@@ -352,7 +352,8 @@ area: temporal
 op: Temporal.PlainDate.from (string), calendarId
 in: str:"2020-01-01[u-ca=gregorian]"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C2: the aliases gregorian and minguo are accepted as gregory and roc, by the constructor, an annotation and a calendar string, where Table 1's aliases are ethiopic-amete-alem and islamicc only (decision D5); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-canonicalizecalendar proposal:temporal@e8cc03fc#sec-temporal-iso8601grammar proposal:temporal@e8cc03fc#sec-temporal-parseisodatetime proposal:intl-era-monthcode@5833eae#sup-availablecalendars ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=gregorian]").calendarId
 note: rows C1 to C3: calendar identifiers (Table 1's types, the aliases ethiopic-amete-alem and islamicc, ASCII case)
@@ -363,7 +364,8 @@ area: temporal
 op: Temporal.PlainDate.from (string), calendarId
 in: str:"2020-01-01[u-ca=minguo]"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C2: the aliases gregorian and minguo are accepted as gregory and roc, by the constructor, an annotation and a calendar string, where Table 1's aliases are ethiopic-amete-alem and islamicc only (decision D5); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-canonicalizecalendar proposal:temporal@e8cc03fc#sec-temporal-iso8601grammar proposal:temporal@e8cc03fc#sec-temporal-parseisodatetime proposal:intl-era-monthcode@5833eae#sup-availablecalendars ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=minguo]").calendarId
 note: rows C1 to C3: calendar identifiers (Table 1's types, the aliases ethiopic-amete-alem and islamicc, ASCII case)
@@ -550,7 +552,8 @@ area: temporal
 op: CanonicalizeCalendar, the constructor's calendar
 in: str:"GREGORIAN"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C2: the aliases gregorian and minguo are accepted as gregory and roc, by the constructor, an annotation and a calendar string, where Table 1's aliases are ethiopic-amete-alem and islamicc only (decision D5); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-canonicalizecalendar proposal:temporal@e8cc03fc#sec-temporal.plaindate proposal:intl-era-monthcode@5833eae#sup-availablecalendars ref:temporalref@1
 script: new Temporal.PlainDate(2020, 1, 1, "GREGORIAN").calendarId
 note: rows C1 to C3: calendar identifiers (Table 1's types, the aliases ethiopic-amete-alem and islamicc, ASCII case)
@@ -561,7 +564,8 @@ area: temporal
 op: Temporal.PlainDate.from (string), calendarId
 in: str:"2020-01-01[u-ca=GREGORIAN]"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C2: the aliases gregorian and minguo are accepted as gregory and roc, by the constructor, an annotation and a calendar string, where Table 1's aliases are ethiopic-amete-alem and islamicc only (decision D5); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-canonicalizecalendar proposal:temporal@e8cc03fc#sec-temporal-iso8601grammar proposal:temporal@e8cc03fc#sec-temporal-parseisodatetime proposal:intl-era-monthcode@5833eae#sup-availablecalendars ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=GREGORIAN]").calendarId
 note: rows C1 to C3: calendar identifiers (Table 1's types, the aliases ethiopic-amete-alem and islamicc, ASCII case)
@@ -2134,7 +2138,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"coptic" str:"year" int:1739 str:"monthCode" str:"M00" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "coptic", year: 1739, monthCode: "M00", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -2376,7 +2381,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"coptic" str:"year" int:1739 str:"monthCode" str:"M14" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "coptic", year: 1739, monthCode: "M14", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -2398,7 +2404,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"coptic" str:"year" int:1739 str:"monthCode" str:"M99" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "coptic", year: 1739, monthCode: "M99", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -3014,7 +3021,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"ethioaa" str:"year" int:7515 str:"monthCode" str:"M00" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethioaa", year: 7515, monthCode: "M00", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -3256,7 +3264,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"ethioaa" str:"year" int:7515 str:"monthCode" str:"M14" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethioaa", year: 7515, monthCode: "M14", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -3278,7 +3287,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"ethioaa" str:"year" int:7515 str:"monthCode" str:"M99" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethioaa", year: 7515, monthCode: "M99", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -3454,7 +3464,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"ethiopic" str:"year" int:2015 str:"monthCode" str:"M00" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethiopic", year: 2015, monthCode: "M00", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -3696,7 +3707,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"ethiopic" str:"year" int:2015 str:"monthCode" str:"M14" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethiopic", year: 2015, monthCode: "M14", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -3718,7 +3730,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"ethiopic" str:"year" int:2015 str:"monthCode" str:"M99" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethiopic", year: 2015, monthCode: "M99", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -4774,7 +4787,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"indian" str:"year" int:1946 str:"monthCode" str:"M00" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "indian", year: 1946, monthCode: "M00", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -4972,7 +4986,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"indian" str:"year" int:1946 str:"monthCode" str:"M13" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "indian", year: 1946, monthCode: "M13", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -5016,7 +5031,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"indian" str:"year" int:1946 str:"monthCode" str:"M14" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "indian", year: 1946, monthCode: "M14", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -5038,7 +5054,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"indian" str:"year" int:1946 str:"monthCode" str:"M99" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "indian", year: 1946, monthCode: "M99", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -5214,7 +5231,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-civil" str:"year" int:1445 str:"monthCode" str:"M00" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-civil", year: 1445, monthCode: "M00", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -5412,7 +5430,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-civil" str:"year" int:1445 str:"monthCode" str:"M13" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-civil", year: 1445, monthCode: "M13", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -5456,7 +5475,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-civil" str:"year" int:1445 str:"monthCode" str:"M14" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-civil", year: 1445, monthCode: "M14", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -5478,7 +5498,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-civil" str:"year" int:1445 str:"monthCode" str:"M99" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-civil", year: 1445, monthCode: "M99", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -5654,7 +5675,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-tbla" str:"year" int:1445 str:"monthCode" str:"M00" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-tbla", year: 1445, monthCode: "M00", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -5852,7 +5874,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-tbla" str:"year" int:1445 str:"monthCode" str:"M13" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-tbla", year: 1445, monthCode: "M13", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -5896,7 +5919,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-tbla" str:"year" int:1445 str:"monthCode" str:"M14" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-tbla", year: 1445, monthCode: "M14", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -5918,7 +5942,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-tbla" str:"year" int:1445 str:"monthCode" str:"M99" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-tbla", year: 1445, monthCode: "M99", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -6094,7 +6119,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-umalqura" str:"year" int:1445 str:"monthCode" str:"M00" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-umalqura", year: 1445, monthCode: "M00", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -6292,7 +6318,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-umalqura" str:"year" int:1445 str:"monthCode" str:"M13" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-umalqura", year: 1445, monthCode: "M13", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -6336,7 +6363,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-umalqura" str:"year" int:1445 str:"monthCode" str:"M14" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-umalqura", year: 1445, monthCode: "M14", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -6358,7 +6386,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"islamic-umalqura" str:"year" int:1445 str:"monthCode" str:"M99" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-umalqura", year: 1445, monthCode: "M99", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -6974,7 +7003,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"persian" str:"year" int:1403 str:"monthCode" str:"M00" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "persian", year: 1403, monthCode: "M00", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -7172,7 +7202,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"persian" str:"year" int:1403 str:"monthCode" str:"M13" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "persian", year: 1403, monthCode: "M13", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -7216,7 +7247,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"persian" str:"year" int:1403 str:"monthCode" str:"M14" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "persian", year: 1403, monthCode: "M14", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -7238,7 +7270,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag, options), calendar fields
 in: str:"calendar" str:"persian" str:"year" int:1403 str:"monthCode" str:"M99" str:"day" int:1 str:"overflow" str:"constrain"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C5: an invalid month code under constrain (M00, M13 where there is no thirteenth month, M14, M99) is constrained to the first or the last month in Coptic, Ethiopic, Indian, the Islamic calendars and Persian, where NonISOResolveFields throws a RangeError for a month code the calendar lacks (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode proposal:intl-era-monthcode@5833eae#sec-temporal-isvalidmonthcodeforcalendar ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "persian", year: 1403, monthCode: "M99", day: 1}, {overflow: "constrain"}))
 note: rows C4 and C5: month codes in each calendar's leap year under both overflows (the grammar's MonthCode, then Table 3's validity: an invalid code is a RangeError under constrain too)
@@ -10208,7 +10241,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"coptic" str:"era" str:"AM" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "coptic", era: "AM", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -10219,7 +10253,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"coptic" str:"era" str:"coptic" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "coptic", era: "coptic", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -11220,7 +11255,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"ethioaa" str:"era" str:"mundi" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:intl-era-monthcode@5833eae#table-eras proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sup-temporal-nonisoresolvefields proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera overruled:temporalref@1=value:str:"aa;5;5;-005488-07-17"
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethioaa", era: "mundi", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5; decision D7: the pinned text's answer, where its polyfill answers str:"aa;5;5;-005488-07-17": Table 2 at the pinned era proposal lists no such era or alias for the calendar (the aliases mundi, minguo and before-roc left it on 2025-11-21, and incar and minguo-qian with them), so CanonicalizeEraInCalendar answers undefined and NonISOResolveFields throws a RangeError (decision D4)
@@ -11242,7 +11278,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"ethioaa" str:"era" str:"ethioaa" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethioaa", era: "ethioaa", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -11660,7 +11697,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"ethiopic" str:"era" str:"AM" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethiopic", era: "AM", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -11693,7 +11731,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"ethiopic" str:"era" str:"incarnation" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethiopic", era: "incarnation", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -11704,7 +11743,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"ethiopic" str:"era" str:"mundi" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:intl-era-monthcode@5833eae#table-eras proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sup-temporal-nonisoresolvefields proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera overruled:temporalref@1=value:str:"aa;5;-5495;-005488-07-17"
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethiopic", era: "mundi", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5; decision D7: the pinned text's answer, where its polyfill answers str:"aa;5;-5495;-005488-07-17": Table 2 at the pinned era proposal lists no such era or alias for the calendar (the aliases mundi, minguo and before-roc left it on 2025-11-21, and incar and minguo-qian with them), so CanonicalizeEraInCalendar answers undefined and NonISOResolveFields throws a RangeError (decision D4)
@@ -11715,7 +11755,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"ethiopic" str:"era" str:"ethiopic" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethiopic", era: "ethiopic", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -11726,7 +11767,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"ethiopic" str:"era" str:"ethioaa" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "ethiopic", era: "ethioaa", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -11968,7 +12010,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"gregory" str:"era" str:"CE" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "gregory", era: "CE", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -11979,7 +12022,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"gregory" str:"era" str:"Ce" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "gregory", era: "Ce", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -11990,7 +12034,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"gregory" str:"era" str:"gregory" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "gregory", era: "gregory", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -12001,7 +12046,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"gregory" str:"era" str:"gregory-inverse" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "gregory", era: "gregory-inverse", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -12628,7 +12674,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"hebrew" str:"era" str:"AM" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "hebrew", era: "AM", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -12650,7 +12697,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"hebrew" str:"era" str:"hebrew" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "hebrew", era: "hebrew", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -13200,7 +13248,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"indian" str:"era" str:"saka" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "indian", era: "saka", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -13739,7 +13788,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"islamic-civil" str:"era" str:"AH" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-civil", era: "AH", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -14223,7 +14273,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"islamic-tbla" str:"era" str:"AH" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-tbla", era: "AH", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -14707,7 +14758,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"islamic-umalqura" str:"era" str:"AH" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "islamic-umalqura", era: "AH", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -14872,7 +14924,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"japanese" str:"era" str:"CE" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "japanese", era: "CE", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -14883,7 +14936,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"japanese" str:"era" str:"Ce" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "japanese", era: "Ce", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -15642,7 +15696,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"persian" str:"era" str:"persian" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera proposal:intl-era-monthcode@5833eae#table-eras ref:temporalref@1
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "persian", era: "persian", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5
@@ -15917,7 +15972,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"roc" str:"era" str:"minguo" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:intl-era-monthcode@5833eae#table-eras proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sup-temporal-nonisoresolvefields proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera overruled:temporalref@1=value:str:"roc;5;5;1916-01-01"
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "roc", era: "minguo", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5; decision D7: the pinned text's answer, where its polyfill answers str:"roc;5;5;1916-01-01": Table 2 at the pinned era proposal lists no such era or alias for the calendar (the aliases mundi, minguo and before-roc left it on 2025-11-21, and incar and minguo-qian with them), so CanonicalizeEraInCalendar answers undefined and NonISOResolveFields throws a RangeError (decision D4)
@@ -15928,7 +15984,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), era fields
 in: str:"calendar" str:"roc" str:"era" str:"before-roc" str:"eraYear" int:5 str:"monthCode" str:"M01" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C9: era names of earlier drafts and aliases the era proposal removed (gregory, gregory-inverse, coptic, hebrew, ethiopic, ethioaa, saka, persian, mundi, minguo, before-roc, incarnation) and ASCII case variants of the codes are accepted, where CanonicalizeEraInCalendar admits Table 2's codes and aliases only (decision D4); correction, answered by SJL-10.5
 prov: proposal:intl-era-monthcode@5833eae#table-eras proposal:intl-era-monthcode@5833eae#sec-temporal-canonicalizeeraincalendar proposal:intl-era-monthcode@5833eae#sup-temporal-nonisoresolvefields proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:intl-era-monthcode@5833eae#sec-temporal-calendardateera overruled:temporalref@1=value:str:"broc;5;-4;1907-01-01"
 script: (function (d) { return d.era + ";" + d.eraYear + ";" + d.year + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "roc", era: "before-roc", eraYear: 5, monthCode: "M01", day: 1}))
 note: rows C8 and C9: eras (Table 2's codes; the names of earlier drafts are refused) with eraYear 5; decision D7: the pinned text's answer, where its polyfill answers str:"broc;5;-4;1907-01-01": Table 2 at the pinned era proposal lists no such era or alias for the calendar (the aliases mundi, minguo and before-roc left it on 2025-11-21, and incar and minguo-qian with them), so CanonicalizeEraInCalendar answers undefined and NonISOResolveFields throws a RangeError (decision D4)
@@ -35904,7 +35961,8 @@ area: temporal
 op: ToTemporalCalendarIdentifier (an object), a property bag's calendar
 in: str:"a PlainMonthDay in hebrew"
 out: value: str:"hebrew"
-class: normative
+class: divergence
+divergence.broiler-js: row C13: a PlainMonthDay lends iso8601 as a calendar value, where ToTemporalCalendarIdentifier returns its [[Calendar]] (hebrew); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-totemporalcalendaridentifier ref:temporalref@1
 script: Temporal.PlainDate.from({year: 2020, month: 1, day: 1, calendar: Temporal.PlainMonthDay.from({calendar: "hebrew", monthCode: "M05L", day: 1})}).calendarId
 note: row C13: the calendar an object lends as a calendar value (ToTemporalCalendarIdentifier reads its slot)
@@ -35915,7 +35973,8 @@ area: temporal
 op: ToTemporalCalendarIdentifier (an object), withCalendar
 in: str:"a PlainMonthDay in hebrew"
 out: value: str:"hebrew"
-class: normative
+class: divergence
+divergence.broiler-js: row C13: a PlainMonthDay lends iso8601 as a calendar value, where ToTemporalCalendarIdentifier returns its [[Calendar]] (hebrew); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-totemporalcalendaridentifier ref:temporalref@1
 script: new Temporal.PlainDate(2020, 1, 1).withCalendar(Temporal.PlainMonthDay.from({calendar: "hebrew", monthCode: "M05L", day: 1})).calendarId
 note: row C13: the calendar an object lends as a calendar value (ToTemporalCalendarIdentifier reads its slot)
@@ -35926,7 +35985,8 @@ area: temporal
 op: ToTemporalCalendarIdentifier (an object), a month-day bag's calendar
 in: str:"a PlainMonthDay in hebrew"
 out: value: str:"hebrew"
-class: normative
+class: divergence
+divergence.broiler-js: row C13: a PlainMonthDay lends iso8601 as a calendar value, where ToTemporalCalendarIdentifier returns its [[Calendar]] (hebrew); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-totemporalcalendaridentifier ref:temporalref@1
 script: Temporal.PlainMonthDay.from({monthCode: "M01", day: 1, calendar: Temporal.PlainMonthDay.from({calendar: "hebrew", monthCode: "M05L", day: 1})}).calendarId
 note: row C13: the calendar an object lends as a calendar value (ToTemporalCalendarIdentifier reads its slot)
@@ -36784,7 +36844,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag, options), toString
 in: str:"year" int:2147483652 str:"month" int:2 str:"day" int:29 str:"overflow" str:"reject"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-js: row C12: an ISO month-day's year past 2^31 saturates to 2147483647, which is not a leap year, so 29 February is refused under reject and constrained to the 28th, where CalendarMonthDayToISOReferenceDate regulates against the year given (the milestone's integer narrowing, as it reaches a calendar field); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate ref:temporalref@1
 script: Temporal.PlainMonthDay.from({year: 2147483652, month: 2, day: 29}, {overflow: "reject"}).toString()
 note: row C12: an ISO month-day's year beyond 2^31, which decides only whether 29 February exists (CalendarMonthDayToISOReferenceDate regulates against the given year)
@@ -36795,7 +36856,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag, options), toString
 in: str:"year" int:2147483652 str:"month" int:2 str:"day" int:29 str:"overflow" str:"constrain"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-js: row C12: an ISO month-day's year past 2^31 saturates to 2147483647, which is not a leap year, so 29 February is refused under reject and constrained to the 28th, where CalendarMonthDayToISOReferenceDate regulates against the year given (the milestone's integer narrowing, as it reaches a calendar field); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate ref:temporalref@1
 script: Temporal.PlainMonthDay.from({year: 2147483652, month: 2, day: 29}, {overflow: "constrain"}).toString()
 note: row C12: an ISO month-day's year beyond 2^31, which decides only whether 29 February exists (CalendarMonthDayToISOReferenceDate regulates against the given year)
@@ -36828,7 +36890,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag, options), toString
 in: str:"year" int:4294967296 str:"month" int:2 str:"day" int:29 str:"overflow" str:"reject"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-js: row C12: an ISO month-day's year past 2^31 saturates to 2147483647, which is not a leap year, so 29 February is refused under reject and constrained to the 28th, where CalendarMonthDayToISOReferenceDate regulates against the year given (the milestone's integer narrowing, as it reaches a calendar field); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate ref:temporalref@1
 script: Temporal.PlainMonthDay.from({year: 4294967296, month: 2, day: 29}, {overflow: "reject"}).toString()
 note: row C12: an ISO month-day's year beyond 2^31, which decides only whether 29 February exists (CalendarMonthDayToISOReferenceDate regulates against the given year)
@@ -36839,7 +36902,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag, options), toString
 in: str:"year" int:4294967296 str:"month" int:2 str:"day" int:29 str:"overflow" str:"constrain"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-js: row C12: an ISO month-day's year past 2^31 saturates to 2147483647, which is not a leap year, so 29 February is refused under reject and constrained to the 28th, where CalendarMonthDayToISOReferenceDate regulates against the year given (the milestone's integer narrowing, as it reaches a calendar field); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate ref:temporalref@1
 script: Temporal.PlainMonthDay.from({year: 4294967296, month: 2, day: 29}, {overflow: "constrain"}).toString()
 note: row C12: an ISO month-day's year beyond 2^31, which decides only whether 29 February exists (CalendarMonthDayToISOReferenceDate regulates against the given year)
@@ -36850,7 +36914,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag, options), toString
 in: str:"year" int:10000000000 str:"month" int:2 str:"day" int:29 str:"overflow" str:"reject"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-js: row C12: an ISO month-day's year past 2^31 saturates to 2147483647, which is not a leap year, so 29 February is refused under reject and constrained to the 28th, where CalendarMonthDayToISOReferenceDate regulates against the year given (the milestone's integer narrowing, as it reaches a calendar field); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate ref:temporalref@1
 script: Temporal.PlainMonthDay.from({year: 10000000000, month: 2, day: 29}, {overflow: "reject"}).toString()
 note: row C12: an ISO month-day's year beyond 2^31, which decides only whether 29 February exists (CalendarMonthDayToISOReferenceDate regulates against the given year)
@@ -36861,7 +36926,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag, options), toString
 in: str:"year" int:10000000000 str:"month" int:2 str:"day" int:29 str:"overflow" str:"constrain"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-js: row C12: an ISO month-day's year past 2^31 saturates to 2147483647, which is not a leap year, so 29 February is refused under reject and constrained to the 28th, where CalendarMonthDayToISOReferenceDate regulates against the year given (the milestone's integer narrowing, as it reaches a calendar field); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate ref:temporalref@1
 script: Temporal.PlainMonthDay.from({year: 10000000000, month: 2, day: 29}, {overflow: "constrain"}).toString()
 note: row C12: an ISO month-day's year beyond 2^31, which decides only whether 29 February exists (CalendarMonthDayToISOReferenceDate regulates against the given year)
@@ -36894,7 +36960,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag, options), toString
 in: str:"year" int:1000000000000000 str:"month" int:2 str:"day" int:29 str:"overflow" str:"reject"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-js: row C12: an ISO month-day's year past 2^31 saturates to 2147483647, which is not a leap year, so 29 February is refused under reject and constrained to the 28th, where CalendarMonthDayToISOReferenceDate regulates against the year given (the milestone's integer narrowing, as it reaches a calendar field); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate ref:temporalref@1
 script: Temporal.PlainMonthDay.from({year: 1000000000000000, month: 2, day: 29}, {overflow: "reject"}).toString()
 note: row C12: an ISO month-day's year beyond 2^31, which decides only whether 29 February exists (CalendarMonthDayToISOReferenceDate regulates against the given year)
@@ -36905,7 +36972,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag, options), toString
 in: str:"year" int:1000000000000000 str:"month" int:2 str:"day" int:29 str:"overflow" str:"constrain"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-js: row C12: an ISO month-day's year past 2^31 saturates to 2147483647, which is not a leap year, so 29 February is refused under reject and constrained to the 28th, where CalendarMonthDayToISOReferenceDate regulates against the year given (the milestone's integer narrowing, as it reaches a calendar field); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate ref:temporalref@1
 script: Temporal.PlainMonthDay.from({year: 1000000000000000, month: 2, day: 29}, {overflow: "constrain"}).toString()
 note: row C12: an ISO month-day's year beyond 2^31, which decides only whether 29 February exists (CalendarMonthDayToISOReferenceDate regulates against the given year)
@@ -36960,7 +37028,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag, options), toString
 in: str:"year" int:2147483648 str:"month" int:2 str:"day" int:29 str:"overflow" str:"reject"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-js: row C12: an ISO month-day's year past 2^31 saturates to 2147483647, which is not a leap year, so 29 February is refused under reject and constrained to the 28th, where CalendarMonthDayToISOReferenceDate regulates against the year given (the milestone's integer narrowing, as it reaches a calendar field); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate ref:temporalref@1
 script: Temporal.PlainMonthDay.from({year: 2147483648, month: 2, day: 29}, {overflow: "reject"}).toString()
 note: row C12: an ISO month-day's year beyond 2^31, which decides only whether 29 February exists (CalendarMonthDayToISOReferenceDate regulates against the given year)
@@ -36971,7 +37040,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag, options), toString
 in: str:"year" int:2147483648 str:"month" int:2 str:"day" int:29 str:"overflow" str:"constrain"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-js: row C12: an ISO month-day's year past 2^31 saturates to 2147483647, which is not a leap year, so 29 February is refused under reject and constrained to the 28th, where CalendarMonthDayToISOReferenceDate regulates against the year given (the milestone's integer narrowing, as it reaches a calendar field); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate ref:temporalref@1
 script: Temporal.PlainMonthDay.from({year: 2147483648, month: 2, day: 29}, {overflow: "constrain"}).toString()
 note: row C12: an ISO month-day's year beyond 2^31, which decides only whether 29 February exists (CalendarMonthDayToISOReferenceDate regulates against the given year)
@@ -37026,7 +37096,8 @@ area: temporal
 op: Temporal.PlainMonthDay.prototype.with, toString
 in: str:"02-28" str:"year" int:2147483652 str:"day" int:29 str:"overflow" str:"reject"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-js: row C12: an ISO month-day's year past 2^31 saturates to 2147483647, which is not a leap year, so 29 February is refused under reject and constrained to the 28th, where CalendarMonthDayToISOReferenceDate regulates against the year given (the milestone's integer narrowing, as it reaches a calendar field); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plainmonthday.prototype.with ref:temporalref@1
 script: Temporal.PlainMonthDay.from("02-28").with({year: 2147483652, day: 29}, {overflow: "reject"}).toString()
 note: row C12: an ISO month-day's year beyond 2^31, which decides only whether 29 February exists (CalendarMonthDayToISOReferenceDate regulates against the given year)
@@ -37136,7 +37207,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"buddhist"
 out: value: str:"2023-03-01[u-ca=buddhist]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("buddhist").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37147,7 +37219,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainMonthDay
 in: str:"2023-03-15" str:"buddhist"
 out: value: str:"buddhist;M03/15;1972-03-15[u-ca=buddhist]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: (function (md) { return md.calendarId + ";" + md.monthCode + "/" + md.day + ";" + md.toString({calendarName: "always"}); })(Temporal.PlainDate.from("2023-03-15").withCalendar("buddhist").toPlainMonthDay())
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37158,7 +37231,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"buddhist"
 out: value: str:"2023-03-01[u-ca=buddhist]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("buddhist").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37169,7 +37243,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.toPlainDate, toPlainMonthDay
 in: str:"2023-03-15" str:"buddhist"
 out: value: str:"1972-03-15[u-ca=buddhist]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2023-03-15T12:00[UTC]").withCalendar("buddhist").toPlainDate().toPlainMonthDay().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37180,7 +37255,8 @@ area: temporal
 op: Temporal.PlainMonthDay.prototype.toPlainDate, the calendar year of 2001-06-01
 in: str:"2023-03-15" str:"buddhist"
 out: value: str:"2001-02-10[u-ca=buddhist]"
-class: normative
+class: divergence
+divergence.broiler-js: row C17: PlainMonthDay#toPlainDate reads a buddhist or roc year as an ISO year (2544-02-10, 0090-02-10), where it is the calendar's year (2001-02-10); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainMonthDay.from({calendar: "buddhist", monthCode: "M02", day: 10}).toPlainDate({year: Temporal.PlainDate.from("2001-06-01").withCalendar("buddhist").year}).toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37224,7 +37300,8 @@ area: temporal
 op: Temporal.PlainMonthDay.prototype.with
 in: str:"2023-03-15" str:"buddhist"
 out: value: str:"1972-03-01[u-ca=buddhist]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("buddhist").toPlainMonthDay().with({day: 1}).toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37235,7 +37312,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"chinese"
 out: value: str:"2023-02-20[u-ca=chinese]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("chinese").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37257,7 +37335,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"chinese"
 out: value: str:"2023-02-20[u-ca=chinese]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("chinese").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37334,7 +37413,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"coptic"
 out: value: str:"2023-03-10[u-ca=coptic]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("coptic").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37356,7 +37436,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"coptic"
 out: value: str:"2023-03-10[u-ca=coptic]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("coptic").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37433,7 +37514,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"dangi"
 out: value: str:"2023-02-20[u-ca=dangi]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("dangi").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37455,7 +37537,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"dangi"
 out: value: str:"2023-02-20[u-ca=dangi]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("dangi").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37532,7 +37615,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"ethioaa"
 out: value: str:"2023-03-10[u-ca=ethioaa]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("ethioaa").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37554,7 +37638,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"ethioaa"
 out: value: str:"2023-03-10[u-ca=ethioaa]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("ethioaa").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37631,7 +37716,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"ethiopic"
 out: value: str:"2023-03-10[u-ca=ethiopic]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("ethiopic").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37653,7 +37739,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"ethiopic"
 out: value: str:"2023-03-10[u-ca=ethiopic]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("ethiopic").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37730,7 +37817,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"gregory"
 out: value: str:"2023-03-01[u-ca=gregory]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("gregory").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37741,7 +37829,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainMonthDay
 in: str:"2023-03-15" str:"gregory"
 out: value: str:"gregory;M03/15;1972-03-15[u-ca=gregory]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: (function (md) { return md.calendarId + ";" + md.monthCode + "/" + md.day + ";" + md.toString({calendarName: "always"}); })(Temporal.PlainDate.from("2023-03-15").withCalendar("gregory").toPlainMonthDay())
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37752,7 +37841,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"gregory"
 out: value: str:"2023-03-01[u-ca=gregory]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("gregory").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37763,7 +37853,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.toPlainDate, toPlainMonthDay
 in: str:"2023-03-15" str:"gregory"
 out: value: str:"1972-03-15[u-ca=gregory]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2023-03-15T12:00[UTC]").withCalendar("gregory").toPlainDate().toPlainMonthDay().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37818,7 +37909,8 @@ area: temporal
 op: Temporal.PlainMonthDay.prototype.with
 in: str:"2023-03-15" str:"gregory"
 out: value: str:"1972-03-01[u-ca=gregory]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("gregory").toPlainMonthDay().with({day: 1}).toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37829,7 +37921,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"hebrew"
 out: value: str:"2023-02-22[u-ca=hebrew]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("hebrew").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37851,7 +37944,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"hebrew"
 out: value: str:"2023-02-22[u-ca=hebrew]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("hebrew").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37928,7 +38022,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"indian"
 out: value: str:"2023-02-20[u-ca=indian]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("indian").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -37950,7 +38045,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"indian"
 out: value: str:"2023-02-20[u-ca=indian]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("indian").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38027,7 +38123,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"islamic-civil"
 out: value: str:"2023-02-22[u-ca=islamic-civil]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("islamic-civil").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38049,7 +38146,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"islamic-civil"
 out: value: str:"2023-02-22[u-ca=islamic-civil]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("islamic-civil").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38126,7 +38224,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"islamic-tbla"
 out: value: str:"2023-02-21[u-ca=islamic-tbla]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("islamic-tbla").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38148,7 +38247,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"islamic-tbla"
 out: value: str:"2023-02-21[u-ca=islamic-tbla]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("islamic-tbla").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38225,7 +38325,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"islamic-umalqura"
 out: value: str:"2023-02-21[u-ca=islamic-umalqura]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("islamic-umalqura").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38247,7 +38348,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"islamic-umalqura"
 out: value: str:"2023-02-21[u-ca=islamic-umalqura]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("islamic-umalqura").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38324,7 +38426,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"japanese"
 out: value: str:"2023-03-01[u-ca=japanese]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("japanese").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38335,7 +38438,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainMonthDay
 in: str:"2023-03-15" str:"japanese"
 out: value: str:"japanese;M03/15;1972-03-15[u-ca=japanese]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: (function (md) { return md.calendarId + ";" + md.monthCode + "/" + md.day + ";" + md.toString({calendarName: "always"}); })(Temporal.PlainDate.from("2023-03-15").withCalendar("japanese").toPlainMonthDay())
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38346,7 +38450,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"japanese"
 out: value: str:"2023-03-01[u-ca=japanese]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("japanese").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38357,7 +38462,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.toPlainDate, toPlainMonthDay
 in: str:"2023-03-15" str:"japanese"
 out: value: str:"1972-03-15[u-ca=japanese]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2023-03-15T12:00[UTC]").withCalendar("japanese").toPlainDate().toPlainMonthDay().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38412,7 +38518,8 @@ area: temporal
 op: Temporal.PlainMonthDay.prototype.with
 in: str:"2023-03-15" str:"japanese"
 out: value: str:"1972-03-01[u-ca=japanese]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("japanese").toPlainMonthDay().with({day: 1}).toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38423,7 +38530,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"persian"
 out: value: str:"2023-02-20[u-ca=persian]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("persian").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38445,7 +38553,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"persian"
 out: value: str:"2023-02-20[u-ca=persian]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("persian").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38522,7 +38631,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainYearMonth
 in: str:"2023-03-15" str:"roc"
 out: value: str:"2023-03-01[u-ca=roc]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("roc").toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38533,7 +38643,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.toPlainMonthDay
 in: str:"2023-03-15" str:"roc"
 out: value: str:"roc;M03/15;1972-03-15[u-ca=roc]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: (function (md) { return md.calendarId + ";" + md.monthCode + "/" + md.day + ";" + md.toString({calendarName: "always"}); })(Temporal.PlainDate.from("2023-03-15").withCalendar("roc").toPlainMonthDay())
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38544,7 +38655,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.toPlainDate, toPlainYearMonth
 in: str:"2023-03-15" str:"roc"
 out: value: str:"2023-03-01[u-ca=roc]"
-class: normative
+class: divergence
+divergence.broiler-js: row C15: toPlainYearMonth keeps the date's own ISO day in every calendar but ISO 8601, where CalendarYearMonthFromFields sets the reference day to the first of the calendar month; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDateTime.from("2023-03-15T12:00").withCalendar("roc").toPlainDate().toPlainYearMonth().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38555,7 +38667,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.toPlainDate, toPlainMonthDay
 in: str:"2023-03-15" str:"roc"
 out: value: str:"1972-03-15[u-ca=roc]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2023-03-15T12:00[UTC]").withCalendar("roc").toPlainDate().toPlainMonthDay().toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38566,7 +38679,8 @@ area: temporal
 op: Temporal.PlainMonthDay.prototype.toPlainDate, the calendar year of 2001-06-01
 in: str:"2023-03-15" str:"roc"
 out: value: str:"2001-02-10[u-ca=roc]"
-class: normative
+class: divergence
+divergence.broiler-js: row C17: PlainMonthDay#toPlainDate reads a buddhist or roc year as an ISO year (2544-02-10, 0090-02-10), where it is the calendar's year (2001-02-10); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainMonthDay.from({calendar: "roc", monthCode: "M02", day: 10}).toPlainDate({year: Temporal.PlainDate.from("2001-06-01").withCalendar("roc").year}).toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38610,7 +38724,8 @@ area: temporal
 op: Temporal.PlainMonthDay.prototype.with
 in: str:"2023-03-15" str:"roc"
 out: value: str:"1972-03-01[u-ca=roc]"
-class: normative
+class: divergence
+divergence.broiler-js: row C16: toPlainMonthDay builds the month-day without a calendar in the Gregorian family, so it and its with() are iso8601, where they keep the date's calendar; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainyearmonth proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.toplainmonthday ref:temporalref@1
 script: Temporal.PlainDate.from("2023-03-15").withCalendar("roc").toPlainMonthDay().with({day: 1}).toString({calendarName: "always"})
 note: rows C15 to C17: the conversions (toPlainYearMonth's first day of the calendar month, toPlainMonthDay's calendar and reference year, toPlainDate reading the year in the calendar)
@@ -38643,7 +38758,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"hebrew" str:"year" int:5784 str:"monthCode" str:"M\u0660\u0661" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "hebrew", year: 5784, monthCode: "M\u0660\u0661", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38654,7 +38770,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"chinese" str:"year" int:2023 str:"monthCode" str:"M\u0660\u0661" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "chinese", year: 2023, monthCode: "M\u0660\u0661", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38665,7 +38782,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"coptic" str:"year" int:1739 str:"monthCode" str:"M\u0660\u0661" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "coptic", year: 1739, monthCode: "M\u0660\u0661", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38676,7 +38794,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"persian" str:"year" int:1403 str:"monthCode" str:"M\u0660\u0661" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "persian", year: 1403, monthCode: "M\u0660\u0661", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38687,7 +38806,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag), reference date
 in: str:"calendar" str:"hebrew" str:"monthCode" str:"M\u0660\u0661" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (md) { return md.monthCode + "/" + md.day + ";" + md.toString({calendarName: "never"}); })(Temporal.PlainMonthDay.from({calendar: "hebrew", monthCode: "M\u0660\u0661", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38698,7 +38818,8 @@ area: temporal
 op: Temporal.PlainYearMonth.from (property bag), toString
 in: str:"year" int:2020 str:"monthCode" str:"M\u0660\u0661"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: Temporal.PlainYearMonth.from({year: 2020, monthCode: "M\u0660\u0661"}).toString()
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38731,7 +38852,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"hebrew" str:"year" int:5784 str:"monthCode" str:"M0\u0661" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "hebrew", year: 5784, monthCode: "M0\u0661", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38742,7 +38864,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"chinese" str:"year" int:2023 str:"monthCode" str:"M0\u0661" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "chinese", year: 2023, monthCode: "M0\u0661", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38753,7 +38876,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"coptic" str:"year" int:1739 str:"monthCode" str:"M0\u0661" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "coptic", year: 1739, monthCode: "M0\u0661", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38764,7 +38888,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"persian" str:"year" int:1403 str:"monthCode" str:"M0\u0661" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "persian", year: 1403, monthCode: "M0\u0661", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38775,7 +38900,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag), reference date
 in: str:"calendar" str:"hebrew" str:"monthCode" str:"M0\u0661" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (md) { return md.monthCode + "/" + md.day + ";" + md.toString({calendarName: "never"}); })(Temporal.PlainMonthDay.from({calendar: "hebrew", monthCode: "M0\u0661", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38786,7 +38912,8 @@ area: temporal
 op: Temporal.PlainYearMonth.from (property bag), toString
 in: str:"year" int:2020 str:"monthCode" str:"M0\u0661"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: Temporal.PlainYearMonth.from({year: 2020, monthCode: "M0\u0661"}).toString()
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38819,7 +38946,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"hebrew" str:"year" int:5784 str:"monthCode" str:"M\uFF10\uFF11" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "hebrew", year: 5784, monthCode: "M\uFF10\uFF11", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38830,7 +38958,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"chinese" str:"year" int:2023 str:"monthCode" str:"M\uFF10\uFF11" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "chinese", year: 2023, monthCode: "M\uFF10\uFF11", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38841,7 +38970,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"coptic" str:"year" int:1739 str:"monthCode" str:"M\uFF10\uFF11" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "coptic", year: 1739, monthCode: "M\uFF10\uFF11", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38852,7 +38982,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"persian" str:"year" int:1403 str:"monthCode" str:"M\uFF10\uFF11" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "persian", year: 1403, monthCode: "M\uFF10\uFF11", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38863,7 +38994,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag), reference date
 in: str:"calendar" str:"hebrew" str:"monthCode" str:"M\uFF10\uFF11" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (md) { return md.monthCode + "/" + md.day + ";" + md.toString({calendarName: "never"}); })(Temporal.PlainMonthDay.from({calendar: "hebrew", monthCode: "M\uFF10\uFF11", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38874,7 +39006,8 @@ area: temporal
 op: Temporal.PlainYearMonth.from (property bag), toString
 in: str:"year" int:2020 str:"monthCode" str:"M\uFF10\uFF11"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: Temporal.PlainYearMonth.from({year: 2020, monthCode: "M\uFF10\uFF11"}).toString()
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38907,7 +39040,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"hebrew" str:"year" int:5784 str:"monthCode" str:"M\u0660\u0665L" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "hebrew", year: 5784, monthCode: "M\u0660\u0665L", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38918,7 +39052,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"chinese" str:"year" int:2023 str:"monthCode" str:"M\u0660\u0665L" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "chinese", year: 2023, monthCode: "M\u0660\u0665L", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38929,7 +39064,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"coptic" str:"year" int:1739 str:"monthCode" str:"M\u0660\u0665L" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "coptic", year: 1739, monthCode: "M\u0660\u0665L", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38940,7 +39076,8 @@ area: temporal
 op: Temporal.PlainDate.from (property bag), calendar fields
 in: str:"calendar" str:"persian" str:"year" int:1403 str:"monthCode" str:"M\u0660\u0665L" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendardatefromfields proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (d) { return d.year + "/" + d.monthCode + "/" + d.day + ";" + d.month + ";" + d.toString({calendarName: "never"}); })(Temporal.PlainDate.from({calendar: "persian", year: 1403, monthCode: "M\u0660\u0665L", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes
@@ -38951,7 +39088,8 @@ area: temporal
 op: Temporal.PlainMonthDay.from (property bag), reference date
 in: str:"calendar" str:"hebrew" str:"monthCode" str:"M\u0660\u0665L" str:"day" int:1
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row C6: a month code with decimal digits other than ASCII passes ^M\d{2}L?$ and int.Parse then lets a FormatException escape the evaluation, where MonthCode's digits are ASCII and the code a RangeError; correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal-calendarmonthdaytoisoreferencedate proposal:temporal@e8cc03fc#sec-temporal-parsemonthcode ref:temporalref@1
 script: (function (md) { return md.monthCode + "/" + md.day + ";" + md.toString({calendarName: "never"}); })(Temporal.PlainMonthDay.from({calendar: "hebrew", monthCode: "M\u0660\u0665L", day: 1}))
 note: row C6: a month code with decimal digits other than ASCII, and month codes of other shapes

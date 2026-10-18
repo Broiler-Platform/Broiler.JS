@@ -86,8 +86,10 @@ HERE = Path(__file__).resolve().parent
 REPOSITORY = HERE.parents[1]
 CORPUS = REPOSITORY / "conformance" / "vectors"
 
-# The corpus revision this generator writes, and the revision its vectors were added in.
-CORPUS_REVISION = 24
+# The corpus revision this generator writes, and the revision its vectors were added in. Revision 25 classifies every
+# difference of both engines' first runs on revision 24 (temporal-divergences.txt): Broiler.JS's, under UTC and
+# America/New_York, and Broiler.VM's, taken locally; no expected value changes.
+CORPUS_REVISION = 25
 FIRST_REVISION = 24
 GENERATOR = "ref:temporalref@1"
 SPEC = "spec:es2026@0248456c"

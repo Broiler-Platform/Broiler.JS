@@ -1077,7 +1077,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2020-07-20[u-ca=hebrew]" undefined str:"month" undefined str:"halfExpand"
 out: value: str:"P7M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate proposal:temporal@e8cc03fc#sec-temporal-calendardateuntil ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2020-07-20[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "halfExpand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -1099,7 +1100,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2021-10-20[u-ca=hebrew]" undefined str:"year" undefined str:"halfExpand"
 out: value: str:"P2Y"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate proposal:temporal@e8cc03fc#sec-temporal-calendardateuntil ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2021-10-20[u-ca=hebrew]"), {smallestUnit: "year", roundingMode: "halfExpand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -1110,7 +1112,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.since, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2020-07-20[u-ca=hebrew]" undefined str:"month" undefined str:"halfExpand"
 out: value: str:"-P7M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.since proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate proposal:temporal@e8cc03fc#sec-temporal-calendardateuntil ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").since(Temporal.PlainDate.from("2020-07-20[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "halfExpand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -1121,7 +1124,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=coptic]" str:"2020-03-20[u-ca=coptic]" undefined str:"week" undefined str:"ceil"
 out: value: str:"P12W"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate proposal:temporal@e8cc03fc#sec-temporal-calendardateuntil ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=coptic]").until(Temporal.PlainDate.from("2020-03-20[u-ca=coptic]"), {smallestUnit: "week", roundingMode: "ceil"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -1132,7 +1136,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=islamic-civil]" str:"2020-03-20[u-ca=islamic-civil]" undefined str:"day" int:7 str:"halfExpand"
 out: value: str:"P77D"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate proposal:temporal@e8cc03fc#sec-temporal-calendardateuntil ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=islamic-civil]").until(Temporal.PlainDate.from("2020-03-20[u-ca=islamic-civil]"), {smallestUnit: "day", roundingIncrement: 7, roundingMode: "halfExpand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -1154,7 +1159,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2020-01-16[u-ca=hebrew]" undefined str:"month" undefined str:"halfExpand"
 out: value: str:"P1M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate proposal:temporal@e8cc03fc#sec-temporal-calendardateuntil ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2020-01-16[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "halfExpand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -1198,7 +1204,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.until, toString
 in: str:"2020-01-01T00:00[u-ca=hebrew]" str:"2020-01-16T00:00[u-ca=hebrew]" undefined str:"month" undefined str:"halfExpand"
 out: value: str:"P1M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindatetime proposal:temporal@e8cc03fc#sec-temporal-calendardateuntil ref:temporalref@1
 script: Temporal.PlainDateTime.from("2020-01-01T00:00[u-ca=hebrew]").until(Temporal.PlainDateTime.from("2020-01-16T00:00[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "halfExpand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -1209,7 +1216,8 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.until, toString
 in: str:"2020-01-01T00:00[u-ca=hebrew]" str:"2020-01-16T00:00[u-ca=hebrew]" str:"year" str:"month" undefined str:"halfExpand"
 out: value: str:"P1M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindatetime proposal:temporal@e8cc03fc#sec-temporal-calendardateuntil ref:temporalref@1
 script: Temporal.PlainDateTime.from("2020-01-01T00:00[u-ca=hebrew]").until(Temporal.PlainDateTime.from("2020-01-16T00:00[u-ca=hebrew]"), {smallestUnit: "month", largestUnit: "year", roundingMode: "halfExpand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -1220,7 +1228,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2020-01-01T00:00[UTC][u-ca=hebrew]" str:"2020-01-03T13:00[UTC][u-ca=hebrew]" undefined str:"day" undefined str:"halfExpand"
 out: value: str:"P3D"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-calendardateuntil ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2020-01-01T00:00[UTC][u-ca=hebrew]").until(Temporal.ZonedDateTime.from("2020-01-03T13:00[UTC][u-ca=hebrew]"), {smallestUnit: "day", roundingMode: "halfExpand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -1231,7 +1240,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2020-01-01T00:00[UTC][u-ca=hebrew]" str:"2020-07-20T00:00[UTC][u-ca=hebrew]" str:"month" str:"month" undefined str:"halfExpand"
 out: value: str:"P7M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-calendardateuntil ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2020-01-01T00:00[UTC][u-ca=hebrew]").until(Temporal.ZonedDateTime.from("2020-07-20T00:00[UTC][u-ca=hebrew]"), {largestUnit: "month", smallestUnit: "month", roundingMode: "halfExpand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -1242,7 +1252,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2020-01-01T00:00[UTC][u-ca=hebrew]" str:"2020-01-03T13:20[UTC][u-ca=hebrew]" str:"day" str:"hour" undefined str:"halfExpand"
 out: value: str:"P2DT13H"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-calendardateuntil ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2020-01-01T00:00[UTC][u-ca=hebrew]").until(Temporal.ZonedDateTime.from("2020-01-03T13:20[UTC][u-ca=hebrew]"), {largestUnit: "day", smallestUnit: "hour", roundingMode: "halfExpand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -1253,7 +1264,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2020-07-20[u-ca=hebrew]" undefined str:"month" undefined str:"ceil"
 out: value: str:"P7M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2020-07-20[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "ceil"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO): every mode, ceil
@@ -1264,7 +1276,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2020-07-20[u-ca=hebrew]" undefined str:"month" undefined str:"floor"
 out: value: str:"P6M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2020-07-20[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "floor"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO): every mode, floor
@@ -1275,7 +1288,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2020-07-20[u-ca=hebrew]" undefined str:"month" undefined str:"expand"
 out: value: str:"P7M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2020-07-20[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "expand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO): every mode, expand
@@ -1286,7 +1300,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2020-07-20[u-ca=hebrew]" undefined str:"month" undefined str:"trunc"
 out: value: str:"P6M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2020-07-20[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "trunc"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO): every mode, trunc
@@ -1297,7 +1312,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2020-07-20[u-ca=hebrew]" undefined str:"month" undefined str:"halfCeil"
 out: value: str:"P7M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2020-07-20[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "halfCeil"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO): every mode, halfCeil
@@ -1308,7 +1324,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2020-07-20[u-ca=hebrew]" undefined str:"month" undefined str:"halfFloor"
 out: value: str:"P7M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2020-07-20[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "halfFloor"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO): every mode, halfFloor
@@ -1319,7 +1336,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2020-07-20[u-ca=hebrew]" undefined str:"month" undefined str:"halfTrunc"
 out: value: str:"P7M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2020-07-20[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "halfTrunc"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO): every mode, halfTrunc
@@ -1330,7 +1348,8 @@ area: temporal
 op: Temporal.PlainDate.prototype.until, toString
 in: str:"2020-01-01[u-ca=hebrew]" str:"2020-07-20[u-ca=hebrew]" undefined str:"month" undefined str:"halfEven"
 out: value: str:"P7M"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplaindate ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2020-07-20[u-ca=hebrew]"), {smallestUnit: "month", roundingMode: "halfEven"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO): every mode, halfEven
@@ -1341,7 +1360,8 @@ area: temporal
 op: Temporal.PlainYearMonth.prototype.until, toString
 in: str:"hebrew" int:5780 str:"M04" str:"hebrew" int:5781 str:"M03" undefined str:"year" undefined str:"halfExpand"
 out: value: str:"P1Y"
-class: normative
+class: divergence
+divergence.broiler-js: row F4: differences in another calendar ignore the rounding options (PlainDate, PlainYearMonth and ZonedDateTime) or measure months in ISO (PlainDateTime), so Hebrew 2020-01-01 until 2020-07-20 rounded to months is P6M24D, where it is P7M (the milestone's listed correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.plainyearmonth.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalplainyearmonth ref:temporalref@1
 script: Temporal.PlainYearMonth.from({year: 5780, monthCode: "M04", calendar: "hebrew"}).until(Temporal.PlainYearMonth.from({year: 5781, monthCode: "M03", calendar: "hebrew"}), {smallestUnit: "year", roundingMode: "halfExpand"}).toString()
 note: row F4: differences in another calendar with rounding options (the milestone's listed correction; Broiler.JS ignores them, or measures a PlainDateTime's months in ISO)
@@ -2199,7 +2219,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2026-03-07T12:00-05:00[America/New_York]" str:"2026-03-07T23:45-05:00[America/New_York]" undefined str:"day" undefined str:"halfExpand"
 out: value: str:"P1D"
-class: normative
+class: divergence
+divergence.broiler-js: row F7: ZonedDateTime until and since with a calendar smallest unit nudge on 24-hour days, so New York's 23- and 25-hour days round as if they had 24 (2026-03-07T12:00 until 23:45 is PT0S, where it is P1D), where NudgeToCalendarUnit measures the window in the zone's instants (the milestone's listed DST correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-differencezoneddatetime ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2026-03-07T12:00-05:00[America/New_York]").until(Temporal.ZonedDateTime.from("2026-03-07T23:45-05:00[America/New_York]"), {smallestUnit: "day", roundingMode: "halfExpand"}).toString()
 note: row F7: ZonedDateTime differences across New York's 2026 transitions (the milestone's listed DST correction: a calendar smallest unit on 24-hour days)
@@ -2221,7 +2242,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2026-10-31T12:00-04:00[America/New_York]" str:"2026-11-01T00:15-04:00[America/New_York]" undefined str:"day" undefined str:"halfExpand"
 out: value: str:"PT0S"
-class: normative
+class: divergence
+divergence.broiler-js: row F7: ZonedDateTime until and since with a calendar smallest unit nudge on 24-hour days, so New York's 23- and 25-hour days round as if they had 24 (2026-03-07T12:00 until 23:45 is PT0S, where it is P1D), where NudgeToCalendarUnit measures the window in the zone's instants (the milestone's listed DST correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-differencezoneddatetime ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2026-10-31T12:00-04:00[America/New_York]").until(Temporal.ZonedDateTime.from("2026-11-01T00:15-04:00[America/New_York]"), {smallestUnit: "day", roundingMode: "halfExpand"}).toString()
 note: row F7: ZonedDateTime differences across New York's 2026 transitions (the milestone's listed DST correction: a calendar smallest unit on 24-hour days)
@@ -2243,7 +2265,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2026-03-07T12:00-05:00[America/New_York]" str:"2026-03-07T23:45-05:00[America/New_York]" str:"month" str:"day" undefined str:"halfExpand"
 out: value: str:"P1D"
-class: normative
+class: divergence
+divergence.broiler-js: row F7: ZonedDateTime until and since with a calendar smallest unit nudge on 24-hour days, so New York's 23- and 25-hour days round as if they had 24 (2026-03-07T12:00 until 23:45 is PT0S, where it is P1D), where NudgeToCalendarUnit measures the window in the zone's instants (the milestone's listed DST correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-differencezoneddatetime ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2026-03-07T12:00-05:00[America/New_York]").until(Temporal.ZonedDateTime.from("2026-03-07T23:45-05:00[America/New_York]"), {smallestUnit: "day", largestUnit: "month", roundingMode: "halfExpand"}).toString()
 note: row F7: ZonedDateTime differences across New York's 2026 transitions (the milestone's listed DST correction: a calendar smallest unit on 24-hour days)
@@ -2419,7 +2442,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2026-03-07T12:00-05:00[America/New_York]" str:"2026-03-07T23:45-05:00[America/New_York]" undefined str:"day" undefined str:"halfCeil"
 out: value: str:"P1D"
-class: normative
+class: divergence
+divergence.broiler-js: row F7: ZonedDateTime until and since with a calendar smallest unit nudge on 24-hour days, so New York's 23- and 25-hour days round as if they had 24 (2026-03-07T12:00 until 23:45 is PT0S, where it is P1D), where NudgeToCalendarUnit measures the window in the zone's instants (the milestone's listed DST correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2026-03-07T12:00-05:00[America/New_York]").until(Temporal.ZonedDateTime.from("2026-03-07T23:45-05:00[America/New_York]"), {smallestUnit: "day", roundingMode: "halfCeil"}).toString()
 note: row F7: ZonedDateTime differences across New York's 2026 transitions (the milestone's listed DST correction: a calendar smallest unit on 24-hour days): a day of 23 or 25 hours, halfCeil
@@ -2430,7 +2454,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2026-10-31T12:00-04:00[America/New_York]" str:"2026-11-01T00:15-04:00[America/New_York]" undefined str:"day" undefined str:"halfCeil"
 out: value: str:"PT0S"
-class: normative
+class: divergence
+divergence.broiler-js: row F7: ZonedDateTime until and since with a calendar smallest unit nudge on 24-hour days, so New York's 23- and 25-hour days round as if they had 24 (2026-03-07T12:00 until 23:45 is PT0S, where it is P1D), where NudgeToCalendarUnit measures the window in the zone's instants (the milestone's listed DST correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2026-10-31T12:00-04:00[America/New_York]").until(Temporal.ZonedDateTime.from("2026-11-01T00:15-04:00[America/New_York]"), {smallestUnit: "day", roundingMode: "halfCeil"}).toString()
 note: row F7: ZonedDateTime differences across New York's 2026 transitions (the milestone's listed DST correction: a calendar smallest unit on 24-hour days): a day of 23 or 25 hours, halfCeil
@@ -2441,7 +2466,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2026-03-07T12:00-05:00[America/New_York]" str:"2026-03-07T23:45-05:00[America/New_York]" undefined str:"day" undefined str:"halfFloor"
 out: value: str:"P1D"
-class: normative
+class: divergence
+divergence.broiler-js: row F7: ZonedDateTime until and since with a calendar smallest unit nudge on 24-hour days, so New York's 23- and 25-hour days round as if they had 24 (2026-03-07T12:00 until 23:45 is PT0S, where it is P1D), where NudgeToCalendarUnit measures the window in the zone's instants (the milestone's listed DST correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2026-03-07T12:00-05:00[America/New_York]").until(Temporal.ZonedDateTime.from("2026-03-07T23:45-05:00[America/New_York]"), {smallestUnit: "day", roundingMode: "halfFloor"}).toString()
 note: row F7: ZonedDateTime differences across New York's 2026 transitions (the milestone's listed DST correction: a calendar smallest unit on 24-hour days): a day of 23 or 25 hours, halfFloor
@@ -2452,7 +2478,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2026-10-31T12:00-04:00[America/New_York]" str:"2026-11-01T00:15-04:00[America/New_York]" undefined str:"day" undefined str:"halfFloor"
 out: value: str:"PT0S"
-class: normative
+class: divergence
+divergence.broiler-js: row F7: ZonedDateTime until and since with a calendar smallest unit nudge on 24-hour days, so New York's 23- and 25-hour days round as if they had 24 (2026-03-07T12:00 until 23:45 is PT0S, where it is P1D), where NudgeToCalendarUnit measures the window in the zone's instants (the milestone's listed DST correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2026-10-31T12:00-04:00[America/New_York]").until(Temporal.ZonedDateTime.from("2026-11-01T00:15-04:00[America/New_York]"), {smallestUnit: "day", roundingMode: "halfFloor"}).toString()
 note: row F7: ZonedDateTime differences across New York's 2026 transitions (the milestone's listed DST correction: a calendar smallest unit on 24-hour days): a day of 23 or 25 hours, halfFloor
@@ -2463,7 +2490,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2026-03-07T12:00-05:00[America/New_York]" str:"2026-03-07T23:45-05:00[America/New_York]" undefined str:"day" undefined str:"halfTrunc"
 out: value: str:"P1D"
-class: normative
+class: divergence
+divergence.broiler-js: row F7: ZonedDateTime until and since with a calendar smallest unit nudge on 24-hour days, so New York's 23- and 25-hour days round as if they had 24 (2026-03-07T12:00 until 23:45 is PT0S, where it is P1D), where NudgeToCalendarUnit measures the window in the zone's instants (the milestone's listed DST correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2026-03-07T12:00-05:00[America/New_York]").until(Temporal.ZonedDateTime.from("2026-03-07T23:45-05:00[America/New_York]"), {smallestUnit: "day", roundingMode: "halfTrunc"}).toString()
 note: row F7: ZonedDateTime differences across New York's 2026 transitions (the milestone's listed DST correction: a calendar smallest unit on 24-hour days): a day of 23 or 25 hours, halfTrunc
@@ -2474,7 +2502,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2026-10-31T12:00-04:00[America/New_York]" str:"2026-11-01T00:15-04:00[America/New_York]" undefined str:"day" undefined str:"halfTrunc"
 out: value: str:"PT0S"
-class: normative
+class: divergence
+divergence.broiler-js: row F7: ZonedDateTime until and since with a calendar smallest unit nudge on 24-hour days, so New York's 23- and 25-hour days round as if they had 24 (2026-03-07T12:00 until 23:45 is PT0S, where it is P1D), where NudgeToCalendarUnit measures the window in the zone's instants (the milestone's listed DST correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2026-10-31T12:00-04:00[America/New_York]").until(Temporal.ZonedDateTime.from("2026-11-01T00:15-04:00[America/New_York]"), {smallestUnit: "day", roundingMode: "halfTrunc"}).toString()
 note: row F7: ZonedDateTime differences across New York's 2026 transitions (the milestone's listed DST correction: a calendar smallest unit on 24-hour days): a day of 23 or 25 hours, halfTrunc
@@ -2485,7 +2514,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2026-03-07T12:00-05:00[America/New_York]" str:"2026-03-07T23:45-05:00[America/New_York]" undefined str:"day" undefined str:"halfEven"
 out: value: str:"P1D"
-class: normative
+class: divergence
+divergence.broiler-js: row F7: ZonedDateTime until and since with a calendar smallest unit nudge on 24-hour days, so New York's 23- and 25-hour days round as if they had 24 (2026-03-07T12:00 until 23:45 is PT0S, where it is P1D), where NudgeToCalendarUnit measures the window in the zone's instants (the milestone's listed DST correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2026-03-07T12:00-05:00[America/New_York]").until(Temporal.ZonedDateTime.from("2026-03-07T23:45-05:00[America/New_York]"), {smallestUnit: "day", roundingMode: "halfEven"}).toString()
 note: row F7: ZonedDateTime differences across New York's 2026 transitions (the milestone's listed DST correction: a calendar smallest unit on 24-hour days): a day of 23 or 25 hours, halfEven
@@ -2496,7 +2526,8 @@ area: temporal
 op: Temporal.ZonedDateTime.prototype.until, toString
 in: str:"2026-10-31T12:00-04:00[America/New_York]" str:"2026-11-01T00:15-04:00[America/New_York]" undefined str:"day" undefined str:"halfEven"
 out: value: str:"PT0S"
-class: normative
+class: divergence
+divergence.broiler-js: row F7: ZonedDateTime until and since with a calendar smallest unit nudge on 24-hour days, so New York's 23- and 25-hour days round as if they had 24 (2026-03-07T12:00 until 23:45 is PT0S, where it is P1D), where NudgeToCalendarUnit measures the window in the zone's instants (the milestone's listed DST correction); correction, answered by SJL-10.5
 prov: proposal:temporal@e8cc03fc#sec-temporal.zoneddatetime.prototype.until proposal:temporal@e8cc03fc#sec-temporal-differencetemporalzoneddatetime proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit ref:temporalref@1
 script: Temporal.ZonedDateTime.from("2026-10-31T12:00-04:00[America/New_York]").until(Temporal.ZonedDateTime.from("2026-11-01T00:15-04:00[America/New_York]"), {smallestUnit: "day", roundingMode: "halfEven"}).toString()
 note: row F7: ZonedDateTime differences across New York's 2026 transitions (the milestone's listed DST correction: a calendar smallest unit on 24-hour days): a day of 23 or 25 hours, halfEven
