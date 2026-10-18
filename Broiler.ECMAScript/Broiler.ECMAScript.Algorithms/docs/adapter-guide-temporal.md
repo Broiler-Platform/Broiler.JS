@@ -947,8 +947,8 @@ Under the owner's direction of 2026-10-18, part C took these, within JSD-0078's 
    provider has no identifier to compare.
 6. **The year-month difference takes `TemporalCalendars`**, which has the fields operations it needs, and
    `ICalendarArithmetic` keeps the design's two members.
-7. **Row D12 is reached, and answers a status.** The correspondence read it as code no input reaches, and decision
-   D12 let the library assert there or answer a status. The differential check found an input that reaches it: Pacific/Apia
+7. **Row D12 is reached, and answers a status.** The correspondence read it as code no input reaches, and its open
+   point on the row let the library assert there or answer a status (JSD-0078's decision D11 records the status). The differential check found an input that reaches it: Pacific/Apia
    skipped 2011-12-30, so a day window back from 2011-12-31 ends on that skipped day, which `compatible` moves onto
    the window's start, and the window has no length. `ZonedDateTime.from("2011-12-31T16:15+14:00[Pacific/Apia]")`
    `.since("2011-12-31T00:00+14:00[Pacific/Apia]", {largestUnit: "day", smallestUnit: "day"})` meets it, as does

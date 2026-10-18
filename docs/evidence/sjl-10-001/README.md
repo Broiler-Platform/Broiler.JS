@@ -296,10 +296,11 @@ data home's tables.
   destination, which the specification asserts:
   - Broiler.VM's code ends the invocation with a .NET `ArgumentOutOfRangeException`;
   - the reference polyfill fails its own assertion, with a plain `Error`;
+  - this engine's shell answers `PT0S`, from its own day arithmetic;
   - the library answers `OutOfRange`, a `RangeError` in both engines.
 
-  The correspondence read row D12 as code no input reaches, and decision D12 let the library assert there or answer
-  a status. The input reaches it, so the library answers a status (`cc3e3076`). It is the one place the library does
+  The correspondence read row D12 as code no input reaches, and its open point on the row let the library assert there
+  or answer a status. JSD-0078 records the status as the owner's decision D11 of 2026-10-18. The input reaches it, so the library answers a status (`cc3e3076`). It is the one place the library does
   not answer as Broiler.VM's code does.
 - **The negative control:** with the polyfill's nudge after a shifted window in place of decision D7's, the
   durations sections find 94 differences.

@@ -1047,11 +1047,15 @@ This repository's part of it:
   holds the destination, as code no input reaches. A zone's skipped day reaches it: Pacific/Apia's 2011-12-30
   leaves a day window back from 2011-12-31 with no length.
   - Broiler.VM's code ends the invocation with a .NET exception there.
+  - This engine answers `PT0S`, from its own day arithmetic, which never reaches the assertion.
   - The reference polyfill fails its own assertion.
-  - Decision D12 let the library assert or answer a status. It answers `OutOfRange`, a `RangeError` in both engines.
+  - The correspondence's open point on row D12 let the library assert or answer a status. It answers `OutOfRange`,
+    a `RangeError` in both engines. JSD-0078 records this as the owner's decision D11 of 2026-10-18, taken under
+    the same direction as decisions D1 to D10.
 
-  It is the one place the library does not answer as Broiler.VM's code does. The owner's record should note that row
-  D12's "no input reaches" does not hold for the day window.
+  It is the one place the library does not answer as Broiler.VM's code does. Broiler.VM's answer there is a
+  correction its cut-over (SJL-10.4) makes. This engine's moves from `PT0S` to a `RangeError` at SJL-10.5, a policy
+  change its changelog lists then.
 - **The decisions taken** are in the guide, under each part, within JSD-0078's X3. Part C's: the design's names; the
   zone provider one zone per instance, where the design passed a zone with each call, as an offset zone has no
   identifier; `RelativeTo` carrying its providers; a new status, `RelativeToRequired`; the zones' equality left to the
