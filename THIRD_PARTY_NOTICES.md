@@ -17,11 +17,11 @@ in source files, package metadata, or accompanying notices.
 The packages built from [`Broiler.ECMAScript/`](Broiler.ECMAScript/README.md) carry this file. They
 contain three pieces of third-party code and one set of public-domain formulas, named below, and no data:
 
-- `Broiler.ECMAScript.Algorithms` holds the contract types and the number-conversion, numerics, text,
-  Date and time-zone and calendar areas written for the shared libraries programme, Apache-2.0, and no
-  code derived from Yantra JS. Its third-party components are **Ryu**, **fdlibm** and **ICU4X's
-  lunisolar approximation**, below, and it implements **Howard Hinnant's civil-day formulas**, also
-  below.
+- `Broiler.ECMAScript.Algorithms` holds the contract types, the number-conversion, numerics, text,
+  Date and time-zone and calendar areas, and the Temporal core's first part written for the shared
+  libraries programme, Apache-2.0, and no code derived from Yantra JS. Its third-party components are
+  **Ryu**, **fdlibm** and **ICU4X's lunisolar approximation**, below, and it implements **Howard
+  Hinnant's civil-day formulas**, also below.
 - **Ryu** ([github.com/ulfjack/ryu](https://github.com/ulfjack/ryu)), Copyright 2018 Ulf Adams, used
   under the Apache License, Version 2.0 (the project is offered under that licence or the Boost
   Software License 1.0, at the user's choice). `Broiler.ECMAScript.Algorithms/Numbers/ShortestDecimal.cs`
@@ -60,8 +60,13 @@ contain three pieces of third-party code and one set of public-domain formulas, 
   (`EcmaDateParser.cs`, from `DateParseText` and `DateParseTextual`); and so is the time-zone and calendar
   area, at milestone SJL-8.3 (`TimeZoneDatabase.cs`, `OffsetTimeZones.cs`, `ZonedTime.cs` and
   `CalendarYears.cs`, from `JsTimeZones`, `JsTemporal.Zones`, `JsRealm.DateTimeFormat`'s zone resolution and
-  `JsCalendars`), whose Persian and tabular Hijri years are Calendrical Calculations' arithmetic. Each
-  records its origin in its assurance annotation or its source.
+  `JsCalendars`), whose Persian and tabular Hijri years are Calendrical Calculations' arithmetic; and so is
+  the Temporal core's first part, its records and limits, balancing, grammar and serialization, at milestone
+  SJL-10.3 (`Temporal/TemporalRecords.cs`, `TemporalLimits.cs`, `IsoArithmetic.cs`, `DurationCore.cs`,
+  `TemporalGrammar.cs`, `TemporalFormat.cs` and `TemporalOptionRules.cs`, from `JsTemporalCore`,
+  `JsTemporalParser`, `JsTemporal.Conversions` and the engine-free arithmetic of `JsTemporal.Calendar`,
+  `JsTemporal.Durations` and `JsTemporal.Options`). Each records its origin in its assurance annotation or
+  its source.
 - `Broiler.ECMAScript.Generation` holds the time data home's generator (milestone SJL-8.2): the tz pin
   reader, the tz compiler and the time zone table generator, the calendar pin reader and the calendar
   table generator, ported from Broiler.VM's architecture tests under the same licence and by the same
@@ -135,7 +140,11 @@ civil-day formulas**, also below."; the bullet on ICU4X's approximation was adde
 ported from Broiler.VM read "so is the Date area's reading of strings in Broiler.VM's dialect, at milestone
 SJL-6.3 (`EcmaDateParser.cs`, from `DateParseText` and `DateParseTextual`). Each records its origin in its
 assurance annotation or its source."; and the bullet on `Broiler.ECMAScript.Algorithms.Tests` ended at "the
-Date arms' civil copies implement Hinnant's formulas, above.".
+Date arms' civil copies implement Hinnant's formulas, above.". Revised again 2026-10-18, at milestone SJL-10.3,
+when the Temporal core's first part moved in: the first bullet read "holds the contract types and the
+number-conversion, numerics, text, Date and time-zone and calendar areas written for the shared libraries
+programme"; and the bullet on the code ported from Broiler.VM read "..., whose Persian and tabular Hijri years
+are Calendrical Calculations' arithmetic. Each records its origin in its assurance annotation or its source.".
 
 ## The time data home (`Broiler.ECMAScript/data/time/`)
 

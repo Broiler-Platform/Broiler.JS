@@ -12,6 +12,63 @@ follow semantic versioning under [convention 16](docs/conventions.md):
 Each entry has the headings **Added**, **Changed**, **Observable changes** and **Data**, and says
 "none" under a heading with nothing to report. A release without an entry here is not published.
 
+## Unreleased
+
+Not yet packed under a version of its own: the stream's next version is set when this entry is published.
+
+### Added
+
+- `Broiler.ECMAScript.Algorithms`: the Temporal core's first part - its records and limits, balancing,
+  grammar and serialization - in a new namespace, `Broiler.ECMAScript.Temporal` (milestone SJL-10.3, part A;
+  Broiler.VM's JSD-0078, following `tc39/proposal-temporal@e8cc03fc` by its decision D1; adapter guide
+  [`docs/adapter-guide-temporal.md`](Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md)). The
+  records are SJL-8's `IsoDate`, `IsoTime` and `IsoDateTime`, extended and not redeclared (decision D8):
+  - **records and limits**: `TemporalUnit`, `TemporalStatus`, `TemporalOverflow`, `DateDuration`,
+    `InternalDuration` and `DurationFields`; `TemporalLimits`, whose `CheckIsoDate`, `CheckIsoDateTime`,
+    `CheckIsoYearMonth`, `CheckIsoDaysRange`, `CheckEpochNanoseconds` and `CheckDuration` take any record and
+    answer a status, none throwing (decision D9), with `IsValidTime`, `MaxTimeDuration` and the limits'
+    constants;
+  - **balancing, regulation and addition**: `IsoArithmetic` - `CompareIsoDate`, `CompareTime`,
+    `CompareIsoDateTime`, `TimeToNanoseconds`, `BalanceIsoDate`, `AddDaysToIsoDate`, `BalanceTime` (its
+    overflow days answered beside the `IsoTime`), `AddTime`, `DifferenceTime`, `RegulateIsoDate` and
+    `RegulateTime` under both overflows, `AddIsoDate` (the ISO 8601 `CalendarDateAdd`),
+    `GetUtcEpochNanoseconds`, `GetIsoPartsFromEpoch`, `BalanceIsoDateTime`, `RoundTime`, `RoundIsoDateTime`,
+    `RoundTemporalInstant` and `AddInstant`;
+  - **the grammar**: `TemporalGrammar` - `TryParse` for every goal (`TemporalGoal`) into an `IsoParseResult`
+    with its `TemporalAnnotation`s, `TryParseInstant`, `TryParseTimeZoneString`, `TryParseTimeZoneIdentifier`
+    (with `TimeZoneIdentifierRecord`), `TryParseCalendarString`, `TryParseOffsetString`, `TryParseDuration`,
+    `IsTimeZoneIdentifier`, `IsUtcOffset` and `IsAnnotationValue`, each refusal a `TemporalParseError`, each
+    member whose work grows with its input charging the caller's meter the text's length;
+  - **serialization**: `TemporalFormat` - every string form (`DateToString`, `TimeToString`,
+    `DateTimeToString`, `YearMonthToString`, `MonthDayToString`, `InstantToString`, `ZonedDateTimeToString`
+    and `DurationToString`), `PadIsoYear`, `FormatFractionalSeconds`, `FormatTimeString`,
+    `FormatCalendarAnnotation`, `FormatUtcOffsetNanoseconds` and `FormatDateTimeUtcOffsetRounded`, and the
+    steps after the option reads of `PlainTime`, `PlainDateTime` and `Duration`'s `toString`;
+  - **the options' rules of these sub-areas**: `TemporalOptionRules` - `overflow`, and the `toString` options
+    `calendarName`, `timeZoneName`, `offset`, `fractionalSecondDigits`, `smallestUnit` with
+    `ToSecondsStringPrecisionRecord` and its `SecondsStringPrecision`, `roundingMode`'s default, and
+    `IsValidRoundingIncrement`; `ShowCalendarName`, `ShowTimeZoneName` and `ShowOffset`.
+
+  Each is ported from Broiler.VM's `JsTemporalCore`, `JsTemporalParser`, `JsTemporal.Conversions`, and the
+  engine-free arithmetic of `JsTemporal.Calendar`, `JsTemporal.Durations` and `JsTemporal.Options`, with its
+  behaviour unchanged, which a differential check against that code showed, but for row R6: a limit check
+  answers `OutOfRange` for a year past 2^53, where Broiler.VM's constructors ended the invocation (decision
+  D9). The grammar is that engine's linear parser, with no regular expression, and refuses every string of
+  the correspondence's rows G1 to G24 that it refuses.
+
+### Changed
+
+None.
+
+### Observable changes
+
+None: the area is new, and no engine reads it yet. Broiler.VM cuts over at milestone SJL-10.4, correcting row
+R6 there, and Broiler.JS at SJL-10.5, whose own records list what each observes.
+
+### Data
+
+None.
+
 ## 0.1.0-preview.5 — published to nuget.org
 
 *(Heading corrected 2026-10-17, when the entry was published; read "Unreleased". This entry was published
