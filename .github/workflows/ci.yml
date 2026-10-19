@@ -22,8 +22,72 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Whether this run has anything to test. A change whose every path is under docs/evidence/ or is
+  # docs/roadmap/SharedLibraries*.md skips the jobs below; Shared libraries still runs on it. The list
+  # may hold only paths that no test, build or generator reads: M8ValidationTests reads other files
+  # under docs/ (architecture, compliance, roadmap/Component.md and Measurement.md, public-api.md), and
+  # the scripts filed in evidence bundles are run by no test. git diff has no limit on the number of
+  # paths, which a paths-ignore filter has (300). A publish (workflow_call with a version), a dispatch,
+  # and a push whose earlier commit cannot be read run everything.
+  changes:
+    name: Changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      # Depth 2: a pull request's merge commit and the base it was merged onto.
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - name: Compare with the base
+        id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          run_all() {
+            echo "$1, so every job runs."
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+          [ -z "${PACKAGE_VERSION:-}" ] || run_all "A publish run validates $PACKAGE_VERSION"
+          case "$EVENT" in
+            pull_request)
+              base="$(git rev-parse HEAD^1)"
+              ;;
+            push)
+              [ "$REF" = refs/heads/main ] || run_all "A push to $REF"
+              if [ -z "$BEFORE" ] || [ -z "${BEFORE//0/}" ]; then
+                run_all "The push has no earlier commit"
+              fi
+              git fetch --no-tags --depth=1 origin "$BEFORE" || run_all "The push's earlier commit $BEFORE cannot be fetched"
+              base="$BEFORE"
+              ;;
+            *)
+              run_all "A $EVENT run"
+              ;;
+          esac
+          changed="$RUNNER_TEMP/changed-paths.txt"
+          git -c core.quotePath=false diff --name-only --no-renames "$base" HEAD > "$changed"
+          echo "$(wc -l < "$changed") path(s) differ from $base."
+          others="$(grep -Ev '^(docs/evidence/|docs/roadmap/SharedLibraries[^/]*\.md$)' "$changed" || true)"
+          if [ ! -s "$changed" ]; then
+            run_all "No path differs"
+          elif [ -n "$others" ]; then
+            echo "Paths outside the records, the first 20:"
+            head -n 20 <<< "$others"
+            run_all "The change is not records alone"
+          fi
+          echo "Every changed path is a record no test reads, so the build and test jobs are skipped."
+          echo "code=false" >> "$GITHUB_OUTPUT"
+
   build:
     name: ${{ matrix.os }} / Release
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ${{ matrix.os }}
     defaults:
       run:

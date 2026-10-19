@@ -58,7 +58,12 @@ The [`Publish`](../.github/workflows/publish.yml) workflow is the only supported
 
 1. **Rehearse in CI.** There is no dry-run mode in Publish. CI already builds, tests, packs,
    verifies every package and proves a consumer can restore the set from nuget.org on every
-   push and pull request, attaching the packages as an artifact — without pushing anything.
+   push and pull request that changes more than records, attaching the packages as an
+   artifact — without pushing anything. A change confined to `docs/evidence/` and
+   `docs/roadmap/SharedLibraries*.md`, which no test reads, skips CI's build and test jobs;
+   `Shared libraries` still runs on it, and Publish runs CI in full whatever changed.
+   *(Revised 2026-10-19, when CI began to skip records-only changes: "on every push and pull
+   request" became "on every push and pull request that changes more than records".)*
 2. **Dispatch Publish** from the Actions tab. Leave `version-suffix` empty so the version is
    resolved automatically. The run validates again against the version it resolves, then
    pushes.
