@@ -14,6 +14,10 @@ the after run under the rule.
 "Taken on 2026-10-18 at milestone SJL-10.2. Nothing here is a verdict: the rule judges the after run, at the commit
 that lands SJL-10.5's cut-over, and reads the base without judging it." The after run and its rows below are added.)*
 
+*(Noted 2026-10-19, at SJL-10.6, after review: `80dff79f`, here and below, is the commit the base run names as its
+harness's ([`base/identity.txt`](base/identity.txt)), before its branch was rebased; no branch holds it. The default
+branch holds it as `2b5b6daf`, with the same tree, and the bundle's README and collector cite that.)*
+
 | Folder | What it holds |
 |---|---|
 | [`base/`](base/) | **The base**, at the rule's commit `1d27064d`: its shell built in Release by the harness in a clean detached worktree of that commit, and the harness run from this branch. Each program's every line (`<program>.lines.tsv`), answer, standard error and driver; the counts (`summary.json`, `report.txt`); the identity (`identity.txt`, `shell-binaries.sha256`). Also [`observations.txt`](base/observations.txt), written by [`observe.py`](base/observe.py): the differing lines grouped by the correspondence row each seems to be a case of, by the shape of its operation. It is an observation, not a classification |
@@ -76,7 +80,11 @@ python3 -I docs/evidence/sjl-10-001/datasets/base/observe.py docs/evidence/sjl-1
 ```
 
 The build log is not retained: the build ended with 0 errors, and `identity.txt` names its command. The after run
-is taken the same way at the cut-over's commit and joined with `base/` by the harness's `compare`.
+was taken the same way at `00b65dd0`, the merge that lands the cut-over (below), and joined with `base/` by the
+harness's `compare`.
+
+*(Revised 2026-10-19, at SJL-10.6, after review: the sentence read "The after run is taken the same way at the
+cut-over's commit and joined with `base/` by the harness's `compare`.")*
 
 **The after run**, on 2026-10-19 from 13:45Z, from this repository's root at `00b65dd0`, with no `LANG` and `TZ` unset
 in the harness, which sets `TZ=UTC` for the shell:

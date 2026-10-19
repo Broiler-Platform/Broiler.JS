@@ -88,9 +88,37 @@ Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Records.cs:129: 
 # hits: 0
 
 ## the per-type regular-expression parsers with their patterns, and CanonicalizeTimeZone's string fallback
-# in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal: \bRegex\b|RegularExpressions|\b(DatePattern|CalendarAnnotation|DateTimePattern|StrictTimeCore|OffsetDesignator|DateTimeFormPattern|BareTimeFormPattern|TrailingAnnotationsPattern|NumericUtcOffsetPattern|ValidateNumericUtcOffset|IsAmbiguousTimeString|YearMonthPattern|MonthDayPattern|FullDatePattern|ResolveCalendarId|OffsetValuePattern|ZonedCorePattern|ZonedTrailingAnnotation|InstantPattern|DurationPattern|FractionToNanoseconds)\b
-# hits at the rule's commit (1d27064d), the control: 94
-# hits: 0
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal: \bRegex\b|RegularExpressions|\bconst string Year\b|\b(DatePattern|CalendarAnnotation|DateTimePattern|StrictTimeCore|OffsetDesignator|DateTimeFormPattern|BareTimeFormPattern|TrailingAnnotationsPattern|AmbiguousYearMonthPattern|AmbiguousMonthDayPattern|NumericUtcOffsetPattern|ValidateNumericUtcOffset|IsAmbiguousTimeString|YearMonthPattern|MonthDayPattern|FullDatePattern|ResolveCalendarId|OffsetValuePattern|YearField|ZonedCorePattern|ZonedTrailingAnnotation|InstantPattern|DurationPattern|FractionToNanoseconds|CanonicalizeTimeZone|ParseTemporalDateString|ParseTemporalDateTimeString|ParseTemporalTimeString|ParseTemporalYearMonthString|ParseTemporalMonthDayString|ParseZonedDateTimeString|ParseTemporalInstant|ParseTemporalDurationString|TryParseOffsetString)\b
+# hits at the rule's commit (1d27064d), the control: 137
+# hits: 28
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:332:            return ParseTemporalDurationString(item.ToString());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:360:    // ParseTemporalDurationString, the shared library's grammar (each part exact, a fraction carried into the
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:363:    private static JSValue ParseTemporalDurationString(string text)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:251:            return ParseTemporalInstant(item.ToString());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:256:    // ParseTemporalInstant, the shared library's grammar: a date-time that must carry Z or a UTC offset (to
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:259:    private static JSValue ParseTemporalInstant(string text)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:323:            var parsed = ParseTemporalDateString(item.ToString());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:345:    private static JSValue ParseTemporalDateString(string text)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:429:            var parsed = ParseTemporalDateTimeString(item.ToString());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:495:    private static JSValue ParseTemporalDateTimeString(string text)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:180:            var parsed = ParseTemporalMonthDayString(item.ToString());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:204:    private static JSValue ParseTemporalMonthDayString(string text)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:94:            var parsed = ParseTemporalTimeString(item.ToString());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:298:            return ParseTemporalTimeString(item.ToString());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:327:    // ParseTemporalTimeString: ParseISODateTime with the TemporalTimeString goal, the shared library's grammar. Its
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:330:    private static JSValue ParseTemporalTimeString(string text)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:252:            var parsed = ParseTemporalYearMonthString(item.ToString());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:278:    private static JSValue ParseTemporalYearMonthString(string text)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:221:            return ParseZonedDateTimeString(item.ToString(), options);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:540:        if (offsetPresent && !TemporalAdapter.TryParseOffsetString(offsetString, out candidateOffset))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:645:            return ParseZonedDateTimeString(item.ToString());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:731:            if (!TemporalAdapter.TryParseOffsetString(offsetPrimitive.StringValue, out explicitOffset))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:806:    private static JSValue ParseZonedDateTimeString(string text, JSValue options = null)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Durations.cs:208:        if (offset != null && !TryParseOffsetString(offset, out offsetNanoseconds))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs:53:    /// The proposal's ParseTemporalInstant, the shared library's: the instant a string names, its offset applied. A
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs:71:    /// The proposal's ParseTemporalDurationString, the shared library's: the ten fields, each part exact and made a
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs:118:    internal static bool TryParseOffsetString(string text, out long offsetNanoseconds) =>
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs:119:        TemporalGrammar.TryParseOffsetString(text, out offsetNanoseconds);
 
 ## the per-type formatters, the toString bodies' precision arithmetic and the five ReadCalendarName copies
 # in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal: \b(FormatCalendarAnnotation|FormatISOString|FormatTime|FormatOffset|FormatOffsetRounded|FormatToString|FormatISO|AppendFraction|ReadCalendarName|GetFractionalSecondDigits)\b

@@ -112,7 +112,9 @@ RULE_FILES = (RULE, "scripts/compliance/compare_test262_paths.py", ".github/work
 # Part C's harness and population, extended to the second program at SJL-10.2 after the rule, as the rule asks.
 DATASET_FILES = ("scripts/conformance/run_reference_datasets.py", "scripts/conformance/reference_dataset_driver.js",
                  "conformance/datasets/time")
-DATASETS_COMMIT = "80dff79f80a981e92175dd0cd2c0916b13ad606b"
+# The commit in this repository's history that lands them, 2b5b6daf (SJL-10.2). The base run named 80dff79f
+# (datasets/base/identity.txt), the same commit before its branch was rebased, with the same tree; no branch holds it.
+DATASETS_COMMIT = "2b5b6daf44c1df2784a5417929b575a5b0d6e3b0"
 # The rule's commit, which carries the three parts' bases.
 BASE_COMMIT = "1d27064d0a1f57608a7af20e37eac91bd8887baa"
 # The merge that lands SJL-10.5's cut-over (Broiler-Platform/Broiler.JS#1054), which both after runs name.
@@ -209,13 +211,21 @@ DELETED = (
      r"ISODateSurpasses|CompareSurpasses|CalendarDateUntil)\b"),
     ("the dead code: NotImplementedArithmetic and ReadLargestUnit", [TEMPORAL],
      r"\b(NotImplementedArithmetic|ReadLargestUnit)\b"),
+    # The parsers by name, each type's Parse* and ZonedDateTime's TryParseOffsetString, with every pattern and helper
+    # the correspondence names beside them; PlainYearMonth's year pattern, a constant named Year, by its declaration,
+    # as the word names every year field; and CanonicalizeTimeZone, whose string fallback has no name of its own.
+    # (Revised 2026-10-19, at SJL-10.6, after review: the parsers' names, TryParseOffsetString, the two ambiguity
+    # patterns, Year, YearField and CanonicalizeTimeZone were added; the pattern named the patterns and helpers only.)
     ("the per-type regular-expression parsers with their patterns, and CanonicalizeTimeZone's string fallback",
      [TEMPORAL],
-     r"\bRegex\b|RegularExpressions|\b(DatePattern|CalendarAnnotation|DateTimePattern|StrictTimeCore|"
-     r"OffsetDesignator|DateTimeFormPattern|BareTimeFormPattern|TrailingAnnotationsPattern|NumericUtcOffsetPattern|"
-     r"ValidateNumericUtcOffset|IsAmbiguousTimeString|YearMonthPattern|MonthDayPattern|FullDatePattern|"
-     r"ResolveCalendarId|OffsetValuePattern|ZonedCorePattern|ZonedTrailingAnnotation|InstantPattern|DurationPattern|"
-     r"FractionToNanoseconds)\b"),
+     r"\bRegex\b|RegularExpressions|\bconst string Year\b|\b(DatePattern|CalendarAnnotation|DateTimePattern|"
+     r"StrictTimeCore|OffsetDesignator|DateTimeFormPattern|BareTimeFormPattern|TrailingAnnotationsPattern|"
+     r"AmbiguousYearMonthPattern|AmbiguousMonthDayPattern|NumericUtcOffsetPattern|ValidateNumericUtcOffset|"
+     r"IsAmbiguousTimeString|YearMonthPattern|MonthDayPattern|FullDatePattern|ResolveCalendarId|OffsetValuePattern|"
+     r"YearField|ZonedCorePattern|ZonedTrailingAnnotation|InstantPattern|DurationPattern|FractionToNanoseconds|"
+     r"CanonicalizeTimeZone|ParseTemporalDateString|ParseTemporalDateTimeString|ParseTemporalTimeString|"
+     r"ParseTemporalYearMonthString|ParseTemporalMonthDayString|ParseZonedDateTimeString|ParseTemporalInstant|"
+     r"ParseTemporalDurationString|TryParseOffsetString)\b"),
     ("the per-type formatters, the toString bodies' precision arithmetic and the five ReadCalendarName copies",
      [TEMPORAL],
      r"\b(FormatCalendarAnnotation|FormatISOString|FormatTime|FormatOffset|FormatOffsetRounded|FormatToString|"

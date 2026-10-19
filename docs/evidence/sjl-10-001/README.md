@@ -622,11 +622,11 @@ its cut-over by its folder, `/home/user/vm-at-14072b0`, and the library step's s
 | Evidence bundle | SJL-10-001 (Broiler.JS's) |
 | Bases | Section 1: the workflow's runs at `1d27064d`, the commit that carries the rule, before any code of the area, part A's in UTC and part B's in `America/New_York`, each with its re-run of the rows that timed out; and part C's run at the same commit |
 | After | `00b65dd0` (`00b65dd055a277859d5325ead6338a040bcf2f30`), the merge into the default branch (Broiler-Platform/Broiler.JS#1054) that lands SJL-10.5's cut-over (`f42eac6b` to `6dbff805`) and corpus revision 26 (`feee5b7a`). **Its product sources are `6dbff805`'s**, the cut-over's last commit, but for three files that are not code: the two changelogs and `Broiler.ECMAScript/Directory.Build.props`, whose version suffix moved to `preview.6` when `0.1.0-preview.6` was published (`bf81d1b7`, merged in `e2b2a785`). [`identity.txt`](identity.txt) lists every commit and every file. Every local run of this bundle is taken from a clean checkout of it |
-| Rule commit | `1d27064d`, an ancestor of the after commit. The rule, the comparison script, the workflow and the two scripts it runs and merges with are unchanged between the two. Part C's harness, its driver and the copies are unchanged since SJL-10.2 committed them (`80dff79f`), and the harness's SHA-256 is the base run's ([`identity.txt`](identity.txt)). No file under `Broiler.JS/` differs between the rule commit and `1c411b68`, the cut-over's branch point |
+| Rule commit | `1d27064d`, an ancestor of the after commit. The rule, the comparison script, the workflow and the two scripts it runs and merges with are unchanged between the two. Part C's harness, its driver and the copies are unchanged since SJL-10.2 committed them (`2b5b6daf`), and the harness's SHA-256 is the base run's ([`identity.txt`](identity.txt)). The base run names `80dff79f` ([`datasets/base/identity.txt`](datasets/base/identity.txt)): the same commit before its branch was rebased, which no branch holds, with the same tree as `2b5b6daf` *(corrected 2026-10-19, at SJL-10.6, after review; read "unchanged since SJL-10.2 committed them (`80dff79f`)", the id the collector and `identity.txt` used too)*. No file under `Broiler.JS/` differs between the rule commit and `1c411b68`, the cut-over's branch point |
 | Shared library | `Broiler.ECMAScript.Algorithms` at the after commit, by project reference. **Its code is not byte for byte the published version's**: nuget.org serves `0.1.0-preview.6`, published from `fc829f8a` with `bf81d1b7`'s library code, and decision D12 (`163d43aa`) changes two of its files after that, `DurationMath.Relative.cs` and `DurationMath.cs`, under the shared changelog's Unreleased heading (section 10). Bundle `sjl-8-001`'s after commit held its published version's code exactly |
 | Shared vectors | `conformance/vectors` at corpus revision 26, which retires the area's 479 divergence fields, this engine's 473 and Broiler.VM's 6 ([`engine/retired-divergences-revision-26.tsv`](engine/retired-divergences-revision-26.tsv)) |
 | Collector | [`collect.py`](collect.py) as this change commits it, which reuses bundle `sjl-8-001`'s collector, and through it `sjl-7-001`'s, `sjl-6-001`'s, `sjl-5-001`'s, `sjl-4-001`'s, `sjl-3-001`'s and `sjl-0-001`'s, run against clean checkouts of the after commit and, for the consumer's control, of the rule's commit. Part C was taken by its own harness, by hand, as its base was and as bundle `sjl-8-001`'s after run was ([`datasets/README.md`](datasets/README.md)); the collector has no step for it, as `sjl-8-001`'s had none. Its `test262` step imported parts A's and B's after runs, and its `compare` step compared each with its base (sections 7 and 8). Its `manifest` step wrote [`manifest.json`](manifest.json), the SHA-256 of every other file the bundle retains, this README's included *(revised 2026-10-19, at SJL-10.6, when parts A and B were imported; the last two sentences read "Its `test262` and `compare` steps are written for parts A and B and not yet run. Its `manifest` step wrote [`manifest.json`](manifest.json), the SHA-256 of every other file the bundle retains, this README's included, as it stands before parts A and B are imported")* |
-| Taken | 2026-10-19. Parts A's and B's after runs by the workflow, dispatched together at 12:28Z and completed at 13:54Z and 14:00Z: run 39252310861 (part A) and run 39252316070 (part B). Locally, part C from 13:45Z, `simplification` at 13:53Z, `vectors` from 13:53Z, `home` from 15:02Z and again at 15:07Z (section 10), `area` from 15:04Z, `probe` from 15:05Z, `consumer` from 15:05Z and `identity` at 15:09Z; `test262` and `compare` at 15:18Z, once for each part, and `manifest` last. The machine is section 1's; other work shared it, and nothing local here is timed *(revised 2026-10-19, at SJL-10.6, when parts A and B were imported; read "Parts A's and B's after runs by the workflow, dispatched at 12:28Z: run 39252310861 (part A) and run 39252316070 (part B), not imported here.", and the local steps ended "`identity` at 15:09Z and `manifest` last")* |
+| Taken | 2026-10-19. Parts A's and B's after runs by the workflow, dispatched together at 12:28Z and completed at 13:54Z and 14:00Z: run 39252310861 (part A) and run 39252316070 (part B). Locally, part C from 13:45Z, `simplification` at 13:53Z, `vectors` from 13:53Z, `home` from 15:02Z and again at 15:07Z (section 10), `area` from 15:04Z, `probe` from 15:05Z, `consumer` from 15:05Z and `identity` at 15:09Z; `test262` and `compare` at 15:18Z, once for each part, and `manifest` after them; after review, from a second clean checkout of the after commit, `identity` and `simplification` again at 17:24Z with the collector corrected (the row above and section 12), decision D12's answer with the published library by hand at 17:28Z (section 11), and `manifest` again last *(corrected 2026-10-19, at SJL-10.6, after review; the local steps ended "`test262` and `compare` at 15:18Z, once for each part, and `manifest` last")*. The machine is section 1's; other work shared it, and nothing local here is timed *(revised 2026-10-19, at SJL-10.6, when parts A and B were imported; read "Parts A's and B's after runs by the workflow, dispatched at 12:28Z: run 39252310861 (part A) and run 39252316070 (part B), not imported here.", and the local steps ended "`identity` at 15:09Z and `manifest` last")* |
 | RID | `linux-x64`: the workflow's runners for test262; locally, one machine with four logical processors |
 
 **Each project was built once.** The after checkout was created clean (`git status --porcelain --untracked-files=all`
@@ -637,7 +637,10 @@ script's build of `Broiler.JavaScript.All` for the pristine consumer, and the ho
 found every project up to date. The Native AOT probe was published for `linux-x64` once, as bundle `sjl-8-001`'s was,
 and its JIT twin is the shared folder's build, with no second build (bundle `sjl-8-001`'s probe step built it again).
 The rule's checkout for the consumer's control was built once, its shell only. These checkouts are git worktrees of
-this repository in the scratch folder, as bundle `sjl-8-001`'s after tree was.
+this repository in the scratch folder, as bundle `sjl-8-001`'s after tree was. After review, a second clean checkout of
+the after commit, also a worktree there, ran the `identity` and `simplification` steps again, which build nothing, and
+its shell was built in Release once for section 11's record of decision D12 *(added 2026-10-19, at SJL-10.6, after
+review)*.
 
 **Parts A and B** judge hosted runs, which the collector's `test262` and `compare` steps imported and compared, each
 from the zip as downloaded (sections 7 and 8).
@@ -704,9 +707,14 @@ over `.github` and `scripts/compliance` prints nothing.
 
 It is imported into [`test262/after/`](test262/after/) unchanged, every file of the workflow's artifact
 `test262-evidence` (id 12192515568), with [`imported.txt`](test262/after/imported.txt), which records the digest of
-the zip as downloaded, `1fcc203a…`, the digest GitHub records for the artifact. The bundle keeps that artifact alone,
-as the bases did: the run's second artifact, `test262-rerun-shard-0`, holds the re-run's report and log, and they are
-`rerun-timeouts.json` and `rerun-timeouts.log` here byte for byte.
+the zip as downloaded, `1fcc203a…`, the digest GitHub records for the artifact. The run uploaded 18 artifacts:
+`test262-evidence`; `test262-rerun-shard-0`, the re-run's (id 12192029219); and for each of the eight shards
+`test262-full-shard-N` and `test262-evidence-shell-shard-N`. The bundle keeps `test262-evidence` alone, as it did of
+the bases. The re-run's artifact holds three files: its report and log, which are `rerun-timeouts.json` and
+`rerun-timeouts.log` here byte for byte, and its status file, `test262-rerun-shard-0-status.json` (phase `rerun`,
+exit code 1), which is not kept *(corrected 2026-10-19, at SJL-10.6, after review; read "The bundle keeps that
+artifact alone, as the bases did: the run's second artifact, `test262-rerun-shard-0`, holds the re-run's report and
+log, and they are `rerun-timeouts.json` and `rerun-timeouts.log` here byte for byte.")*.
 
 **Timeouts and their re-runs.** As at the base, one path timed out in both variants,
 `test/staging/sm/regress/regress-1507322-deep-weakmap.js` ([`test262/after/timed-out-paths.txt`](test262/after/timed-out-paths.txt),
@@ -737,6 +745,9 @@ It has no row: no verdict changed.
 
 The retained logs and report name this repository's checkout, the after checkout and the step's scratch folder as
 `<repo>`, `<tree>` and `<scratch>`.
+
+*(Noted 2026-10-19, at SJL-10.6, after review: before part A's after run was imported, this section read "(To be
+written when the hosted after runs are imported.)")*
 
 ## 8. Test262 per path, in `America/New_York` (rule part B)
 
@@ -770,8 +781,12 @@ which stays this engine's (decision SJL-D-19).
 completed 14:00Z with the conclusion success, in the configuration of part A's run and on the same runner image. It is
 imported into [`test262/after-new-york/`](test262/after-new-york/) unchanged, every file of the workflow's artifact
 `test262-evidence` (id 12193110753), with [`imported.txt`](test262/after-new-york/imported.txt), which records the
-digest of the zip as downloaded, `fccbee20…`, the digest GitHub records. As in part A, the run's second artifact,
-`test262-rerun-shard-0`, is the re-run's report and log byte for byte, and is not kept apart.
+digest of the zip as downloaded, `fccbee20…`, the digest GitHub records. As in part A, the run uploaded 18 artifacts
+and the bundle keeps `test262-evidence` alone: the re-run's artifact, `test262-rerun-shard-0` (id 12193010971), holds
+its report and log, which are `rerun-timeouts.json` and `rerun-timeouts.log` here byte for byte, and its status file
+(phase `rerun`, exit code 1), which is not kept *(corrected 2026-10-19, at SJL-10.6, after review; read "As in part A,
+the run's second artifact, `test262-rerun-shard-0`, is the re-run's report and log byte for byte, and is not kept
+apart.")*.
 
 **Timeouts and their re-runs.** As at part B's base, one path timed out in both variants,
 `test/staging/sm/regress/regress-1507322-deep-weakmap.js`, and timed out again alone with one worker, under the same
@@ -789,6 +804,9 @@ It has no row: no verdict changed.
 `Temporal` passes in both runs, and the rows of `built-ins/Date`, `intl402/DateTimeFormat` and
 `intl402/DurationFormat` that do not pass are part A's four `proto-from-ctor-realm` paths, in both runs. The two parts'
 runs are not compared with each other, as the rule says.
+
+*(Noted 2026-10-19, at SJL-10.6, after review: before part B's after run was imported, this section read "(To be
+written when the hosted after runs are imported.)")*
 
 ## 9. The reference datasets (rule part C)
 
@@ -878,8 +896,19 @@ same version, whose assembly differs. `Broiler.ECMAScript.Generation` is not in 
 **With the shared stream as nuget.org publishes it.** The same consumer, its build outputs removed, was restored again
 into a second isolated cache, with `Broiler.ECMAScript.*` mapped to nuget.org alone and the engine's 17 other packages to
 the local feed alone. It restored nuget.org's `0.1.0-preview.6`, signed, its assembly nuget.org's byte for byte, and the
-checks printed **`failed decision D12 (false)`**: the other 23 hold, and decision D12's `since` answers a duration where
-this engine answers a `RangeError`. That is the shared changelog's Unreleased entry: with the published
+checks printed **`failed decision D12 (false)`**: the other 23 hold, and decision D12's check is false. The log records
+no more than that: the check is false when `since` returns, and also when it throws an error that is not a
+`RangeError`. **What `since` answers there** is recorded by hand,
+[`engine/pristine-consumer-d12-published.txt`](engine/pristine-consumer-d12-published.txt): in the shell built in
+Release from a clean checkout of the after commit, under `TZ=America/New_York`, the check is true and `since` throws a
+`RangeError` with the after commit's library, and with nuget.org's assembly of `0.1.0-preview.6` in its place (the one
+the consumer restored, by its SHA-256, `48488a70…`) and every other file the same, the check is false and `since`
+answers the duration **`P1DT16H`**. Part C's shell at `41eaa90f`, whose library code is `bf81d1b7`'s, the code that version holds,
+answers the same ([`cutover/d12z.part-c.txt`](cutover/d12z.part-c.txt), the line `a.since(b) day/hour trunc`, `trunc`
+being the default), as Broiler.VM does on that version ([`cutover/d12z.vm-now.txt`](cutover/d12z.vm-now.txt)). So
+decision D12's `since` answers a duration where this engine answers a `RangeError` *(corrected 2026-10-19, at
+SJL-10.6, after review; read "the other 23 hold, and decision D12's `since` answers a duration where this engine
+answers a `RangeError`.", which the log alone does not show)*. That is the shared changelog's Unreleased entry: with the published
 `0.1.0-preview.6`, this engine answers there as Broiler.VM does on that version, until the stream's next version is
 published. The consumer then stops with the exception it is written to throw, and the log records it.
 
@@ -914,7 +943,7 @@ its entry held there. **Every entry is absent.**
 | `JSTemporalRoundingOptions`' arithmetic and rules | 105 | nothing | absent |
 | The differences and the settings' rules | 59 | nothing | absent |
 | The dead code: `NotImplementedArithmetic`, `ReadLargestUnit` | 2 | nothing | absent |
-| The eight regular-expression parsers with their patterns, and `CanonicalizeTimeZone`'s string fallback | 94 | nothing: no file of `BuiltIns/Temporal/` names `Regex` | absent |
+| The eight regular-expression parsers with their patterns, and `CanonicalizeTimeZone`'s string fallback | 137 | no pattern: no file of `BuiltIns/Temporal/` names `Regex`, and `CanonicalizeTimeZone` is gone. The eight parsers' names remain, `ParseTemporalDateString`, `ParseTemporalDateTimeString`, `ParseTemporalTimeString`, `ParseTemporalYearMonthString`, `ParseTemporalMonthDayString`, `ParseZonedDateTimeString`, `ParseTemporalInstant` and `ParseTemporalDurationString`, each a private adapter that parses with the library's grammar, `TemporalGrammar`, through `TemporalAdapter`, then takes its type's own creation steps; and `TemporalAdapter.TryParseOffsetString`, one line calling the library's `TemporalGrammar.TryParseOffsetString`. The other lines are their callers and comments naming the proposal's operations *(corrected 2026-10-19, at SJL-10.6, after review, when the entry's pattern was given the parsers' names, `TryParseOffsetString`, the two ambiguity patterns, `Year`, `YearField` and `CanonicalizeTimeZone`; the row read "94" and "nothing: no file of `BuiltIns/Temporal/` names `Regex`")* | absent |
 | The per-type formatters, the precision arithmetic and the five `ReadCalendarName` copies | 43 | nothing | absent |
 | `TemporalIsoString`, whole | 75 | its coercing members, `RequireMonthCodeString`, `RequireOffsetString` and `RequireStringField`, now in `TemporalAdapter.Grammar.cs`, which the list makes adapter code; a test's comment on the engine before the cut-over; the changelog | absent |
 | `TemporalNonIso`'s calendar parts | 171 | a comment naming the library's `ParseMonthCode`; tests' comments on the engine before the cut-over; the changelog | absent |
@@ -992,7 +1021,10 @@ whether test262 adds anything to list; the cut-over's local selection found no p
 
 **Every vector of corpus revision 26 has the result its class expects, in both zones, at the after commit.** The
 engine-level runner, `Broiler.JS/Broiler.JavaScript.Vectors.Tests` in Release, built once from a clean checkout of
-`00b65dd0` (its build compiled the runner alone: the engine was the shell's build, [`engine/after-build.log`](engine/after-build.log))
+`00b65dd0` (its build compiled nothing the shell's build had: the runner and the projects only it needs,
+`Broiler.JavaScript.All`, `Broiler.JavaScript.Debugger`, `Broiler.JavaScript.ModuleExtensions` and
+`Broiler.ECMAScript.Conformance`, [`engine/after-build.log`](engine/after-build.log); *corrected 2026-10-19, at
+SJL-10.6, after review; read "its build compiled the runner alone: the engine was the shell's build"*)
 and run under `TZ=UTC` and `TZ=America/New_York` at once, with no `LANG`, from 13:53Z to 15:02Z on 2026-10-19. Other
 work shared the machine; nothing in the run is timed.
 
@@ -1004,7 +1036,9 @@ work shared the machine; nothing in the run is timed.
 
 The 4 are the number area's `numbers/literal/0082`, `0084`, `0088` and `0090`, which stay with SJL-14. **The two
 reports are byte for byte the same, and each is byte for byte section 4's run of revision 26 in its zone**, taken at
-`c97a9996`, whose code is `6dbff805`'s; so are the negative controls. Every Temporal vector, the 473 whose
+`feee5b7a` (committed in `c97a9996`), whose code is `6dbff805`'s; so are the negative controls *(corrected 2026-10-19,
+at SJL-10.6, after review; read "taken at `c97a9996`", the commit that only added those runs' files; the message of
+`f65fa03b` repeats the slip)*. Every Temporal vector, the 473 whose
 `divergence.broiler-js` field revision 26 retired among them, matches in both zones.
 
 ## 15. What this bundle does not claim

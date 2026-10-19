@@ -1,0 +1,33 @@
+# SJL-10.6, taken by hand on 2026-10-19T17:28:53Z after review: decision D12's check of the pristine consumer, and the
+# value of its expression, in the shell built in Release from a clean checkout of the after commit
+# (00b65dd055a277859d5325ead6338a040bcf2f30, clean: yes),
+# as built and with nuget.org's Broiler.ECMAScript.Algorithms 0.1.0-preview.6 assembly in place of its own build
+# of the library, every other file the same; each run with TZ=America/New_York and no LANG.
+# build: dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release (the shell's only build there)
+# BroilerJS.dll sha256 fda14c23ae634907d8d7ceedd80dfe2a492acb53c613fe901135dd08a07c63f1
+# the library as built: Broiler.ECMAScript.Algorithms.dll sha256 84c34bffca8645965ae723c3a1606e16c7c61f8726107b28e7d8acbf9447038b
+# nuget.org's package: https://api.nuget.org/v3-flatcontainer/broiler.ecmascript.algorithms/0.1.0-preview.6/broiler.ecmascript.algorithms.0.1.0-preview.6.nupkg,
+#   sha256 742ba8371b20789d686630d9215c2607c21918037ded151664c1a009d705fd8f, signed: yes;
+#   its lib/net10.0/Broiler.ECMAScript.Algorithms.dll sha256 48488a7045d107b9fe3b4ee246a871d7110517f319a386ecff473ecfc4a45d3b
+# files of the two shells' folders that differ: Broiler.ECMAScript.Algorithms.dll
+# the program, <scratch>/probe/d12-published.js:
+#   var out = [];
+#   out.push("decision D12's check, as the consumer runs it: " + String((() => { try { Temporal.ZonedDateTime.from('2011-12-31T16:15+14:00[Pacific/Apia]').since(Temporal.ZonedDateTime.from('2011-12-31T00:00+14:00[Pacific/Apia]'), { largestUnit: 'day', smallestUnit: 'hour' }); return false; } catch (e) { return e instanceof RangeError; } })()));
+#   var v;
+#   try { v = String(Temporal.ZonedDateTime.from('2011-12-31T16:15+14:00[Pacific/Apia]').since(Temporal.ZonedDateTime.from('2011-12-31T00:00+14:00[Pacific/Apia]'), { largestUnit: 'day', smallestUnit: 'hour' })); }
+#   catch (e) { v = e.name + ': ' + e.message; }
+#   out.push("its expression's value: " + v);
+#   print(out.join("\n"));
+
+## the shell as built (the after commit's library, with decision D12)
+$ TZ=America/New_York dotnet <tree>/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll --script-host <scratch>/probe/d12-published.js
+decision D12's check, as the consumer runs it: true
+its expression's value: RangeError: Temporal.ZonedDateTime: result is outside the representable range
+# exit 0
+
+## the shell with nuget.org's 0.1.0-preview.6 library
+$ TZ=America/New_York dotnet <scratch>/shell-published/BroilerJS.dll --script-host <scratch>/probe/d12-published.js
+decision D12's check, as the consumer runs it: false
+its expression's value: P1DT16H
+# exit 0
+

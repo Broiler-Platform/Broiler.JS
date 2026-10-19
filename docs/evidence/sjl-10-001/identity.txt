@@ -130,7 +130,7 @@ rule commit is the base commit: True
 rule commit an ancestor of the after commit: True
 files the rule fixes, changed between the rule commit and the after commit:
   none
-part C's harness and copies, changed between their commit (80dff79f) and the after commit:
+part C's harness and copies, changed between their commit (2b5b6daf) and the after commit:
   none
   498b4243887c0ef029c52042dac07589f70eab5838c96b9ca41fefed37a85c80  scripts/conformance/run_reference_datasets.py
   18aad752c1bc164639cc696b5f8472a11d79c547d13b8770cf5f326d0b4b542a  scripts/conformance/reference_dataset_driver.js
@@ -140,7 +140,7 @@ the shared library's code, changed between bf81d1b7 (the code 0.1.0-preview.6 wa
    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md              | 51 +++++++++++++++++++++++++++++++++++++++++++++++----
    3 files changed, 69 insertions(+), 15 deletions(-)
   the commits that change them: 163d43aa SJL-10.5: NudgeToZonedTime answers OutOfRange where the day span's sign is not the duration's (decision D12); 6dbff805 SJL-10.5: the changelog and the adapter guide record decision D12
-collector: docs/evidence/sjl-10-001/collect.py, sha256 9aa6c46d9849748a034e1cc40ebcf4cc5b3edca40514a5f453af7382a2ea57da, run from <repo> at 00b65dd055a277859d5325ead6338a040bcf2f30, committed with this bundle
+collector: docs/evidence/sjl-10-001/collect.py, sha256 b01029eacaf919374b727433cf99a39dda58123c663445025ce99f032d1a5b30, run from <repo> at ec735124e0a63b55ea6fdd406c25e94e48563cf5, committed with this bundle
 dotnet --version: 10.0.401
 dotnet --list-runtimes: Microsoft.AspNetCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.AspNetCore.App]
 Microsoft.NETCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.NETCore.App]
@@ -149,4 +149,4 @@ machine: x86_64; Linux-6.18.44-fc-v139-x86_64-with-glibc2.39; logical processors
 cpu: Intel(R) Xeon(R) Processor @ 2.80GHz
 memory: 16479424 kB
 suite revision: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
-collected: 2026-10-19T15:09:50Z
+collected: 2026-10-19T17:24:07Z
