@@ -459,6 +459,73 @@ public class DurationApiTests
     }
 
     [Fact]
+    public void A_day_the_zone_skips_reaches_the_zoned_day_spans_assertion_and_answers_out_of_range()
+    {
+        // ROW D12, DECISIONS D11 AND D12: NudgeToZonedTime (s7.5.35) step 8 asserts "TimeDurationSign(daySpan) = sign".
+        // Back from 2011-12-31T16:15+14:00 in Pacific/Apia, the day before is 2011-12-30, which the zone skipped, so the
+        // day span is zero. The library answered from outside the text's domain there (P1DT16H for a since in days to the
+        // hour); it answers OutOfRange, which each engine throws as a RangeError, as the reference polyfill throws one.
+        var zone = Zone("Pacific/Apia");
+        var one = BigInteger.Parse("1325297700000000000", System.Globalization.CultureInfo.InvariantCulture); // 2011-12-31T16:15+14:00
+        var two = BigInteger.Parse("1325239200000000000", System.Globalization.CultureInfo.InvariantCulture); // 2011-12-31T00:00+14:00
+        var relativeTo = RelativeTo.FromZoned(one, zone, Calendars, CalendarId.Iso8601);
+        foreach (var mode in new[] { RoundingMode.Trunc, RoundingMode.Floor, RoundingMode.Ceil, RoundingMode.Expand, RoundingMode.HalfExpand })
+        {
+            foreach (var operation in new[] { DifferenceOperation.Since, DifferenceOperation.Until })
+            {
+                foreach (var (largest, smallest, increment) in new[] { (TemporalUnit.Day, TemporalUnit.Hour, 1L), (TemporalUnit.Month, TemporalUnit.Hour, 1L), (TemporalUnit.Day, TemporalUnit.Minute, 30L) })
+                {
+                    Assert.True(TemporalOptionRules.TryGetDifferenceSettings(TemporalType.ZonedDateTime, operation, largest, increment, mode, smallest, out var settings));
+                    Assert.Equal(TemporalStatus.OutOfRange, TemporalDifferences.DifferenceTemporalZonedDateTime(
+                        operation, one, two, zone, Calendars, CalendarId.Iso8601, settings, out _));
+                }
+            }
+
+            Assert.Equal(TemporalStatus.OutOfRange, DurationMath.Round(D(hours: -16, minutes: -15), TemporalUnit.Day, 1, TemporalUnit.Hour, mode, relativeTo, out _));
+            Assert.Equal(TemporalStatus.OutOfRange, DurationMath.Round(D(hours: -16, minutes: -15), TemporalUnit.Month, 1, TemporalUnit.Hour, mode, relativeTo, out _));
+            Assert.Equal(TemporalStatus.OutOfRange, DurationMath.Round(D(hours: -16, minutes: -15), TemporalUnit.Day, 30, TemporalUnit.Minute, mode, relativeTo, out _));
+        }
+
+        // A total in a time unit does not nudge, and the largest unit an hour takes no day span: both stand.
+        Assert.Equal(TemporalStatus.Completed, DurationMath.Total(D(hours: -16, minutes: -15), TemporalUnit.Hour, relativeTo, out var hours));
+        Assert.Equal(-16.25, hours);
+        Assert.True(TemporalOptionRules.TryGetDifferenceSettings(
+            TemporalType.ZonedDateTime, DifferenceOperation.Since, TemporalUnit.Hour, 1, RoundingMode.Trunc, TemporalUnit.Nanosecond, out var exact));
+        Assert.Equal(TemporalStatus.Completed, TemporalDifferences.DifferenceTemporalZonedDateTime(
+            DifferenceOperation.Since, one, two, zone, Calendars, CalendarId.Iso8601, exact, out var timeOnly));
+        Assert.Equal(D(hours: 16, minutes: 15), timeOnly);
+
+        // Forward, the span is the next day, of 24 hours, and the answer is the polyfill's.
+        Assert.True(TemporalOptionRules.TryGetDifferenceSettings(
+            TemporalType.ZonedDateTime, DifferenceOperation.Until, TemporalUnit.Day, 1, RoundingMode.Ceil, TemporalUnit.Hour, out var forwardSettings));
+        Assert.Equal(TemporalStatus.Completed, TemporalDifferences.DifferenceTemporalZonedDateTime(
+            DifferenceOperation.Until, two, one, zone, Calendars, CalendarId.Iso8601, forwardSettings, out var forward));
+        Assert.Equal(D(hours: 17), forward);
+    }
+
+    [Fact]
+    public void A_zoned_day_span_of_the_wrong_sign_is_out_of_range()
+    {
+        // ROW D12, DECISIONS D11 AND D12: an engine's zone whose instants run against its wall clock makes the day after
+        // the nudge's start an earlier instant, a day span of the wrong sign, which NudgeToZonedTime's step 8 asserts
+        // cannot happen. The library answered P1DT29H for five hours there; it answers OutOfRange. The same rounding
+        // through a zone of a constant hour completes.
+        var origin = new IsoDateTime(new IsoDate(2020, 1, 1), new IsoTime(12, 0, 0, 0, 0, 0));
+        var hour = NsPerDay / 24;
+        var duration = new InternalDuration(default, 5 * hour);
+        Assert.Equal(TimeStatus.Completed, new BackwardZone().GetEpochNanosecondsFor(origin, Disambiguation.Compatible, out var backwardOrigin));
+        Assert.Equal(TemporalStatus.OutOfRange, DurationMath.RoundRelativeDuration(
+            duration, backwardOrigin, backwardOrigin + (5 * hour), origin, new BackwardZone(), Calendars, CalendarId.Iso8601, TemporalUnit.Day, 1,
+            TemporalUnit.Hour, RoundingMode.Trunc, out _));
+
+        Assert.Equal(TimeStatus.Completed, new FixedHourZone().GetEpochNanosecondsFor(origin, Disambiguation.Compatible, out var fixedOrigin));
+        Assert.Equal(TemporalStatus.Completed, DurationMath.RoundRelativeDuration(
+            duration, fixedOrigin, fixedOrigin + (5 * hour), origin, new FixedHourZone(), Calendars, CalendarId.Iso8601, TemporalUnit.Day, 1,
+            TemporalUnit.Hour, RoundingMode.Trunc, out var rounded));
+        Assert.Equal(duration, rounded);
+    }
+
+    [Fact]
     public void The_durations_answer_alike_from_many_threads()
     {
         var zone = Zone("Europe/Berlin");
@@ -527,6 +594,21 @@ public class DurationApiTests
             epochNanoseconds = BigInteger.Zero;
             return TimeStatus.NoStartOfDay;
         }
+    }
+
+    // An inconsistent zone: its instants run against its wall clock, so a later day is an earlier instant.
+    private sealed class BackwardZone : ITimeZoneArithmetic
+    {
+        public long GetOffsetNanosecondsFor(BigInteger epochNanoseconds) => 0;
+
+        public TimeStatus GetEpochNanosecondsFor(IsoDateTime dateTime, Disambiguation disambiguation, out BigInteger epochNanoseconds)
+        {
+            epochNanoseconds = -IsoArithmetic.GetUtcEpochNanoseconds(dateTime);
+            return TimeStatus.Completed;
+        }
+
+        public TimeStatus GetStartOfDay(IsoDate date, out BigInteger epochNanoseconds) =>
+            GetEpochNanosecondsFor(new IsoDateTime(date, default), Disambiguation.Compatible, out epochNanoseconds);
     }
 
     // A calendar provider that forwards to the library's, counting its calls.

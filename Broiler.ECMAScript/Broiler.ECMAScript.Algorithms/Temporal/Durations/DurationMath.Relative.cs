@@ -51,8 +51,9 @@ public static partial class DurationMath
     /// <returns>
     /// <see cref="TemporalStatus.Completed"/>; <see cref="TemporalStatus.InvalidDuration"/> where a window's duration or the
     /// rounded time is not valid; <see cref="TemporalStatus.OutOfRange"/> where a window passes the limits, or where a
-    /// week or day window does not hold the destination, which the specification asserts and a day the zone skips
-    /// reaches (row D12: Pacific/Apia's 2011-12-30 makes a day window back from 2011-12-31 of no length).
+    /// week or day window does not hold the destination, or the zone's day from the nudge's start is not of the
+    /// duration's sign, which the specification asserts and a day the zone skips reaches (row D12: Pacific/Apia's
+    /// 2011-12-30 makes a day window back from 2011-12-31 of no length; decisions D11 and D12).
     /// </returns>
     /// <exception cref="ArgumentNullException">The calendar provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A unit is unset or auto, the smallest is larger than the largest, or the increment is not positive.</exception>
@@ -291,7 +292,7 @@ public static partial class DurationMath
     }
 
     // The proposal's NudgeToCalendarUnit (s7.5.34): the nudge, and the exact total TotalRelativeDuration reads.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.34, JSD-0078 decisions D7 and D12 via Broiler.VM JsTemporal.NudgeToCalendarUnit; IP=Low; Security=Medium; Resources=2; Fingerprint=E2CC43
+    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.34, JSD-0078 decisions D7 and D11 via Broiler.VM JsTemporal.NudgeToCalendarUnit; IP=Low; Security=Medium; Resources=2; Fingerprint=E2CC43
     // Broiler-Human:        PENDING
     private static TemporalStatus NudgeToCalendarUnit(
         int sign, InternalDuration duration, BigInteger originEpochNanoseconds, BigInteger destinationEpochNanoseconds, IsoDateTime dateTime,
@@ -311,11 +312,11 @@ public static partial class DurationMath
 
         if (!Inside(window))
         {
-            // ROW D12: the specification asserts that a week or day window holds the destination, and a day the zone
-            // skips breaks it: back from Pacific/Apia's 2011-12-31, the day before is 2011-12-30, which the zone skipped,
-            // so the window's end is moved onto its start. The reference polyfill fails its own assertion there and
-            // Broiler.VM ends the invocation with a .NET exception; the library answers a status, a RangeError in both
-            // engines (decision D12 as revised at SJL-10.3, part C).
+            // ROW D12, DECISION D11: the specification asserts that a week or day window holds the destination, and a day
+            // the zone skips breaks it: back from Pacific/Apia's 2011-12-31, the day before is 2011-12-30, which the zone
+            // skipped, so the window's end is moved onto its start. The reference polyfill fails its own assertion there
+            // and Broiler.VM ended the invocation with a .NET exception; the library answers a status, a RangeError in
+            // both engines (the owner's decision D11, 2026-10-18).
             if (unit is TemporalUnit.Week or TemporalUnit.Day)
                 return TemporalStatus.OutOfRange;
 
@@ -362,7 +363,7 @@ public static partial class DurationMath
     }
 
     // The proposal's NudgeToZonedTime (s7.5.35): the time rounded within the zone's real day, which may carry a day.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.35 via Broiler.VM JsTemporal.NudgeToZonedTime; IP=Low; Security=Medium; Resources=2; Fingerprint=FF26E9
+    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.35, JSD-0078 decisions D11 and D12 via Broiler.VM JsTemporal.NudgeToZonedTime; IP=Low; Security=Medium; Resources=2; Fingerprint=C80E4D
     // Broiler-Human:        PENDING
     private static TemporalStatus NudgeToZonedTime(
         int sign, InternalDuration duration, IsoDateTime dateTime, ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId calendar,
@@ -384,6 +385,16 @@ public static partial class DurationMath
             return status;
 
         var daySpan = endEpochNanoseconds - startEpochNanoseconds;
+
+        // ROW D12, DECISIONS D11 AND D12: s7.5.35 step 8 asserts "TimeDurationSign(daySpan) = sign", and a day the zone skips
+        // breaks it: back from Pacific/Apia's 2011-12-31, the day before is 2011-12-30, which the zone skipped, so the
+        // end is moved onto the start and the day span is zero. Decision D12 (the owner's, 2026-10-19) carries decision
+        // D11's rule to this assertion: the library answers a status, a RangeError in both engines, as the reference
+        // polyfill throws one ("time zone returned inconsistent Instants"), rather than a day from outside the text's
+        // domain.
+        if (daySpan.Sign != sign)
+            return TemporalStatus.OutOfRange;
+
         var unitIncrement = (BigInteger)DurationCore.UnitLength(unit) * increment;
         status = RoundTimeDurationToIncrement(duration.TimeNanoseconds, unitIncrement, mode, out var rounded);
         if (status != TemporalStatus.Completed)
@@ -587,7 +598,7 @@ public static partial class DurationMath
     };
 
     // Whether a date-duration field converts to the calendar's exact integers.
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 decision D12; IP=None; Security=Low; Resources=0; Fingerprint=1DC9E9
+    // Broiler-AI:           Origin=AI; Spec=JSD-0078 row D12; IP=None; Security=Low; Resources=0; Fingerprint=1DC9E9
     // Broiler-Human:        PENDING
     private static bool FitsCalendar(double value) => double.IsFinite(value) && Math.Abs(value) <= MaxCalendarField;
 }
