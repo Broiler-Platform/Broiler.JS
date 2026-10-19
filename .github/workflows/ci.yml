@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      vectors-workers:
+        description: Evaluating processes in the engine vectors jobs; 1 takes one-process reports, as evidence runs do
+        type: string
+        default: '4'
   workflow_call:
     inputs:
       package-version:
@@ -151,7 +156,8 @@ jobs:
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 40
+    # A dispatch with fewer processes takes up to four times as long.
+    timeout-minutes: ${{ (inputs.vectors-workers || '4') == '4' && 40 || 90 }}
     defaults:
       run:
         shell: bash
@@ -160,7 +166,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     env:
-      BROILER_VECTORS_WORKERS: '4'
+      BROILER_VECTORS_WORKERS: ${{ inputs.vectors-workers || '4' }}
       BROILER_VECTORS_REPORT: engine-vectors.tsv
     steps:
       - name: Check out
@@ -211,6 +217,47 @@ jobs:
             engine-vectors.tsv
             engine-vectors.log
           if-no-files-found: warn
+
+  # The Windows report against the Linux report of the same run. The four-process run was compared with
+  # one process's on Linux only, and nothing yet shows that the two runners' reports must be the same
+  # byte for byte, so a difference is a warning here, not a failure; the first runs settle whether it
+  # should become one. A difference calls for a one-process Windows report, which a dispatch with
+  # vectors-workers 1 takes.
+  vectors-compare:
+    name: engine vectors (Windows against Linux)
+    needs: vectors
+    if: needs.vectors.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch both reports
+        uses: actions/download-artifact@v8
+        with:
+          pattern: engine-vectors-*
+          path: reports
+
+      - name: Compare
+        run: |
+          linux=reports/engine-vectors-ubuntu-latest/engine-vectors.tsv
+          windows=reports/engine-vectors-windows-latest/engine-vectors.tsv
+          for report in "$linux" "$windows"; do
+            if [ ! -f "$report" ]; then
+              echo "::warning title=Engine vectors compared::$report is missing, so nothing was compared."
+              exit 0
+            fi
+          done
+          if cmp -s "$linux" "$windows"; then
+            echo "The Windows and Linux reports are the same, byte for byte ($(sha256sum < "$linux" | cut -d' ' -f1))." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          diff "$linux" "$windows" > "$RUNNER_TEMP/reports.diff" || true
+          lines="$(grep -c '^>' "$RUNNER_TEMP/reports.diff" || true)"
+          echo "::warning title=Engine vectors compared::The Windows report differs from the Linux report on ${lines} line(s); the job summary shows the first."
+          {
+            echo "The Windows report differs from the Linux report on ${lines} line(s). The first 40 lines of the difference (< Linux, > Windows):"
+            echo '```'
+            grep '^[<>]' "$RUNNER_TEMP/reports.diff" | head -n 40 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # The one check of this workflow to wait for, and the one a branch rule should require. GitHub does
   # not expand the matrix of a job that its if skips: it reports one skipped check under the unexpanded

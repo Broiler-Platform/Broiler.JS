@@ -87,8 +87,11 @@ vector's time and the vectors run again alone, to the test's output and to stand
 was run again. **Retained evidence runs use one process**: such a run is started with the variable
 unset (`env -u BROILER_VECTORS_WORKERS`), and a collector removes it from the environment it gives
 `dotnet test`, as it removes `LANG`. A run retained with more would need a dated note in the
-configuration clause of bundle sjl-1-001's decision rule. *(Added 2026-10-19, when CI's engine vectors
-job began to run the corpus in four processes.)*
+configuration clause of bundle sjl-1-001's decision rule. CI keeps each runner's report as the artifact
+`engine-vectors-<os>`, warns when the Windows report differs from the Linux one, and takes one-process
+reports on both runners when it is dispatched with `vectors-workers` set to 1 (one dispatch on a branch
+at a time: a later CI run on the same ref cancels an earlier one). *(Added 2026-10-19, when CI's engine
+vectors job began to run the corpus in four processes.)*
 
 *(Revised 2026-10-12, at milestone SJL-2.10, when the shared folder was created. It read: "The
 reader and validator are engine-neutral and live, for now, in the Broiler.JS test project beside the
