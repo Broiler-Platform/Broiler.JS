@@ -228,7 +228,9 @@ part of the record:
 - **Left, as the area verdict leaves them:** the Temporal consumers' quantities (`PlainTime`,
   `PlainDateTime` and `ZonedDateTime`'s `round` round the nanoseconds since midnight) with SJL-10, and
   Intl's mathematical value with SJL-9. `UriHelper` cites Jurassic too, and the notices say that its
-  derivation is not yet examined.
+  derivation is not yet examined. *(2026-10-19: the Temporal consumers' rounding is corrected at milestone
+  SJL-10.5, where `round` rounds a minute within its hour and a second within its minute; "The cut-over
+  (SJL-10.5)" below, and the changelog's entry of that milestone. This item is unchanged.)*
 
 **Text algorithms (SJL-5.1), filed 2026-10-14: all six sub-areas accepted.** Broiler.VM's record is
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0070-text-algorithms-move-to-the-shared-algorithms-library.md`
@@ -953,7 +955,9 @@ This repository's part of it:
   "inconsistent Instants" branch and its fourth day correction (D12); the handling of U+2212 after a match (G10); the
   `islamic` entry (C3) and the reference-date search's upper year (C10); the offset getter's dropped fraction of a
   second (S8); `RejectIncompatibleStyle`, `NotImplementedArithmetic`, `ReadLargestUnit` and the unused
-  `AddYearsMonths`.
+  `AddYearsMonths`. *(SJL-10.5 finds the "inconsistent Instants" branch reached, by Pacific/Apia's skipped day, and
+  decision D12 governs it; the rest is deleted, much of it from files that remain rather than with its file. See
+  "The cut-over (SJL-10.5)" below.)*
 - **The deletion list**, as JSD-0078's X6 states it (the correspondence's section 11):
   - the per-type validity, regulation, addition and balancing copies, and the small copies beside them:
     `CompareISODate`, `FloorDiv` and the unit-length tables;
@@ -1059,17 +1063,25 @@ This repository's part of it:
 
   *(Note, 2026-10-19, at SJL-10.5. "This engine answers `PT0S`" and "moves from `PT0S` to a `RangeError`" hold of one
   input among several. With `a` 2011-12-31T16:15+14:00[Pacific/Apia] and `b` 2011-12-31T00:00 the same day, exactly
-  these moved to a `RangeError`, in every rounding mode:*
+  these moved to a `RangeError`, in each of the nine rounding modes:*
   - *`a.since(b)` and `a.until(b)` with largest and smallest unit `day`, which answered `PT0S` or one day by mode
-    (`since`: `PT0S` under `trunc` and `floor`, `P1D` under `ceil`, `expand` and `halfExpand`; `until`: `PT0S` under
-    `trunc` and `ceil`, `-P1D` under `floor`, `expand` and `halfExpand`);*
-  - *`a.since(b)` with largest unit `month` and smallest unit `day`, which answered `PT0S` or `P1D`;*
+    (`since`: `PT0S` under `trunc` and `floor`, `P1D` in the other seven; `until`: `PT0S` under `trunc` and `ceil`,
+    `-P1D` in the other seven);*
+  - *`a.since(b)` with largest unit `month` and smallest unit `day`, which answered `PT0S` under `trunc` and
+    `floor` and `P1D` in the other seven;*
   - *`-PT16H15M` rounded to days relative to `a`, and its total in days, which threw a plain `Error` carrying a .NET
     `ArgumentOutOfRangeException`, not `PT0S`.*
 
   *`b.until(a)` and `b.since(a)` in days, windows of weeks, differences in hours and everything relative to `b`
   answer as before. Rounding to a time unit with a date largest unit back from `a` answered a `RangeError` before and
-  after; that is decision D12, in "The cut-over (SJL-10.5)" below. The sentences above are left as written.)*
+  after; that is decision D12, in "The cut-over (SJL-10.5)" below. Bundle `sjl-10-001`'s `cutover/d12-ext.js` probes
+  five of the modes, and `cutover/d12-half-modes.js` the other four.*
+
+  *"It is the one place the library does not answer as Broiler.VM's code does" held of the library as SJL-10.3
+  wrote it. Decision D12 makes a second, NudgeToZonedTime's day span: back from `a`, with a time unit rounded under a
+  date largest unit, the library now answers `OutOfRange`, where Broiler.VM's code and the library at
+  `0.1.0-preview.6` answer durations. The differential check ran before the decision and found no difference
+  there. The sentences above are left as written.)*
 - **The decisions taken** are in the guide, under each part, within JSD-0078's X3. Part C's: the design's names; the
   zone provider one zone per instance, where the design passed a zone with each call, as an offset zone has no
   identifier; `RelativeTo` carrying its providers; a new status, `RelativeToRequired`; the zones' equality left to the
@@ -1090,11 +1102,12 @@ written on branch `sjl-10-5-js`, from `main` at `1c411b68`:
 Then:
 - **The deletion list is absent**, as JSD-0078's X6 and this plan's SJL-10.1 record list it, the formula and table
   calendar copies among them (decision D3). The search for its members' names (bundle `sjl-10-001`,
-  [`cutover/deletion-search.txt`](../evidence/sjl-10-001/cutover/deletion-search.txt)) finds them only in three
-  places:
+  [`cutover/deletion-search.txt`](../evidence/sjl-10-001/cutover/deletion-search.txt)) finds them only as:
   - the adapter's thin members named after the specification's operations, each a call into the library;
   - comments that name those operations;
-  - tests' comments on the engine before the cut-over.
+  - tests' comments on the engine before the cut-over;
+  - a library record's member, `TimeNanoseconds`, which the adapter reads;
+  - Intl's own `ResolveCalendar`, a different member of the same name.
 
   No file of `BuiltIns/Temporal/` uses a regular expression. The public `JSTemporal*` types stay as shells
   (SJL-D-25), and the engine's public API listing is unchanged ([`docs/public-api.md`](../public-api.md)).
@@ -1115,10 +1128,11 @@ Then:
   reached. Pacific/Apia's skipped day reaches it, as it reaches decision D11's window, and this engine answered a
   `RangeError` from it at the base. Decision D12 keeps that answer.
 - **The changes no row lists are kept**, under the owner's direction of 2026-10-18: part A's two, part B's seven,
-  part C's six, and the review's U1 to U8. So are the two defects at the base that the review fixed: a Temporal
-  object read as a property bag lends its own calendar (code-1), and no .NET exception reaches script from
-  `ZonedDateTime.from` of a plain type (code-2). Each follows the pinned text and is the library's answer, and so
-  Broiler.VM's. Each is listed as a correction under SJL-D-16 (a).
+  five of part C's six (its fifth, that `add` and `subtract` read no second argument, is row D3's), and the review's
+  U1 to U8. So are the two defects at the base that the review fixed: a Temporal object read as a property bag
+  lends its own calendar (code-1), and no .NET exception reaches script from `ZonedDateTime.from` of a plain type
+  (code-2). Each follows the pinned text and is the library's answer, and so Broiler.VM's. Each is listed as a
+  correction under SJL-D-16 (a).
   - **These records found one more**: the rounding of points rounds a minute within its hour and a second within its
     minute. `01:10` rounded to 20 minutes under `halfEven` is `01:00`, where it was `01:20`. It is the case the
     SJL-4.5 changelog entry's "Not corrected here" names for SJL-10.
@@ -1134,7 +1148,8 @@ Then:
     breaks it, the library answers `OutOfRange`, a `RangeError`.
   - **This engine.** Its answer there was already a `RangeError`: only the message moves, from "time zone returned
     inconsistent Instants" to "result is outside the representable range". Without the decision, the cut-over would
-    have moved 36 probe lines from a `RangeError` to durations from outside the text's domain.
+    have moved 36 probe lines from a `RangeError` to durations from outside the text's domain: part C's shell, at
+    `41eaa90f`, answers them so (`cutover/d12z.part-c.txt`).
   - **Broiler.VM** answers those durations on `0.1.0-preview.6` until it takes the stream's next version.
     ([`cutover/d12-facts.md`](../evidence/sjl-10-001/cutover/d12-facts.md) has every line in every engine.)
 - **The checks at the cut-over's final commit, `6dbff805`.** The branch then took `main` in the merge `e2b2a785`,

@@ -1,10 +1,10 @@
 # The divergence.broiler-js and divergence.broiler-vm fields corpus revision 26 retires: every Temporal vector
 # Broiler.JS matches after milestone SJL-10.5's cut-over, under TZ=UTC and under TZ=America/New_York, in the runs
 # on revision 25 at 6dbff805, whose code the branch's merge of main, e2b2a785, leaves unchanged
-# (Broiler.JS/CHANGELOG.md lists the corrections); and every one Broiler.VM matches after milestone SJL-10.4's, in
-# its run on revision 25 at its 9b7eead (its JSD-0079 lists the correction, and its bundle sjl-10-001 section 4
-# records the run); under the reason scripts/conformance/temporal-divergences.txt gave it at revision 25. The
-# reasons' text follows the table.
+# (Broiler.JS/CHANGELOG.md lists the corrections and the policy changes); and every one Broiler.VM matches after
+# milestone SJL-10.4's, in its run on revision 25 at its 9b7eead (its JSD-0079 lists the correction, and its
+# bundle sjl-10-001 section 4 records the run); under the reason scripts/conformance/temporal-divergences.txt gave
+# it at revision 25. The reasons' text follows the table.
 engine	reason	vector
 broiler-js	js-r7	temporal/balancing/0107
 broiler-js	js-r7	temporal/balancing/0108

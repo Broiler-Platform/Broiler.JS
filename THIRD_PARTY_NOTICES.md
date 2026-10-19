@@ -285,7 +285,10 @@ numerics record found that the notices named neither citation. Revised 2026-10-1
 the bullet on `JSDate.Parse` was added; the notices had named neither of the Date code's citations. Revised
 again 2026-10-16, at milestone SJL-7.5: the bullet on `CharExtensions` was added; the notices had not named
 its tables' source. Revised again 2026-10-19, at milestone SJL-10.5: the bullet on `TemporalArithmeticCalendar` was
-added; the notices had not named its citation.*
+added; the notices had not named its citation. The deleted `JSTemporalCalendar.cs` also named sources, ICU4X, the era
+and month code proposal and ICU's Japanese calendar, for its table of the first days of the five modern Japanese eras
+and Meiji's numbering of its years from 1868. Those are dates and a convention the era proposal publishes, not code,
+and need no bullet.*
 
 ## Data the engine's own code is generated from
 

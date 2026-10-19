@@ -4,6 +4,7 @@ A2 ZDT.toString({offset: bad}) and its conversions => THROWS RangeError | toStri
 B1 PlainDate.from(hebrew bag, options) reads => 2020-01-27[u-ca=hebrew] | get b.calendar, get o.overflow, get b.day, get b.year, get b.month, get b.day
 B1 PlainDate(gregory).with(bag) reads => 2021-01-01[u-ca=gregory] | get b.year, get b.era, get b.eraYear
 B1 PlainMonthDay(gregory).toPlainDate(bag) reads => THROWS RangeError | get b.year, get b.era, get b.eraYear
+B1 ZonedDateTime(hebrew).with(bag, options) reads => 2020-01-02T01:00:00+00:00[UTC][u-ca=hebrew] | get b.offset, get o.disambiguation, get o.offset, get b.day, get o.overflow, get b.hour, get b.day, get b.day
 B2 PlainDate.from({year 2020, month 1}, {overflow: bad}) => THROWS TypeError
 B3 PlainYearMonth(2020-01).toPlainDate({day: 0}) => 2020-01-01
 B3 PlainMonthDay.from({month: 0, day: 1}, options) reads => THROWS RangeError | get b.day, get b.month, get b.monthCode, get b.year, get o.overflow
@@ -44,6 +45,8 @@ U3 ZDT -271821-04-21[UTC] since -271821-04-20[UTC] {day} => P1D
 U4 PMD.from({gregory, era <object>, eraYear 2020, M02, 29}) => THROWS RangeError | get era.toString, call era.toString
 U4 PMD(gregory M02-29).toPlainDate({era ce, eraYear 2021}) => THROWS RangeError
 U4 P1M.total(day) relativeTo {gregory, era <object>, eraYear 2020, 1, 31} => THROWS RangeError | get era.toString, call era.toString
+U4 PMD(coptic M01-01).toPlainDate({era <object>, eraYear 1740}) => THROWS RangeError | get era.toString, call era.toString
+U4 P1M.total(day) relativeTo {coptic, era <object>, eraYear 1740, M01, 1} => THROWS RangeError | get era.toString, call era.toString
 U5 PMD.from({gregory, monthCode M05, month 5, day 1}) => 1972-05-01[u-ca=gregory]
 U5 PMD(hebrew M05-01).with({monthCode M06, month 6}) => 1972-02-16[u-ca=hebrew]
 U6 PMD(gregory M02-01).with({era ce, eraYear 5}) => THROWS TypeError

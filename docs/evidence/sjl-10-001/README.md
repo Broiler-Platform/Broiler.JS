@@ -372,6 +372,14 @@ All pass. `assurance check` reports no violation.
 - Row D12: a day the zone skips answers `OutOfRange`, where Broiler.VM's code ended the invocation with a .NET
   exception (above).
 
+*(Note, 2026-10-19, at SJL-10.5. "It is the one place the library does not answer as Broiler.VM's code does", above,
+held of the library as SJL-10.3 wrote it, and this list named every such place. Decision D12 makes a second, in
+NudgeToZonedTime: where the day span's sign is not the duration's, as back from the same Pacific/Apia instant when a
+time unit is rounded under a date largest unit, the library now answers `OutOfRange`, where Broiler.VM's code, and
+the library at `0.1.0-preview.6`, answer durations from outside the text's domain. The differential check above
+ran before the decision, so it found no difference there. Section 4 has the decision and its lines. The text above
+is left as written.)*
+
 **Nothing is cut over yet.** Broiler.VM's cut-over (SJL-10.4) follows on the shared stream's next version, which it
 sets, as SJL-8.5's `2d37a38a` did, and this engine's (SJL-10.5) after it. *(SJL-10.5 cuts this engine over: section
 4.)*
@@ -399,7 +407,7 @@ it, with decision D12 (below), which the library makes after that version.
 | Decision D12 | `163d43aa`, `6dbff805` | the library's NudgeToZonedTime answers `OutOfRange` where the day span's sign is not the duration's; its tests, the shared changelog and the adapter guide |
 | `main` | `e2b2a785` (merge) | `0.1.0-preview.6` published: `Broiler.ECMAScript/CHANGELOG.md` and the version suffix in `Broiler.ECMAScript/Directory.Build.props`, `preview.5` to `preview.6`, only. No code |
 | Corpus revision 26 | `feee5b7a`, `c97a9996` | retires the area's 479 `divergence` fields; this engine's runs on revision 25 after the cut-over and on revision 26 |
-| The records | the commits that add this section | the changelog, the public API, the notices, the plan pair and this section |
+| The records | the commits that add this section | the changelog, the public API, the notices, the plan pair and this section; the wording of revision 26's row in `REVISIONS.md` and of its retired fields' header, no vector |
 
 **What was deleted.** Every member the deletion list names (JSD-0078's X6, the correspondence's section 11), the
 formula and table calendar copies among them (decision D3). The commits name each.
@@ -478,18 +486,23 @@ and `.tsv.gz`, [`engine/run-revision-26-new-york.log`](engine/run-revision-26-ne
 
 **Decision D11**, the owner's of 2026-10-18 (JSD-0078): where the pinned text asserts that a week or day nudge window
 holds its destination and an input breaks it, the answer is a `RangeError`. Pacific/Apia skipped 2011-12-30. With `a`
-2011-12-31T16:15+14:00[Pacific/Apia] and `b` 2011-12-31T00:00+14:00[Pacific/Apia], exactly these moved
-([`cutover/d12-ext.js`](cutover/d12-ext.js), [`.base.txt`](cutover/d12-ext.base.txt) at `1c411b68`,
-[`.after.txt`](cutover/d12-ext.after.txt) at `6dbff805`):
+2011-12-31T16:15+14:00[Pacific/Apia] and `b` 2011-12-31T00:00+14:00[Pacific/Apia], exactly these moved. Part C's
+probe [`cutover/d12-ext.js`](cutover/d12-ext.js) runs `trunc`, `floor`, `ceil`, `expand` and `halfExpand`
+([`.base.txt`](cutover/d12-ext.base.txt) at `1c411b68`, [`.after.txt`](cutover/d12-ext.after.txt) at `6dbff805`);
+these records' [`cutover/d12-half-modes.js`](cutover/d12-half-modes.js) runs the other four, `halfCeil`,
+`halfFloor`, `halfTrunc` and `halfEven`, in the same two shells ([`.base.txt`](cutover/d12-half-modes.base.txt),
+[`.after.txt`](cutover/d12-half-modes.after.txt)), in the polyfill and in Broiler.VM on `0.1.0-preview.6`.
 
-| Operation, in each of `trunc`, `floor`, `ceil`, `expand` and `halfExpand` | Base | After |
+| Operation, in each of the nine rounding modes | Base | After |
 |---|---|---|
-| `a.since(b, { largestUnit: "day", smallestUnit: "day" })` | `PT0S` (`trunc`, `floor`), `P1D` (the others) | `RangeError` |
-| `a.until(b, { largestUnit: "day", smallestUnit: "day" })` | `PT0S` (`trunc`, `ceil`), `-P1D` (the others) | `RangeError` |
-| `a.since(b, { largestUnit: "month", smallestUnit: "day" })` | `PT0S` (`trunc`, `floor`), `P1D` (the others) | `RangeError` |
-| `Temporal.Duration.from("-PT16H15M").round({ smallestUnit: "day", relativeTo: a })`, and `.total({ unit: "day", relativeTo: a })` | a plain `Error` carrying a .NET `ArgumentOutOfRangeException` | `RangeError` |
+| `a.since(b, { largestUnit: "day", smallestUnit: "day" })` | `PT0S` (`trunc`, `floor`), `P1D` (the other seven) | `RangeError` |
+| `a.until(b, { largestUnit: "day", smallestUnit: "day" })` | `PT0S` (`trunc`, `ceil`), `-P1D` (the other seven) | `RangeError` |
+| `a.since(b, { largestUnit: "month", smallestUnit: "day" })` | `PT0S` (`trunc`, `floor`), `P1D` (the other seven) | `RangeError` |
+| `Temporal.Duration.from("-PT16H15M").round({ smallestUnit: "day", relativeTo: a })`, and `.total({ unit: "day", relativeTo: a })`, which takes no mode | a plain `Error` carrying a .NET `ArgumentOutOfRangeException` | `RangeError` |
 
-The message is "result is outside the representable range". Nothing else in the probe moved:
+The message is "result is outside the representable range". Nothing else in the probes moved but the lines of
+decision D12 (below), 30 in `d12-ext.js` and 12 in `d12-half-modes.js`, whose `RangeError` changes its message
+only:
 - `b.until(a)` and `b.since(a)` in days;
 - `a.since(b)` and `-PT16H15M` relative to `a` rounded to weeks;
 - `a.since(b)` in hours;
@@ -507,18 +520,30 @@ whenever a time unit is rounded with a date largest unit back from `a`. In 36 pr
 - **this change:** a `RangeError`, "result is outside the representable range";
 - **the polyfill at `e8cc03fc`:** a `RangeError`;
 - **Broiler.VM**, before its cut-over and on `0.1.0-preview.6`: durations from outside the text's domain, `P1DT16H`
-  and the like.
+  and the like;
+- **part C's shell, at `41eaa90f`**, the cut-over before the decision: the same durations as Broiler.VM, line for
+  line.
 
 The lines are `a.since(b)` and `a.until(b)` with `{ largestUnit: "day", smallestUnit: "hour" }`, with a largest
 month, to 30 minutes and to 2 nanoseconds, and `-PT16H15M` rounded the same way relative to `a`. The 9 other lines,
-forward from `b`, unrounded, or in hours, are equal in all five.
-[`cutover/d12-facts.md`](cutover/d12-facts.md) has every line in every engine, from the decision's own check, with
-its probe [`cutover/d12z.js`](cutover/d12z.js) and its base, after, polyfill and Broiler.VM answers beside it. Its
-"this build" was `163d43aa`, whose library code is `6dbff805`'s; at `6dbff805` the probe gives the same answers.
-Its file names are those of the library step's scratch folder.
+forward from `b`, unrounded, or in hours, are equal in all six. `d12-half-modes.js` finds the same in the four half
+modes, for `a.since(b)` and `a.until(b)` to hours and `-PT16H15M` rounded to hours: 12 more lines, the base's and
+the polyfill's a `RangeError`, this change's a `RangeError` with its own message, and Broiler.VM's durations.
+
+[`cutover/d12-facts.md`](cutover/d12-facts.md) has every line in every engine but part C's shell, from the
+decision's own check, with its probe [`cutover/d12z.js`](cutover/d12z.js) and the answers beside it:
+`d12z.base.txt`, `d12z.after.txt`, `d12z.ref.txt`, `d12z.vm-now.txt`, and for Broiler.VM before its cut-over
+`d12z.vm-before.txt` with its transcript `d12z.vm-before.txt.raw` (decision D11's line ends the invocation) and
+`d12z-nod11.js` with `d12z-nod11.vm-before.txt`, the probe without that line. Its "this build" was `163d43aa`,
+whose library code is `6dbff805`'s; at `6dbff805` the probe gives the same answers. Its file names are those of the
+library step's scratch folder; its `probes/` files are these. These records ran `d12z.js` in part C's shell
+([`cutover/d12z.part-c.txt`](cutover/d12z.part-c.txt)), and retain part C's own run of `d12-ext.js` there
+([`cutover/d12-ext.part-c.txt`](cutover/d12-ext.part-c.txt)), which d12-facts.md cites: its 30 lines of decision
+D12 are durations.
 
 **The changes no row lists**, kept under the owner's direction of 2026-10-18:
-- part A's two, part B's seven and part C's six;
+- part A's two, part B's seven and five of part C's six (its fifth, that `add` and `subtract` read no second
+  argument, is row D3's);
 - the review's U1 to U8;
 - the two defects at the base that the review fixed, code-1 and code-2;
 - one these records found: the rounding of points, `01:10` to 20 minutes under `halfEven` being `01:00` where it was
@@ -529,7 +554,7 @@ Its file names are those of the library step's scratch folder.
 in Broiler.VM at `83fef1a` with `0.1.0-preview.6` ([`.vm.txt`](cutover/kept-changes.vm.txt)), and in the polyfill
 at `e8cc03fc` ([`.ref.txt`](cutover/kept-changes.ref.txt)).
 [`cutover/kept-changes.compare.tsv`](cutover/kept-changes.compare.tsv) sets them side by side:
-- 61 of its 66 lines changed since the base, and on every one this engine now answers as Broiler.VM and the
+- 64 of its 69 lines changed since the base, and on every one this engine now answers as Broiler.VM and the
   polyfill do;
 - three are controls that did not change;
 - two did not change and still differ from both. A string outside the limits is refused before the `overflow`
@@ -554,11 +579,14 @@ checks. The bundle has no manifest yet: its collector writes one when the after 
 | `test262-run-utc.log`, `test262-run-new-york.log` | The two runs' logs, with the shell's commit |
 | `datasets-report.txt`, `datasets-compare.txt` | The datasets run's report and its comparison with part C's base |
 | `probes-check.txt`, `probes-vs-vm.txt` | The correspondence's probes against Broiler.VM's recorded answers, by probe and by line |
-| `d12-ext.js`, `.base.txt`, `.after.txt` | Part C's probe of row D12's input: decision D11's operations, and decision D12's |
-| `d12-facts.md`, `d12z.js`, `d12z.{base,after,ref,vm-now}.txt` | Decision D12's facts, its probe and the answers of each engine |
+| `d12-ext.js`, `.base.txt`, `.after.txt`, `.part-c.txt` | Part C's probe of row D12's input: decision D11's operations, and decision D12's, in five rounding modes; at the base, after, and in part C's shell |
+| `d12-half-modes.js`, `.{base,after,ref,vm}.txt` | The same operations in the other four rounding modes, in four engines |
+| `d12-facts.md`, `d12z.js`, `d12z.{base,after,ref,vm-now,vm-before,part-c}.txt`, `d12z.vm-before.txt.raw`, `d12z-nod11.js`, `d12z-nod11.vm-before.txt` | Decision D12's facts, its probe and the answers of each engine |
 | `kept-changes.js`, `kept-changes.{base,after,vm,ref}.txt`, `kept-changes.compare.tsv` | The changes no row lists, in four engines |
 | `deletion-search.txt` | The name search for the deletion list |
 | `public-api-check.txt` | The public API listings before and after |
 
-Paths in them are shortened to `<tree>`, this repository's checkout, and `<scratch>`, the scratch folder the checks
-ran from.
+Paths under this repository's checkout and the checks' scratch folder are shortened to `<tree>` and `<scratch>`.
+Three kinds are left as written: the test262 suite root, `/home/user/tc39/test262`, in the two test262 logs; the
+.NET runtime's folder in `datasets-report.txt`; and `d12-facts.md`'s own names, which name Broiler.VM's build before
+its cut-over by its folder, `/home/user/vm-at-14072b0`, and the library step's scratch files by their names there.

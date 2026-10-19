@@ -97,9 +97,9 @@ lists every retired vector under its reason.
   - **A `relativeTo` in any calendar** (D11, 15 vectors of `temporal/rounding`, `temporal/durations` and
     `temporal/grammar`, `js-d11`): `Temporal.Duration.from("P1M").round({ smallestUnit: "day", relativeTo: "2020-01-01[u-ca=hebrew]" })`
     is `P1M` and `Temporal.Duration.compare({ years: 1 }, { days: 365 }, { relativeTo: "2020-01-01[u-ca=hebrew]" })`
-    is -1, where `round`, `total` and `compare` threw a plain `Error`, "not yet implemented"; and 45 days rounded
-    to months relative to a Coptic `ZonedDateTime` is `P1M15D` in Coptic months, where it was `P1M14D` in ISO
-    months.
+    is -1, where `round`, `total` and `compare` threw a plain `Error`, "not yet implemented"; and 45 days balanced
+    with a largest unit of `month`, relative to a Coptic `ZonedDateTime`, is `P1M15D` in Coptic months, where it was
+    `P1M14D` in ISO months.
 - *Differences, 31 vectors:*
   - **Rounding options apply in every calendar** (F4, 20 vectors of `temporal/differences`, `js-f4`):
     `Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]").until(Temporal.PlainDate.from("2020-07-20[u-ca=hebrew]"), { smallestUnit: "month", roundingMode: "halfExpand" })`
@@ -110,8 +110,9 @@ lists every retired vector under its reason.
     with `halfExpand`, is `P1D` (the day to 2026-03-08T12:00 has 23 hours), where it was `PT0S`; and 2026-10-31T12:00
     until 2026-11-01T00:15 is `PT0S` (the day to 2026-11-01T12:00 has 25), where it was `P1D`. `round` and `hoursInDay` already measured the
     zone's days.
-- *The grammar, 213 vectors of `temporal/grammar`, each a string this engine accepted and the grammar refuses; each
-  is now a `RangeError`:*
+- *The grammar, 213 vectors of `temporal/grammar`, each a string this engine read otherwise than the grammar does.
+  205 are now a `RangeError`: 164 of them it accepted, and in 41 (G9) a .NET `FormatException` escaped. The other 8
+  (G17) now take the first of several `u-ca` annotations; 2 of these were a `RangeError` before:*
   - **a year-month's day must be a date** (G3, 7, `js-g3`): `Temporal.PlainYearMonth.from("2020-02-30")`, where it
     was `2020-02`;
   - **a time string's date must be a date** (G4, 6, `js-g4`): `Temporal.PlainTime.from("2021-13-45T12:00")`, where
@@ -205,9 +206,12 @@ change's answer is Broiler.VM's and the polyfill's at `e8cc03fc`.
     "X1"` and `day: 0` beside `timeZone: 5` are `RangeError`s at their reads, where the zone's `TypeError` came first.
   - **A property bag in a calendar other than ISO 8601 and the Gregorian family is read in the specification's
     order** (part B): `Temporal.PlainDate.from({ calendar: "hebrew", year: 5780, month: 5, day: 1 }, options)` reads
-    `calendar`, `day`, `month`, `year`, then the options' `overflow`, where it read `overflow` first, then `day`,
-    `year`, `month` and `day` again. The Gregorian family's `with` and `PlainMonthDay.prototype.toPlainDate` read `era`
-    and `eraYear` before `year`, where they read `year` first.
+    `calendar`, `day`, `month`, `year`, then the options' `overflow`, where it read `calendar`, then `overflow`, then
+    `day`, `year`, `month` and `day` again. `ZonedDateTime.prototype.with` of a Hebrew receiver, given
+    `{ day, hour, offset }` and options, reads the bag's `day`, `hour` and `offset`, then the options'
+    `disambiguation`, `offset` and `overflow`, where it read the bag's `offset`, the options' `disambiguation` and
+    `offset`, then `day`, `overflow`, `hour` and `day` twice more. The Gregorian family's `with` and
+    `PlainMonthDay.prototype.toPlainDate` read `era` and `eraYear` before `year`, where they read `year` first.
   - **A missing field's `TypeError` follows the `overflow` option's read** (part B):
     `Temporal.PlainDate.from({ year: 2020, month: 1 }, { overflow: "bad" })` is the option's `RangeError`, where the
     missing day's `TypeError` came first.
@@ -216,7 +220,9 @@ change's answer is Broiler.VM's and the polyfill's at `e8cc03fc`.
     before `monthCode`, `year` and the options are read.
   - **An `era` is converted by ToString at its read** (the review's U4): an era object whose `toString` answers
     `String("ce")` is `"ce"` in `PlainMonthDay.from`, `PlainMonthDay.prototype.toPlainDate` and a `relativeTo` bag,
-    where its text was taken as `"[object Object]"`, a `RangeError` in `gregory` and `japanese`; and
+    where its text was taken as `"[object Object]"`, a `RangeError` in `gregory` and `japanese`, and in `coptic`'s
+    `toPlainDate` and `relativeTo` bag, where such an era `"am"` with era year 1740 now gives
+    `2023-09-12[u-ca=coptic]` and a `total` of 30 days; and
     `Temporal.PlainMonthDay.from({ calendar: "gregory", monthCode: "M02", day: 29 }).toPlainDate({ era: "ce", eraYear: 2021 })`
     is `2021-02-28`, where every era of `gregory` and `japanese` was a `RangeError` there.
   - **`PlainMonthDay.prototype.with` reads `era` and `eraYear` in a calendar with eras** (U6):
@@ -295,7 +301,7 @@ change's answer is Broiler.VM's and the polyfill's at `e8cc03fc`.
 
   Part C's fifth, that `add` and `subtract` read no second argument, is row D3's, above.
 
-**Code no input reaches, deleted with its file** (rows G10, C3, C10, S8 and D12): the handling of U+2212 after a
+**Code no input reaches, deleted** (rows G10, C3, C10, S8 and D12): the handling of U+2212 after a
 match (G10); the `islamic` entry (C3) and the reference-date search's upper year (C10), the reference years now being
 Table 6's, with no answer changed; the offset getter's dropped fraction of a second (S8); the zoned machinery's shift
 of years and months and its fourth day correction (D12); and `RejectIncompatibleStyle`, `NotImplementedArithmetic`,
@@ -315,24 +321,29 @@ decisions and skip waiting for review." (Broiler.VM's JSD-0078).
   With `a` 2011-12-31T16:15+14:00[Pacific/Apia] and `b` 2011-12-31T00:00+14:00[Pacific/Apia], the day window back
   from `a` ends on the skipped day and has no length. These moved to a `RangeError` (message "result is outside the
   representable range"):
-  - `a.since(b)` and `a.until(b)` with `{ largestUnit: "day", smallestUnit: "day" }`, in every rounding mode: they
-    were `PT0S` or one day by mode, `since` `PT0S` under `trunc` and `floor` and `P1D` under `ceil`, `expand` and
-    `halfExpand`, and `until` `PT0S` under `trunc` and `ceil` and `-P1D` under `floor`, `expand` and `halfExpand`;
-  - `a.since(b)` with `{ largestUnit: "month", smallestUnit: "day" }`, in every mode, where it was `PT0S` or `P1D`;
-  - `Temporal.Duration.from("-PT16H15M").round({ smallestUnit: "day", relativeTo: a })` and `.total({ unit: "day",
-    relativeTo: a })`, in every mode, which threw a plain `Error` carrying a .NET `ArgumentOutOfRangeException`.
+  - `a.since(b)` and `a.until(b)` with `{ largestUnit: "day", smallestUnit: "day" }`, in each of the nine rounding
+    modes: they were `PT0S` or one day by mode, `since` `PT0S` under `trunc` and `floor` and `P1D` in the other seven,
+    and `until` `PT0S` under `trunc` and `ceil` and `-P1D` in the other seven;
+  - `a.since(b)` with `{ largestUnit: "month", smallestUnit: "day" }`, in each mode, where it was `PT0S` under
+    `trunc` and `floor` and `P1D` in the other seven;
+  - `Temporal.Duration.from("-PT16H15M").round({ smallestUnit: "day", relativeTo: a })`, in each mode, and
+    `.total({ unit: "day", relativeTo: a })`, which threw a plain `Error` carrying a .NET
+    `ArgumentOutOfRangeException`.
 
-  Nothing else moved: `b.until(a)` and `b.since(a)` in days, `a.since(b)` and rounding to weeks, `a.since(b)` in
-  hours, anything relative to `b`, `compare`, `a.round("day")`, `hoursInDay` and `a.subtract("P1D")` answer as
-  before ([`docs/evidence/sjl-10-001/cutover/d12-ext.js`](../docs/evidence/sjl-10-001/cutover/d12-ext.js)).
+  [`docs/evidence/sjl-10-001/cutover/d12-ext.js`](../docs/evidence/sjl-10-001/cutover/d12-ext.js) probes `trunc`,
+  `floor`, `ceil`, `expand` and `halfExpand`, and
+  [`d12-half-modes.js`](../docs/evidence/sjl-10-001/cutover/d12-half-modes.js) the other four. Nothing else in them
+  moved to a `RangeError`: `b.until(a)` and `b.since(a)` in days, `a.since(b)` and rounding to weeks, `a.since(b)`
+  in hours, anything relative to `b`, `compare`, `a.round("day")`, `hoursInDay` and `a.subtract("P1D")` answer as
+  before. The lines of decision D12, below, were a `RangeError` before and change only its message.
 - **NudgeToZonedTime's day span is a `RangeError` where its sign is not the duration's** (decision D12, the owner's
   of 2026-10-19, under the same direction): rounding to a time unit with a date largest unit back from `a`, as in
-  `a.since(b, { largestUnit: "day", smallestUnit: "hour" })` in every mode, with a largest month, to 30 minutes or to
-  2 nanoseconds, and `-PT16H15M` rounded so relative to `a`. This engine answered a `RangeError` there before the
-  cut-over, so only its message moves, from "time zone returned inconsistent Instants" to "result is outside the
-  representable range". `0.1.0-preview.6` of the shared stream, which Broiler.VM takes, answers durations from outside
-  the text's domain there (`P1DT16H` and the like), and this engine's packages need the stream's next version to
-  answer as this engine does.
+  `a.since(b, { largestUnit: "day", smallestUnit: "hour" })` in each of the nine modes, with a largest month, to 30
+  minutes or to 2 nanoseconds, and `-PT16H15M` rounded so relative to `a`. This engine answered a `RangeError` there
+  before the cut-over, so only its message moves, from "time zone returned inconsistent Instants" to "result is
+  outside the representable range". `0.1.0-preview.6` of the shared stream, which Broiler.VM takes, answers durations
+  from outside the text's domain there (`P1DT16H` and the like), and this engine's packages need the stream's next
+  version to answer as this engine does.
 
 **test262.** No path of the selection this change was checked against changed its verdict, in UTC or in
 `America/New_York`: `built-ins/Temporal`, `intl402/Temporal`, `staging/Temporal`, `staging/Intl402/Temporal`,

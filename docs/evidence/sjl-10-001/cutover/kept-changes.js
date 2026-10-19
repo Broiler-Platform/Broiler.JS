@@ -36,6 +36,7 @@ t("A2 ZDT.toString({offset: bad}) and its conversions", function () { var z = T.
 t("B1 PlainDate.from(hebrew bag, options) reads", function () { return T.PlainDate.from(bag("b", { calendar: "hebrew", year: 5780, month: 5, day: 1 }), bag("o", { overflow: "constrain" })); });
 t("B1 PlainDate(gregory).with(bag) reads", function () { return T.PlainDate.from({ calendar: "gregory", year: 2020, month: 1, day: 1 }).with(bag("b", { era: "ce", eraYear: 2021, year: 2021 })); });
 t("B1 PlainMonthDay(gregory).toPlainDate(bag) reads", function () { return T.PlainMonthDay.from({ calendar: "gregory", monthCode: "M02", day: 1 }).toPlainDate(bag("b", { era: "ce", eraYear: 2021, year: 2021 })); });
+t("B1 ZonedDateTime(hebrew).with(bag, options) reads", function () { return T.ZonedDateTime.from("2020-01-01T00:00+00:00[UTC][u-ca=hebrew]").with(bag("b", { day: 5, hour: 1, offset: "+00:00" }), bag("o", { disambiguation: "compatible", offset: "prefer", overflow: "constrain" })); });
 t("B2 PlainDate.from({year 2020, month 1}, {overflow: bad})", function () { return T.PlainDate.from({ year: 2020, month: 1 }, { overflow: "bad" }); });
 t("B3 PlainYearMonth(2020-01).toPlainDate({day: 0})", function () { return T.PlainYearMonth.from("2020-01").toPlainDate({ day: 0 }); });
 t("B3 PlainMonthDay.from({month: 0, day: 1}, options) reads", function () { return T.PlainMonthDay.from(bag("b", { day: 1, month: 0, monthCode: "M01", year: 2020 }), bag("o", { overflow: "constrain" })); });
@@ -90,6 +91,8 @@ function eraObject() { return prim2("era", "ce"); }
 t("U4 PMD.from({gregory, era <object>, eraYear 2020, M02, 29})", function () { return T.PlainMonthDay.from({ calendar: "gregory", era: eraObject(), eraYear: 2020, monthCode: "M02", day: 29 }).toString({ calendarName: "always" }); });
 t("U4 PMD(gregory M02-29).toPlainDate({era ce, eraYear 2021})", function () { return T.PlainMonthDay.from({ calendar: "gregory", monthCode: "M02", day: 29 }).toPlainDate({ era: "ce", eraYear: 2021 }); });
 t("U4 P1M.total(day) relativeTo {gregory, era <object>, eraYear 2020, 1, 31}", function () { return D.from("P1M").total({ unit: "day", relativeTo: { calendar: "gregory", era: eraObject(), eraYear: 2020, month: 1, day: 31 } }); });
+t("U4 PMD(coptic M01-01).toPlainDate({era <object>, eraYear 1740})", function () { return T.PlainMonthDay.from({ calendar: "coptic", monthCode: "M01", day: 1 }).toPlainDate({ era: prim2("era", "am"), eraYear: 1740 }); });
+t("U4 P1M.total(day) relativeTo {coptic, era <object>, eraYear 1740, M01, 1}", function () { return D.from("P1M").total({ unit: "day", relativeTo: { calendar: "coptic", era: prim2("era", "am"), eraYear: 1740, monthCode: "M01", day: 1 } }); });
 t("U5 PMD.from({gregory, monthCode M05, month 5, day 1})", function () { return T.PlainMonthDay.from({ calendar: "gregory", monthCode: "M05", month: 5, day: 1 }); });
 t("U5 PMD(hebrew M05-01).with({monthCode M06, month 6})", function () { return T.PlainMonthDay.from({ calendar: "hebrew", monthCode: "M05", day: 1 }).with({ monthCode: "M06", month: 6 }); });
 t("U6 PMD(gregory M02-01).with({era ce, eraYear 5})", function () { return T.PlainMonthDay.from({ calendar: "gregory", monthCode: "M02", day: 1 }).with({ era: "ce", eraYear: 5 }).toString({ calendarName: "always" }); });
