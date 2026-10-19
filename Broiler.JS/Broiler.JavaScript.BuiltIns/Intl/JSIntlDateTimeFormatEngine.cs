@@ -198,9 +198,9 @@ internal static class JSIntlDateTimeFormatEngine
     }
 
     // The islamic (Hijri) calendars share month/era names; the formatter converts the ISO date to the
-    // calendar's own year/month/day (TemporalNonIso) and renders these names rather than the Gregorian
-    // ones. The day/month arithmetic of the specific variant (civil / tbla / umalqura) is handled by
-    // the calendar conversion; only the (English) display names live here.
+    // calendar's own year/month/day (the shared library's calendars) and renders these names rather
+    // than the Gregorian ones. The day/month arithmetic of the specific variant (civil / tbla /
+    // umalqura) is handled by the calendar conversion; only the (English) display names live here.
     private static readonly HashSet<string> IslamicCalendars = new(StringComparer.Ordinal)
         { "islamic", "islamic-civil", "islamic-rgsa", "islamic-tbla", "islamic-umalqura" };
 
