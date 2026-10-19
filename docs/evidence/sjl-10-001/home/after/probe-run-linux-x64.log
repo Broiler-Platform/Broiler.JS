@@ -1,0 +1,9 @@
+# managed assemblies in the publish directory: none
+$ <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/Broiler.ECMAScript.Probe conformance/vectors --report <scratch>/probe-aot.tsv
+# cwd <tree>; started 2026-10-19T15:05:19Z; exit 0
+Broiler.ECMAScript.Probe: corpus revision 26, 49 files, 103312 vectors, 0 failures
+# the JIT's probe: Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll, the home step's Release build, sha256 63fdb5b30d81c643ab9dd43e102bdf59f923b6a068a163d5a632392d21c2dbd5
+$ dotnet <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll conformance/vectors --report <scratch>/probe-jit.tsv
+# cwd <tree>; started 2026-10-19T15:05:24Z; exit 0
+Broiler.ECMAScript.Probe: corpus revision 26, 49 files, 103312 vectors, 0 failures
+# the Native AOT report is byte-identical to the JIT's: True

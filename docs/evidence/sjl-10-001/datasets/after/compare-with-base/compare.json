@@ -1,0 +1,49 @@
+{
+  "format": 2,
+  "bundle": "sjl-10-001",
+  "rule": "docs/evidence/sjl-10-001/decision-rule.md, part C",
+  "base": {
+    "label": "base",
+    "shellCommit": "1d27064d0a1f57608a7af20e37eac91bd8887baa",
+    "shellSha256": "fb17d8ae760d0f0da0b83770f3d917b820cf5a45445ecb76905896d7999c7ce2"
+  },
+  "after": {
+    "label": "after",
+    "shellCommit": "00b65dd055a277859d5325ead6338a040bcf2f30",
+    "shellSha256": "c15aa952a7c9dff70518e4faed4ca14be3444ab10d7fe602bee6b1c60477e940"
+  },
+  "copies": {
+    "temporal.js": "91e1e5a4fe33785c1430f967b727680ead50406ee98a479a5e0f081b75a869db",
+    "temporal.polyfill-e8cc03fc.txt": "ebf380dda41192c160347c4ddf8f33f40101bfc75b44589ae348241322ad5fec",
+    "temporal.divergences.txt": "271ae88cc6b5ad1c4f5c768551c8e925f0830b15528a48e899fb2b308939daa8",
+    "temporal-calendars.js": "bfef1cf45f3da8abea8f8d8630385607b5e9478b243969537323776adf719032",
+    "temporal-calendars.polyfill-e8cc03fc.txt": "911f403a66c7dbe74ca70558b5184f7440fe46cb119a012a8a19d5752ccdadb6",
+    "temporal-calendars.divergences.txt": "aad6cae3e0a94418e688536e53aa0b7608a017d7d8a9643c362d8972bca038ef"
+  },
+  "programs": {
+    "temporal": {
+      "lines": 1629,
+      "afterEqual": 1629,
+      "afterDiffering": 0,
+      "differingSameAsBase": 0,
+      "differingMovedSinceBase": 0,
+      "baseDifferingAfterEqual": 7,
+      "baseEqualAfterDiffering": 0,
+      "expectedDiffers": 0,
+      "baseCompleted": true,
+      "afterCompleted": true
+    },
+    "temporal-calendars": {
+      "lines": 3999,
+      "afterEqual": 3999,
+      "afterDiffering": 0,
+      "differingSameAsBase": 0,
+      "differingMovedSinceBase": 0,
+      "baseDifferingAfterEqual": 103,
+      "baseEqualAfterDiffering": 0,
+      "expectedDiffers": 0,
+      "baseCompleted": true,
+      "afterCompleted": true
+    }
+  }
+}

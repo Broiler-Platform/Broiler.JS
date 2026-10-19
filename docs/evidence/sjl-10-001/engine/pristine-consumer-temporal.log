@@ -1,0 +1,51 @@
+# the pristine consumer above, kept, with its Program.cs replaced by a run of these checks under TZ=America/New_York and no LANG, offline from the same isolated cache; each is a JavaScript expression that must be true:
+#   R7: (() => { try { Temporal.PlainDateTime.from('2020-06-15T12:00').add({ years: 4294967295 }); return false; } catch (e) { return e instanceof RangeError; } })()
+#   B5: (() => { try { Temporal.PlainYearMonth.from('-271821-05').subtract({ months: 1 }); return false; } catch (e) { return e instanceof RangeError; } })()
+#   D3: Temporal.Duration.from({ hours: 1 }).add({ hours: 1 }, 5).toString() === 'PT2H' && (() => { try { Temporal.Duration.from({ years: 1 }).add({ months: 1 }, { relativeTo: '2020-01-01' }); return false; } catch (e) { return e instanceof RangeError; } })()
+#   D4: Temporal.Duration.compare({ years: 1, seconds: 9e15 }, { years: 1 }, { relativeTo: new Temporal.PlainDate(2020, 1, 1) }) === 1
+#   D6: Temporal.Duration.from('P1Y2M3W4DT5H6M7.008009010S').round({ smallestUnit: 'month', roundingMode: 'ceil', relativeTo: new Temporal.PlainDate(2020, 1, 31) }).toString() === 'P1Y3M'
+#   D7: Temporal.Duration.from({ months: 10, days: 29 }).round({ smallestUnit: 'month', largestUnit: 'year', roundingMode: 'ceil', relativeTo: new Temporal.PlainDate(2019, 3, 31) }).toString() === 'P11M'
+#   D8: Temporal.Duration.from({ months: 10, days: 29, hours: 12 }).round({ smallestUnit: 'month', largestUnit: 'year', roundingMode: 'trunc', relativeTo: Temporal.ZonedDateTime.from('2019-03-31T00:00[UTC]') }).toString() === 'P11M'
+#   D11: Temporal.Duration.from('P1M').round({ smallestUnit: 'day', relativeTo: '2020-01-01[u-ca=hebrew]' }).toString() === 'P1M'
+#   F4: Temporal.PlainDate.from('2020-01-01[u-ca=hebrew]').until(Temporal.PlainDate.from('2020-07-20[u-ca=hebrew]'), { smallestUnit: 'month', roundingMode: 'halfExpand' }).toString() === 'P7M'
+#   F7: Temporal.ZonedDateTime.from('2026-03-07T12:00[America/New_York]').until(Temporal.ZonedDateTime.from('2026-03-07T23:45[America/New_York]'), { smallestUnit: 'day', roundingMode: 'halfExpand' }).toString() === 'P1D'
+#   G9: (() => { try { Temporal.PlainDate.from('\uFF12\uFF10\uFF12\uFF10-01-01'); return false; } catch (e) { return e instanceof RangeError; } })()
+#   G22: (() => { try { Temporal.Duration.from('P1YT'); return false; } catch (e) { return e instanceof RangeError; } })()
+#   C2: (() => { try { Temporal.PlainDate.from('2020-01-01[u-ca=gregorian]'); return false; } catch (e) { return e instanceof RangeError; } })()
+#   C5: (() => { try { Temporal.PlainDate.from({ calendar: 'coptic', year: 1739, monthCode: 'M00', day: 1 }, { overflow: 'constrain' }); return false; } catch (e) { return e instanceof RangeError; } })()
+#   C6: (() => { try { Temporal.PlainDate.from({ calendar: 'hebrew', year: 5784, monthCode: 'M\u0660\u0661', day: 1 }); return false; } catch (e) { return e instanceof RangeError; } })()
+#   C9: (() => { try { Temporal.PlainDate.from({ calendar: 'coptic', era: 'coptic', eraYear: 5, monthCode: 'M01', day: 1 }); return false; } catch (e) { return e instanceof RangeError; } })()
+#   C12: Temporal.PlainMonthDay.from({ year: 2147483652, month: 2, day: 29 }, { overflow: 'reject' }).toString() === '02-29'
+#   C13: Temporal.PlainDate.from({ calendar: Temporal.PlainMonthDay.from({ calendar: 'hebrew', monthCode: 'M05', day: 1 }), year: 5784, monthCode: 'M05', day: 1 }).calendarId === 'hebrew'
+#   C15: Temporal.PlainDate.from('2023-03-15').withCalendar('buddhist').toPlainYearMonth().toString() === '2023-03-01[u-ca=buddhist]'
+#   C16: Temporal.PlainDate.from('2020-05-01').withCalendar('gregory').toPlainMonthDay().calendarId === 'gregory'
+#   C17: Temporal.PlainMonthDay.from({ calendar: 'buddhist', monthCode: 'M02', day: 10 }).toPlainDate({ year: 2544 }).withCalendar('iso8601').toString() === '2001-02-10'
+#   points: Temporal.PlainTime.from('01:10').round({ smallestUnit: 'minute', roundingIncrement: 20, roundingMode: 'halfEven' }).toString() === '01:00:00'
+#   decision D11: (() => { try { Temporal.ZonedDateTime.from('2011-12-31T16:15+14:00[Pacific/Apia]').since(Temporal.ZonedDateTime.from('2011-12-31T00:00+14:00[Pacific/Apia]'), { largestUnit: 'day', smallestUnit: 'day' }); return false; } catch (e) { return e instanceof RangeError; } })()
+#   decision D12: (() => { try { Temporal.ZonedDateTime.from('2011-12-31T16:15+14:00[Pacific/Apia]').since(Temporal.ZonedDateTime.from('2011-12-31T00:00+14:00[Pacific/Apia]'), { largestUnit: 'day', smallestUnit: 'hour' }); return false; } catch (e) { return e instanceof RangeError; } })()
+$ dotnet run -c Release --no-restore
+# cwd /tmp/broiler-pristine-consumer-3g89dv9e/consumer; started 2026-10-19T15:06:29Z; exit 0
+pristine-consumer: the Temporal area's checks: ok 24
+
+# the shared packages in the consumer's isolated cache: where each was restored from, whether it carries nuget.org's signature, its content hash, and the content hash of the copy nuget.org serves (the hash of the package without its signature):
+Broiler.ECMAScript.Algorithms 0.1.0-preview.6: from /tmp/broiler-pristine-consumer-3g89dv9e/feed; signed: False; content hash xikuJVosN4GJIAAar2VuAH2rPV3mZBgkESSfc+Ij9dwixPsPc2yy2opWBYcKqaCl2Omn2H7xKtJTmp8bhTWw6g==; nuget.org's copy's content hash PERCRai0B9fgQc9YeyREvInd0sdJUDdoiHmBoku6M8BZPzYLrXBaC+AKTpMNRtFFMs1rM8NO4vAEmTvRbzQfgQ==
+  lib/net10.0/Broiler.ECMAScript.Algorithms.dll: restored 7c15491722fe2811a936b9333483a6304df673c7ae8c7eeadd6b30ce2e898feb; nuget.org's 48488a7045d107b9fe3b4ee246a871d7110517f319a386ecff473ecfc4a45d3b; equal: False
+Broiler.ECMAScript.Generation: not in the consumer's closure
+
+# the same consumer, its bin/ and obj/ removed, restored into a second isolated cache with the shared stream's packages (Broiler.ECMAScript.*) mapped to nuget.org alone and the engine's 17 packages to the local feed alone, so that the library is the one nuget.org publishes as 0.1.0-preview.6; then the same checks, under TZ=America/New_York
+# the local feed's packages: Broiler.ECMAScript.Algorithms, Broiler.JavaScript.All, Broiler.JavaScript.Ast, Broiler.JavaScript.BuiltIns, Broiler.JavaScript.Clr, Broiler.JavaScript.Compiler, Broiler.JavaScript.Debugger, Broiler.JavaScript.Engine, Broiler.JavaScript.ExpressionCompiler, Broiler.JavaScript.Expressions, Broiler.JavaScript.Extensions, Broiler.JavaScript.Globals, Broiler.JavaScript.LinqExpressions, Broiler.JavaScript.ModuleExtensions, Broiler.JavaScript.Modules, Broiler.JavaScript.Parser, Broiler.JavaScript.Runtime, Broiler.JavaScript.Storage
+$ dotnet restore --configfile /tmp/broiler-pristine-consumer-3g89dv9e/NuGet.published.Config --no-http-cache
+# cwd /tmp/broiler-pristine-consumer-3g89dv9e/consumer; started 2026-10-19T15:06:34Z; exit 0
+  Determining projects to restore...
+  Restored /tmp/broiler-pristine-consumer-3g89dv9e/consumer/Consumer.csproj (in 2.5 sec).
+$ dotnet run -c Release --no-restore
+# cwd /tmp/broiler-pristine-consumer-3g89dv9e/consumer; started 2026-10-19T15:06:38Z; exit 134
+pristine-consumer: the Temporal area's checks: failed decision D12 (false)
+# stderr
+Unhandled exception. System.InvalidOperationException: failed decision D12 (false)
+   at Program.<Main>$(String[] args) in /tmp/broiler-pristine-consumer-3g89dv9e/consumer/Program.cs:line 9
+
+# the shared packages in the consumer's isolated cache: where each was restored from, whether it carries nuget.org's signature, its content hash, and the content hash of the copy nuget.org serves (the hash of the package without its signature):
+Broiler.ECMAScript.Algorithms 0.1.0-preview.6: from https://api.nuget.org/v3/index.json; signed: True; content hash PERCRai0B9fgQc9YeyREvInd0sdJUDdoiHmBoku6M8BZPzYLrXBaC+AKTpMNRtFFMs1rM8NO4vAEmTvRbzQfgQ==; nuget.org's copy's content hash PERCRai0B9fgQc9YeyREvInd0sdJUDdoiHmBoku6M8BZPzYLrXBaC+AKTpMNRtFFMs1rM8NO4vAEmTvRbzQfgQ==
+  lib/net10.0/Broiler.ECMAScript.Algorithms.dll: restored 48488a7045d107b9fe3b4ee246a871d7110517f319a386ecff473ecfc4a45d3b; nuget.org's 48488a7045d107b9fe3b4ee246a871d7110517f319a386ecff473ecfc4a45d3b; equal: True
+Broiler.ECMAScript.Generation: not in the consumer's closure
