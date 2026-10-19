@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 import unittest
@@ -62,6 +63,16 @@ class Phase0ConfigurationTests(unittest.TestCase):
                 self.assertTrue((REPO_ROOT / "Broiler.JS" / owner / f"{owner}.csproj").is_file(), owner)
                 if not item["benchmark"].startswith("phase0-"):
                     self.assertIn(f"class {item['benchmark']}", benchmark_sources)
+
+    def test_the_collector_reads_every_project_and_no_record(self) -> None:
+        # Performance baselines' "Collect evidence" step reads this graph on both runners; a project
+        # file it cannot parse fails the step after the benchmarks have run.
+        spec = importlib.util.spec_from_file_location("collect_phase0", REPO_ROOT / "scripts" / "performance" / "collect_phase0.py")
+        collector = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(collector)
+        paths = [project["path"] for project in collector.read_project_graph()["projects"]]
+        self.assertIn("Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj", paths)
+        self.assertFalse([path for path in paths if path.startswith("docs/")])
 
     def test_focused_manifests_contain_only_test262_paths_and_comments(self) -> None:
         manifests = {item["manifest"] for item in self.ownership["items"]}
