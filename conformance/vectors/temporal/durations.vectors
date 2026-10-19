@@ -351,8 +351,7 @@ area: temporal
 op: Temporal.Duration.prototype.add, toString
 in: str:"years" int:1 str:"months" int:1 str:"relativeTo" str:"2020-01-01"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): with a relativeTo they throw a plain Error, "not yet implemented", where AddDurations throws a RangeError for a calendar unit; and a second argument is read as options (5 and null a TypeError, a relativeTo getter run), where add and subtract take one parameter; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.add proposal:temporal@e8cc03fc#sec-temporal-adddurations ref:temporalref@1
 script: Temporal.Duration.from({years: 1}).add({months: 1}, {relativeTo: "2020-01-01"}).toString()
 note: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): AddDurations refuses a calendar unit, and add takes one parameter
@@ -363,8 +362,7 @@ area: temporal
 op: Temporal.Duration.prototype.add, toString
 in: str:"years" int:1 str:"months" int:1 str:"relativeTo" str:"2020-01-01T00:00[UTC]"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): with a relativeTo they throw a plain Error, "not yet implemented", where AddDurations throws a RangeError for a calendar unit; and a second argument is read as options (5 and null a TypeError, a relativeTo getter run), where add and subtract take one parameter; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.add proposal:temporal@e8cc03fc#sec-temporal-adddurations ref:temporalref@1
 script: Temporal.Duration.from({years: 1}).add({months: 1}, {relativeTo: Temporal.ZonedDateTime.from("2020-01-01T00:00[UTC]")}).toString()
 note: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): AddDurations refuses a calendar unit, and add takes one parameter
@@ -375,8 +373,7 @@ area: temporal
 op: Temporal.Duration.prototype.add, toString
 in: str:"hours" int:1 str:"hours" int:1 int:5
 out: value: str:"PT2H"
-class: divergence
-divergence.broiler-js: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): with a relativeTo they throw a plain Error, "not yet implemented", where AddDurations throws a RangeError for a calendar unit; and a second argument is read as options (5 and null a TypeError, a relativeTo getter run), where add and subtract take one parameter; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.add proposal:temporal@e8cc03fc#sec-temporal-adddurations ref:temporalref@1
 script: Temporal.Duration.from({hours: 1}).add({hours: 1}, 5).toString()
 note: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): AddDurations refuses a calendar unit, and add takes one parameter
@@ -387,8 +384,7 @@ area: temporal
 op: Temporal.Duration.prototype.add, toString
 in: str:"hours" int:1 str:"hours" int:1 null
 out: value: str:"PT2H"
-class: divergence
-divergence.broiler-js: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): with a relativeTo they throw a plain Error, "not yet implemented", where AddDurations throws a RangeError for a calendar unit; and a second argument is read as options (5 and null a TypeError, a relativeTo getter run), where add and subtract take one parameter; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.add proposal:temporal@e8cc03fc#sec-temporal-adddurations ref:temporalref@1
 script: Temporal.Duration.from({hours: 1}).add({hours: 1}, null).toString()
 note: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): AddDurations refuses a calendar unit, and add takes one parameter
@@ -410,8 +406,7 @@ area: temporal
 op: Temporal.Duration.prototype.subtract, toString
 in: str:"years" int:1 str:"months" int:1 str:"relativeTo" str:"2020-01-01"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): with a relativeTo they throw a plain Error, "not yet implemented", where AddDurations throws a RangeError for a calendar unit; and a second argument is read as options (5 and null a TypeError, a relativeTo getter run), where add and subtract take one parameter; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-adddurations ref:temporalref@1
 script: Temporal.Duration.from({years: 1}).subtract({months: 1}, {relativeTo: "2020-01-01"}).toString()
 note: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): AddDurations refuses a calendar unit, and add takes one parameter
@@ -422,8 +417,7 @@ area: temporal
 op: Temporal.Duration.prototype.subtract, toString
 in: str:"years" int:1 str:"months" int:1 str:"relativeTo" str:"2020-01-01T00:00[UTC]"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): with a relativeTo they throw a plain Error, "not yet implemented", where AddDurations throws a RangeError for a calendar unit; and a second argument is read as options (5 and null a TypeError, a relativeTo getter run), where add and subtract take one parameter; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-adddurations ref:temporalref@1
 script: Temporal.Duration.from({years: 1}).subtract({months: 1}, {relativeTo: Temporal.ZonedDateTime.from("2020-01-01T00:00[UTC]")}).toString()
 note: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): AddDurations refuses a calendar unit, and add takes one parameter
@@ -434,8 +428,7 @@ area: temporal
 op: Temporal.Duration.prototype.subtract, toString
 in: str:"hours" int:1 str:"hours" int:1 int:5
 out: value: str:"PT0S"
-class: divergence
-divergence.broiler-js: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): with a relativeTo they throw a plain Error, "not yet implemented", where AddDurations throws a RangeError for a calendar unit; and a second argument is read as options (5 and null a TypeError, a relativeTo getter run), where add and subtract take one parameter; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-adddurations ref:temporalref@1
 script: Temporal.Duration.from({hours: 1}).subtract({hours: 1}, 5).toString()
 note: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): AddDurations refuses a calendar unit, and add takes one parameter
@@ -446,8 +439,7 @@ area: temporal
 op: Temporal.Duration.prototype.subtract, toString
 in: str:"hours" int:1 str:"hours" int:1 null
 out: value: str:"PT0S"
-class: divergence
-divergence.broiler-js: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): with a relativeTo they throw a plain Error, "not yet implemented", where AddDurations throws a RangeError for a calendar unit; and a second argument is read as options (5 and null a TypeError, a relativeTo getter run), where add and subtract take one parameter; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-adddurations ref:temporalref@1
 script: Temporal.Duration.from({hours: 1}).subtract({hours: 1}, null).toString()
 note: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): AddDurations refuses a calendar unit, and add takes one parameter
@@ -469,8 +461,7 @@ area: temporal
 op: Temporal.Duration.prototype.add, the second argument's reads
 in: str:"hours" int:1 str:"hours" int:1
 out: value: str:"PT2H;"
-class: divergence
-divergence.broiler-js: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): with a relativeTo they throw a plain Error, "not yet implemented", where AddDurations throws a RangeError for a calendar unit; and a second argument is read as options (5 and null a TypeError, a relativeTo getter run), where add and subtract take one parameter; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.add ref:temporalref@1
 script: (function (reads) { var r = Temporal.Duration.from({hours: 1}).add({hours: 1}, {get relativeTo() { reads.push("relativeTo"); return undefined; }}); return r.toString() + ";" + reads.join(); })([])
 note: row D3: Duration.prototype.add and subtract with calendar units (the milestone's listed correction): AddDurations refuses a calendar unit, and add takes one parameter (a getter on a second argument runs not at all)
@@ -602,8 +593,7 @@ area: temporal
 op: Temporal.Duration.compare
 in: str:"years" int:1 str:"seconds" int:9000000000000000 str:"years" int:1 int:2020 int:1 int:1
 out: value: f64:0x3FF0000000000000
-class: divergence
-divergence.broiler-js: row D4: compare adds the whole duration, time included, to relativeTo and requires a representable date-time, so durations whose seconds DateDurationDays and the time duration's bound admit throw a RangeError, where compare answers 1; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.compare ref:temporalref@1
 script: Temporal.Duration.compare({years: 1, seconds: 9000000000000000}, {years: 1}, {relativeTo: new Temporal.PlainDate(2020, 1, 1)})
 note: row D4: Temporal.Duration.compare, with DateDurationDays (no date-time limit is involved)
@@ -614,8 +604,7 @@ area: temporal
 op: Temporal.Duration.compare
 in: str:"years" int:1 str:"seconds" int:9000000000000000 str:"years" int:1 str:"seconds" int:8999999999999999 int:2020 int:1 int:1
 out: value: f64:0x3FF0000000000000
-class: divergence
-divergence.broiler-js: row D4: compare adds the whole duration, time included, to relativeTo and requires a representable date-time, so durations whose seconds DateDurationDays and the time duration's bound admit throw a RangeError, where compare answers 1; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.compare ref:temporalref@1
 script: Temporal.Duration.compare({years: 1, seconds: 9000000000000000}, {years: 1, seconds: 8999999999999999}, {relativeTo: new Temporal.PlainDate(2020, 1, 1)})
 note: row D4: Temporal.Duration.compare, with DateDurationDays (no date-time limit is involved)
@@ -637,8 +626,7 @@ area: temporal
 op: Temporal.Duration.compare
 in: str:"years" int:1 str:"seconds" int:9007199223118591 str:"years" int:1 int:2020 int:1 int:1
 out: value: f64:0x3FF0000000000000
-class: divergence
-divergence.broiler-js: row D4: compare adds the whole duration, time included, to relativeTo and requires a representable date-time, so durations whose seconds DateDurationDays and the time duration's bound admit throw a RangeError, where compare answers 1; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.compare ref:temporalref@1
 script: Temporal.Duration.compare({years: 1, seconds: 9007199223118591}, {years: 1}, {relativeTo: new Temporal.PlainDate(2020, 1, 1)})
 note: row D4: Temporal.Duration.compare, with DateDurationDays (no date-time limit is involved)
@@ -715,8 +703,7 @@ area: temporal
 op: Temporal.Duration.compare
 in: str:"years" int:1 str:"days" int:365 str:"2020-01-01[u-ca=hebrew]"
 out: value: f64:0xBFF0000000000000
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.compare ref:temporalref@1
 script: Temporal.Duration.compare({years: 1}, {days: 365}, {relativeTo: "2020-01-01[u-ca=hebrew]"})
 note: row D4: Temporal.Duration.compare, with DateDurationDays (no date-time limit is involved); a relativeTo in another calendar (row D11)
@@ -727,8 +714,7 @@ area: temporal
 op: Temporal.Duration.compare
 in: str:"months" int:1 str:"days" int:29 str:"hebrew" int:5780 str:"M05" int:1
 out: value: f64:0x3FF0000000000000
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.compare ref:temporalref@1
 script: Temporal.Duration.compare({months: 1}, {days: 29}, {relativeTo: Temporal.PlainDate.from({year: 5780, monthCode: "M05", day: 1, calendar: "hebrew"})})
 note: row D4: Temporal.Duration.compare, with DateDurationDays (no date-time limit is involved); a relativeTo in another calendar (row D11)

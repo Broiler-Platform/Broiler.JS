@@ -858,8 +858,7 @@ area: temporal
 op: Temporal.PlainDate (constructor), toString
 in: f64:0x4340000000000001 int:1 int:1
 out: error: RangeError
-class: divergence
-divergence.broiler-vm: row R6: new PlainDate with a year of 2^53 + 2 or of 10^20 either sign, new PlainDateTime with 2^53 + 2 or 10^20, and new PlainMonthDay with a reference year of 10^20 end the invocation (ProfileFault/ProfileContractViolation), because the shared IsoCalendarMath.EpochDays precondition throws before the limit check, where CreateTemporalDate and CreateTemporalDateTime throw a RangeError; correction of Broiler.VM (JSD-0078, decision D9), answered by SJL-10.4
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate proposal:temporal@e8cc03fc#sec-temporal-isodatewithinlimits ref:temporalref@1
 script: new Temporal.PlainDate(9007199254740994, 1, 1).toString()
 note: row R6: integers beyond the engines' fields, to the constructors and in property bags (Broiler.VM's constructors end the invocation above 2^53, its one correction)
@@ -870,8 +869,7 @@ area: temporal
 op: Temporal.PlainDate (constructor), toString
 in: f64:0x4415AF1D78B58C40 int:1 int:1
 out: error: RangeError
-class: divergence
-divergence.broiler-vm: row R6: new PlainDate with a year of 2^53 + 2 or of 10^20 either sign, new PlainDateTime with 2^53 + 2 or 10^20, and new PlainMonthDay with a reference year of 10^20 end the invocation (ProfileFault/ProfileContractViolation), because the shared IsoCalendarMath.EpochDays precondition throws before the limit check, where CreateTemporalDate and CreateTemporalDateTime throw a RangeError; correction of Broiler.VM (JSD-0078, decision D9), answered by SJL-10.4
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate proposal:temporal@e8cc03fc#sec-temporal-isodatewithinlimits ref:temporalref@1
 script: new Temporal.PlainDate(1e20, 1, 1).toString()
 note: row R6: integers beyond the engines' fields, to the constructors and in property bags (Broiler.VM's constructors end the invocation above 2^53, its one correction)
@@ -882,8 +880,7 @@ area: temporal
 op: Temporal.PlainDate (constructor), toString
 in: f64:0xC415AF1D78B58C40 int:1 int:1
 out: error: RangeError
-class: divergence
-divergence.broiler-vm: row R6: new PlainDate with a year of 2^53 + 2 or of 10^20 either sign, new PlainDateTime with 2^53 + 2 or 10^20, and new PlainMonthDay with a reference year of 10^20 end the invocation (ProfileFault/ProfileContractViolation), because the shared IsoCalendarMath.EpochDays precondition throws before the limit check, where CreateTemporalDate and CreateTemporalDateTime throw a RangeError; correction of Broiler.VM (JSD-0078, decision D9), answered by SJL-10.4
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate proposal:temporal@e8cc03fc#sec-temporal-isodatewithinlimits ref:temporalref@1
 script: new Temporal.PlainDate(-1e20, 1, 1).toString()
 note: row R6: integers beyond the engines' fields, to the constructors and in property bags (Broiler.VM's constructors end the invocation above 2^53, its one correction)
@@ -927,8 +924,7 @@ area: temporal
 op: Temporal.PlainDateTime (constructor), toString
 in: f64:0x4415AF1D78B58C40 int:1 int:1
 out: error: RangeError
-class: divergence
-divergence.broiler-vm: row R6: new PlainDate with a year of 2^53 + 2 or of 10^20 either sign, new PlainDateTime with 2^53 + 2 or 10^20, and new PlainMonthDay with a reference year of 10^20 end the invocation (ProfileFault/ProfileContractViolation), because the shared IsoCalendarMath.EpochDays precondition throws before the limit check, where CreateTemporalDate and CreateTemporalDateTime throw a RangeError; correction of Broiler.VM (JSD-0078, decision D9), answered by SJL-10.4
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindatetime ref:temporalref@1
 script: new Temporal.PlainDateTime(1e20, 1, 1).toString()
 note: row R6: integers beyond the engines' fields, to the constructors and in property bags (Broiler.VM's constructors end the invocation above 2^53, its one correction)
@@ -939,8 +935,7 @@ area: temporal
 op: Temporal.PlainDateTime (constructor), toString
 in: f64:0x4340000000000001 int:1 int:1
 out: error: RangeError
-class: divergence
-divergence.broiler-vm: row R6: new PlainDate with a year of 2^53 + 2 or of 10^20 either sign, new PlainDateTime with 2^53 + 2 or 10^20, and new PlainMonthDay with a reference year of 10^20 end the invocation (ProfileFault/ProfileContractViolation), because the shared IsoCalendarMath.EpochDays precondition throws before the limit check, where CreateTemporalDate and CreateTemporalDateTime throw a RangeError; correction of Broiler.VM (JSD-0078, decision D9), answered by SJL-10.4
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindatetime ref:temporalref@1
 script: new Temporal.PlainDateTime(9007199254740994, 1, 1).toString()
 note: row R6: integers beyond the engines' fields, to the constructors and in property bags (Broiler.VM's constructors end the invocation above 2^53, its one correction)
@@ -973,8 +968,7 @@ area: temporal
 op: Temporal.PlainMonthDay (constructor), toString
 in: int:1 int:1 undefined f64:0x4415AF1D78B58C40
 out: error: RangeError
-class: divergence
-divergence.broiler-vm: row R6: new PlainDate with a year of 2^53 + 2 or of 10^20 either sign, new PlainDateTime with 2^53 + 2 or 10^20, and new PlainMonthDay with a reference year of 10^20 end the invocation (ProfileFault/ProfileContractViolation), because the shared IsoCalendarMath.EpochDays precondition throws before the limit check, where CreateTemporalDate and CreateTemporalDateTime throw a RangeError; correction of Broiler.VM (JSD-0078, decision D9), answered by SJL-10.4
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plainmonthday ref:temporalref@1
 script: new Temporal.PlainMonthDay(1, 1, undefined, 1e20).toString()
 note: row R6: integers beyond the engines' fields, to the constructors and in property bags (Broiler.VM's constructors end the invocation above 2^53, its one correction)
@@ -1183,8 +1177,7 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.add, toString
 in: str:"2020-06-15T12:00" str:"years" int:4294967295
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindatetime.prototype.add proposal:temporal@e8cc03fc#sec-temporal-calendardateadd ref:temporalref@1
 script: Temporal.PlainDateTime.from("2020-06-15T12:00").add({years: 4294967295}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1195,8 +1188,7 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.subtract, toString
 in: str:"2020-06-15T12:00" str:"years" int:4294967295
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindatetime.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-calendardateadd ref:temporalref@1
 script: Temporal.PlainDateTime.from("2020-06-15T12:00").subtract({years: 4294967295}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1207,8 +1199,7 @@ area: temporal
 op: Temporal.PlainYearMonth.prototype.add, toString
 in: str:"2020-06" str:"years" int:4294967295
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plainyearmonth.prototype.add proposal:temporal@e8cc03fc#sec-temporal-calendardateadd ref:temporalref@1
 script: Temporal.PlainYearMonth.from("2020-06").add({years: 4294967295}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1219,8 +1210,7 @@ area: temporal
 op: Temporal.PlainYearMonth.prototype.subtract, toString
 in: str:"2020-06" str:"years" int:4294967295
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plainyearmonth.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-calendardateadd ref:temporalref@1
 script: Temporal.PlainYearMonth.from("2020-06").subtract({years: 4294967295}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1275,8 +1265,7 @@ area: temporal
 op: Temporal.PlainDate.prototype.add, toString
 in: str:"2020-06-15[u-ca=hebrew]" str:"years" int:4294967295
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.add proposal:temporal@e8cc03fc#sec-temporal-calendardateadd ref:temporalref@1
 script: Temporal.PlainDate.from("2020-06-15[u-ca=hebrew]").add({years: 4294967295}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1287,8 +1276,7 @@ area: temporal
 op: Temporal.PlainDate.prototype.subtract, toString
 in: str:"2020-06-15[u-ca=hebrew]" str:"years" int:4294967295
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-calendardateadd ref:temporalref@1
 script: Temporal.PlainDate.from("2020-06-15[u-ca=hebrew]").subtract({years: 4294967295}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1299,8 +1287,7 @@ area: temporal
 op: Temporal.PlainDate.prototype.add, toString
 in: str:"2020-06-15[u-ca=coptic]" str:"years" int:4294967295
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.add proposal:temporal@e8cc03fc#sec-temporal-calendardateadd ref:temporalref@1
 script: Temporal.PlainDate.from("2020-06-15[u-ca=coptic]").add({years: 4294967295}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1311,8 +1298,7 @@ area: temporal
 op: Temporal.PlainDate.prototype.subtract, toString
 in: str:"2020-06-15[u-ca=coptic]" str:"years" int:4294967295
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-calendardateadd ref:temporalref@1
 script: Temporal.PlainDate.from("2020-06-15[u-ca=coptic]").subtract({years: 4294967295}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1323,8 +1309,7 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.add, toString
 in: str:"2020-06-15T12:00" str:"years" int:4294964275
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindatetime.prototype.add ref:temporalref@1
 script: Temporal.PlainDateTime.from("2020-06-15T12:00").add({years: 4294964275}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1368,8 +1353,7 @@ area: temporal
 op: Temporal.PlainDate.prototype.add, toString
 in: str:"2020-01-01" str:"nanoseconds" f64:0x451DC74BE914D16B
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindate.prototype.add ref:temporalref@1
 script: Temporal.PlainDate.from("2020-01-01").add({nanoseconds: 9e24}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1402,8 +1386,7 @@ area: temporal
 op: Temporal.PlainDateTime.prototype.add, toString
 in: str:"2020-01-01T00:00" str:"nanoseconds" f64:0x451DC74BE914D16B
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plaindatetime.prototype.add ref:temporalref@1
 script: Temporal.PlainDateTime.from("2020-01-01T00:00").add({nanoseconds: 9e24}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1469,8 +1452,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"nanoseconds" f64:0x451DC74BE914D16B str:"second" undefined undefined undefined int:2020 int:1 int:1
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round ref:temporalref@1
 script: Temporal.Duration.from({nanoseconds: 9e24}).round({smallestUnit: "second", relativeTo: new Temporal.PlainDate(2020, 1, 1)}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1481,8 +1463,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"nanoseconds" f64:0x451DC74BE914D16B undefined str:"year" undefined undefined int:2020 int:1 int:1
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round ref:temporalref@1
 script: Temporal.Duration.from({nanoseconds: 9e24}).round({largestUnit: "year", relativeTo: new Temporal.PlainDate(2020, 1, 1)}).toString()
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -1493,8 +1474,7 @@ area: temporal
 op: Temporal.Duration.prototype.total (options)
 in: str:"nanoseconds" f64:0x451DC74BE914D16B str:"day" int:2020 int:1 int:1
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row R7: integer narrowing inside addition (the milestone's listed correction): a year sum cast to int wraps (2020-06-15T12:00 + P4294967295Y is 2019-06-15T12:00, and so for PlainYearMonth and for Hebrew and Coptic dates) and a time added to a date or date-time saturates at a long (2020-01-01 plus 9e24 ns is 2312-04-11), where CalendarDateAdd's ISODateWithinLimits and the time duration's limit throw a RangeError; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.total proposal:temporal@e8cc03fc#sec-temporal-totalrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({nanoseconds: 9e24}).total({unit: "day", relativeTo: new Temporal.PlainDate(2020, 1, 1)})
 note: row R7: integer narrowing inside addition (the milestone's listed correction: it wraps or saturates)
@@ -2528,8 +2508,7 @@ area: temporal
 op: Temporal.PlainYearMonth.prototype.subtract, toString
 in: str:"-271821-05" str:"months" int:1
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row B5: a year-month's addition is checked against the year-month limits only, so -271821-05 - P1M is -271821-04, where AddDurationToYearMonth adds to the first of the month through CalendarDateAdd, whose ISODateWithinLimits refuses -271821-04-01; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plainyearmonth.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-adddurationtoyearmonth ref:temporalref@1
 script: Temporal.PlainYearMonth.from("-271821-05").subtract({months: 1}).toString()
 note: row B5: addition at the representable limits
@@ -2551,8 +2530,7 @@ area: temporal
 op: Temporal.PlainYearMonth.prototype.subtract, toString
 in: str:"-271821-06" str:"months" int:2
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row B5: a year-month's addition is checked against the year-month limits only, so -271821-05 - P1M is -271821-04, where AddDurationToYearMonth adds to the first of the month through CalendarDateAdd, whose ISODateWithinLimits refuses -271821-04-01; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plainyearmonth.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-adddurationtoyearmonth ref:temporalref@1
 script: Temporal.PlainYearMonth.from("-271821-06").subtract({months: 2}).toString()
 note: row B5: addition at the representable limits
@@ -2563,8 +2541,7 @@ area: temporal
 op: Temporal.PlainYearMonth.prototype.add, toString
 in: str:"-271821-05" str:"months" int:-1
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row B5: a year-month's addition is checked against the year-month limits only, so -271821-05 - P1M is -271821-04, where AddDurationToYearMonth adds to the first of the month through CalendarDateAdd, whose ISODateWithinLimits refuses -271821-04-01; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plainyearmonth.prototype.add proposal:temporal@e8cc03fc#sec-temporal-adddurationtoyearmonth ref:temporalref@1
 script: Temporal.PlainYearMonth.from("-271821-05").add({months: -1}).toString()
 note: row B5: addition at the representable limits
@@ -2575,8 +2552,7 @@ area: temporal
 op: Temporal.PlainYearMonth.prototype.subtract, toString
 in: str:"-271820-04" str:"years" int:1
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row B5: a year-month's addition is checked against the year-month limits only, so -271821-05 - P1M is -271821-04, where AddDurationToYearMonth adds to the first of the month through CalendarDateAdd, whose ISODateWithinLimits refuses -271821-04-01; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plainyearmonth.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-adddurationtoyearmonth ref:temporalref@1
 script: Temporal.PlainYearMonth.from("-271820-04").subtract({years: 1}).toString()
 note: row B5: addition at the representable limits
@@ -2587,8 +2563,7 @@ area: temporal
 op: Temporal.PlainYearMonth.prototype.subtract, toString
 in: str:"-271820-04" str:"months" int:12
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row B5: a year-month's addition is checked against the year-month limits only, so -271821-05 - P1M is -271821-04, where AddDurationToYearMonth adds to the first of the month through CalendarDateAdd, whose ISODateWithinLimits refuses -271821-04-01; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.plainyearmonth.prototype.subtract proposal:temporal@e8cc03fc#sec-temporal-adddurationtoyearmonth ref:temporalref@1
 script: Temporal.PlainYearMonth.from("-271820-04").subtract({months: 12}).toString()
 note: row B5: addition at the representable limits

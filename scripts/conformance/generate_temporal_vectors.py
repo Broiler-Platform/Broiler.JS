@@ -88,8 +88,9 @@ CORPUS = REPOSITORY / "conformance" / "vectors"
 
 # The corpus revision this generator writes, and the revision its vectors were added in. Revision 25 classifies every
 # difference of both engines' first runs on revision 24 (temporal-divergences.txt): Broiler.JS's, under UTC and
-# America/New_York, and Broiler.VM's, taken locally; no expected value changes.
-CORPUS_REVISION = 25
+# America/New_York, and Broiler.VM's, taken locally; no expected value changes. Revision 26 retires every one of them,
+# which the two engines' cut-overs, milestones SJL-10.5 (Broiler.JS's) and SJL-10.4 (Broiler.VM's), correct.
+CORPUS_REVISION = 26
 FIRST_REVISION = 24
 GENERATOR = "ref:temporalref@1"
 SPEC = "spec:es2026@0248456c"
@@ -766,7 +767,8 @@ class Corpus:
         return counts
 
     def classify(self, path: Path) -> None:
-        """Applies temporal-divergences.txt, as the other generators apply their own files; revision 24 has none."""
+        """Applies temporal-divergences.txt, as the other generators apply their own files; revision 24 had none,
+        revision 25 adds it, and revision 26 retires every line of it."""
         if not path.exists():
             return
         reasons: dict[str, str] = {}

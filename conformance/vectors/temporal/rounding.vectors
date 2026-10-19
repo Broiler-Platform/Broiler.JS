@@ -50193,8 +50193,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"P1Y2M3W4DT5H6M7.008009010S" str:"month" undefined undefined str:"ceil" int:2020 int:1 int:31
 out: value: str:"P1Y3M"
-class: divergence
-divergence.broiler-js: row D6: rounding to months adds the rounded month count to relativeTo and re-derives years and months with DiffCalendarDate, so from 2020-01-31 fifteen months, a clamped 2021-04-30, read P1Y2M30D, where RoundRelativeDuration keeps the nudge's P1Y3M and bubbles it; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from("P1Y2M3W4DT5H6M7.008009010S").round({smallestUnit: "month", roundingMode: "ceil", relativeTo: new Temporal.PlainDate(2020, 1, 31)}).toString()
 note: row D6: the retained dataset's duration rounded to months, bubbled, ceil (from 2020-01-31 its fifteen months end on a clamped day)
@@ -50238,8 +50237,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"P1Y2M3W4DT5H6M7.008009010S" str:"month" undefined undefined str:"expand" int:2020 int:1 int:31
 out: value: str:"P1Y3M"
-class: divergence
-divergence.broiler-js: row D6: rounding to months adds the rounded month count to relativeTo and re-derives years and months with DiffCalendarDate, so from 2020-01-31 fifteen months, a clamped 2021-04-30, read P1Y2M30D, where RoundRelativeDuration keeps the nudge's P1Y3M and bubbles it; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from("P1Y2M3W4DT5H6M7.008009010S").round({smallestUnit: "month", roundingMode: "expand", relativeTo: new Temporal.PlainDate(2020, 1, 31)}).toString()
 note: row D6: the retained dataset's duration rounded to months, bubbled, expand (from 2020-01-31 its fifteen months end on a clamped day)
@@ -50283,8 +50281,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"P1Y2M3W4DT5H6M7.008009010S" str:"month" undefined undefined str:"halfCeil" int:2020 int:1 int:31
 out: value: str:"P1Y3M"
-class: divergence
-divergence.broiler-js: row D6: rounding to months adds the rounded month count to relativeTo and re-derives years and months with DiffCalendarDate, so from 2020-01-31 fifteen months, a clamped 2021-04-30, read P1Y2M30D, where RoundRelativeDuration keeps the nudge's P1Y3M and bubbles it; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from("P1Y2M3W4DT5H6M7.008009010S").round({smallestUnit: "month", roundingMode: "halfCeil", relativeTo: new Temporal.PlainDate(2020, 1, 31)}).toString()
 note: row D6: the retained dataset's duration rounded to months, bubbled, halfCeil (from 2020-01-31 its fifteen months end on a clamped day)
@@ -50306,8 +50303,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"P1Y2M3W4DT5H6M7.008009010S" str:"month" undefined undefined str:"halfFloor" int:2020 int:1 int:31
 out: value: str:"P1Y3M"
-class: divergence
-divergence.broiler-js: row D6: rounding to months adds the rounded month count to relativeTo and re-derives years and months with DiffCalendarDate, so from 2020-01-31 fifteen months, a clamped 2021-04-30, read P1Y2M30D, where RoundRelativeDuration keeps the nudge's P1Y3M and bubbles it; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from("P1Y2M3W4DT5H6M7.008009010S").round({smallestUnit: "month", roundingMode: "halfFloor", relativeTo: new Temporal.PlainDate(2020, 1, 31)}).toString()
 note: row D6: the retained dataset's duration rounded to months, bubbled, halfFloor (from 2020-01-31 its fifteen months end on a clamped day)
@@ -50329,8 +50325,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"P1Y2M3W4DT5H6M7.008009010S" str:"month" undefined undefined str:"halfExpand" int:2020 int:1 int:31
 out: value: str:"P1Y3M"
-class: divergence
-divergence.broiler-js: row D6: rounding to months adds the rounded month count to relativeTo and re-derives years and months with DiffCalendarDate, so from 2020-01-31 fifteen months, a clamped 2021-04-30, read P1Y2M30D, where RoundRelativeDuration keeps the nudge's P1Y3M and bubbles it; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from("P1Y2M3W4DT5H6M7.008009010S").round({smallestUnit: "month", roundingMode: "halfExpand", relativeTo: new Temporal.PlainDate(2020, 1, 31)}).toString()
 note: row D6: the retained dataset's duration rounded to months, bubbled, halfExpand (from 2020-01-31 its fifteen months end on a clamped day)
@@ -50352,8 +50347,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"P1Y2M3W4DT5H6M7.008009010S" str:"month" undefined undefined str:"halfTrunc" int:2020 int:1 int:31
 out: value: str:"P1Y3M"
-class: divergence
-divergence.broiler-js: row D6: rounding to months adds the rounded month count to relativeTo and re-derives years and months with DiffCalendarDate, so from 2020-01-31 fifteen months, a clamped 2021-04-30, read P1Y2M30D, where RoundRelativeDuration keeps the nudge's P1Y3M and bubbles it; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from("P1Y2M3W4DT5H6M7.008009010S").round({smallestUnit: "month", roundingMode: "halfTrunc", relativeTo: new Temporal.PlainDate(2020, 1, 31)}).toString()
 note: row D6: the retained dataset's duration rounded to months, bubbled, halfTrunc (from 2020-01-31 its fifteen months end on a clamped day)
@@ -50375,8 +50369,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"P1Y2M3W4DT5H6M7.008009010S" str:"month" undefined undefined str:"halfEven" int:2020 int:1 int:31
 out: value: str:"P1Y3M"
-class: divergence
-divergence.broiler-js: row D6: rounding to months adds the rounded month count to relativeTo and re-derives years and months with DiffCalendarDate, so from 2020-01-31 fifteen months, a clamped 2021-04-30, read P1Y2M30D, where RoundRelativeDuration keeps the nudge's P1Y3M and bubbles it; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from("P1Y2M3W4DT5H6M7.008009010S").round({smallestUnit: "month", roundingMode: "halfEven", relativeTo: new Temporal.PlainDate(2020, 1, 31)}).toString()
 note: row D6: the retained dataset's duration rounded to months, bubbled, halfEven (from 2020-01-31 its fifteen months end on a clamped day)
@@ -50453,8 +50446,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"month" str:"year" undefined str:"ceil" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 29}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "ceil", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, the destination at the shifted window's start, ceil
@@ -50476,8 +50468,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"floor" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "floor", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, largest year, floor; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -50499,8 +50490,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"floor" str:"2019-03-31T00:00[UTC]"
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D8: rounding relative to a zoned date takes the window's end as the nudged instant whenever the window was shifted, so {months: 10, days: 29, hours: 12} from 2019-03-31T00:00[UTC] bubbles into P1Y, where the pinned text keeps the window's start and answers P11M (decision D7: the text rules over its polyfill, which answers P1Y); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "floor", relativeTo: Temporal.ZonedDateTime.from("2019-03-31T00:00[UTC]")}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a zoned relativeTo, floor; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -50522,8 +50512,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:30 str:"month" str:"year" undefined str:"floor" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 30}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "floor", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a whole day further, floor
@@ -50534,8 +50523,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"month" str:"year" undefined str:"floor" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 29}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "floor", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, the destination at the shifted window's start, floor
@@ -50612,8 +50600,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"month" str:"year" undefined str:"expand" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 29}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "expand", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, the destination at the shifted window's start, expand
@@ -50635,8 +50622,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"trunc" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "trunc", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, largest year, trunc; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -50658,8 +50644,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"trunc" str:"2019-03-31T00:00[UTC]"
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D8: rounding relative to a zoned date takes the window's end as the nudged instant whenever the window was shifted, so {months: 10, days: 29, hours: 12} from 2019-03-31T00:00[UTC] bubbles into P1Y, where the pinned text keeps the window's start and answers P11M (decision D7: the text rules over its polyfill, which answers P1Y); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "trunc", relativeTo: Temporal.ZonedDateTime.from("2019-03-31T00:00[UTC]")}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a zoned relativeTo, trunc; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -50681,8 +50666,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:30 str:"month" str:"year" undefined str:"trunc" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 30}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "trunc", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a whole day further, trunc
@@ -50693,8 +50677,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"month" str:"year" undefined str:"trunc" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 29}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "trunc", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, the destination at the shifted window's start, trunc
@@ -50716,8 +50699,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"halfCeil" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfCeil", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, largest year, halfCeil; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -50739,8 +50721,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"halfCeil" str:"2019-03-31T00:00[UTC]"
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D8: rounding relative to a zoned date takes the window's end as the nudged instant whenever the window was shifted, so {months: 10, days: 29, hours: 12} from 2019-03-31T00:00[UTC] bubbles into P1Y, where the pinned text keeps the window's start and answers P11M (decision D7: the text rules over its polyfill, which answers P1Y); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfCeil", relativeTo: Temporal.ZonedDateTime.from("2019-03-31T00:00[UTC]")}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a zoned relativeTo, halfCeil; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -50762,8 +50743,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:30 str:"month" str:"year" undefined str:"halfCeil" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 30}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfCeil", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a whole day further, halfCeil
@@ -50774,8 +50754,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"month" str:"year" undefined str:"halfCeil" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 29}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfCeil", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, the destination at the shifted window's start, halfCeil
@@ -50797,8 +50776,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"halfFloor" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfFloor", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, largest year, halfFloor; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -50820,8 +50798,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"halfFloor" str:"2019-03-31T00:00[UTC]"
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D8: rounding relative to a zoned date takes the window's end as the nudged instant whenever the window was shifted, so {months: 10, days: 29, hours: 12} from 2019-03-31T00:00[UTC] bubbles into P1Y, where the pinned text keeps the window's start and answers P11M (decision D7: the text rules over its polyfill, which answers P1Y); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfFloor", relativeTo: Temporal.ZonedDateTime.from("2019-03-31T00:00[UTC]")}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a zoned relativeTo, halfFloor; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -50843,8 +50820,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:30 str:"month" str:"year" undefined str:"halfFloor" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 30}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfFloor", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a whole day further, halfFloor
@@ -50855,8 +50831,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"month" str:"year" undefined str:"halfFloor" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 29}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfFloor", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, the destination at the shifted window's start, halfFloor
@@ -50878,8 +50853,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"halfExpand" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfExpand", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, largest year, halfExpand; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -50901,8 +50875,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"halfExpand" str:"2019-03-31T00:00[UTC]"
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D8: rounding relative to a zoned date takes the window's end as the nudged instant whenever the window was shifted, so {months: 10, days: 29, hours: 12} from 2019-03-31T00:00[UTC] bubbles into P1Y, where the pinned text keeps the window's start and answers P11M (decision D7: the text rules over its polyfill, which answers P1Y); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfExpand", relativeTo: Temporal.ZonedDateTime.from("2019-03-31T00:00[UTC]")}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a zoned relativeTo, halfExpand; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -50924,8 +50897,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:30 str:"month" str:"year" undefined str:"halfExpand" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 30}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfExpand", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a whole day further, halfExpand
@@ -50936,8 +50908,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"month" str:"year" undefined str:"halfExpand" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 29}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfExpand", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, the destination at the shifted window's start, halfExpand
@@ -50959,8 +50930,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"halfTrunc" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfTrunc", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, largest year, halfTrunc; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -50982,8 +50952,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"halfTrunc" str:"2019-03-31T00:00[UTC]"
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D8: rounding relative to a zoned date takes the window's end as the nudged instant whenever the window was shifted, so {months: 10, days: 29, hours: 12} from 2019-03-31T00:00[UTC] bubbles into P1Y, where the pinned text keeps the window's start and answers P11M (decision D7: the text rules over its polyfill, which answers P1Y); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfTrunc", relativeTo: Temporal.ZonedDateTime.from("2019-03-31T00:00[UTC]")}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a zoned relativeTo, halfTrunc; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -51005,8 +50974,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:30 str:"month" str:"year" undefined str:"halfTrunc" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 30}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfTrunc", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a whole day further, halfTrunc
@@ -51017,8 +50985,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"month" str:"year" undefined str:"halfTrunc" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 29}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfTrunc", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, the destination at the shifted window's start, halfTrunc
@@ -51040,8 +51007,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"halfEven" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfEven", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, largest year, halfEven; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -51063,8 +51029,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"hours" int:12 str:"month" str:"year" undefined str:"halfEven" str:"2019-03-31T00:00[UTC]"
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D8: rounding relative to a zoned date takes the window's end as the nudged instant whenever the window was shifted, so {months: 10, days: 29, hours: 12} from 2019-03-31T00:00[UTC] bubbles into P1Y, where the pinned text keeps the window's start and answers P11M (decision D7: the text rules over its polyfill, which answers P1Y); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit proposal:temporal@e8cc03fc#sec-temporal-bubblerelativeduration proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration overruled:temporalref@1=value:str:"P1Y"
 script: Temporal.Duration.from({months: 10, days: 29, hours: 12}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfEven", relativeTo: Temporal.ZonedDateTime.from("2019-03-31T00:00[UTC]")}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a zoned relativeTo, halfEven; decision D7: the pinned text's answer, where its polyfill answers str:"P1Y" (row D8)
@@ -51086,8 +51051,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:30 str:"month" str:"year" undefined str:"halfEven" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 30}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfEven", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, a whole day further, halfEven
@@ -51098,8 +51062,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:10 str:"days" int:29 str:"month" str:"year" undefined str:"halfEven" int:2019 int:3 int:31
 out: value: str:"P11M"
-class: divergence
-divergence.broiler-js: row D7: rounding to months relative to a plain date whose destination lies past the first window re-derives through a clamped difference (row D6's path), so {months: 10, days: 29, hours: 12} from 2019-03-31 is P10M29D, where the pinned text answers P11M (decision D7); correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 10, days: 29}).round({smallestUnit: "month", largestUnit: "year", roundingMode: "halfEven", relativeTo: new Temporal.PlainDate(2019, 3, 31)}).toString()
 note: rows D7 and D8: from 2019-03-31 the destination lies past the first month window and inside the shifted one; rounded to months, the destination at the shifted window's start, halfEven
@@ -52243,8 +52206,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:1 str:"day" undefined undefined undefined str:"2020-01-01[u-ca=hebrew]"
 out: value: str:"P1M"
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 1}).round({smallestUnit: "day", relativeTo: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]")}).toString()
 note: row D11: round, total and compare relative to a date in another calendar
@@ -52255,8 +52217,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"days" int:45 undefined str:"month" undefined undefined str:"2020-01-01[u-ca=hebrew]"
 out: value: str:"P1M16D"
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({days: 45}).round({largestUnit: "month", relativeTo: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]")}).toString()
 note: row D11: round, total and compare relative to a date in another calendar
@@ -52267,8 +52228,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:13 undefined str:"year" undefined undefined str:"hebrew" int:5784 str:"M01" int:1
 out: value: str:"P1Y"
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 13}).round({largestUnit: "year", relativeTo: Temporal.PlainDate.from({year: 5784, monthCode: "M01", day: 1, calendar: "hebrew"})}).toString()
 note: row D11: round, total and compare relative to a date in another calendar
@@ -52279,8 +52239,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"days" int:45 undefined str:"month" undefined undefined str:"2020-01-01T00:00[UTC][u-ca=coptic]"
 out: value: str:"P1M15D"
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({days: 45}).round({largestUnit: "month", relativeTo: Temporal.ZonedDateTime.from("2020-01-01T00:00[UTC][u-ca=coptic]")}).toString()
 note: row D11: round, total and compare relative to a date in another calendar
@@ -52291,8 +52250,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"days" int:45 undefined str:"month" undefined undefined str:"year" int:5780 str:"month" int:4 str:"day" int:1 str:"calendar" str:"hebrew"
 out: value: str:"P1M16D"
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({days: 45}).round({largestUnit: "month", relativeTo: {year: 5780, month: 4, day: 1, calendar: "hebrew"}}).toString()
 note: row D11: round, total and compare relative to a date in another calendar
@@ -52325,8 +52283,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"days" int:400 undefined str:"year" undefined undefined str:"2020-01-01[u-ca=islamic-civil]"
 out: value: str:"P1Y1M16D"
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({days: 400}).round({largestUnit: "year", relativeTo: Temporal.PlainDate.from("2020-01-01[u-ca=islamic-civil]")}).toString()
 note: row D11: round, total and compare relative to a date in another calendar
@@ -52337,8 +52294,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:2 str:"month" undefined undefined str:"halfExpand" str:"2020-09-11[u-ca=coptic]"
 out: value: str:"P2M"
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 2}).round({smallestUnit: "month", roundingMode: "halfExpand", relativeTo: Temporal.PlainDate.from("2020-09-11[u-ca=coptic]")}).toString()
 note: row D11: round, total and compare relative to a date in another calendar
@@ -52349,8 +52305,7 @@ area: temporal
 op: Temporal.Duration.prototype.round, toString
 in: str:"months" int:12 str:"days" int:3 str:"year" undefined undefined str:"ceil" str:"2020-09-11[u-ca=coptic]"
 out: value: str:"P1Y"
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round proposal:temporal@e8cc03fc#sec-temporal-roundrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 12, days: 3}).round({smallestUnit: "year", roundingMode: "ceil", relativeTo: Temporal.PlainDate.from("2020-09-11[u-ca=coptic]")}).toString()
 note: row D11: round, total and compare relative to a date in another calendar
@@ -52361,8 +52316,7 @@ area: temporal
 op: Temporal.Duration.prototype.total (options)
 in: str:"days" int:45 str:"month" str:"2020-01-01[u-ca=hebrew]"
 out: value: f64:0x3FF8888888888889
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.total proposal:temporal@e8cc03fc#sec-temporal-totalrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({days: 45}).total({unit: "month", relativeTo: Temporal.PlainDate.from("2020-01-01[u-ca=hebrew]")})
 note: row D11: round, total and compare relative to a date in another calendar
@@ -52373,8 +52327,7 @@ area: temporal
 op: Temporal.Duration.prototype.total (options)
 in: str:"days" int:45 str:"month" str:"2020-01-01" str:"islamic-civil"
 out: value: f64:0x3FF8469EE58469EE
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.total proposal:temporal@e8cc03fc#sec-temporal-totalrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({days: 45}).total({unit: "month", relativeTo: Temporal.PlainDate.from("2020-01-01").withCalendar("islamic-civil")})
 note: row D11: round, total and compare relative to a date in another calendar
@@ -52385,8 +52338,7 @@ area: temporal
 op: Temporal.Duration.prototype.total (options)
 in: str:"months" int:13 str:"year" str:"hebrew" int:5784 str:"M01" int:1
 out: value: f64:0x3FF0000000000000
-class: divergence
-divergence.broiler-js: row D11: relativeTo in another calendar: round, total and compare throw a plain Error, "a relativeTo with the ... calendar is not yet implemented", where GetTemporalRelativeToOption takes any calendar; and a ZonedDateTime relativeTo in coptic rounds with ISO months (P1M14D for P1M15D), which the row does not record; correction, answered by SJL-10.5
+class: normative
 prov: proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.total proposal:temporal@e8cc03fc#sec-temporal-totalrelativeduration ref:temporalref@1
 script: Temporal.Duration.from({months: 13}).total({unit: "year", relativeTo: Temporal.PlainDate.from({year: 5784, monthCode: "M01", day: 1, calendar: "hebrew"})})
 note: row D11: round, total and compare relative to a date in another calendar
