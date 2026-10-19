@@ -1207,6 +1207,15 @@ answers a `RangeError`: decision D12 (`163d43aa`) is under the shared changelog'
 version carries it, and its publication is the owner's to approve; Broiler.VM takes decision D12 with it too. That is
 a next action, not a verdict on any part: the parts judge the after commit, whose library holds the decision.
 
+*Added 2026-10-19, later:* on the owner's approval of 2026-10-19, `Publish shared libraries` published
+`Broiler.ECMAScript.Algorithms` and `Broiler.ECMAScript.Generation` `0.1.0-preview.7` to nuget.org from `5ddee404`
+(run 39312237448), whose library code is the after commit's file for file, and tagged that commit
+`ecmascript-v0.1.0-preview.7`. Decision D12 is in that version, and the shared changelog's entry for it is retitled
+as published. With it restored from nuget.org in place of the after commit's library, the pristine consumer's check
+of decision D12 holds, a `RangeError`, and so do the other 23 (bundle
+[`sjl-10-001`](../evidence/sjl-10-001/README.md), section 11). The next action on decision D12 is Broiler.VM's: it
+takes the decision with `0.1.0-preview.7`. The paragraph above is left as written.
+
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses are judged in its own bundle of the
 same name, and SJL-10 may not meet its gate before SJL-3, SJL-6 and SJL-8 meet theirs.
 
