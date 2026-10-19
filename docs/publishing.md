@@ -58,12 +58,16 @@ The [`Publish`](../.github/workflows/publish.yml) workflow is the only supported
 
 1. **Rehearse in CI.** There is no dry-run mode in Publish. CI already builds, tests, packs,
    verifies every package and proves a consumer can restore the set from nuget.org on every
-   push and pull request that changes more than records, attaching the packages as an
-   artifact — without pushing anything. A change confined to `docs/evidence/` and
-   `docs/roadmap/SharedLibraries*.md`, which no test reads, skips CI's build and test jobs;
-   `Shared libraries` still runs on it, and Publish runs CI in full whatever changed.
-   *(Revised 2026-10-19, when CI began to skip records-only changes: "on every push and pull
-   request" became "on every push and pull request that changes more than records".)*
+   push to `main` and every pull request that changes more than records, attaching the
+   packages as an artifact — without pushing anything. A pull request confined to
+   `docs/evidence/` and `docs/roadmap/SharedLibraries*.md`, which no test reads, skips CI's
+   build and test jobs; `Shared libraries` still runs on it, and a push to `main` and Publish
+   run CI in full whatever changed. CI's `CI result` job reports on every run, under that one
+   name, whether the build and test jobs passed or were rightly skipped: it is the CI check to
+   wait for, and the one a branch rule should require, because a skipped matrix job does not
+   report its per-OS names. *(Revised 2026-10-19, when CI began to skip records-only pull
+   requests: "on every push and pull request" became "on every push to `main` and every pull
+   request that changes more than records".)*
 2. **Dispatch Publish** from the Actions tab. Leave `version-suffix` empty so the version is
    resolved automatically. The run validates again against the version it resolves, then
    pushes. It also runs [`Shared libraries`](../.github/workflows/shared-libraries.yml) at the
