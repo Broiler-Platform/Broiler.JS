@@ -102,7 +102,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (!partial.Any)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires at least one field");
 
-        var overflow = ReadOverflow(a.GetAt(1));
+        var overflow = TemporalAdapter.ReadOverflow(a.GetAt(1));
         var date = TemporalAdapter.MonthDayFromFields(calendarId, TemporalAdapter.MergeFields(calendarId, fields, partial.Fields), overflow,
             "Temporal.PlainMonthDay");
         return new JSTemporalPlainMonthDay(date, calendarId, PlainMonthDayPrototype);
@@ -162,19 +162,6 @@ public partial class JSTemporalPlainMonthDay : JSObject
         return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainMonthDay: component must be finite");
     }
 
-    private static string ReadOverflow(JSValue options)
-    {
-        if (options == null || options.IsUndefined) return "constrain";
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-        var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
-        if (v.IsUndefined) return "constrain";
-        var overflow = v.StringValue;
-        if (overflow is not ("constrain" or "reject"))
-            throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
-        return overflow;
-    }
-
     private static JSValue ToTemporalMonthDay(JSValue item) => ToTemporalMonthDay(item, JSUndefined.Value);
 
     // `options` is the raw options argument: the overflow option is read at the spec-mandated point
@@ -184,14 +171,14 @@ public partial class JSTemporalPlainMonthDay : JSObject
     {
         if (item is JSTemporalPlainMonthDay md)
         {
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return new JSTemporalPlainMonthDay(md.isoMonth, md.isoDay, md.referenceISOYear, md.calendarId, PlainMonthDayPrototype);
         }
 
         if (item.IsString)
         {
             var parsed = ParseTemporalMonthDayString(item.ToString());
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return parsed;
         }
 
@@ -207,7 +194,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         var fields = new TemporalAdapter.CalendarFieldReader(obj, calendarId, "Temporal.PlainMonthDay");
         fields.DateFields();
 
-        var overflow = ReadOverflow(options);
+        var overflow = TemporalAdapter.ReadOverflow(options);
         return new JSTemporalPlainMonthDay(TemporalAdapter.MonthDayFromFields(calendarId, fields.Fields, overflow, "Temporal.PlainMonthDay"),
             calendarId, PlainMonthDayPrototype);
     }

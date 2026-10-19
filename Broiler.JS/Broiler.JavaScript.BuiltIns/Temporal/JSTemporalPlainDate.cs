@@ -128,7 +128,7 @@ public partial class JSTemporalPlainDate : JSObject
         if (!partial.Any)
             throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.with requires at least one date property");
 
-        var overflow = ReadOverflow(a.GetAt(1));
+        var overflow = TemporalAdapter.ReadOverflow(a.GetAt(1));
         var date = TemporalAdapter.DateFromFields(calendarId, TemporalAdapter.MergeFields(calendarId, fields, partial.Fields), overflow,
             "Temporal.PlainDate");
         return new JSTemporalPlainDate(date, calendarId, PlainDatePrototype);
@@ -153,7 +153,7 @@ public partial class JSTemporalPlainDate : JSObject
     {
         // Spec reads the duration argument before the overflow option.
         var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
-        var overflow = ReadOverflow(options);
+        var overflow = TemporalAdapter.ReadOverflow(options);
 
         // ToDateDurationRecordWithoutTime: the days and the time fields as one exact time duration of
         // 24-hour days, its whole days truncated toward zero (row R7: no field is narrowed first).
@@ -289,24 +289,6 @@ public partial class JSTemporalPlainDate : JSObject
     private static int ToIntegerWithTruncationArgument(JSValue value)
         => (int)TemporalRoundingOptions.ToIntegerWithTruncation(value ?? JSUndefined.Value, "Temporal.PlainDate: date component must be finite");
 
-    private static string ReadOverflow(JSValue options)
-    {
-        if (options == null || options.IsUndefined)
-            return "constrain";
-
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-
-        var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
-        if (v.IsUndefined) return "constrain";
-
-        var overflow = v.StringValue;
-        if (overflow is not ("constrain" or "reject"))
-            throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
-
-        return overflow;
-    }
-
     private static JSValue ToTemporalDate(JSValue item) => ToTemporalDate(item, JSUndefined.Value);
 
     // `options` is the raw options argument; the overflow option is read at the spec-mandated point
@@ -316,7 +298,7 @@ public partial class JSTemporalPlainDate : JSObject
     {
         if (item is JSTemporalPlainDate d)
         {
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return new JSTemporalPlainDate(d.isoYear, d.isoMonth, d.isoDay, d.calendarId, PlainDatePrototype);
         }
 
@@ -326,20 +308,20 @@ public partial class JSTemporalPlainDate : JSObject
         if (item is JSTemporalZonedDateTime zdt)
         {
             var result = zdt.ToPlainDateFromSlots();
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return result;
         }
 
         if (item is JSTemporalPlainDateTime pdt)
         {
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return new JSTemporalPlainDate(pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.calendarId, PlainDatePrototype);
         }
 
         if (item.IsString)
         {
             var parsed = ParseTemporalDateString(item.ToString());
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return parsed;
         }
 
@@ -354,7 +336,7 @@ public partial class JSTemporalPlainDate : JSObject
         var fields = new TemporalAdapter.CalendarFieldReader(obj, calendarId, "Temporal.PlainDate");
         fields.DateFields();
 
-        var overflow = ReadOverflow(options);
+        var overflow = TemporalAdapter.ReadOverflow(options);
         return new JSTemporalPlainDate(TemporalAdapter.DateFromFields(calendarId, fields.Fields, overflow, "Temporal.PlainDate"),
             calendarId, PlainDatePrototype);
     }

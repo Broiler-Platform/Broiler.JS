@@ -211,9 +211,9 @@ public partial class JSTemporalZonedDateTime : JSObject
         // the right point; for a ZonedDateTime input they are read (and validated) here.
         if (item is JSTemporalZonedDateTime zdt)
         {
-            ReadDisambiguation(options);
+            TemporalAdapter.ReadDisambiguation(options);
             ReadOffsetOption(options, "reject");
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return new JSTemporalZonedDateTime(zdt.epochNanoseconds, zdt.timeZoneId, zdt.calendarId, ZonedDateTimePrototype);
         }
 
@@ -518,12 +518,12 @@ public partial class JSTemporalZonedDateTime : JSObject
             offsetString = offsetPrimitive.StringValue;
         }
 
-        string ReadOptions()
+        TemporalOverflow ReadOptions()
         {
             // disambiguation, then offset, then overflow — every option getter fires after all fields.
-            disambiguation = ReadDisambiguation(options);
+            disambiguation = TemporalAdapter.ReadDisambiguation(options);
             offsetOption = ReadOffsetOption(options);
-            return ReadOverflow(options);
+            return TemporalAdapter.ReadOverflow(options);
         }
 
         var updated = (JSTemporalPlainDateTime)current.WithCore(
@@ -580,19 +580,6 @@ public partial class JSTemporalZonedDateTime : JSObject
             : throw JSEngine.NewRangeError($"Temporal: invalid offset option \"{s}\"");
     }
 
-    // GetTemporalDisambiguationOption: compatible (default) / earlier / later / reject.
-    private static string ReadDisambiguation(JSValue options)
-    {
-        if (options == null || options.IsUndefined) return "compatible";
-        if (options is not JSObject o)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-        var v = o[KeyStrings.GetOrCreate("disambiguation")];
-        if (v.IsUndefined) return "compatible";
-        var s = v.StringValue;
-        return s is "compatible" or "earlier" or "later" or "reject" ? s
-            : throw JSEngine.NewRangeError($"Temporal: invalid disambiguation \"{s}\"");
-    }
-
     // AddDurationToZonedDateTime (s6.5.10): ToTemporalDuration, then the overflow option, then the shared library's
     // AddZonedDateTime - the date part added to the wall clock in the calendar, the wall clock made an instant again
     // ("compatible"), then the exact time part (row R7) - the duration negated for subtract.
@@ -601,7 +588,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var fields = ((JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike)).Fields;
         if (subtract)
             fields = DurationMath.Negate(fields);
-        var overflow = TemporalAdapter.Overflow(ReadOverflow(options));
+        var overflow = TemporalAdapter.ReadOverflow(options);
 
         TemporalAdapter.CheckArithmetic(DurationMath.AddZonedDateTime(epochNanoseconds, TemporalTimeZones.Arithmetic(timeZoneId), TemporalAdapter.Calendars,
             TemporalAdapter.CalendarIdOf(calendarId), DurationMath.ToInternal(fields), overflow, out var result), "Temporal.ZonedDateTime");
@@ -706,19 +693,6 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     private (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) Local() => LocalAt(epochNanoseconds);
 
-    private static string ReadOverflow(JSValue options)
-    {
-        if (options == null || options.IsUndefined) return "constrain";
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-        var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
-        if (v.IsUndefined) return "constrain";
-        var overflow = v.StringValue;
-        if (overflow is not ("constrain" or "reject"))
-            throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
-        return overflow;
-    }
-
     private static int ToIntegerWithTruncation(JSValue value)
     {
         if (value == null || value.IsUndefined) return 0;
@@ -773,11 +747,11 @@ public partial class JSTemporalZonedDateTime : JSObject
         // overflowReader runs at ToTemporalDateTime's overflow point (after the fields).
         var offsetOption = "reject";
         var disambiguation = "compatible";
-        string ReadOptionsReturningOverflow()
+        TemporalOverflow ReadOptionsReturningOverflow()
         {
-            disambiguation = ReadDisambiguation(options); // disambiguation
+            disambiguation = TemporalAdapter.ReadDisambiguation(options); // disambiguation
             offsetOption = ReadOffsetOption(options, "reject");
-            return ReadOverflow(options);                 // overflow
+            return TemporalAdapter.ReadOverflow(options);                 // overflow
         }
 
         // Resolve the wall-clock date-time by reusing Temporal.PlainDateTime's property-bag
@@ -859,9 +833,9 @@ public partial class JSTemporalZonedDateTime : JSObject
         var disambiguation = "compatible";
         if (options != null)
         {
-            disambiguation = ReadDisambiguation(options);
+            disambiguation = TemporalAdapter.ReadDisambiguation(options);
             offsetOption = ReadOffsetOption(options, "reject");
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
         }
 
         // InterpretISODateTimeOffset. The "wall" cases (no numeric offset, or an offset dropped by

@@ -249,9 +249,9 @@ internal static partial class TemporalAdapter
 
     // ── the calendar operations ──────────────────────────────────────────────────
 
-    /// <summary>The <c>overflow</c> option as this engine holds it, as the calendars take it.</summary>
-    private static CalendarOverflow CalendarOverflowOf(string overflow) =>
-        overflow == "reject" ? CalendarOverflow.Reject : CalendarOverflow.Constrain;
+    /// <summary>The <c>overflow</c> option, as the calendars take it.</summary>
+    private static CalendarOverflow CalendarOverflowOf(TemporalOverflow overflow) =>
+        overflow == TemporalOverflow.Reject ? CalendarOverflow.Reject : CalendarOverflow.Constrain;
 
     /// <summary>
     /// Each status but <see cref="CalendarStatus.Completed"/> as this engine's error: a missing field is the
@@ -310,7 +310,7 @@ internal static partial class TemporalAdapter
         TemporalCalendars.MergeFields(CalendarIdOf(calendarId), fields, additional);
 
     /// <summary>CalendarDateFromFields (s12.3.12) under the <c>overflow</c> option, then ISODateWithinLimits.</summary>
-    internal static IsoDate DateFromFields(string calendarId, CalendarFields fields, string overflow, string typeName)
+    internal static IsoDate DateFromFields(string calendarId, CalendarFields fields, TemporalOverflow overflow, string typeName)
     {
         CheckCalendar(Calendars.DateFromFields(CalendarIdOf(calendarId), fields, CalendarOverflowOf(overflow), out var result),
             calendarId, typeName, $"{typeName}: date is out of range");
@@ -318,7 +318,7 @@ internal static partial class TemporalAdapter
     }
 
     /// <summary>CalendarYearMonthFromFields (s12.3.13): the first day of the calendar month, then ISOYearMonthWithinLimits.</summary>
-    internal static IsoDate YearMonthFromFields(string calendarId, CalendarFields fields, string overflow, string typeName)
+    internal static IsoDate YearMonthFromFields(string calendarId, CalendarFields fields, TemporalOverflow overflow, string typeName)
     {
         CheckCalendar(Calendars.YearMonthFromFields(CalendarIdOf(calendarId), fields, CalendarOverflowOf(overflow), out var result),
             calendarId, typeName, $"{typeName}: year-month is out of range");
@@ -329,7 +329,7 @@ internal static partial class TemporalAdapter
     /// CalendarMonthDayFromFields (s12.3.14): the reference date, ISO 8601's year 1972 or Table 6's and the 1900 to
     /// 2035 rule elsewhere (row C10).
     /// </summary>
-    internal static IsoDate MonthDayFromFields(string calendarId, CalendarFields fields, string overflow, string typeName)
+    internal static IsoDate MonthDayFromFields(string calendarId, CalendarFields fields, TemporalOverflow overflow, string typeName)
     {
         CheckCalendar(Calendars.MonthDayFromFields(CalendarIdOf(calendarId), fields, CalendarOverflowOf(overflow), out var result),
             calendarId, typeName, $"{typeName}: month-day is out of range");
@@ -342,7 +342,7 @@ internal static partial class TemporalAdapter
     /// within the limits. Each field is an integer of a valid duration, held exactly.
     /// </summary>
     internal static IsoDate CalendarDateAdd(string calendarId, IsoDate date, double years, double months, double weeks, double days,
-        string overflow, string typeName)
+        TemporalOverflow overflow, string typeName)
     {
         var duration = new CalendarDuration((long)years, (long)months, (long)weeks, (long)days);
         var status = Calendars.DateAdd(CalendarIdOf(calendarId), date, duration, CalendarOverflowOf(overflow), out var result);
@@ -393,19 +393,19 @@ internal static partial class TemporalAdapter
     /// under <c>constrain</c>, so that the reference day is the calendar month's first.
     /// </summary>
     internal static IsoDate YearMonthOfDate(string calendarId, IsoDate date) =>
-        YearMonthFromFields(calendarId, DateToFields(calendarId, date, CalendarFieldsType.YearMonth), "constrain", "Temporal.PlainYearMonth");
+        YearMonthFromFields(calendarId, DateToFields(calendarId, date, CalendarFieldsType.YearMonth), TemporalOverflow.Constrain, "Temporal.PlainYearMonth");
 
     /// <summary>
     /// ToTemporalMonthDay's steps after a string's limits, outside ISO 8601: ISODateToFields as a month-day and
     /// CalendarMonthDayFromFields under <c>constrain</c>, so that the reference year is the calendar's.
     /// </summary>
     internal static IsoDate MonthDayOfDate(string calendarId, IsoDate date) =>
-        MonthDayFromFields(calendarId, DateToFields(calendarId, date, CalendarFieldsType.MonthDay), "constrain", "Temporal.PlainMonthDay");
+        MonthDayFromFields(calendarId, DateToFields(calendarId, date, CalendarFieldsType.MonthDay), TemporalOverflow.Constrain, "Temporal.PlainMonthDay");
 
     /// <summary>
     /// A year-month's first day, as AddDurationToYearMonth and DifferenceTemporalPlainYearMonth form it: ISODateToFields
     /// as a year-month, its day set to 1, and CalendarDateFromFields under <c>constrain</c>, within the date limits.
     /// </summary>
     internal static IsoDate YearMonthFirstDay(string calendarId, IsoDate yearMonth, string typeName) =>
-        DateFromFields(calendarId, DateToFields(calendarId, yearMonth, CalendarFieldsType.YearMonth) with { Day = 1 }, "constrain", typeName);
+        DateFromFields(calendarId, DateToFields(calendarId, yearMonth, CalendarFieldsType.YearMonth) with { Day = 1 }, TemporalOverflow.Constrain, typeName);
 }

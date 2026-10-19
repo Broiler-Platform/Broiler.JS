@@ -1,6 +1,7 @@
 using System.Numerics;
 using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
+using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal;
@@ -34,9 +35,42 @@ internal static partial class TemporalAdapter
             throw JSEngine.NewRangeError(message);
     }
 
-    /// <summary>The <c>overflow</c> option as this engine holds it (<c>"constrain"</c> or <c>"reject"</c>), as the library's.</summary>
-    internal static TemporalOverflow Overflow(string overflow) =>
-        overflow == "reject" ? TemporalOverflow.Reject : TemporalOverflow.Constrain;
+    // ── options ──────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// GetTemporalOverflowOption of an options argument, every type's one read of it: GetOptionsObject, then
+    /// <c>overflow</c> read with Get and ToString and mapped by the library's rule,
+    /// <see cref="TemporalOptionRules.TryParseOverflow"/> (<see cref="TemporalOptionRules.DefaultOverflow"/> where it is
+    /// undefined); a string the rule refuses is the <c>RangeError</c>.
+    /// </summary>
+    internal static TemporalOverflow ReadOverflow(JSValue options)
+    {
+        var value = OptionsObject(options, "Temporal")?[KeyStrings.GetOrCreate("overflow")];
+        if (value == null || value.IsUndefined)
+            return TemporalOptionRules.DefaultOverflow;
+
+        var text = value.StringValue;
+        return TemporalOptionRules.TryParseOverflow(text, out var overflow)
+            ? overflow
+            : throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{text}\"");
+    }
+
+    /// <summary>
+    /// GetTemporalDisambiguationOption of an options argument: GetOptionsObject, then <c>disambiguation</c> read with Get
+    /// and ToString - <c>compatible</c> (where it is undefined), <c>earlier</c>, <c>later</c> or <c>reject</c>, as
+    /// <see cref="TemporalTimeZones"/> takes it; any other string is the <c>RangeError</c>.
+    /// </summary>
+    internal static string ReadDisambiguation(JSValue options)
+    {
+        var value = OptionsObject(options, "Temporal")?[KeyStrings.GetOrCreate("disambiguation")];
+        if (value == null || value.IsUndefined)
+            return "compatible";
+
+        var disambiguation = value.StringValue;
+        return disambiguation is "compatible" or "earlier" or "later" or "reject"
+            ? disambiguation
+            : throw JSEngine.NewRangeError($"Temporal: invalid disambiguation \"{disambiguation}\"");
+    }
 
     // ── limits ───────────────────────────────────────────────────────────────────
 
@@ -90,9 +124,9 @@ internal static partial class TemporalAdapter
 
     /// <summary>RegulateTime under the <c>overflow</c> option; a time the fields are not under <c>reject</c> is the <c>RangeError</c>.</summary>
     internal static IsoTime RegulateTime(
-        double hour, double minute, double second, double millisecond, double microsecond, double nanosecond, string overflow, string message)
+        double hour, double minute, double second, double millisecond, double microsecond, double nanosecond, TemporalOverflow overflow, string message)
     {
-        Check(IsoArithmetic.RegulateTime(hour, minute, second, millisecond, microsecond, nanosecond, Overflow(overflow), out var time), message);
+        Check(IsoArithmetic.RegulateTime(hour, minute, second, millisecond, microsecond, nanosecond, overflow, out var time), message);
         return time;
     }
 }

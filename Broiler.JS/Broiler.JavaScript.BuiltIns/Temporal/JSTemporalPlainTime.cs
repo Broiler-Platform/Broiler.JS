@@ -83,7 +83,7 @@ public partial class JSTemporalPlainTime : JSObject
 
         if (item is JSTemporalPlainTime t)
         {
-            ReadOverflow(options); // GetTemporalOverflowOption still validates the options bag.
+            TemporalAdapter.ReadOverflow(options); // GetTemporalOverflowOption still validates the options bag.
             return new JSTemporalPlainTime(t.IsoTime, PlainTimePrototype);
         }
 
@@ -92,21 +92,21 @@ public partial class JSTemporalPlainTime : JSObject
         if (item.IsString)
         {
             var parsed = ParseTemporalTimeString(item.ToString());
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return parsed;
         }
 
         // The recognized time fields are read (alphabetically) before the overflow
         // option, so the option getter runs last (test262 PlainTime/from
         // order-of-operations).
-        return ToTemporalTime(item, () => ReadOverflow(options));
+        return ToTemporalTime(item, () => TemporalAdapter.ReadOverflow(options));
     }
 
     [JSExport("compare", Length = 2)]
     internal static JSValue Compare(in Arguments a)
     {
-        var one = RequireTime(ToTemporalTime(a.GetAt(0), "constrain"));
-        var two = RequireTime(ToTemporalTime(a.GetAt(1), "constrain"));
+        var one = RequireTime(ToTemporalTime(a.GetAt(0), TemporalOverflow.Constrain));
+        var two = RequireTime(ToTemporalTime(a.GetAt(1), TemporalOverflow.Constrain));
         return new JSNumber(IsoArithmetic.CompareTime(one.IsoTime, two.IsoTime));
     }
 
@@ -143,7 +143,7 @@ public partial class JSTemporalPlainTime : JSObject
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainTime.prototype.with requires at least one time property");
 
-        var overflow = ReadOverflow(a.GetAt(1));
+        var overflow = TemporalAdapter.ReadOverflow(a.GetAt(1));
 
         return RegulateTime(h, mi, s, ms, us, ns, overflow);
     }
@@ -176,7 +176,7 @@ public partial class JSTemporalPlainTime : JSObject
     private JSValue Difference(JSValue other, JSValue options, DifferenceOperation operation)
     {
         const string typeName = "Temporal.PlainTime";
-        var target = RequireTime(ToTemporalTime(other, "constrain"));
+        var target = RequireTime(ToTemporalTime(other, TemporalOverflow.Constrain));
         var settings = TemporalAdapter.DifferenceSettings(TemporalType.PlainTime, operation, options, typeName);
         return TemporalAdapter.DurationOf(TemporalDifferences.DifferenceTemporalPlainTime(operation, IsoTime, target.IsoTime, settings, out var result),
             result, typeName);
@@ -196,7 +196,7 @@ public partial class JSTemporalPlainTime : JSObject
     [JSExport("equals", Length = 1)]
     public JSValue Equals(in Arguments a)
     {
-        var other = RequireTime(ToTemporalTime(a.GetAt(0), "constrain"));
+        var other = RequireTime(ToTemporalTime(a.GetAt(0), TemporalOverflow.Constrain));
         return IsoArithmetic.CompareTime(IsoTime, other.IsoTime) == 0 ? BooleanTrue : BooleanFalse;
     }
 
@@ -243,7 +243,7 @@ public partial class JSTemporalPlainTime : JSObject
     // ToTemporalTime for callers in other Temporal types (e.g. ZonedDateTime.withPlainTime). Accepts
     // a PlainTime, a property bag, or a time string and returns a PlainTime instance.
     internal static JSTemporalPlainTime ToTemporalTimeObject(JSValue item)
-        => RequireTime(ToTemporalTime(item, "constrain"));
+        => RequireTime(ToTemporalTime(item, TemporalOverflow.Constrain));
 
     private static int ToIntegerWithTruncation(JSValue value)
     {
@@ -253,36 +253,18 @@ public partial class JSTemporalPlainTime : JSObject
         return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainTime: time component must be finite");
     }
 
-    private static string ReadOverflow(JSValue options)
-    {
-        if (options.IsUndefined)
-            return "constrain";
-
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-
-        var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
-        if (v.IsUndefined) return "constrain";
-
-        var overflow = v.StringValue;
-        if (overflow is not ("constrain" or "reject"))
-            throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
-
-        return overflow;
-    }
-
     // RegulateTime, the shared library's: constrain each component into range, or reject an out-of-range value.
-    private static JSValue RegulateTime(int h, int mi, int s, int ms, int us, int ns, string overflow)
+    private static JSValue RegulateTime(int h, int mi, int s, int ms, int us, int ns, TemporalOverflow overflow)
         => new JSTemporalPlainTime(
             TemporalAdapter.RegulateTime(h, mi, s, ms, us, ns, overflow, "Temporal.PlainTime: time component out of range"), PlainTimePrototype);
 
-    private static JSValue ToTemporalTime(JSValue item, string overflow)
+    private static JSValue ToTemporalTime(JSValue item, TemporalOverflow overflow)
         => ToTemporalTime(item, () => overflow);
 
     // The overflow option is supplied as a callback so a caller (PlainTime.from) can
     // defer reading it until *after* the time fields have been read, matching the spec
-    // order; callers with a fixed overflow ("constrain") pass a constant.
-    private static JSValue ToTemporalTime(JSValue item, Func<string> readOverflow)
+    // order; callers with a fixed overflow (constrain) pass a constant.
+    private static JSValue ToTemporalTime(JSValue item, Func<TemporalOverflow> readOverflow)
     {
         if (item is JSTemporalPlainTime t)
         {

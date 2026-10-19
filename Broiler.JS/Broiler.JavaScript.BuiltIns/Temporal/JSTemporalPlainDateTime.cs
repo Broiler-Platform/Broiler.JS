@@ -160,7 +160,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     //  - overflowReader replaces the trailing GetTemporalOverflowOption so the caller can read the
     //    disambiguation / offset / overflow options together, after every field has been read.
     // (test262 ZonedDateTime/prototype/with order-of-operations.)
-    internal JSValue WithCore(in Arguments a, Action afterNanosecond, Func<string> overflowReader, Func<bool> hasExtraField)
+    internal JSValue WithCore(in Arguments a, Action afterNanosecond, Func<TemporalOverflow> overflowReader, Func<bool> hasExtraField)
     {
         if (a.GetAt(0) is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires an object");
@@ -200,7 +200,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (!any && !partial.Any && (hasExtraField == null || !hasExtraField()))
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires at least one field");
 
-        var overflow = overflowReader != null ? overflowReader() : ReadOverflow(a.GetAt(1));
+        var overflow = overflowReader != null ? overflowReader() : TemporalAdapter.ReadOverflow(a.GetAt(1));
 
         var date = TemporalAdapter.DateFromFields(calendarId, TemporalAdapter.MergeFields(calendarId, fields, partial.Fields), overflow,
             "Temporal.PlainDateTime");
@@ -248,7 +248,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     {
         // Spec reads the duration argument before the overflow option.
         var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
-        var overflow = ReadOverflow(options);
+        var overflow = TemporalAdapter.ReadOverflow(options);
 
         // AddDurationToDateTime: the days and time fields as one exact time duration of 24-hour days (row R7: no
         // field is narrowed first), added to the wall-clock time by AddTime, whose whole days carry into the date
@@ -365,24 +365,8 @@ public partial class JSTemporalPlainDateTime : JSObject
         var tz = a.GetAt(0);
         if (tz == null || !tz.IsString)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.toZonedDateTime: time zone must be a string");
-        var disambiguation = ReadDisambiguation(a.GetAt(1));
+        var disambiguation = TemporalAdapter.ReadDisambiguation(a.GetAt(1));
         return JSTemporalZonedDateTime.FromLocal(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, tz.ToString(), calendarId, disambiguation);
-    }
-
-    // GetTemporalDisambiguationOption: compatible (default) / earlier / later / reject. An invalid
-    // value is a RangeError, a Symbol a TypeError. The chosen mode is applied by FromLocal when the
-    // wall-clock time is ambiguous (a fold) or skipped (a spring-forward gap).
-    private static string ReadDisambiguation(JSValue options)
-    {
-        if (options == null || options.IsUndefined) return "compatible";
-        if (options is not JSObject o)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-        var v = o[KeyStrings.GetOrCreate("disambiguation")];
-        if (v.IsUndefined) return "compatible";
-        var d = v.StringValue;
-        if (d is not ("compatible" or "earlier" or "later" or "reject"))
-            throw JSEngine.NewRangeError($"Temporal: invalid disambiguation \"{d}\"");
-        return d;
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────
@@ -412,20 +396,6 @@ public partial class JSTemporalPlainDateTime : JSObject
     private static int ToIntegerWithTruncationArgument(JSValue value)
         => (int)TemporalRoundingOptions.ToIntegerWithTruncation(value ?? JSUndefined.Value, "Temporal.PlainDateTime: component must be finite");
 
-    private static string ReadOverflow(JSValue options)
-    {
-        if (options == null || options.IsUndefined)
-            return "constrain";
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-        var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
-        if (v.IsUndefined) return "constrain";
-        var overflow = v.StringValue;
-        if (overflow is not ("constrain" or "reject"))
-            throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
-        return overflow;
-    }
-
     private static JSValue ToTemporalDateTime(JSValue item) => ToTemporalDateTime(item, JSUndefined.Value);
 
     // `options` is the raw options argument; the overflow option is read at the spec-mandated point
@@ -441,24 +411,24 @@ public partial class JSTemporalPlainDateTime : JSObject
     // / overflow options together at that point (after all the bag's fields). When null,
     // overflow is read directly.
     internal static JSValue ToTemporalDateTime(JSValue item, JSValue options,
-        Action afterNanosecond = null, Action afterSecond = null, Func<string> overflowReader = null)
+        Action afterNanosecond = null, Action afterSecond = null, Func<TemporalOverflow> overflowReader = null)
     {
         if (item is JSTemporalPlainDateTime dt)
         {
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return dt.Clone();
         }
 
         if (item is JSTemporalPlainDate d)
         {
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return new JSTemporalPlainDateTime(d.isoYear, d.isoMonth, d.isoDay, 0, 0, 0, 0, 0, 0, d.calendarId, PlainDateTimePrototype);
         }
 
         if (item.IsString)
         {
             var parsed = ParseTemporalDateTimeString(item.ToString());
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return parsed;
         }
 
@@ -489,14 +459,14 @@ public partial class JSTemporalPlainDateTime : JSObject
         afterSecond?.Invoke(); // ZonedDateTime reads `timeZone` here
         fields.Year();
 
-        var overflow = overflowReader != null ? overflowReader() : ReadOverflow(options);
+        var overflow = overflowReader != null ? overflowReader() : TemporalAdapter.ReadOverflow(options);
 
         var date = TemporalAdapter.DateFromFields(calendarId, fields.Fields, overflow, "Temporal.PlainDateTime");
         return RegulateDateTime(date, hour, minute, second, millisecond, microsecond, nanosecond, overflow, calendarId);
     }
 
     // The date the calendar resolved, then RegulateTime and ISODateTimeWithinLimits: the shared library's.
-    private static JSValue RegulateDateTime(IsoDate date, int h, int mi, int s, int ms, int us, int ns, string overflow, string calendarId)
+    private static JSValue RegulateDateTime(IsoDate date, int h, int mi, int s, int ms, int us, int ns, TemporalOverflow overflow, string calendarId)
     {
         const string message = "Temporal.PlainDateTime: date-time is out of range";
         var time = TemporalAdapter.RegulateTime(h, mi, s, ms, us, ns, overflow, message);

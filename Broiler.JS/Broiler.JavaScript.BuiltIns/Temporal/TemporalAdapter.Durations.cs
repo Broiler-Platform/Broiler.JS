@@ -213,8 +213,8 @@ internal static partial class TemporalAdapter
         var timeZone = zoneValue == null || zoneValue.IsUndefined ? null : JSTemporalZonedDateTime.ToTimeZoneIdentifier(zoneValue);
         fields.Year();
 
-        var date = DateFromFields(calendarId, fields.Fields, "constrain", typeName);
-        var time = RegulateTime(hour, minute, second, millisecond, microsecond, nanosecond, "constrain", $"{typeName}: relativeTo time is out of range");
+        var date = DateFromFields(calendarId, fields.Fields, TemporalOverflow.Constrain, typeName);
+        var time = RegulateTime(hour, minute, second, millisecond, microsecond, nanosecond, TemporalOverflow.Constrain, $"{typeName}: relativeTo time is out of range");
         if (timeZone == null)
             return PlainRelativeTo(date, calendarId);
 
