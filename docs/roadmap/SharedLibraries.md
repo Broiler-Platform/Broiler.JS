@@ -1232,8 +1232,10 @@ recorded, decisions SJL-D-11 and SJL-D-12 recorded, and the owner's decisions of
   corrected below were witnessed by probes against this engine's assemblies at `24510b0e`.
 - **SJL-12 started on 2026-10-19 by the owner's choice.** That day the owner wrote "Continue with SJL-12 after the
   plan is ready", after the survey for SJL-12's plan had been started on a recommendation: SJL-12 feeds SJL-13 on
-  the programme's critical path, and may start after SJL-0. The programme's ledger records it. **SJL-12 may not exit
-  before SJL-3 does**, because the contract cites the literal-value operations.
+  the programme's critical path, and may start after SJL-0. The programme's ledger is to record it in an entry of
+  its own, filed in Broiler.VM apart from this record *(corrected 2026-10-19, at SJL-12.1, after review; read "The
+  programme's ledger records it.")*. **SJL-12 may not exit before SJL-3 does**, because the contract cites the
+  literal-value operations.
 - **The owner's direction.** On 2026-10-18 the owner wrote: "Please do all recommended decisions and skip waiting
   for review." Each decision the plan left open is taken as it recommends, and recorded as the owner's dated
   decision of 2026-10-19, D1 to D42 in JSD-0080. **It changes no rule**: nothing is accepted without review, and
