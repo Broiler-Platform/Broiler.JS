@@ -1,0 +1,8 @@
+$ /usr/bin/python3 <tree>/scripts/compliance/compare_test262_paths.py --base <scratch>/after-A-test262-results.json --after <scratch>/after-A-test262-results.json
+# cwd <tree>; started 2026-10-19T15:18:19Z; exit 0
+rows 106058; changed 0; admitted 0; unclassified 0; regressions 0
+# negative control: test/annexB/built-ins/Date/prototype/getYear/B.2.4.js [original] turned from passed to failed in a copy
+$ /usr/bin/python3 <tree>/scripts/compliance/compare_test262_paths.py --base <scratch>/after-A-test262-results.json --after <scratch>/test262-negative-control.json
+# cwd <tree>; started 2026-10-19T15:18:24Z; exit 1
+regression     passed -> failed   test/annexB/built-ins/Date/prototype/getYear/B.2.4.js [original]
+rows 106058; changed 1; admitted 0; unclassified 0; regressions 1

@@ -29,16 +29,25 @@ area's rules run test262 `ccaac100` (decision D2).
 - This engine is cut over to the library, and the cut-over's own checks hold: the local Temporal selection of test262,
   both datasets, the correspondence's probes, and the vectors at corpus revisions 25 and 26, which retires the area's
   divergence fields (section 4).
-- The after arm is collected locally at `00b65dd0`, the merge that lands the cut-over (sections 5 to 15):
+- The after arm is collected at `00b65dd0`, the merge that lands the cut-over (sections 5 to 15). **The three home
+  clauses and the four Broiler.JS clauses are met**, as section 6 reads them:
+  - **parts A and B are met** under the rule as written: in UTC and in `America/New_York`, with negative-metadata
+    tests, no row of the suite changed, so none regressed and class C1 lists no row (sections 7 and 8);
   - **part C is met** under the rule as written: every line of both datasets equals its expected answer (section 9);
   - the home clauses hold by the tests SJL-10.3 committed (section 10);
   - the deletion list is absent (section 12), and every correction is listed (section 13);
   - every vector of corpus revision 26 has the result its class expects, in both zones (section 14).
-- Parts A and B's after runs are taken by the workflow at the same commit, runs 39252310861 and 39252316070, and are
-  judged when they are imported (sections 7 and 8). Until then, the clause "test262 Temporal per path meets the area
-  rule" is open.
+- With the shared library as nuget.org publishes it, `0.1.0-preview.6`, in place of the after commit's, this engine
+  answers decision D12's case with a duration (section 11): decision D12 (`163d43aa`) is under the shared changelog's
+  Unreleased heading. The stream's next version carries it, and publishing it is the owner's to approve.
 
 Nothing is accepted: review is deferred, and SJL-10 may not meet its gate before SJL-6 and SJL-8 meet theirs.
+
+*(Revised 2026-10-19, at SJL-10.6, when parts A and B were imported. The fourth item read "The after arm is collected
+locally at `00b65dd0`, the merge that lands the cut-over (sections 5 to 15):", with no sub-item on parts A and B, and
+the last item read "Parts A and B's after runs are taken by the workflow at the same commit, runs 39252310861 and
+39252316070, and are judged when they are imported (sections 7 and 8). Until then, the clause "test262 Temporal per
+path meets the area rule" is open.")*
 
 *(Revised 2026-10-19, at SJL-10.6. The state read "at SJL-10.5", its last item "The after runs of the rule's three
 parts follow, at the commit that lands the cut-over (SJL-10.6).", and the line after it "**Nothing here is a
@@ -616,8 +625,8 @@ its cut-over by its folder, `/home/user/vm-at-14072b0`, and the library step's s
 | Rule commit | `1d27064d`, an ancestor of the after commit. The rule, the comparison script, the workflow and the two scripts it runs and merges with are unchanged between the two. Part C's harness, its driver and the copies are unchanged since SJL-10.2 committed them (`80dff79f`), and the harness's SHA-256 is the base run's ([`identity.txt`](identity.txt)). No file under `Broiler.JS/` differs between the rule commit and `1c411b68`, the cut-over's branch point |
 | Shared library | `Broiler.ECMAScript.Algorithms` at the after commit, by project reference. **Its code is not byte for byte the published version's**: nuget.org serves `0.1.0-preview.6`, published from `fc829f8a` with `bf81d1b7`'s library code, and decision D12 (`163d43aa`) changes two of its files after that, `DurationMath.Relative.cs` and `DurationMath.cs`, under the shared changelog's Unreleased heading (section 10). Bundle `sjl-8-001`'s after commit held its published version's code exactly |
 | Shared vectors | `conformance/vectors` at corpus revision 26, which retires the area's 479 divergence fields, this engine's 473 and Broiler.VM's 6 ([`engine/retired-divergences-revision-26.tsv`](engine/retired-divergences-revision-26.tsv)) |
-| Collector | [`collect.py`](collect.py) as this change commits it, which reuses bundle `sjl-8-001`'s collector, and through it `sjl-7-001`'s, `sjl-6-001`'s, `sjl-5-001`'s, `sjl-4-001`'s, `sjl-3-001`'s and `sjl-0-001`'s, run against clean checkouts of the after commit and, for the consumer's control, of the rule's commit. Part C was taken by its own harness, by hand, as its base was and as bundle `sjl-8-001`'s after run was ([`datasets/README.md`](datasets/README.md)); the collector has no step for it, as `sjl-8-001`'s had none. Its `test262` and `compare` steps are written for parts A and B and not yet run. Its `manifest` step wrote [`manifest.json`](manifest.json), the SHA-256 of every other file the bundle retains, this README's included, as it stands before parts A and B are imported |
-| Taken | 2026-10-19. Parts A's and B's after runs by the workflow, dispatched at 12:28Z: run 39252310861 (part A) and run 39252316070 (part B), not imported here. Locally, part C from 13:45Z, `simplification` at 13:53Z, `vectors` from 13:53Z, `home` from 15:02Z and again at 15:07Z (section 10), `area` from 15:04Z, `probe` from 15:05Z, `consumer` from 15:05Z, `identity` at 15:09Z and `manifest` last. The machine is section 1's; other work shared it, and nothing local here is timed |
+| Collector | [`collect.py`](collect.py) as this change commits it, which reuses bundle `sjl-8-001`'s collector, and through it `sjl-7-001`'s, `sjl-6-001`'s, `sjl-5-001`'s, `sjl-4-001`'s, `sjl-3-001`'s and `sjl-0-001`'s, run against clean checkouts of the after commit and, for the consumer's control, of the rule's commit. Part C was taken by its own harness, by hand, as its base was and as bundle `sjl-8-001`'s after run was ([`datasets/README.md`](datasets/README.md)); the collector has no step for it, as `sjl-8-001`'s had none. Its `test262` step imported parts A's and B's after runs, and its `compare` step compared each with its base (sections 7 and 8). Its `manifest` step wrote [`manifest.json`](manifest.json), the SHA-256 of every other file the bundle retains, this README's included *(revised 2026-10-19, at SJL-10.6, when parts A and B were imported; the last two sentences read "Its `test262` and `compare` steps are written for parts A and B and not yet run. Its `manifest` step wrote [`manifest.json`](manifest.json), the SHA-256 of every other file the bundle retains, this README's included, as it stands before parts A and B are imported")* |
+| Taken | 2026-10-19. Parts A's and B's after runs by the workflow, dispatched together at 12:28Z and completed at 13:54Z and 14:00Z: run 39252310861 (part A) and run 39252316070 (part B). Locally, part C from 13:45Z, `simplification` at 13:53Z, `vectors` from 13:53Z, `home` from 15:02Z and again at 15:07Z (section 10), `area` from 15:04Z, `probe` from 15:05Z, `consumer` from 15:05Z and `identity` at 15:09Z; `test262` and `compare` at 15:18Z, once for each part, and `manifest` last. The machine is section 1's; other work shared it, and nothing local here is timed *(revised 2026-10-19, at SJL-10.6, when parts A and B were imported; read "Parts A's and B's after runs by the workflow, dispatched at 12:28Z: run 39252310861 (part A) and run 39252316070 (part B), not imported here.", and the local steps ended "`identity` at 15:09Z and `manifest` last")* |
 | RID | `linux-x64`: the workflow's runners for test262; locally, one machine with four logical processors |
 
 **Each project was built once.** The after checkout was created clean (`git status --porcelain --untracked-files=all`
@@ -630,9 +639,13 @@ and its JIT twin is the shared folder's build, with no second build (bundle `sjl
 The rule's checkout for the consumer's control was built once, its shell only. These checkouts are git worktrees of
 this repository in the scratch folder, as bundle `sjl-8-001`'s after tree was.
 
-**What is not here yet.** Parts A and B judge hosted runs, which the collector's `test262` and `compare` steps import
-and compare. Sections 7 and 8 are written when they are imported, and clause "test262 Temporal per path meets the area
-rule" is not judged before then.
+**Parts A and B** judge hosted runs, which the collector's `test262` and `compare` steps imported and compared, each
+from the zip as downloaded (sections 7 and 8).
+
+*(Revised 2026-10-19, at SJL-10.6, when parts A and B were imported. The paragraph read "**What is not here yet.**
+Parts A and B judge hosted runs, which the collector's `test262` and `compare` steps import and compare. Sections 7
+and 8 are written when they are imported, and clause "test262 Temporal per path meets the area rule" is not judged
+before then.")*
 
 ## 6. The clauses, and what holds each
 
@@ -647,20 +660,135 @@ rule's "What this file does not decide").
 | Home: its vectors pass | The library-level runner answers the Temporal area | section 10 | **Met**: `LibraryRunTests`' Temporal test passes on corpus revision 26, every answered Temporal vector matching, and so does its control against the empty library; the Native AOT probe runs the corpus with no failure, its report byte for byte the JIT's |
 | Home: the polyfill dataset passes at library level wherever it can run there | Both retained datasets, at library level | section 10 | **Met**: `TemporalDatasetTests` (all 1,629 lines of `temporal.js`) and `CalendarDatasetTests` (all 3,999 lines of `temporal-calendars.js`) pass |
 | Broiler.JS: the deletion list is absent | The correspondence's section 11, JSD-0078's X6, with decision D3's calendar copies | section 12 | **Met** at `00b65dd0`: every entry is absent from the folder that held it, and nine files are gone whole. What remains is adapters that call the library, the coercing members the list makes adapter code, comments, the library's own types of two of the names, and the changelog |
-| Broiler.JS: test262 Temporal per path meets the area rule | Parts A and B of the rule | sections 7 and 8 | **Not judged yet.** The after runs, 39252310861 and 39252316070, are imported and compared with section 1's bases when they are complete |
+| Broiler.JS: test262 Temporal per path meets the area rule | Parts A and B of the rule | sections 7 and 8, [`test262/`](test262/) | **Met** under parts A and B of the rule as written, at `00b65dd0`: in each zone both runs are complete and comparable, every shard in the zone, the host-zone records alike (tzdata 2026c in all four runs), and no row of the suite changed, so none regressed and class C1 lists no row *(revised 2026-10-19, at SJL-10.6, when parts A and B were imported; read "**Not judged yet.** The after runs, 39252310861 and 39252316070, are imported and compared with section 1's bases when they are complete", and the third column "sections 7 and 8")* |
 | Broiler.JS: the polyfill dataset meets its rule | Part C of the rule | section 9, [`datasets/after/`](datasets/after/) | **Met** under part C of the rule as written, at `00b65dd0`: both programs complete with every line, and every line of both equals its expected answer |
-| Broiler.JS: every correction is listed | The changelog against the correspondence's rows and the vectors | section 13, [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md) | **Met** for every correction the correspondence names for this engine, with the 473 vectors and the datasets' 110 lines by row; for the code no input reaches; for every policy change; and for the changes no row lists. Whether test262 adds a row to list is read when parts A and B are imported |
+| Broiler.JS: every correction is listed | The changelog against the correspondence's rows and the vectors | section 13, [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md) | **Met** for every correction the correspondence names for this engine, with the 473 vectors and the datasets' 110 lines by row; for the code no input reaches; for every policy change; and for the changes no row lists. Sections 7 and 8 have no row in class C1, so test262 adds none to list *(revised 2026-10-19, at SJL-10.6, when parts A and B were imported; the last sentence read "Whether test262 adds a row to list is read when parts A and B are imported")* |
 
 The Broiler.VM clauses are judged in its bundle of the same name. None is accepted: review is deferred, and SJL-10
 may not meet its gate before SJL-6 and SJL-8 meet theirs, and so not before SJL-3 meets SJL-3's.
 
 ## 7. Test262 per path, in UTC (rule part A)
 
-*(To be written when the hosted after runs are imported.)*
+**MET under part A of the rule as written, at the after commit `00b65dd0`: no row changed.**
+[`test262/comparison-utc/comparison.json`](test262/comparison-utc/comparison.json) and
+[`test262/comparison-utc/comparison.log`](test262/comparison-utc/comparison.log): the after run against part A's
+base of section 1, through `scripts/compliance/compare_test262_paths.py` as SJL-0.9 committed it (`1410079e`, the
+only commit that touches it; the after checkout it ran from holds the same blob), with each run's timed-out rows
+replaced by their re-runs, and with the classification file the rule asks for beside the report,
+[`test262/comparison-utc/classifications.json`](test262/comparison-utc/classifications.json). **Every row, each path
+in both variants, gives its base's verdict: 0 changed, 0 regressions, 0 unclassified.** The classification file is
+empty, `{}`, because no verdict changed, and the script reports no classification unused.
+
+| Part A's condition | This run |
+|---|---|
+| Both runs complete: every expected shard reported | eight of eight expected shards reported in each run, none incomplete and none retried; every shard's status file reads phase `full`, its exit code 1 for failing tests, as at the base ([`test262/comparison-utc/completeness.log`](test262/comparison-utc/completeness.log), read from each run's own files; [`test262/after/merge.log`](test262/after/merge.log)) |
+| No configuration failure | none in either run |
+| One suite revision | `ccaac100` in each run, the revision the rule pins |
+| One shell | in each run, the hashes of the shell's binaries are the same in every shard and in the re-run: one distinct list ([`test262/after/shell-hashes.log`](test262/after/shell-hashes.log)). The two runs' shells differ, as they must: the after run's is built from the cut-over ([`test262/after/shell-binaries.sha256`](test262/after/shell-binaries.sha256)) |
+| Every shard in the zone | in each run, all eight shards in the runner's zone: `TZ` unset, UTC +0000 at 2021-01-15T12:00:00Z and at 2021-07-15T12:00:00Z ([`test262/after/host-zone.log`](test262/after/host-zone.log)) |
+| `includeNegative` true in both | in `run.txt`, in the merged results and in the re-run, in each run |
+| The two runs' host-zone records read alike, line for line | yes: every expected line is the same in both, `TZ` unset, UTC +0000 at both instants and one tzdata release, 2026c ([`test262/comparison-utc/zone-records.log`](test262/comparison-utc/zone-records.log)); the after run's `host-zone.log` is the base's byte for byte. The runners' tzdata did not move between the base and the after run, so the part is judged |
+| The script finds them comparable | yes, exit 0. Its checks ([`test262/comparison-utc/compare-checks.log`](test262/comparison-utc/compare-checks.log)): the after run against itself changes nothing, and a copy with one passing row turned to failed is reported as one regression, exit 1. The fields it records and does not compare are the same in both: .NET SDK 10.0.402, four workers, eight shards, Linux, X64 |
+| No row passing at the base fails, times out or is skipped after | none |
+| Every changed verdict in C1, and listed | **met**: no verdict changed, so C1 lists no row (the table below) |
+
+**The after run.** Taken by `.github/workflows/test262-evidence.yml` at `00b65dd0`, in the rule's configuration
+([`test262/after/run.txt`](test262/after/run.txt)): run
+[39252310861](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/39252310861), attempt 1, dispatched
+2026-10-19 12:28Z from `main` at `00b65dd0`, with the tested commit named by all forty digits, `time_zone` empty and
+`include_negative` true, and completed 13:54Z with the conclusion success. It ran `--all-script-host-verifiable` over
+eight shards at suite `ccaac100`, with terser 5.50.0, 30 seconds per test, no memory limit, four workers,
+`rerun_timeouts` true and the .NET SDK 10.0.402, on runner image ubuntu24 20261012.334.1, the base's. The workflow, the
+two scripts it runs and merges with, and the comparison script are the rule commit's: `git diff 1d27064d 00b65dd0`
+over `.github` and `scripts/compliance` prints nothing.
+
+It is imported into [`test262/after/`](test262/after/) unchanged, every file of the workflow's artifact
+`test262-evidence` (id 12192515568), with [`imported.txt`](test262/after/imported.txt), which records the digest of
+the zip as downloaded, `1fcc203a…`, the digest GitHub records for the artifact. The bundle keeps that artifact alone,
+as the bases did: the run's second artifact, `test262-rerun-shard-0`, holds the re-run's report and log, and they are
+`rerun-timeouts.json` and `rerun-timeouts.log` here byte for byte.
+
+**Timeouts and their re-runs.** As at the base, one path timed out in both variants,
+`test/staging/sm/regress/regress-1507322-deep-weakmap.js` ([`test262/after/timed-out-paths.txt`](test262/after/timed-out-paths.txt),
+the base's byte for byte). The workflow ran it again alone, with one worker, at the same commit and with the same
+shell, and it timed out again in both variants
+([`test262/after/rerun-timeouts.log`](test262/after/rerun-timeouts.log),
+[`rerun-timeouts.json`](test262/after/rerun-timeouts.json)). The script took each run's re-run, with `--base-rerun`
+and `--after-rerun`, and replaced the two rows on each side, so they compare timed out against timed out (the report's
+`replacedByRerun`). Both the runs and the re-runs are retained.
+
+**The C1 table.** Each row that changed under class C1, with its path, its variant and the row of the correspondence
+that names the correction:
+
+| Path | Variant | Base | After | Row of the correspondence |
+|---|---|---|---|---|
+
+It has no row: no verdict changed.
+
+**What it says.** In UTC, SJL-10.5's cut-over moved no verdict of the suite.
+- Every row whose path names `Temporal` passes in both runs, `built-ins/Temporal`'s and `intl402/Temporal`'s among
+  them.
+- `built-ins/Date`, `intl402/DateTimeFormat` and `intl402/DurationFormat` pass in both runs but for four
+  `proto-from-ctor-realm` paths, `Date`'s three and `DateTimeFormat`'s one, which fail in both: they read a
+  constructor's prototype from another realm, not a Temporal value.
+- So no test262 case at this revision shows one of the area's corrections: each is a case the suite does not hold, or
+  holds where the base already passed. The vectors (section 14), part C (section 9) and the area's tests (section 10)
+  hold them. The cut-over's local selection found the same (section 4).
+
+The retained logs and report name this repository's checkout, the after checkout and the step's scratch folder as
+`<repo>`, `<tree>` and `<scratch>`.
 
 ## 8. Test262 per path, in `America/New_York` (rule part B)
 
-*(To be written when the hosted after runs are imported.)*
+**MET under part B of the rule as written, at the after commit `00b65dd0`: no row changed.**
+[`test262/comparison-new-york/comparison.json`](test262/comparison-new-york/comparison.json) and
+[`test262/comparison-new-york/comparison.log`](test262/comparison-new-york/comparison.log): the after run against
+part B's base of section 1, through the same script, with each run's timed-out rows replaced by their re-runs and with
+the classification file beside the report,
+[`test262/comparison-new-york/classifications.json`](test262/comparison-new-york/classifications.json). **Every row
+gives its base's verdict: 0 changed, 0 regressions, 0 unclassified.** The classification file is empty, `{}`, because
+no verdict changed. This is the area's run under a host zone with daylight-saving time, the zone `Temporal.Now` reads,
+which stays this engine's (decision SJL-D-19).
+
+| Part B's condition | This run |
+|---|---|
+| Both runs complete: every expected shard reported | eight of eight expected shards reported in each run, none incomplete and none retried; every shard's status file reads phase `full`, its exit code 1 for failing tests, as at the base ([`test262/comparison-new-york/completeness.log`](test262/comparison-new-york/completeness.log); [`test262/after-new-york/merge.log`](test262/after-new-york/merge.log)) |
+| No configuration failure | none in either run |
+| One suite revision | `ccaac100` in each run |
+| One shell | in each run, the hashes of the shell's binaries are the same in every shard and in the re-run ([`test262/after-new-york/shell-hashes.log`](test262/after-new-york/shell-hashes.log)); the after run's shell is part A's after run's, by its hashes |
+| Every shard in the zone | in each run, all eight shards with `TZ` `America/New_York`: EST -0500 at 2021-01-15T12:00:00Z and EDT -0400 at 2021-07-15T12:00:00Z ([`test262/after-new-york/host-zone.log`](test262/after-new-york/host-zone.log)) |
+| `includeNegative` true in both | in `run.txt`, in the merged results and in the re-run, in each run |
+| The two runs' host-zone records read alike, line for line | yes: `TZ` `America/New_York`, EST -0500 and EDT -0400 at the two instants, and one tzdata release, 2026c, in both ([`test262/comparison-new-york/zone-records.log`](test262/comparison-new-york/zone-records.log)); the after run's `host-zone.log` is the base's byte for byte. The runners' tzdata did not move, so the part is judged |
+| The script finds them comparable | yes, exit 0. Its checks ([`test262/comparison-new-york/compare-checks.log`](test262/comparison-new-york/compare-checks.log)): the after run against itself changes nothing, and a planted regression is reported, exit 1. The fields it records and does not compare are the same in both: .NET SDK 10.0.402, four workers, eight shards, Linux, X64 |
+| No row passing at the base fails, times out or is skipped after | none |
+| Every changed verdict in C1, and listed | **met**: no verdict changed, so C1 lists no row (the table below); the rule admits nothing here that part A does not |
+
+**The after run.** Taken by `.github/workflows/test262-evidence.yml` at `00b65dd0`, in part B's configuration
+([`test262/after-new-york/run.txt`](test262/after-new-york/run.txt)): run
+[39252316070](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/39252316070), attempt 1, dispatched
+2026-10-19 12:28Z from `main` at `00b65dd0` with `time_zone` `America/New_York` and `include_negative` true, and
+completed 14:00Z with the conclusion success, in the configuration of part A's run and on the same runner image. It is
+imported into [`test262/after-new-york/`](test262/after-new-york/) unchanged, every file of the workflow's artifact
+`test262-evidence` (id 12193110753), with [`imported.txt`](test262/after-new-york/imported.txt), which records the
+digest of the zip as downloaded, `fccbee20…`, the digest GitHub records. As in part A, the run's second artifact,
+`test262-rerun-shard-0`, is the re-run's report and log byte for byte, and is not kept apart.
+
+**Timeouts and their re-runs.** As at part B's base, one path timed out in both variants,
+`test/staging/sm/regress/regress-1507322-deep-weakmap.js`, and timed out again alone with one worker, under the same
+zone, at the same commit ([`test262/after-new-york/rerun-timeouts.log`](test262/after-new-york/rerun-timeouts.log));
+the script replaced the two rows on each side with their re-runs, so they compare timed out against timed out.
+
+**The C1 table.**
+
+| Path | Variant | Base | After | Row of the correspondence |
+|---|---|---|---|---|
+
+It has no row: no verdict changed.
+
+**What it says.** Under `America/New_York`, the cut-over moved no verdict either. Every row whose path names
+`Temporal` passes in both runs, and the rows of `built-ins/Date`, `intl402/DateTimeFormat` and
+`intl402/DurationFormat` that do not pass are part A's four `proto-from-ctor-realm` paths, in both runs. The two parts'
+runs are not compared with each other, as the rule says.
 
 ## 9. The reference datasets (rule part C)
 
@@ -854,8 +982,11 @@ row. Each reason's count equals the count the changelog gives its row, and the 3
 R7 14, B5 5, D3 9, D4 3, D6 7, D7 23, D8 7, D11 15, F4 20, F7 11, the fourteen G rows 213, and the nine C rows 146.
 Every correction the correspondence names for this engine, and every policy change, is listed with its row.
 
-Sections 7 and 8 will say whether test262 adds anything to list; the cut-over's local selection found no path that
-changed (section 4).
+Sections 7 and 8 have no row in class C1, so test262 adds nothing to list: no verdict of the suite changed in either
+zone, as the cut-over's local selection found no path that changed (section 4).
+
+*(Revised 2026-10-19, at SJL-10.6, when parts A and B were imported. The paragraph read "Sections 7 and 8 will say
+whether test262 adds anything to list; the cut-over's local selection found no path that changed (section 4).")*
 
 ## 14. Engine-level vectors at the after commit (corpus revision 26)
 
@@ -878,8 +1009,12 @@ reports are byte for byte the same, and each is byte for byte section 4's run of
 
 ## 15. What this bundle does not claim
 
-- **A verdict on parts A and B.** Their after runs are taken by the workflow at the after commit and judged when they
-  are imported (sections 7 and 8). Until then, clause "test262 Temporal per path meets the area rule" is open.
+- **That test262 shows the area's corrections.** Parts A and B are met with no verdict changed: every row whose path
+  names `Temporal` passed at the base already, so no case of the suite at `ccaac100` tells this engine before the
+  cut-over from after it. The corrections are held by the vectors, part C and the area's tests (sections 9, 10 and 14).
+  *(Revised 2026-10-19, at SJL-10.6, when parts A and B were imported. The item read "**A verdict on parts A and B.**
+  Their after runs are taken by the workflow at the after commit and judged when they are imported (sections 7 and
+  8). Until then, clause "test262 Temporal per path meets the area rule" is open.")*
 - **Nothing about Broiler.VM.** Its clauses, its own test262, its run of the reference datasets and its records are
   judged in its bundle of the same name, by its own rule, and this bundle reads none of its runs.
 - **A revised rule.** Part C is met under the rule `1d27064d` committed, and no reading of it is new.
