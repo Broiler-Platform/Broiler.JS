@@ -1,0 +1,67 @@
+id	changed since the base	after == Broiler.VM	after == polyfill	base (1c411b68)	after (6dbff805)	Broiler.VM (83fef1a, 0.1.0-preview.6)	polyfill (e8cc03fc)
+A1 P1M.round(day) relativeTo {2020-01-01, offset +25:00, timeZone 5}	changed	True	True	THROWS TypeError	THROWS RangeError	THROWS RangeError	THROWS RangeError
+A1 P1M.round(day) relativeTo {2020-01-01, offset +25:00, timeZone UTC}	same	True	True	THROWS RangeError	THROWS RangeError	THROWS RangeError	THROWS RangeError
+A2 ZDT.toString({offset: bad}) and its conversions	changed	True	True	THROWS RangeError | toString offset, toString offset	THROWS RangeError | toString offset	THROWS RangeError | toString offset	THROWS RangeError | toString offset
+B1 PlainDate.from(hebrew bag, options) reads	changed	True	True	2020-01-27[u-ca=hebrew] | get b.calendar, get o.overflow, get b.day, get b.year, get b.month, get b.day	2020-01-27[u-ca=hebrew] | get b.calendar, get b.day, get b.month, get b.year, get o.overflow	2020-01-27[u-ca=hebrew] | get b.calendar, get b.day, get b.month, get b.year, get o.overflow	2020-01-27[u-ca=hebrew] | get b.calendar, get b.day, get b.month, get b.year, get o.overflow
+B1 PlainDate(gregory).with(bag) reads	changed	True	True	2021-01-01[u-ca=gregory] | get b.year, get b.era, get b.eraYear	2021-01-01[u-ca=gregory] | get b.era, get b.eraYear, get b.year	2021-01-01[u-ca=gregory] | get b.era, get b.eraYear, get b.year	2021-01-01[u-ca=gregory] | get b.era, get b.eraYear, get b.year
+B1 PlainMonthDay(gregory).toPlainDate(bag) reads	changed	True	True	THROWS RangeError | get b.year, get b.era, get b.eraYear	2021-02-01[u-ca=gregory] | get b.era, get b.eraYear, get b.year	2021-02-01[u-ca=gregory] | get b.era, get b.eraYear, get b.year	2021-02-01[u-ca=gregory] | get b.era, get b.eraYear, get b.year
+B2 PlainDate.from({year 2020, month 1}, {overflow: bad})	changed	True	True	THROWS TypeError	THROWS RangeError	THROWS RangeError	THROWS RangeError
+B3 PlainYearMonth(2020-01).toPlainDate({day: 0})	changed	True	True	2020-01-01	THROWS RangeError	THROWS RangeError	THROWS RangeError
+B3 PlainMonthDay.from({month: 0, day: 1}, options) reads	changed	True	True	THROWS RangeError | get b.day, get b.month, get b.monthCode, get b.year, get o.overflow	THROWS RangeError | get b.day, get b.month	THROWS RangeError | get b.day, get b.month	THROWS RangeError | get b.day, get b.month
+B4 new PlainMonthDay(2, 1, iso8601, 1900).with({day: 30})	changed	True	True	02-28	02-29	02-29	02-29
+B5 PlainMonthDay.from({roc, year 109, month 2, day 29}, reject)	changed	True	True	THROWS RangeError	1972-02-29[u-ca=roc]	1972-02-29[u-ca=roc]	1972-02-29[u-ca=roc]
+B5 PlainMonthDay.from({buddhist, year 2563, month 2, day 29}, reject)	changed	True	True	THROWS RangeError	1972-02-29[u-ca=buddhist]	1972-02-29[u-ca=buddhist]	1972-02-29[u-ca=buddhist]
+B6 new PlainDate(-271821, 4, 19, coptic).toPlainYearMonth()	changed	True	True	-271821-04-19[u-ca=coptic]	THROWS RangeError	THROWS RangeError	THROWS RangeError
+B6 new PlainYearMonth(-271821, 4, coptic, 19).add(P1M)	changed	True	True	-271821-04-27[u-ca=coptic]	THROWS RangeError	THROWS RangeError	THROWS RangeError
+B6 new PlainYearMonth(-271821, 4, coptic, 19).until(new PlainYearMonth(-271821, 6, coptic, 1))	changed	True	True	P2M	THROWS RangeError	THROWS RangeError	THROWS RangeError
+B7 PlainDate(gregory 2020-01-01).with({year 2021, era ce, eraYear 2019})	changed	True	True	2021-01-01[u-ca=gregory]	THROWS RangeError	THROWS RangeError	THROWS RangeError
+C1 P1M.round(day) relativeTo {calendar gregorian, 2020-01-01} reads	changed	True	True	P1M | get r.calendar, get r.day, get r.month, get r.year	THROWS RangeError | get r.calendar	THROWS RangeError | get r.calendar	THROWS RangeError | get r.calendar
+C1 P1M.round(day) relativeTo {calendar hebrew, 5780-05-01, timeZone UTC}	changed	True	True	THROWS Error	P1M	P1M	P1M
+C2 P1M.round(day) relativeTo {2020-01-01, offset garbage}	changed	True	True	P1M	THROWS RangeError	THROWS RangeError	THROWS RangeError
+C2 P1M.total(day) relativeTo {2020-01-01, offset garbage}	changed	True	True	31	THROWS RangeError	THROWS RangeError	THROWS RangeError
+C2 compare(P1M, P31D) relativeTo {2020-01-01, offset garbage}	changed	True	True	0	THROWS RangeError	THROWS RangeError	THROWS RangeError
+C3 P1M.round(day) relativeTo {year Infinity, 1, 1, timeZone 5}	changed	True	True	THROWS RangeError	THROWS TypeError	THROWS TypeError	THROWS TypeError
+C4 P1M.round(day) relativeTo {2020, monthCode X1, day 1, timeZone 5}	changed	True	True	THROWS TypeError	THROWS RangeError	THROWS RangeError	THROWS RangeError
+C4 P1M.round(day) relativeTo {2020, 1, day 0, timeZone 5}	changed	True	True	THROWS TypeError	THROWS RangeError	THROWS RangeError	THROWS RangeError
+C5 PT1H.subtract(PT1H, 5)	changed	True	True	THROWS TypeError	PT0S	PT0S	PT0S
+C5 PT1H.add(PT1H, bag) reads	changed	True	True	PT2H | get o.relativeTo	PT2H	PT2H	PT2H
+C6 new PYM(-271821, 4, iso8601, 19).until(new PYM(-271821, 4, iso8601, 20))	changed	True	True	PT0S	THROWS RangeError	THROWS RangeError	THROWS RangeError
+C6 new PYM(275760, 9, iso8601, 1).until(new PYM(275760, 9, iso8601, 13), year)	changed	True	True	PT0S	THROWS RangeError	THROWS RangeError	THROWS RangeError
+C7 P1D.total(hours) relativeTo {-271821-04-19T12:00, offset -12:00, timeZone -12:00}	changed	True	True	24	THROWS RangeError	THROWS RangeError	THROWS RangeError
+C7 P1D.total(hours) relativeTo {-271821-04-19T12:00, timeZone -12:00} (no offset)	same	True	True	24	24	24	24
+P1 PlainTime 01:10 round {minute, 20, halfEven}	changed	True	True	01:20:00	01:00:00	01:00:00	01:00:00
+P1 PlainDateTime 2020-01-01T01:10 round {minute, 20, halfEven}	changed	True	True	2020-01-01T01:20:00	2020-01-01T01:00:00	2020-01-01T01:00:00	2020-01-01T01:00:00
+P1 ZonedDateTime 2020-01-01T01:10[UTC] round {minute, 20, halfEven}	changed	True	True	2020-01-01T01:20:00+00:00[UTC]	2020-01-01T01:00:00+00:00[UTC]	2020-01-01T01:00:00+00:00[UTC]	2020-01-01T01:00:00+00:00[UTC]
+P1 PlainTime 00:01:10 round {second, 20, halfEven}	changed	True	True	00:01:20	00:01:00	00:01:00	00:01:00
+P1 PlainTime 01:10 round {minute, 20, halfExpand} (control)	same	True	True	01:20:00	01:20:00	01:20:00	01:20:00
+U1 PT100H.round({week, increment 1e9, relativeTo 2020-01-01})	changed	True	True	PT0S	THROWS RangeError	THROWS RangeError	THROWS RangeError
+U1 P1W.round({day, relativeTo +275760-09-01})	changed	True	True	P1W	THROWS RangeError	THROWS RangeError	THROWS RangeError
+U1 P1W.total({week, relativeTo +275760-09-01})	changed	True	True	1	THROWS RangeError	THROWS RangeError	THROWS RangeError
+U1 -P1W.round({day, relativeTo -271821-05-01})	changed	True	True	-P1W	THROWS RangeError	THROWS RangeError	THROWS RangeError
+U2 PDT -271821-04-19T00:00:00.000000001 until +275760-09-13 {year, hour, ceil}	changed	True	True	P547581Y4M25D	THROWS RangeError	THROWS RangeError	THROWS RangeError
+U2 PDT 2020-01-31T00:00:00.000000001 until 2020-02-29 {month, hour, ceil}	changed	True	True	P29D	P1M	P1M	P1M
+U3 ZDT +275760-09-12[UTC] until +275760-09-13[UTC] {day}	changed	True	True	P1D	THROWS RangeError	THROWS RangeError	THROWS RangeError
+U3 ZDT -271821-04-21[UTC] since -271821-04-20[UTC] {day}	changed	True	True	P1D	THROWS RangeError	THROWS RangeError	THROWS RangeError
+U4 PMD.from({gregory, era <object>, eraYear 2020, M02, 29})	changed	True	True	THROWS RangeError | get era.toString, call era.toString	1972-02-29[u-ca=gregory] | get era.toString, call era.toString	1972-02-29[u-ca=gregory] | get era.toString, call era.toString	1972-02-29[u-ca=gregory] | get era.toString, call era.toString
+U4 PMD(gregory M02-29).toPlainDate({era ce, eraYear 2021})	changed	True	True	THROWS RangeError	2021-02-28[u-ca=gregory]	2021-02-28[u-ca=gregory]	2021-02-28[u-ca=gregory]
+U4 P1M.total(day) relativeTo {gregory, era <object>, eraYear 2020, 1, 31}	changed	True	True	THROWS RangeError | get era.toString, call era.toString	29 | get era.toString, call era.toString	29 | get era.toString, call era.toString	29 | get era.toString, call era.toString
+U5 PMD.from({gregory, monthCode M05, month 5, day 1})	changed	True	True	1972-05-01[u-ca=gregory]	THROWS TypeError	THROWS TypeError	THROWS TypeError
+U5 PMD(hebrew M05-01).with({monthCode M06, month 6})	changed	True	True	1972-02-16[u-ca=hebrew]	THROWS TypeError	THROWS TypeError	THROWS TypeError
+U6 PMD(gregory M02-01).with({era ce, eraYear 5})	changed	True	True	THROWS TypeError	1972-02-01[u-ca=gregory]	1972-02-01[u-ca=gregory]	1972-02-01[u-ca=gregory]
+U6 PMD.from({gregory, era xx, eraYear 1, M01, 1}, 5)	changed	True	True	THROWS RangeError	THROWS TypeError	THROWS TypeError	THROWS TypeError
+U7 PYM(hebrew 5780-M03).with({year 5781, era xx, eraYear 1})	changed	True	True	2020-11-17[u-ca=hebrew]	THROWS RangeError	THROWS RangeError	THROWS RangeError
+U7 PYM(coptic 1736-M03).with({year 1737, era am, eraYear 1})	changed	True	True	2020-11-10[u-ca=coptic]	THROWS RangeError	THROWS RangeError	THROWS RangeError
+U8 PYM(chinese 2021-M03).with({monthCode M02L})	changed	True	True	THROWS RangeError	M02 2021-03-13[u-ca=chinese]	M02 2021-03-13[u-ca=chinese]	M02 2021-03-13[u-ca=chinese]
+U8 PYM(hebrew 5783-M04).with({monthCode M05L})	changed	True	True	THROWS RangeError	M06 2023-02-22[u-ca=hebrew]	M06 2023-02-22[u-ca=hebrew]	M06 2023-02-22[u-ca=hebrew]
+K1 PlainDateTime.from(hebrew ZonedDateTime) reads	changed	True	True	5780-04-18T10:00:00	2020-01-15T10:00:00[u-ca=hebrew]	2020-01-15T10:00:00[u-ca=hebrew]	2020-01-15T10:00:00[u-ca=hebrew]
+K1 PlainYearMonth.from(hebrew PlainDate)	changed	True	True	5780-04	2019-12-29[u-ca=hebrew]	2019-12-29[u-ca=hebrew]	2019-12-29[u-ca=hebrew]
+K1 PlainMonthDay.from(hebrew PlainDate)	changed	True	True	04-18	1972-12-23[u-ca=hebrew]	1972-12-23[u-ca=hebrew]	1972-12-23[u-ca=hebrew]
+K1 hebrew PlainDateTime.equals(hebrew ZonedDateTime of its wall clock)	changed	True	True	false	true	true	true
+K2 ZonedDateTime.from(PlainDate 2020-01-01)	changed	True	True	THROWS Error	THROWS TypeError	THROWS TypeError	THROWS TypeError
+K2 ZonedDateTime.compare(ZDT, PlainDateTime)	changed	True	True	THROWS Error	THROWS TypeError	THROWS TypeError	THROWS TypeError
+K2 ZonedDateTime.from(PlainDate with timeZone UTC)	changed	True	True	THROWS Error	2020-01-01T00:00:00+00:00[UTC]	2020-01-01T00:00:00+00:00[UTC]	2020-01-01T00:00:00+00:00[UTC]
+K3 ZonedDateTime.from({-271821-04-19T12:00, offset -12:00, timeZone -12:00})	changed	True	True	-271821-04-19T12:00:00-12:00[-12:00]	THROWS RangeError	THROWS RangeError	THROWS RangeError
+K3 new ZonedDateTime(-8.64e21 ns, -12:00).with({minute 1})	changed	True	True	-271821-04-19T12:01:00-12:00[-12:00]	THROWS RangeError	THROWS RangeError	THROWS RangeError
+K3 new ZonedDateTime(-8.64e21 ns, -12:00).round(hour)	changed	True	True	-271821-04-19T12:00:00-12:00[-12:00]	THROWS RangeError	THROWS RangeError	THROWS RangeError
+N1 PlainDate.from(-271821-04-18, bag) reads	same	False	False	THROWS RangeError	THROWS RangeError	THROWS RangeError | get o.overflow	THROWS RangeError | get o.overflow
+N1 PlainYearMonth.from(-271821-03, bag) reads	same	False	False	THROWS RangeError	THROWS RangeError	THROWS RangeError | get o.overflow	THROWS RangeError | get o.overflow

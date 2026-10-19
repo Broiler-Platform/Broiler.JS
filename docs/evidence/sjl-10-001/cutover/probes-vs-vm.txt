@@ -1,0 +1,99 @@
+b1-balance-time: 10 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+b2-balance-datetime: 10 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 3
+b3-add-iso-date: 17 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 8
+b4-regulate: 17 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 8
+b5-limits-in-addition: 17 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 11
+b6-zoned-addition: 9 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+b7-date-add-time-units: 9 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 2
+b8-yearmonth-addition: 8 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 3
+b9-round-points: 35 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 5
+c01-identifiers: 83 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+c02-month-codes: 704 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+c03-eras: 1060 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+c04-reference-years: 1670 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+c05-formula-edges: 558 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 22
+c06-table-edges: 34 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+c07-slot-and-narrowing: 77 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+c08-saturation: 19 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+c09-conversions: 144 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+c10-monthcode-digits: 88 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+d-retained-temporal: 1629 lines, exit=0; no VM answer recorded
+d-retained-temporal-calendars: 3999 lines, exit=0; no VM answer recorded
+d1-sign-and-shape: 10 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 2
+d10-total: 21 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 5
+d11-non-iso-relative: 9 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+d2-largest-unit-and-balance: 15 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 2
+d3-add-calendar-units: 11 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 7
+d4-compare: 16 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 3
+d5-round-time: 57 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 11
+d6-retained-dataset: 1629 lines, exit=0; no VM answer recorded
+d6-round-plain-relative: 24 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 1
+d8-shifted-window: 7 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+d9-round-zoned-relative: 18 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 3
+f1-settings-and-defaults: 29 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 17
+f2-date-differences: 14 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+f3-date-rounding: 19 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 2
+f4-non-iso-rounding: 18 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+f5-datetime-differences: 15 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+f6-time-and-instant: 15 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+f7-zoned-differences: 21 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+f8-yearmonth-differences: 11 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 4
+g01-dates: 280 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+g02-times: 253 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+g03-offsets: 253 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+g04-annotations: 476 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+g05-goals: 138 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+g06-durations: 78 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 1
+g07-calendar-strings: 132 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+g08-timezone-strings: 117 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+g09-offset-strings: 46 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+g10-nonascii: 40 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 40
+g11-more: 38 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 3
+g12-relativeto: 58 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 22
+g13-zoned-option-reads: 20 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+r01-revision-markers: 56 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+r1-date-limits: 12 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 7
+r2-datetime-limits: 11 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 5
+r3-yearmonth-limits: 11 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 4
+r4-instant-limits: 17 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 6
+r5-time-records: 16 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 11
+r6-integer-conversion: 21 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 14
+r6b-plaindate-1e20: 1 lines, exit=0; differing from VM (error type compared): 1, message-only: 0; THROWS lines of the same error type with another message: 0
+   DIFFERS line 1
+     after: new PlainDate(1e20, 1, 1) => THROWS RangeError: Temporal.PlainDate: invalid ISO date
+     vm:    NO OUTPUT; see raw transcript
+r6c-plaindate-minus-1e20: 1 lines, exit=0; differing from VM (error type compared): 1, message-only: 0; THROWS lines of the same error type with another message: 0
+   DIFFERS line 1
+     after: new PlainDate(-1e20, 1, 1) => THROWS RangeError: Temporal.PlainDate: invalid ISO date
+     vm:    NO OUTPUT; see raw transcript
+r6d-plaindatetime-1e20: 1 lines, exit=0; differing from VM (error type compared): 1, message-only: 0; THROWS lines of the same error type with another message: 0
+   DIFFERS line 1
+     after: new PlainDateTime(1e20, 1, 1) => THROWS RangeError: Temporal.PlainDateTime: invalid ISO date-time
+     vm:    NO OUTPUT; see raw transcript
+r6e-plainmonthday-1e20: 1 lines, exit=0; differing from VM (error type compared): 1, message-only: 0; THROWS lines of the same error type with another message: 0
+   DIFFERS line 1
+     after: new PlainMonthDay(1, 1, undefined, 1e20) => THROWS RangeError: Temporal.PlainMonthDay: reference date is out of range
+     vm:    NO OUTPUT; see raw transcript
+r6f-plaindate-2e53-plus-2: 1 lines, exit=0; differing from VM (error type compared): 1, message-only: 0; THROWS lines of the same error type with another message: 0
+   DIFFERS line 1
+     after: new PlainDate(2**53 + 2, 1, 1) => THROWS RangeError: Temporal.PlainDate: invalid ISO date
+     vm:    NO OUTPUT; see raw transcript
+r7-narrowing-in-addition: 20 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 19
+r8-duration-limits: 22 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 13
+s01-forms: 308 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+s02-precision: 375 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+s03-zoned-instant: 81 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+s04-durations: 121 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+s05-option-order: 54 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+smoke: 3 lines, exit=0; differing from VM (error type compared): 0, message-only: 0; THROWS lines of the same error type with another message: 0
+TOTAL lines differing from VM (error type compared): 5; message-only: 0; THROWS lines of the same error type with another message (not compared by check-probes.py): 264
+
+== lines differing (exactly) from <scratch>/sjl105-c/probes-final
+b3-add-iso-date: line count after 17 previous 17
+   line 17
+     now:      PlainDate("2020-01-01").add({months: 1}, null) => THROWS TypeError: Temporal: options must be an object or undefined
+     previous: PlainDate("2020-01-01").add({months: 1}, null) => THROWS TypeError: Temporal options must be an object or undefined
+b9-round-points: line count after 35 previous 35
+   line 34
+     now:      ZonedDateTime UTC +275760-09-13T00:00 round day => THROWS RangeError: Temporal: the date-time is outside the representable range
+     previous: ZonedDateTime UTC +275760-09-13T00:00 round day => THROWS RangeError: Temporal.ZonedDateTime: start of day is outside the representable range

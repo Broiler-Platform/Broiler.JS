@@ -1,0 +1,26 @@
+== start 2026-10-19T06:16:54Z TZ=UTC shell 6dbff8058713c5724ed82ee6173c19b53392e59b
+[test262] Starting test262 run for suite ref ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e using local suite root /home/user/tc39/test262
+[test262] Selected 7549 runnable test(s) for shard 1/1 from 7549 selected file(s) and 53194 candidate path(s) using mode all-script-host-verifiable.
+[test262] Using Broiler script host at <scratch>/sjl105-final/shell/BroilerJS.dll
+[test262] Running 7549 test(s) for shard 1/1.
+[test262] Per-test timeout is 60s; POSIX memory cap is disabled.
+[test262] Using 3 parallel worker(s).
+[test262] Failure 1 at test/built-ins/Date/proto-from-ctor-realm-one.js [original]
+[test262] Failure 2 at test/built-ins/Date/proto-from-ctor-realm-two.js [original]
+[test262] Failure 3 at test/built-ins/Date/proto-from-ctor-realm-zero.js [original]
+[test262] Completed 754/7549 path(s), 754 variant case(s) (passed=751, failed=3, skipped=0, timedOut=0).
+[test262] Completed 1508/7549 path(s), 1508 variant case(s) (passed=1505, failed=3, skipped=0, timedOut=0).
+[test262] Completed 2262/7549 path(s), 2262 variant case(s) (passed=2259, failed=3, skipped=0, timedOut=0).
+[test262] Completed 3016/7549 path(s), 3016 variant case(s) (passed=3013, failed=3, skipped=0, timedOut=0).
+[test262] Completed 3770/7549 path(s), 3770 variant case(s) (passed=3767, failed=3, skipped=0, timedOut=0).
+[test262] Completed 4524/7549 path(s), 4524 variant case(s) (passed=4521, failed=3, skipped=0, timedOut=0).
+[test262] Failure 4 at test/intl402/DateTimeFormat/proto-from-ctor-realm.js [original]
+[test262] Completed 5278/7549 path(s), 5278 variant case(s) (passed=5274, failed=4, skipped=0, timedOut=0).
+[test262] Completed 6032/7549 path(s), 6032 variant case(s) (passed=6028, failed=4, skipped=0, timedOut=0).
+[test262] Completed 6786/7549 path(s), 6786 variant case(s) (passed=6782, failed=4, skipped=0, timedOut=0).
+[test262] Completed 7540/7549 path(s), 7540 variant case(s) (passed=7536, failed=4, skipped=0, timedOut=0).
+[test262] Completed 7549/7549 path(s), 7549 variant case(s) (passed=7545, failed=4, skipped=0, timedOut=0).
+[test262] Wrote machine-readable summary to <scratch>/sjl105-final/temporal-after-utc.json
+[test262] Finished test262 run: variantCases=7549, executed=7549, passed=7545, failed=4, skipped=0, timedOut=0
+exit=1
+== end 2026-10-19T07:10:16Z

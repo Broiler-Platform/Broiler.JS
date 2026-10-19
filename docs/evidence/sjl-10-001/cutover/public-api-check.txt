@@ -1,0 +1,34 @@
+SJL-10.5: the public API of this engine's assemblies before and after the Temporal cut-over (decision SJL-D-25)
+
+Taken 2026-10-19 by the records' step (part D), from the two shells the cut-over's checks ran:
+  base:  main 1c411b68, <scratch>/sjl105-base/shell (Broiler.JavaScript.BuiltIns.dll SHA-256 61dbdd71...)
+  after: sjl-10-5-js 6dbff805, <scratch>/sjl105-final/shell (Broiler.JavaScript.BuiltIns.dll SHA-256 dfd38877...)
+The branch's later commits (the merge e2b2a785 and corpus revision 26's feee5b7a and c97a9996) change no code.
+
+Tool: PublicApiGenerator 11.4.6, as bundle sjl-0-001's api step uses it (docs/evidence/sjl-0-001/api/), here in a
+throwaway console program that loads one assembly from a shell folder, resolving its references beside it:
+
+  var path = Path.GetFullPath(args[0]);
+  var dir = Path.GetDirectoryName(path)!;
+  AssemblyLoadContext.Default.Resolving += (ctx, name) =>
+  {
+      var candidate = Path.Combine(dir, name.Name + ".dll");
+      return File.Exists(candidate) ? ctx.LoadFromAssemblyPath(candidate) : null;
+  };
+  var text = Assembly.LoadFrom(path).GeneratePublicApi(new ApiGeneratorOptions { IncludeAssemblyAttributes = false });
+  File.WriteAllText(args[1], text.ReplaceLineEndings("\n") + "\n");
+
+Result (SHA-256 of each listing, 2,574 and 1,492 lines):
+  Broiler.JavaScript.BuiltIns  base 65a6e25d555f98f87ed915800d68c03557a768f2d22b1a7eb3a648ca71c7c456
+                               after 65a6e25d555f98f87ed915800d68c03557a768f2d22b1a7eb3a648ca71c7c456  identical
+  Broiler.JavaScript.Runtime   base 9aef185a79957bd19660b30ccd555d75a3aa0efb80af855b054af8eb9cc497a1
+                               after 9aef185a79957bd19660b30ccd555d75a3aa0efb80af855b054af8eb9cc497a1  identical
+
+The public Temporal types in the listing, before and after alike: JSTemporalDuration, JSTemporalInstant,
+JSTemporalPlainDate, JSTemporalPlainDateTime, JSTemporalPlainMonthDay, JSTemporalPlainTime, JSTemporalPlainYearMonth
+and JSTemporalZonedDateTime, each with the same constructors, exported properties and methods. No other assembly of
+the engine changed in the cut-over (git diff --stat 1c411b68 6dbff805 -- Broiler.JS lists files of BuiltIns and of
+its tests only).
+
+The shared library's own baseline, Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt, is unchanged
+between 1c411b68 and 6dbff805: decision D12 (163d43aa) changed no public API, and rule SL6 holds it.

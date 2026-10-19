@@ -23,12 +23,18 @@ area's rules run test262 `ccaac100` (decision D2).
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in Broiler.VM).
 **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State, 2026-10-18, at SJL-10.3:**
+**State, 2026-10-19, at SJL-10.5:**
 - The bases of all three parts are taken at the rule's commit `1d27064d` (section 1).
 - The library holds the area, and the library-level runner answers its vectors (section 3).
-- The after runs follow SJL-10.5's cut-over.
+- This engine is cut over to the library, and the cut-over's own checks hold: the local Temporal selection of test262,
+  both datasets, the correspondence's probes, and the vectors at corpus revisions 25 and 26, which retires the area's
+  divergence fields (section 4).
+- The after runs of the rule's three parts follow, at the commit that lands the cut-over (SJL-10.6).
 
 **Nothing here is a verdict.**
+
+*(Revised 2026-10-19, at SJL-10.5: the state read "at SJL-10.3", and its last item "The after runs follow SJL-10.5's
+cut-over.")*
 
 *(Revised 2026-10-18, at SJL-10.3: the state read "at SJL-10.2", and had no item on the library.)*
 
@@ -367,4 +373,192 @@ All pass. `assurance check` reports no violation.
   exception (above).
 
 **Nothing is cut over yet.** Broiler.VM's cut-over (SJL-10.4) follows on the shared stream's next version, which it
-sets, as SJL-8.5's `2d37a38a` did, and this engine's (SJL-10.5) after it.
+sets, as SJL-8.5's `2d37a38a` did, and this engine's (SJL-10.5) after it. *(SJL-10.5 cuts this engine over: section
+4.)*
+
+## 4. The cut-over (SJL-10.5)
+
+This engine's Temporal core is the library's `Broiler.ECMAScript.Temporal` (section 3). `BuiltIns` takes it by
+project reference: the shared stream's `0.1.0-preview.6`, published on 2026-10-18 after Broiler.VM's cut-over set
+it, with decision D12 (below), which the library makes after that version.
+- **The built-ins keep** their `JSTemporal*` objects, the reads of options and fields in specification order,
+  coercion, `relativeTo` resolution, their errors and `Temporal.Now`'s clock and host zone.
+- **The adapter** is `TemporalAdapter`, in `Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/`, one file by concern:
+  records, grammar, serialization, calendars and durations. Beside it, `TemporalTimeZones.Arithmetic` is the
+  library's zone provider over SJL-8's rules.
+- **Every correction** is in [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md), 2026-10-19.
+
+**The commits**, on branch `sjl-10-5-js` from `main` at `1c411b68`, each a part of the cut-over:
+
+| Part | Commits | What it moved, or did |
+|---|---|---|
+| A: records, limits, balancing, the grammar and serialization | `f42eac6b`, `3503cab5`, `808d7838` | `TemporalLimits` and `IsoArithmetic` for every type's limits, regulation, addition and balancing; `TemporalGrammar` for every string; `TemporalFormat` and `TemporalOptionRules` for every string form |
+| B: calendars | `9242c342`, `b34f8c30` | `TemporalCalendars` for calendar identifiers, the calendar a Temporal object lends, and every calendar operation |
+| C: durations, rounding and differences | `8df9227e`, `b37c7465`, `2dfdf92d`, `dd3ade8c`, `41eaa90f` | `DurationMath` for `Duration`'s addition, `compare`, `round` and `total` with `relativeTo`; `TemporalDifferences` for every `until` and `since`; the rounding of points, a zone's day lengths and the zoned addition; the options' rules; the tests of the corrections |
+| The review's fixes | `3dd4626e`, `fd6dab95`, `25a474ec`, `88bbe199`, `70770e35`, `4bdfb232`, `58549f77`, `b72aefdd` | two bridges with no caller deleted; one start-of-day adapter, one copy of InterpretISODateTimeOffset's matching and one `overflow` read; stale comments; the defects code-1 and code-2; their tests |
+| Decision D12 | `163d43aa`, `6dbff805` | the library's NudgeToZonedTime answers `OutOfRange` where the day span's sign is not the duration's; its tests, the shared changelog and the adapter guide |
+| `main` | `e2b2a785` (merge) | `0.1.0-preview.6` published: `Broiler.ECMAScript/CHANGELOG.md` and the version suffix in `Broiler.ECMAScript/Directory.Build.props`, `preview.5` to `preview.6`, only. No code |
+| Corpus revision 26 | `feee5b7a`, `c97a9996` | retires the area's 479 `divergence` fields; this engine's runs on revision 25 after the cut-over and on revision 26 |
+| The records | the commits that add this section | the changelog, the public API, the notices, the plan pair and this section |
+
+**What was deleted.** Every member the deletion list names (JSD-0078's X6, the correspondence's section 11), the
+formula and table calendar copies among them (decision D3). The commits name each.
+- **Nine files, whole:** `TemporalIsoString.cs`, `TemporalNonIso.cs`, `TemporalArithmeticCalendar.cs`,
+  `TemporalTableCalendar.cs`, `TemporalCalendarMath.cs`, `JSTemporalCalendar.cs`, `JSTemporalDuration.Arithmetic.cs`,
+  `JSTemporalZonedDateTime.Rounding.cs` and `JSTemporalStubs.cs`, which held only comments.
+- **In each type:** the limit, regulation, addition, balancing, difference, parsing and formatting copies, the
+  month-code copies, and the copies of the `overflow` and `disambiguation` reads.
+- **In `JSTemporalRoundingOptions`:** the unit order, the maximum increments and their validation.
+
+`BuiltIns/Temporal/` held 21 files of 11,521 lines at the base, and holds 17 of 4,761. None of them uses a regular
+expression, where ten did. The public API listings of `Broiler.JavaScript.BuiltIns` and `Broiler.JavaScript.Runtime`
+are byte for byte the base's ([`cutover/public-api-check.txt`](cutover/public-api-check.txt)), so the public
+`JSTemporal*` types stay as shells (SJL-D-25).
+
+**The name search** ([`cutover/deletion-search.txt`](cutover/deletion-search.txt)) runs over every tracked `.cs` file
+of `Broiler.JS/` at `c97a9996`, whose code is `6dbff805`'s, comments included. It looks for 156 names, every type
+and member the commits name as deleted. 127 have no hit. The other 29 are found only as:
+- thin adapters named after the specification's operations, each a call into the library (`RegulateDateTime`,
+  `LocalAt`, `LocalNanoseconds`, the six `Parse…String` members, `TryParseOffsetString`, `CanonicalizeCalendar`);
+- comments naming those operations;
+- tests' comments on the engine before the cut-over;
+- a library record's member (`TimeNanoseconds`), and Intl's own `ResolveCalendar`.
+
+**The checks at the cut-over's final commit, `6dbff805`**, taken on 2026-10-19 from 06:12Z to 09:04Z from a clean
+tree, on a machine nothing else was using. The branch's later commits change no code (the table above).
+
+| Check | Result | Retained |
+|---|---|---|
+| Build | `Broiler.JS.slnx` in Release, every project compiled: 0 errors, 76 warnings, the 58 distinct warnings of parts B's and C's builds, none new | [`cutover/build-and-tests.txt`](cutover/build-and-tests.txt) |
+| Unit tests, Release, `--no-build`, `TZ=UTC` | `Broiler.JavaScript.BuiltIns.Tests` 3,524, `Broiler.JavaScript.Integration.Tests` 5,339 (20 of them `SharedTemporalAdapterTests`' and 23 `SharedTemporalDurationsTests`') and `Broiler.ECMAScript.Algorithms.Tests` 1,296, every one passing, none skipped | the same |
+| test262, the local Temporal selection, UTC and `America/New_York` | Each path's verdict is the base's, in each zone: no path changed, and none timed out | [`cutover/test262-compare-utc.txt`](cutover/test262-compare-utc.txt), [`-new-york.txt`](cutover/test262-compare-new-york.txt), [`cutover/test262-run-utc.log`](cutover/test262-run-utc.log), [`-new-york.log`](cutover/test262-run-new-york.log) |
+| The reference datasets, against part C's base | Every line of `temporal.js` and of `temporal-calendars.js` equals its expected answer; 7 and 103 moved there since the base, and none the other way | [`cutover/datasets-report.txt`](cutover/datasets-report.txt), [`cutover/datasets-compare.txt`](cutover/datasets-compare.txt) |
+| The correspondence's probes, against Broiler.VM's recorded answers | Every line is Broiler.VM's answer, by error type, but the five of row R6, whose recorded answers are Broiler.VM's from before its cut-over corrected the row | [`cutover/probes-check.txt`](cutover/probes-check.txt), [`cutover/probes-vs-vm.txt`](cutover/probes-vs-vm.txt) |
+| The engine-level vectors, revision 25 | In each zone, the 473 classified divergences no longer hold and everything else is as at the base | [`engine/cut-over-revision-25-*`](engine/) |
+
+- **test262.** The selection is `built-ins/Temporal`, `intl402/Temporal`, `staging/Temporal`,
+  `staging/Intl402/Temporal`, `intl402/DateTimeFormat`, `intl402/DurationFormat` and `built-ins/Date`. It was run at
+  suite `ccaac100` by `scripts/compliance/run_test262.py` with `--all-script-host-verifiable --include-negative`,
+  three workers and a 60 s timeout. Each zone's run is compared, path by path, with the one local base, taken the
+  same way at `1c411b68`. The paths that fail at the base, Date's three `proto-from-ctor-realm` tests and
+  `DateTimeFormat`'s, fail after. These are not the rule's runs: parts A and B judge hosted runs, at the commit that
+  lands the cut-over (SJL-10.6).
+- **The datasets** were run by the rule's harness, `--bundle sjl-10-001`, with the shell of `6dbff805`, and compared
+  with [`datasets/base/`](datasets/base/). The Broiler.VM copies are the same SHA-256 in both runs.
+- **The probes.** All 73 of the correspondence's probes were run in `TZ=UTC`. 70 have a Broiler.VM answer and 65
+  equal it on every line. The other five differ by one line each: R6's `new PlainDate(1e20, 1, 1)` and its kin, where
+  Broiler.VM's recorded answer ended the invocation and this engine answers a `RangeError`. In exact text, 264
+  `RangeError` and `TypeError` lines carry another message than Broiler.VM's; each engine keeps its own (JSD-0078).
+- **The vectors.** Built once in Release at `6dbff805` from a clean tree and run in both zones together, with no
+  `LANG`, from 08:02Z to 09:03Z. In each zone: 103,312 vectors, 103,308 matching, 4 classified divergences (the
+  number area's) and, among the matches, 473 whose divergence no longer holds. Nothing is unclassified, and nothing
+  is not implemented. The two reports are byte for byte the same. Against the base's runs (section 2) the vectors
+  are the same, in the same order. Only those 473 changed status, and no other vector's rendered value moved. Each
+  negative control reports `numbers/to-fixed/0001` as its one difference.
+  - Logs and reports: [`engine/cut-over-revision-25-utc.log`](engine/cut-over-revision-25-utc.log) and `.tsv.gz`,
+    [`engine/cut-over-revision-25-new-york.log`](engine/cut-over-revision-25-new-york.log) and `.tsv.gz`.
+  - Negative controls: `negative-control-cut-over-revision-25-utc.tsv` and `-new-york.tsv`.
+
+**Corpus revision 26** (`feee5b7a`) retires the area's 479 `divergence` fields: this engine's 473, and Broiler.VM's
+6 (row R6), which its cut-over corrects and its bundle's section 4 records
+([`engine/retired-divergences-revision-26.tsv`](engine/retired-divergences-revision-26.tsv)). The six files under
+`conformance/vectors/temporal/` are revision 24's byte for byte.
+
+This engine's runs on revision 26 were built once in Release at `feee5b7a`, from a clean tree, and run in both zones
+together from 09:37Z to 10:37Z, with no `LANG`. In each zone:
+- 103,312 vectors: 103,308 match, and 4 are classified divergences, the number area's;
+- no difference is unclassified, none is not implemented, and no divergence no longer holds;
+- the two reports are byte for byte the same, and so are the negative controls, each of which reports
+  `numbers/to-fixed/0001` as its one difference.
+
+Against the runs on revision 25 after the cut-over, every expected and rendered value is the same, and only the
+479 retired vectors changed class. The files are [`engine/run-revision-26-utc.log`](engine/run-revision-26-utc.log)
+and `.tsv.gz`, [`engine/run-revision-26-new-york.log`](engine/run-revision-26-new-york.log) and `.tsv.gz`, and
+`negative-control-revision-26-utc.tsv` and `-new-york.tsv`.
+
+**Decision D11**, the owner's of 2026-10-18 (JSD-0078): where the pinned text asserts that a week or day nudge window
+holds its destination and an input breaks it, the answer is a `RangeError`. Pacific/Apia skipped 2011-12-30. With `a`
+2011-12-31T16:15+14:00[Pacific/Apia] and `b` 2011-12-31T00:00+14:00[Pacific/Apia], exactly these moved
+([`cutover/d12-ext.js`](cutover/d12-ext.js), [`.base.txt`](cutover/d12-ext.base.txt) at `1c411b68`,
+[`.after.txt`](cutover/d12-ext.after.txt) at `6dbff805`):
+
+| Operation, in each of `trunc`, `floor`, `ceil`, `expand` and `halfExpand` | Base | After |
+|---|---|---|
+| `a.since(b, { largestUnit: "day", smallestUnit: "day" })` | `PT0S` (`trunc`, `floor`), `P1D` (the others) | `RangeError` |
+| `a.until(b, { largestUnit: "day", smallestUnit: "day" })` | `PT0S` (`trunc`, `ceil`), `-P1D` (the others) | `RangeError` |
+| `a.since(b, { largestUnit: "month", smallestUnit: "day" })` | `PT0S` (`trunc`, `floor`), `P1D` (the others) | `RangeError` |
+| `Temporal.Duration.from("-PT16H15M").round({ smallestUnit: "day", relativeTo: a })`, and `.total({ unit: "day", relativeTo: a })` | a plain `Error` carrying a .NET `ArgumentOutOfRangeException` | `RangeError` |
+
+The message is "result is outside the representable range". Nothing else in the probe moved:
+- `b.until(a)` and `b.since(a)` in days;
+- `a.since(b)` and `-PT16H15M` relative to `a` rounded to weeks;
+- `a.since(b)` in hours;
+- anything relative to `b`, and `a.since(c)` from 2011-12-29;
+- `compare`, `a.round("day")`, `hoursInDay` and `a.subtract("P1D")`.
+
+So section 3's "this engine's shell answers `PT0S`" holds of `trunc`, the default, and of some other modes: the
+others answered a day, and `round` and `total` a plain `Error`. The plan's SJL-10.3 record gains a dated note that
+says so.
+
+**Decision D12**, the owner's of 2026-10-19, under the same direction: decision D11's rule reaches
+NudgeToZonedTime's assertion on the day span's sign (step 8), where an input breaks it. The same `a` and `b` break it
+whenever a time unit is rounded with a date largest unit back from `a`. In 36 probe lines, the answers are:
+- **the base:** a `RangeError`, "time zone returned inconsistent Instants", from this engine's own zoned code;
+- **this change:** a `RangeError`, "result is outside the representable range";
+- **the polyfill at `e8cc03fc`:** a `RangeError`;
+- **Broiler.VM**, before its cut-over and on `0.1.0-preview.6`: durations from outside the text's domain, `P1DT16H`
+  and the like.
+
+The lines are `a.since(b)` and `a.until(b)` with `{ largestUnit: "day", smallestUnit: "hour" }`, with a largest
+month, to 30 minutes and to 2 nanoseconds, and `-PT16H15M` rounded the same way relative to `a`. The 9 other lines,
+forward from `b`, unrounded, or in hours, are equal in all five.
+[`cutover/d12-facts.md`](cutover/d12-facts.md) has every line in every engine, from the decision's own check, with
+its probe [`cutover/d12z.js`](cutover/d12z.js) and its base, after, polyfill and Broiler.VM answers beside it. Its
+"this build" was `163d43aa`, whose library code is `6dbff805`'s; at `6dbff805` the probe gives the same answers.
+Its file names are those of the library step's scratch folder.
+
+**The changes no row lists**, kept under the owner's direction of 2026-10-18:
+- part A's two, part B's seven and part C's six;
+- the review's U1 to U8;
+- the two defects at the base that the review fixed, code-1 and code-2;
+- one these records found: the rounding of points, `01:10` to 20 minutes under `halfEven` being `01:00` where it was
+  `01:20`.
+
+[`cutover/kept-changes.js`](cutover/kept-changes.js) probes each, in `TZ=UTC`, in this engine at `1c411b68`
+([`.base.txt`](cutover/kept-changes.base.txt)) and at `6dbff805` ([`.after.txt`](cutover/kept-changes.after.txt)),
+in Broiler.VM at `83fef1a` with `0.1.0-preview.6` ([`.vm.txt`](cutover/kept-changes.vm.txt)), and in the polyfill
+at `e8cc03fc` ([`.ref.txt`](cutover/kept-changes.ref.txt)).
+[`cutover/kept-changes.compare.tsv`](cutover/kept-changes.compare.tsv) sets them side by side:
+- 61 of its 66 lines changed since the base, and on every one this engine now answers as Broiler.VM and the
+  polyfill do;
+- three are controls that did not change;
+- two did not change and still differ from both. A string outside the limits is refused before the `overflow`
+  option is read, a divergence from the text that this cut-over leaves as it was.
+
+**What SJL-10.6 judges.** The rule's three parts at the commit that lands this change, as the rule asks:
+- part A, the whole suite per path in UTC with negative-metadata tests, by `test262 evidence`, against section 1's
+  base;
+- part B, the same in `America/New_York`;
+- part C, both datasets at that commit, against [`datasets/base/`](datasets/base/).
+
+Nothing above is a verdict on them. The local selection, the datasets run and the probes are the cut-over's own
+checks. The bundle has no manifest yet: its collector writes one when the after runs are imported, as bundle
+`sjl-8-001`'s did at SJL-8.7.
+
+**The files in [`cutover/`](cutover/)**, each small and text:
+
+| File | What it holds |
+|---|---|
+| `build-and-tests.txt` | The build's summary and its 58 distinct warnings; the three test projects' results |
+| `test262-compare-utc.txt`, `test262-compare-new-york.txt` | The per-path comparison with the local base, in each zone |
+| `test262-run-utc.log`, `test262-run-new-york.log` | The two runs' logs, with the shell's commit |
+| `datasets-report.txt`, `datasets-compare.txt` | The datasets run's report and its comparison with part C's base |
+| `probes-check.txt`, `probes-vs-vm.txt` | The correspondence's probes against Broiler.VM's recorded answers, by probe and by line |
+| `d12-ext.js`, `.base.txt`, `.after.txt` | Part C's probe of row D12's input: decision D11's operations, and decision D12's |
+| `d12-facts.md`, `d12z.js`, `d12z.{base,after,ref,vm-now}.txt` | Decision D12's facts, its probe and the answers of each engine |
+| `kept-changes.js`, `kept-changes.{base,after,vm,ref}.txt`, `kept-changes.compare.tsv` | The changes no row lists, in four engines |
+| `deletion-search.txt` | The name search for the deletion list |
+| `public-api-check.txt` | The public API listings before and after |
+
+Paths in them are shortened to `<tree>`, this repository's checkout, and `<scratch>`, the scratch folder the checks
+ran from.

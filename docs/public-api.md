@@ -64,7 +64,7 @@ profile. They are not part of the `Broiler.JavaScript.*` set above and do not sh
 
 | Package | State | Public surface |
 | --- | --- | --- |
-| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1` to `0.1.0-preview.4` published, the numerics area from `0.1.0-preview.2`, the text area from `0.1.0-preview.3` and the Date area from `0.1.0-preview.4` *(corrected 2026-10-16; read "`0.1.0-preview.1` and `0.1.0-preview.2`, with the numerics area, published; `0.1.0-preview.3`, with the text area, the next"; corrected 2026-10-14, read "`0.2.0`, with the numerics area, the next version (Broiler.VM's committed feed holds its `0.2.0-preview.1`)")*; this engine's `Ast`, `Parser`, `Runtime`, `BuiltIns`, `Storage` and `Expressions` reference it *(`Ast` added 2026-10-16, at milestone SJL-7.5, for `StringSpan`'s obsolete trims)* | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys`; the numerics area, in the same namespace: `IntegerConversions`, `Float16`, `MathKernels`, `PreciseSum`, `ExactRounding` with `RoundingMode` and `UnsignedRoundingMode`, `BigIntMath`, `BigIntText` and `BigIntPolicy`; the text area, namespace `Broiler.ECMAScript.Text`: `Utf16` with `CodePointRecord`, `StringPadding` with `PadPlacement`, `RelativeIndex`, `ReplacementTemplate` with `ReplacementPart` and `ReplacementPartKind`, `UriCodec`, `Base64Codec` with `Base64Alphabet` and `LastChunkHandling`, `JsonReader` with `JsonToken`, and `JsonText`; and the Date area, namespace `Broiler.ECMAScript.Time`: `EcmaTime`, `IsoCalendarMath`, `ILocalTimeProvider` with `FixedOffsetLocalTimeProvider` and `EcmaLocalTime`, `EcmaDateParser` with `DateParseDialect`, `EcmaParsedKind` and `EcmaParsedDate`, and `EcmaDateFormatter` *(added 2026-10-16)*; and, in the stream's next version `0.1.0-preview.5`, not yet published, the time-zone and calendar area in the same namespace: `ITimeZoneDatabase` and `TimeZoneDatabase` with `TimeZoneId`, `ITimeZoneRules` and `FixedOffsetTimeZoneRules`, `OffsetTimeZones`, `ZonedTime` with `IsoDate`, `IsoTime`, `IsoDateTime`, `Disambiguation` and `TimeStatus`, and `ICalendarTables`, `CalendarTables`, `CalendarYears`, `CalendarYear` and `TableCalendar`, which this engine's `BuiltIns` calls from milestone SJL-8.6 *(added 2026-10-17)* |
+| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1` to `0.1.0-preview.6` published, the numerics area from `0.1.0-preview.2`, the text area from `0.1.0-preview.3`, the Date area from `0.1.0-preview.4`, the time-zone and calendar area from `0.1.0-preview.5` and the Temporal core from `0.1.0-preview.6` *(revised 2026-10-19, at milestone SJL-10.5; read "`0.1.0-preview.1` to `0.1.0-preview.4` published, the numerics area from `0.1.0-preview.2`, the text area from `0.1.0-preview.3` and the Date area from `0.1.0-preview.4`")* *(corrected 2026-10-16; read "`0.1.0-preview.1` and `0.1.0-preview.2`, with the numerics area, published; `0.1.0-preview.3`, with the text area, the next"; corrected 2026-10-14, read "`0.2.0`, with the numerics area, the next version (Broiler.VM's committed feed holds its `0.2.0-preview.1`)")*; this engine's `Ast`, `Parser`, `Runtime`, `BuiltIns`, `Storage` and `Expressions` reference it *(`Ast` added 2026-10-16, at milestone SJL-7.5, for `StringSpan`'s obsolete trims)* | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys`; the numerics area, in the same namespace: `IntegerConversions`, `Float16`, `MathKernels`, `PreciseSum`, `ExactRounding` with `RoundingMode` and `UnsignedRoundingMode`, `BigIntMath`, `BigIntText` and `BigIntPolicy`; the text area, namespace `Broiler.ECMAScript.Text`: `Utf16` with `CodePointRecord`, `StringPadding` with `PadPlacement`, `RelativeIndex`, `ReplacementTemplate` with `ReplacementPart` and `ReplacementPartKind`, `UriCodec`, `Base64Codec` with `Base64Alphabet` and `LastChunkHandling`, `JsonReader` with `JsonToken`, and `JsonText`; and the Date area, namespace `Broiler.ECMAScript.Time`: `EcmaTime`, `IsoCalendarMath`, `ILocalTimeProvider` with `FixedOffsetLocalTimeProvider` and `EcmaLocalTime`, `EcmaDateParser` with `DateParseDialect`, `EcmaParsedKind` and `EcmaParsedDate`, and `EcmaDateFormatter` *(added 2026-10-16)*; and, from `0.1.0-preview.5`, the time-zone and calendar area in the same namespace: `ITimeZoneDatabase` and `TimeZoneDatabase` with `TimeZoneId`, `ITimeZoneRules` and `FixedOffsetTimeZoneRules`, `OffsetTimeZones`, `ZonedTime` with `IsoDate`, `IsoTime`, `IsoDateTime`, `Disambiguation` and `TimeStatus`, and `ICalendarTables`, `CalendarTables`, `CalendarYears`, `CalendarYear` and `TableCalendar`, which this engine's `BuiltIns` calls from milestone SJL-8.6 *(added 2026-10-17; revised 2026-10-19, at milestone SJL-10.5, where it read "and, in the stream's next version `0.1.0-preview.5`, not yet published, the time-zone and calendar area")*; and, from `0.1.0-preview.6`, the Temporal core, namespace `Broiler.ECMAScript.Temporal`, every member of which its `PublicAPI.txt` lists, which this engine's `BuiltIns` calls from milestone SJL-10.5 *(added 2026-10-19)* |
 | `Broiler.ECMAScript.Conformance` | Test-only; not packed at this version | The corpus reader, the validator, the engine-level and library-level runners and their report |
 
 **Their compatibility promise is stronger than this engine's**, and it is enforced rather than stated
@@ -97,6 +97,45 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 "`NumericKeys`".* *Revised again 2026-10-15, at milestone SJL-5.5, when the text area moved in: the
 row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
 next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
+
+## Public API changes, 2026-10-19 (the Temporal core moves to the shared library)
+
+Milestone SJL-10.5 moves the Temporal core onto `Broiler.ECMAScript.Algorithms`' `Broiler.ECMAScript.Temporal`, which
+`BuiltIns` takes by project reference (Broiler.VM's JSD-0078): records and limits, balancing, durations and rounding,
+differences, the grammar, calendars and serialization. It applies decision SJL-D-25 to each public member the move
+changes. **No public member is removed, emptied or changed**: every member of the area's deletion list is internal
+or private, and the public `JSTemporal*` types stay as shells over the library. The public API listings of
+`Broiler.JavaScript.BuiltIns` and `Broiler.JavaScript.Runtime`, written by PublicApiGenerator 11.4.6 from the base's
+shell (`1c411b68`) and the cut-over's (`6dbff805`), are byte for byte the same
+([`docs/evidence/sjl-10-001/cutover/public-api-check.txt`](evidence/sjl-10-001/cutover/public-api-check.txt)). The
+observable corrections and policy changes are in [`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md).
+
+| Member | Assembly | Disposition | What it does now |
+| --- | --- | --- | --- |
+| `JSTemporalDuration`, `JSTemporalInstant`, `JSTemporalPlainDate`, `JSTemporalPlainDateTime`, `JSTemporalPlainMonthDay`, `JSTemporalPlainTime`, `JSTemporalPlainYearMonth` and `JSTemporalZonedDateTime`, and their exported members | `BuiltIns` | kept, results corrected | Each reads its options and fields as before, in specification order, and hands its slots to the shared library for the limits, arithmetic, rounding, differences, parsing, formatting and calendars. The answers that change are the changelog's corrections, by correspondence row (R7, B5, D3, D4, D6 to D8, D11, F4, F7, the G rows, C2, C5, C6, C9, C12, C13, C15 to C17), the changes the correspondence did not find, and decisions D11 and D12 |
+
+**Removed internal and private members**, with no public surface:
+
+- *Whole types and files:* the internal types `TemporalIsoString`, `TemporalNonIso`, `TemporalArithmeticCalendar`,
+  `TemporalTableCalendar`, `TemporalCalendarMath` and `TemporalCalendar` (`JSTemporalCalendar.cs`); and the files
+  `JSTemporalDuration.Arithmetic.cs` and `JSTemporalZonedDateTime.Rounding.cs`, parts of the public partial classes
+  `JSTemporalDuration` and `JSTemporalZonedDateTime` that held no public member, and `JSTemporalStubs.cs`, which held
+  only comments.
+- *In each type:* the limit, regulation, addition, balancing, difference, parsing and formatting copies and the
+  month-code and option-reading copies the changelog lists; and `TemporalRoundingOptions`' unit order, maximum
+  increments and their validation. The commits `f42eac6b` to `6dbff805` name every member, and bundle `sjl-10-001`'s
+  [`cutover/deletion-search.txt`](evidence/sjl-10-001/cutover/deletion-search.txt) is the search for them.
+
+The new internal members are, in `BuiltIns`, `TemporalAdapter` (`TemporalAdapter.Records.cs`, `.Grammar.cs`,
+`.Serialization.cs`, `.Calendars.cs` and `.Durations.cs`: this engine's reads, coercions and error mapping around the
+library) and `TemporalTimeZones.Arithmetic`, the library's zone provider over SJL-8's rules.
+
+**Packages.** `BuiltIns` references `Broiler.ECMAScript.Algorithms`, as before. The Temporal core is in
+`0.1.0-preview.6`, which nuget.org serves. Decision D12, which the library makes after that version, is in the stream's
+next version, which is not yet published: until it is, `BuiltIns` packed against `0.1.0-preview.6` answers a duration
+where the changelog's decision D12 entry says this engine answers a `RangeError`.
+
+**Compatibility.** Binary-compatible: every public member is kept with its signature. Source-compatible.
 
 ## Public API changes, 2026-10-17 (the time-zone and calendar area moves to the data home's tables)
 

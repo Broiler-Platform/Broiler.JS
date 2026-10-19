@@ -1,0 +1,138 @@
+# SJL-10.5: the name search for the deletion list, at the cut-over's final code
+#
+# Tree: Broiler.JS sjl-10-5-js at c97a9996, whose code is 6dbff805's (the merge e2b2a785 and corpus
+# revision 26's two commits change no code). Searched: every tracked .cs file under Broiler.JS/, word-bounded,
+# comments included. Names: every type and member the cut-over's commits (f42eac6b to 6dbff805) name as
+# deleted, from the brief's deletion list (JSD-0078's X6; the correspondence's section 11), with the review's
+# fixes. A name with no hit is absent. Each name with hits is classified below; none is a copy of the area's
+# arithmetic, parsing, formatting or calendars left in the engine.
+#
+# Names searched: 156; with no hit: 127; with hits: 29.
+
+TemporalNonIso: 4 - comments in tests, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue775Tests.cs:11: //     calendar-date math with PlainDate via TemporalNonIso.
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue777Tests.cs:13: //     the calendar-date math with PlainDate / PlainDateTime via TemporalNonIso.
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue781Tests.cs:67: //     difference path (TemporalNonIso.Difference). It now anchors the year/month counting on the
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue794Tests.cs:13: //     the receiver's calendar (TemporalNonIso.AddToIso) for the non-ISO calendars, instead of always
+TemporalArithmeticCalendar: 1 - a comment in a test, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue773Tests.cs:10: //     islamic-civil / islamic-tbla (TemporalArithmeticCalendar, pure epoch-day math).
+TemporalCalendarMath: 1 - a comment in a test, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue779Tests.cs:45: //     inLeapYear) through the same TemporalCalendarMath as PlainDate. Calendar/DST arithmetic
+ISOYearMonthWithinLimits: 4 - comments naming the specification's operation (two in tests, two beside the library's call)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue826PlainYearMonthExtremesTests.cs:7: // a PlainYearMonth is bounded by ISOYearMonthWithinLimits (year/month only), but Broiler
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue826PlainYearMonthExtremesTests.cs:39: // The month one past the maximum overflows ISOYearMonthWithinLimits (reference month > 9) and is rejected.
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:277: // ISOYearMonthWithinLimits.
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:324: /// <summary>CalendarYearMonthFromFields (s12.3.13): the first day of the calendar month, then ISOYearMonthWithinLimits.</summary>
+RegulateDateTime: 3 - JSTemporalPlainDateTime's private adapter of that name: the library's RegulateTime and ISODateTimeWithinLimits after the calendar's date (no copy of the arithmetic)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:207: return RegulateDateTime(date, h, mi, s, ms, us, ns, overflow, calendarId);
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:477: return RegulateDateTime(date, hour, minute, second, millisecond, microsecond, nanosecond, overflow, calendarId);
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:481: private static JSValue RegulateDateTime(IsoDate date, int h, int mi, int s, int ms, int us, int ns, TemporalOverflow overflow, string calendarId)
+LocalAt: 2 - JSTemporalZonedDateTime's private adapter: the library's GetISOPartsFromEpoch of the instant plus its offset
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:624: private (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) LocalAt(BigInteger epochNs)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:699: private (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) Local() => LocalAt(epochNanoseconds);
+LocalNanoseconds: 4 - JSTemporalZonedDateTime's private adapter: the library's GetUtcEpochNanoseconds
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:550: var localNs = LocalNanoseconds(updated.isoYear, updated.isoMonth, updated.isoDay,
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:769: var localNs = LocalNanoseconds(pdt.isoYear, pdt.isoMonth, pdt.isoDay,
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:795: private static BigInteger LocalNanoseconds(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:821: var localNs = LocalNanoseconds(year, month, day, hour, minute, second, ms, us, ns);
+ParseTemporalDateString: 2 - the type's private adapter named after the specification's operation: the library's grammar (TemporalAdapter.ParseIsoString), no regular expression
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:323: var parsed = ParseTemporalDateString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:345: private static JSValue ParseTemporalDateString(string text)
+ParseTemporalDateTimeString: 2 - as above
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:429: var parsed = ParseTemporalDateTimeString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:495: private static JSValue ParseTemporalDateTimeString(string text)
+ParseTemporalTimeString: 4 - as above (and its comment)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:94: var parsed = ParseTemporalTimeString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:298: return ParseTemporalTimeString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:327: // ParseTemporalTimeString: ParseISODateTime with the TemporalTimeString goal, the shared library's grammar. Its
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:330: private static JSValue ParseTemporalTimeString(string text)
+ParseTemporalYearMonthString: 2 - as above
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:252: var parsed = ParseTemporalYearMonthString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:278: private static JSValue ParseTemporalYearMonthString(string text)
+ParseTemporalMonthDayString: 2 - as above
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:180: var parsed = ParseTemporalMonthDayString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:204: private static JSValue ParseTemporalMonthDayString(string text)
+ParseZonedDateTimeString: 3 - as above
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:221: return ParseZonedDateTimeString(item.ToString(), options);
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:645: return ParseZonedDateTimeString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:806: private static JSValue ParseZonedDateTimeString(string text, JSValue options = null)
+TryParseOffsetString: 5 - the adapter's forwarder to the library's TemporalGrammar.TryParseOffsetString, and its callers
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:540: if (offsetPresent && !TemporalAdapter.TryParseOffsetString(offsetString, out candidateOffset))
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:731: if (!TemporalAdapter.TryParseOffsetString(offsetPrimitive.StringValue, out explicitOffset))
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Durations.cs:208: if (offset != null && !TryParseOffsetString(offset, out offsetNanoseconds))
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs:118: internal static bool TryParseOffsetString(string text, out long offsetNanoseconds) =>
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs:119: TemporalGrammar.TryParseOffsetString(text, out offsetNanoseconds);
+CanonicalizeCalendar: 6 - the adapter's forwarder to the library's TemporalCalendars.Canonicalize, its callers and comments
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:43: /// CanonicalizeCalendar, the shared library's: Table 1's calendar types and its two aliases (<c>ethiopic-amete-alem</c>
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:59: /// <summary>CanonicalizeCalendar, as <see cref="TryCanonicalizeCalendar"/>; an identifier it does not know is the <c>RangeError</c>.</summary>
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:60: internal static string CanonicalizeCalendar(string identifier) =>
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:84: return CanonicalizeCalendar(calendar.StringValue);
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:111: return CanonicalizeCalendar(ParseCalendarString(calendar.StringValue));
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs:50: parsed.Calendar is null ? "iso8601" : CanonicalizeCalendar(parsed.Calendar);
+ResolveCalendar: 2 - JSIntl.ResolveCalendar, Intl's locale calendar resolution: another member of the same name, outside the area
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2587: internal static (string Calendar, string Locale) ResolveCalendar(string localeTag, string optionValue)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7345: (_, localeTag) = JSIntl.ResolveCalendar(localeTag, OptionString(CalendarKey));
+ResolveMonthAfterYearShift: 1 - a comment in a test, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue794Tests.cs:16: //     when added/subtracted into a common year (ResolveMonthAfterYearShift).
+AddToIso: 1 - a comment in a test, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue794Tests.cs:13: //     the receiver's calendar (TemporalNonIso.AddToIso) for the non-ISO calendars, instead of always
+EraToIso: 2 - comments in a test, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue781Tests.cs:40: //     eraYear } pair hit EraToIso and threw "invalid era" for the calendar's own eras (am / ah / bh
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue781Tests.cs:325: // Providing { era, eraYear } no longer routes through the Gregorian EraToIso (which rejected
+RoundRelative: 1 - a comment in a test, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue790Tests.cs:20: //     calendar date difference to smallestUnit at the given roundingIncrement / roundingMode (RoundRelative
+AddCalendarDate: 1 - a comment in a test, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue826DurationRelativeRoundingTests.cs:9: //        unit count was re-derived through AddCalendarDate + DiffCalendarDate, which is
+DiffCalendarDate: 1 - the same comment
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue826DurationRelativeRoundingTests.cs:9: //        unit count was re-derived through AddCalendarDate + DiffCalendarDate, which is
+DifferenceISODateTime: 2 - a comment naming the specification's operation the library performs, and a comment in a test
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:276: // rules, then the shared library's difference: DifferenceISODateTime with its borrowed day, the calendar's DateUntil,
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836PlainDateTimeDifferenceTests.cs:10: //   DifferenceISODateTime computed the date part as whole days and the time part
+TimeNanoseconds: 2 - the library's record member DurationMath...TimeNanoseconds, read by the adapter
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Records.cs:114: internal static BigInteger TimeDuration(JSTemporalDuration duration) => DurationMath.ToInternal(duration.Fields).TimeNanoseconds;
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Records.cs:121: DurationMath.ToInternalWith24HourDays(duration.Fields).TimeNanoseconds;
+BalanceTimeDuration: 1 - a comment in a test, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836PlainDateTimeDifferenceTests.cs:15: //   days into the time total via BalanceTimeDuration when largestUnit is finer than a day.
+NudgeToCalendarUnit: 5 - comments: tests describing the engine before the cut-over, and JSTemporalRoundingOptions' note of what moved to the library
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedRoundingTests.cs:9: // modes, increment roundings, NudgeToCalendarUnit's window and the nearest double of a ratio moved to
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedRoundingTests.cs:126: // NudgeToCalendarUnit rounds over the increment's window [r1, r2], not linearly inside one unit:
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalRoundingOptions.cs:16: // normalisation, the maximum increments, ValidateTemporalRoundingIncrement, and NudgeToCalendarUnit's window) were
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue788Tests.cs:47: //     over a zoned timeline: NudgeToCalendarUnit / NudgeToZonedTime / BubbleRelativeDuration, where a
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue790Tests.cs:21: //     Duration over the ISO day axis: NudgeToCalendarUnit + BubbleRelativeDuration, day-based since a plain
+NudgeToZonedTime: 2 - comments in tests, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue818ZonedRoundingTests.cs:11: //   * NudgeToZonedTime rolled a time value that landed exactly on (or, with a time
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue788Tests.cs:47: //     over a zoned timeline: NudgeToCalendarUnit / NudgeToZonedTime / BubbleRelativeDuration, where a
+BubbleRelativeDuration: 2 - comments in tests, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue788Tests.cs:47: //     over a zoned timeline: NudgeToCalendarUnit / NudgeToZonedTime / BubbleRelativeDuration, where a
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue790Tests.cs:21: //     Duration over the ISO day axis: NudgeToCalendarUnit + BubbleRelativeDuration, day-based since a plain
+BuildDuration: 1 - a comment in a test, describing the engine before the cut-over
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue818ZonedRoundingTests.cs:14: //   * BuildDuration then re-split the sub-day remainder into 24-hour days, so in a
+
+Absent (no hit):
+    TemporalTableCalendar, TemporalIsoString, JSTemporalStubs, WithinLimits, IsValidISODateTime
+    IsWithinIsoDateLimits, IsoYearMonthWithinLimits, RejectDuration, RegulateISODate, RegulateYearMonth
+    RegulateMonthDay, AddISODate, AddIsoDate, AddYearsMonths, AddCalendarYearsMonths, FromTimeNanoseconds
+    CompareISODate, FloorDiv, FloorDivBig, NotImplementedArithmetic, IsAmbiguousTimeString, ValidateNumericUtcOffset
+    ResolveCalendarId, FractionToNanoseconds, RejectIncompatibleStyle, FormatCalendarAnnotation, FormatISOString
+    FormatTime, FormatOffset, FormatOffsetRounded, FormatToString, FormatISO, AppendFraction, DefaultLargestUnitRank
+    ReadCalendarName, GetFractionalSecondDigits, Pow10, TryCanonicalizeName, ResolveCalendarIdentifierArgument
+    ToSlotValue, CanonicalizeIdentifierOrIsoString, CalendarYmd, ToIsoFromBag, WithToIso, YearMonthToIso
+    MonthDayFields, MonthDayToPlainDate, ResolveYearMonth, RegulateToIso, AddCalendarMonths, JapaneseEra
+    ResolveIsoYear, YearToIso, MonthFromCode, ValidateMonthCodeSyntax, MonthCodeSyntaxPattern, MonthFromCodeIso
+    ParseMonthCodeLeap, RequireWellFormedMonthCode, ResolveWithYear, YearMonthFromIsoDate, AddSubtract
+    RelativeEndpoints, TotalRelative, NudgeCalendarUnit, CalendarNudgeWindow, BubbleDateDuration
+    RejectRelativeDateTimeRange, ValidateRelativeEndpoints, BalanceFromNanoseconds, BalanceTimeOnly
+    TimePlusDaysNanoseconds, TimeComponentsNs, UnitOrder, UnitIndex, TimeUnitNanoseconds, NormalizeUnit, MaxUnit
+    HasCalendarUnits, TryGetRelativeTo, TryResolveRelativeTo, BuildOrderedRelativeBagSnapshot
+    ValidateRelativeBagTimeFields, IsTemporalRelativeObject, BuildRelative, ValidateBagOffsetMatchesZone
+    ReadDifferenceSettings, DateUnits, DifferenceISODate, DifferenceISODateRounded, RoundDateTimeDateDifference
+    RoundDateDifference, DateDurationSign, AddDateGetDays, ISODateSurpasses, CompareSurpasses, ToRelativeDate
+    EpochDaysFor, DateFromEpochDays, NonIsoDateDifference, RoundTimeDifference, BalanceTime, UnitNanoseconds
+    ReadZonedDifferenceSettings, ReadLargestUnit, DifferenceTimeOnly, DifferenceCalendar, TimeOfDayNs
+    RoundDurationRelative, TotalDurationRelative, DifferenceInternal, ComputeNudgeWindow, AddDurationEpochNs
+    TimeUnitNs, CalendarDateUntil, CalendarUnitOf, SharesIsoArithmetic, ReadRoundTo, MaximumRoundingIncrement
+    ValidateRoundingIncrement, NormalizeTimeUnit, NormalizeAnyUnit, NudgeTotal, NudgeRoundsToEnd, YearForRegulation
+    TryMatchZoneOffset, ValidStartOfDayEpochNs
+
+Also: no file in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/ uses a regular expression at c97a9996 (`git grep -l Regex`
+lists none), where ten did at the base 1c411b68; the folder holds 17 .cs files of 4,761 lines, where it held 21 of 11,521.
