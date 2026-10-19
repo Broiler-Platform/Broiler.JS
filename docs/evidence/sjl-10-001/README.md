@@ -37,11 +37,18 @@ area's rules run test262 `ccaac100` (decision D2).
   - the home clauses hold by the tests SJL-10.3 committed (section 10);
   - the deletion list is absent (section 12), and every correction is listed (section 13);
   - every vector of corpus revision 26 has the result its class expects, in both zones (section 14).
-- With the shared library as nuget.org publishes it, `0.1.0-preview.6`, in place of the after commit's, this engine
-  answers decision D12's case with a duration (section 11): decision D12 (`163d43aa`) is under the shared changelog's
-  Unreleased heading. The stream's next version carries it, and publishing it is the owner's to approve.
+- With the shared library as nuget.org publishes it at `0.1.0-preview.6` in place of the after commit's, this engine
+  answers decision D12's case with a duration (section 11). Decision D12 (`163d43aa`) is in `0.1.0-preview.7`, which
+  `Publish shared libraries` published on 2026-10-19 (run 39312237448, from `5ddee404`, whose library code is the
+  after commit's file for file). With that version restored from nuget.org, the pristine consumer's check of decision
+  D12 holds, a `RangeError`, and so do the other 23 (section 11).
 
 Nothing is accepted: review is deferred, and SJL-10 may not meet its gate before SJL-6 and SJL-8 meet theirs.
+
+*(Revised 2026-10-19, when `0.1.0-preview.7` was published. The last item read "With the shared library as nuget.org
+publishes it, `0.1.0-preview.6`, in place of the after commit's, this engine answers decision D12's case with a
+duration (section 11): decision D12 (`163d43aa`) is under the shared changelog's Unreleased heading. The stream's next
+version carries it, and publishing it is the owner's to approve.")*
 
 *(Revised 2026-10-19, at SJL-10.6, when parts A and B were imported. The fourth item read "The after arm is collected
 locally at `00b65dd0`, the merge that lands the cut-over (sections 5 to 15):", with no sub-item on parts A and B, and
@@ -623,10 +630,10 @@ its cut-over by its folder, `/home/user/vm-at-14072b0`, and the library step's s
 | Bases | Section 1: the workflow's runs at `1d27064d`, the commit that carries the rule, before any code of the area, part A's in UTC and part B's in `America/New_York`, each with its re-run of the rows that timed out; and part C's run at the same commit |
 | After | `00b65dd0` (`00b65dd055a277859d5325ead6338a040bcf2f30`), the merge into the default branch (Broiler-Platform/Broiler.JS#1054) that lands SJL-10.5's cut-over (`f42eac6b` to `6dbff805`) and corpus revision 26 (`feee5b7a`). **Its product sources are `6dbff805`'s**, the cut-over's last commit, but for three files that are not code: the two changelogs and `Broiler.ECMAScript/Directory.Build.props`, whose version suffix moved to `preview.6` when `0.1.0-preview.6` was published (`bf81d1b7`, merged in `e2b2a785`). [`identity.txt`](identity.txt) lists every commit and every file. Every local run of this bundle is taken from a clean checkout of it |
 | Rule commit | `1d27064d`, an ancestor of the after commit. The rule, the comparison script, the workflow and the two scripts it runs and merges with are unchanged between the two. Part C's harness, its driver and the copies are unchanged since SJL-10.2 committed them (`2b5b6daf`), and the harness's SHA-256 is the base run's ([`identity.txt`](identity.txt)). The base run names `80dff79f` ([`datasets/base/identity.txt`](datasets/base/identity.txt)): the same commit before its branch was rebased, which no branch holds, with the same tree as `2b5b6daf` *(corrected 2026-10-19, at SJL-10.6, after review; read "unchanged since SJL-10.2 committed them (`80dff79f`)", the id the collector and `identity.txt` used too)*. No file under `Broiler.JS/` differs between the rule commit and `1c411b68`, the cut-over's branch point |
-| Shared library | `Broiler.ECMAScript.Algorithms` at the after commit, by project reference. **Its code is not byte for byte the published version's**: nuget.org serves `0.1.0-preview.6`, published from `fc829f8a` with `bf81d1b7`'s library code, and decision D12 (`163d43aa`) changes two of its files after that, `DurationMath.Relative.cs` and `DurationMath.cs`, under the shared changelog's Unreleased heading (section 10). Bundle `sjl-8-001`'s after commit held its published version's code exactly |
+| Shared library | `Broiler.ECMAScript.Algorithms` at the after commit, by project reference. **Its code is not byte for byte the published version's**: nuget.org serves `0.1.0-preview.6`, published from `fc829f8a` with `bf81d1b7`'s library code, and decision D12 (`163d43aa`) changes two of its files after that, `DurationMath.Relative.cs` and `DurationMath.cs`, in the shared changelog's `0.1.0-preview.7` entry (section 10). That version, published on 2026-10-19 from `5ddee404`, holds the after commit's library code file for file (section 11) *(revised 2026-10-19, when `0.1.0-preview.7` was published; read "under the shared changelog's Unreleased heading (section 10).")*. Bundle `sjl-8-001`'s after commit held its published version's code exactly |
 | Shared vectors | `conformance/vectors` at corpus revision 26, which retires the area's 479 divergence fields, this engine's 473 and Broiler.VM's 6 ([`engine/retired-divergences-revision-26.tsv`](engine/retired-divergences-revision-26.tsv)) |
 | Collector | [`collect.py`](collect.py) as this change commits it, which reuses bundle `sjl-8-001`'s collector, and through it `sjl-7-001`'s, `sjl-6-001`'s, `sjl-5-001`'s, `sjl-4-001`'s, `sjl-3-001`'s and `sjl-0-001`'s, run against clean checkouts of the after commit and, for the consumer's control, of the rule's commit. Part C was taken by its own harness, by hand, as its base was and as bundle `sjl-8-001`'s after run was ([`datasets/README.md`](datasets/README.md)); the collector has no step for it, as `sjl-8-001`'s had none. Its `test262` step imported parts A's and B's after runs, and its `compare` step compared each with its base (sections 7 and 8). Its `manifest` step wrote [`manifest.json`](manifest.json), the SHA-256 of every other file the bundle retains, this README's included *(revised 2026-10-19, at SJL-10.6, when parts A and B were imported; the last two sentences read "Its `test262` and `compare` steps are written for parts A and B and not yet run. Its `manifest` step wrote [`manifest.json`](manifest.json), the SHA-256 of every other file the bundle retains, this README's included, as it stands before parts A and B are imported")* |
-| Taken | 2026-10-19. Parts A's and B's after runs by the workflow, dispatched together at 12:28Z and completed at 13:54Z and 14:00Z: run 39252310861 (part A) and run 39252316070 (part B). Locally, part C from 13:45Z, `simplification` at 13:53Z, `vectors` from 13:53Z, `home` from 15:02Z and again at 15:07Z (section 10), `area` from 15:04Z, `probe` from 15:05Z, `consumer` from 15:05Z and `identity` at 15:09Z; `test262` and `compare` at 15:18Z, once for each part, and `manifest` after them; after review, from a second clean checkout of the after commit, `identity` and `simplification` again at 17:24Z with the collector corrected (the Rule commit row and section 12), decision D12's answer with the published library by hand at 17:28Z (section 11), and `manifest` again last *(corrected 2026-10-19, at SJL-10.6, after review; the local steps ended "`test262` and `compare` at 15:18Z, once for each part, and `manifest` last")*. The machine is section 1's; other work shared it, and nothing local here is timed *(revised 2026-10-19, at SJL-10.6, when parts A and B were imported; read "Parts A's and B's after runs by the workflow, dispatched at 12:28Z: run 39252310861 (part A) and run 39252316070 (part B), not imported here.", and the local steps ended "`identity` at 15:09Z and `manifest` last")* |
+| Taken | 2026-10-19. Parts A's and B's after runs by the workflow, dispatched together at 12:28Z and completed at 13:54Z and 14:00Z: run 39252310861 (part A) and run 39252316070 (part B). Locally, part C from 13:45Z, `simplification` at 13:53Z, `vectors` from 13:53Z, `home` from 15:02Z and again at 15:07Z (section 10), `area` from 15:04Z, `probe` from 15:05Z, `consumer` from 15:05Z and `identity` at 15:09Z; `test262` and `compare` at 15:18Z, once for each part, and `manifest` after them; after review, from a second clean checkout of the after commit, `identity` and `simplification` again at 17:24Z with the collector corrected (the Rule commit row and section 12), decision D12's answer with the published library by hand at 17:28Z (section 11), and `manifest` again last *(corrected 2026-10-19, at SJL-10.6, after review; the local steps ended "`test262` and `compare` at 15:18Z, once for each part, and `manifest` last")*. After `0.1.0-preview.7` was published, decision D12's check of the pristine consumer with that version restored from nuget.org, by hand from a clean clone at `5ddee404`, from 20:00Z (section 11), and `manifest` again last *(added 2026-10-19, when `0.1.0-preview.7` was published)*. The machine is section 1's; other work shared it, and nothing local here is timed *(revised 2026-10-19, at SJL-10.6, when parts A and B were imported; read "Parts A's and B's after runs by the workflow, dispatched at 12:28Z: run 39252310861 (part A) and run 39252316070 (part B), not imported here.", and the local steps ended "`identity` at 15:09Z and `manifest` last")* |
 | RID | `linux-x64`: the workflow's runners for test262; locally, one machine with four logical processors |
 
 **Each project was built once.** The after checkout was created clean (`git status --porcelain --untracked-files=all`
@@ -640,7 +647,10 @@ The rule's checkout for the consumer's control was built once, its shell only. T
 this repository in the scratch folder, as bundle `sjl-8-001`'s after tree was. After review, a second clean checkout of
 the after commit, also a worktree there, ran the `identity` and `simplification` steps again, which build nothing, and
 its shell was built in Release once for section 11's record of decision D12 *(added 2026-10-19, at SJL-10.6, after
-review)*.
+review)*. After `0.1.0-preview.7` was published, a clean clone of this repository at `5ddee404`, in the scratch
+folder, built `Broiler.JavaScript.All` in Release once, for the packaging script, for section 11's record of that
+version, restoring from nuget.org into a package cache of its own *(added 2026-10-19, when `0.1.0-preview.7` was
+published)*.
 
 **Parts A and B** judge hosted runs, which the collector's `test262` and `compare` steps imported and compared, each
 from the zip as downloaded (sections 7 and 8).
@@ -861,8 +871,12 @@ data home's tables. From a clean checkout of `00b65dd0`, into [`home/after/`](ho
 | The area's tests in this engine | built in Release and run under `TZ=UTC`: **250 tests, none failed**, in `Broiler.JavaScript.Integration.Tests`, the classes the changelog's SJL-10.5 entry names: `SharedTemporalDurationsTests` 23 (D3, D4, D6, D7, D8, D11, F4, F7 and decision D11), `SharedTemporalAdapterTests` 20 (code-1, code-2 and the offset's range check), `Issue781Tests` 138 and `Issue777Tests` 69 (row C9's era tests among them). The build had no error; its 6 warnings are xUnit's analyzers on integration tests outside the area | [`home/after/engine-build.log`](home/after/engine-build.log), [`home/after/engine-tests.log`](home/after/engine-tests.log) |
 
 **The library at the after commit is not the published version's code**, as section 5 says. The tests above are of
-the after commit's library, with decision D12. The packages nuget.org serves hold `bf81d1b7`'s code, and section 11 shows
-the one answer of this engine's that this changes.
+the after commit's library, with decision D12. The packages nuget.org serves at `0.1.0-preview.6` hold `bf81d1b7`'s
+code, and section 11 shows the one answer of this engine's that this changes. Those it serves at `0.1.0-preview.7`,
+published on 2026-10-19 from `5ddee404`, hold the after commit's library code file for file, and with them this engine
+answers there as the after commit does (section 11). *(Revised 2026-10-19, when `0.1.0-preview.7` was published; the
+third sentence read "The packages nuget.org serves hold `bf81d1b7`'s code, and section 11 shows the one answer of
+this engine's that this changes.")*
 
 **The home step was run twice.** Its first run, at 15:02Z, counted the clauses' tests from the console, whose lines the
 four test assemblies interleave, and missed two of the 1,489 results, neither of them a clause's test. The collector was
@@ -908,9 +922,34 @@ answers the same ([`cutover/d12z.part-c.txt`](cutover/d12z.part-c.txt), the line
 being the default), as Broiler.VM does on that version ([`cutover/d12z.vm-now.txt`](cutover/d12z.vm-now.txt)). So
 decision D12's `since` answers a duration where this engine answers a `RangeError` *(corrected 2026-10-19, at
 SJL-10.6, after review; read "the other 23 hold, and decision D12's `since` answers a duration where this engine
-answers a `RangeError`.", which the log alone does not show)*. That is the shared changelog's Unreleased entry: with the published
-`0.1.0-preview.6`, this engine answers there as Broiler.VM does on that version, until the stream's next version is
-published. The consumer then stops with the exception it is written to throw, and the log records it.
+answers a `RangeError`.", which the log alone does not show)*. That is the shared changelog's `0.1.0-preview.7` entry:
+with the published `0.1.0-preview.6`, this engine answers there as Broiler.VM does on that version. The consumer then
+stops with the exception it is written to throw, and the log records it. *(Revised 2026-10-19, when
+`0.1.0-preview.7` was published; the last two sentences read "That is the shared changelog's Unreleased entry: with
+the published `0.1.0-preview.6`, this engine answers there as Broiler.VM does on that version, until the stream's next
+version is published. The consumer then stops with the exception it is written to throw, and the log records it.")*
+
+**With `0.1.0-preview.7` as nuget.org publishes it** *(added 2026-10-19, when that version was published)*.
+`Publish shared libraries`, run 39312237448, published `Broiler.ECMAScript.Algorithms` and
+`Broiler.ECMAScript.Generation` `0.1.0-preview.7` from `5ddee404`, and tagged that commit
+`ecmascript-v0.1.0-preview.7`. Its library code is the after commit's file for file: between `00b65dd0` and
+`5ddee404`, no file of either project changes; under `Broiler.ECMAScript/` only the changelog and the version suffix
+change, and under `Broiler.JS/` only the vectors' test project, which the engine set does not pack. Decision D12's
+check was taken again by hand, as the collector's consumer step takes the published run,
+[`engine/pristine-consumer-d12-published-preview.7.txt`](engine/pristine-consumer-d12-published-preview.7.txt):
+- the engine set packed from a clean clone at `5ddee404` by `scripts/packaging/test_pristine_consumer.py --set engine
+  --keep`, the library at `0.1.0-preview.7` among its 18 packages, and `BuiltIns` and `Runtime` each depending on that
+  version; the consumer printed `42`;
+- the kept consumer, its `bin/` and `obj/` removed, restored into a second isolated cache with `Broiler.ECMAScript.*`
+  mapped to nuget.org alone and the engine's 17 other packages to the local feed alone, and run under
+  `TZ=America/New_York` and no `LANG`. Its program is the collector's, with one line added that prints decision D12's
+  check and its expression's value before the 24 checks.
+
+It restored nuget.org's `0.1.0-preview.7`, signed, which `dotnet nuget verify` accepts, the package and its assembly
+nuget.org's byte for byte (SHA-256 `2e553d33…` for the assembly), and printed decision D12's check **true**, `since`
+throwing **`RangeError: Temporal.ZonedDateTime: result is outside the representable range`**, and the area's checks
+**`ok 24`**. With the shared library as nuget.org publishes it at `0.1.0-preview.7`, this engine's packages answer
+decision D12's case as the after commit does.
 
 **A control of the checks**, [`engine/pristine-consumer-checks-control.txt`](engine/pristine-consumer-checks-control.txt):
 the same 24 expressions, as one program, in the shell built at the rule's commit `1d27064d` and at `00b65dd0`, under
@@ -1053,7 +1092,10 @@ at SJL-10.6, after review; read "taken at `c97a9996`", the commit that only adde
   judged in its bundle of the same name, by its own rule, and this bundle reads none of its runs.
 - **A revised rule.** Part C is met under the rule `1d27064d` committed, and no reading of it is new.
 - **That a consumer of nuget.org's `0.1.0-preview.6` answers as this engine does** where decision D12 applies: the
-  published library answers durations there (section 11). This engine's packages need the stream's next version.
+  published library answers durations there (section 11). This engine's packages need `0.1.0-preview.7`, published
+  on 2026-10-19, with which the pristine consumer answers as this engine does (section 11). *(Revised 2026-10-19,
+  when `0.1.0-preview.7` was published; the last sentence read "This engine's packages need the stream's next
+  version.")*
 - **Intl's formatting of Temporal objects**, which is SJL-9's, and `Temporal.Now`'s clock and host zone, which stay this
   engine's (SJL-D-19).
 - **A speed claim of any kind.** SJL-10 measures nothing.
