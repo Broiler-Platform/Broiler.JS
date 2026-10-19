@@ -18,6 +18,44 @@ Not yet packed under a version of its own: the stream's next version is set when
 
 ### Added
 
+None.
+
+### Changed
+
+None.
+
+### Observable changes
+
+**Decision D12**, the owner's of 2026-10-19 under the direction of 2026-10-18:
+decision D11's rule reaches `NudgeToZonedTime`'s assertion on the day span's sign (s7.5.35 step 8, "Assert:
+TimeDurationSign(daySpan) = sign"). Where a zone's skipped day leaves the day from the nudge's start with no length
+(Pacific/Apia's 2011-12-30, rounding to a time unit with a date largest unit back from 2011-12-31), or an engine's own
+zone gives it the wrong sign, `RoundRelativeDuration` answers `OutOfRange`, and so do `DurationMath.Round` and the
+zoned differences that reach it: a `RangeError` in both engines, as the reference polyfill throws one. `0.1.0-preview.6`
+answers a duration from outside the text's domain there:
+`ZonedDateTime.from("2011-12-31T16:15+14:00[Pacific/Apia]").since("2011-12-31T00:00+14:00[Pacific/Apia]", {largestUnit: "day", smallestUnit: "hour"})`
+is `P1DT16H`, and Broiler.VM, which takes that version, answers so until it moves past it. Broiler.JS, which takes the
+library as a project, answers the `RangeError` its own code answered before its cut-over. No public API changes, and the
+library-level runner's 10,851 Temporal vectors all still match.
+
+### Data
+
+None.
+
+## 0.1.0-preview.6 — published to nuget.org
+
+*(Heading corrected 2026-10-19, at SJL-10.5; read "Unreleased". This entry was published as `0.1.0-preview.6` by
+`Publish shared libraries`, run 39161419185, on 2026-10-18, from `fc829f8a`, whose library code is `bf81d1b7`'s.)*
+
+Packed as `0.1.0-preview.6`, the stream keeping its `0.1.0` prefix while it is a preview. Broiler.VM's cut-over
+(SJL-10.4) admitted the packages packed at `bf81d1b7` from its committed feed before they were published, and its
+feed now holds them as published. *(Corrected 2026-10-19, at SJL-10.5; read "To be packed as `0.1.0-preview.6`, the
+stream keeping its `0.1.0` prefix while it is a preview: Broiler.VM's cut-over (SJL-10.4) admits the packages from
+its committed feed before they are published, which is the owner's to choose." That read, until SJL-10.4, "Not yet
+packed under a version of its own: the stream's next version is set when this entry is published.")*
+
+### Added
+
 - `Broiler.ECMAScript.Algorithms`: the Temporal core's first part - its records and limits, balancing,
   grammar and serialization - in a new namespace, `Broiler.ECMAScript.Temporal` (milestone SJL-10.3, part A;
   Broiler.VM's JSD-0078, following `tc39/proposal-temporal@e8cc03fc` by its decision D1; adapter guide
@@ -135,18 +173,6 @@ R6 there, and Broiler.JS at SJL-10.5, whose own records list what each observes;
 the calendar rows are JSD-0078's C2, C5, C6, C9, C12, C13, C15, C16 and C17, and on the duration and difference rows
 D3, D4, D6, D7, D8, D11, F4 and F7. Row D12's case, a day the zone skips, becomes a `RangeError` in both engines at
 their cut-overs.
-
-*(Added 2026-10-19, at SJL-10.5.)* **Decision D12**, the owner's of 2026-10-19 under the direction of 2026-10-18:
-decision D11's rule reaches `NudgeToZonedTime`'s assertion on the day span's sign (s7.5.35 step 8, "Assert:
-TimeDurationSign(daySpan) = sign"). Where a zone's skipped day leaves the day from the nudge's start with no length
-(Pacific/Apia's 2011-12-30, rounding to a time unit with a date largest unit back from 2011-12-31), or an engine's own
-zone gives it the wrong sign, `RoundRelativeDuration` answers `OutOfRange`, and so do `DurationMath.Round` and the
-zoned differences that reach it: a `RangeError` in both engines, as the reference polyfill throws one. `0.1.0-preview.6`
-answers a duration from outside the text's domain there:
-`ZonedDateTime.from("2011-12-31T16:15+14:00[Pacific/Apia]").since("2011-12-31T00:00+14:00[Pacific/Apia]", {largestUnit: "day", smallestUnit: "hour"})`
-is `P1DT16H`, and Broiler.VM, which takes that version, answers so until it moves past it. Broiler.JS, which takes the
-library as a project, answers the `RangeError` its own code answered before its cut-over. No public API changes, and the
-library-level runner's 10,851 Temporal vectors all still match.
 
 ### Data
 
