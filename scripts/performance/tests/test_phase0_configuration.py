@@ -43,9 +43,10 @@ class Phase0ConfigurationTests(unittest.TestCase):
 
     def test_every_roadmap_priority_item_has_unique_ownership_and_existing_manifest(self) -> None:
         items = self.ownership["items"]
-        # Each phase adds entries (docs/roadmap/Archive.md), so the count is the file's own: every
-        # entry is one item with an id of its own, an owner, a benchmark and a manifest.
-        self.assertTrue(items)
+        # Each phase adds entries (docs/roadmap/Archive.md), so this is a floor, not the count: the 39
+        # entries of 2026-10-19. A change that removes one on purpose, such as item 0-11's retirement
+        # of the tiered-unboxed-locals duplicate, lowers it in the same change.
+        self.assertGreaterEqual(len(items), 39)
         self.assertEqual(len(items), len({item["id"] for item in items}))
         self.assertEqual({"P0", "P1", "P2", "P3"}, {item["priority"] for item in items})
 
