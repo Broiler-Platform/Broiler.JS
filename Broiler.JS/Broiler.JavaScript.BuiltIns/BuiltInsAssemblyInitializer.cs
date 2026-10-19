@@ -732,11 +732,8 @@ internal static class BuiltInsAssemblyInitializer
             context.RegisterIntrinsic(KeyStrings.GetOrCreate("Temporal." + name), ctor, ctor.prototype);
         }
 
-        // Implemented types.
         Attach("Duration", Temporal.JSTemporalDuration.CreateClass(context, register: false));
         Attach("Instant", Temporal.JSTemporalInstant.CreateClass(context, register: false));
-
-        // Stub types (constructors exist but throw until implemented — see JSTemporalStubs.cs).
         Attach("PlainDate", Temporal.JSTemporalPlainDate.CreateClass(context, register: false));
         Attach("PlainTime", Temporal.JSTemporalPlainTime.CreateClass(context, register: false));
         Attach("PlainDateTime", Temporal.JSTemporalPlainDateTime.CreateClass(context, register: false));

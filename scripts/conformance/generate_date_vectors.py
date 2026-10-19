@@ -44,8 +44,9 @@ from generate_number_vectors import js_string_literal, splitmix64, string_value 
 # which classifies the Unicode area's divergences, nor revision 20, which retires them, nor revision 21, which
 # adds the time-zone area (generate_time_zone_vectors.py), nor revision 22, which classifies its divergences, nor
 # revision 23, which retires them, nor revision 24, which adds the Temporal area (generate_temporal_vectors.py) and
-# widens the schema's provenance, nor revision 25, which classifies its differences.
-CORPUS_REVISION = 25
+# widens the schema's provenance, nor revision 25, which classifies its differences, nor revision 26, which retires
+# them.
+CORPUS_REVISION = 26
 FIRST_REVISION = 14
 OUTSIDE_FORMAT_REVISION = 16
 GENERATOR = "ref:dateref@1"

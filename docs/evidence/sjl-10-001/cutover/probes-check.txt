@@ -1,0 +1,289 @@
+b1-balance-time: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+b2-balance-datetime: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+b3-add-iso-date: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+b4-regulate: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+b5-limits-in-addition: changed 1, matching VM 1, NOT matching VM 0, still differing from VM 0
+b6-zoned-addition: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+b7-date-add-time-units: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+b8-yearmonth-addition: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+b9-round-points: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+c01-identifiers: changed 6, matching VM 6, NOT matching VM 0, still differing from VM 0
+c02-month-codes: changed 29, matching VM 29, NOT matching VM 0, still differing from VM 0
+c03-eras: changed 24, matching VM 24, NOT matching VM 0, still differing from VM 0
+c04-reference-years: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+c05-formula-edges: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+c06-table-edges: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+c07-slot-and-narrowing: changed 3, matching VM 3, NOT matching VM 0, still differing from VM 0
+c08-saturation: changed 11, matching VM 11, NOT matching VM 0, still differing from VM 0
+c09-conversions: changed 44, matching VM 44, NOT matching VM 0, still differing from VM 0
+c10-monthcode-digits: changed 23, matching VM 23, NOT matching VM 0, still differing from VM 0
+d-retained-temporal: changed 7, matching VM 0, NOT matching VM 7, still differing from VM 0 (no aligned VM file)
+   line 14
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month ceil rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month ceil rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 16
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month expand rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month expand rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 18
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month halfCeil rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month halfCeil rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 19
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month halfFloor rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month halfFloor rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 20
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month halfExpand rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month halfExpand rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 21
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month halfTrunc rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month halfTrunc rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 22
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month halfEven rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month halfEven rel 2020-01-31 => P1Y3M
+     vm:    None
+d-retained-temporal-calendars: changed 103, matching VM 0, NOT matching VM 103, still differing from VM 0 (no aligned VM file)
+   line 2129
+     base: buddhist toPlainYearMonth => 2023-03-15[u-ca=buddhist]
+     after: buddhist toPlainYearMonth => 2023-03-01[u-ca=buddhist]
+     vm:    None
+   line 2130
+     base: buddhist toPlainMonthDay => 03-15
+     after: buddhist toPlainMonthDay => 1972-03-15[u-ca=buddhist]
+     vm:    None
+   line 2180
+     base: chinese until 1999-01-01 round months => -P24Y3M10D
+     after: chinese until 1999-01-01 round months => -P24Y3M
+     vm:    None
+   line 2186
+     base: chinese until 2023-03-14 round months => -P1D
+     after: chinese until 2023-03-14 round months => PT0S
+     vm:    None
+   line 2192
+     base: chinese until 2024-02-29 round months => P11M26D
+     after: chinese until 2024-02-29 round months => P12M
+     vm:    None
+   line 2198
+     base: chinese until 2030-12-31 round months => P7Y9M13D
+     after: chinese until 2030-12-31 round months => P7Y9M
+     vm:    None
+   line 2204
+     base: chinese until 1850-06-06 round months => -P172Y9M27D
+     after: chinese until 1850-06-06 round months => -P172Y10M
+     vm:    None
+   line 2208
+     base: chinese toPlainYearMonth => 2023-03-15[u-ca=chinese]
+     after: chinese toPlainYearMonth => 2023-02-20[u-ca=chinese]
+     vm:    None
+   line 2214
+     base: chinese duration round relativeTo => throws Error
+     after: chinese duration round relativeTo => P2Y8M26D
+     vm:    None
+   line 2215
+     base: chinese duration total relativeTo => throws Error
+     after: chinese duration total relativeTo => 33.86666666666667
+     vm:    None
+   line 2262
+     base: coptic until 1999-01-01 round months => -P24Y2M13D
+     after: coptic until 1999-01-01 round months => -P24Y2M
+     vm:    None
+   line 2268
+     base: coptic until 2023-03-14 round months => -P1D
+     after: coptic until 2023-03-14 round months => PT0S
+     vm:    None
+   line 2274
+     base: coptic until 2024-02-29 round months => P12M15D
+     after: coptic until 2024-02-29 round months => P1Y
+     vm:    None
+   line 2280
+     base: coptic until 2030-12-31 round months => P7Y10M16D
+     after: coptic until 2030-12-31 round months => P7Y11M
+     vm:    None
+   line 2286
+     base: coptic until 1850-06-06 round months => -P172Y10M6D
+     after: coptic until 1850-06-06 round months => -P172Y10M
+     vm:    None
+   line 2290
+     base: coptic toPlainYearMonth => 2023-03-15[u-ca=coptic]
+     after: coptic toPlainYearMonth => 2023-03-10[u-ca=coptic]
+     vm:    None
+   line 2296
+     base: coptic duration round relativeTo => throws Error
+     after: coptic duration round relativeTo => P2Y9M24D
+     vm:    None
+   line 2297
+     base: coptic duration total relativeTo => throws Error
+     after: coptic duration total relativeTo => 35.8
+     vm:    None
+   line 2341
+     base: dangi until 1999-01-01 round months => -P24Y3M10D
+     after: dangi until 1999-01-01 round months => -P24Y3M
+     vm:    None
+   line 2347
+     base: dangi until 2023-03-14 round months => -P1D
+     after: dangi until 2023-03-14 round months => PT0S
+     vm:    None
+   line 2353
+     base: dangi until 2024-02-29 round months => P11M26D
+     after: dangi until 2024-02-29 round months => P12M
+     vm:    None
+   line 2359
+     base: dangi until 2030-12-31 round months => P7Y9M13D
+     after: dangi until 2030-12-31 round months => P7Y9M
+     vm:    None
+   line 2365
+     base: dangi until 1850-06-06 round months => -P172Y9M27D
+     after: dangi until 1850-06-06 round months => -P172Y10M
+     vm:    None
+   line 2369
+     base: dangi toPlainYearMonth => 2023-03-15[u-ca=dangi]
+     after: dangi toPlainYearMonth => 2023-02-20[u-ca=dangi]
+     vm:    None
+   line 2375
+     base: dangi duration round relativeTo => throws Error
+     after: dangi duration round relativeTo => P2Y8M26D
+     vm:    None
+   line 2376
+     base: dangi duration total relativeTo => throws Error
+     after: dangi duration total relativeTo => 33.86666666666667
+     vm:    None
+   line 2423
+     base: ethioaa until 1999-01-01 round months => -P24Y2M13D
+     after: ethioaa until 1999-01-01 round months => -P24Y2M
+     vm:    None
+   line 2429
+     base: ethioaa until 2023-03-14 round months => -P1D
+     after: ethioaa until 2023-03-14 round months => PT0S
+     vm:    None
+   line 2435
+     base: ethioaa until 2024-02-29 round months => P12M15D
+     after: ethioaa until 2024-02-29 round months => P1Y
+     vm:    None
+   line 2441
+     base: ethioaa until 2030-12-31 round months => P7Y10M16D
+     after: ethioaa until 2030-12-31 round months => P7Y11M
+     vm:    None
+   line 2447
+     base: ethioaa until 1850-06-06 round months => -P172Y10M6D
+     after: ethioaa until 1850-06-06 round months => -P172Y10M
+     vm:    None
+   line 2451
+     base: ethioaa toPlainYearMonth => 2023-03-15[u-ca=ethioaa]
+     after: ethioaa toPlainYearMonth => 2023-03-10[u-ca=ethioaa]
+     vm:    None
+   line 2457
+     base: ethioaa duration round relativeTo => throws Error
+     after: ethioaa duration round relativeTo => P2Y9M24D
+     vm:    None
+   line 2458
+     base: ethioaa duration total relativeTo => throws Error
+     after: ethioaa duration total relativeTo => 35.8
+     vm:    None
+   line 2505
+     base: ethiopic until 1999-01-01 round months => -P24Y2M13D
+     after: ethiopic until 1999-01-01 round months => -P24Y2M
+     vm:    None
+   line 2511
+     base: ethiopic until 2023-03-14 round months => -P1D
+     after: ethiopic until 2023-03-14 round months => PT0S
+     vm:    None
+   line 2517
+     base: ethiopic until 2024-02-29 round months => P12M15D
+     after: ethiopic until 2024-02-29 round months => P1Y
+     vm:    None
+   line 2523
+     base: ethiopic until 2030-12-31 round months => P7Y10M16D
+     after: ethiopic until 2030-12-31 round months => P7Y11M
+     vm:    None
+   line 2529
+     base: ethiopic until 1850-06-06 round months => -P172Y10M6D
+     after: ethiopic until 1850-06-06 round months => -P172Y10M
+     vm:    None
+   line 2533
+     base: ethiopic toPlainYearMonth => 2023-03-15[u-ca=ethiopic]
+     after: ethiopic toPlainYearMonth => 2023-03-10[u-ca=ethiopic]
+     vm:    None
+d1-sign-and-shape: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+d10-total: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+d11-non-iso-relative: changed 7, matching VM 7, NOT matching VM 0, still differing from VM 0
+d2-largest-unit-and-balance: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+d3-add-calendar-units: changed 6, matching VM 6, NOT matching VM 0, still differing from VM 0
+d4-compare: changed 4, matching VM 4, NOT matching VM 0, still differing from VM 0
+d5-round-time: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+d6-retained-dataset: changed 7, matching VM 0, NOT matching VM 7, still differing from VM 0 (no aligned VM file)
+   line 14
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month ceil rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month ceil rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 16
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month expand rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month expand rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 18
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month halfCeil rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month halfCeil rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 19
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month halfFloor rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month halfFloor rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 20
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month halfExpand rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month halfExpand rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 21
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month halfTrunc rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month halfTrunc rel 2020-01-31 => P1Y3M
+     vm:    None
+   line 22
+     base: duration P1Y2M3W4DT5H6M7.008009010S round month halfEven rel 2020-01-31 => P1Y2M30D
+     after: duration P1Y2M3W4DT5H6M7.008009010S round month halfEven rel 2020-01-31 => P1Y3M
+     vm:    None
+d6-round-plain-relative: changed 2, matching VM 2, NOT matching VM 0, still differing from VM 0
+d8-shifted-window: changed 3, matching VM 3, NOT matching VM 0, still differing from VM 0
+d9-round-zoned-relative: changed 2, matching VM 2, NOT matching VM 0, still differing from VM 0
+f1-settings-and-defaults: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+f2-date-differences: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+f3-date-rounding: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+f4-non-iso-rounding: changed 12, matching VM 12, NOT matching VM 0, still differing from VM 0
+f5-datetime-differences: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+f6-time-and-instant: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+f7-zoned-differences: changed 3, matching VM 3, NOT matching VM 0, still differing from VM 0
+f8-yearmonth-differences: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+g01-dates: changed 18, matching VM 18, NOT matching VM 0, still differing from VM 0
+g02-times: changed 4, matching VM 4, NOT matching VM 0, still differing from VM 0
+g03-offsets: changed 20, matching VM 20, NOT matching VM 0, still differing from VM 0
+g04-annotations: changed 72, matching VM 72, NOT matching VM 0, still differing from VM 0
+g05-goals: changed 11, matching VM 11, NOT matching VM 0, still differing from VM 0
+g06-durations: changed 5, matching VM 5, NOT matching VM 0, still differing from VM 0
+g07-calendar-strings: changed 28, matching VM 28, NOT matching VM 0, still differing from VM 0
+g08-timezone-strings: changed 12, matching VM 12, NOT matching VM 0, still differing from VM 0
+g09-offset-strings: changed 4, matching VM 4, NOT matching VM 0, still differing from VM 0
+g10-nonascii: changed 22, matching VM 22, NOT matching VM 0, still differing from VM 0
+g11-more: changed 15, matching VM 15, NOT matching VM 0, still differing from VM 0
+g12-relativeto: changed 10, matching VM 10, NOT matching VM 0, still differing from VM 0
+g13-zoned-option-reads: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+r01-revision-markers: changed 10, matching VM 10, NOT matching VM 0, still differing from VM 0
+r1-date-limits: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+r2-datetime-limits: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+r3-yearmonth-limits: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+r4-instant-limits: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+r5-time-records: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+r6-integer-conversion: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+r6b-plaindate-1e20: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 1
+r6c-plaindate-minus-1e20: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 1
+r6d-plaindatetime-1e20: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 1
+r6e-plainmonthday-1e20: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 1
+r6f-plaindate-2e53-plus-2: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 1
+r7-narrowing-in-addition: changed 12, matching VM 12, NOT matching VM 0, still differing from VM 0
+r8-duration-limits: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+s01-forms: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+s02-precision: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+s03-zoned-instant: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+s04-durations: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+s05-option-order: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0
+smoke: changed 0, matching VM 0, NOT matching VM 0, still differing from VM 0

@@ -509,11 +509,18 @@ public class Issue781Tests
         => Assert.Equal("shaka",
             Eval("Temporal.PlainDate.from('1957-03-22').withCalendar('indian').era"));
 
-    // The "saka" spelling is still accepted as an input alias.
+    // The "saka" spelling is not an era of the indian calendar: an era is matched exactly against Table 2's codes and
+    // aliases at the pinned revision (row C9 of bundle sjl-10-001's correspondence, decision D4 of JSD-0078), so it is
+    // a RangeError, as "shaka" is not.
     [Fact(Timeout = 600000)]
-    public void IndianEraAcceptsSakaAlias()
+    public void IndianEraRefusesSakaSpelling()
+        => Assert.Equal("RangeError",
+            ErrorName("Temporal.PlainDate.from({ era: 'saka', eraYear: 1922, month: 1, day: 1, calendar: 'indian' })"));
+
+    [Fact(Timeout = 600000)]
+    public void IndianEraAcceptsShaka()
         => Assert.Equal("1922",
-            Eval("String(Temporal.PlainDate.from({ era: 'saka', eraYear: 1922, month: 1, day: 1, calendar: 'indian' }).eraYear)"));
+            Eval("String(Temporal.PlainDate.from({ era: 'shaka', eraYear: 1922, month: 1, day: 1, calendar: 'indian' }).eraYear)"));
 
     // ───────────── Problem 3 (subset): PlainYearMonth.add/subtract ISO-range validation ─────────────
 

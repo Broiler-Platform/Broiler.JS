@@ -31,6 +31,9 @@ internal static class JSIntlDateTimeFormatEngine
         // A pre-rendered month label that overrides the numeric month, used for calendars whose
         // months are not a plain number: hebrew month names, and chinese/dangi leap months ("11bis").
         public readonly string MonthLabel;
+        // The era code of a date projected into a calendar with its own years (ConvertToCalendar), which the
+        // 'G' token renders; null for the unconverted fields, whose era follows from the ISO date.
+        public readonly string EraCode;
         public Fields(double wallClockMs, string timeZoneName = null, string dayPeriod = null)
         {
             Year = (int)EcmaTime.YearFromTime(wallClockMs);
@@ -43,17 +46,19 @@ internal static class JSIntlDateTimeFormatEngine
             TimeZoneName = timeZoneName;
             DayPeriod = dayPeriod;
             MonthLabel = null;
+            EraCode = null;
         }
 
         // Explicit wall-clock fields, used when formatting a Temporal plain type: its own clock is
         // formatted directly, with no time-zone conversion (the formatter's time zone is ignored).
-        public Fields(int year, int month, int day, int hour, int minute, int second, int millisecond, string timeZoneName = null, string dayPeriod = null, string monthLabel = null)
+        public Fields(int year, int month, int day, int hour, int minute, int second, int millisecond, string timeZoneName = null, string dayPeriod = null, string monthLabel = null, string eraCode = null)
         {
             Year = year; Month = month; Day = day;
             Hour = hour; Minute = minute; Second = second; Millisecond = millisecond;
             TimeZoneName = timeZoneName;
             DayPeriod = dayPeriod;
             MonthLabel = monthLabel;
+            EraCode = eraCode;
         }
     }
 
@@ -193,15 +198,15 @@ internal static class JSIntlDateTimeFormatEngine
     }
 
     // The islamic (Hijri) calendars share month/era names; the formatter converts the ISO date to the
-    // calendar's own year/month/day (TemporalNonIso) and renders these names rather than the Gregorian
-    // ones. The day/month arithmetic of the specific variant (civil / tbla / umalqura) is handled by
-    // the calendar conversion; only the (English) display names live here.
+    // calendar's own year/month/day (the shared library's calendars) and renders these names rather
+    // than the Gregorian ones. The day/month arithmetic of the specific variant (civil / tbla /
+    // umalqura) is handled by the calendar conversion; only the (English) display names live here.
     private static readonly HashSet<string> IslamicCalendars = new(StringComparer.Ordinal)
         { "islamic", "islamic-civil", "islamic-rgsa", "islamic-tbla", "islamic-umalqura" };
 
     // Arithmetic non-Gregorian calendars whose own year/month/day come from the calendar
-    // conversion (TemporalNonIso). Their displayed year equals the era-year (a single era, year
-    // count matching), so the numeric year field renders the converted year directly.
+    // conversion (the shared library's calendars). Their displayed year equals the era-year (a single
+    // era, year count matching), so the numeric year field renders the converted year directly.
     private static readonly HashSet<string> ArithmeticCalendars = new(StringComparer.Ordinal)
         { "coptic", "ethiopic", "ethioaa", "indian", "persian" };
 
@@ -730,7 +735,7 @@ internal static class JSIntlDateTimeFormatEngine
                 if (calendar == "japanese")
                     // The regnal year resets at each era boundary; derive it from the ISO date
                     // (japanese shares the ISO year/month/day, so the converted fields are the ISO ones).
-                    year = Temporal.TemporalCalendar.JapaneseEra(f.Year, f.Month, f.Day).eraYear;
+                    year = (int)JapaneseDate(in f).EraYear!.Value;
                 else if (calendar != null && EraCalendars.TryGetValue(calendar, out var cal))
                     year += cal.YearOffset;
                 else if ((calendar is null or "gregory") && year <= 0)
@@ -836,7 +841,7 @@ internal static class JSIntlDateTimeFormatEngine
     private static string ResolveEraDisplay(string calendar, in Fields f, int width)
     {
         if (calendar == "japanese")
-            return EraName(Temporal.TemporalCalendar.JapaneseEra(f.Year, f.Month, f.Day).code);
+            return EraName(JapaneseDate(in f).Era);
         if (calendar == "roc")
             return f.Year >= 1912 ? "Minguo" : "Before R.O.C.";
         if (EraCalendars.TryGetValue(calendar ?? string.Empty, out var era))
@@ -851,9 +856,14 @@ internal static class JSIntlDateTimeFormatEngine
                 _ => bc ? "BC" : "AD",
             };
         }
-        // Converted era calendars (coptic/ethiopic/ethioaa/indian/persian/islamic/hebrew).
-        return EraName(Temporal.TemporalCalendarMath.Era(calendar, f.Year).code);
+        // Converted era calendars (coptic/ethiopic/ethioaa/indian/persian/islamic/hebrew): the era of the
+        // converted date (ConvertToCalendar).
+        return EraName(f.EraCode);
     }
+
+    // The japanese calendar's era and era year of the (unconverted, ISO) fields: the shared library's calendars.
+    private static Broiler.ECMAScript.Temporal.CalendarDate JapaneseDate(in Fields f)
+        => Temporal.TemporalAdapter.CalendarDateOf("japanese", new IsoDate(f.Year, f.Month, f.Day));
 
     private static string EraName(string code) => code switch
     {
@@ -873,26 +883,28 @@ internal static class JSIntlDateTimeFormatEngine
         _ => code,
     };
 
+    // The ISO date projected into the calendar: CalendarISOToDate, the shared library's calendars'.
     private static Fields ConvertToCalendar(in Fields f, string calendar)
     {
-        var (cy, cm, cd) = Temporal.TemporalNonIso.CalendarYmd(calendar, f.Year, f.Month, f.Day);
+        var date = Temporal.TemporalAdapter.CalendarDateOf(calendar, new IsoDate(f.Year, f.Month, f.Day));
+        var cm = date.Month;
         string monthLabel = null;
         if (CyclicYearCalendars.Contains(calendar))
         {
             // chinese/dangi number their months by the lunar month (the month-code number), not the
             // 1..13 ordinal that counts an intervening leap month; a leap month renders as "<n>bis".
-            var code = Temporal.TemporalCalendarMath.MonthCode(calendar, cy, cm);
-            cm = Temporal.TemporalTableCalendar.DisplayMonthNumber(calendar, cy, cm);
-            if (code.EndsWith("L", StringComparison.Ordinal))
+            cm = date.MonthCode.Number;
+            if (date.MonthCode.IsLeapMonth)
                 monthLabel = cm.ToString(CultureInfo.InvariantCulture) + "bis";
         }
         else if (calendar == "hebrew")
         {
             // Hebrew months are always shown by name (never numeric), keyed by the month code so
             // the leap-year Adar I / Adar II distinction is preserved.
-            monthLabel = HebrewMonthName(Temporal.TemporalCalendarMath.MonthCode("hebrew", cy, cm));
+            monthLabel = HebrewMonthName(date.MonthCode.ToString());
         }
-        return new Fields(cy, cm, cd, f.Hour, f.Minute, f.Second, f.Millisecond, f.TimeZoneName, f.DayPeriod, monthLabel);
+        return new Fields((int)date.Year, cm, date.Day, f.Hour, f.Minute, f.Second, f.Millisecond, f.TimeZoneName, f.DayPeriod,
+            monthLabel, date.Era);
     }
 
     // English Hebrew month names keyed by Temporal month code (Adar II shares "M06" with a

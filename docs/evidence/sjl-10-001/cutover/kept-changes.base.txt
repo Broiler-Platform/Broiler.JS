@@ -1,0 +1,70 @@
+A1 P1M.round(day) relativeTo {2020-01-01, offset +25:00, timeZone 5} => THROWS TypeError
+A1 P1M.round(day) relativeTo {2020-01-01, offset +25:00, timeZone UTC} => THROWS RangeError
+A2 ZDT.toString({offset: bad}) and its conversions => THROWS RangeError | toString offset, toString offset
+B1 PlainDate.from(hebrew bag, options) reads => 2020-01-27[u-ca=hebrew] | get b.calendar, get o.overflow, get b.day, get b.year, get b.month, get b.day
+B1 PlainDate(gregory).with(bag) reads => 2021-01-01[u-ca=gregory] | get b.year, get b.era, get b.eraYear
+B1 PlainMonthDay(gregory).toPlainDate(bag) reads => THROWS RangeError | get b.year, get b.era, get b.eraYear
+B1 ZonedDateTime(hebrew).with(bag, options) reads => 2020-01-02T01:00:00+00:00[UTC][u-ca=hebrew] | get b.offset, get o.disambiguation, get o.offset, get b.day, get o.overflow, get b.hour, get b.day, get b.day
+B2 PlainDate.from({year 2020, month 1}, {overflow: bad}) => THROWS TypeError
+B3 PlainYearMonth(2020-01).toPlainDate({day: 0}) => 2020-01-01
+B3 PlainMonthDay.from({month: 0, day: 1}, options) reads => THROWS RangeError | get b.day, get b.month, get b.monthCode, get b.year, get o.overflow
+B4 new PlainMonthDay(2, 1, iso8601, 1900).with({day: 30}) => 02-28
+B5 PlainMonthDay.from({roc, year 109, month 2, day 29}, reject) => THROWS RangeError
+B5 PlainMonthDay.from({buddhist, year 2563, month 2, day 29}, reject) => THROWS RangeError
+B6 new PlainDate(-271821, 4, 19, coptic).toPlainYearMonth() => -271821-04-19[u-ca=coptic]
+B6 new PlainYearMonth(-271821, 4, coptic, 19).add(P1M) => -271821-04-27[u-ca=coptic]
+B6 new PlainYearMonth(-271821, 4, coptic, 19).until(new PlainYearMonth(-271821, 6, coptic, 1)) => P2M
+B7 PlainDate(gregory 2020-01-01).with({year 2021, era ce, eraYear 2019}) => 2021-01-01[u-ca=gregory]
+C1 P1M.round(day) relativeTo {calendar gregorian, 2020-01-01} reads => P1M | get r.calendar, get r.day, get r.month, get r.year
+C1 P1M.round(day) relativeTo {calendar hebrew, 5780-05-01, timeZone UTC} => THROWS Error
+C2 P1M.round(day) relativeTo {2020-01-01, offset garbage} => P1M
+C2 P1M.total(day) relativeTo {2020-01-01, offset garbage} => 31
+C2 compare(P1M, P31D) relativeTo {2020-01-01, offset garbage} => 0
+C3 P1M.round(day) relativeTo {year Infinity, 1, 1, timeZone 5} => THROWS RangeError
+C4 P1M.round(day) relativeTo {2020, monthCode X1, day 1, timeZone 5} => THROWS TypeError
+C4 P1M.round(day) relativeTo {2020, 1, day 0, timeZone 5} => THROWS TypeError
+C5 PT1H.subtract(PT1H, 5) => THROWS TypeError
+C5 PT1H.add(PT1H, bag) reads => PT2H | get o.relativeTo
+C6 new PYM(-271821, 4, iso8601, 19).until(new PYM(-271821, 4, iso8601, 20)) => PT0S
+C6 new PYM(275760, 9, iso8601, 1).until(new PYM(275760, 9, iso8601, 13), year) => PT0S
+C7 P1D.total(hours) relativeTo {-271821-04-19T12:00, offset -12:00, timeZone -12:00} => 24
+C7 P1D.total(hours) relativeTo {-271821-04-19T12:00, timeZone -12:00} (no offset) => 24
+P1 PlainTime 01:10 round {minute, 20, halfEven} => 01:20:00
+P1 PlainDateTime 2020-01-01T01:10 round {minute, 20, halfEven} => 2020-01-01T01:20:00
+P1 ZonedDateTime 2020-01-01T01:10[UTC] round {minute, 20, halfEven} => 2020-01-01T01:20:00+00:00[UTC]
+P1 PlainTime 00:01:10 round {second, 20, halfEven} => 00:01:20
+P1 PlainTime 01:10 round {minute, 20, halfExpand} (control) => 01:20:00
+U1 PT100H.round({week, increment 1e9, relativeTo 2020-01-01}) => PT0S
+U1 P1W.round({day, relativeTo +275760-09-01}) => P1W
+U1 P1W.total({week, relativeTo +275760-09-01}) => 1
+U1 -P1W.round({day, relativeTo -271821-05-01}) => -P1W
+U2 PDT -271821-04-19T00:00:00.000000001 until +275760-09-13 {year, hour, ceil} => P547581Y4M25D
+U2 PDT 2020-01-31T00:00:00.000000001 until 2020-02-29 {month, hour, ceil} => P29D
+U3 ZDT +275760-09-12[UTC] until +275760-09-13[UTC] {day} => P1D
+U3 ZDT -271821-04-21[UTC] since -271821-04-20[UTC] {day} => P1D
+U4 PMD.from({gregory, era <object>, eraYear 2020, M02, 29}) => THROWS RangeError | get era.toString, call era.toString
+U4 PMD(gregory M02-29).toPlainDate({era ce, eraYear 2021}) => THROWS RangeError
+U4 P1M.total(day) relativeTo {gregory, era <object>, eraYear 2020, 1, 31} => THROWS RangeError | get era.toString, call era.toString
+U4 PMD(coptic M01-01).toPlainDate({era <object>, eraYear 1740}) => THROWS RangeError | get era.toString, call era.toString
+U4 P1M.total(day) relativeTo {coptic, era <object>, eraYear 1740, M01, 1} => THROWS RangeError | get era.toString, call era.toString
+U5 PMD.from({gregory, monthCode M05, month 5, day 1}) => 1972-05-01[u-ca=gregory]
+U5 PMD(hebrew M05-01).with({monthCode M06, month 6}) => 1972-02-16[u-ca=hebrew]
+U6 PMD(gregory M02-01).with({era ce, eraYear 5}) => THROWS TypeError
+U6 PMD.from({gregory, era xx, eraYear 1, M01, 1}, 5) => THROWS RangeError
+U7 PYM(hebrew 5780-M03).with({year 5781, era xx, eraYear 1}) => 2020-11-17[u-ca=hebrew]
+U7 PYM(coptic 1736-M03).with({year 1737, era am, eraYear 1}) => 2020-11-10[u-ca=coptic]
+U8 PYM(chinese 2021-M03).with({monthCode M02L}) => THROWS RangeError
+U8 PYM(hebrew 5783-M04).with({monthCode M05L}) => THROWS RangeError
+K1 PlainDateTime.from(hebrew ZonedDateTime) reads => 5780-04-18T10:00:00
+K1 PlainYearMonth.from(hebrew PlainDate) => 5780-04
+K1 PlainMonthDay.from(hebrew PlainDate) => 04-18
+K1 hebrew PlainDateTime.equals(hebrew ZonedDateTime of its wall clock) => false
+K2 ZonedDateTime.from(PlainDate 2020-01-01) => THROWS Error
+K2 ZonedDateTime.compare(ZDT, PlainDateTime) => THROWS Error
+K2 ZonedDateTime.from(PlainDate with timeZone UTC) => THROWS Error
+K3 ZonedDateTime.from({-271821-04-19T12:00, offset -12:00, timeZone -12:00}) => -271821-04-19T12:00:00-12:00[-12:00]
+K3 new ZonedDateTime(-8.64e21 ns, -12:00).with({minute 1}) => -271821-04-19T12:01:00-12:00[-12:00]
+K3 new ZonedDateTime(-8.64e21 ns, -12:00).round(hour) => -271821-04-19T12:00:00-12:00[-12:00]
+N1 PlainDate.from(-271821-04-18, bag) reads => THROWS RangeError
+N1 PlainYearMonth.from(-271821-03, bag) reads => THROWS RangeError
+exit=0

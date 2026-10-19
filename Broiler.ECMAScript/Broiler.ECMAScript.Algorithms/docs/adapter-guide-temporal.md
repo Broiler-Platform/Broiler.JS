@@ -898,7 +898,10 @@ day.
   within the limits or a valid epoch.
 - The library throws no other exception. Where a week or day nudge window does not hold the destination, which the
   specification asserts, `RoundRelativeDuration` and `TotalRelativeDuration` answer `OutOfRange` (row D12, below). A
-  year or month window that misses is the specification's second window, not a failure.
+  year or month window that misses is the specification's second window, not a failure. Where the zone's day from
+  `NudgeToZonedTime`'s start is not of the duration's sign, which the specification also asserts,
+  `RoundRelativeDuration` answers `OutOfRange` too (decision D12, below). *(Added 2026-10-19, at SJL-10.5: the last
+  sentence.)*
 
 ### What the caller does with each status
 
@@ -908,7 +911,11 @@ day.
 | `RelativeToRequired` | years, months or weeks, or a calendar unit to round or total to, with no `relativeTo` date; and `add` of calendar units | `RangeError` | its `RangeError` (row D3's correction: `add` no longer takes a `relativeTo`) | `RangeError`, "… needs a relativeTo date" |
 | `InvalidDuration` | a result that is no valid duration, or a time duration past the limit | `RangeError` | its `RangeError` | `RangeError`, "the duration is not valid" |
 | `InvalidDate` | an addition under `reject` to a day or leap month the target lacks | `RangeError` | its `RangeError` | its `RangeError` |
-| `OutOfRange` | a date, date-time or instant past the limits; any other failure of a provider; a week or day nudge window that does not hold the destination (row D12) | `RangeError` | its `RangeError` | `RangeError`, "… is outside the representable range"; at row D12, the invocation ends with a .NET `ArgumentOutOfRangeException` until SJL-10.4 |
+| `OutOfRange` | a date, date-time or instant past the limits; any other failure of a provider; a week or day nudge window that does not hold the destination (row D12); a zone's day in `NudgeToZonedTime` not of the duration's sign (row D12, decision D12) | `RangeError` | its `RangeError` | `RangeError`, "… is outside the representable range"; at row D12, the invocation ends with a .NET `ArgumentOutOfRangeException` until SJL-10.4; at decision D12's day span, `0.1.0-preview.6` answers a duration (below) |
+
+*(Revised 2026-10-19, at SJL-10.5, for decision D12: the `OutOfRange` row's meaning ended "a week or day nudge window
+that does not hold the destination (row D12)", and its Broiler.VM cell "at row D12, the invocation ends with a .NET
+`ArgumentOutOfRangeException` until SJL-10.4".)*
 
 ### Evidence
 
@@ -955,12 +962,48 @@ Under the owner's direction of 2026-10-18, part C took these, within JSD-0078's 
    rounding `-PT16H15M` to a day relative to the first. The reference polyfill fails its own assertion ("day was 0 days
    long", a plain `Error`); Broiler.VM ends the invocation with a .NET `ArgumentOutOfRangeException` from
    `ExactRounding`; the library answers `OutOfRange`, a `RangeError` in both engines, so that no engine faults. It is
-   the one place the library does not answer as Broiler.VM's code. A date-duration field beyond 4×10^18, which no
-   valid duration has, is `OutOfRange` before a calendar is called.
+   one of the two places the library does not answer as Broiler.VM's code; decision D12's day span (below) is the
+   other. A date-duration field beyond 4×10^18, which no valid duration has, is `OutOfRange` before a calendar is
+   called. *(Revised 2026-10-19, at SJL-10.5: read "It is the one place the library does not answer as Broiler.VM's
+   code.")*
 8. **Decision D7 is applied at row D8**, and JSD-0054 section 4's named places stand, as above.
 9. **The runner's Temporal adapter** (`runners/TemporalAdapter.cs`) is written once, the engine-side steps around the
    library as Broiler.VM's realm files take them, and linked into the tests and the Native AOT probe; it is never a
    library's.
+
+### Decision D12, at SJL-10.5
+
+*(Added 2026-10-19, at milestone SJL-10.5.)* Under the owner's direction of 2026-10-18 ("do all recommended
+decisions"), the owner took **decision D12 on 2026-10-19: decision D11's rule reaches `NudgeToZonedTime`'s assertion
+on the day span's sign; where an input breaks it, the answer is a `RangeError`.**
+
+- **The assertion.** The pinned text's `NudgeToZonedTime` (s7.5.35) step 8 reads "Assert: TimeDurationSign(_daySpan_)
+  = _sign_", where the day span runs from the nudge's start, the origin with the duration's date part added, to the
+  day after it in the duration's direction, both at the origin's wall-clock time under `compatible`.
+- **Row D12's input breaks it too.** Rounding to a time unit with a date largest unit, back from 2011-12-31 in
+  Pacific/Apia, the day before is 2011-12-30, which the zone skipped; `compatible` moves it onto the start, and the day
+  span is zero. Item 7's day window is the other branch of the same row.
+- **Until this decision** the library tested decision D11's windows only, and here went on from outside the text's
+  domain: `ZonedDateTime.from("2011-12-31T16:15+14:00[Pacific/Apia]")`
+  `.since("2011-12-31T00:00+14:00[Pacific/Apia]", {largestUnit: "day", smallestUnit: "hour"})` answered `P1DT16H`
+  (`P1DT17H` under `ceil` and `expand`), and rounding `-PT16H15M` to the hour, with a largest unit of a day or a month,
+  relative to the first answered `-P1DT16H` or `-P1DT17H`. Broiler.VM's code at `14072b0` answers the same, and so
+  does `0.1.0-preview.6`. The reference polyfill throws a `RangeError` ("time zone returned inconsistent Instants"),
+  as Broiler.JS did before its cut-over.
+- **Now** `NudgeToZonedTime` answers `OutOfRange` where the day span's sign is not the duration's, and so do
+  `RoundRelativeDuration`, `Round` and every zoned difference whose smallest unit is a time unit (but a nanosecond
+  with an increment of 1, which does not round) and whose largest unit is a date unit: a `RangeError` in both engines.
+  A day span of the wrong sign, which only an engine's own inconsistent zone gives, answers the same.
+  `TotalRelativeDuration` measures no day span, and forward from the earlier instant the span is the next day, of 24
+  hours: those answers stand.
+- **In the engines.** Broiler.VM takes `0.1.0-preview.6`, and answers `P1DT16H` there until it moves to a version that
+  carries this decision. Broiler.JS takes the library as a project and answers the `RangeError` from SJL-10.5, as its
+  own code did before the cut-over; only the message changes, from "time zone returned inconsistent Instants" to
+  "… is outside the representable range".
+- **Evidence.** `DurationApiTests.cs` holds it: Pacific/Apia's case for `since` and `until` and for `Round` in every
+  rounding mode, to the hour with a largest unit of a day or a month and to 30 minutes with a largest unit of a day,
+  the answers that stand, and an engine's zone whose instants run against its wall clock. The library-level runner still answers
+  10,851 of revision 25's Temporal vectors, every one matching: no vector reaches the assertion.
 
 ### Engine-specific behaviour
 

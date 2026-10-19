@@ -1,9 +1,7 @@
 using System;
-using System.Globalization;
-using System.Numerics;
-using System.Text;
-using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -14,17 +12,14 @@ using Broiler.JavaScript.Engine.Core;
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
 // Temporal.PlainTime (Temporal proposal §4): a wall-clock time of day with no date, calendar,
-// or time zone — six integer fields (hour…nanosecond). Everything here is calendar- and
-// zone-independent, so the full surface (construction, from/compare, with/add/subtract/
-// until/since/round/equals, ISO string round-tripping) is implementable. Arithmetic wraps
-// modulo 24 h (the day overflow is discarded, since a PlainTime has no date).
+// or time zone — six integer fields (hour…nanosecond). Its regulation, addition, rounding and
+// differences are the shared library's, through TemporalAdapter. Arithmetic wraps modulo 24 h (the
+// day overflow is discarded, since a PlainTime has no date).
 //
 // Registered under the Temporal namespace (not as a global) via Register = false.
 [JSClassGenerator("PlainTime", Register = false)]
 public partial class JSTemporalPlainTime : JSObject
 {
-    private const long NanosecondsPerDay = 86_400_000_000_000;
-
     internal readonly int hour, minute, second, millisecond, microsecond, nanosecond;
 
     [JSExport(Length = 0)]
@@ -37,26 +32,23 @@ public partial class JSTemporalPlainTime : JSObject
         microsecond = ToIntegerWithTruncation(a.GetAt(4));
         nanosecond = ToIntegerWithTruncation(a.GetAt(5));
 
-        if (!IsValidTime(hour, minute, second, millisecond, microsecond, nanosecond))
+        if (!TemporalLimits.IsValidTime(IsoTime))
             throw JSEngine.NewRangeError("Temporal.PlainTime: time component out of range");
     }
 
     // Factory used by sibling Temporal types (PlainDateTime.toPlainTime) to build a
     // PlainTime from already-validated components without going through `new`.
     internal static JSTemporalPlainTime Create(int h, int mi, int s, int ms, int us, int ns)
-        => new JSTemporalPlainTime(
-            ((((long)h * 60 + mi) * 60 + s) * 1000L + ms) * 1_000_000L + (long)us * 1000 + ns,
-            PlainTimePrototype);
+        => new JSTemporalPlainTime(new IsoTime(h, mi, s, ms, us, ns), PlainTimePrototype);
 
-    private JSTemporalPlainTime(long totalNanoseconds, JSObject prototype) : base(prototype)
+    private JSTemporalPlainTime(IsoTime time, JSObject prototype) : base(prototype)
     {
-        nanosecond = (int)(totalNanoseconds % 1000); totalNanoseconds /= 1000;
-        microsecond = (int)(totalNanoseconds % 1000); totalNanoseconds /= 1000;
-        millisecond = (int)(totalNanoseconds % 1000); totalNanoseconds /= 1000;
-        second = (int)(totalNanoseconds % 60); totalNanoseconds /= 60;
-        minute = (int)(totalNanoseconds % 60); totalNanoseconds /= 60;
-        hour = (int)totalNanoseconds;
+        hour = time.Hour; minute = time.Minute; second = time.Second;
+        millisecond = time.Millisecond; microsecond = time.Microsecond; nanosecond = time.Nanosecond;
     }
+
+    // The slots as the shared library's record.
+    internal IsoTime IsoTime => new(hour, minute, second, millisecond, microsecond, nanosecond);
 
     private static JSObject ResolvePrototype()
     {
@@ -91,8 +83,8 @@ public partial class JSTemporalPlainTime : JSObject
 
         if (item is JSTemporalPlainTime t)
         {
-            ReadOverflow(options); // GetTemporalOverflowOption still validates the options bag.
-            return new JSTemporalPlainTime(t.TotalNanoseconds(), PlainTimePrototype);
+            TemporalAdapter.ReadOverflow(options); // GetTemporalOverflowOption still validates the options bag.
+            return new JSTemporalPlainTime(t.IsoTime, PlainTimePrototype);
         }
 
         // ParseISODateTime runs before the options are validated, so an invalid string — e.g. one
@@ -100,24 +92,22 @@ public partial class JSTemporalPlainTime : JSObject
         if (item.IsString)
         {
             var parsed = ParseTemporalTimeString(item.ToString());
-            ReadOverflow(options);
+            TemporalAdapter.ReadOverflow(options);
             return parsed;
         }
 
         // The recognized time fields are read (alphabetically) before the overflow
         // option, so the option getter runs last (test262 PlainTime/from
         // order-of-operations).
-        return ToTemporalTime(item, () => ReadOverflow(options));
+        return ToTemporalTime(item, () => TemporalAdapter.ReadOverflow(options));
     }
 
     [JSExport("compare", Length = 2)]
     internal static JSValue Compare(in Arguments a)
     {
-        var one = RequireTime(ToTemporalTime(a.GetAt(0), "constrain"));
-        var two = RequireTime(ToTemporalTime(a.GetAt(1), "constrain"));
-        var n1 = one.TotalNanoseconds();
-        var n2 = two.TotalNanoseconds();
-        return new JSNumber(n1 < n2 ? -1 : n1 > n2 ? 1 : 0);
+        var one = RequireTime(ToTemporalTime(a.GetAt(0), TemporalOverflow.Constrain));
+        var two = RequireTime(ToTemporalTime(a.GetAt(1), TemporalOverflow.Constrain));
+        return new JSNumber(IsoArithmetic.CompareTime(one.IsoTime, two.IsoTime));
     }
 
     // ── methods ─────────────────────────────────────────────────────────────────
@@ -132,7 +122,7 @@ public partial class JSTemporalPlainTime : JSObject
         // fields, which ToTemporalTimeRecord then reads in alphabetical order — hour,
         // microsecond, millisecond, minute, nanosecond, second — coercing each as read;
         // the overflow option is read last (test262 PlainTime/prototype/with order-of-operations).
-        TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
+        TemporalAdapter.RejectObjectWithCalendarOrTimeZone(obj);
 
         var any = false;
         int Read(string name, int current)
@@ -153,7 +143,7 @@ public partial class JSTemporalPlainTime : JSObject
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainTime.prototype.with requires at least one time property");
 
-        var overflow = ReadOverflow(a.GetAt(1));
+        var overflow = TemporalAdapter.ReadOverflow(a.GetAt(1));
 
         return RegulateTime(h, mi, s, ms, us, ns, overflow);
     }
@@ -168,140 +158,46 @@ public partial class JSTemporalPlainTime : JSObject
     {
         var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
 
-        // Only the time components participate; years/months/weeks/days are ignored because
-        // a PlainTime has no date, and any 24 h overflow wraps.
-        var durationNs = new BigInteger(d.HoursValue) * 3_600_000_000_000
-            + new BigInteger(d.MinutesValue) * 60_000_000_000
-            + new BigInteger(d.SecondsValue) * 1_000_000_000
-            + new BigInteger(d.MillisecondsValue) * 1_000_000
-            + new BigInteger(d.MicrosecondsValue) * 1_000
-            + new BigInteger(d.NanosecondsValue);
-
-        var total = TotalNanoseconds() + durationNs * sign;
-        var wrapped = (long)(((total % NanosecondsPerDay) + NanosecondsPerDay) % NanosecondsPerDay);
-        return new JSTemporalPlainTime(wrapped, PlainTimePrototype);
+        // AddDurationToTime: only the time components participate (years/months/weeks/days are
+        // ignored because a PlainTime has no date), added by the shared library's AddTime, whose
+        // carried days are dropped.
+        return new JSTemporalPlainTime(IsoArithmetic.AddTime(IsoTime, sign * TemporalAdapter.TimeDuration(d), out _), PlainTimePrototype);
     }
 
     [JSExport("until", Length = 1)]
-    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), 1);
+    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), DifferenceOperation.Until);
 
     [JSExport("since", Length = 1)]
-    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
+    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), DifferenceOperation.Since);
 
-    // GetDifferenceSettings for until/since: validates largestUnit / smallestUnit (time units only —
-    // a calendar unit is a RangeError, and smallestUnit must not be larger than largestUnit),
-    // roundingIncrement (finite integer in 1 … the unit maximum, dividing it evenly) and
-    // roundingMode, returning the resolved settings the difference rounds with.
-    private static (string largestUnit, string smallestUnit, long increment, RoundingMode roundingMode)
-        ReadDifferenceSettings(JSValue options)
+    // DifferenceTemporalPlainTime (s4.5.17): ToTemporalTime, then GetDifferenceSettings' reads and rules (time units
+    // only), then the shared library's difference: the time difference rounded to the smallest unit and increment and
+    // balanced up to the largest unit, negated for since.
+    private JSValue Difference(JSValue other, JSValue options, DifferenceOperation operation)
     {
-        if (options == null || options.IsUndefined)
-            return ("hour", "nanosecond", 1, RoundingMode.Trunc);
-        if (options is not JSObject o)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-
-        // GetDifferenceSettings reads largestUnit, roundingIncrement, roundingMode, smallestUnit in that
-        // order, coercing each unit (calendar units included) before any is validated against the allowed
-        // group, so a disallowed-unit RangeError is reported only after every option has been read.
-        var largestRaw = o[KeyStrings.GetOrCreate("largestUnit")];
-        string largestUnit = largestRaw.IsUndefined ? null : TemporalRoundingOptions.NormalizeAnyUnit(largestRaw.StringValue, allowAuto: true);
-        if (largestUnit == "auto") largestUnit = null;
-
-        var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
-        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
-
-        var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
-        var smallestUnit = smallestRaw.IsUndefined ? "nanosecond" : TemporalRoundingOptions.NormalizeAnyUnit(smallestRaw.StringValue, allowAuto: false);
-
-        // Only time units (hour … nanosecond) are valid for a PlainTime difference.
-        if (largestUnit != null && TemporalRoundingOptions.UnitIndex(largestUnit) < TemporalRoundingOptions.UnitIndex("hour"))
-            throw JSEngine.NewRangeError($"Temporal.PlainTime: invalid largestUnit \"{largestUnit}\"");
-        if (TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("hour"))
-            throw JSEngine.NewRangeError($"Temporal.PlainTime: invalid smallestUnit \"{smallestUnit}\"");
-
-        largestUnit ??= TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("hour")
-            ? smallestUnit : "hour";
-        if (TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex(largestUnit))
-            throw JSEngine.NewRangeError("Temporal.PlainTime: smallestUnit must not be larger than largestUnit");
-
-        TemporalRoundingOptions.ValidateRoundingIncrement(increment, MaximumRoundingIncrement(smallestUnit), inclusive: false);
-        return (largestUnit, smallestUnit, increment, roundingMode);
-    }
-
-    // MaximumTemporalDurationRoundingIncrement for a time unit.
-    private static long MaximumRoundingIncrement(string unit) => unit switch
-    {
-        "hour" => 24,
-        "minute" or "second" => 60,
-        _ => 1000, // millisecond / microsecond / nanosecond
-    };
-
-    // DifferenceTemporalPlainTime: the operand is coerced first, then the difference settings are
-    // read; the (other − this) nanosecond difference is rounded to smallestUnit × roundingIncrement
-    // (with the rounding mode negated for "since", which also negates the result) and balanced up to
-    // largestUnit.
-    private JSValue Difference(JSValue other, JSValue options, int sign)
-    {
-        var target = RequireTime(ToTemporalTime(other, "constrain"));
-        var (largestUnit, smallestUnit, increment, roundingMode) = ReadDifferenceSettings(options);
-
-        var diff = target.TotalNanoseconds() - TotalNanoseconds(); // other − this
-        var mode = sign < 0 ? ExactRounding.Negate(roundingMode) : roundingMode;
-        var unitNs = UnitNanoseconds(smallestUnit) * increment;
-        var rounded = (long)ExactRounding.RoundNumberToIncrement(diff, BigInteger.One, unitNs, mode) * sign;
-
-        return BalanceTimeDuration(rounded, largestUnit);
-    }
-
-    // BalanceTimeDuration: split a signed nanosecond count into time components, folding every unit
-    // larger than largestUnit into largestUnit (so largestUnit "minute" yields no hours, etc.).
-    private static JSTemporalDuration BalanceTimeDuration(long signedNs, string largestUnit)
-    {
-        var s = Math.Sign(signedNs);
-        var rem = Math.Abs(signedNs);
-
-        long hr = 0, min = 0, sec = 0, ms = 0, us = 0;
-        var ns = rem;
-        if (largestUnit != "nanosecond")
-        {
-            ns = rem % 1000; rem /= 1000; us = rem;
-            if (largestUnit != "microsecond")
-            {
-                us = rem % 1000; rem /= 1000; ms = rem;
-                if (largestUnit != "millisecond")
-                {
-                    ms = rem % 1000; rem /= 1000; sec = rem;
-                    if (largestUnit != "second")
-                    {
-                        sec = rem % 60; rem /= 60; min = rem;
-                        if (largestUnit != "minute")
-                        {
-                            min = rem % 60; rem /= 60; hr = rem;
-                        }
-                    }
-                }
-            }
-        }
-
-        return new JSTemporalDuration(0, 0, 0, 0, s * hr, s * min, s * sec, s * ms, s * us, s * ns,
-            JSTemporalDuration.DurationPrototype);
+        const string typeName = "Temporal.PlainTime";
+        var target = RequireTime(ToTemporalTime(other, TemporalOverflow.Constrain));
+        var settings = TemporalAdapter.DifferenceSettings(TemporalType.PlainTime, operation, options, typeName);
+        return TemporalAdapter.DurationOf(TemporalDifferences.DifferenceTemporalPlainTime(operation, IsoTime, target.IsoTime, settings, out var result),
+            result, typeName);
     }
 
     [JSExport("round", Length = 1)]
     public JSValue Round(in Arguments a)
     {
-        var (unit, increment, roundingMode) = ReadRoundTo(a.GetAt(0));
-        var unitNs = UnitNanoseconds(unit) * increment;
-        var rounded = (long)ExactRounding.RoundNumberToIncrement(TotalNanoseconds(), BigInteger.One, unitNs, roundingMode) % NanosecondsPerDay;
-        if (rounded < 0) rounded += NanosecondsPerDay;
-        return new JSTemporalPlainTime(rounded, PlainTimePrototype);
+        // The reads - roundingIncrement, roundingMode, the required smallestUnit - then the library's rule: a time unit
+        // whose increment divides the next unit and does not reach it (round to hours allows 1, 2, 3, 4, 6, 8 and 12).
+        var (increment, roundingMode, unit) = TemporalAdapter.RoundOptions(TemporalType.PlainTime, a.GetAt(0), "Temporal.PlainTime");
+
+        // RoundTime, the shared library's; a time rounded up to midnight wraps (a PlainTime has no date).
+        return new JSTemporalPlainTime(IsoArithmetic.RoundTime(IsoTime, increment, unit, roundingMode, out _), PlainTimePrototype);
     }
 
     [JSExport("equals", Length = 1)]
     public JSValue Equals(in Arguments a)
     {
-        var other = RequireTime(ToTemporalTime(a.GetAt(0), "constrain"));
-        return TotalNanoseconds() == other.TotalNanoseconds() ? BooleanTrue : BooleanFalse;
+        var other = RequireTime(ToTemporalTime(a.GetAt(0), TemporalOverflow.Constrain));
+        return IsoArithmetic.CompareTime(IsoTime, other.IsoTime) == 0 ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("toString", Length = 0)]
@@ -309,83 +205,23 @@ public partial class JSTemporalPlainTime : JSObject
     {
         var options = a.GetAt(0);
         if (options == null || options.IsUndefined)
-            return new JSString(ToISOString());
+            return ToJSON(a);
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
-        // Option-reading order per TemporalTimeToString: fractionalSecondDigits, roundingMode, then
-        // smallestUnit.
-        var digits = TemporalRoundingOptions.GetFractionalSecondDigits(o);
+        // The options are read in alphabetical order — fractionalSecondDigits, roundingMode, smallestUnit — each
+        // validated by its rule as it is read, the unit's group after the last read.
+        var digits = TemporalAdapter.ReadFractionalSecondDigits(o);
         var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
+        var precision = TemporalAdapter.ToStringPrecision(TemporalAdapter.ReadSmallestUnitText(o), digits, duration: false, "Temporal.PlainTime");
 
-        var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
-        string smallestUnit = null;
-        if (!smallestRaw.IsUndefined)
-        {
-            smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(smallestRaw.StringValue, allowAuto: false);
-            if (smallestUnit == "hour")
-                throw JSEngine.NewRangeError("Temporal.PlainTime.toString: smallestUnit \"hour\" is not allowed");
-        }
-
-        // ToSecondsStringPrecisionRecord: a smallestUnit fixes both the displayed precision and the
-        // rounding increment; otherwise fractionalSecondDigits ("auto" → trimmed) is used.
-        long incrementNs; int fracDigits; var minutePrecision = false;
-        if (smallestUnit != null)
-        {
-            switch (smallestUnit)
-            {
-                case "minute": minutePrecision = true; incrementNs = 60_000_000_000; fracDigits = 0; break;
-                case "second": incrementNs = 1_000_000_000; fracDigits = 0; break;
-                case "millisecond": incrementNs = 1_000_000; fracDigits = 3; break;
-                case "microsecond": incrementNs = 1_000; fracDigits = 6; break;
-                default: incrementNs = 1; fracDigits = 9; break; // nanosecond
-            }
-        }
-        else if (digits < 0) // "auto"
-        {
-            return new JSString(ToISOString());
-        }
-        else
-        {
-            fracDigits = digits;
-            incrementNs = TemporalRoundingOptions.Pow10(9 - digits);
-        }
-
-        // Round the time-of-day to the increment; an overflow past midnight wraps (PlainTime has no
-        // date component to carry into).
-        var wrapped = TotalNanoseconds();
-        if (incrementNs > 1)
-        {
-            wrapped = (long)ExactRounding.RoundNumberToIncrement(TotalNanoseconds(), BigInteger.One, incrementNs, roundingMode) % NanosecondsPerDay;
-            if (wrapped < 0) wrapped += NanosecondsPerDay;
-        }
-
-        return new JSString(FormatTime(wrapped, fracDigits, minutePrecision));
-    }
-
-    // TemporalTimeToString with an explicit precision: "HH:MM" (minute precision) or "HH:MM:SS" plus a
-    // fixed number of fractional-second digits.
-    private static string FormatTime(long ns, int fracDigits, bool minutePrecision)
-    {
-        var totalSeconds = ns / 1_000_000_000;
-        var fraction = ns % 1_000_000_000;
-        var h = (int)(totalSeconds / 3600);
-        var mi = (int)(totalSeconds / 60 % 60);
-        var s = (int)(totalSeconds % 60);
-
-        var sb = new StringBuilder();
-        sb.Append(h.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(mi.ToString("00", CultureInfo.InvariantCulture));
-        if (minutePrecision) return sb.ToString();
-
-        sb.Append(':').Append(s.ToString("00", CultureInfo.InvariantCulture));
-        if (fracDigits > 0)
-            sb.Append('.').Append(fraction.ToString("000000000", CultureInfo.InvariantCulture).Substring(0, fracDigits));
-        return sb.ToString();
+        // RoundTime then TimeRecordToString, the shared library's: a time rounded up to midnight wraps (a
+        // PlainTime has no date to carry into).
+        return new JSString(TemporalFormat.PlainTimeToString(IsoTime, precision, roundingMode));
     }
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToJSON(in Arguments a) => new JSString(TemporalFormat.TimeToString(IsoTime, TemporalFormat.AutoPrecision));
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
@@ -401,17 +237,13 @@ public partial class JSTemporalPlainTime : JSObject
 
     // ── helpers ─────────────────────────────────────────────────────────────────
 
-    internal long TotalNanoseconds()
-        => ((((long)hour * 60 + minute) * 60 + second) * 1000L + millisecond) * 1000L * 1000L
-           + (long)microsecond * 1000 + nanosecond;
-
     private static JSTemporalPlainTime RequireTime(JSValue value)
         => value as JSTemporalPlainTime ?? throw JSEngine.NewTypeError("expected a Temporal.PlainTime");
 
     // ToTemporalTime for callers in other Temporal types (e.g. ZonedDateTime.withPlainTime). Accepts
     // a PlainTime, a property bag, or a time string and returns a PlainTime instance.
     internal static JSTemporalPlainTime ToTemporalTimeObject(JSValue item)
-        => RequireTime(ToTemporalTime(item, "constrain"));
+        => RequireTime(ToTemporalTime(item, TemporalOverflow.Constrain));
 
     private static int ToIntegerWithTruncation(JSValue value)
     {
@@ -421,57 +253,18 @@ public partial class JSTemporalPlainTime : JSObject
         return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainTime: time component must be finite");
     }
 
-    private static bool IsValidTime(int h, int mi, int s, int ms, int us, int ns)
-        => h is >= 0 and <= 23 && mi is >= 0 and <= 59 && s is >= 0 and <= 59
-           && ms is >= 0 and <= 999 && us is >= 0 and <= 999 && ns is >= 0 and <= 999;
+    // RegulateTime, the shared library's: constrain each component into range, or reject an out-of-range value.
+    private static JSValue RegulateTime(int h, int mi, int s, int ms, int us, int ns, TemporalOverflow overflow)
+        => new JSTemporalPlainTime(
+            TemporalAdapter.RegulateTime(h, mi, s, ms, us, ns, overflow, "Temporal.PlainTime: time component out of range"), PlainTimePrototype);
 
-    private static string ReadOverflow(JSValue options)
-    {
-        if (options.IsUndefined)
-            return "constrain";
-
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-
-        var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
-        if (v.IsUndefined) return "constrain";
-
-        var overflow = v.StringValue;
-        if (overflow is not ("constrain" or "reject"))
-            throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
-
-        return overflow;
-    }
-
-    // RegulateTime: either constrain each component into range, or reject an out-of-range value.
-    private static JSValue RegulateTime(int h, int mi, int s, int ms, int us, int ns, string overflow)
-    {
-        if (overflow == "reject")
-        {
-            if (!IsValidTime(h, mi, s, ms, us, ns))
-                throw JSEngine.NewRangeError("Temporal.PlainTime: time component out of range");
-        }
-        else
-        {
-            h = Math.Clamp(h, 0, 23);
-            mi = Math.Clamp(mi, 0, 59);
-            s = Math.Clamp(s, 0, 59);
-            ms = Math.Clamp(ms, 0, 999);
-            us = Math.Clamp(us, 0, 999);
-            ns = Math.Clamp(ns, 0, 999);
-        }
-
-        var total = ((((long)h * 60 + mi) * 60 + s) * 1000L + ms) * 1000L * 1000L + (long)us * 1000 + ns;
-        return new JSTemporalPlainTime(total, PlainTimePrototype);
-    }
-
-    private static JSValue ToTemporalTime(JSValue item, string overflow)
+    private static JSValue ToTemporalTime(JSValue item, TemporalOverflow overflow)
         => ToTemporalTime(item, () => overflow);
 
     // The overflow option is supplied as a callback so a caller (PlainTime.from) can
     // defer reading it until *after* the time fields have been read, matching the spec
-    // order; callers with a fixed overflow ("constrain") pass a constant.
-    private static JSValue ToTemporalTime(JSValue item, Func<string> readOverflow)
+    // order; callers with a fixed overflow (constrain) pass a constant.
+    private static JSValue ToTemporalTime(JSValue item, Func<TemporalOverflow> readOverflow)
     {
         if (item is JSTemporalPlainTime t)
         {
@@ -479,7 +272,7 @@ public partial class JSTemporalPlainTime : JSObject
             // every source kind, including those whose time comes from internal slots — only the
             // property-bag form reads time fields (test262 PlainTime/from order-of-operations).
             readOverflow();
-            return new JSTemporalPlainTime(t.TotalNanoseconds(), PlainTimePrototype);
+            return new JSTemporalPlainTime(t.IsoTime, PlainTimePrototype);
         }
 
         // ToTemporalTime fast path: a PlainDateTime carries its time in internal slots, so
@@ -531,219 +324,9 @@ public partial class JSTemporalPlainTime : JSObject
         return RegulateTime(h, mi, s, ms, us, ns, readOverflow());
     }
 
-    // The time-of-day grammar with *consistent* separators: either every component is colon-separated
-    // (HH:MM:SS) or none is (HHMMSS). A mixed form such as "00:0000" or "0000:00" is rejected — the two
-    // alternation branches never allow a ':' on one boundary and a bare digit run on another. Named
-    // groups h / mi / s / f are reused across both branches (only one branch ever matches).
-    private const string StrictTimeCore =
-        @"(?<h>\d{2})(?::(?<mi>\d{2})(?::(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?|(?<mi>\d{2})(?:(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?";
-
-    // The optional trailing Z / numeric-offset designator. The offset shape is matched leniently here and
-    // its separator consistency is enforced separately via TemporalIsoString.IsStrictOffset.
-    private const string OffsetDesignator =
-        @"(?<off>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?";
-
-    // A full date + required separator + time, with an optional Z / numeric-offset designator. The
-    // date's fraction-bearing component is the seconds only (the date-only parsers reject minutes/hours
-    // fractions). Named groups: h=hour mi=minute s=second f=fraction, "off"=Z/offset designator.
-    private static readonly System.Text.RegularExpressions.Regex DateTimeFormPattern = new(
-        @"^(?:\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-\d{2}-\d{2}|\d{2}\d{2})[Tt ]" + StrictTimeCore + OffsetDesignator + "$",
-        RegexOptions.CultureInvariant);
-
-    // A bare time-of-day (after any leading time designator has been removed), with an optional Z /
-    // numeric-offset designator. Same capture groups as DateTimeFormPattern.
-    private static readonly System.Text.RegularExpressions.Regex BareTimeFormPattern = new(
-        "^" + StrictTimeCore + OffsetDesignator + "$",
-        RegexOptions.CultureInvariant);
-
-    // The maximal trailing run of [..] annotations (used to peel annotations off before parsing).
-    private static readonly System.Text.RegularExpressions.Regex TrailingAnnotationsPattern = new(@"(?:\[[^\]]*\])*$", RegexOptions.CultureInvariant);
-
-    // Date forms that make a designator-less time string ambiguous: a year-month (YYYY-MM / YYYYMM with
-    // a valid month) or a month-day (MM-DD / MMDD / --MM-DD with a valid month and day). Such a string —
-    // e.g. "2021-12" (year-month) or "1130" (month-day "Nov 30") — could be intended as a calendar date,
-    // so it is rejected as a PlainTime unless prefixed with the time designator "T".
-    private static readonly System.Text.RegularExpressions.Regex AmbiguousYearMonthPattern =
-        new(@"^(?:\d{4}|\+\d{6}|-\d{6})-?(\d{2})$", RegexOptions.CultureInvariant);
-    private static readonly System.Text.RegularExpressions.Regex AmbiguousMonthDayPattern =
-        new(@"^(?:--)?(\d{2})-?(\d{2})$", RegexOptions.CultureInvariant);
-
-    // A numeric UTC offset: sign, hour, optional minute / second / fractional second. Mirrors the
-    // "off" group of the time patterns; used only to range-check the components.
-    private static readonly System.Text.RegularExpressions.Regex NumericUtcOffsetPattern = new(
-        @"^[+-](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,]\d{1,9})?)?)?$", RegexOptions.CultureInvariant);
-
-    private static void ValidateNumericUtcOffset(string offset, string text)
-    {
-        var m = NumericUtcOffsetPattern.Match(offset);
-        if (!m.Success)
-            return; // shape already validated by the time pattern's "off" group
-        var oh = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
-        var om = m.Groups[2].Success ? int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture) : 0;
-        var os = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
-        if (oh > 23 || om > 59 || os > 59)
-            throw JSEngine.NewRangeError($"Temporal.PlainTime: invalid UTC offset in \"{text}\"");
-    }
-
+    // ParseTemporalTimeString: ParseISODateTime with the TemporalTimeString goal, the shared library's grammar. Its
+    // early errors refuse a designator-less time that is also a year-month or a month-day, a Z (a PlainTime has no
+    // time zone) and an offset out of range; a leap second (:60) reads as :59, and an offset's value is unused.
     private static JSValue ParseTemporalTimeString(string text)
-    {
-        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
-        TemporalIsoString.RejectMalformedAnnotations(text);
-        TemporalIsoString.RejectInvalidAnnotations(text);
-
-        // Peel off the trailing [..] annotations; a PlainTime ignores both the time-zone annotation and
-        // the calendar, so only the date/time core is examined.
-        var core = text.Substring(0, TrailingAnnotationsPattern.Match(text).Index);
-
-        Match match;
-        var dt = DateTimeFormPattern.Match(core);
-        if (dt.Success)
-        {
-            match = dt;
-        }
-        else
-        {
-            // A bare time-of-day. The only valid designator is "T"/"t"; a space is not accepted. Without
-            // a designator the string must be unambiguous with a calendar date.
-            var hasDesignator = core.Length > 0 && core[0] is 'T' or 't';
-            var body = hasDesignator ? core.Substring(1) : core;
-            if (!hasDesignator && IsAmbiguousTimeString(body))
-                throw JSEngine.NewRangeError($"Temporal.PlainTime: \"{text}\" is ambiguous and requires a time designator");
-
-            match = BareTimeFormPattern.Match(body);
-            if (!match.Success)
-                throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainTime from \"{text}\"");
-        }
-
-        // A Z (UTC) designator implies a wall clock anchored to UTC, which a (zone-less) PlainTime cannot
-        // carry — it is a RangeError, distinct from a plain numeric offset (which is merely ignored).
-        var off = match.Groups["off"];
-        if (off.Success && off.Value is "Z" or "z")
-            throw JSEngine.NewRangeError($"Temporal.PlainTime: a UTC (Z) designator is not valid for a PlainTime: \"{text}\"");
-
-        // A zone-less PlainTime ignores the *value* of a numeric UTC offset, but the offset must
-        // still be well-formed: its separators must be consistent (so "+00:0000" / "+0000:00" are
-        // rejected) and its hour (00-23), minute (00-59) and second (00-59) components are
-        // range-checked, so e.g. "00:00-24:00" is rejected rather than silently parsed as 00:00.
-        if (off.Success)
-        {
-            if (!TemporalIsoString.IsStrictOffset(off.Value))
-                throw JSEngine.NewRangeError($"Temporal.PlainTime: invalid UTC offset in \"{text}\"");
-            ValidateNumericUtcOffset(off.Value, text);
-        }
-
-        var h = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture);
-        var mi = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
-        var s = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
-
-        int ms = 0, us = 0, ns = 0;
-        if (match.Groups["f"].Success)
-        {
-            var digits = match.Groups["f"].Value.PadRight(9, '0');
-            ms = int.Parse(digits.Substring(0, 3), CultureInfo.InvariantCulture);
-            us = int.Parse(digits.Substring(3, 3), CultureInfo.InvariantCulture);
-            ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);
-        }
-
-        // A leap second (:60) parsed from a string collapses to :59 (ParseISODateTime), regardless of
-        // overflow; only a property bag with overflow "reject" rejects it.
-        if (s == 60) s = 59;
-
-        // A time string is parsed strictly (no constrain) otherwise; 24:00 etc. is invalid.
-        if (!IsValidTime(h, mi, s, ms, us, ns))
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainTime from \"{text}\"");
-
-        return RegulateTime(h, mi, s, ms, us, ns, "reject");
-    }
-
-    // Whether a designator-less time body would also be a valid year-month or month-day (Feb 29 allowed,
-    // since a month-day's reference year is a leap year). See AmbiguousYearMonthPattern / *MonthDay*.
-    private static bool IsAmbiguousTimeString(string body)
-    {
-        var ym = AmbiguousYearMonthPattern.Match(body);
-        if (ym.Success && int.Parse(ym.Groups[1].Value, CultureInfo.InvariantCulture) is >= 1 and <= 12)
-            return true;
-
-        var md = AmbiguousMonthDayPattern.Match(body);
-        if (md.Success)
-        {
-            var month = int.Parse(md.Groups[1].Value, CultureInfo.InvariantCulture);
-            var day = int.Parse(md.Groups[2].Value, CultureInfo.InvariantCulture);
-            var maxDay = month switch
-            {
-                1 or 3 or 5 or 7 or 8 or 10 or 12 => 31,
-                4 or 6 or 9 or 11 => 30,
-                2 => 29, // a month-day's reference year is a leap year, so Feb 29 is valid
-                _ => 0,
-            };
-            if (month is >= 1 and <= 12 && day >= 1 && day <= maxDay)
-                return true;
-        }
-
-        return false;
-    }
-
-    private static (string unit, int increment, RoundingMode roundingMode) ReadRoundTo(JSValue roundTo)
-    {
-        string smallestUnit;
-        var increment = 1;
-        var roundingMode = RoundingMode.HalfExpand;
-
-        if (roundTo.IsString)
-        {
-            smallestUnit = roundTo.ToString();
-        }
-        else if (roundTo is JSObject obj)
-        {
-            // GetRoundingIncrementOption and GetRoundingModeOption are read before the (required)
-            // smallestUnit, matching the spec's option-reading order.
-            increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, RoundingMode.HalfExpand);
-
-            var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
-            if (unitValue.IsUndefined)
-                throw JSEngine.NewRangeError("Temporal.PlainTime.round requires a smallestUnit");
-            smallestUnit = unitValue.StringValue;
-        }
-        else
-        {
-            throw JSEngine.NewTypeError("Temporal.PlainTime.round requires an options object or string");
-        }
-
-        smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(smallestUnit, allowAuto: false);
-
-        // ValidateTemporalRoundingIncrement: the increment must divide the next unit evenly and not
-        // reach it (e.g. round to "hour" allows 1,2,3,4,6,8,12 but not 24).
-        TemporalRoundingOptions.ValidateRoundingIncrement(increment, MaximumRoundingIncrement(smallestUnit), inclusive: false);
-
-        return (smallestUnit, increment, roundingMode);
-    }
-
-    private static long UnitNanoseconds(string unit) => unit switch
-    {
-        "hour" => 3_600_000_000_000,
-        "minute" => 60_000_000_000,
-        "second" => 1_000_000_000,
-        "millisecond" => 1_000_000,
-        "microsecond" => 1_000,
-        _ => 1,
-    };
-
-    // TemporalTimeToString with auto precision: "HH:MM:SS" plus the trimmed fractional second.
-    private string ToISOString()
-    {
-        var sb = new StringBuilder();
-        sb.Append(hour.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(minute.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(second.ToString("00", CultureInfo.InvariantCulture));
-
-        var fraction = millisecond * 1_000_000 + microsecond * 1_000 + nanosecond;
-        if (fraction != 0)
-        {
-            var digits = fraction.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0');
-            sb.Append('.').Append(digits);
-        }
-
-        return sb.ToString();
-    }
+        => new JSTemporalPlainTime(TemporalAdapter.ParseIsoString(text, [TemporalGoal.Time], "Temporal.PlainTime").Time!.Value, PlainTimePrototype);
 }

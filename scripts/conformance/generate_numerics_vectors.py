@@ -44,8 +44,8 @@ from generate_number_vectors import double_expression, f64, js_string_literal, s
 # retired them, nor revision 21, which added the time-zone area (generate_time_zone_vectors.py), nor revision 22,
 # which classified its divergences, nor revision 23, which retired them, nor revision 24, which added the Temporal
 # area (generate_temporal_vectors.py) and widened the schema's provenance, nor revision 25, which classified its
-# differences.
-CORPUS_REVISION = 25
+# differences, nor revision 26, which retired them.
+CORPUS_REVISION = 26
 FIRST_REVISION = 6
 GENERATOR = "ref:numericsref@1"
 SPEC = "spec:es2026@0248456c"

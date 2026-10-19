@@ -64,7 +64,7 @@ public static partial class DurationMath
 
     // A date-duration field past this cannot be handed to a calendar exactly; no such field is a valid duration's,
     // and no result that far from a date within the limits is within them.
-    // Broiler-AI:           Origin=AI; Spec=Temporal s7.5.2, JSD-0078 decision D12; IP=None; Security=Low; Resources=0; Fingerprint=AF151B
+    // Broiler-AI:           Origin=AI; Spec=Temporal s7.5.2, JSD-0078 row D12; IP=None; Security=Low; Resources=0; Fingerprint=AF151B
     // Broiler-Human:        PENDING
     private const double MaxCalendarField = 4.0e18;
 

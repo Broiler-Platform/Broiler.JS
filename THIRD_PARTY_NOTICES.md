@@ -273,11 +273,22 @@ on 2026-10-18, at milestone SJL-10.2.*
   with the classification they patched: identifiers are Broiler.Unicode's `EcmaScriptLexical` over the
   generated tables below.
 
+- `TemporalArithmeticCalendar` (`Broiler.JavaScript.BuiltIns`) said, until milestone SJL-10.5, that its Hebrew
+  calendar was Reingold and Dershowitz's arithmetic, the molad and its postponements in integers, and that its year
+  search began from Reingold's estimate of the mean year. Those are algorithms of *Calendrical Calculations*, whose
+  authors released them as Lisp code under the Apache License 2.0, the licence of this repository's own code (the
+  time data home's section, above). The file is deleted with the cut-over: the formula calendars are the shared
+  library's `TemporalCalendars`, ported from Broiler.VM, whose Hebrew calendar is the same arithmetic (above).
+
 *Added 2026-10-13, at milestone SJL-4.5, as the shared libraries plan said it would be: the plan's
 numerics record found that the notices named neither citation. Revised 2026-10-16, at milestone SJL-6.5:
 the bullet on `JSDate.Parse` was added; the notices had named neither of the Date code's citations. Revised
 again 2026-10-16, at milestone SJL-7.5: the bullet on `CharExtensions` was added; the notices had not named
-its tables' source.*
+its tables' source. Revised again 2026-10-19, at milestone SJL-10.5: the bullet on `TemporalArithmeticCalendar` was
+added; the notices had not named its citation. The deleted `JSTemporalCalendar.cs` also named sources, ICU4X, the era
+and month code proposal and ICU's Japanese calendar, for its table of the first days of the five modern Japanese eras
+and Meiji's numbering of its years from 1868. Those are dates and a convention the era proposal publishes, not code,
+and need no bullet.*
 
 ## Data the engine's own code is generated from
 

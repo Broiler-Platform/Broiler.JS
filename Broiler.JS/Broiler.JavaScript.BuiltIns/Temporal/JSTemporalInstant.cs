@@ -1,10 +1,7 @@
 using System;
-using System.Globalization;
 using System.Numerics;
-using System.Text;
-using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
-using Broiler.ECMAScript.Time;
+using Broiler.ECMAScript.Temporal;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -17,14 +14,11 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 
 // Temporal.Instant (Temporal proposal §8): an exact point on the UTC timeline, stored as a
 // signed integer count of nanoseconds since the epoch. Valid instants lie within ±10^8 days
-// of the epoch (±8.64e21 ns). Registered under the Temporal namespace (Register = false).
+// of the epoch (±8.64e21 ns). Its addition, rounding and differences are the shared library's,
+// through TemporalAdapter. Registered under the Temporal namespace (Register = false).
 [JSClassGenerator("Instant", Register = false)]
 public partial class JSTemporalInstant : JSObject
 {
-    // ±10^8 days from epoch, in nanoseconds.
-    private static readonly BigInteger MaxEpochNanoseconds = BigInteger.Parse("8640000000000000000000");
-    private static readonly BigInteger MinEpochNanoseconds = -MaxEpochNanoseconds;
-
     internal readonly BigInteger epochNanoseconds;
 
     [JSExport(Length = 1)]
@@ -54,12 +48,13 @@ public partial class JSTemporalInstant : JSObject
     // `globalThis.Temporal.Instant` holds now: guest code may replace the namespace or its members.
     internal static JSObject InstantPrototype => Intrinsics.TemporalPrototype(InstantIntrinsicKey);
 
-    private static bool IsValid(BigInteger ns) => ns >= MinEpochNanoseconds && ns <= MaxEpochNanoseconds;
+    // IsValidEpochNanoseconds, the shared library's: within ±10^8 days of the epoch.
+    private static bool IsValid(BigInteger ns) => TemporalAdapter.IsValidEpochNanoseconds(ns);
 
     // ── accessors ───────────────────────────────────────────────────────────────
 
     [JSExport("epochMilliseconds")]
-    public double EpochMilliseconds => (double)FloorDiv(epochNanoseconds, 1_000_000);
+    public double EpochMilliseconds => TemporalAdapter.EpochMilliseconds(epochNanoseconds);
 
     [JSExport("epochNanoseconds")]
     public JSValue EpochNanoseconds => new JSBigInt(epochNanoseconds);
@@ -121,150 +116,40 @@ public partial class JSTemporalInstant : JSObject
         if (duration.YearsValue != 0 || duration.MonthsValue != 0 || duration.WeeksValue != 0 || duration.DaysValue != 0)
             throw JSEngine.NewRangeError("Temporal.Instant arithmetic does not support calendar units (years, months, weeks, days)");
 
-        var deltaNs = TimeDurationNanoseconds(duration) * sign;
-        var result = epochNanoseconds + deltaNs;
-        if (!IsValid(result))
-            throw JSEngine.NewRangeError("Temporal.Instant: result is out of range");
+        // AddInstant, the shared library's, of the exact time duration.
+        TemporalAdapter.Check(IsoArithmetic.AddInstant(epochNanoseconds, sign * TemporalAdapter.TimeDuration(duration), out var result),
+            "Temporal.Instant: result is out of range");
 
         return new JSTemporalInstant(result, InstantPrototype);
     }
 
     [JSExport("until", Length = 1)]
-    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), 1);
+    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), DifferenceOperation.Until);
 
     [JSExport("since", Length = 1)]
-    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
+    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), DifferenceOperation.Since);
 
-    // DifferenceTemporalInstant: the difference between two instants, expressed as a Duration of
-    // time units. The options bag (largestUnit / smallestUnit / roundingIncrement / roundingMode)
-    // is honored per GetDifferenceSettings; only time units are valid (an Instant has no date).
-    private JSValue Difference(JSValue other, JSValue optionsArg, int sign)
+    // DifferenceTemporalInstant (s8.5.9): ToTemporalInstant, then GetDifferenceSettings' reads and rules (time units
+    // only, largest second by default), then the shared library's DifferenceInstant: the nanoseconds rounded to the
+    // smallest unit and increment and balanced up to the largest unit, negated for since.
+    private JSValue Difference(JSValue other, JSValue options, DifferenceOperation operation)
     {
+        const string typeName = "Temporal.Instant";
         var target = RequireInstant(ToTemporalInstant(other));
-
-        var largestUnit = "auto";
-        var smallestUnit = "nanosecond";
-        var roundingMode = RoundingMode.Trunc;
-        var increment = 1;
-
-        if (optionsArg != null && !optionsArg.IsUndefined)
-        {
-            if (optionsArg is not JSObject options)
-                throw JSEngine.NewTypeError("Temporal.Instant difference options must be an object or undefined");
-
-            // GetDifferenceSettings reads every option — largestUnit, roundingIncrement, roundingMode,
-            // smallestUnit, in that order — and coerces each (calendar units included) before any is
-            // validated against the allowed group, so a disallowed unit is reported only afterwards.
-            var lu = options[KeyStrings.GetOrCreate("largestUnit")];
-            if (!lu.IsUndefined)
-                largestUnit = TemporalRoundingOptions.NormalizeAnyUnit(lu.StringValue, allowAuto: true);
-
-            increment = TemporalRoundingOptions.GetRoundingIncrement(options);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.Trunc);
-
-            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
-            if (!su.IsUndefined)
-                smallestUnit = TemporalRoundingOptions.NormalizeAnyUnit(su.StringValue, allowAuto: false);
-
-            // Only time units (hour … nanosecond) are valid for an Instant difference.
-            if (largestUnit != "auto" && TemporalRoundingOptions.UnitIndex(largestUnit) < TemporalRoundingOptions.UnitIndex("hour"))
-                throw JSEngine.NewRangeError($"Temporal.Instant: invalid largestUnit \"{largestUnit}\"");
-            if (TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("hour"))
-                throw JSEngine.NewRangeError($"Temporal.Instant: invalid smallestUnit \"{smallestUnit}\"");
-        }
-
-        // largestUnit defaults to the larger of "second" and the chosen smallestUnit.
-        if (largestUnit == "auto")
-            largestUnit = TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("second")
-                ? smallestUnit : "second";
-
-        if (TemporalRoundingOptions.UnitIndex(largestUnit) > TemporalRoundingOptions.UnitIndex(smallestUnit))
-            throw JSEngine.NewRangeError("Temporal.Instant: largestUnit must be larger than or equal to smallestUnit");
-
-        var maxIncrement = smallestUnit switch
-        {
-            "hour" => 24L,
-            "minute" or "second" => 60L,
-            _ => 1000L, // millisecond / microsecond / nanosecond
-        };
-        TemporalRoundingOptions.ValidateRoundingIncrement(increment, maxIncrement, inclusive: false);
-
-        // The "since" direction is the negation of "until"; rounding a negated value with the
-        // requested mode is equivalent to negating both the mode and the rounded result.
-        var diff = (target.epochNanoseconds - epochNanoseconds) * sign;
-        var unitNs = (BigInteger)UnitNanoseconds(smallestUnit) * increment;
-        var rounded = ExactRounding.RoundNumberToIncrement(diff, BigInteger.One, unitNs, roundingMode);
-        return BalanceTimeDuration(rounded, largestUnit);
-    }
-
-    // BalanceTimeDuration: distribute a signed nanosecond total into time components, from
-    // `largestUnit` (hour … nanosecond) downward.
-    private static JSValue BalanceTimeDuration(BigInteger totalNs, string largestUnit)
-    {
-        var sign = totalNs.Sign;
-        var ns = BigInteger.Abs(totalNs);
-        var li = TemporalRoundingOptions.UnitIndex(largestUnit);
-
-        BigInteger hours = 0, minutes = 0, seconds = 0, millis = 0, micros = 0;
-        if (li <= TemporalRoundingOptions.UnitIndex("hour")) { hours = ns / 3_600_000_000_000; ns %= 3_600_000_000_000; }
-        if (li <= TemporalRoundingOptions.UnitIndex("minute")) { minutes = ns / 60_000_000_000; ns %= 60_000_000_000; }
-        if (li <= TemporalRoundingOptions.UnitIndex("second")) { seconds = ns / 1_000_000_000; ns %= 1_000_000_000; }
-        if (li <= TemporalRoundingOptions.UnitIndex("millisecond")) { millis = ns / 1_000_000; ns %= 1_000_000; }
-        if (li <= TemporalRoundingOptions.UnitIndex("microsecond")) { micros = ns / 1_000; ns %= 1_000; }
-        var nanos = ns;
-
-        // Each component is the ℝ→𝔽 nearest double (ties to even), not .NET's
-        // (double)BigInteger which truncates toward zero — observable for the very large
-        // components a near-limit difference produces (#818 Problems 18/19).
-        double S(BigInteger v) => sign * ExactRounding.ToDouble(v, BigInteger.One);
-        return new JSTemporalDuration(0, 0, 0, 0, S(hours), S(minutes), S(seconds), S(millis), S(micros), S(nanos),
-            JSTemporalDuration.DurationPrototype);
+        var settings = TemporalAdapter.DifferenceSettings(TemporalType.Instant, operation, options, typeName);
+        return TemporalAdapter.DurationOf(TemporalDifferences.DifferenceTemporalInstant(operation, epochNanoseconds, target.epochNanoseconds, settings,
+            out var result), result, typeName);
     }
 
     [JSExport("round", Length = 1)]
     public JSValue Round(in Arguments a)
     {
-        var roundTo = a.GetAt(0) ?? JSUndefined.Value;
-        if (roundTo.IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.Instant.prototype.round requires an argument");
+        // The reads - roundingIncrement, roundingMode, the required smallestUnit - then the library's rule: a time unit
+        // whose increment divides a day, a day's worth of the unit included.
+        var (increment, roundingMode, smallestUnit) = TemporalAdapter.RoundOptions(TemporalType.Instant, a.GetAt(0), "Temporal.Instant");
 
-        string smallestUnit;
-        var increment = 1;
-        var roundingMode = RoundingMode.HalfExpand;
-
-        if (roundTo.IsString)
-        {
-            smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(roundTo.StringValue, allowAuto: false);
-        }
-        else if (roundTo is JSObject options)
-        {
-            // The increment and mode are read before smallestUnit, matching the spec ordering
-            // (so a bad roundingIncrement / roundingMode is reported before "missing smallestUnit").
-            increment = TemporalRoundingOptions.GetRoundingIncrement(options);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.HalfExpand);
-
-            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
-            if (su.IsUndefined)
-                throw JSEngine.NewRangeError("Temporal.Instant.round requires a smallestUnit");
-            smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
-        }
-        else throw JSEngine.NewTypeError("Temporal.Instant.round requires an options object or string");
-
-        // Instant rounding is relative to a whole day, so the increment may go up to the number of
-        // smallestUnits in a day (inclusive) and must divide it evenly.
-        var dayUnits = smallestUnit switch
-        {
-            "hour" => 24L,
-            "minute" => 1440L,
-            "second" => 86400L,
-            "millisecond" => 86_400_000L,
-            "microsecond" => 86_400_000_000L,
-            _ => 86_400_000_000_000L, // nanosecond
-        };
-        TemporalRoundingOptions.ValidateRoundingIncrement(increment, dayUnits, inclusive: true);
-
-        var unitNs = (BigInteger)UnitNanoseconds(smallestUnit) * increment;
-        var rounded = ExactRounding.RoundNumberToIncrementAsIfPositive(epochNanoseconds, BigInteger.One, unitNs, roundingMode);
+        // RoundTemporalInstant, the shared library's.
+        var rounded = IsoArithmetic.RoundTemporalInstant(epochNanoseconds, increment, smallestUnit, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.Instant.round: result is out of range");
 
@@ -282,7 +167,7 @@ public partial class JSTemporalInstant : JSObject
     public JSValue ToStringMethod(in Arguments a)
     {
         var optionsArg = a.GetAt(0);
-        var digits = -1; // "auto"
+        var digits = TemporalFormat.AutoPrecision;
         var roundingMode = RoundingMode.Trunc;
         string smallestUnit = null;
         string timeZoneId = null;
@@ -292,68 +177,36 @@ public partial class JSTemporalInstant : JSObject
             if (optionsArg is not JSObject options)
                 throw JSEngine.NewTypeError("Temporal.Instant.toString options must be an object or undefined");
 
-            // The options are read in alphabetical order — fractionalSecondDigits,
-            // roundingMode, smallestUnit, timeZone — and EVERY option is read (its getter
-            // fired and value coerced) before any algorithmic validation runs, so a date
-            // smallestUnit such as "month" is rejected only after timeZone has been read
-            // (test262 Instant/prototype/toString options-read-before-algorithmic-validation).
-            digits = TemporalRoundingOptions.GetFractionalSecondDigits(options);
+            // The options are read in alphabetical order — fractionalSecondDigits, roundingMode,
+            // smallestUnit, timeZone — and EVERY option is read (its getter fired and value coerced)
+            // before the unit's group is validated, so a date smallestUnit such as "month" is rejected
+            // only after timeZone has been read (test262 Instant/prototype/toString
+            // options-read-before-algorithmic-validation).
+            digits = TemporalAdapter.ReadFractionalSecondDigits(options);
             roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.Trunc);
-
-            // Coerce smallestUnit to a string now (firing its toString); defer the
-            // time-unit validation until after timeZone is read.
-            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
-            var smallestUnitRaw = su.IsUndefined ? null : su.StringValue;
+            smallestUnit = TemporalAdapter.ReadSmallestUnitText(options);
 
             // A timeZone option displays the instant in that zone (with its numeric offset) instead of
             // UTC; it must be a valid time-zone identifier — a bare date-time string is a RangeError.
             var tz = options[KeyStrings.GetOrCreate("timeZone")];
             if (!tz.IsUndefined)
                 timeZoneId = JSTemporalZonedDateTime.ToTimeZoneIdentifier(tz);
-
-            if (smallestUnitRaw != null)
-                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(smallestUnitRaw, allowAuto: false);
-
-            if (smallestUnit == "hour")
-                throw JSEngine.NewRangeError("Temporal.Instant.toString: smallestUnit cannot be \"hour\"");
         }
 
-        // ToSecondsStringPrecisionRecord: precision -2 = minutes (no seconds), -1 = auto,
-        // 0..9 = a fixed number of fractional-second digits; incrementNs is the rounding step.
-        int precision;
-        long incrementNs;
-        if (smallestUnit != null)
-        {
-            (precision, incrementNs) = smallestUnit switch
-            {
-                "minute" => (-2, 60_000_000_000L),
-                "second" => (0, 1_000_000_000L),
-                "millisecond" => (3, 1_000_000L),
-                "microsecond" => (6, 1_000L),
-                _ => (9, 1L), // nanosecond
-            };
-        }
-        else if (digits == -1) { precision = -1; incrementNs = 1; }
-        else { precision = digits; incrementNs = TemporalRoundingOptions.Pow10(9 - digits); }
+        var precision = TemporalAdapter.ToStringPrecision(smallestUnit, digits, duration: false, "Temporal.Instant");
 
-        var rounded = ExactRounding.RoundNumberToIncrementAsIfPositive(epochNanoseconds, BigInteger.One, incrementNs, roundingMode);
+        // RoundTemporalInstant, then TemporalInstantToString with the offset in force at the rounded instant:
+        // the shared library's.
+        var rounded = IsoArithmetic.RoundTemporalInstant(epochNanoseconds, precision.Increment, precision.Unit, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.Instant.toString: result is out of range");
 
-        if (timeZoneId == null)
-            return new JSString(FormatISO(rounded, precision));
-
-        // Display the instant in the requested zone: shift to its local wall clock and append the
-        // numeric UTC offset in place of the "Z" designator.
-        var offsetNs = TemporalTimeZones.OffsetNanoseconds(timeZoneId, rounded);
-        var localFraction = FormatISO(rounded + offsetNs, precision);
-        // Replace the trailing "Z" with the offset string.
-        return new JSString(localFraction.Substring(0, localFraction.Length - 1)
-            + JSTemporalZonedDateTime.FormatOffsetRounded(offsetNs));
+        long? offsetNs = timeZoneId == null ? null : TemporalTimeZones.OffsetNanoseconds(timeZoneId, rounded);
+        return new JSString(TemporalFormat.InstantToString(rounded, offsetNs, precision.Precision));
     }
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToJSON(in Arguments a) => new JSString(TemporalFormat.InstantToString(epochNanoseconds, null, TemporalFormat.AutoPrecision));
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
@@ -400,162 +253,9 @@ public partial class JSTemporalInstant : JSObject
         throw JSEngine.NewTypeError("Temporal.Instant: invalid value");
     }
 
-    private static BigInteger TimeDurationNanoseconds(JSTemporalDuration d)
-        => new BigInteger(d.HoursValue) * 3_600_000_000_000
-         + new BigInteger(d.MinutesValue) * 60_000_000_000
-         + new BigInteger(d.SecondsValue) * 1_000_000_000
-         + new BigInteger(d.MillisecondsValue) * 1_000_000
-         + new BigInteger(d.MicrosecondsValue) * 1_000
-         + new BigInteger(d.NanosecondsValue);
-
-    private static long UnitNanoseconds(string unit) => unit switch
-    {
-        "hour" => 3_600_000_000_000,
-        "minute" => 60_000_000_000,
-        "second" => 1_000_000_000,
-        "millisecond" => 1_000_000,
-        "microsecond" => 1_000,
-        _ => 1,
-    };
-
-    private static BigInteger FloorDiv(BigInteger a, BigInteger b)
-    {
-        var q = BigInteger.DivRem(a, b, out var r);
-        if (r != 0 && (r < 0) != (b < 0))
-            q -= 1;
-        return q;
-    }
-
-    // A Temporal.Instant string is a date-time that *must* carry a UTC designator — either Z or a
-    // numeric UTC offset (which may run down to sub-minute precision with a fractional part). The
-    // date may use the extended ("1976-11-18") or basic ("19761118") form, the minutes/seconds of
-    // both the wall clock and the offset are optional, and any trailing RFC 9557 [..] annotations
-    // (time-zone and/or key=value) are permitted and ignored here.
-    private const string YearField = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
-    private static readonly System.Text.RegularExpressions.Regex InstantPattern = new(
-        @"^(?:(?<y>" + YearField + @")-(?<mo>\d{2})-(?<d>\d{2})|(?<y>" + YearField + @")(?<mo>\d{2})(?<d>\d{2}))" +
-        @"[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
-        @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::?(?<om>\d{2})(?::?(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))" +
-        TemporalIsoString.AnnotationsTail + "$",
-        RegexOptions.CultureInvariant);
-
+    // ParseTemporalInstant, the shared library's grammar: a date-time that must carry Z or a UTC offset (to
+    // sub-minute precision), its annotations checked and their payload ignored, the offset applied, and the
+    // instant within the representable range.
     private static JSValue ParseTemporalInstant(string text)
-    {
-        // The trailing annotations are validated even though their payload is ignored: more than one
-        // calendar/time-zone annotation, a malformed key=value, or a critical unknown key is a
-        // RangeError (shared with the other Temporal string parsers).
-        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
-        TemporalIsoString.RejectMalformedAnnotations(text);
-        TemporalIsoString.RejectInvalidAnnotations(text);
-
-        var match = InstantPattern.Match(text);
-        if (!match.Success)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
-
-        var year = int.Parse(match.Groups["y"].Value, CultureInfo.InvariantCulture);
-        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
-        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
-        var hour = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture);
-        var minute = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
-        var second = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
-        if (second == 60) second = 59; // a leap second collapses to :59
-
-        if (!IsoCalendarMath.IsValidIsoDate(year, month, day)
-            || hour > 23 || minute > 59 || second > 59)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
-
-        var fractionNs = BigInteger.Zero;
-        if (match.Groups["f"].Success)
-        {
-            var digits = match.Groups["f"].Value.PadRight(9, '0');
-            fractionNs = BigInteger.Parse(digits, CultureInfo.InvariantCulture);
-        }
-
-        var days = IsoCalendarMath.EpochDays(year, month, day);
-        var secondsOfDay = (long)hour * 3600 + (long)minute * 60 + second;
-        var ns = (new BigInteger(days) * 86400 + secondsOfDay) * 1_000_000_000 + fractionNs;
-
-        // Apply the UTC offset (subtract to convert local → UTC); a Z designator means a zero offset.
-        if (match.Groups["off"].Success)
-        {
-            // The offset must use consistent separators (e.g. "+00:0000" mixes ':' with bare digits).
-            if (!TemporalIsoString.IsStrictOffset(match.Groups["off"].Value))
-                throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
-
-            var offsetSign = match.Groups["osign"].Value == "-" ? -1 : 1;
-            var offsetHours = int.Parse(match.Groups["oh"].Value, CultureInfo.InvariantCulture);
-            var offsetMinutes = match.Groups["om"].Success ? int.Parse(match.Groups["om"].Value, CultureInfo.InvariantCulture) : 0;
-            var offsetSeconds = match.Groups["os"].Success ? int.Parse(match.Groups["os"].Value, CultureInfo.InvariantCulture) : 0;
-            if (offsetHours > 23 || offsetMinutes > 59 || offsetSeconds > 59)
-                throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
-
-            var offsetFractionNs = BigInteger.Zero;
-            if (match.Groups["of"].Success)
-                offsetFractionNs = BigInteger.Parse(match.Groups["of"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture);
-
-            var offsetNs = ((long)(offsetHours * 3600 + offsetMinutes * 60 + offsetSeconds) * 1_000_000_000 + offsetFractionNs) * offsetSign;
-            ns -= offsetNs;
-        }
-
-        if (!IsValid(ns))
-            throw JSEngine.NewRangeError("Temporal.Instant: parsed value is out of range");
-
-        return new JSTemporalInstant(ns, InstantPrototype);
-    }
-
-    private string ToISOString() => FormatISO(epochNanoseconds, precision: -1);
-
-    // Renders epoch nanoseconds as an ISO-8601 UTC string. `precision` controls the seconds field:
-    // -2 omits seconds (minute precision), -1 emits the minimal (auto) fractional part, and 0..9
-    // emits exactly that many fractional digits.
-    private static string FormatISO(BigInteger ns, int precision)
-    {
-        var totalSeconds = FloorDiv(ns, 1_000_000_000);
-        var fraction = ns - totalSeconds * 1_000_000_000; // [0, 1e9)
-
-        var days = (long)FloorDiv(totalSeconds, 86400);
-        var secondsOfDay = (long)(totalSeconds - new BigInteger(days) * 86400);
-
-        var (y, m, d) = IsoCalendarMath.FromEpochDays(days);
-        var hour = secondsOfDay / 3600;
-        var minute = secondsOfDay % 3600 / 60;
-        var second = secondsOfDay % 60;
-
-        var sb = new StringBuilder();
-        if (y < 0 || y > 9999)
-            sb.Append(y < 0 ? '-' : '+').Append(Math.Abs(y).ToString("000000", CultureInfo.InvariantCulture));
-        else
-            sb.Append(y.ToString("0000", CultureInfo.InvariantCulture));
-
-        sb.Append('-').Append(m.ToString("00", CultureInfo.InvariantCulture))
-          .Append('-').Append(d.ToString("00", CultureInfo.InvariantCulture))
-          .Append('T').Append(hour.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(minute.ToString("00", CultureInfo.InvariantCulture));
-
-        if (precision != -2)
-        {
-            sb.Append(':').Append(second.ToString("00", CultureInfo.InvariantCulture));
-            AppendFraction(sb, (long)fraction, precision);
-        }
-
-        sb.Append('Z');
-        return sb.ToString();
-    }
-
-    // Appends the fractional-second part for a 0..999_999_999 nanosecond value. precision -1 trims
-    // trailing zeros (and omits the field entirely when zero); 0 omits it; 1..9 zero-pads to width.
-    internal static void AppendFraction(StringBuilder sb, long fractionNs, int precision)
-    {
-        if (precision == 0) return;
-        if (precision < 0)
-        {
-            if (fractionNs == 0) return;
-            var frac = fractionNs.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0');
-            sb.Append('.').Append(frac);
-            return;
-        }
-
-        var digits = fractionNs.ToString("000000000", CultureInfo.InvariantCulture).Substring(0, precision);
-        sb.Append('.').Append(digits);
-    }
+        => new JSTemporalInstant(TemporalAdapter.ParseInstant(text), InstantPrototype);
 }

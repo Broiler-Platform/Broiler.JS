@@ -22,10 +22,6 @@ internal static class TemporalTimeData
     // The embedded files' logical names: this prefix and the home's file name.
     internal const string ResourcePrefix = "Broiler.JavaScript.BuiltIns.TimeData.";
 
-    // The home's generated files this engine embeds.
-    internal static readonly string[] Files =
-        ["time-zones.bin", "time-zone-ids.txt", "time-zone-regions.txt", "calendars.bin", "tables.manifest"];
-
     private static readonly Lazy<TimeZoneDatabase> TimeZoneTables =
         new(LoadTimeZones, LazyThreadSafetyMode.ExecutionAndPublication);
 

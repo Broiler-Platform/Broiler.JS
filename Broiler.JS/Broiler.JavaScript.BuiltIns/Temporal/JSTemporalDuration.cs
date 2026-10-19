@@ -1,9 +1,6 @@
 using System;
-using System.Globalization;
-using System.Numerics;
-using System.Text;
-using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -14,11 +11,10 @@ using Broiler.JavaScript.Engine.Core;
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
 // Temporal.Duration (Temporal proposal §7). A Duration is an immutable record of ten signed
-// integer components (years … nanoseconds) sharing one sign. This implements construction,
-// from()/compare(), the component/sign/blank accessors, with()/negated()/abs(), and ISO-8601
-// string round-tripping. Calendar-dependent arithmetic (round/total/add with a relativeTo
-// that needs a calendar) is only supported for the calendar-independent (time + days) case;
-// otherwise a RangeError is raised, matching the spec's "relativeTo is required" paths.
+// integer components (years … nanoseconds) sharing one sign. Its validity, sign, addition,
+// compare, round and total, with and without relativeTo in any calendar and zone, are the shared
+// library's DurationMath (milestone SJL-10.5, part C); what stays here is each method's reads, in
+// the specification's order, and the RangeError each status is, through TemporalAdapter.
 //
 // Registered under the Temporal namespace (not as a global) via Register = false.
 [JSClassGenerator("Duration", Register = false)]
@@ -40,7 +36,7 @@ public partial class JSTemporalDuration : JSObject
         microseconds = ToIntegerIfIntegral(a.GetAt(8));
         nanoseconds = ToIntegerIfIntegral(a.GetAt(9));
 
-        RejectDuration(years, months, weeks, days, hours, minutes, seconds, milliseconds, microseconds, nanoseconds);
+        TemporalAdapter.CheckDuration(new DurationFields(years, months, weeks, days, hours, minutes, seconds, milliseconds, microseconds, nanoseconds));
     }
 
     internal JSTemporalDuration(
@@ -57,7 +53,15 @@ public partial class JSTemporalDuration : JSObject
         this.microseconds = NoNegativeZero(microseconds); this.nanoseconds = NoNegativeZero(nanoseconds);
     }
 
+    // A duration of the shared library's record, every field already a Number.
+    internal JSTemporalDuration(DurationFields fields, JSObject prototype)
+        : this(fields.Years, fields.Months, fields.Weeks, fields.Days, fields.Hours, fields.Minutes, fields.Seconds,
+            fields.Milliseconds, fields.Microseconds, fields.Nanoseconds, prototype) { }
+
     private static double NoNegativeZero(double v) => v == 0 ? 0.0 : v;
+
+    // The ten fields as the shared library's record.
+    internal DurationFields Fields => new(years, months, weeks, days, hours, minutes, seconds, milliseconds, microseconds, nanoseconds);
 
     private static JSObject ResolvePrototype()
     {
@@ -90,7 +94,7 @@ public partial class JSTemporalDuration : JSObject
     [JSExport("sign")] public double Sign => DurationSign();
     [JSExport("blank")] public bool Blank => DurationSign() == 0;
 
-    private int DurationSign() => DurationSign(years, months, weeks, days, hours, minutes, seconds, milliseconds, microseconds, nanoseconds);
+    private int DurationSign() => DurationMath.Sign(Fields);
 
     // ── methods ─────────────────────────────────────────────────────────────────
 
@@ -134,7 +138,7 @@ public partial class JSTemporalDuration : JSObject
         if (!any)
             throw JSEngine.NewTypeError("Temporal.Duration.prototype.with requires at least one duration property");
 
-        RejectDuration(y, mo, w, d, h, mi, s, ms, us, ns);
+        TemporalAdapter.CheckDuration(new DurationFields(y, mo, w, d, h, mi, s, ms, us, ns));
         return new JSTemporalDuration(y, mo, w, d, h, mi, s, ms, us, ns, DurationPrototype);
     }
 
@@ -142,7 +146,7 @@ public partial class JSTemporalDuration : JSObject
     public JSValue ToStringMethod(in Arguments a)
     {
         var optionsArg = a.GetAt(0);
-        var digits = -1; // "auto"
+        var digits = TemporalFormat.AutoPrecision;
         var roundingMode = RoundingMode.Trunc;
         string smallestUnit = null;
 
@@ -151,40 +155,25 @@ public partial class JSTemporalDuration : JSObject
             if (optionsArg is not JSObject options)
                 throw JSEngine.NewTypeError("Temporal.Duration.toString options must be an object or undefined");
 
-            digits = TemporalRoundingOptions.GetFractionalSecondDigits(options);
+            // The options are read in alphabetical order — fractionalSecondDigits, roundingMode, smallestUnit —
+            // each validated by its rule as it is read, the unit's group (no hour, no minute) after the last read.
+            digits = TemporalAdapter.ReadFractionalSecondDigits(options);
             roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.Trunc);
-
-            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
-            if (!su.IsUndefined)
-            {
-                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
-                if (smallestUnit is "hour" or "minute")
-                    throw JSEngine.NewRangeError($"Temporal.Duration.toString: smallestUnit \"{smallestUnit}\" is not supported");
-            }
+            smallestUnit = TemporalAdapter.ReadSmallestUnitText(options);
         }
 
-        // ToSecondsStringPrecisionRecord: precision -1 = auto, 0..9 = fixed fractional-second
-        // digits; incrementNs is the rounding step applied to the seconds field.
-        int precision;
-        long incrementNs;
-        if (smallestUnit != null)
-        {
-            (precision, incrementNs) = smallestUnit switch
-            {
-                "second" => (0, 1_000_000_000L),
-                "millisecond" => (3, 1_000_000L),
-                "microsecond" => (6, 1_000L),
-                _ => (9, 1L), // nanosecond
-            };
-        }
-        else if (digits == -1) { precision = -1; incrementNs = 1; }
-        else { precision = digits; incrementNs = TemporalRoundingOptions.Pow10(9 - digits); }
+        var precision = TemporalAdapter.ToStringPrecision(smallestUnit, digits, duration: true, "Temporal.Duration");
 
-        return new JSString(ToISOString(precision, incrementNs, roundingMode));
+        // The time part rounded (RoundTimeDuration), balanced up to the larger of the default largest unit and
+        // second, its validity checked, and TemporalDurationToString: the shared library's. Rounding up can push
+        // the duration past its limits, a RangeError.
+        TemporalAdapter.Check(TemporalFormat.TryDurationToString(Fields, precision, roundingMode, out var text),
+            "Temporal.Duration: rounded duration is out of range");
+        return new JSString(text);
     }
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString(-1, 1, RoundingMode.Trunc));
+    public JSValue ToJSON(in Arguments a) => new JSString(TemporalFormat.DurationToString(Fields, TemporalFormat.AutoPrecision));
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
@@ -194,19 +183,100 @@ public partial class JSTemporalDuration : JSObject
     public JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.Duration.prototype.valueOf, which is not supported. Use Temporal.Duration.compare for comparison.");
 
-    // add / subtract / round / total: the calendar-independent (time + 24h-day) cases are
-    // implemented in JSTemporalDuration.Arithmetic.cs; calendar-unit / relativeTo cases throw.
     [JSExport("add", Length = 1)]
-    public JSValue Add(in Arguments a) => AddSubtract(a.GetAt(0), a.GetAt(1), 1);
+    public JSValue Add(in Arguments a) => AddDurations(a.GetAt(0), subtract: false);
 
     [JSExport("subtract", Length = 1)]
-    public JSValue Subtract(in Arguments a) => AddSubtract(a.GetAt(0), a.GetAt(1), -1);
+    public JSValue Subtract(in Arguments a) => AddDurations(a.GetAt(0), subtract: true);
 
+    // AddDurations (s7.5.41): ToTemporalDuration of the one argument - the pinned revision's add and subtract take one
+    // parameter, so a second argument is never read (row D3) - negated for subtract, then the library's sum: years,
+    // months or weeks in either duration are the RangeError, and the sum past the limits too.
+    private JSValue AddDurations(JSValue otherValue, bool subtract)
+    {
+        var other = ((JSTemporalDuration)ToTemporalDuration(otherValue)).Fields;
+        if (subtract)
+            other = DurationMath.Negate(other);
+
+        TemporalAdapter.CheckArithmetic(DurationMath.AddDurations(Fields, other, out var result), "Temporal.Duration",
+            "Temporal.Duration.prototype.add/subtract: a duration with years, months or weeks cannot be added or subtracted");
+        return TemporalAdapter.DurationOf(result);
+    }
+
+    // Temporal.Duration.prototype.round (s7.3.20): a String is { smallestUnit }, undefined the TypeError; then the reads in
+    // code unit order - largestUnit, relativeTo (GetTemporalRelativeToOption), roundingIncrement, roundingMode (default
+    // halfExpand), smallestUnit - each converted as it is read; then the units' rules (TryGetDurationRoundUnits) and the
+    // library's rounding: relative to a zoned instant over its zone's real days, to a plain date in its calendar, and
+    // otherwise in days of 24 hours.
     [JSExport("round", Length = 1)]
-    public JSValue Round(in Arguments a) => RoundImpl(a.GetAt(0));
+    public JSValue Round(in Arguments a)
+    {
+        const string typeName = "Temporal.Duration.prototype.round";
+        var roundTo = a.GetAt(0);
+        if (roundTo == null || roundTo.IsUndefined)
+            throw JSEngine.NewTypeError("Temporal.Duration.prototype.round requires an options argument");
 
+        var largestUnit = TemporalUnit.Unset;
+        var relativeTo = RelativeTo.None;
+        var roundingIncrement = TemporalOptionRules.DefaultRoundingIncrement;
+        var roundingMode = TemporalOptionRules.DefaultRoundRoundingMode;
+        TemporalUnit smallestUnit;
+        if (roundTo.IsString)
+        {
+            smallestUnit = TemporalRoundingOptions.ParseUnit(roundTo.StringValue, "smallestUnit", typeName);
+        }
+        else if (roundTo is JSObject options)
+        {
+            largestUnit = TemporalRoundingOptions.GetUnit(options, "largestUnit", typeName);
+            relativeTo = TemporalAdapter.RelativeToOption(options);
+            roundingIncrement = TemporalRoundingOptions.GetRoundingIncrement(options);
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, TemporalOptionRules.DefaultRoundRoundingMode);
+            smallestUnit = TemporalRoundingOptions.GetUnit(options, "smallestUnit", typeName);
+        }
+        else
+        {
+            throw JSEngine.NewTypeError("Temporal.Duration.prototype.round requires an options object or string");
+        }
+
+        if (!TemporalOptionRules.TryGetDurationRoundUnits(Fields, largestUnit, roundingIncrement, smallestUnit, out var largest, out var smallest))
+            throw JSEngine.NewRangeError($"{typeName}: the largestUnit, smallestUnit and roundingIncrement options are not valid together");
+
+        TemporalAdapter.CheckArithmetic(DurationMath.Round(Fields, largest, roundingIncrement, smallest, roundingMode, relativeTo, out var result), typeName);
+        return TemporalAdapter.DurationOf(result);
+    }
+
+    // Temporal.Duration.prototype.total (s7.3.21): a String is { unit }, undefined the TypeError; then relativeTo, then the
+    // required unit, a unit of any group; then the library's total, an exact ratio rounded once.
     [JSExport("total", Length = 1)]
-    public JSValue Total(in Arguments a) => TotalImpl(a.GetAt(0));
+    public JSValue Total(in Arguments a)
+    {
+        const string typeName = "Temporal.Duration.prototype.total";
+        var totalOf = a.GetAt(0);
+        if (totalOf == null || totalOf.IsUndefined)
+            throw JSEngine.NewTypeError("Temporal.Duration.prototype.total requires an options argument");
+
+        var relativeTo = RelativeTo.None;
+        TemporalUnit unit;
+        if (totalOf.IsString)
+        {
+            unit = TemporalRoundingOptions.ParseUnit(totalOf.StringValue, "unit", typeName);
+        }
+        else if (totalOf is JSObject options)
+        {
+            relativeTo = TemporalAdapter.RelativeToOption(options);
+            unit = TemporalRoundingOptions.GetUnit(options, "unit", typeName, required: true);
+        }
+        else
+        {
+            throw JSEngine.NewTypeError("Temporal.Duration.prototype.total requires an options object or string");
+        }
+
+        if (!TemporalOptionRules.IsValidTotalUnit(unit))
+            throw JSEngine.NewRangeError($"{typeName}: invalid unit");
+
+        TemporalAdapter.CheckArithmetic(DurationMath.Total(Fields, unit, relativeTo, out var total), typeName);
+        return new JSNumber(total);
+    }
 
     // ── statics ─────────────────────────────────────────────────────────────────
 
@@ -220,88 +290,23 @@ public partial class JSTemporalDuration : JSObject
         return ToTemporalDuration(item);
     }
 
+    // Temporal.Duration.compare (s7.2.3): both ToTemporalDurations, GetOptionsObject and GetTemporalRelativeToOption -
+    // relativeTo is resolved, and refused if invalid, even where the comparison does not need it - then the library's
+    // comparison: equal fields are 0; relative to a zoned instant, each added to it; relative to a plain date, by
+    // DateDurationDays, which adds only the years, months and weeks (row D4); otherwise in days of 24 hours.
     [JSExport("compare", Length = 2)]
     internal static JSValue Compare(in Arguments a)
     {
-        var one = ToTemporalDuration(a.GetAt(0));
-        var two = ToTemporalDuration(a.GetAt(1));
+        var one = (JSTemporalDuration)ToTemporalDuration(a.GetAt(0));
+        var two = (JSTemporalDuration)ToTemporalDuration(a.GetAt(1));
+        var options = TemporalAdapter.OptionsObject(a.GetAt(2), "Temporal.Duration.compare");
+        var relativeTo = options == null ? RelativeTo.None : TemporalAdapter.RelativeToOption(options);
 
-        var d1 = (JSTemporalDuration)one;
-        var d2 = (JSTemporalDuration)two;
-
-        var options = a.GetAt(2);
-
-        var calendarUnits = d1.years != 0 || d1.months != 0 || d1.weeks != 0
-            || d2.years != 0 || d2.months != 0 || d2.weeks != 0;
-
-        // ToRelativeTemporalObject resolves (and validates) relativeTo whenever it is present, even when
-        // the comparison itself does not need it — an unparsable or otherwise invalid relativeTo string
-        // is a RangeError regardless of the durations' units. The spec resolves relativeTo before the
-        // identical-durations short-circuit below, so an invalid relativeTo still throws here. The
-        // `relativeTo` property is read exactly once (test262 Duration/compare order-of-operations).
-        JSTemporalZonedDateTime relZoned = null;
-        JSTemporalPlainDate relDate = null;
-        var hasRelativeTo = TryResolveRelativeTo(options, out relZoned, out relDate);
-
-        // If the two durations are identical in every field, the result is +0 regardless of relativeTo.
-        // The spec applies this short-circuit before the calendar-units requirement, so comparing a
-        // duration that has calendar units to itself returns 0 rather than throwing for a missing relativeTo.
-        if (d1.years == d2.years && d1.months == d2.months && d1.weeks == d2.weeks
-            && d1.days == d2.days && d1.hours == d2.hours && d1.minutes == d2.minutes
-            && d1.seconds == d2.seconds && d1.milliseconds == d2.milliseconds
-            && d1.microseconds == d2.microseconds && d1.nanoseconds == d2.nanoseconds)
-            return new JSNumber(0);
-
-        if (calendarUnits && !hasRelativeTo)
-            throw JSEngine.NewRangeError("Temporal.Duration.compare with calendar units requires a relativeTo option");
-
-        // The spec only adds each duration to the zoned relativeTo when one of the durations has a
-        // date-category largest unit (a non-zero year/month/week/day); a purely time-based comparison
-        // never touches the relativeTo, so a boundary relativeTo whose instant is representable does not
-        // overflow even though adding the time would (test262 compare/relativeto-string-limits).
-        var dateUnits = calendarUnits || d1.days != 0 || d2.days != 0;
-
-        if (relZoned != null && dateUnits)
-        {
-            // Add each duration to the (shared) zoned relativeTo and compare the resulting instants,
-            // so a day spans its real DST-adjusted length.
-            var e1 = relZoned.AddDurationEpochNs(d1);
-            var e2 = relZoned.AddDurationEpochNs(d2);
-            return new JSNumber(e1 < e2 ? -1 : e1 > e2 ? 1 : 0);
-        }
-
-        if (calendarUnits)
-        {
-            // Add each duration's date part to the (shared) relativeTo date and compare the resulting
-            // instants on the 24-hour-day timeline. Each endpoint must be a representable PlainDateTime
-            // (spec: adding the 24-hour days + normalized time runs through RejectDateTimeRange) — e.g. a
-            // duration carrying ~2^53 seconds reaches far beyond the range and is a RangeError.
-            var (end1, start1, _) = d1.RelativeEndpoints(relDate);
-            var (end2, start2, _) = d2.RelativeEndpoints(relDate);
-            ValidateRelativeEndpoints(start1, end1);
-            ValidateRelativeEndpoints(start2, end2);
-            return new JSNumber(end1 < end2 ? -1 : end1 > end2 ? 1 : 0);
-        }
-
-        var ns1 = d1.TotalNanoseconds();
-        var ns2 = d2.TotalNanoseconds();
-        return new JSNumber(ns1 < ns2 ? -1 : ns1 > ns2 ? 1 : 0);
+        TemporalAdapter.CheckArithmetic(DurationMath.Compare(one.Fields, two.Fields, relativeTo, out var result), "Temporal.Duration.compare");
+        return new JSNumber(result);
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────
-
-    // Total nanoseconds for the calendar-independent part (days treated as 24h).
-    private BigInteger TotalNanoseconds()
-    {
-        BigInteger ToBig(double v) => new(v);
-        return ToBig(days) * 86_400_000_000_000
-            + ToBig(hours) * 3_600_000_000_000
-            + ToBig(minutes) * 60_000_000_000
-            + ToBig(seconds) * 1_000_000_000
-            + ToBig(milliseconds) * 1_000_000
-            + ToBig(microseconds) * 1_000
-            + ToBig(nanoseconds);
-    }
 
     private static double ToIntegerIfIntegral(JSValue value)
     {
@@ -316,57 +321,6 @@ public partial class JSTemporalDuration : JSObject
             throw JSEngine.NewRangeError("Temporal.Duration field must be an integer");
 
         return number == 0 ? 0 : number; // normalize -0 → 0
-    }
-
-    private static int DurationSign(params double[] components)
-    {
-        foreach (var v in components)
-        {
-            if (v < 0) return -1;
-            if (v > 0) return 1;
-        }
-        return 0;
-    }
-
-    // RejectDuration / IsValidDuration: every component must share the duration's sign, and
-    // the magnitudes must stay within the spec limits (years…days < 2^32, and the total
-    // time in seconds < 2^53).
-    private static void RejectDuration(
-        double years, double months, double weeks, double days, double hours,
-        double minutes, double seconds, double milliseconds, double microseconds, double nanoseconds)
-    {
-        var sign = DurationSign(years, months, weeks, days, hours, minutes, seconds, milliseconds, microseconds, nanoseconds);
-
-        void Check(double v)
-        {
-            if (!double.IsFinite(v))
-                throw JSEngine.NewRangeError("Temporal.Duration field must be finite");
-            if (v < 0 && sign > 0)
-                throw JSEngine.NewRangeError("Temporal.Duration fields must have a consistent sign");
-            if (v > 0 && sign < 0)
-                throw JSEngine.NewRangeError("Temporal.Duration fields must have a consistent sign");
-        }
-
-        Check(years); Check(months); Check(weeks); Check(days); Check(hours);
-        Check(minutes); Check(seconds); Check(milliseconds); Check(microseconds); Check(nanoseconds);
-
-        // Only years, months and weeks are bounded by 2^32; days are limited only by the total-time
-        // bound below (a duration may carry up to ~1.04e11 days — 2^53 seconds — of elapsed time).
-        if (Math.Abs(years) >= 4294967296d || Math.Abs(months) >= 4294967296d || Math.Abs(weeks) >= 4294967296d)
-            throw JSEngine.NewRangeError("Temporal.Duration date fields are out of range");
-
-        // The total elapsed time (days + the time components) must be under 2^53 seconds. The
-        // components are integer-valued, so the sum is computed exactly in nanoseconds via BigInteger
-        // to honour the precise mathematical boundary (a floating-point sum would round near 2^53).
-        var totalNs = (BigInteger)days * 86_400_000_000_000
-            + (BigInteger)hours * 3_600_000_000_000
-            + (BigInteger)minutes * 60_000_000_000
-            + (BigInteger)seconds * 1_000_000_000
-            + (BigInteger)milliseconds * 1_000_000
-            + (BigInteger)microseconds * 1_000
-            + (BigInteger)nanoseconds;
-        if (BigInteger.Abs(totalNs) >= (BigInteger)9007199254740992d * 1_000_000_000) // 2^53 seconds
-            throw JSEngine.NewRangeError("Temporal.Duration is out of range");
     }
 
     internal static JSValue ToTemporalDuration(JSValue item)
@@ -399,196 +353,18 @@ public partial class JSTemporalDuration : JSObject
         if (!any)
             throw JSEngine.NewTypeError("Temporal.Duration: object has no duration properties");
 
-        RejectDuration(y, mo, w, dd, h, mi, s, ms, us, ns);
+        TemporalAdapter.CheckDuration(new DurationFields(y, mo, w, dd, h, mi, s, ms, us, ns));
         return new JSTemporalDuration(y, mo, w, dd, h, mi, s, ms, us, ns, DurationPrototype);
     }
 
-    private static readonly System.Text.RegularExpressions.Regex DurationPattern = new(
-        @"^([+-])?[Pp](?:(\d+)[Yy])?(?:(\d+)[Mm])?(?:(\d+)[Ww])?(?:(\d+)[Dd])?(?:[Tt](?:(\d+)(?:[.,](\d{1,9}))?[Hh])?(?:(\d+)(?:[.,](\d{1,9}))?[Mm])?(?:(\d+)(?:[.,](\d{1,9}))?[Ss])?)?$",
-        RegexOptions.CultureInvariant);
-
+    // ParseTemporalDurationString, the shared library's grammar (each part exact, a fraction carried into the
+    // smaller units exactly, and a time designator with no time part refused), then CreateTemporalDuration's
+    // IsValidDuration.
     private static JSValue ParseTemporalDurationString(string text)
     {
-        var match = DurationPattern.Match(text);
-        if (!match.Success)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.Duration from \"{text}\"");
-
-        double G(int i) => match.Groups[i].Success ? double.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture) : 0;
-        bool Has(int i) => match.Groups[i].Success;
-
-        // At least one component must be present, and a `T` with no time component is invalid.
-        if (!Has(2) && !Has(3) && !Has(4) && !Has(5) && !Has(6) && !Has(8) && !Has(10))
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.Duration from \"{text}\"");
-
-        // A fraction may only appear on the smallest provided time unit; cascade it down.
-        if ((Has(7) && (Has(8) || Has(10))) || (Has(9) && Has(10)))
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.Duration from \"{text}\"");
-
-        var sign = match.Groups[1].Value is "-" or "−" ? -1 : 1;
-
-        var years = G(2); var months = G(3); var weeks = G(4); var days = G(5);
-        var hours = G(6); var minutes = G(8); var seconds = G(10);
-        double milliseconds = 0, microseconds = 0, nanoseconds = 0;
-
-        // Distribute the (single) fractional part to nanosecond resolution.
-        BigInteger fractionNs = 0;
-        if (Has(7)) fractionNs = FractionToNanoseconds(match.Groups[7].Value, 3_600_000_000_000);
-        else if (Has(9)) fractionNs = FractionToNanoseconds(match.Groups[9].Value, 60_000_000_000);
-        else if (Has(11)) fractionNs = FractionToNanoseconds(match.Groups[11].Value, 1_000_000_000);
-
-        if (fractionNs != 0)
-        {
-            minutes += (double)(fractionNs / 60_000_000_000); fractionNs %= 60_000_000_000;
-            seconds += (double)(fractionNs / 1_000_000_000); fractionNs %= 1_000_000_000;
-            milliseconds = (double)(fractionNs / 1_000_000); fractionNs %= 1_000_000;
-            microseconds = (double)(fractionNs / 1_000); fractionNs %= 1_000;
-            nanoseconds = (double)fractionNs;
-        }
-
-        RejectDuration(sign * years, sign * months, sign * weeks, sign * days, sign * hours,
-            sign * minutes, sign * seconds, sign * milliseconds, sign * microseconds, sign * nanoseconds);
-
-        return new JSTemporalDuration(sign * years, sign * months, sign * weeks, sign * days, sign * hours,
-            sign * minutes, sign * seconds, sign * milliseconds, sign * microseconds, sign * nanoseconds, DurationPrototype);
-    }
-
-    // digits/10^len of unitNs, as an exact nanosecond count.
-    private static BigInteger FractionToNanoseconds(string digits, long unitNs)
-    {
-        var numerator = BigInteger.Parse(digits, CultureInfo.InvariantCulture) * unitNs;
-        var denominator = BigInteger.Pow(10, digits.Length);
-        return numerator / denominator;
-    }
-
-    // TemporalDurationToString: ISO-8601 with the seconds field assembled from seconds/ms/us/ns.
-    // `precision` controls the fractional-second digits (-1 = auto, 0..9 = fixed); `incrementNs`
-    // and `roundingMode` round the combined seconds value to that precision.
-    private string ToISOString(int precision, long incrementNs, RoundingMode roundingMode)
-    {
-        var sign = DurationSign();
-        var sb = new StringBuilder();
-        if (sign < 0) sb.Append('-');
-        sb.Append('P');
-
-        void DatePart(BigInteger v, char unit)
-        {
-            if (!v.IsZero) sb.Append(v.ToString(CultureInfo.InvariantCulture)).Append(unit);
-        }
-
-        var absDays = new BigInteger(Math.Abs(days));
-
-        // The whole-seconds and sub-second components combined into a nanosecond magnitude.
-        var secondsNs = new BigInteger(Math.Abs(seconds)) * 1_000_000_000
-            + new BigInteger(Math.Abs(milliseconds)) * 1_000_000
-            + new BigInteger(Math.Abs(microseconds)) * 1_000
-            + new BigInteger(Math.Abs(nanoseconds));
-
-        BigInteger hoursOut = new(Math.Abs(hours));
-        BigInteger minutesOut = new(Math.Abs(minutes));
-        BigInteger wholeSeconds = secondsNs / 1_000_000_000;
-        var fraction = (long)(secondsNs % 1_000_000_000);
-        var daysOut = absDays;
-
-        if (incrementNs > 1)
-        {
-            // Round the WHOLE time portion (hours + minutes + seconds + sub-seconds) to the
-            // requested precision, then balance the result back up to (at most) the
-            // duration's largest unit, floored at "second" — TemporalDurationToString uses
-            // roundedLargestUnit = LargerOfTwoTemporalUnits(DefaultTemporalLargestUnit, "second").
-            // So rounding can cross unit boundaries: seconds into minutes/hours and, when the
-            // largest unit is day or larger, into days — but never up into weeks/months/years.
-            var timeNs = hoursOut * 3_600_000_000_000
-                + minutesOut * 60_000_000_000
-                + secondsNs;
-
-            var signed = sign < 0 ? -timeNs : timeNs;
-            signed = ExactRounding.RoundNumberToIncrement(signed, BigInteger.One, incrementNs, roundingMode);
-            timeNs = BigInteger.Abs(signed);
-
-            // TemporalDurationFromInternal: the rounded duration must still be valid — rounding the
-            // time up (ceil/expand) can push the total elapsed time to/over the 2^53-second limit.
-            var roundedTimeNs = absDays * 86_400_000_000_000 + timeNs;
-            if (roundedTimeNs >= (BigInteger)9007199254740992d * 1_000_000_000)
-                throw JSEngine.NewRangeError("Temporal.Duration: rounded duration is out of range");
-
-            fraction = (long)(timeNs % 1_000_000_000);
-            var totalSeconds = timeNs / 1_000_000_000;
-
-            // cap = the rank of LargerOfTwoTemporalUnits(DefaultTemporalLargestUnit, "second").
-            // Ranks: day=6, hour=5, minute=4, second(+finer)=3.
-            var cap = Math.Max(DefaultLargestUnitRank(), 3);
-            if (cap >= 6) // day or larger: time balances all the way into days
-            {
-                wholeSeconds = totalSeconds % 60;
-                var totalMinutes = totalSeconds / 60;
-                minutesOut = totalMinutes % 60;
-                var totalHours = totalMinutes / 60;
-                hoursOut = totalHours % 24;
-                daysOut = absDays + totalHours / 24;
-            }
-            else if (cap == 5) // hour: balance up to (uncapped) hours
-            {
-                wholeSeconds = totalSeconds % 60;
-                var totalMinutes = totalSeconds / 60;
-                minutesOut = totalMinutes % 60;
-                hoursOut = totalMinutes / 60;
-            }
-            else if (cap == 4) // minute: balance up to (uncapped) minutes
-            {
-                wholeSeconds = totalSeconds % 60;
-                minutesOut = totalSeconds / 60;
-                hoursOut = BigInteger.Zero;
-            }
-            else // second or finer: seconds stay as a single (possibly >= 60) value
-            {
-                wholeSeconds = totalSeconds;
-                minutesOut = BigInteger.Zero;
-                hoursOut = BigInteger.Zero;
-            }
-        }
-
-        DatePart(new BigInteger(Math.Abs(years)), 'Y');
-        DatePart(new BigInteger(Math.Abs(months)), 'M');
-        DatePart(new BigInteger(Math.Abs(weeks)), 'W');
-        DatePart(daysOut, 'D');
-
-        // With a fixed precision the seconds field is always emitted; with auto it appears only
-        // when nonzero.
-        var showSeconds = !wholeSeconds.IsZero || fraction != 0 || precision >= 0;
-        var hasTime = !hoursOut.IsZero || !minutesOut.IsZero || showSeconds;
-        if (hasTime)
-        {
-            sb.Append('T');
-            if (!hoursOut.IsZero) sb.Append(hoursOut.ToString(CultureInfo.InvariantCulture)).Append('H');
-            if (!minutesOut.IsZero) sb.Append(minutesOut.ToString(CultureInfo.InvariantCulture)).Append('M');
-            if (showSeconds)
-            {
-                sb.Append(wholeSeconds.ToString(CultureInfo.InvariantCulture));
-                JSTemporalInstant.AppendFraction(sb, fraction, precision);
-                sb.Append('S');
-            }
-        }
-
-        // The zero duration is "PT0S".
-        if (sb.Length == (sign < 0 ? 2 : 1))
-            sb.Append("T0S");
-
-        return sb.ToString();
-    }
-
-    // DefaultTemporalLargestUnit rank: the largest unit with a nonzero value.
-    // year=9, month=8, week=7, day=6, hour=5, minute=4, second=3, ms=2, us=1, ns=0.
-    private int DefaultLargestUnitRank()
-    {
-        if (years != 0) return 9;
-        if (months != 0) return 8;
-        if (weeks != 0) return 7;
-        if (days != 0) return 6;
-        if (hours != 0) return 5;
-        if (minutes != 0) return 4;
-        if (seconds != 0) return 3;
-        if (milliseconds != 0) return 2;
-        if (microseconds != 0) return 1;
-        return 0;
+        var d = TemporalAdapter.ParseDuration(text);
+        TemporalAdapter.CheckDuration(d);
+        return new JSTemporalDuration(d.Years, d.Months, d.Weeks, d.Days, d.Hours, d.Minutes, d.Seconds, d.Milliseconds, d.Microseconds,
+            d.Nanoseconds, DurationPrototype);
     }
 }
