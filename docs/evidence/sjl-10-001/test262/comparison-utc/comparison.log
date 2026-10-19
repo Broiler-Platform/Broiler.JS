@@ -1,0 +1,3 @@
+$ /usr/bin/python3 <tree>/scripts/compliance/compare_test262_paths.py --base <scratch>/base-A-test262-results.json --after <scratch>/after-A-test262-results.json --output <scratch>/comparison-A.json --base-rerun <repo>/docs/evidence/sjl-10-001/test262/base/rerun-timeouts.json --after-rerun <repo>/docs/evidence/sjl-10-001/test262/after/rerun-timeouts.json --classifications <repo>/docs/evidence/sjl-10-001/test262/comparison-utc/classifications.json
+# cwd <tree>; started 2026-10-19T15:18:16Z; exit 0
+rows 106058; changed 0; admitted 0; unclassified 0; regressions 0

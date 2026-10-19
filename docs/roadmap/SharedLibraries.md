@@ -1173,6 +1173,43 @@ Then:
   - Broiler.VM's pin move to revision 26;
   - publishing the stream's next version, which carries decision D12.
 
+**The evidence (SJL-10.6), 2026-10-19.** Bundle [`sjl-10-001`](../evidence/sjl-10-001/README.md) reads this engine's
+clauses and the home clauses at the after commit `00b65dd0`, the merge (Broiler-Platform/Broiler.JS#1054) that lands
+SJL-10.5's cut-over and corpus revision 26, whose product sources are `6dbff805`'s but for the two changelogs and the
+shared stream's version suffix. **The three home clauses and this engine's four are met**, each part of the rule as
+written:
+- **Part A, test262 per path in UTC, is met**: with negative-metadata tests, the after run (39252310861) and the base
+  (39123945598) are complete and comparable, every shard in the zone and their host-zone records alike, and every row
+  of the whole suite gives its base's verdict. No row changed, so none regressed and class C1 lists no row; the
+  classification file beside each report is empty.
+- **Part B, the same in `America/New_York`, is met** on the same grounds (runs 39252316070 and 39123948554). The
+  runners' tzdata, 2026c, did not move between the bases and the after runs. In each zone the one path that timed
+  out, in both variants, timed out again when the workflow ran it alone, at the base and after, and the comparison
+  took the re-runs.
+- **Part C, the reference datasets, is met**: every line of `temporal.js` (1,629) and of `temporal-calendars.js`
+  (3,999) equals its expected answer, Broiler.VM's, the 7 and 103 lines that differed at the base among them.
+- **The deletion list is absent**: every entry, searched in the folder that held it, with the rule's commit as the
+  control; nine files are gone whole.
+- **Every correction is listed**: each the correspondence names for this engine, with its row, the 473 vectors'
+  counts row by row and the datasets' 110 lines; the code no input reaches, the policy changes and the changes no row
+  lists. Test262 adds none, as no verdict changed.
+- **The home clauses hold** by the tests SJL-10.3 committed: every sub-area's, the library-level runner over the
+  Temporal area with its control against the empty library, and both datasets at library level, in a run of the
+  shared folder's 1,489 tests with none failed. The Native AOT probe runs corpus revision 26 with no failure.
+- **The consumer**: a pristine consumer of the engine set packed from the after commit runs 24 of SJL-10.5's
+  corrections and policy changes from its own package cache, where the rule's commit fails 23 of them.
+- **The vectors at revision 26**: every vector has the result its class expects at the after commit, in both zones,
+  the 473 whose divergence fields revision 26 retired among them.
+
+**The shared library as published.** With the shared library taken from nuget.org's published `0.1.0-preview.6`
+instead of the after commit's, this engine answers decision D12's case with a duration, where the after commit
+answers a `RangeError`: decision D12 (`163d43aa`) is under the shared changelog's Unreleased heading. The stream's next
+version carries it, and its publication is the owner's to approve; Broiler.VM takes decision D12 with it too. That is
+a next action, not a verdict on any part: the parts judge the after commit, whose library holds the decision.
+
+None of it is accepted: no second holder exists to review it. Broiler.VM's clauses are judged in its own bundle of the
+same name, and SJL-10 may not meet its gate before SJL-3, SJL-6 and SJL-8 meet theirs.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

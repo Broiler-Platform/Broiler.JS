@@ -1,0 +1,152 @@
+bundle: sjl-10-001 (Broiler.JS), its after arm
+after commit: 00b65dd055a277859d5325ead6338a040bcf2f30
+after commit is the one parts A's and B's after runs name (00b65dd055a277859d5325ead6338a040bcf2f30): True
+after tree clean: True
+cut-over: SJL-10.5, f42eac6b to 6dbff805, on a branch from main at 1c411b68; its commits that change product sources:
+  f42eac6b01eeee69023eba6ddb9ed0ef401b2c7b SJL-10.5: Temporal's records, limits, balancing, regulation and addition are the shared library's
+  3503cab5deb1e5bda1e7a31885e29e81a99a1fdc SJL-10.5: Temporal's strings are parsed by the shared library's grammar
+  808d783846568d8da1d37f3bf431663fd9a80e07 SJL-10.5: Temporal's string forms and their options' rules are the shared library's
+  9242c342007ed09ca4907753c676ab093dc26911 SJL-10.5: Temporal's calendar identifiers and a Temporal object's calendar are the shared library's
+  b34f8c30d78c7e81d020ee8dede1a9fc2bf7903d SJL-10.5: Temporal's calendars are the shared library's
+  8df9227e9f112900a156c4992b48b2b03df7e894 SJL-10.5: Temporal.Duration's addition, compare, round and total, and relativeTo, are the shared library's
+  b37c7465777a319d8eca0eb26ceba8ce3b57c091 SJL-10.5: every Temporal type's until and since are the shared library's TemporalDifferences
+  2dfdf92d9865fb463cdba5d907c18c5fcf4463d8 SJL-10.5: the rounding of points, a zone's day lengths and the zoned addition are the shared library's
+  dd3ade8c1004161ada16d1a671a131718179f084 SJL-10.5: the rules of Temporal's rounding and difference options are TemporalOptionRules'
+  41eaa90fb342460c70eaaa92f322a878c6547216 SJL-10.5: tests hold the corrections of Temporal's durations and differences
+  3dd4626e529a750361faaa9ec5f26cf3c877c9cf SJL-10.5: the adapter's two regulation bridges that lost their callers are deleted
+  fd6dab956c6bcca5525fcf0136d1c8853673274c SJL-10.5: every ZonedDateTime start of day goes through one GetStartOfDay adapter
+  25a474ec28f550ec33403efb1bf5f359b247064a SJL-10.5: InterpretISODateTimeOffset's offset matching is one adapter
+  88bbe19957cdceb0a9159097effb02d4e9c87850 SJL-10.5: overflow is read once, by the library's rule, and disambiguation once
+  70770e355c1a87cd0d0c299dbf9ed8bdcf514436 SJL-10.5: stale Temporal comments, a comment-only file and an unread list are removed
+  4bdfb232c1111c186238a282afd58ddc4aa3884c SJL-10.5: a Temporal object read as a property bag lends its own calendar, and PlainDateTime takes a ZonedDateTime by its slots
+  58549f77e6727fe9dca4d358bb4cbdc201559dbd SJL-10.5: ZonedDateTime reads a PlainDate or PlainDateTime as a property bag, so no .NET exception reaches script
+  b72aefdd23ca86fb84ecf07ae67c917953e05ea0 SJL-10.5: tests hold the answers the fixes after review changed
+  163d43aabebfbee46bf700c3a294f5a131b1b8ce SJL-10.5: NudgeToZonedTime answers OutOfRange where the day span's sign is not the duration's (decision D12)
+  6dbff8058713c5724ed82ee6173c19b53392e59b SJL-10.5: the changelog and the adapter guide record decision D12
+commits between the cut-over's last (6dbff805) and the after commit, with the files each changes (merges by subject only):
+  bf81d1b7b468d8235b672ed7dfc0327c26a4843c SJL-10.4: the shared stream's next version is 0.1.0-preview.6
+    Broiler.ECMAScript/CHANGELOG.md
+    Broiler.ECMAScript/Directory.Build.props
+  feee5b7a391704a7b54b1206d941316d9d0e4753 SJL-10.5: corpus revision 26 retires the Temporal area's divergences
+    conformance/vectors/REVISIONS.md
+    conformance/vectors/temporal/balancing.vectors
+    conformance/vectors/temporal/calendars.vectors
+    conformance/vectors/temporal/differences.vectors
+    conformance/vectors/temporal/durations.vectors
+    conformance/vectors/temporal/grammar.vectors
+    conformance/vectors/temporal/rounding.vectors
+    docs/evidence/sjl-10-001/engine/cut-over-revision-25-new-york.log
+    docs/evidence/sjl-10-001/engine/cut-over-revision-25-new-york.tsv.gz
+    docs/evidence/sjl-10-001/engine/cut-over-revision-25-utc.log
+    docs/evidence/sjl-10-001/engine/cut-over-revision-25-utc.tsv.gz
+    docs/evidence/sjl-10-001/engine/negative-control-cut-over-revision-25-new-york.tsv
+    docs/evidence/sjl-10-001/engine/negative-control-cut-over-revision-25-utc.tsv
+    docs/evidence/sjl-10-001/engine/retired-divergences-revision-26.tsv
+    scripts/conformance/generate_date_vectors.py
+    scripts/conformance/generate_number_vectors.py
+    scripts/conformance/generate_numerics_vectors.py
+    scripts/conformance/generate_temporal_vectors.py
+    scripts/conformance/generate_text_vectors.py
+    scripts/conformance/generate_time_zone_vectors.py
+    scripts/conformance/generate_unicode_vectors.py
+    scripts/conformance/temporal-divergences.txt
+  c97a9996574e77ac2e4e57e1e39f3cbf5203165c SJL-10.5: this engine's runs on corpus revision 26
+    docs/evidence/sjl-10-001/engine/negative-control-revision-26-new-york.tsv
+    docs/evidence/sjl-10-001/engine/negative-control-revision-26-utc.tsv
+    docs/evidence/sjl-10-001/engine/run-revision-26-new-york.log
+    docs/evidence/sjl-10-001/engine/run-revision-26-new-york.tsv.gz
+    docs/evidence/sjl-10-001/engine/run-revision-26-utc.log
+    docs/evidence/sjl-10-001/engine/run-revision-26-utc.tsv.gz
+  0e1ca13abcabeb5e51959321ca6291f3d96a6c79 SJL-10.5: the changelog, the public API, the notices and bundle sjl-10-001 record the Temporal cut-over
+    Broiler.JS/CHANGELOG.md
+    THIRD_PARTY_NOTICES.md
+    docs/evidence/sjl-10-001/README.md
+    docs/evidence/sjl-10-001/cutover/build-and-tests.txt
+    docs/evidence/sjl-10-001/cutover/d12-ext.after.txt
+    docs/evidence/sjl-10-001/cutover/d12-ext.base.txt
+    docs/evidence/sjl-10-001/cutover/d12-ext.js
+    docs/evidence/sjl-10-001/cutover/d12-facts.md
+    docs/evidence/sjl-10-001/cutover/d12z.after.txt
+    docs/evidence/sjl-10-001/cutover/d12z.base.txt
+    docs/evidence/sjl-10-001/cutover/d12z.js
+    docs/evidence/sjl-10-001/cutover/d12z.ref.txt
+    docs/evidence/sjl-10-001/cutover/d12z.vm-now.txt
+    docs/evidence/sjl-10-001/cutover/datasets-compare.txt
+    docs/evidence/sjl-10-001/cutover/datasets-report.txt
+    docs/evidence/sjl-10-001/cutover/deletion-search.txt
+    docs/evidence/sjl-10-001/cutover/kept-changes.after.txt
+    docs/evidence/sjl-10-001/cutover/kept-changes.base.txt
+    docs/evidence/sjl-10-001/cutover/kept-changes.compare.tsv
+    docs/evidence/sjl-10-001/cutover/kept-changes.js
+    docs/evidence/sjl-10-001/cutover/kept-changes.ref.txt
+    docs/evidence/sjl-10-001/cutover/kept-changes.vm.txt
+    docs/evidence/sjl-10-001/cutover/probes-check.txt
+    docs/evidence/sjl-10-001/cutover/probes-vs-vm.txt
+    docs/evidence/sjl-10-001/cutover/public-api-check.txt
+    docs/evidence/sjl-10-001/cutover/test262-compare-new-york.txt
+    docs/evidence/sjl-10-001/cutover/test262-compare-utc.txt
+    docs/evidence/sjl-10-001/cutover/test262-run-new-york.log
+    docs/evidence/sjl-10-001/cutover/test262-run-utc.log
+    docs/public-api.md
+  b5d5e21064605419a539285a16e9bbe461c8e298 SJL-10.5: the plan pair records the Temporal cut-over
+    docs/roadmap/SharedLibraries.md
+    docs/roadmap/SharedLibraries.status.md
+  c33933f90ddbe70d454fd0cdbbd2d5b8bd8d6a5c SJL-10.5: the records of the cut-over, corrected after review
+    Broiler.JS/CHANGELOG.md
+    THIRD_PARTY_NOTICES.md
+    conformance/vectors/REVISIONS.md
+    docs/evidence/sjl-10-001/README.md
+    docs/evidence/sjl-10-001/cutover/d12-ext.part-c.txt
+    docs/evidence/sjl-10-001/cutover/d12-half-modes.after.txt
+    docs/evidence/sjl-10-001/cutover/d12-half-modes.base.txt
+    docs/evidence/sjl-10-001/cutover/d12-half-modes.js
+    docs/evidence/sjl-10-001/cutover/d12-half-modes.ref.txt
+    docs/evidence/sjl-10-001/cutover/d12-half-modes.vm.txt
+    docs/evidence/sjl-10-001/cutover/d12z-nod11.js
+    docs/evidence/sjl-10-001/cutover/d12z-nod11.vm-before.txt
+    docs/evidence/sjl-10-001/cutover/d12z.part-c.txt
+    docs/evidence/sjl-10-001/cutover/d12z.vm-before.txt
+    docs/evidence/sjl-10-001/cutover/d12z.vm-before.txt.raw
+    docs/evidence/sjl-10-001/cutover/kept-changes.after.txt
+    docs/evidence/sjl-10-001/cutover/kept-changes.base.txt
+    docs/evidence/sjl-10-001/cutover/kept-changes.compare.tsv
+    docs/evidence/sjl-10-001/cutover/kept-changes.js
+    docs/evidence/sjl-10-001/cutover/kept-changes.ref.txt
+    docs/evidence/sjl-10-001/cutover/kept-changes.vm.txt
+    docs/evidence/sjl-10-001/engine/retired-divergences-revision-26.tsv
+    docs/roadmap/SharedLibraries.md
+  merge: fc829f8a507295185527e4175e70d74e15630fd1 Merge SJL-10.4: the shared stream's next version is 0.1.0-preview.6
+  merge: 39fa87ea48f7cedde9b70c64a597b139d7f5d059 Merge pull request #1053 from Broiler-Platform/claude/busy-lamport-m3yprr
+  merge: e2b2a785b034af4817362973a7c123a89656dfa2 Merge main into SJL-10.5: the shared stream's version 0.1.0-preview.6
+  merge: 00b65dd055a277859d5325ead6338a040bcf2f30 Merge pull request #1054 from Broiler-Platform/claude/busy-lamport-m3yprr
+files under Broiler.JS, Broiler.ECMAScript, Directory.Packages.props, Directory.Build.props, Directory.Build.targets, NuGet.config, global.json that differ between the cut-over's last commit and the after commit:
+  Broiler.ECMAScript/CHANGELOG.md
+  Broiler.ECMAScript/Directory.Build.props
+  Broiler.JS/CHANGELOG.md
+files under Broiler.JS/ that differ between the rule commit and the cut-over's branch point (1c411b68): none
+bases: test262/base/ (part A) and test262/base-new-york/ (part B), and datasets/base/ (part C), all taken at 1d27064d0a1f57608a7af20e37eac91bd8887baa
+rule commit: 1d27064d0a1f57608a7af20e37eac91bd8887baa (the commit that added docs/evidence/sjl-10-001/decision-rule.md)
+rule commit is the base commit: True
+rule commit an ancestor of the after commit: True
+files the rule fixes, changed between the rule commit and the after commit:
+  none
+part C's harness and copies, changed between their commit (2b5b6daf) and the after commit:
+  none
+  498b4243887c0ef029c52042dac07589f70eab5838c96b9ca41fefed37a85c80  scripts/conformance/run_reference_datasets.py
+  18aad752c1bc164639cc696b5f8472a11d79c547d13b8770cf5f326d0b4b542a  scripts/conformance/reference_dataset_driver.js
+the shared library's code, changed between bf81d1b7 (the code 0.1.0-preview.6 was published from, at fc829f8a) and the after commit:
+  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs | 31 +++++++++++++++++++++----------
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs          |  2 +-
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md              | 51 +++++++++++++++++++++++++++++++++++++++++++++++----
+   3 files changed, 69 insertions(+), 15 deletions(-)
+  the commits that change them: 163d43aa SJL-10.5: NudgeToZonedTime answers OutOfRange where the day span's sign is not the duration's (decision D12); 6dbff805 SJL-10.5: the changelog and the adapter guide record decision D12
+collector: docs/evidence/sjl-10-001/collect.py, sha256 b01029eacaf919374b727433cf99a39dda58123c663445025ce99f032d1a5b30, run from <repo> at ec735124e0a63b55ea6fdd406c25e94e48563cf5, committed with this bundle
+dotnet --version: 10.0.401
+dotnet --list-runtimes: Microsoft.AspNetCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.NETCore.App]
+node --version: v22.22.0
+machine: x86_64; Linux-6.18.44-fc-v139-x86_64-with-glibc2.39; logical processors 4
+cpu: Intel(R) Xeon(R) Processor @ 2.80GHz
+memory: 16479424 kB
+suite revision: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+collected: 2026-10-19T17:24:07Z

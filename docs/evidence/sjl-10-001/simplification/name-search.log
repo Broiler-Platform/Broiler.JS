@@ -1,0 +1,446 @@
+# SJL-10.6 name search, Broiler.JS at 00b65dd055a277859d5325ead6338a040bcf2f30: every file of Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/ that the rule's commit
+# (1d27064d) holds and the after commit does not, by its name without .cs, and every type declared
+# there at the rule's commit and nowhere there at the after commit, each searched word-bounded with
+# git grep -w in every tracked file of Broiler.JS, Broiler.ECMAScript (tests, project files, comments
+# and the changelogs included). A name with no hit is absent; each hit is read in the bundle's README.
+# Then the cut-over's own name search (cutover/deletion-search.txt, at c97a9996), its 156 names
+# searched again the same way in Broiler.JS/'s .cs files, and set against the cut-over's.
+
+## deleted files: 9
+#   JSTemporalCalendar
+#   JSTemporalDuration.Arithmetic
+#   JSTemporalStubs
+#   JSTemporalZonedDateTime.Rounding
+#   TemporalArithmeticCalendar
+#   TemporalCalendarMath
+#   TemporalIsoString
+#   TemporalNonIso
+#   TemporalTableCalendar
+## deleted types: 10
+#   InternalDuration (declared at 1d27064d in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.Rounding.cs:18)
+#   NudgeResult (declared at 1d27064d in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.Rounding.cs:189)
+#   NudgeWindow (declared at 1d27064d in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.Rounding.cs:234)
+#   Parsed (declared at 1d27064d in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs:222)
+#   TemporalArithmeticCalendar (declared at 1d27064d in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs:25)
+#   TemporalCalendar (declared at 1d27064d in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalCalendar.cs:15)
+#   TemporalCalendarMath (declared at 1d27064d in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:9)
+#   TemporalIsoString (declared at 1d27064d in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs:24)
+#   TemporalNonIso (declared at 1d27064d in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:17)
+#   TemporalTableCalendar (declared at 1d27064d in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTableCalendar.cs:18)
+## types declared there at the after commit: CalendarFieldReader, JSTemporalDuration, JSTemporalInstant, JSTemporalNow, JSTemporalPlainDate, JSTemporalPlainDateTime, JSTemporalPlainMonthDay, JSTemporalPlainTime, JSTemporalPlainYearMonth, JSTemporalZonedDateTime, SystemZone, TemporalAdapter, TemporalRoundingOptions, TemporalTimeData, TemporalTimeZones
+
+## InternalDuration (a deleted type)
+# hits: 101 (in Broiler.JS/: 0; in Broiler.ECMAScript/: 101)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/DurationApiTests.cs:179:        Assert.Equal(-1, DurationMath.Sign(new InternalDuration(default, -BigInteger.One)));
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/DurationApiTests.cs:423:        var duration = new InternalDuration(new DateDuration(0, 0, 1, 3), BigInteger.Zero);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/DurationApiTests.cs:432:        Assert.Equal(new InternalDuration(new DateDuration(0, 0, 1, 0), BigInteger.Zero), rounded);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/DurationApiTests.cs:515:        var duration = new InternalDuration(default, 5 * hour);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:389:Broiler.ECMAScript.Temporal.DurationMath.AddZonedDateTime(System.Numerics.BigInteger, Broiler.ECMAScript.Temporal.ITimeZoneArithmetic, Broiler.ECMAScript.Temporal.ICalendarA
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:394:Broiler.ECMAScript.Temporal.DurationMath.FromInternal(Broiler.ECMAScript.Temporal.InternalDuration, Broiler.ECMAScript.Temporal.TemporalUnit, Broiler.ECMAScript.Temporal.Dur
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:397:Broiler.ECMAScript.Temporal.DurationMath.RoundRelativeDuration(Broiler.ECMAScript.Temporal.InternalDuration, System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:402:Broiler.ECMAScript.Temporal.DurationMath.Sign(Broiler.ECMAScript.Temporal.InternalDuration) method static System.Int32
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:403:Broiler.ECMAScript.Temporal.DurationMath.ToInternal(Broiler.ECMAScript.Temporal.DurationFields) method static Broiler.ECMAScript.Temporal.InternalDuration
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:404:Broiler.ECMAScript.Temporal.DurationMath.ToInternalWith24HourDays(Broiler.ECMAScript.Temporal.DurationFields) method static Broiler.ECMAScript.Temporal.InternalDuration
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:406:Broiler.ECMAScript.Temporal.DurationMath.TotalRelativeDuration(Broiler.ECMAScript.Temporal.InternalDuration, System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:415:Broiler.ECMAScript.Temporal.InternalDuration struct : System.IEquatable`1<Broiler.ECMAScript.Temporal.InternalDuration>
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:416:Broiler.ECMAScript.Temporal.InternalDuration..ctor(Broiler.ECMAScript.Temporal.DateDuration, System.Numerics.BigInteger) method System.Void
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:417:Broiler.ECMAScript.Temporal.InternalDuration.Deconstruct(Broiler.ECMAScript.Temporal.DateDuration&, System.Numerics.BigInteger&) method System.Void
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:418:Broiler.ECMAScript.Temporal.InternalDuration.Equals(Broiler.ECMAScript.Temporal.InternalDuration) method System.Boolean
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:419:Broiler.ECMAScript.Temporal.InternalDuration.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:420:Broiler.ECMAScript.Temporal.InternalDuration.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:421:Broiler.ECMAScript.Temporal.InternalDuration.ToString() method virtual System.String
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:422:Broiler.ECMAScript.Temporal.InternalDuration.get_Date() method Broiler.ECMAScript.Temporal.DateDuration
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:423:Broiler.ECMAScript.Temporal.InternalDuration.get_TimeNanoseconds() method System.Numerics.BigInteger
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:424:Broiler.ECMAScript.Temporal.InternalDuration.op_Equality(Broiler.ECMAScript.Temporal.InternalDuration, Broiler.ECMAScript.Temporal.InternalDuration) method static System.Boo
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:425:Broiler.ECMAScript.Temporal.InternalDuration.op_Inequality(Broiler.ECMAScript.Temporal.InternalDuration, Broiler.ECMAScript.Temporal.InternalDuration) method static System.B
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:426:Broiler.ECMAScript.Temporal.InternalDuration.set_Date(Broiler.ECMAScript.Temporal.DateDuration) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:427:Broiler.ECMAScript.Temporal.InternalDuration.set_TimeNanoseconds(System.Numerics.BigInteger) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:554:Broiler.ECMAScript.Temporal.TemporalDifferences.DifferenceInstant(System.Numerics.BigInteger, System.Numerics.BigInteger, System.Int64, Broiler.ECMAScript.Temporal.TemporalU
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:555:Broiler.ECMAScript.Temporal.TemporalDifferences.DifferenceIsoDateTime(Broiler.ECMAScript.Temporal.ICalendarArithmetic, Broiler.ECMAScript.Temporal.CalendarId, Broiler.ECMASc
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:556:Broiler.ECMAScript.Temporal.TemporalDifferences.DifferencePlainDateTimeWithRounding(Broiler.ECMAScript.Temporal.ICalendarArithmetic, Broiler.ECMAScript.Temporal.CalendarId, 
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:564:Broiler.ECMAScript.Temporal.TemporalDifferences.DifferenceZonedDateTime(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Temporal.ITimeZoneArithmet
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:565:Broiler.ECMAScript.Temporal.TemporalDifferences.DifferenceZonedDateTimeWithRounding(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Temporal.ITime
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:63:        InternalDuration duration, BigInteger originEpochNanoseconds, BigInteger destinationEpochNanoseconds, IsoDateTime dateTime,
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:65:        TemporalUnit smallestUnit, RoundingMode roundingMode, out InternalDuration result)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:131:        InternalDuration duration, BigInteger originEpochNanoseconds, BigInteger destinationEpochNanoseconds, IsoDateTime dateTime,
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:164:    private readonly record struct Nudge(InternalDuration Duration, BigInteger NudgedEpochNanoseconds, bool DidExpandCalendarUnit);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:175:        long R1, long R2, BigInteger StartEpochNanoseconds, BigInteger EndEpochNanoseconds, InternalDuration StartDuration, InternalDuration En
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:181:        int sign, InternalDuration duration, BigInteger originEpochNanoseconds, IsoDateTime dateTime, ITimeZoneArithmetic? timeZone,
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:290:            r1, r2, startEpochNanoseconds, endEpochNanoseconds, new InternalDuration(startDate, BigInteger.Zero), new InternalDuration(endDate,
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:298:        int sign, InternalDuration duration, BigInteger originEpochNanoseconds, BigInteger destinationEpochNanoseconds, IsoDateTime dateTime,
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:369:        int sign, InternalDuration duration, IsoDateTime dateTime, ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId cale
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:428:        nudge = new Nudge(new InternalDuration(date, rounded), nudgedEpochNanoseconds, didRoundBeyondDay);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:437:        InternalDuration duration, BigInteger destinationEpochNanoseconds, TemporalUnit largestUnit, long increment, TemporalUnit smallestUnit,
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:468:        nudge = new Nudge(new InternalDuration(date, remainder), nudgedEpochNanoseconds, didExpandDays);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:477:        int sign, InternalDuration duration, BigInteger nudgedEpochNanoseconds, IsoDateTime dateTime, ITimeZoneArithmetic? timeZone,
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:478:        ICalendarArithmetic calendars, CalendarId calendar, TemporalUnit largestUnit, TemporalUnit smallestUnit, out InternalDuration result)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:513:            result = new InternalDuration(endDuration, BigInteger.Zero);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs:97:    public static int Sign(InternalDuration duration)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs:119:    public static InternalDuration ToInternal(DurationFields duration)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs:122:        return new InternalDuration(
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs:137:    public static InternalDuration ToInternalWith24HourDays(DurationFields duration)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs:140:        return new InternalDuration(
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs:157:    public static TemporalStatus FromInternal(InternalDuration duration, TemporalUnit largestUnit, out DurationFields result)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs:321:        return status != TemporalStatus.Completed ? status : FromInternal(new InternalDuration(default, time), largest, out result);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs:459:        InternalDuration roundedDuration;
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs:467:            roundedDuration = new InternalDuration(dateDuration, BigInteger.Zero);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs:475:            roundedDuration = new InternalDuration(default, time);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs:580:        BigInteger epochNanoseconds, ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId calendar, InternalDuration duration,
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:82:        var duration = new InternalDuration(date, BigInteger.Zero);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:148:        return status != TemporalStatus.Completed ? status : Result(operation, new InternalDuration(default, time), settings.LargestUnit, out res
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:265:        var duration = new InternalDuration(yearsMonths, BigInteger.Zero);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:296:    public static TemporalStatus DifferenceInstant(BigInteger one, BigInteger two, long roundingIncrement, TemporalUnit smallestUnit, RoundingMod
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:301:            result = new InternalDuration(default, time);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:323:        ICalendarArithmetic calendars, CalendarId calendar, IsoDateTime one, IsoDateTime two, TemporalUnit largestUnit, out InternalDuration resu
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:353:        result = new InternalDuration(date, time);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:380:        TemporalUnit smallestUnit, RoundingMode roundingMode, out InternalDuration result)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:466:        out InternalDuration result)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:481:            result = new InternalDuration(default, two - one);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:514:        result = new InternalDuration(date, time);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:540:        long roundingIncrement, TemporalUnit smallestUnit, RoundingMode roundingMode, out InternalDuration result)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs:608:    private static TemporalStatus Result(DifferenceOperation operation, InternalDuration duration, TemporalUnit largestUnit, out DurationFields r
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalRecords.cs:144:public readonly record struct InternalDuration(DateDuration Date, BigInteger TimeNanoseconds);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:67:public readonly record struct InternalDuration(DateDuration Date, BigInteger TimeNanoseconds);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:734:    public static int Sign(InternalDuration duration);                       // InternalDurationSign
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:736:    public static InternalDuration ToInternal(DurationFields duration);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:737:    public static InternalDuration ToInternalWith24HourDays(DurationFields duration);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:738:    public static TemporalStatus FromInternal(InternalDuration duration, TemporalUnit largestUnit, out DurationFields result);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:757:        ICalendarArithmetic calendars, CalendarId calendar, InternalDuration duration, TemporalOverflow overflow, out BigInteger result);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:760:    public static TemporalStatus RoundRelativeDuration(InternalDuration duration, BigInteger originEpochNanoseconds,
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:763:        out InternalDuration result);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:764:    public static TemporalStatus TotalRelativeDuration(InternalDuration duration, BigInteger originEpochNanoseconds,
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:813:        TemporalUnit smallestUnit, RoundingMode roundingMode, out InternalDuration result);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:815:        IsoDateTime two, TemporalUnit largestUnit, out InternalDuration result);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:816:    public static TemporalStatus DifferencePlainDateTimeWithRounding(…, out InternalDuration result);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:819:        ICalendarArithmetic calendars, CalendarId calendar, TemporalUnit largestUnit, out InternalDuration result);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md:820:    public static TemporalStatus DifferenceZonedDateTimeWithRounding(…, out InternalDuration result);
+Broiler.ECMAScript/CHANGELOG.md:65:    `InternalDuration` and `DurationFields`; `TemporalLimits`, whose `CheckIsoDate`, `CheckIsoDateTime`,
+Broiler.ECMAScript/assurance.manifest.json:683:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.BubbleRelativeDuration(int, InternalDuration, BigInteger, IsoDateTime, ITimeZoneArithmetic?, ICalendarArithmetic, CalendarId, TemporalUni
+Broiler.ECMAScript/assurance.manifest.json:686:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.ComputeNudgeWindow(int, InternalDuration, BigInteger, IsoDateTime, ITimeZoneArithmetic?, ICalendarArithmetic, CalendarId, long, TemporalU
+Broiler.ECMAScript/assurance.manifest.json:694:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.NudgeToCalendarUnit(int, InternalDuration, BigInteger, BigInteger, IsoDateTime, ITimeZoneArithmetic?, ICalendarArithmetic, CalendarId, lo
+Broiler.ECMAScript/assurance.manifest.json:695:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.NudgeToDayOrTime(InternalDuration, BigInteger, TemporalUnit, long, TemporalUnit, RoundingMode, out Nudge)", "file": "Broiler.ECMAScript.A
+Broiler.ECMAScript/assurance.manifest.json:696:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.NudgeToZonedTime(int, InternalDuration, IsoDateTime, ITimeZoneArithmetic, ICalendarArithmetic, CalendarId, long, TemporalUnit, RoundingMo
+Broiler.ECMAScript/assurance.manifest.json:698:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.RoundRelativeDuration(InternalDuration, BigInteger, BigInteger, IsoDateTime, ITimeZoneArithmetic?, ICalendarArithmetic, CalendarId, Tempo
+Broiler.ECMAScript/assurance.manifest.json:699:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.TotalRelativeDuration(InternalDuration, BigInteger, BigInteger, IsoDateTime, ITimeZoneArithmetic?, ICalendarArithmetic, CalendarId, Tempo
+Broiler.ECMAScript/assurance.manifest.json:705:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.AddZonedDateTime(BigInteger, ITimeZoneArithmetic, ICalendarArithmetic, CalendarId, InternalDuration, TemporalOverflow, out BigInteger)", 
+Broiler.ECMAScript/assurance.manifest.json:718:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.FromInternal(InternalDuration, TemporalUnit, out DurationFields)", "file": "Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath
+Broiler.ECMAScript/assurance.manifest.json:731:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.Sign(InternalDuration)", "file": "Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs", "exempt": false, "exemption": "None"
+Broiler.ECMAScript/assurance.manifest.json:777:    { "name": "Broiler.ECMAScript.Temporal.TemporalDifferences.DifferenceInstant(BigInteger, BigInteger, long, TemporalUnit, RoundingMode, out InternalDuration)", "file": "Broiler.ECMAScript.Al
+Broiler.ECMAScript/assurance.manifest.json:778:    { "name": "Broiler.ECMAScript.Temporal.TemporalDifferences.DifferenceIsoDateTime(ICalendarArithmetic, CalendarId, IsoDateTime, IsoDateTime, TemporalUnit, out InternalDuration)", "file": "Br
+Broiler.ECMAScript/assurance.manifest.json:779:    { "name": "Broiler.ECMAScript.Temporal.TemporalDifferences.DifferencePlainDateTimeWithRounding(ICalendarArithmetic, CalendarId, IsoDateTime, IsoDateTime, TemporalUnit, long, TemporalUnit, R
+Broiler.ECMAScript/assurance.manifest.json:787:    { "name": "Broiler.ECMAScript.Temporal.TemporalDifferences.DifferenceZonedDateTime(BigInteger, BigInteger, ITimeZoneArithmetic, ICalendarArithmetic, CalendarId, TemporalUnit, out InternalDu
+Broiler.ECMAScript/assurance.manifest.json:788:    { "name": "Broiler.ECMAScript.Temporal.TemporalDifferences.DifferenceZonedDateTimeWithRounding(BigInteger, BigInteger, ITimeZoneArithmetic, ICalendarArithmetic, CalendarId, TemporalUnit, lo
+Broiler.ECMAScript/assurance.manifest.json:793:    { "name": "Broiler.ECMAScript.Temporal.TemporalDifferences.Result(DifferenceOperation, InternalDuration, TemporalUnit, out DurationFields)", "file": "Broiler.ECMAScript.Algorithms/Temporal/
+Broiler.ECMAScript/assurance.manifest.json:1021:    { "name": "Broiler.ECMAScript.Temporal.InternalDuration", "file": "Broiler.ECMAScript.Algorithms/Temporal/TemporalRecords.cs", "exempt": false, "exemption": "None", "fingerprint": "D4D151"
+
+## JSTemporalCalendar (a deleted file)
+# hits: 1 (in Broiler.JS/: 1; in Broiler.ECMAScript/: 0)
+Broiler.JS/CHANGELOG.md:40:  `JSTemporalCalendar.cs`, the Gregorian family's identifiers, years and era tables; `JSTemporalDuration.Arithmetic.cs`,
+
+## JSTemporalDuration.Arithmetic (a deleted file)
+# hits: 2 (in Broiler.JS/: 1; in Broiler.ECMAScript/: 1)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/TemporalRounding.cs:10://   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.Arithmetic.cs
+Broiler.JS/CHANGELOG.md:40:  `JSTemporalCalendar.cs`, the Gregorian family's identifiers, years and era tables; `JSTemporalDuration.Arithmetic.cs`,
+
+## JSTemporalStubs (a deleted file)
+# hits: 1 (in Broiler.JS/: 1; in Broiler.ECMAScript/: 0)
+Broiler.JS/CHANGELOG.md:43:  `JSTemporalStubs.cs`, which held only comments;
+
+## JSTemporalZonedDateTime.Rounding (a deleted file)
+# hits: 3 (in Broiler.JS/: 2; in Broiler.ECMAScript/: 1)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/TemporalRounding.cs:13://   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.Rounding.cs
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue788Tests.cs:49://     supported via its date (a fixed 24-hour day). Implemented in JSTemporalZonedDateTime.Rounding.cs.
+Broiler.JS/CHANGELOG.md:42:  plain-date relative machinery; `JSTemporalZonedDateTime.Rounding.cs`, the zoned relative machinery; and
+
+## NudgeResult (a deleted type)
+# hits: 0 (in Broiler.JS/: 0; in Broiler.ECMAScript/: 0)
+
+## NudgeWindow (a deleted type)
+# hits: 6 (in Broiler.JS/: 0; in Broiler.ECMAScript/: 6)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:174:    private readonly record struct NudgeWindow(
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:182:        ICalendarArithmetic calendars, CalendarId calendar, long increment, TemporalUnit unit, bool additionalShift, out NudgeWindow window)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:289:        window = new NudgeWindow(
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs:309:        bool Inside(NudgeWindow w) => sign == 1
+Broiler.ECMAScript/assurance.manifest.json:686:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.ComputeNudgeWindow(int, InternalDuration, BigInteger, IsoDateTime, ITimeZoneArithmetic?, ICalendarArithmetic, CalendarId, long, TemporalU
+Broiler.ECMAScript/assurance.manifest.json:697:    { "name": "Broiler.ECMAScript.Temporal.DurationMath.NudgeWindow", "file": "Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs", "exempt": false, "exemption": "None", 
+
+## Parsed (a deleted type)
+# hits: 1 (in Broiler.JS/: 1; in Broiler.ECMAScript/: 0)
+Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:1218:        // Parsed with the module goal symbol and compiled as module code: strict, `await`
+
+## TemporalArithmeticCalendar (a deleted file and a deleted type)
+# hits: 9 (in Broiler.JS/: 3; in Broiler.ECMAScript/: 6)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.J.cs:83:        yield return new("J8", "TemporalArithmeticCalendar", i => B(J.TemporalArithmeticCalendarCivil.GregorianLeap((int)i.Year)), s, IntYear);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.J.cs:108:        yield return new("J8", "TemporalArithmeticCalendar", R(J.TemporalArithmeticCalendarCivil.DaysFromCivil), s, Valid);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.J.cs:120:        yield return new("J8", "TemporalArithmeticCalendar", R(J.TemporalArithmeticCalendarCivil.CivilFromDays), s);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/J/TemporalArithmeticCalendarCivil.cs:6://   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/J/TemporalArithmeticCalendarCivil.cs:7://     blob 00e82a33ad885c125d396fd9b6f2b3a720b35fc2: TemporalArithmeticCalendar's GregorianLeap (:321),
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/J/TemporalArithmeticCalendarCivil.cs:13://     (TemporalArithmeticCalendar is a static class in the source); private members are internal.
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue773Tests.cs:10://     islamic-civil / islamic-tbla (TemporalArithmeticCalendar, pure epoch-day math).
+Broiler.JS/CHANGELOG.md:38:  conversions, reference-date search and arithmetic; `TemporalArithmeticCalendar`, the formula calendars;
+Broiler.JS/CHANGELOG.md:408:`PersianCalendar`; the Umm al-Qura and .NET dispatch of `TemporalArithmeticCalendar` and
+
+## TemporalCalendar (a deleted type)
+# hits: 0 (in Broiler.JS/: 0; in Broiler.ECMAScript/: 0)
+
+## TemporalCalendarMath (a deleted file and a deleted type)
+# hits: 3 (in Broiler.JS/: 3; in Broiler.ECMAScript/: 0)
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue779Tests.cs:45://     inLeapYear) through the same TemporalCalendarMath as PlainDate. Calendar/DST arithmetic
+Broiler.JS/CHANGELOG.md:39:  `TemporalTableCalendar`, the arithmetic over the shared years; `TemporalCalendarMath`, their dispatch;
+Broiler.JS/CHANGELOG.md:409:`TemporalCalendarMath`; and this engine's uses of the CLDR package's `CldrChineseCalendar` and `CldrUmmAlQura`.
+
+## TemporalIsoString (a deleted file and a deleted type)
+# hits: 6 (in Broiler.JS/: 1; in Broiler.ECMAScript/: 5)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.J.cs:82:        yield return new("J7", "TemporalIsoString", i => B(J.TemporalIsoStringCivil.IsLeapYear((int)i.Year)), s, IntYear);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.J.cs:97:        yield return new("J7", "TemporalIsoString", i => DateRender.Num(J.TemporalIsoStringCivil.DaysInMonth((int)i.Year, i.Month)), s, IntYear);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/J/TemporalIsoStringCivil.cs:6://   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/J/TemporalIsoStringCivil.cs:7://     blob 7ed5bc9fb7ea6461f7c808556bc9a9afe03f5d0d: TemporalIsoString's IsLeapYear (:322) and DaysInMonth
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/J/TemporalIsoStringCivil.cs:12://   - the namespace; the members sit in the static class TemporalIsoStringCivil (TemporalIsoString is a static
+Broiler.JS/CHANGELOG.md:37:- whole files: `TemporalIsoString`, the lenient ISO string reader; `TemporalNonIso`, the non-ISO calendars' fields,
+
+## TemporalNonIso (a deleted file and a deleted type)
+# hits: 10 (in Broiler.JS/: 5; in Broiler.ECMAScript/: 5)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.J.cs:109:        yield return new("J9", "TemporalNonIso", R(J.TemporalNonIsoCivil.DaysFromCivil), s, Valid);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.J.cs:121:        yield return new("J9", "TemporalNonIso", R(J.TemporalNonIsoCivil.CivilFromDays), s);
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/J/TemporalNonIsoCivil.cs:6://   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/J/TemporalNonIsoCivil.cs:7://     blob 0161bf2557061ea5817454033829212f697503bc: TemporalNonIso's DaysFromCivil (:605-613) and CivilFromDays
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/J/TemporalNonIsoCivil.cs:12://   - the namespace; the members sit in the static class TemporalNonIsoCivil (TemporalNonIso is a static class in
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue775Tests.cs:11://     calendar-date math with PlainDate via TemporalNonIso.
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue777Tests.cs:13://     the calendar-date math with PlainDate / PlainDateTime via TemporalNonIso.
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue781Tests.cs:67://     difference path (TemporalNonIso.Difference). It now anchors the year/month counting on the
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue794Tests.cs:13://     the receiver's calendar (TemporalNonIso.AddToIso) for the non-ISO calendars, instead of always
+Broiler.JS/CHANGELOG.md:37:- whole files: `TemporalIsoString`, the lenient ISO string reader; `TemporalNonIso`, the non-ISO calendars' fields,
+
+## TemporalTableCalendar (a deleted file and a deleted type)
+# hits: 1 (in Broiler.JS/: 1; in Broiler.ECMAScript/: 0)
+Broiler.JS/CHANGELOG.md:39:  `TemporalTableCalendar`, the arithmetic over the shared years; `TemporalCalendarMath`, their dispatch;
+
+## the cut-over's name search repeated: 156 names, in every tracked .cs file of Broiler.JS/
+# name: hits now (hits at the cut-over)
+TemporalNonIso: 4 (4)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue775Tests.cs:11://     calendar-date math with PlainDate via TemporalNonIso.
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue777Tests.cs:13://     the calendar-date math with PlainDate / PlainDateTime via TemporalNonIso.
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue781Tests.cs:67://     difference path (TemporalNonIso.Difference). It now anchors the year/month counting on the
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue794Tests.cs:13://     the receiver's calendar (TemporalNonIso.AddToIso) for the non-ISO calendars, instead of always
+TemporalArithmeticCalendar: 1 (1)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue773Tests.cs:10://     islamic-civil / islamic-tbla (TemporalArithmeticCalendar, pure epoch-day math).
+TemporalCalendarMath: 1 (1)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue779Tests.cs:45://     inLeapYear) through the same TemporalCalendarMath as PlainDate. Calendar/DST arithmetic
+ISOYearMonthWithinLimits: 4 (4)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue826PlainYearMonthExtremesTests.cs:7:// a PlainYearMonth is bounded by ISOYearMonthWithinLimits (year/month only), but Broiler
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue826PlainYearMonthExtremesTests.cs:39:    // The month one past the maximum overflows ISOYearMonthWithinLimits (reference month > 9) and is rejected.
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:277:    // ISOYearMonthWithinLimits.
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:324:    /// <summary>CalendarYearMonthFromFields (s12.3.13): the first day of the calendar month, then ISOYearMonthWithinLimits.</summary>
+RegulateDateTime: 3 (3)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:207:        return RegulateDateTime(date, h, mi, s, ms, us, ns, overflow, calendarId);
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:477:        return RegulateDateTime(date, hour, minute, second, millisecond, microsecond, nanosecond, overflow, calendarId);
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:481:    private static JSValue RegulateDateTime(IsoDate date, int h, int mi, int s, int ms, int us, int ns, TemporalOverflow overflow, string calendarId)
+LocalAt: 2 (2)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:624:    private (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) LocalAt(BigInteger epochNs)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:699:    private (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) Local() => LocalAt(epochNanoseconds);
+LocalNanoseconds: 4 (4)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:550:        var localNs = LocalNanoseconds(updated.isoYear, updated.isoMonth, updated.isoDay,
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:769:        var localNs = LocalNanoseconds(pdt.isoYear, pdt.isoMonth, pdt.isoDay,
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:795:    private static BigInteger LocalNanoseconds(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:821:        var localNs = LocalNanoseconds(year, month, day, hour, minute, second, ms, us, ns);
+ParseTemporalDateString: 2 (2)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:323:            var parsed = ParseTemporalDateString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:345:    private static JSValue ParseTemporalDateString(string text)
+ParseTemporalDateTimeString: 2 (2)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:429:            var parsed = ParseTemporalDateTimeString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:495:    private static JSValue ParseTemporalDateTimeString(string text)
+ParseTemporalTimeString: 4 (4)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:94:            var parsed = ParseTemporalTimeString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:298:            return ParseTemporalTimeString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:327:    // ParseTemporalTimeString: ParseISODateTime with the TemporalTimeString goal, the shared library's grammar. Its
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:330:    private static JSValue ParseTemporalTimeString(string text)
+ParseTemporalYearMonthString: 2 (2)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:252:            var parsed = ParseTemporalYearMonthString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:278:    private static JSValue ParseTemporalYearMonthString(string text)
+ParseTemporalMonthDayString: 2 (2)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:180:            var parsed = ParseTemporalMonthDayString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:204:    private static JSValue ParseTemporalMonthDayString(string text)
+ParseZonedDateTimeString: 3 (3)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:221:            return ParseZonedDateTimeString(item.ToString(), options);
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:645:            return ParseZonedDateTimeString(item.ToString());
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:806:    private static JSValue ParseZonedDateTimeString(string text, JSValue options = null)
+TryParseOffsetString: 5 (5)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:540:        if (offsetPresent && !TemporalAdapter.TryParseOffsetString(offsetString, out candidateOffset))
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:731:            if (!TemporalAdapter.TryParseOffsetString(offsetPrimitive.StringValue, out explicitOffset))
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Durations.cs:208:        if (offset != null && !TryParseOffsetString(offset, out offsetNanoseconds))
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs:118:    internal static bool TryParseOffsetString(string text, out long offsetNanoseconds) =>
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs:119:        TemporalGrammar.TryParseOffsetString(text, out offsetNanoseconds);
+CanonicalizeCalendar: 6 (6)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:43:    /// CanonicalizeCalendar, the shared library's: Table 1's calendar types and its two aliases (<c>ethiopic-amete-alem</c>
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:59:    /// <summary>CanonicalizeCalendar, as <see cref="TryCanonicalizeCalendar"/>; an identifier it does not know is the <c>RangeError</c>.</summary>
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:60:    internal static string CanonicalizeCalendar(string identifier) =>
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:84:        return CanonicalizeCalendar(calendar.StringValue);
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs:111:        return CanonicalizeCalendar(ParseCalendarString(calendar.StringValue));
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs:50:        parsed.Calendar is null ? "iso8601" : CanonicalizeCalendar(parsed.Calendar);
+ResolveCalendar: 2 (2)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2587:    internal static (string Calendar, string Locale) ResolveCalendar(string localeTag, string optionValue)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7345:        (_, localeTag) = JSIntl.ResolveCalendar(localeTag, OptionString(CalendarKey));
+ResolveMonthAfterYearShift: 1 (1)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue794Tests.cs:16://     when added/subtracted into a common year (ResolveMonthAfterYearShift).
+AddToIso: 1 (1)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue794Tests.cs:13://     the receiver's calendar (TemporalNonIso.AddToIso) for the non-ISO calendars, instead of always
+EraToIso: 2 (2)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue781Tests.cs:40://     eraYear } pair hit EraToIso and threw "invalid era" for the calendar's own eras (am / ah / bh
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue781Tests.cs:325:    // Providing { era, eraYear } no longer routes through the Gregorian EraToIso (which rejected
+RoundRelative: 1 (1)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue790Tests.cs:20://     calendar date difference to smallestUnit at the given roundingIncrement / roundingMode (RoundRelative
+AddCalendarDate: 1 (1)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue826DurationRelativeRoundingTests.cs:9://        unit count was re-derived through AddCalendarDate + DiffCalendarDate, which is
+DiffCalendarDate: 1 (1)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue826DurationRelativeRoundingTests.cs:9://        unit count was re-derived through AddCalendarDate + DiffCalendarDate, which is
+DifferenceISODateTime: 2 (2)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:276:    // rules, then the shared library's difference: DifferenceISODateTime with its borrowed day, the calendar's DateUntil,
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836PlainDateTimeDifferenceTests.cs:10://   DifferenceISODateTime computed the date part as whole days and the time part
+TimeNanoseconds: 2 (2)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Records.cs:114:    internal static BigInteger TimeDuration(JSTemporalDuration duration) => DurationMath.ToInternal(duration.Fields).TimeNanoseconds;
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Records.cs:121:        DurationMath.ToInternalWith24HourDays(duration.Fields).TimeNanoseconds;
+BalanceTimeDuration: 1 (1)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836PlainDateTimeDifferenceTests.cs:15://   days into the time total via BalanceTimeDuration when largestUnit is finer than a day.
+NudgeToCalendarUnit: 5 (5)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedRoundingTests.cs:9:// modes, increment roundings, NudgeToCalendarUnit's window and the nearest double of a ratio moved to
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedRoundingTests.cs:126:    // NudgeToCalendarUnit rounds over the increment's window [r1, r2], not linearly inside one unit:
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalRoundingOptions.cs:16:// normalisation, the maximum increments, ValidateTemporalRoundingIncrement, and NudgeToCalendarUnit's window) were
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue788Tests.cs:47://     over a zoned timeline: NudgeToCalendarUnit / NudgeToZonedTime / BubbleRelativeDuration, where a
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue790Tests.cs:21://     Duration over the ISO day axis: NudgeToCalendarUnit + BubbleRelativeDuration, day-based since a plain
+NudgeToZonedTime: 2 (2)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue818ZonedRoundingTests.cs:11://   * NudgeToZonedTime rolled a time value that landed exactly on (or, with a time
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue788Tests.cs:47://     over a zoned timeline: NudgeToCalendarUnit / NudgeToZonedTime / BubbleRelativeDuration, where a
+BubbleRelativeDuration: 2 (2)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue788Tests.cs:47://     over a zoned timeline: NudgeToCalendarUnit / NudgeToZonedTime / BubbleRelativeDuration, where a
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue790Tests.cs:21://     Duration over the ISO day axis: NudgeToCalendarUnit + BubbleRelativeDuration, day-based since a plain
+BuildDuration: 1 (1)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue818ZonedRoundingTests.cs:14://   * BuildDuration then re-split the sub-day remainder into 24-hour days, so in a
+TemporalTableCalendar: 0 (0)
+TemporalIsoString: 0 (0)
+JSTemporalStubs: 0 (0)
+WithinLimits: 0 (0)
+IsValidISODateTime: 0 (0)
+IsWithinIsoDateLimits: 0 (0)
+IsoYearMonthWithinLimits: 0 (0)
+RejectDuration: 0 (0)
+RegulateISODate: 0 (0)
+RegulateYearMonth: 0 (0)
+RegulateMonthDay: 0 (0)
+AddISODate: 0 (0)
+AddIsoDate: 0 (0)
+AddYearsMonths: 0 (0)
+AddCalendarYearsMonths: 0 (0)
+FromTimeNanoseconds: 0 (0)
+CompareISODate: 0 (0)
+FloorDiv: 0 (0)
+FloorDivBig: 0 (0)
+NotImplementedArithmetic: 0 (0)
+IsAmbiguousTimeString: 0 (0)
+ValidateNumericUtcOffset: 0 (0)
+ResolveCalendarId: 0 (0)
+FractionToNanoseconds: 0 (0)
+RejectIncompatibleStyle: 0 (0)
+FormatCalendarAnnotation: 0 (0)
+FormatISOString: 0 (0)
+FormatTime: 0 (0)
+FormatOffset: 0 (0)
+FormatOffsetRounded: 0 (0)
+FormatToString: 0 (0)
+FormatISO: 0 (0)
+AppendFraction: 0 (0)
+DefaultLargestUnitRank: 0 (0)
+ReadCalendarName: 0 (0)
+GetFractionalSecondDigits: 0 (0)
+Pow10: 0 (0)
+TryCanonicalizeName: 0 (0)
+ResolveCalendarIdentifierArgument: 0 (0)
+ToSlotValue: 0 (0)
+CanonicalizeIdentifierOrIsoString: 0 (0)
+CalendarYmd: 0 (0)
+ToIsoFromBag: 0 (0)
+WithToIso: 0 (0)
+YearMonthToIso: 0 (0)
+MonthDayFields: 0 (0)
+MonthDayToPlainDate: 0 (0)
+ResolveYearMonth: 0 (0)
+RegulateToIso: 0 (0)
+AddCalendarMonths: 0 (0)
+JapaneseEra: 0 (0)
+ResolveIsoYear: 0 (0)
+YearToIso: 0 (0)
+MonthFromCode: 0 (0)
+ValidateMonthCodeSyntax: 0 (0)
+MonthCodeSyntaxPattern: 0 (0)
+MonthFromCodeIso: 0 (0)
+ParseMonthCodeLeap: 0 (0)
+RequireWellFormedMonthCode: 0 (0)
+ResolveWithYear: 0 (0)
+YearMonthFromIsoDate: 0 (0)
+AddSubtract: 0 (0)
+RelativeEndpoints: 0 (0)
+TotalRelative: 0 (0)
+NudgeCalendarUnit: 0 (0)
+CalendarNudgeWindow: 0 (0)
+BubbleDateDuration: 0 (0)
+RejectRelativeDateTimeRange: 0 (0)
+ValidateRelativeEndpoints: 0 (0)
+BalanceFromNanoseconds: 0 (0)
+BalanceTimeOnly: 0 (0)
+TimePlusDaysNanoseconds: 0 (0)
+TimeComponentsNs: 0 (0)
+UnitOrder: 0 (0)
+UnitIndex: 0 (0)
+TimeUnitNanoseconds: 0 (0)
+NormalizeUnit: 0 (0)
+MaxUnit: 0 (0)
+HasCalendarUnits: 0 (0)
+TryGetRelativeTo: 0 (0)
+TryResolveRelativeTo: 0 (0)
+BuildOrderedRelativeBagSnapshot: 0 (0)
+ValidateRelativeBagTimeFields: 0 (0)
+IsTemporalRelativeObject: 0 (0)
+BuildRelative: 0 (0)
+ValidateBagOffsetMatchesZone: 0 (0)
+ReadDifferenceSettings: 0 (0)
+DateUnits: 0 (0)
+DifferenceISODate: 0 (0)
+DifferenceISODateRounded: 0 (0)
+RoundDateTimeDateDifference: 0 (0)
+RoundDateDifference: 0 (0)
+DateDurationSign: 0 (0)
+AddDateGetDays: 0 (0)
+ISODateSurpasses: 0 (0)
+CompareSurpasses: 0 (0)
+ToRelativeDate: 0 (0)
+EpochDaysFor: 0 (0)
+DateFromEpochDays: 0 (0)
+NonIsoDateDifference: 0 (0)
+RoundTimeDifference: 0 (0)
+BalanceTime: 0 (0)
+UnitNanoseconds: 0 (0)
+ReadZonedDifferenceSettings: 0 (0)
+ReadLargestUnit: 0 (0)
+DifferenceTimeOnly: 0 (0)
+DifferenceCalendar: 0 (0)
+TimeOfDayNs: 0 (0)
+RoundDurationRelative: 0 (0)
+TotalDurationRelative: 0 (0)
+DifferenceInternal: 0 (0)
+ComputeNudgeWindow: 0 (0)
+AddDurationEpochNs: 0 (0)
+TimeUnitNs: 0 (0)
+CalendarDateUntil: 0 (0)
+CalendarUnitOf: 0 (0)
+SharesIsoArithmetic: 0 (0)
+ReadRoundTo: 0 (0)
+MaximumRoundingIncrement: 0 (0)
+ValidateRoundingIncrement: 0 (0)
+NormalizeTimeUnit: 0 (0)
+NormalizeAnyUnit: 0 (0)
+NudgeTotal: 0 (0)
+NudgeRoundsToEnd: 0 (0)
+YearForRegulation: 0 (0)
+TryMatchZoneOffset: 0 (0)
+ValidStartOfDayEpochNs: 0 (0)
+# names with hits now: 29; at the cut-over: 29
+

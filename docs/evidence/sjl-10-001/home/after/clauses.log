@@ -1,0 +1,37 @@
+# SJL-10.6: the home clauses at 00b65dd055a277859d5325ead6338a040bcf2f30, each with the tests SJL-10.3 committed that hold it, counted
+# from the run in home/after/tests.log, by the 4 TRX reports it wrote (one per test assembly;
+# the console interleaves their lines). A test with several data rows counts once per row.
+
+## every sub-area implemented: records and limits
+  Broiler.ECMAScript.Algorithms.Tests.TemporalLimitsTests: passed 52, failed 0, skipped 0
+
+## every sub-area implemented: balancing
+  Broiler.ECMAScript.Algorithms.Tests.TemporalBalancingTests: passed 41, failed 0, skipped 0
+
+## every sub-area implemented: durations and rounding, and differences
+  Broiler.ECMAScript.Algorithms.Tests.DurationApiTests: passed 50, failed 0, skipped 0
+  Broiler.ECMAScript.Algorithms.Tests.DurationCorrespondenceTests: passed 20, failed 0, skipped 0
+
+## every sub-area implemented: the grammar
+  Broiler.ECMAScript.Algorithms.Tests.TemporalGrammarTests: passed 357, failed 0, skipped 0
+
+## every sub-area implemented: calendars
+  Broiler.ECMAScript.Algorithms.Tests.CalendarApiTests: passed 65, failed 0, skipped 0
+  Broiler.ECMAScript.Algorithms.Tests.CalendarCorrespondenceTests: passed 11, failed 0, skipped 0
+
+## every sub-area implemented: serialization
+  Broiler.ECMAScript.Algorithms.Tests.TemporalFormatTests: passed 151, failed 0, skipped 0
+
+## its vectors passing (the library-level runner over the Temporal area, and its control against the empty library)
+  Broiler.ECMAScript.Conformance.Tests.LibraryRunTests.Every_Temporal_vector_passes_against_the_algorithms_library: passed 1, failed 0, skipped 0
+  Broiler.ECMAScript.Conformance.Tests.LibraryRunTests.Against_the_empty_library_every_vector_is_not_implemented: passed 1, failed 0, skipped 0
+
+## the polyfill dataset at library level
+  Broiler.ECMAScript.Algorithms.Tests.TemporalDatasetTests: passed 1, failed 0, skipped 0
+  Broiler.ECMAScript.Algorithms.Tests.CalendarDatasetTests: passed 1, failed 0, skipped 0
+
+## the whole run: passed 1489, failed 0, skipped 0; exit 0
+  Broiler.ECMAScript.Algorithms.Tests: passed 1296, failed 0
+  Broiler.ECMAScript.Architecture.Tests: passed 32, failed 0
+  Broiler.ECMAScript.Conformance.Tests: passed 133, failed 0
+  Broiler.ECMAScript.Generation.Tests: passed 28, failed 0

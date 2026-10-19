@@ -1,0 +1,10 @@
+# the pristine consumer's checks, run as one program (print(<the checks>)) in each shell with TZ=America/New_York and no LANG; at the rule's commit and at the after commit
+
+## rule's commit: 1d27064d0a1f57608a7af20e37eac91bd8887baa, shell BroilerJS.dll sha256 c350dd049ec7acdc5dece44730d568567793f0cd0ed167aecdaf48451d79e389; exit 0; built here: dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release
+failed R7 (false), B5 (false), D3 (TypeError: Temporal.Duration options must be an object or undefined), D4 (RangeError: Temporal.Duration: relative date/time is outside of supported range), D6 (false), D7 (false), D8 (false), D11 (Error: Temporal.Duration: a relativeTo with the "hebrew" calendar is not yet implemented), F4 (false), F7 (false), G9 (false), G22 (false), C2 (false), C5 (false), C6 (false), C9 (false), C12 (RangeError: Temporal.PlainMonthDay: month-day is out of range), C13 (false), C15 (false), C16 (false), C17 (false), points (false), decision D11 (false)
+
+
+## after commit: 00b65dd055a277859d5325ead6338a040bcf2f30, shell BroilerJS.dll sha256 c15aa952a7c9dff70518e4faed4ca14be3444ab10d7fe602bee6b1c60477e940; exit 0; built before (the harness's build)
+ok 24
+
+
