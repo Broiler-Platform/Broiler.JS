@@ -263,18 +263,4 @@ internal static partial class TemporalAdapter
             throw JSEngine.NewRangeError("Temporal.Duration: relativeTo is outside the representable range");
         return epochNanoseconds;
     }
-
-    // ── zoned days ───────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// GetStartOfDay (s11.1.14) through the zone's provider: the first instant of a day, the instant limits tested. The
-    /// zoned rounding to a day and <c>hoursInDay</c> measure a day's real length with it.
-    /// </summary>
-    internal static BigInteger StartOfDay(string timeZoneId, IsoDate date, string typeName)
-    {
-        if (TemporalTimeZones.Arithmetic(timeZoneId).GetStartOfDay(date, out var epochNanoseconds) != TimeStatus.Completed
-            || !IsValidEpochNanoseconds(epochNanoseconds))
-            throw JSEngine.NewRangeError($"{typeName}: start of day is outside the representable range");
-        return epochNanoseconds;
-    }
 }

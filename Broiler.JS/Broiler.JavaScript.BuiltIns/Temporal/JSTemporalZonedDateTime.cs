@@ -18,10 +18,10 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 // with a time zone and a calendar. The time zone is an offset identifier ("+01:00") or an
 // available named zone; its offsets, possible instants, disambiguation, start of day and
 // transitions are the shared library's (Broiler.ECMAScript.Time's ZonedTime), over the time zone
-// tables this engine embeds, through TemporalTimeZones (milestone SJL-8.6). Its addition,
-// differences, day lengths and rounding to a day are the shared Temporal core's DurationMath and
-// TemporalDifferences over the zone's provider (milestone SJL-10.5, part C). Registered under the
-// Temporal namespace via Register = false.
+// tables this engine embeds, through TemporalTimeZones (milestone SJL-8.6). Its addition and
+// differences are the shared Temporal core's DurationMath and TemporalDifferences over the zone's
+// provider, and its day lengths and rounding to a day the core's arithmetic over GetStartOfDay
+// (milestone SJL-10.5, part C). Registered under the Temporal namespace via Register = false.
 [JSClassGenerator("ZonedDateTime", Register = false)]
 public partial class JSTemporalZonedDateTime : JSObject
 {
@@ -115,10 +115,27 @@ public partial class JSTemporalZonedDateTime : JSObject
     internal static JSValue StartOfDayFor(int y, int mo, int d, string timeZone, string calendarId = "iso8601")
     {
         var tz = TemporalAdapter.ToTimeZoneIdentifier(timeZone);
-        var epochNs = TemporalTimeZones.StartOfDay(tz, new IsoDate(y, mo, d));
+        return new JSTemporalZonedDateTime(StartOfDayEpochNs(tz, new IsoDate(y, mo, d)), tz, calendarId, ZonedDateTimePrototype);
+    }
+
+    // GetStartOfDay (s11.1.14), the shared library's over the zone's rules (TemporalTimeZones.StartOfDay): the first
+    // instant of a day, a RangeError where it is outside the representable instants. Every start of day this type
+    // reads - startOfDay, withPlainTime, hoursInDay, the rounding to a day, PlainDate.prototype.toZonedDateTime and a
+    // date-only string - is this one.
+    private static BigInteger StartOfDayEpochNs(string timeZone, IsoDate date)
+    {
+        var epochNs = TemporalTimeZones.StartOfDay(timeZone, date);
         if (!IsValid(epochNs))
-            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is out of range");
-        return new JSTemporalZonedDateTime(epochNs, tz, calendarId, ZonedDateTimePrototype);
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is outside the representable range");
+        return epochNs;
+    }
+
+    // The starts of the local day and of the next day: the day's real length is the time between them.
+    private (BigInteger Today, BigInteger Tomorrow) DayStarts()
+    {
+        var l = Local();
+        var today = new IsoDate(l.y, l.mo, l.d);
+        return (StartOfDayEpochNs(timeZoneId, today), StartOfDayEpochNs(timeZoneId, IsoArithmetic.AddDaysToIsoDate(today, 1)));
     }
 
     // ── accessors ───────────────────────────────────────────────────────────────
@@ -165,19 +182,15 @@ public partial class JSTemporalZonedDateTime : JSObject
     // FormatUTCOffsetNanoseconds, the shared library's: to the minute, or with the seconds where the offset has them.
     [JSExport("offset")] public JSValue Offset => new JSString(TemporalFormat.FormatUtcOffsetNanoseconds(OffsetNanoseconds()));
 
-    // The day's real length: GetStartOfDay of today and of tomorrow through the zone's provider (either may fall
-    // outside the representable instant range at the extreme epoch limits, a RangeError), then TotalTimeDuration in
-    // hours, the shared library's exact ratio rounded once.
+    // The day's real length: GetStartOfDay of today and of tomorrow (either may fall outside the representable
+    // instant range at the extreme epoch limits, a RangeError), then TotalTimeDuration in hours, the shared library's
+    // exact ratio rounded once.
     [JSExport("hoursInDay")]
     public double HoursInDay
     {
         get
         {
-            var l = Local();
-            var today = new IsoDate(l.y, l.mo, l.d);
-            const string typeName = "Temporal.ZonedDateTime.prototype.hoursInDay";
-            var todayStart = TemporalAdapter.StartOfDay(timeZoneId, today, typeName);
-            var tomorrowStart = TemporalAdapter.StartOfDay(timeZoneId, IsoArithmetic.AddDaysToIsoDate(today, 1), typeName);
+            var (todayStart, tomorrowStart) = DayStarts();
             return DurationMath.TotalTimeDuration(tomorrowStart - todayStart, TemporalUnit.Hour);
         }
     }
@@ -255,17 +268,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     public JSValue StartOfDay(in Arguments a)
     {
         var l = Local();
-        return new JSTemporalZonedDateTime(ValidStartOfDayEpochNs(l.y, l.mo, l.d), timeZoneId, calendarId, ZonedDateTimePrototype);
-    }
-
-    // GetStartOfDay for the local date, validating that the resulting instant is representable —
-    // near the instant-range boundary midnight in this zone can fall outside the valid limits.
-    private BigInteger ValidStartOfDayEpochNs(int y, int mo, int d)
-    {
-        var epoch = TemporalTimeZones.StartOfDay(timeZoneId, new IsoDate(y, mo, d));
-        if (!IsValid(epoch))
-            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is outside the representable range");
-        return epoch;
+        return new JSTemporalZonedDateTime(StartOfDayEpochNs(timeZoneId, new IsoDate(l.y, l.mo, l.d)), timeZoneId, calendarId, ZonedDateTimePrototype);
     }
 
     // Replaces the wall-clock time of day, keeping the date, calendar and time zone. An absent argument
@@ -278,7 +281,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var l = Local();
         var arg = a.GetAt(0);
         if (arg == null || arg.IsUndefined)
-            return new JSTemporalZonedDateTime(ValidStartOfDayEpochNs(l.y, l.mo, l.d), timeZoneId, calendarId, ZonedDateTimePrototype);
+            return new JSTemporalZonedDateTime(StartOfDayEpochNs(timeZoneId, new IsoDate(l.y, l.mo, l.d)), timeZoneId, calendarId, ZonedDateTimePrototype);
 
         var t = JSTemporalPlainTime.ToTemporalTimeObject(arg);
         var epoch = EpochNsForLocal(l.y, l.mo, l.d, t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond);
@@ -443,11 +446,9 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         if (smallestUnit == TemporalUnit.Day)
         {
-            // Round to a day boundary over the day's real length: GetStartOfDay of today and tomorrow through the
-            // zone's provider, both representable instants, then RoundTimeDurationToIncrement within the day.
-            var today = new IsoDate(l.y, l.mo, l.d);
-            var dayStart = TemporalAdapter.StartOfDay(timeZoneId, today, typeName);
-            var tomorrowStart = TemporalAdapter.StartOfDay(timeZoneId, IsoArithmetic.AddDaysToIsoDate(today, 1), typeName);
+            // Round to a day boundary over the day's real length: GetStartOfDay of today and tomorrow, both
+            // representable instants, then RoundTimeDurationToIncrement within the day.
+            var (dayStart, tomorrowStart) = DayStarts();
             TemporalAdapter.CheckArithmetic(
                 DurationMath.RoundTimeDurationToIncrement(epochNanoseconds - dayStart, tomorrowStart - dayStart, roundingMode, out var rounded), typeName);
             var epoch = dayStart + rounded;
@@ -891,7 +892,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         BigInteger epochNs;
         if (!hasTime)
-            epochNs = TemporalTimeZones.StartOfDay(timeZoneId, new IsoDate(year, month, day));
+            epochNs = StartOfDayEpochNs(timeZoneId, new IsoDate(year, month, day));
         else if (hasZ)
             epochNs = localNs;
         else if (!hasNumericOffset)

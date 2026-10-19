@@ -100,7 +100,7 @@ internal static class TemporalTimeZones
     /// <summary>
     /// A canonical identifier as the shared Temporal core's zone provider (<see cref="ITimeZoneArithmetic"/>, the adapter
     /// guide's part C): the library's <see cref="TemporalTimeZone"/> over the zone's <see cref="Rules"/>, one per zone. The
-    /// zoned additions, the relative rounding, the zoned differences and the day lengths compute through it.
+    /// zoned additions, the relative rounding and the zoned differences compute through it.
     /// </summary>
     internal static ITimeZoneArithmetic Arithmetic(string timeZone) =>
         ArithmeticById.TryGetValue(timeZone, out var zone) ? zone : ArithmeticById.GetOrAdd(timeZone, new TemporalTimeZone(Rules(timeZone)));
