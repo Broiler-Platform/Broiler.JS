@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Globalization;
 using Broiler.ECMAScript.Conformance;
 using Broiler.ECMAScript.Runners;
 using Broiler.JavaScript.Vectors.Tests.Runners;
@@ -13,8 +15,10 @@ public class EngineRunTests
 
     /// <summary>
     /// How many evaluating processes the corpus test runs its vectors in: a whole number above 1, or
-    /// one process when unset or anything else (<see cref="CorpusRun"/>). The report is the same at
-    /// any number. Retained evidence runs use one; CI's engine vectors job uses 4.
+    /// one process when unset or anything else (<see cref="CorpusRun"/>). The report is one process's,
+    /// byte for byte, unless a vector finds no completion in that one process's run, which several
+    /// processes run again alone and keep what it gives there. Retained evidence runs use one, with the
+    /// variable unset; CI's engine vectors job uses 4.
     /// </summary>
     public const string WorkersVariable = "BROILER_VECTORS_WORKERS";
 
@@ -42,6 +46,9 @@ public class EngineRunTests
         var workers = CorpusRun.WorkersFrom(Environment.GetEnvironmentVariable(WorkersVariable));
         var run = CorpusRun.Run(vectors, Home.Prelude, workers, Engine);
         output.WriteLine(run.Summary());
+        // Also on standard error, which dotnet test prints at normal verbosity, where it leaves out a
+        // passing test's output: a collector's log then shows N and the vectors re-checked.
+        Console.Error.WriteLine(run.Summary());
         var results = run.Results;
         WriteReport(results, corpus);
 
@@ -148,6 +155,41 @@ public class EngineRunTests
         Assert.Equal(vectors[looping].Id, run.SlowestId);
     }
 
+    /// <summary>
+    /// A vector that finds no completion in the parallel pass but completes alone keeps what it gives
+    /// alone, in its own place, and is named among those re-checked; every other vector is evaluated
+    /// once. A stand-in engine finds no completion for one vector the first time it is asked.
+    /// </summary>
+    [Fact]
+    public void A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place()
+    {
+        var records = Home.Corpus.Files.Single(f => f.Path == "numbers/to-fixed.vectors").Records.Take(40).ToList();
+        // A script of its own for each vector, so the stand-in can tell them apart.
+        var vectors = records.Select((record, i) => record.With("script", "vector " + i.ToString(CultureInfo.InvariantCulture))).ToList();
+        var answers = vectors.ToDictionary(v => v.Script, v => v.Out);
+        const int late = 17;
+        var asked = new ConcurrentDictionary<string, int>();
+        var created = 0;
+        ITimedVectorEngine Create()
+        {
+            Interlocked.Increment(ref created);
+            return new StandInEngine(answers, vectors[late].Script, asked);
+        }
+
+        var run = CorpusRun.Run(vectors, Home.Prelude, workers: 3, new StandInEngine(answers, vectors[late].Script, asked), Create, blockSize: 4);
+
+        Assert.Equal(vectors.Select(v => v.Id), run.Results.Select(r => r.Vector.Id));
+        for (var i = 0; i < vectors.Count; i++)
+        {
+            Assert.Equal(answers[vectors[i].Script], run.Results[i].Rendered);
+            Assert.Equal(Verdict.Match, run.Results[i].Verdict);
+            Assert.Equal(i == late ? 2 : 1, asked[vectors[i].Script]);
+        }
+
+        Assert.Equal(vectors[late].Id, Assert.Single(run.Rechecked));
+        Assert.Equal(4, created);
+    }
+
     /// <summary>A different expected value of the same kind: the last bit of a double, or a character of a string.</summary>
     private static string Mutate(string outcome)
     {
@@ -167,6 +209,28 @@ public class EngineRunTests
             Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, directory)));
         foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
             File.Copy(file, Path.Combine(destination, Path.GetRelativePath(source, file)));
+    }
+
+    /// <summary>
+    /// An engine that answers each script with the outcome its vector expects, and finds no completion
+    /// for <paramref name="late"/> the first time any engine sharing <paramref name="asked"/> is asked it.
+    /// </summary>
+    private sealed class StandInEngine(IReadOnlyDictionary<string, string> answers, string late, ConcurrentDictionary<string, int> asked) : ITimedVectorEngine
+    {
+        public string Name => "broiler-js";
+
+        public TimeSpan LastEvaluation { get; private set; }
+
+        public string Evaluate(string prelude, string script)
+        {
+            var times = asked.AddOrUpdate(script, 1, static (_, n) => n + 1);
+            LastEvaluation = TimeSpan.FromMilliseconds(times);
+            return script == late && times == 1 ? BroilerJsEngine.TimeoutOutcome : answers[script];
+        }
+
+        public void Dispose()
+        {
+        }
     }
 
     /// <summary>

@@ -139,10 +139,13 @@ jobs:
           if-no-files-found: error
 
   # Broiler.JS's engine-level run of the whole vector corpus (Broiler.JavaScript.Vectors.Tests,
-  # Category=EngineCorpus) in four evaluating processes on the runner's four cores. Its report is the one a
-  # single process writes, byte for byte, and a vector that finds no completion within 5 s in the parallel
-  # pass is run again alone (conformance/vectors/README.md). The test's output line gives N, the elapsed
-  # time and the slowest vector's time; the report is kept as an artifact.
+  # Category=EngineCorpus) in four evaluating processes on the runner's four cores. A vector that finds no
+  # completion within 5 s in the parallel pass is run again alone and keeps what it gives there
+  # (conformance/vectors/README.md), so the report is the one a single process writes, byte for byte,
+  # unless a vector times out in the single process's run. The test's line gives N, the elapsed time,
+  # the slowest vector's time and every vector run again, and the job raises a warning when there is
+  # one: such a vector passes here where one process would have failed it. The report and the log are
+  # kept as an artifact.
   vectors:
     name: engine vectors (${{ matrix.os }})
     needs: changes
@@ -177,16 +180,36 @@ jobs:
           dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --nologo "${args[@]}"
 
       - name: Run the corpus
-        run: >
-          dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo
-          --filter "Category=EngineCorpus" --logger "console;verbosity=detailed"
+        run: |
+          set -o pipefail
+          dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo \
+            --filter "Category=EngineCorpus" --logger "console;verbosity=detailed" 2>&1 | tee engine-vectors.log
+
+      - name: Report the vectors run again alone
+        if: always()
+        run: |
+          [ -f engine-vectors.log ] || exit 0
+          line="$(grep -m 1 'evaluating process(es)' engine-vectors.log || true)"
+          line="${line%$'\r'}"
+          line="${line#"${line%%[![:space:]]*}"}"
+          if [ -z "$line" ]; then
+            echo "The corpus test wrote no summary line."
+            exit 0
+          fi
+          echo "$line" >> "$GITHUB_STEP_SUMMARY"
+          again="$(sed -nE 's/.*; ([0-9]+) found no completion in the parallel pass.*/\1/p' <<< "$line")"
+          if [ "${again:-0}" -gt 0 ]; then
+            echo "::warning title=Engine vectors run again alone on $RUNNER_OS::${line//%/%25}"
+          fi
 
       - name: Keep the report
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: engine-vectors-${{ matrix.os }}
-          path: engine-vectors.tsv
+          path: |
+            engine-vectors.tsv
+            engine-vectors.log
           if-no-files-found: warn
 
   # The one check of this workflow to wait for, and the one a branch rule should require. GitHub does

@@ -32,7 +32,7 @@ namespace Broiler.JavaScript.Vectors.Tests.Runners;
 /// not the engine's result.
 /// </para>
 /// </remarks>
-public sealed class BroilerJsEngine : IVectorEngine, IDisposable
+public sealed class BroilerJsEngine : ITimedVectorEngine
 {
     /// <summary>The argument that makes this assembly's entry point a vector evaluator.</summary>
     public const string ChildSwitch = "--evaluate-vectors";

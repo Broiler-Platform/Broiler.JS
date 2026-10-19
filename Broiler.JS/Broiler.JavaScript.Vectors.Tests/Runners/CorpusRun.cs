@@ -29,6 +29,12 @@ namespace Broiler.JavaScript.Vectors.Tests.Runners;
 /// result is kept. A vector that never completes still aborts. One process has no parallel pass, and
 /// nothing is evaluated twice.
 /// </para>
+/// <para>
+/// So the report is one process's, byte for byte, unless a vector finds no completion in that one
+/// process's run: there one process keeps the abort, and N processes keep what the vector gives alone,
+/// which also lets a vector that hangs only sometimes pass. <see cref="Rechecked"/> names every vector
+/// run again, <see cref="Summary"/> prints them, and CI's engine vectors job raises a warning for them.
+/// </para>
 /// </remarks>
 public sealed class CorpusRun
 {
@@ -77,9 +83,24 @@ public sealed class CorpusRun
     /// <param name="blockSize">How many vectors a worker takes at a time.</param>
     /// <returns>The run.</returns>
     public static CorpusRun Run(IReadOnlyList<VectorRecord> vectors, string prelude, int workers, BroilerJsEngine serial, int blockSize = DefaultBlockSize)
+        => Run(vectors, prelude, workers, serial, static () => new BroilerJsEngine(), blockSize);
+
+    /// <summary>
+    /// Runs <paramref name="vectors"/> in <paramref name="workers"/> engines that <paramref name="create"/>
+    /// makes, one per worker and one per vector re-checked, so a test can give engines of its own.
+    /// </summary>
+    /// <param name="vectors">The vectors, already validated.</param>
+    /// <param name="prelude">The corpus's prelude.js.</param>
+    /// <param name="workers">The number of engines; 1 runs every vector through <paramref name="serial"/>.</param>
+    /// <param name="serial">The engine a one-process run uses.</param>
+    /// <param name="create">Makes a new engine, which the run disposes.</param>
+    /// <param name="blockSize">How many vectors a worker takes at a time.</param>
+    /// <returns>The run.</returns>
+    internal static CorpusRun Run(IReadOnlyList<VectorRecord> vectors, string prelude, int workers, ITimedVectorEngine serial, Func<ITimedVectorEngine> create, int blockSize)
     {
         ArgumentNullException.ThrowIfNull(vectors);
         ArgumentNullException.ThrowIfNull(serial);
+        ArgumentNullException.ThrowIfNull(create);
         ArgumentOutOfRangeException.ThrowIfLessThan(workers, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(blockSize, 1);
 
@@ -100,11 +121,11 @@ public sealed class CorpusRun
             if (poolThreads < 2 * workers)
                 ThreadPool.SetMinThreads(2 * workers, completionThreads);
 
-            var engines = new BroilerJsEngine[workers];
+            var engines = new ITimedVectorEngine[workers];
             try
             {
                 for (var w = 0; w < workers; w++)
-                    engines[w] = new BroilerJsEngine();
+                    engines[w] = create();
 
                 var failures = new Exception?[workers];
                 var threads = new Thread[workers];
@@ -150,7 +171,7 @@ public sealed class CorpusRun
             {
                 if (results[i].Rendered != BroilerJsEngine.TimeoutOutcome)
                     continue;
-                using var alone = new BroilerJsEngine();
+                using var alone = create();
                 results[i] = VectorRun.RunEngine([results[i].Vector], prelude, alone)[0];
                 times[i] = alone.LastEvaluation;
                 rechecked.Add(results[i].Vector.Id);
@@ -188,7 +209,7 @@ public sealed class CorpusRun
 
     // Worker `worker` of `workers`: blocks worker, worker + workers, ..., each vector as the serial
     // runner evaluates it, into the block's own place in `parts` and the vector's own in `times`.
-    private static void RunBlocks(int worker, int workers, VectorRecord[][] blocks, int blockSize, string prelude, BroilerJsEngine engine, VectorResult[][] parts, TimeSpan[] times)
+    private static void RunBlocks(int worker, int workers, VectorRecord[][] blocks, int blockSize, string prelude, ITimedVectorEngine engine, VectorResult[][] parts, TimeSpan[] times)
     {
         for (var b = worker; b < blocks.Length; b += workers)
         {
@@ -203,4 +224,11 @@ public sealed class CorpusRun
             parts[b] = part;
         }
     }
+}
+
+/// <summary>An engine a <see cref="CorpusRun"/> can time and dispose: <see cref="BroilerJsEngine"/>, or a test's own.</summary>
+internal interface ITimedVectorEngine : IVectorEngine, IDisposable
+{
+    /// <summary>How long the last evaluation took, from writing the script to the answer.</summary>
+    TimeSpan LastEvaluation { get; }
 }

@@ -76,11 +76,17 @@ not move.
 **`BROILER_VECTORS_WORKERS`** sets how many evaluating processes Broiler.JS's corpus test uses: a
 whole number above 1, or one process when it is unset or anything else. With N processes the corpus
 is cut into blocks of 512 vectors, and worker w takes blocks w, w + N, w + 2N and so on, in order, with
-an engine and a process of its own; the results are merged in corpus order, so the report is byte for
-byte the one a single process writes. A vector that finds no completion within the runner's 5 s in that
-pass is run again alone in a new process, and that result is kept, so a vector that never completes
-still aborts. Each run writes N, its elapsed time and its slowest vector's time to the test's output.
-**Retained evidence runs use one process.** A run retained with more would need a dated note in the
+an engine and a process of its own; the results are merged in corpus order. A vector that finds no
+completion within the runner's 5 s in that pass is run again alone in a new process, and that result is
+kept, so a vector that never completes still aborts. The report is therefore byte for byte the one a
+single process writes, unless a vector finds no completion in the single process's run: there one
+process keeps the abort, where N processes keep what the vector gives alone, and the same goes for a
+vector that only sometimes completes. Each run writes a line with N, its elapsed time, its slowest
+vector's time and the vectors run again alone, to the test's output and to standard error, which
+`dotnet test` shows from normal verbosity up; CI's engine vectors job raises a warning when any vector
+was run again. **Retained evidence runs use one process**: such a run is started with the variable
+unset (`env -u BROILER_VECTORS_WORKERS`), and a collector removes it from the environment it gives
+`dotnet test`, as it removes `LANG`. A run retained with more would need a dated note in the
 configuration clause of bundle sjl-1-001's decision rule. *(Added 2026-10-19, when CI's engine vectors
 job began to run the corpus in four processes.)*
 
