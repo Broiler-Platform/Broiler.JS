@@ -136,6 +136,18 @@ the calendar rows are JSD-0078's C2, C5, C6, C9, C12, C13, C15, C16 and C17, and
 D3, D4, D6, D7, D8, D11, F4 and F7. Row D12's case, a day the zone skips, becomes a `RangeError` in both engines at
 their cut-overs.
 
+*(Added 2026-10-19, at SJL-10.5.)* **Decision D12**, the owner's of 2026-10-19 under the direction of 2026-10-18:
+decision D11's rule reaches `NudgeToZonedTime`'s assertion on the day span's sign (s7.5.35 step 8, "Assert:
+TimeDurationSign(daySpan) = sign"). Where a zone's skipped day leaves the day from the nudge's start with no length
+(Pacific/Apia's 2011-12-30, rounding to a time unit with a date largest unit back from 2011-12-31), or an engine's own
+zone gives it the wrong sign, `RoundRelativeDuration` answers `OutOfRange`, and so do `DurationMath.Round` and the
+zoned differences that reach it: a `RangeError` in both engines, as the reference polyfill throws one. `0.1.0-preview.6`
+answers a duration from outside the text's domain there:
+`ZonedDateTime.from("2011-12-31T16:15+14:00[Pacific/Apia]").since("2011-12-31T00:00+14:00[Pacific/Apia]", {largestUnit: "day", smallestUnit: "hour"})`
+is `P1DT16H`, and Broiler.VM, which takes that version, answers so until it moves past it. Broiler.JS, which takes the
+library as a project, answers the `RangeError` its own code answered before its cut-over. No public API changes, and the
+library-level runner's 10,851 Temporal vectors all still match.
+
 ### Data
 
 None. The table calendars read SJL-8's calendar table, which each engine hands in; its versions are unchanged.
