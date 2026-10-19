@@ -44,8 +44,13 @@ class Test262WorkflowTests(unittest.TestCase):
 
     def test_workflow_remains_manual_only_and_consolidated(self) -> None:
         self.assertEqual(["workflow_dispatch"], list(self._events(self.workflow)))
+        # test262-evidence.yml (2026-10-14) is the one other: it only measures, and it too
+        # runs only when dispatched.
+        evidence_path = WORKFLOW_PATH.parent / "test262-evidence.yml"
         workflows = sorted(WORKFLOW_PATH.parent.glob("test262*.yml"))
-        self.assertEqual([WORKFLOW_PATH], workflows)
+        self.assertEqual(sorted([evidence_path, WORKFLOW_PATH]), workflows)
+        evidence = yaml.safe_load(evidence_path.read_text(encoding="utf-8"))
+        self.assertEqual(["workflow_dispatch"], list(self._events(evidence)))
 
     def test_embedded_python_blocks_compile(self) -> None:
         documents = (
