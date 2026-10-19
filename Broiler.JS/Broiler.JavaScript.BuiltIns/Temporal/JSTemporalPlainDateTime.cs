@@ -401,17 +401,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     // `options` is the raw options argument; the overflow option is read at the spec-mandated point
     // (after the item's type is validated and its slots / fields / string are read) so an invalid
     // primitive item throws a TypeError before the options bag is ever observed.
-    //
-    // ToTemporalZonedDateTime reads the SAME alphabetical field list with two extra fields — `offset`
-    // (between nanosecond and second) and `timeZone` (between second and year). The two optional
-    // callbacks let it read those at their correct positions in this single pass (#818 Problem 7),
-    // so the property-access order matches PrepareCalendarFields exactly.
-    // overflowReader (ZonedDateTime.from) replaces the GetTemporalOverflowOption read at
-    // the end of the property-bag pass, so the caller can read the disambiguation / offset
-    // / overflow options together at that point (after all the bag's fields). When null,
-    // overflow is read directly.
-    internal static JSValue ToTemporalDateTime(JSValue item, JSValue options,
-        Action afterNanosecond = null, Action afterSecond = null, Func<TemporalOverflow> overflowReader = null)
+    internal static JSValue ToTemporalDateTime(JSValue item, JSValue options)
     {
         if (item is JSTemporalPlainDateTime dt)
         {
@@ -444,6 +434,19 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime: invalid value");
 
+        return FromFields(obj, () => TemporalAdapter.ReadOverflow(options));
+    }
+
+    // ToTemporalDateTime's steps for an object read as a property bag (2.d onward), which ToTemporalZonedDateTime
+    // shares for every object that is not a ZonedDateTime - a PlainDate or PlainDateTime among them, read through its
+    // getters with its own calendar. ToTemporalZonedDateTime reads the SAME alphabetical field list with two extra
+    // fields — `offset` (between nanosecond and second) and `timeZone` (between second and year); the two optional
+    // callbacks let it read those at their correct positions in this single pass (#818 Problem 7), so the
+    // property-access order matches PrepareCalendarFields exactly. overflowReader runs at the
+    // GetTemporalOverflowOption point after the bag's fields, so ZonedDateTime.from can read the disambiguation /
+    // offset / overflow options together there.
+    internal static JSValue FromFields(JSObject obj, Func<TemporalOverflow> overflowReader, Action afterNanosecond = null, Action afterSecond = null)
+    {
         var calendarId = TemporalAdapter.CalendarWithIsoDefault(obj);
 
         int Field(string name) { var v = obj[KeyStrings.GetOrCreate(name)]; return v.IsUndefined ? 0 : ToIntegerWithTruncation(v); }
@@ -468,7 +471,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         afterSecond?.Invoke(); // ZonedDateTime reads `timeZone` here
         fields.Year();
 
-        var overflow = overflowReader != null ? overflowReader() : TemporalAdapter.ReadOverflow(options);
+        var overflow = overflowReader();
 
         var date = TemporalAdapter.DateFromFields(calendarId, fields.Fields, overflow, "Temporal.PlainDateTime");
         return RegulateDateTime(date, hour, minute, second, millisecond, microsecond, nanosecond, overflow, calendarId);

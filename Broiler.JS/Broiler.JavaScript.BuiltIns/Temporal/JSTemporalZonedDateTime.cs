@@ -760,9 +760,11 @@ public partial class JSTemporalZonedDateTime : JSObject
         }
 
         // Resolve the wall-clock date-time by reusing Temporal.PlainDateTime's property-bag
-        // resolution (non-Gregorian calendars), with offset/timeZone read inline.
-        var pdt = (JSTemporalPlainDateTime)JSTemporalPlainDateTime.ToTemporalDateTime(
-            obj, options, ReadOffset, ReadTimeZone, ReadOptionsReturningOverflow);
+        // resolution (every calendar), with offset/timeZone read inline. Every object but a
+        // ZonedDateTime is read as a bag - a PlainDate or PlainDateTime too, in its own calendar,
+        // whose missing timeZone is the TypeError at its read.
+        var pdt = (JSTemporalPlainDateTime)JSTemporalPlainDateTime.FromFields(
+            obj, ReadOptionsReturningOverflow, ReadOffset, ReadTimeZone);
 
         var localNs = LocalNanoseconds(pdt.isoYear, pdt.isoMonth, pdt.isoDay,
             pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond);
