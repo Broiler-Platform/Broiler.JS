@@ -32,7 +32,7 @@ namespace Broiler.JavaScript.Vectors.Tests.Runners;
 /// not the engine's result.
 /// </para>
 /// </remarks>
-public sealed class BroilerJsEngine : IVectorEngine, IDisposable
+public sealed class BroilerJsEngine : ITimedVectorEngine
 {
     /// <summary>The argument that makes this assembly's entry point a vector evaluator.</summary>
     public const string ChildSwitch = "--evaluate-vectors";
@@ -50,6 +50,9 @@ public sealed class BroilerJsEngine : IVectorEngine, IDisposable
     /// <summary>How long a new child may take to start, load the engine and say it is ready.</summary>
     public static readonly TimeSpan StartLimit = TimeSpan.FromMinutes(2);
 
+    /// <summary>The outcome of a vector still running at <see cref="Limit"/>.</summary>
+    public static readonly string TimeoutOutcome = $"abort: no completion within {Limit.TotalSeconds:0} s";
+
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false);
 
     private readonly object gate = new();
@@ -59,8 +62,15 @@ public sealed class BroilerJsEngine : IVectorEngine, IDisposable
 
     public string Name => "broiler-js";
 
+    /// <summary>
+    /// How long the last <see cref="Evaluate"/> took from writing the script to the answer, the span
+    /// <see cref="Limit"/> bounds; zero when it wrote nothing. Read it on the thread that evaluated.
+    /// </summary>
+    public TimeSpan LastEvaluation { get; private set; }
+
     public string Evaluate(string prelude, string script)
     {
+        LastEvaluation = TimeSpan.Zero;
         if (script.Contains('\n') || script.Contains('\r'))
             return BroilerJsRealm.Fault("a script must be one line");
 
@@ -69,13 +79,16 @@ public sealed class BroilerJsEngine : IVectorEngine, IDisposable
             if (Child(prelude) is not { } process)
                 return BroilerJsRealm.Fault($"the evaluating process was not ready within {StartLimit.TotalSeconds:0} s");
 
+            var clock = Stopwatch.StartNew();
             process.StandardInput.WriteLine(script);
             process.StandardInput.Flush();
             var answer = process.StandardOutput.ReadLineAsync();
-            if (!answer.Wait(Limit))
+            var completed = answer.Wait(Limit);
+            LastEvaluation = clock.Elapsed;
+            if (!completed)
             {
                 Stop();
-                return $"abort: no completion within {Limit.TotalSeconds:0} s";
+                return TimeoutOutcome;
             }
 
             if (answer.Result is { } rendered)

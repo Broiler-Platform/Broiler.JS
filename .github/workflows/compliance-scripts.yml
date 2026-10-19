@@ -1,0 +1,61 @@
+name: Compliance scripts
+
+# The unit tests of scripts/compliance/: the test262 runner, the shard merge, the path comparison, the
+# Closure worker and the test262 workflows' structure. They run on a change to what they test or read.
+# Until 2026-10-19 they ran only in test262.yml's validate job, which runs only when dispatched.
+#
+# Not a required check: a required check that a path filter skips leaves every other pull request
+# pending. test262-evidence.yml does not run them, because the open decision rules take that workflow
+# as the commit that carries each rule has it.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/compliance/**'
+      - 'scripts/ci-commit-generated-results.sh'
+      - '.github/workflows/test262*.yml'
+      - '.github/actions/run-test262-shard/**'
+      - '.github/workflows/compliance-scripts.yml'
+  pull_request:
+    paths:
+      - 'scripts/compliance/**'
+      - 'scripts/ci-commit-generated-results.sh'
+      - '.github/workflows/test262*.yml'
+      - '.github/actions/run-test262-shard/**'
+      - '.github/workflows/compliance-scripts.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compliance-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unittest:
+    name: Compliance script tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+      # The version test262-evidence.yml's collect job merges the shards with.
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      # The Closure worker's tests start it under Node, as the shard action does.
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      # The workflow-structure tests read the workflows as YAML.
+      - name: Install the tests' dependency
+        run: python -m pip install --disable-pip-version-check PyYAML==6.0.2
+      - name: Run the compliance unit tests
+        run: python -m unittest discover -s scripts/compliance/tests -v

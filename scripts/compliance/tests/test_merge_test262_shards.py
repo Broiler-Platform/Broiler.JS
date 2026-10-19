@@ -938,6 +938,95 @@ class MergeTest262ShardsTests(unittest.TestCase):
         self.assertEqual(1, merged["pathSummary"]["timedOut"])
         self.assertEqual([], merged["executedPaths"])
 
+    def write_report_with_path_summary(
+        self, results: list[dict[str, object]], **declared: int
+    ) -> Path:
+        """Shard 0's terser report, its pathSummary counts replaced by ``declared``."""
+        payload = self.report_payload(0, results, minifier="terser")
+        path_summary = dict(payload["pathSummary"])
+        path_summary.update(declared)
+        payload["pathSummary"] = path_summary
+        return self.write_json("test262-full-shard-0.json", payload)
+
+    def assert_path_summary_rejected(self, merged: dict[str, object]) -> None:
+        self.assertEqual([], merged["results"])
+        incomplete = merged["incompleteShards"]
+        self.assertEqual([0], [item["shardIndex"] for item in incomplete])
+        self.assertEqual("MalformedReport", incomplete[0]["failureReason"])
+        self.assertIn("report pathSummary.", incomplete[0]["failureDetail"])
+
+    def test_an_off_by_one_path_summary_makes_the_shard_incomplete(self) -> None:
+        path = "test/language/off-by-one.js"
+        self.write_report_with_path_summary(
+            [
+                {"path": path, "variant": "original", "status": "failed", "reason": "assertion failed"},
+                {"path": path, "variant": "terser", "status": "failed", "reason": "assertion failed"},
+            ],
+            failed=2,
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assert_path_summary_rejected(merged)
+        self.assertIn(
+            "pathSummary.failed count 2 does not match results (1)",
+            merged["incompleteShards"][0]["failureDetail"],
+        )
+
+    def test_path_summary_counts_a_timed_out_variant_over_passed_and_failed(self) -> None:
+        passed_path = "test/language/passed-then-timed-out.js"
+        failed_path = "test/language/failed-then-timed-out.js"
+        results = [
+            {"path": passed_path, "variant": "original", "status": "passed"},
+            {"path": passed_path, "variant": "terser", "status": "timedOut"},
+            {"path": failed_path, "variant": "original", "status": "failed", "reason": "assertion failed"},
+            {"path": failed_path, "variant": "terser", "status": "timedOut"},
+        ]
+        cases: list[tuple[dict[str, int], bool]] = [
+            ({"timedOut": 2}, True),
+            # The passed path read as passed, or the failed one as failed, is the wrong precedence.
+            ({"timedOut": 1, "passed": 1}, False),
+            ({"timedOut": 1, "failed": 1}, False),
+        ]
+        for declared, accepted in cases:
+            with self.subTest(declared=declared):
+                self.write_report_with_path_summary(results, **declared)
+
+                merged = merger.merge(self.root, expected_shard_indexes={0})
+
+                if accepted:
+                    self.assertEqual([], merged["incompleteShards"])
+                    self.assertEqual(sorted([passed_path, failed_path]), merged["timedOutPaths"])
+                else:
+                    self.assert_path_summary_rejected(merged)
+
+    def test_path_summary_counts_a_failed_and_skipped_path_as_failed(self) -> None:
+        path = "test/language/failed-and-skipped.js"
+        results = [
+            {"path": path, "variant": "original", "status": "failed", "reason": "assertion failed"},
+            {
+                "path": path,
+                "variant": "terser",
+                "status": "skipped",
+                "reason": "worker chose not to run this case",
+            },
+        ]
+        cases: list[tuple[dict[str, int], bool]] = [
+            ({"executed": 1, "failed": 1, "skipped": 0}, True),
+            ({"executed": 0, "failed": 0, "skipped": 1}, False),
+        ]
+        for declared, accepted in cases:
+            with self.subTest(declared=declared):
+                self.write_report_with_path_summary(results, **declared)
+
+                merged = merger.merge(self.root, expected_shard_indexes={0})
+
+                if accepted:
+                    self.assertEqual([], merged["incompleteShards"])
+                    self.assertEqual([path], merged["failedPaths"])
+                else:
+                    self.assert_path_summary_rejected(merged)
+
     def test_same_path_variant_timeouts_remain_distinct_and_ordered(self) -> None:
         path = "test/language/both-timeout.js"
         self.write_report(

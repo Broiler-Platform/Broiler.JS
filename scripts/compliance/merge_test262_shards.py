@@ -607,12 +607,13 @@ def _validate_report(artifact: Artifact) -> str | None:
         if not isinstance(path_summary, dict):
             return "report pathSummary is not an object"
         path_statuses: dict[str, str] = {}
-        for path in variants_by_path:
-            case_statuses = {
+        statuses_by_path: dict[str, set[str | None]] = defaultdict(set)
+        for result in results:
+            statuses_by_path[_normalise_path(result.get("path"))].add(
                 _canonical_status(result.get("status"))
-                for result in results
-                if _normalise_path(result.get("path")) == path
-            }
+            )
+        for path in variants_by_path:
+            case_statuses = statuses_by_path.get(path, set())
             if "timedOut" in case_statuses:
                 path_statuses[path] = "timedOut"
             elif "failed" in case_statuses:
