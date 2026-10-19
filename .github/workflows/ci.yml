@@ -49,6 +49,12 @@ jobs:
       - name: Test preview version selection
         run: node --test eng/resolve-preview-version.test.mjs
 
+      # The performance configuration and architecture checks, which otherwise run only in the weekly
+      # Performance baselines workflow. They read files and need no build.
+      - name: Test the performance configuration
+        if: runner.os == 'Linux'
+        run: python3 -m unittest discover -s scripts/performance/tests -v
+
       - name: Build
         run: |
           args=()

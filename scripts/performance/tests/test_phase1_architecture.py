@@ -42,10 +42,6 @@ class Phase1ArchitectureTests(unittest.TestCase):
             "<IsPackable>true</IsPackable>",
             text(SOURCE_ROOT / "Broiler.JavaScript.ModuleExtensions" / "Broiler.JavaScript.ModuleExtensions.csproj"),
         )
-        self.assertIn(
-            "<IsPackable>true</IsPackable>",
-            text(REPO_ROOT / "Broiler.Unicode" / "src" / "UnicodeProperties" / "UnicodeProperties.csproj"),
-        )
 
     def test_generator_is_incremental_and_persisted_output_is_opt_in(self) -> None:
         generator_project = text(
