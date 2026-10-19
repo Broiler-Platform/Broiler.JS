@@ -230,34 +230,15 @@ internal static partial class TemporalAdapter
     }
 
     // InterpretISODateTimeOffset (s6.5.1) as GetTemporalRelativeToOption calls it for a bag: compatible, offset reject,
-    // the offset matched exactly. With no offset the wall clock is read in the zone; with one, CheckISODaysRange, then
-    // the candidate instant whose offset is the bag's, else the RangeError.
+    // the offset matched exactly. With no offset the wall clock is read in the zone; with one, ZonedDateTime's one copy
+    // of the matching (CheckISODaysRange, then the candidate instant whose offset is the bag's, else the RangeError).
     private static BigInteger RelativeToEpochNanoseconds(IsoDateTime dateTime, bool hasOffset, long offsetNanoseconds, string timeZone)
     {
-        BigInteger epochNanoseconds;
-        if (!hasOffset)
-        {
-            epochNanoseconds = TemporalTimeZones.EpochNanosecondsFor(timeZone, dateTime, "compatible");
-        }
-        else
-        {
-            Check(TemporalLimits.CheckIsoDaysRange(dateTime.Date), "Temporal.Duration: relativeTo is outside the representable range");
-            var wall = IsoArithmetic.GetUtcEpochNanoseconds(dateTime);
-            epochNanoseconds = BigInteger.MinusOne;
-            var matched = false;
-            foreach (var candidate in TemporalTimeZones.PossibleEpochNanoseconds(timeZone, dateTime))
-            {
-                if (wall - candidate == offsetNanoseconds)
-                {
-                    epochNanoseconds = candidate;
-                    matched = true;
-                    break;
-                }
-            }
-
-            if (!matched)
-                throw JSEngine.NewRangeError($"Temporal.Duration: the relativeTo offset does not match the time zone \"{timeZone}\"");
-        }
+        var epochNanoseconds = hasOffset
+            ? JSTemporalZonedDateTime.InterpretOffset(timeZone, dateTime, offsetNanoseconds, matchMinutes: false, "reject", "compatible",
+                "Temporal.Duration: relativeTo is outside the representable range",
+                $"Temporal.Duration: the relativeTo offset does not match the time zone \"{timeZone}\"")
+            : TemporalTimeZones.EpochNanosecondsFor(timeZone, dateTime, "compatible");
 
         if (!IsValidEpochNanoseconds(epochNanoseconds))
             throw JSEngine.NewRangeError("Temporal.Duration: relativeTo is outside the representable range");

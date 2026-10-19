@@ -458,17 +458,11 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         // Round the wall-clock time of day, carrying any overflow into the date (RoundISODateTime, the
         // shared library's), then re-resolve in the zone keeping the current offset when it is still
-        // valid ("prefer").
+        // valid: InterpretISODateTimeOffset with the offset option "prefer" and "compatible".
         var roundedLocal = IsoArithmetic.RoundIsoDateTime(
             IsoDateTimeOf(l.y, l.mo, l.d, l.h, l.mi, l.s, l.ms, l.us, l.ns), increment, smallestUnit, roundingMode);
-        var (rd, rt) = (roundedLocal.Date, roundedLocal.Time);
-
-        var localNs = IsoArithmetic.GetUtcEpochNanoseconds(roundedLocal);
-        var oldOffset = OffsetNanoseconds();
-        var candidate = localNs - oldOffset;
-        var resolved = GetOffsetNanosecondsFor(candidate) == oldOffset
-            ? candidate
-            : EpochNsForLocal((int)rd.Year, rd.Month, rd.Day, rt.Hour, rt.Minute, rt.Second, rt.Millisecond, rt.Microsecond, rt.Nanosecond);
+        var resolved = InterpretOffset(timeZoneId, roundedLocal, OffsetNanoseconds(), matchMinutes: false, "prefer", "compatible",
+            "Temporal.ZonedDateTime.prototype.round: wall-clock time is outside the representable range", null);
         if (!IsValid(resolved)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
         return new JSTemporalZonedDateTime(resolved, timeZoneId, calendarId, ZonedDateTimePrototype);
     }
@@ -551,8 +545,8 @@ public partial class JSTemporalZonedDateTime : JSObject
         var localNs = LocalNanoseconds(updated.isoYear, updated.isoMonth, updated.isoDay,
             updated.hour, updated.minute, updated.second, updated.millisecond, updated.microsecond, updated.nanosecond);
 
-        // The "wall" cases ("ignore", or an unmatched "prefer") re-anchor the new wall clock through the
-        // DISAMBIGUATION option (earlier/later/compatible/reject) so a fold/gap honours `disambiguation`
+        // The "wall" cases ("ignore", or an unmatched "prefer" in InterpretOffset) re-anchor the new wall clock
+        // through the DISAMBIGUATION option (earlier/later/compatible/reject) so a fold/gap honours `disambiguation`
         // (test262 ZonedDateTime/prototype/with/dst-option-offset-disambiguation-combinations).
         BigInteger Wall() => DisambiguateEpochNs(timeZoneId, updated.isoYear, updated.isoMonth, updated.isoDay,
             updated.hour, updated.minute, updated.second, updated.millisecond, updated.microsecond, updated.nanosecond, disambiguation);
@@ -562,18 +556,10 @@ public partial class JSTemporalZonedDateTime : JSObject
             epoch = localNs - candidateOffset;
         else if (offsetOption == "ignore")
             epoch = Wall();
-        else
-        {
-            // "prefer" / "reject": keep the candidate offset if it is valid for the new local time,
-            // otherwise fall back (prefer) or throw (reject).
-            var candidateEpoch = localNs - candidateOffset;
-            if (GetOffsetNanosecondsFor(candidateEpoch) == candidateOffset)
-                epoch = candidateEpoch;
-            else if (offsetOption == "reject")
-                throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.with: offset does not match the time zone");
-            else
-                epoch = Wall();
-        }
+        else // "prefer" / "reject": the candidate whose offset is the given one, matched exactly
+            epoch = InterpretOffset(timeZoneId, updated.IsoDateTime, candidateOffset, matchMinutes: false, offsetOption, disambiguation,
+                "Temporal.ZonedDateTime.prototype.with: wall-clock time is outside the representable range",
+                "Temporal.ZonedDateTime.prototype.with: offset does not match the time zone");
 
         if (!IsValid(epoch))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
@@ -687,28 +673,33 @@ public partial class JSTemporalZonedDateTime : JSObject
         return TemporalAdapter.ToTimeZoneIdentifier(value.ToString());
     }
 
-    // InterpretISODateTimeOffset offset-matching for the "prefer"/"reject" options: does the explicit
-    // offset match the offset of one of the wall clock's possible instants (GetPossibleEpochNanoseconds,
-    // each offset being the wall clock read as UTC minus the instant)? A minute-precision offset string
-    // (no sub-minute component) uses the match-minutes behaviour — a candidate matches when it equals the
-    // explicit offset after being rounded to the nearest minute (half away from zero) — so
-    // Africa/Monrovia's -00:44:30 offset is matched by the string "-00:45". The matched instant (whose
-    // offset is the real one, not the rounded value) is returned. The rounding is
-    // RoundNumberToIncrement(offsetNs, 60e9, "halfExpand"), the shared library's.
-    private static bool TryMatchZoneOffset(BigInteger[] possible, BigInteger localNs, long explicitOffset, bool matchMinutes, out BigInteger matched)
+    // InterpretISODateTimeOffset (s6.5.1) steps 7 to 12, the one copy for an offset honoured under the offset option
+    // "prefer" or "reject" - ZonedDateTime.from of a property bag or a string, ZonedDateTime.prototype.with and round
+    // (prefer, compatible), and a relativeTo property bag (compatible, reject): CheckISODaysRange of the wall clock's date, then the wall clock's
+    // possible instants (GetPossibleEpochNanoseconds, each offset being the wall clock read as UTC minus the instant)
+    // and the one whose offset is the given one. With matchMinutes (an ISO string's offset without seconds) a candidate
+    // also matches when its offset rounded to the minute (RoundNumberToIncrement, halfExpand, the shared library's) is
+    // the given one, so Africa/Monrovia's -00:44:30 is matched by "-00:45"; the matched instant keeps its real offset.
+    // No match is reject's RangeError, or prefer's DisambiguatePossibleEpochNanoseconds under the disambiguation option.
+    internal static BigInteger InterpretOffset(string timeZone, IsoDateTime dateTime, long offsetNanoseconds, bool matchMinutes,
+        string offsetOption, string disambiguation, string outOfRange, string mismatch)
     {
+        if (TemporalLimits.CheckIsoDaysRange(dateTime.Date) != TemporalStatus.Completed)
+            throw JSEngine.NewRangeError(outOfRange);
+
+        var wall = IsoArithmetic.GetUtcEpochNanoseconds(dateTime);
+        var possible = TemporalTimeZones.PossibleEpochNanoseconds(timeZone, dateTime);
         foreach (var candidate in possible)
         {
-            var candidateOffset = localNs - candidate;
-            if (candidateOffset == explicitOffset
-                || (matchMinutes && ExactRounding.RoundNumberToIncrement(candidateOffset, BigInteger.One, NanosecondsPerMinute, RoundingMode.HalfExpand) == explicitOffset))
-            {
-                matched = candidate;
-                return true;
-            }
+            var candidateOffset = wall - candidate;
+            if (candidateOffset == offsetNanoseconds
+                || (matchMinutes && ExactRounding.RoundNumberToIncrement(candidateOffset, BigInteger.One, NanosecondsPerMinute, RoundingMode.HalfExpand) == offsetNanoseconds))
+                return candidate;
         }
-        matched = BigInteger.Zero;
-        return false;
+
+        if (offsetOption == "reject")
+            throw JSEngine.NewRangeError(mismatch);
+        return TemporalTimeZones.Disambiguate(timeZone, possible, dateTime, disambiguation);
     }
 
     private const long NanosecondsPerMinute = 60_000_000_000L;
@@ -797,31 +788,21 @@ public partial class JSTemporalZonedDateTime : JSObject
         var localNs = LocalNanoseconds(pdt.isoYear, pdt.isoMonth, pdt.isoDay,
             pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond);
 
-        // InterpretISODateTimeOffset: the "wall" cases (no offset, "ignore", unmatched "prefer")
-        // resolve through the DISAMBIGUATION option (earlier/later/compatible/reject) so a fall-back
-        // fold or spring-forward gap honours `disambiguation` (test262 ZonedDateTime/from
+        // InterpretISODateTimeOffset: the "wall" cases (no offset, "ignore") resolve through the
+        // DISAMBIGUATION option (earlier/later/compatible/reject) so a fall-back fold or spring-forward
+        // gap honours `disambiguation` (test262 ZonedDateTime/from
         // argument-propertybag-dst-option{,s}-{,offset-}disambiguation*). An exact offset gives the
-        // epoch directly; a property-bag offset must match a candidate EXACTLY (no minute rounding).
-        BigInteger ResolveWall() => DisambiguateEpochNs(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond, disambiguation);
-
+        // epoch directly; under "prefer" or "reject" a property-bag offset must match a candidate
+        // EXACTLY (no minute rounding).
         BigInteger epochNs;
-        if (!hasExplicitOffset)
-            epochNs = ResolveWall();
+        if (!hasExplicitOffset || offsetOption == "ignore")
+            epochNs = DisambiguateEpochNs(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond, disambiguation);
         else if (offsetOption == "use")
             epochNs = localNs - explicitOffset;
-        else if (offsetOption == "ignore")
-            epochNs = ResolveWall();
         else
-        {
-            var possible = TemporalTimeZones.PossibleEpochNanoseconds(timeZoneId, IsoDateTimeOf(pdt.isoYear, pdt.isoMonth, pdt.isoDay,
-                pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond));
-            if (TryMatchZoneOffset(possible, localNs, explicitOffset, matchMinutes: false, out var matched))
-                epochNs = matched;
-            else if (offsetOption == "reject")
-                throw JSEngine.NewRangeError("Temporal.ZonedDateTime: offset does not match the time zone");
-            else
-                epochNs = ResolveWall(); // "prefer"
-        }
+            epochNs = InterpretOffset(timeZoneId, pdt.IsoDateTime, explicitOffset, matchMinutes: false, offsetOption, disambiguation,
+                "Temporal.ZonedDateTime: wall-clock time is outside the representable range",
+                "Temporal.ZonedDateTime: offset does not match the time zone");
 
         if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
@@ -888,6 +869,11 @@ public partial class JSTemporalZonedDateTime : JSObject
         // (earlier/later/compatible/reject) — not always "compatible" — so a fall-back fold or a
         // spring-forward gap honours `disambiguation` (test262 ZonedDateTime/from
         // argument-string-dst-option-{,offset-}disambiguation*). An exact offset gives the epoch directly.
+        // Only the "prefer"/"reject" matching paths inspect the *raw* wall-clock date (CheckISODaysRange, in
+        // InterpretOffset): a wall clock whose own epoch day lies outside ±10^8 - e.g. -271821-04-19, the minimum
+        // PlainDate yet one day before the minimum instant's date - is a RangeError there even when the resolved
+        // instant is itself representable. The "exact" (Z), "use" and "ignore" paths (and the date-only start-of-day
+        // path) only require the resolved instant to be in range.
         BigInteger ResolveWall() => DisambiguateEpochNs(timeZoneId, year, month, day, hour, minute, second, ms, us, ns, disambiguation);
 
         BigInteger epochNs;
@@ -901,26 +887,10 @@ public partial class JSTemporalZonedDateTime : JSObject
             epochNs = localNs - explicitOffset;
         else if (offsetOption == "ignore")
             epochNs = ResolveWall();
-        else
-        {
-            var possible = TemporalTimeZones.PossibleEpochNanoseconds(timeZoneId, IsoDateTimeOf(year, month, day, hour, minute, second, ms, us, ns));
-            if (TryMatchZoneOffset(possible, localNs, explicitOffset, matchMinutes, out var matched))
-                epochNs = matched;
-            else if (offsetOption == "reject")
-                throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: offset does not match the time zone in \"{text}\"");
-            else // "prefer": no match — resolve the wall clock via disambiguation
-                epochNs = ResolveWall();
-        }
-
-        // InterpretISODateTimeOffset: only the "prefer"/"reject" matching paths inspect the *raw*
-        // wall-clock date (CheckISODaysRange) before resolving the offset. A wall clock whose own
-        // epoch day lies outside ±10^8 — e.g. -271821-04-19, the minimum PlainDate yet one day before
-        // the minimum instant's date — is a RangeError there even when the resolved instant is itself
-        // representable. The "exact" (Z), "use" and "ignore" paths (and the date-only start-of-day
-        // path) only require the resolved instant to be in range.
-        if (hasTime && hasNumericOffset && offsetOption is "prefer" or "reject"
-            && TemporalLimits.CheckIsoDaysRange(new IsoDate(year, month, day)) != TemporalStatus.Completed)
-            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: wall-clock time is outside the representable range");
+        else // "prefer" / "reject": the candidate whose offset is the string's, to the minute unless it has seconds
+            epochNs = InterpretOffset(timeZoneId, IsoDateTimeOf(year, month, day, hour, minute, second, ms, us, ns), explicitOffset, matchMinutes,
+                offsetOption, disambiguation, "Temporal.ZonedDateTime: wall-clock time is outside the representable range",
+                $"Temporal.ZonedDateTime: offset does not match the time zone in \"{text}\"");
 
         if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: parsed value is out of range");
