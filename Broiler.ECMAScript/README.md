@@ -20,7 +20,9 @@ The programme that creates them is owned in the Broiler.VM repository, under
 Further libraries (the frontend, Intl, further data generators) are added by the milestones that create
 them. *(Revised 2026-10-17, at milestone SJL-8.2, when the generator's row was added; the sentence read
 "Further libraries (the frontend, Intl, the data generators) are added by the milestones that create
-them.")*
+them.")* The frontend's design document, the contract it is built to, is
+[`docs/frontend/design.md`](docs/frontend/design.md), filed before any of its code; milestone SJL-13 creates the
+library. *(Added 2026-10-19, at milestone SJL-12.1.)*
 
 ## Pins
 
