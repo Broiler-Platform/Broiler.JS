@@ -13,8 +13,10 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 ### The Temporal core moves to the shared library (2026-10-19, milestone SJL-10.5)
 
 The Temporal core is `Broiler.ECMAScript.Algorithms`' `Broiler.ECMAScript.Temporal`, which `BuiltIns` takes by
-project reference: the shared stream's `0.1.0-preview.6`, and decision D12, below, which the stream's unreleased
-entry records. All seven sub-areas of the area verdict (Broiler.VM's JSD-0078) move:
+project reference: the shared stream's `0.1.0-preview.6`, and decision D12, below, which the stream's
+`0.1.0-preview.7` carries, published to nuget.org on 2026-10-19. *(Revised 2026-10-19, when `0.1.0-preview.7` was
+published; read "which the stream's unreleased entry records.")* All seven sub-areas of the area verdict (Broiler.VM's
+JSD-0078) move:
 
 - **records and limits**: SJL-8's `IsoDate`, `IsoTime` and `IsoDateTime` with no parallel type (decision D8), and
   every limit check (`TemporalLimits`);
@@ -342,8 +344,9 @@ decisions and skip waiting for review." (Broiler.VM's JSD-0078).
   minutes or to 2 nanoseconds, and `-PT16H15M` rounded so relative to `a`. This engine answered a `RangeError` there
   before the cut-over, so only its message moves, from "time zone returned inconsistent Instants" to "result is
   outside the representable range". `0.1.0-preview.6` of the shared stream, which Broiler.VM takes, answers durations
-  from outside the text's domain there (`P1DT16H` and the like), and this engine's packages need the stream's next
-  version to answer as this engine does.
+  from outside the text's domain there (`P1DT16H` and the like), and this engine's packages need the stream's
+  `0.1.0-preview.7`, published to nuget.org on 2026-10-19, to answer as this engine does. *(Revised 2026-10-19, when
+  `0.1.0-preview.7` was published; read "need the stream's next version to answer as this engine does.")*
 
 **test262.** No path of the selection this change was checked against changed its verdict, in UTC or in
 `America/New_York`: `built-ins/Temporal`, `intl402/Temporal`, `staging/Temporal`, `staging/Intl402/Temporal`,
