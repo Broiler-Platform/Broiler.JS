@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      vectors-workers:
+        description: Evaluating processes in the engine vectors jobs; 1 takes one-process reports, as evidence runs do
+        type: string
+        default: '4'
   workflow_call:
     inputs:
       package-version:
@@ -22,8 +27,59 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Whether this run has anything to test. A pull request whose every changed path is under
+  # docs/evidence/ or is docs/roadmap/SharedLibraries*.md skips the build and engine vectors jobs;
+  # Shared libraries still runs on it. The list may hold only paths that no test, build or generator
+  # reads: M8ValidationTests reads other files under docs/ (architecture, compliance,
+  # roadmap/Component.md and Measurement.md, public-api.md), and the scripts filed in evidence bundles
+  # are run by no test. git diff has no limit on the number of paths, which a paths-ignore filter has
+  # (300). Every push to main, every dispatch and every publish (workflow_call) runs everything: a push
+  # run sees only its own push, and a later push to main cancels the run before it (the concurrency
+  # group above), so a records-only push that skipped would leave the code merged just before it
+  # without a completed run. A pull request's diff is its whole change, so it can skip safely.
+  changes:
+    name: Changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      # Depth 2: a pull request's merge commit and the base it was merged onto.
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - name: Compare with the base
+        id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          run_all() {
+            echo "$1, so every job runs."
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+          [ -z "${PACKAGE_VERSION:-}" ] || run_all "A publish run validates $PACKAGE_VERSION"
+          [ "$EVENT" = pull_request ] || run_all "A $EVENT run"
+          base="$(git rev-parse HEAD^1)"
+          changed="$RUNNER_TEMP/changed-paths.txt"
+          git -c core.quotePath=false diff --name-only --no-renames "$base" HEAD > "$changed"
+          echo "$(wc -l < "$changed") path(s) differ from $base."
+          others="$(grep -Ev '^(docs/evidence/|docs/roadmap/SharedLibraries[^/]*\.md$)' "$changed" || true)"
+          if [ ! -s "$changed" ]; then
+            run_all "No path differs"
+          elif [ -n "$others" ]; then
+            echo "Paths outside the records, the first 20:"
+            head -n 20 <<< "$others"
+            run_all "The change is not records alone"
+          fi
+          echo "Every changed path is a record no test reads, so the build and test jobs are skipped."
+          echo "code=false" >> "$GITHUB_OUTPUT"
+
   build:
     name: ${{ matrix.os }} / Release
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -49,6 +105,12 @@ jobs:
       - name: Test preview version selection
         run: node --test eng/resolve-preview-version.test.mjs
 
+      # The performance configuration and architecture checks, which otherwise run only in the weekly
+      # Performance baselines workflow. They read files and need no build.
+      - name: Test the performance configuration
+        if: runner.os == 'Linux'
+        run: python3 -m unittest discover -s scripts/performance/tests -v
+
       - name: Build
         run: |
           args=()
@@ -57,8 +119,11 @@ jobs:
           fi
           dotnet build Broiler.JS.slnx -c Release --nologo "${args[@]}"
 
+      # The engine corpus (Category=EngineCorpus) runs in the engine vectors job below, and the
+      # Broiler.ECMAScript test projects in Shared libraries, on every push and pull request and from
+      # Publish. The Build step still builds them.
       - name: Test
-        run: bash ./eng/run-tests.sh Release
+        run: bash ./eng/run-tests.sh Release --filter "Category!=EngineCorpus&FullyQualifiedName!~Broiler.ECMAScript."
 
       - name: Pack and verify every package
         if: matrix.os == 'windows-latest'
@@ -77,3 +142,153 @@ jobs:
           name: nuget-packages
           path: artifacts/*
           if-no-files-found: error
+
+  # Broiler.JS's engine-level run of the whole vector corpus (Broiler.JavaScript.Vectors.Tests,
+  # Category=EngineCorpus) in four evaluating processes on the runner's four cores. A vector that finds no
+  # completion within 5 s in the parallel pass is run again alone and keeps what it gives there
+  # (conformance/vectors/README.md), so the report is the one a single process writes, byte for byte,
+  # unless a vector times out in the single process's run. The test's line gives N, the elapsed time,
+  # the slowest vector's time and every vector run again, and the job raises a warning when there is
+  # one: such a vector passes here where one process would have failed it. The report and the log are
+  # kept as an artifact.
+  vectors:
+    name: engine vectors (${{ matrix.os }})
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ${{ matrix.os }}
+    # A dispatch with fewer processes takes up to four times as long.
+    timeout-minutes: ${{ (inputs.vectors-workers || '4') == '4' && 40 || 90 }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      BROILER_VECTORS_WORKERS: ${{ inputs.vectors-workers || '4' }}
+      BROILER_VECTORS_REPORT: engine-vectors.tsv
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        run: |
+          args=()
+          if [ -n "$PACKAGE_VERSION" ]; then
+            args+=("-p:Version=$PACKAGE_VERSION" "-p:PackageVersion=$PACKAGE_VERSION")
+          fi
+          dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --nologo "${args[@]}"
+
+      - name: Run the corpus
+        run: |
+          set -o pipefail
+          dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo \
+            --filter "Category=EngineCorpus" --logger "console;verbosity=detailed" 2>&1 | tee engine-vectors.log
+
+      - name: Report the vectors run again alone
+        if: always()
+        run: |
+          [ -f engine-vectors.log ] || exit 0
+          line="$(grep -m 1 'evaluating process(es)' engine-vectors.log || true)"
+          line="${line%$'\r'}"
+          line="${line#"${line%%[![:space:]]*}"}"
+          if [ -z "$line" ]; then
+            echo "The corpus test wrote no summary line."
+            exit 0
+          fi
+          echo "$line" >> "$GITHUB_STEP_SUMMARY"
+          again="$(sed -nE 's/.*; ([0-9]+) found no completion in the parallel pass.*/\1/p' <<< "$line")"
+          if [ "${again:-0}" -gt 0 ]; then
+            echo "::warning title=Engine vectors run again alone on $RUNNER_OS::${line//%/%25}"
+          fi
+
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: engine-vectors-${{ matrix.os }}
+          path: |
+            engine-vectors.tsv
+            engine-vectors.log
+          if-no-files-found: warn
+
+  # The Windows report against the Linux report of the same run. The four-process run was compared with
+  # one process's on Linux only, and nothing yet shows that the two runners' reports must be the same
+  # byte for byte, so a difference is a warning here, not a failure; the first runs settle whether it
+  # should become one. A difference calls for a one-process Windows report, which a dispatch with
+  # vectors-workers 1 takes.
+  vectors-compare:
+    name: engine vectors (Windows against Linux)
+    needs: vectors
+    if: needs.vectors.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch both reports
+        uses: actions/download-artifact@v8
+        with:
+          pattern: engine-vectors-*
+          path: reports
+
+      - name: Compare
+        run: |
+          linux=reports/engine-vectors-ubuntu-latest/engine-vectors.tsv
+          windows=reports/engine-vectors-windows-latest/engine-vectors.tsv
+          for report in "$linux" "$windows"; do
+            if [ ! -f "$report" ]; then
+              echo "::warning title=Engine vectors compared::$report is missing, so nothing was compared."
+              exit 0
+            fi
+          done
+          if cmp -s "$linux" "$windows"; then
+            echo "The Windows and Linux reports are the same, byte for byte ($(sha256sum < "$linux" | cut -d' ' -f1))." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          diff "$linux" "$windows" > "$RUNNER_TEMP/reports.diff" || true
+          lines="$(grep -c '^>' "$RUNNER_TEMP/reports.diff" || true)"
+          echo "::warning title=Engine vectors compared::The Windows report differs from the Linux report on ${lines} line(s); the job summary shows the first."
+          {
+            echo "The Windows report differs from the Linux report on ${lines} line(s). The first 40 lines of the difference (< Linux, > Windows):"
+            echo '```'
+            grep '^[<>]' "$RUNNER_TEMP/reports.diff" | head -n 40 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # The one check of this workflow to wait for, and the one a branch rule should require. GitHub does
+  # not expand the matrix of a job that its if skips: it reports one skipped check under the unexpanded
+  # name (for example "${{ matrix.os }} / Release"), so on a records-only pull request the per-OS names
+  # ("windows-latest / Release", "engine vectors (windows-latest)") need never report, and a rule
+  # requiring them would wait for ever. This job reports under one name on every run: it passes when
+  # the changed paths job succeeded and the build and engine vectors jobs all succeeded, or were all
+  # skipped because the change is records alone.
+  result:
+    name: CI result
+    needs: [changes, build, vectors]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the jobs' results
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          CODE: ${{ needs.changes.outputs.code }}
+          BUILD: ${{ needs.build.result }}
+          VECTORS: ${{ needs.vectors.result }}
+        run: |
+          set -euo pipefail
+          echo "Changed paths: $CHANGES (code=$CODE); build: $BUILD; engine vectors: $VECTORS."
+          if [ "$CHANGES" != success ]; then
+            echo "::error title=CI result::The changed paths job ended $CHANGES."
+            exit 1
+          fi
+          if [ "$CODE" = true ]; then want=success; else want=skipped; fi
+          for job in "build=$BUILD" "engine vectors=$VECTORS"; do
+            if [ "${job#*=}" != "$want" ]; then
+              echo "::error title=CI result::${job%%=*} ended ${job#*=}, where code=$CODE wants $want."
+              exit 1
+            fi
+          done

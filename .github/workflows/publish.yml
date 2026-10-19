@@ -63,9 +63,20 @@ jobs:
     with:
       package-version: ${{ needs.version.outputs.version }}
 
+  # CI leaves the Broiler.ECMAScript test projects to Shared libraries, which runs on pushes and pull
+  # requests but not on a tag or a dispatch of this workflow, so a publish runs it at its own commit.
+  # It is called without a version: it checks the shared stream as its dry run does, and nothing it
+  # packs is published here.
+  shared:
+    name: Shared libraries
+    needs: version
+    uses: ./.github/workflows/shared-libraries.yml
+    # The assurance job checks out Broiler.Code with BROILER_CODE_TOKEN when the repository has one.
+    secrets: inherit
+
   publish:
     name: Publish to nuget.org
-    needs: [version, validate]
+    needs: [version, validate, shared]
     runs-on: ubuntu-latest
     permissions:
       # Recording the published version as a tag is what keeps the next run's

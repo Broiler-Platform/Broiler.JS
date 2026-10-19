@@ -287,6 +287,10 @@ def read_project_graph() -> dict[str, object]:
     for project in sorted(REPO_ROOT.rglob("*.csproj")):
         if "bin" in project.parts or "obj" in project.parts:
             continue
+        # docs/ holds records, not projects: evidence bundles retain copies of project files as they
+        # were run, and bundle sjl-0-001's api-lister.csproj keeps a <tree> placeholder that is not XML.
+        if project.relative_to(REPO_ROOT).parts[0] == "docs":
+            continue
         root = ET.parse(project).getroot()
         references = [
             element.attrib["Include"].replace("\\", "/")
