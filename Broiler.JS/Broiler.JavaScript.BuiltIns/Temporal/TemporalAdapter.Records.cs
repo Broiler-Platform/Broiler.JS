@@ -1,4 +1,3 @@
-using System;
 using System.Numerics;
 using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
@@ -87,24 +86,7 @@ internal static partial class TemporalAdapter
     internal static BigInteger TimeDurationWith24HourDays(JSTemporalDuration duration) =>
         DurationMath.ToInternalWith24HourDays(duration.Fields).TimeNanoseconds;
 
-    /// <summary>
-    /// A year made a <see cref="long"/> with its leap-year rule kept, for a regulation that reads the year only for the
-    /// length of February: exact within ±10^9, and reduced modulo 400 beyond, as the shared calendars reduce a
-    /// month-day's year (row C12: <c>{year: 2147483652, month: 2, day: 29}</c> is a leap day, not a saturated year's).
-    /// </summary>
-    internal static long YearForRegulation(double year) => Math.Abs(year) <= 1e9 ? (long)year : (long)(year % 400);
-
     // ── regulation ───────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// RegulateISODate under the <c>overflow</c> option; a date the fields are not under <c>reject</c> is the
-    /// <c>RangeError</c>. The limits are the caller's to test.
-    /// </summary>
-    internal static IsoDate RegulateIsoDate(long year, double month, double day, string overflow, string message)
-    {
-        Check(IsoArithmetic.RegulateIsoDate(year, month, day, Overflow(overflow), out var date), message);
-        return date;
-    }
 
     /// <summary>RegulateTime under the <c>overflow</c> option; a time the fields are not under <c>reject</c> is the <c>RangeError</c>.</summary>
     internal static IsoTime RegulateTime(
