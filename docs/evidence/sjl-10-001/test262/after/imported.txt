@@ -1,0 +1,6 @@
+# imported: the after run was taken by .github/workflows/test262-evidence.yml, not locally
+workflow run: https://github.com/Broiler-Platform/Broiler.JS/actions/runs/39252310861 (attempt 1), dispatched 2026-10-19T12:28:21Z, completed 2026-10-19T13:54:57Z
+tested commit: 00b65dd055a277859d5325ead6338a040bcf2f30 (the merge that lands SJL-10.5's cut-over, Broiler-Platform/Broiler.JS#1054, with corpus revision 26), whose product sources are 6dbff805's but for the files identity.txt lists
+configuration: part A's, in the runner's own zone (time_zone empty: TZ unset, UTC), with negative-metadata tests (include_negative true); includeNegative True in run.txt
+artifact: test262-evidence, id 12192515568, 3,531,106 bytes, sha256 1fcc203a7f5adbbcdb0c3945d883eb7a10d851a9d9f3dcba5c8393671aa30e60 (the zip as downloaded)
+retained: every file of the artifact, unchanged, in this directory (26 entries); this file is the only one added

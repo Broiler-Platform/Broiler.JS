@@ -1,0 +1,46 @@
+# SJL-10.6: the lines each C# file under Broiler.JS/ gained and lost between the rule's commit (1d27064d) and the after commit (00b65dd0), by git diff --numstat -M (a renamed file is
+# one row; a deleted file loses every line). Columns: lines added, lines removed, file.
+
+     0       3  Broiler.JS/Broiler.JavaScript.BuiltIns/BuiltInsAssemblyInitializer.cs
+    28      16  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs
+     0     294  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalCalendar.cs
+     0     850  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.Arithmetic.cs
+   134     358  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs
+    43     343  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs
+   102     939  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs
+   160     973  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs
+    77     449  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs
+    67     484  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs
+   100     636  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs
+    34     133  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalRoundingOptions.cs
+     0      17  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalStubs.cs
+     0     489  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.Rounding.cs
+   239    1221  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs
+   415       0  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs
+   247       0  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Durations.cs
+   153       0  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs
+   132       0  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Records.cs
+   112       0  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Serialization.cs
+     0     348  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs
+     0      57  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs
+     0     386  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs
+     0     615  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs
+     0     191  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTableCalendar.cs
+     0       4  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeData.cs
+    12       0  Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs
+     6       3  Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue777Tests.cs
+    10       3  Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue781Tests.cs
+    81       0  Broiler.JS/Broiler.JavaScript.Integration.Tests/SharedTemporalAdapterTests.cs
+   109       0  Broiler.JS/Broiler.JavaScript.Integration.Tests/SharedTemporalDurationsTests.cs
+
+# files: 31; lines added 2261; lines removed 8812
+# Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/: 21 .cs files of 11521 lines at the rule's commit, 10 of them naming Regex; 17 of 4761 lines at the after commit, 0 naming Regex
+# the public JSTemporal* classes at the after commit (SJL-D-25 keeps them as shells):
+#   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:21:public partial class JSTemporalDuration : JSObject
+#   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:20:public partial class JSTemporalInstant : JSObject
+#   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:21:public partial class JSTemporalPlainDate : JSObject
+#   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:21:public partial class JSTemporalPlainDateTime : JSObject
+#   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:18:public partial class JSTemporalPlainMonthDay : JSObject
+#   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:21:public partial class JSTemporalPlainTime : JSObject
+#   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:21:public partial class JSTemporalPlainYearMonth : JSObject
+#   Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:26:public partial class JSTemporalZonedDateTime : JSObject

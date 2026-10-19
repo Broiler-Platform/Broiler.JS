@@ -1,0 +1,143 @@
+# SJL-10.6: the library's Temporal core (Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/) at 00b65dd055a277859d5325ead6338a040bcf2f30
+
+## files of the library and the generator changed between e33b53e6 (SJL-10.3's last commit, where section 3 read the library) and the after commit
+  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs | 31 +++++++++++++++++++++----------
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs          |  2 +-
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md              | 51 +++++++++++++++++++++++++++++++++++++++++++++++----
+   3 files changed, 69 insertions(+), 15 deletions(-)
+
+## files of the library and the generator changed between bf81d1b7 (the code 0.1.0-preview.6 was published from, at fc829f8a) and the after commit
+  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs | 31 +++++++++++++++++++++----------
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs          |  2 +-
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md              | 51 +++++++++++++++++++++++++++++++++++++++++++++++----
+   3 files changed, 69 insertions(+), 15 deletions(-)
+
+## the code of those files, as it differs (documentation left out)
+  diff --git a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs
+  index 00bafc99..669dde8c 100644
+  --- a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs
+  +++ b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs
+  @@ -51,8 +51,9 @@ public static partial class DurationMath
+       /// <returns>
+       /// <see cref="TemporalStatus.Completed"/>; <see cref="TemporalStatus.InvalidDuration"/> where a window's duration or the
+       /// rounded time is not valid; <see cref="TemporalStatus.OutOfRange"/> where a window passes the limits, or where a
+  -    /// week or day window does not hold the destination, which the specification asserts and a day the zone skips
+  -    /// reaches (row D12: Pacific/Apia's 2011-12-30 makes a day window back from 2011-12-31 of no length).
+  +    /// week or day window does not hold the destination, or the zone's day from the nudge's start is not of the
+  +    /// duration's sign, which the specification asserts and a day the zone skips reaches (row D12: Pacific/Apia's
+  +    /// 2011-12-30 makes a day window back from 2011-12-31 of no length; decisions D11 and D12).
+       /// </returns>
+       /// <exception cref="ArgumentNullException">The calendar provider is <see langword="null"/>.</exception>
+       /// <exception cref="ArgumentOutOfRangeException">A unit is unset or auto, the smallest is larger than the largest, or the increment is not positive.</exception>
+  @@ -291,7 +292,7 @@ public static partial class DurationMath
+       }
+   
+       // The proposal's NudgeToCalendarUnit (s7.5.34): the nudge, and the exact total TotalRelativeDuration reads.
+  -    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.34, JSD-0078 decisions D7 and D12 via Broiler.VM JsTemporal.NudgeToCalendarUnit; IP=Low; Security=Medium; Resources=2; Fingerprint=E2CC43
+  +    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.34, JSD-0078 decisions D7 and D11 via Broiler.VM JsTemporal.NudgeToCalendarUnit; IP=Low; Security=Medium; Resources=2; Fingerprint=E2CC43
+       // Broiler-Human:        PENDING
+       private static TemporalStatus NudgeToCalendarUnit(
+           int sign, InternalDuration duration, BigInteger originEpochNanoseconds, BigInteger destinationEpochNanoseconds, IsoDateTime dateTime,
+  @@ -311,11 +312,11 @@ public static partial class DurationMath
+   
+           if (!Inside(window))
+           {
+  -            // ROW D12: the specification asserts that a week or day window holds the destination, and a day the zone
+  -            // skips breaks it: back from Pacific/Apia's 2011-12-31, the day before is 2011-12-30, which the zone skipped,
+  -            // so the window's end is moved onto its start. The reference polyfill fails its own assertion there and
+  -            // Broiler.VM ends the invocation with a .NET exception; the library answers a status, a RangeError in both
+  -            // engines (decision D12 as revised at SJL-10.3, part C).
+  +            // ROW D12, DECISION D11: the specification asserts that a week or day window holds the destination, and a day
+  +            // the zone skips breaks it: back from Pacific/Apia's 2011-12-31, the day before is 2011-12-30, which the zone
+  +            // skipped, so the window's end is moved onto its start. The reference polyfill fails its own assertion there
+  +            // and Broiler.VM ended the invocation with a .NET exception; the library answers a status, a RangeError in
+  +            // both engines (the owner's decision D11, 2026-10-18).
+               if (unit is TemporalUnit.Week or TemporalUnit.Day)
+                   return TemporalStatus.OutOfRange;
+   
+  @@ -362,7 +363,7 @@ public static partial class DurationMath
+       }
+   
+       // The proposal's NudgeToZonedTime (s7.5.35): the time rounded within the zone's real day, which may carry a day.
+  -    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.35 via Broiler.VM JsTemporal.NudgeToZonedTime; IP=Low; Security=Medium; Resources=2; Fingerprint=FF26E9
+  +    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.35, JSD-0078 decisions D11 and D12 via Broiler.VM JsTemporal.NudgeToZonedTime; IP=Low; Security=Medium; Resources=2; Fingerprint=C80E4D
+       // Broiler-Human:        PENDING
+       private static TemporalStatus NudgeToZonedTime(
+           int sign, InternalDuration duration, IsoDateTime dateTime, ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId calendar,
+  @@ -384,6 +385,16 @@ public static partial class DurationMath
+               return status;
+   
+           var daySpan = endEpochNanoseconds - startEpochNanoseconds;
+  +
+  +        // ROW D12, DECISIONS D11 AND D12: s7.5.35 step 8 asserts "TimeDurationSign(daySpan) = sign", and a day the zone skips
+  +        // breaks it: back from Pacific/Apia's 2011-12-31, the day before is 2011-12-30, which the zone skipped, so the
+  +        // end is moved onto the start and the day span is zero. Decision D12 (the owner's, 2026-10-19) carries decision
+  +        // D11's rule to this assertion: the library answers a status, a RangeError in both engines, as the reference
+  +        // polyfill throws one ("time zone returned inconsistent Instants"), rather than a day from outside the text's
+  +        // domain.
+  +        if (daySpan.Sign != sign)
+  +            return TemporalStatus.OutOfRange;
+  +
+           var unitIncrement = (BigInteger)DurationCore.UnitLength(unit) * increment;
+           status = RoundTimeDurationToIncrement(duration.TimeNanoseconds, unitIncrement, mode, out var rounded);
+           if (status != TemporalStatus.Completed)
+  @@ -587,7 +598,7 @@ public static partial class DurationMath
+       };
+   
+       // Whether a date-duration field converts to the calendar's exact integers.
+  -    // Broiler-AI:           Origin=AI; Spec=JSD-0078 decision D12; IP=None; Security=Low; Resources=0; Fingerprint=1DC9E9
+  +    // Broiler-AI:           Origin=AI; Spec=JSD-0078 row D12; IP=None; Security=Low; Resources=0; Fingerprint=1DC9E9
+       // Broiler-Human:        PENDING
+       private static bool FitsCalendar(double value) => double.IsFinite(value) && Math.Abs(value) <= MaxCalendarField;
+   }
+  diff --git a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs
+  index 7d3f0c97..467d7d16 100644
+  --- a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs
+  +++ b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs
+  @@ -64,7 +64,7 @@ public static partial class DurationMath
+   
+       // A date-duration field past this cannot be handed to a calendar exactly; no such field is a valid duration's,
+       // and no result that far from a date within the limits is within them.
+  -    // Broiler-AI:           Origin=AI; Spec=Temporal s7.5.2, JSD-0078 decision D12; IP=None; Security=Low; Resources=0; Fingerprint=AF151B
+  +    // Broiler-AI:           Origin=AI; Spec=Temporal s7.5.2, JSD-0078 row D12; IP=None; Security=Low; Resources=0; Fingerprint=AF151B
+       // Broiler-Human:        PENDING
+       private const double MaxCalendarField = 4.0e18;
+
+## every file of the Temporal core, by git blob
+  aa9b7527f7714e50ea4d378f5966a77424851451  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarDate.cs
+  a7589fe9b0d48c2295dc373d3694e724e0cd8af8  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarDuration.cs
+  6a3ba5253e68dd59be81b1b9b59822ca98120073  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarFields.cs
+  168bef56bc0d5789f3e130591fd7d5e3560b860b  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarFieldsType.cs
+  703ca447ed456b11b38252621d214cc72d2f2870  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarId.cs
+  b4704aba9fb7b054a7fa094e26fec2072ae70fec  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarOverflow.cs
+  b299e7aef897deb9143213c0446d49e52dc8cc8e  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarStatus.cs
+  2eb8e9a0991b241fe9c485e0fd010440ebbb18c7  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarSystem.cs
+  fa328f307b3bd576bfc73bf23b1db13c2ed977ae  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarSystemYear.cs
+  6a22bfceac65b00f2eff5a274800d08847f95bf5  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarUnit.cs
+  9172ca159e9c742488668b7330cc7b4ae7234cb7  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CopticCalendarSystem.cs
+  bb9deb333b2de7861fe4781a9aec3cf60ece415e  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/EastAsianCalendarSystem.cs
+  ca19f98fcdcadcfecf4881018ef6e6c60391b306  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/GregorianCalendarSystem.cs
+  0b52fff5e5a3bd9e68f2dc63b586c45a053811a2  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/HebrewCalendarSystem.cs
+  3d4bace901d36bcaf3eee4b9a22f61576f85c79f  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/HijriCalendarSystem.cs
+  e671427e3f51dc2fcaf4f1bde7a5f1c52f3fa076  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/ICalendarArithmetic.cs
+  d836e3939ed2db8e4c2c479c06d5039037fc6787  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/IndianCalendarSystem.cs
+  0f5a8e5873efd51a3c3963ebe258792e7c44b23d  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/MonthCode.cs
+  259bd84288af3b81bff2dc659a7436e06cd44d97  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/PersianCalendarSystem.cs
+  76c2f4e7b3354b33d9ee9d3b84a7969ced6649d8  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/TemporalCalendars.cs
+  206fc23d01f15b0641c81db73dbd9f15e517b569  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/DurationCore.cs
+  669dde8cf15299682774035d3e9c04657ba1821e  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs
+  467d7d163b84fa176d543bed2595313354e4d765  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs
+  b04f4164c61e76513815bc2ab9fd266d86e57067  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationRecords.cs
+  4806d95cb42a1fc3b4d8e1cdca474c5af327d801  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/ITimeZoneArithmetic.cs
+  c817543c9d4a148bbffc794e19a63428ff76354b  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs
+  eb87084ccf7987c06e9a33e095f325217b355178  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalTimeZone.cs
+  c4da43571153c565418f4d81d7a04de75d5788dc  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/IsoArithmetic.cs
+  2ae7eb159ca12686ecdb6c9eeadb90c3430a697e  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalFormat.cs
+  d327ad81191f62dddf4d8df91c324640536d541a  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs
+  b2b37082f0bb48559910ebc130b46cbea890ecb9  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalLimits.cs
+  3d6e83b8be47607d113c49b67474e1751a8c90ad  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalOptionRules.Durations.cs
+  f987c37e26e697bf92b99ff2ddf447bc6777c5c6  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalOptionRules.cs
+  25343ba1d247c6be846e28a7fa962d1547f145da  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalRecords.cs
+
+## the Temporal core's public API in the library's baseline (PublicAPI.txt), lines naming Broiler.ECMAScript.Temporal
+  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:523

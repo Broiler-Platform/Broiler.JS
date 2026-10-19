@@ -1,0 +1,83 @@
+{
+  "format": 2,
+  "bundle": "sjl-10-001",
+  "rule": "docs/evidence/sjl-10-001/decision-rule.md, part C",
+  "label": "after",
+  "started": "2026-10-19T13:45:56+00:00",
+  "shellCommit": "00b65dd055a277859d5325ead6338a040bcf2f30",
+  "shellSha256": "c15aa952a7c9dff70518e4faed4ca14be3444ab10d7fe602bee6b1c60477e940",
+  "datasetsSourceCommits": {
+    "temporal.js": "9508bd5b9b6d0f6d009418dda351fb0e7d846745",
+    "temporal.polyfill-e8cc03fc.txt": "9508bd5b9b6d0f6d009418dda351fb0e7d846745",
+    "temporal.divergences.txt": "9508bd5b9b6d0f6d009418dda351fb0e7d846745",
+    "temporal-calendars.js": "14072b02027cde4c0fa83e5a0d2f1ac7e68b1f36",
+    "temporal-calendars.polyfill-e8cc03fc.txt": "14072b02027cde4c0fa83e5a0d2f1ac7e68b1f36",
+    "temporal-calendars.divergences.txt": "14072b02027cde4c0fa83e5a0d2f1ac7e68b1f36"
+  },
+  "copies": {
+    "temporal.js": "91e1e5a4fe33785c1430f967b727680ead50406ee98a479a5e0f081b75a869db",
+    "temporal.polyfill-e8cc03fc.txt": "ebf380dda41192c160347c4ddf8f33f40101bfc75b44589ae348241322ad5fec",
+    "temporal.divergences.txt": "271ae88cc6b5ad1c4f5c768551c8e925f0830b15528a48e899fb2b308939daa8",
+    "temporal-calendars.js": "bfef1cf45f3da8abea8f8d8630385607b5e9478b243969537323776adf719032",
+    "temporal-calendars.polyfill-e8cc03fc.txt": "911f403a66c7dbe74ca70558b5184f7440fe46cb119a012a8a19d5752ccdadb6",
+    "temporal-calendars.divergences.txt": "aad6cae3e0a94418e688536e53aa0b7608a017d7d8a9643c362d8972bca038ef"
+  },
+  "programs": {
+    "temporal": {
+      "completed": true,
+      "completionType": "string",
+      "uncaught": null,
+      "problems": [],
+      "extraOutput": [],
+      "exitCode": 0,
+      "seconds": 2.055,
+      "stdoutSha256": "a78b36e06f20b6a799efacaa8e61d9d86e9e950adce14b11382306bb782cc781",
+      "stdoutBytes": 128092,
+      "stderrBytes": 0,
+      "answerSha256": "ebf380dda41192c160347c4ddf8f33f40101bfc75b44589ae348241322ad5fec",
+      "retainedLines": 1629,
+      "answeredLines": 1629,
+      "comparedLines": 1629,
+      "equal": 1629,
+      "differing": 0,
+      "divergenceEntries": 0,
+      "divergencesUsed": 0,
+      "vmLeast": 1500,
+      "negativeControl": {
+        "line": 1,
+        "wasEqual": true,
+        "expectedChangedTo": "duration P1Y2M3W4DT5H6M7.008009010S sign/blank => 1/falsX",
+        "shownAsDifference": true,
+        "otherLinesUnchanged": true
+      }
+    },
+    "temporal-calendars": {
+      "completed": true,
+      "completionType": "string",
+      "uncaught": null,
+      "problems": [],
+      "extraOutput": [],
+      "exitCode": 0,
+      "seconds": 2.189,
+      "stdoutSha256": "7bbe38fe47510d11b858c98a6bad67bd23c82c727a78535867dde0c810d75de7",
+      "stdoutBytes": 256761,
+      "stderrBytes": 0,
+      "answerSha256": "584d16c51fd8f2b1812957388481780a71ff3193685891b8206f76fb1b41660e",
+      "retainedLines": 3999,
+      "answeredLines": 3999,
+      "comparedLines": 3999,
+      "equal": 3999,
+      "differing": 0,
+      "divergenceEntries": 70,
+      "divergencesUsed": 70,
+      "vmLeast": 3500,
+      "negativeControl": {
+        "line": 1,
+        "wasEqual": true,
+        "expectedChangedTo": "buddhist 1850-01-01 => be,2393,2393,1,M01,1,1,31,365,12,falsX",
+        "shownAsDifference": true,
+        "otherLinesUnchanged": true
+      }
+    }
+  }
+}
