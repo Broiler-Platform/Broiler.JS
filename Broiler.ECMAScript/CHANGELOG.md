@@ -14,7 +14,10 @@ Each entry has the headings **Added**, **Changed**, **Observable changes** and *
 
 ## Unreleased
 
-Not yet packed under a version of its own: the stream's next version is set when this entry is published.
+To be packed and published as `0.1.0-preview.7`, the stream keeping its `0.1.0` prefix while it is a preview: the
+owner approved its publication on 2026-10-19, for decision D12, and Broiler.VM admits the packages from its committed
+feed as published. *(Revised 2026-10-19; read "Not yet packed under a version of its own: the stream's next version is
+set when this entry is published.")*
 
 ### Added
 
