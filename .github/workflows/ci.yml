@@ -127,8 +127,9 @@ jobs:
           fi
           dotnet build Broiler.JS.slnx -c Release --nologo "${args[@]}"
 
+      # The engine corpus (Category=EngineCorpus) runs in the engine vectors job below.
       - name: Test
-        run: bash ./eng/run-tests.sh Release
+        run: bash ./eng/run-tests.sh Release --filter "Category!=EngineCorpus"
 
       - name: Pack and verify every package
         if: matrix.os == 'windows-latest'
@@ -147,3 +148,54 @@ jobs:
           name: nuget-packages
           path: artifacts/*
           if-no-files-found: error
+
+  # Broiler.JS's engine-level run of the whole vector corpus (Broiler.JavaScript.Vectors.Tests,
+  # Category=EngineCorpus) in four evaluating processes on the runner's four cores. Its report is the one a
+  # single process writes, byte for byte, and a vector that finds no completion within 5 s in the parallel
+  # pass is run again alone (conformance/vectors/README.md). The test's output line gives N, the elapsed
+  # time and the slowest vector's time; the report is kept as an artifact.
+  vectors:
+    name: engine vectors (${{ matrix.os }})
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      BROILER_VECTORS_WORKERS: '4'
+      BROILER_VECTORS_REPORT: engine-vectors.tsv
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        run: |
+          args=()
+          if [ -n "$PACKAGE_VERSION" ]; then
+            args+=("-p:Version=$PACKAGE_VERSION" "-p:PackageVersion=$PACKAGE_VERSION")
+          fi
+          dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --nologo "${args[@]}"
+
+      - name: Run the corpus
+        run: >
+          dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo
+          --filter "Category=EngineCorpus" --logger "console;verbosity=detailed"
+
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: engine-vectors-${{ matrix.os }}
+          path: engine-vectors.tsv
+          if-no-files-found: warn

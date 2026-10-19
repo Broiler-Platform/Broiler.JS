@@ -42,6 +42,9 @@ dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release
 # With a report of every vector's verdict, as a bundle retains it (a path relative to the
 # repository, or absolute):
 BROILER_VECTORS_REPORT=vectors-report.tsv dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release
+# The corpus test alone, in four evaluating processes, as CI's engine vectors job runs it; the detailed
+# console logger shows the line with N, the elapsed time and the slowest vector's time:
+BROILER_VECTORS_WORKERS=4 dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --filter Category=EngineCorpus --logger "console;verbosity=detailed"
 # Regenerating the number and numerics areas, and the reference computations' own tests:
 python3 scripts/conformance/generate_number_vectors.py --proplist <UCD 17.0.0 PropList.txt> --out conformance/vectors/numbers
 python3 scripts/conformance/generate_numerics_vectors.py --out conformance/vectors/numerics
@@ -69,6 +72,17 @@ The reader, the validator and both runners' engine-neutral parts are the test-on
 caller and reads nothing from disk, so the same code runs in the shared tests, in Broiler.JS's
 engine-level runner and in the Native AOT probe. It is not packed at this version. The corpus does
 not move.
+
+**`BROILER_VECTORS_WORKERS`** sets how many evaluating processes Broiler.JS's corpus test uses: a
+whole number above 1, or one process when it is unset or anything else. With N processes the corpus
+is cut into blocks of 512 vectors, and worker w takes blocks w, w + N, w + 2N and so on, in order, with
+an engine and a process of its own; the results are merged in corpus order, so the report is byte for
+byte the one a single process writes. A vector that finds no completion within the runner's 5 s in that
+pass is run again alone in a new process, and that result is kept, so a vector that never completes
+still aborts. Each run writes N, its elapsed time and its slowest vector's time to the test's output.
+**Retained evidence runs use one process.** A run retained with more would need a dated note in the
+configuration clause of bundle sjl-1-001's decision rule. *(Added 2026-10-19, when CI's engine vectors
+job began to run the corpus in four processes.)*
 
 *(Revised 2026-10-12, at milestone SJL-2.10, when the shared folder was created. It read: "The
 reader and validator are engine-neutral and live, for now, in the Broiler.JS test project beside the
