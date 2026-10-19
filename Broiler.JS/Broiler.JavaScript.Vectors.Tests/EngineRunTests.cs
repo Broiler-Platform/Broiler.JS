@@ -1,6 +1,7 @@
 using Broiler.ECMAScript.Conformance;
 using Broiler.ECMAScript.Runners;
 using Broiler.JavaScript.Vectors.Tests.Runners;
+using Xunit.Abstractions;
 
 namespace Broiler.JavaScript.Vectors.Tests;
 
@@ -10,7 +11,21 @@ public class EngineRunTests
     /// <summary>When set, the run writes its report there: an absolute path, or one relative to the repository.</summary>
     public const string ReportVariable = "BROILER_VECTORS_REPORT";
 
+    /// <summary>
+    /// How many evaluating processes the corpus test runs its vectors in: a whole number above 1, or
+    /// one process when unset or anything else (<see cref="CorpusRun"/>). The report is the same at
+    /// any number. Retained evidence runs use one; CI's engine vectors job uses 4.
+    /// </summary>
+    public const string WorkersVariable = "BROILER_VECTORS_WORKERS";
+
+    /// <summary>The trait the corpus test carries, so CI can run it in a job of its own and leave it out of the others.</summary>
+    public const string CorpusCategory = "EngineCorpus";
+
     private static readonly BroilerJsEngine Engine = new();
+
+    private readonly ITestOutputHelper output;
+
+    public EngineRunTests(ITestOutputHelper output) => this.output = output;
 
     /// <summary>
     /// Every vector has a result, and every difference is classified. A difference nothing
@@ -18,12 +33,16 @@ public class EngineRunTests
     /// a new corpus revision, a vector defect is fixed in one, and nothing is ever deleted.
     /// </summary>
     [Fact]
+    [Trait("Category", CorpusCategory)]
     public void Every_difference_from_the_corpus_is_classified()
     {
         var corpus = Home.Corpus;
         Assert.Empty(corpus.Diagnostics);
         var vectors = corpus.Records.ToList();
-        var results = VectorRun.RunEngine(vectors, Home.Prelude, Engine);
+        var workers = CorpusRun.WorkersFrom(Environment.GetEnvironmentVariable(WorkersVariable));
+        var run = CorpusRun.Run(vectors, Home.Prelude, workers, Engine);
+        output.WriteLine(run.Summary());
+        var results = run.Results;
         WriteReport(results, corpus);
 
         Assert.Equal(vectors.Count, results.Count);
@@ -100,6 +119,33 @@ public class EngineRunTests
     {
         Assert.Equal("value: undefined", Engine.Evaluate("", "globalThis.leak = 1; undefined"));
         Assert.Equal("value: str:\"undefined\"", Engine.Evaluate("", "typeof leak"));
+    }
+
+    /// <summary>
+    /// Several processes give one process's results in the list's order, and a vector that finds no
+    /// completion in the parallel pass is run again alone, where one that never completes still aborts.
+    /// </summary>
+    [Fact]
+    public void Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion()
+    {
+        var records = Home.Corpus.Files.Single(f => f.Path == "numbers/to-fixed.vectors").Records.Take(40).ToList();
+        var serial = VectorRun.RunEngine(records, Home.Prelude, Engine);
+        const int looping = 17;
+        var vectors = records.Select((record, i) => i == looping ? record.With("script", "for (;;) {}") : record).ToList();
+
+        var run = CorpusRun.Run(vectors, Home.Prelude, workers: 3, Engine, blockSize: 4);
+
+        Assert.Equal(3, run.Workers);
+        Assert.Equal(vectors.Select(v => v.Id), run.Results.Select(r => r.Vector.Id));
+        for (var i = 0; i < vectors.Count; i++)
+        {
+            if (i != looping)
+                Assert.Equal(serial[i].Rendered, run.Results[i].Rendered);
+        }
+
+        Assert.Equal(BroilerJsEngine.TimeoutOutcome, run.Results[looping].Rendered);
+        Assert.Contains(vectors[looping].Id, run.Rechecked);
+        Assert.Equal(vectors[looping].Id, run.SlowestId);
     }
 
     /// <summary>A different expected value of the same kind: the last bit of a double, or a character of a string.</summary>
