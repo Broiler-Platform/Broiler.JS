@@ -66,7 +66,10 @@ The [`Publish`](../.github/workflows/publish.yml) workflow is the only supported
    request" became "on every push and pull request that changes more than records".)*
 2. **Dispatch Publish** from the Actions tab. Leave `version-suffix` empty so the version is
    resolved automatically. The run validates again against the version it resolves, then
-   pushes.
+   pushes. It also runs [`Shared libraries`](../.github/workflows/shared-libraries.yml) at the
+   same commit, because CI leaves the `Broiler.ECMAScript` test projects to that workflow, which
+   otherwise runs only on pushes and pull requests. *(Added 2026-10-19, when CI stopped running
+   those projects itself.)*
 
 Pushing a `v0.1.0-preview.N` tag publishes as well. Use it only to publish a specific number;
 the automatic path is otherwise identical.

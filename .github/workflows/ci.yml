@@ -127,9 +127,11 @@ jobs:
           fi
           dotnet build Broiler.JS.slnx -c Release --nologo "${args[@]}"
 
-      # The engine corpus (Category=EngineCorpus) runs in the engine vectors job below.
+      # The engine corpus (Category=EngineCorpus) runs in the engine vectors job below, and the
+      # Broiler.ECMAScript test projects in Shared libraries, on every push and pull request and from
+      # Publish. The Build step still builds them.
       - name: Test
-        run: bash ./eng/run-tests.sh Release --filter "Category!=EngineCorpus"
+        run: bash ./eng/run-tests.sh Release --filter "Category!=EngineCorpus&FullyQualifiedName!~Broiler.ECMAScript."
 
       - name: Pack and verify every package
         if: matrix.os == 'windows-latest'
