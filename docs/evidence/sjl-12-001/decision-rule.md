@@ -36,6 +36,10 @@ at SJL-12.5. The names J1 and J2 are SJL-12's, not the text area's correspondenc
 - **J2:** the code cache keys a compilation on its top-level-`await` permission, so one context no longer answers a
   compilation from the other mode's entry.
 
+This rule also admits **a compile crash the preparation resolves**: a source whose whole compile threw, at the base,
+an exception other than a JavaScript `SyntaxError`, and which compiles, or is refused with a `SyntaxError`, after.
+Each one is listed in the changelog as a correction. Part A admits it as kind (b) of class C1, and part C as class X.
+
 **Why negative tests are included.** Bundles `sjl-7-001`, `sjl-8-001` and `sjl-10-001` took their runs with them,
 and a parser change shows first in negative tests.
 
@@ -43,8 +47,8 @@ and a parser change shows first in negative tests.
 SJL-3 to SJL-8 and SJL-10, and excludes negative tests (JSD-0080 decision D7). The milestone's SJL-12.5 done-when,
 which names SJL-0's base, is revised by a dated note in Broiler.VM's milestone file, filed with JSD-0080. The
 commits:
-- **The rule commit** is the commit that carries this file. Part A's base run is taken there, and part B's base
-  build.
+- **The rule commit** is the commit that carries this file as it reads here, with the corrections the section
+  "Revisions" lists. Part A's base run is taken there, and part B's base build.
 - **The corpus commit** is the default-branch commit that adds SJL-12.4's parse corpus under `conformance/parse/`, the
   tool `docs/evidence/sjl-12-001/tools/parse-corpus/` and `scripts/compliance/compare_parse_corpus.py`. Parts C and
   D's base runs are taken there. It must meet three conditions:
@@ -67,7 +71,7 @@ configuration: scripts/compliance/run_test262.py through the shell BroilerJS bui
 comparison: per path and variant, joined on both, the verdict at the base against the verdict after, through scripts/compliance/compare_test262_paths.py as committed at SJL-0.9, with the classification file retained beside its report; the script refuses two runs whose includeNegative differs
 timeouts: a row that timed out in either run is the one the workflow ran again alone, with one worker, at that run's commit; the script takes the re-run through --base-rerun or --after-rerun, it replaces the row, and both the run and the re-run are retained
 admitted difference classes:
-  C1 correction - a row failing at the base that passes after, because of correction J1 or J2 above; each one listed with its path, its variant and its correction, and listed in the changelog (decision SJL-D-16); a C1 row that neither explains is recorded in the bundle as a finding against JSD-0080 and is a regression
+  C1 correction, of two kinds, each row listed with its path, its variant and its correction, and listed in the changelog (decision SJL-D-16): (a) a row failing at the base that passes after, because of correction J1 or J2 above; (b) a compile crash resolved - a row failing at the base because the whole compile of its source threw an exception other than a JavaScript SyntaxError, as the base run's recorded output for the row shows, that passes after, listed with that exception's type as well; a C1 row that neither kind explains is recorded in the bundle as a finding against JSD-0080 and is a regression
 no C3 and no C5: SJL-12 moves no pin, data or policy, and changes no language surface beyond J1 and J2
 every other difference is a regression, including a row that passes at the base and fails, times out or is skipped after, and a row whose verdict moves between failed, timed out and skipped without a class
 MET if and only if both runs are complete (every expected shard reported, no configuration failure, one suite revision, one shell, every shard in the zone, includeNegative true in both), the two runs' host-zone records read alike, the script finds them comparable, no row passing at the base fails, times out or is skipped after, and every changed verdict is in C1 and is listed.
@@ -93,7 +97,7 @@ NOT MET otherwise.
 ```rule
 evidence class: conformance parity (not a measurement)
 population: every input of conformance/parse/corpus.manifest as the corpus commit holds it, under its goal and each of its variants; the test262 inputs read from test262 at ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e and each checked against the manifest's SHA-256, the others from conformance/parse/inputs/
-configuration: the tool docs/evidence/sjl-12-001/tools/parse-corpus, as the corpus commit holds it and unchanged at the after commit, built in Release against each commit's own projects, on one thread with a stack of 256 MB, no LANG and TZ=UTC; per input and variant, at two entry points - P, the parser alone (a FastParser over a FastTokenStream and ParseProgram, or FastParser.ParseModule for the module goal), and K, the whole compile (CoreScript.Compile with the module flag and no code cache) - each answering accepted, refused (the exception's type and message) or crashed (the exception's type); at the corpus commit (the base) and at the after commit
+configuration: the tool docs/evidence/sjl-12-001/tools/parse-corpus, as the corpus commit holds it and unchanged at the after commit, built in Release against each commit's own projects, on one thread with a stack of 256 MB, no LANG and TZ=UTC; it reaches the compiler's for-loop pass, for part D, only through the entry point part D names, which it looks up by name when it runs, so item 5 needs no change to it; per input and variant, at two entry points - P, the parser alone (a FastParser over a FastTokenStream and ParseProgram, or FastParser.ParseModule for the module goal), and K, the whole compile (CoreScript.Compile with the module flag and, as its code cache, a pass-through ICodeCache whose GetOrCreate compiles the code it is given and stores nothing, since a null cache selects the context's or the default one) - each answering accepted; refused, which at P is a FastParseException and at K a JSException whose thrown value is a JavaScript SyntaxError, with the exception's type and message; or crashed, which is any other exception at either entry point, with the exception's type; at the corpus commit (the base) and at the after commit
 completeness: every input and variant reported at both entry points at both commits, the manifest's digest equal to the corpus commit's
 controls: a copy of the base report with one outcome flipped and one message changed, which the comparison must report as two differences; retained with its output
 comparison: scripts/compliance/compare_parse_corpus.py, as the corpus commit holds it, per input, variant and entry point: the outcome, the exception type and the message
@@ -112,11 +116,11 @@ NOT MET otherwise.
 ```rule
 evidence class: determinism (not a measurement)
 population: every input and variant accepted at entry point P at the after commit
-configuration: the tool's --dump mode at the after commit, which writes for each input the SHA-256 of a canonical dump of the tree the parser returns (each node's type, span, names, flags and children, in tree order) and of the tree the compiler's for-loop pass returns for it; in three processes - run 1 in the manifest's order, run 2 in the reverse order, and run 3 on two threads, each input parsed and prepared twice concurrently, once on each
+configuration: the tool's --dump mode at the after commit, which writes for each input the SHA-256 of a canonical dump of the tree the parser returns (each node's type, span, names, flags and children, in tree order), written before the pass is called, and of the tree the compiler's for-loop pass returns for it, or, where the pass throws, of the exception's type and message in its place; the pass is called through its entry point, which item 5 declares and this rule names now - in the assembly Broiler.JavaScript.Compiler, the internal static class Broiler.JavaScript.Compiler.ForLoopPreparation and its method internal static Broiler.JavaScript.Ast.AstProgram Prepare(Broiler.JavaScript.Ast.AstProgram program, int directEvalDepth), which returns the prepared tree - with a direct-eval depth of 0; the tool finds it through reflection by that name and signature, public or not, and where it finds none it dumps the parser's tree alone and its report says so; in three processes - run 1 in the manifest's order, run 2 in the reverse order, and run 3 on two threads, each input parsed and prepared twice concurrently, once on each
 controls: two patches, each to a scratch copy of the after commit, never merged, retained with their output: K1 a process-wide counter in the pass's temporary names - run 2 must differ from run 1; K2 a list in the dumped tree ordered by each name's string.GetHashCode(), which the runtime randomizes per process - run 1 against run 2 must differ; each reverted, and the revert checked
 comparison: per input and variant, the four hashes of each dump
 admitted difference classes: none
-MET if and only if every input gives one hash per dump in all four, and both controls differ as stated and agree again after their revert.
+MET if and only if the tool finds the pass's entry point in each of the three runs, every input gives one hash per dump in all four, and both controls differ as stated and agree again after their revert.
 NOT MET otherwise.
 ```
 
@@ -124,14 +128,38 @@ NOT MET otherwise.
 - **Retained:** each run, each comparison's report, the classification file for part A, and a table of every C1, M,
   X and D row.
 - **The base runs of parts C and D** at the corpus commit are retained and read. The corpus commit has no for-loop
-  pass, so part D's base dumps the parser's tree alone; it shows the counter's dependence on parse order. Part B's
-  base run is part of its decision.
+  pass, so the tool finds no entry point there and part D's base dumps the parser's tree alone; it shows the
+  counter's dependence on parse order. Part B's base run is part of its decision.
 - **What decides:** the script decides no class. Totals decide nothing.
 
 ## Revisions
 
 A rule revised after any run it judges has been seen is a new dated file in this directory. It quotes this one whole
 and says it was written afterwards, and its decision is then weaker evidence.
+
+**Corrected before it reached the default branch.** On 2026-10-19, after review, before this file reached the default
+branch and before any run it judges was taken, it was corrected in place, in the change that first carries it. The
+rule commit is the commit that carries it corrected. The corrections:
+- **The rule commit** is named as that commit. The sentence read "**The rule commit** is the commit that carries this
+  file."
+- **A compile crash the preparation resolves** is admitted in part A, as C1's kind (b), as it already was in part C,
+  as class X; JSD-0080 says this rule admits it. The paragraph after J2 is new, and C1 read "C1 correction - a row
+  failing at the base that passes after, because of correction J1 or J2 above; each one listed with its path, its
+  variant and its correction, and listed in the changelog (decision SJL-D-16); a C1 row that neither explains is
+  recorded in the bundle as a finding against JSD-0080 and is a regression".
+- **Part C's outcomes and code cache** are defined: refused is a `FastParseException` at P and a JavaScript
+  `SyntaxError` at K, crashed is any other exception, and K's cache stores nothing. Passing no cache to
+  `CoreScript.Compile` selects the context's or the default one. The text read "K, the whole compile
+  (CoreScript.Compile with the module flag and no code cache) - each answering accepted, refused (the exception's
+  type and message) or crashed (the exception's type)".
+- **The for-loop pass's entry point** is named in parts C and D. The tool is fixed at the corpus commit, where the
+  pass does not exist, and the compiler holds the parsed tree in a local, so the tool could not otherwise reach the
+  pass without a change after the corpus commit. Part D also says what is dumped where the pass throws, because the
+  inputs of class D are accepted at P after and the pass, which takes over the desugaring that refused them, may
+  refuse them. Part D read "a canonical dump of the tree the parser returns (each node's type, span, names, flags and
+  children, in tree order) and of the tree the compiler's for-loop pass returns for it; in three processes" and "MET
+  if and only if every input gives one hash per dump in all four", and "How the parts are read" read "The corpus
+  commit has no for-loop pass, so part D's base dumps the parser's tree alone".
 
 ## What this file does not decide
 

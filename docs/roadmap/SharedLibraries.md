@@ -1309,7 +1309,10 @@ This repository's part of it:
     using-for block wrap move to the pass, and `ThrowIfLabelledFunctionLoopBody` stays in the parser. A temporary is
     named `<d>:<n>`, with `d` the direct-eval nesting depth the compilation inherits and `n` a counter of the pass
     from 1: deterministic, never an identifier, and distinct from an enclosing compilation's carriers. The three
-    walkers leave the parser.
+    walkers leave the parser. The pass's entry point is the internal static method
+    `ForLoopPreparation.Prepare(AstProgram program, int directEvalDepth)` of `Broiler.JavaScript.Compiler`, which
+    returns the prepared tree. The rule names it, so that its parse-corpus tool, fixed before the pass exists, finds
+    the pass by name *(added 2026-10-19, at SJL-12.1, after review)*.
   - **What "does not desugar" reaches** (decision D23): the for-loop desugaring. The synthetic block Annex B gives a
     function declaration that is the whole of an `if` clause (`FastParser.Statement.cs`), and the rewrite of a
     regular-expression literal's `\u{…}` escapes (`FastScanner.cs`), introduce no temporary and restructure no
@@ -1361,7 +1364,9 @@ This repository's part of it:
   - the parse corpus's acceptance, at the parser alone and at the whole compile;
   - the determinism of the parser and of the for-loop pass, over two runs in two orders and two threads.
 
-  Its admitted classes name corrections J1 and J2. **The test262 base is taken afresh, at the rule's commit, with
+  Its admitted classes name corrections J1 and J2, and a whole compile's crash that the preparation resolves, which
+  the changelog names as a correction *(corrected 2026-10-19, at SJL-12.1, after review; read "Its admitted classes
+  name corrections J1 and J2.")*. **The test262 base is taken afresh, at the rule's commit, with
   negative tests** (decision D7). It is not SJL-0's base, which predates every cut-over since SJL-3 and excludes
   negative tests; the milestone's SJL-12.5 done-when, which named SJL-0's base, is revised in Broiler.VM by a dated
   note on the work package (the programme roadmap's section 13), not on the gate, whose clause 2 names no base.
