@@ -357,7 +357,12 @@ public partial class JSTemporalZonedDateTime : JSObject
     }
 
     [JSExport("toPlainDateTime", Length = 0)]
-    public JSValue ToPlainDateTime(in Arguments a)
+    public JSValue ToPlainDateTime(in Arguments a) => ToPlainDateTimeFromSlots();
+
+    // GetISODateTimeFor of the internal slots, with this calendar, without reading any observable property: used by
+    // ToTemporalDateTime so Temporal.PlainDateTime.from / compare / equals / since / until consume a ZonedDateTime
+    // through its slots (no getter calls).
+    internal JSTemporalPlainDateTime ToPlainDateTimeFromSlots()
     {
         var l = Local();
         return new JSTemporalPlainDateTime(l.y, l.mo, l.d, l.h, l.mi, l.s, l.ms, l.us, l.ns, calendarId,

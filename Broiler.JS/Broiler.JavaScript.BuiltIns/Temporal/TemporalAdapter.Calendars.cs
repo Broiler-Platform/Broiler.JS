@@ -112,11 +112,15 @@ internal static partial class TemporalAdapter
     }
 
     /// <summary>
-    /// GetTemporalCalendarIdentifierWithISODefault (s12.3.11) of a property bag: its <c>calendar</c> property, read once,
-    /// <c>iso8601</c> where it is undefined.
+    /// GetTemporalCalendarIdentifierWithISODefault (s12.3.11) of an object read as a property bag: a Temporal object's own
+    /// calendar, from its <c>[[Calendar]]</c> slot with no property read (step 1); else its <c>calendar</c> property,
+    /// read once, <c>iso8601</c> where it is undefined.
     /// </summary>
     internal static string CalendarWithIsoDefault(JSObject item)
     {
+        if (CalendarSlotOf(item) is { } held)
+            return held;
+
         var calendar = item[KeyStrings.GetOrCreate("calendar")];
         return calendar == null || calendar.IsUndefined ? "iso8601" : ToCalendarIdentifier(calendar);
     }

@@ -419,6 +419,15 @@ public partial class JSTemporalPlainDateTime : JSObject
             return dt.Clone();
         }
 
+        // A ZonedDateTime is consumed through its slots - GetISODateTimeFor and its own calendar - never through its
+        // getters (ToTemporalDateTime step 2.b).
+        if (item is JSTemporalZonedDateTime zoned)
+        {
+            var dateTime = zoned.ToPlainDateTimeFromSlots();
+            TemporalAdapter.ReadOverflow(options);
+            return dateTime;
+        }
+
         if (item is JSTemporalPlainDate d)
         {
             TemporalAdapter.ReadOverflow(options);
