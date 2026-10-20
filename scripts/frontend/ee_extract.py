@@ -27,6 +27,13 @@ differs.
            https://raw.githubusercontent.com/tc39/ecma262/d89c03f2db8a597bc915b363a6518d0cc8acdbc0/spec.html
            Read only by `diff`. Result on 2026-10-19: 213 rules on each side, no rule added, removed or
            changed (the errata change no early-error rule of the edition).
+  shadowrealm  tc39/proposal-shadowrealm at 9ff2a01f1ec68a427f6f37ce710aa7cba8150678 (its main on 2026-10-20,
+           and the revision Broiler.VM's JavaScriptProfile pins for its ShadowRealm surface), 28416 bytes,
+           sha256 1e20aea8b997471e0c157e3d0d2df5faebe4070d68739dfc5bbaad8ea48d1fe5
+           https://raw.githubusercontent.com/tc39/proposal-shadowrealm/9ff2a01f1ec68a427f6f37ce710aa7cba8150678/spec.html
+           Not read when the tool runs: EP_STEPS below holds the four SyntaxError steps of its
+           PerformShadowRealmEval as step_rule renders them from that file with each tab read as two
+           spaces (the file indents with tabs). Checked so on 2026-10-20.
 
 HOW TO RE-RUN (from the repository root; Python 3.10 or later, standard library only):
 
@@ -427,6 +434,25 @@ EP_WRITTEN = [
      "`import.defer` does not parse."),
 ]
 
+# Family EP, ShadowRealm: the SyntaxError steps of PerformShadowRealmEval, which ShadowRealm.prototype.evaluate
+# calls (test262 feature `ShadowRealm`), in document order, as EA_STEPS holds PerformEval's. Added on 2026-10-20,
+# after review of the completeness check, each taking the family's next id and block 74's next code. The texts
+# are the proposal's steps as step_rule renders them (the header says how they were checked); the tool does not
+# read the proposal.
+SHADOWREALM_EVAL = "tc39/proposal-shadowrealm@9ff2a01f#sec-performshadowrealmeval"
+SHADOWREALM_STEP_2 = ("2. Perform the following substeps in an implementation-defined order, possibly interleaving "
+                      "parsing and error detection: ")
+EP_STEPS = [
+    ("74", SHADOWREALM_EVAL, "2.b",
+     SHADOWREALM_STEP_2 + "2.b. If _script_ is a List of errors, throw a *SyntaxError* exception."),
+    ("74", SHADOWREALM_EVAL, "2.e",
+     SHADOWREALM_STEP_2 + "2.e. If _body_ Contains |NewTarget| is *true*, throw a *SyntaxError* exception."),
+    ("74", SHADOWREALM_EVAL, "2.f",
+     SHADOWREALM_STEP_2 + "2.f. If _body_ Contains |SuperProperty| is *true*, throw a *SyntaxError* exception."),
+    ("74", SHADOWREALM_EVAL, "2.g",
+     SHADOWREALM_STEP_2 + "2.g. If _body_ Contains |SuperCall| is *true*, throw a *SyntaxError* exception."),
+]
+
 # Family EX: refusals no early-error rule of the edition makes (early-errors.md, "Families"). Block 91 is
 # source text that matches no production, which the specification reports only as a failure to parse and
 # whose classification is each engine's own; 92 the engines' limits; 93 the engines' policies.
@@ -494,7 +520,7 @@ def sha10(text):
 
 def block_of(row):
     """The shared code's block: the ECMA-262 clause of the row's anchor, 81 and 83 for Annex B.1 and B.3,
-    71 to 73 for the proposals, 91 to 93 for the engine-only refusals (early-errors.md, "Shared codes")."""
+    71 to 74 for the proposals, 91 to 93 for the engine-only refusals (early-errors.md, "Shared codes")."""
     if row["family"] in ("EP", "EX"):
         return row["block"]
     section = row["section"]
@@ -531,6 +557,8 @@ def build(edition, later):
     ep = [dict(r, block="71") for r in merged]
     ep += [{"block": b, "anchor": a, "clause": "-", "section": "-", "productions": p, "ordinal": "-",
             "text_from": "catalogue", "rule_text": t, "annexb": "-"} for b, a, p, t in EP_WRITTEN]
+    ep += [{"block": b, "anchor": a, "clause": a.split("#")[-1], "section": "-", "productions": "-", "ordinal": o,
+            "text_from": "step", "rule_text": t, "annexb": "-"} for b, a, o, t in EP_STEPS]
     for n, r in enumerate(ep, 1):
         rows.append(dict(r, id=f"EP{n:04d}", family="EP"))
 

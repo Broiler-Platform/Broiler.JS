@@ -6,8 +6,10 @@
 **Filed:** 2026-10-19, at milestone SJL-12.3 (task 3.1, the skeleton). **Revised:** 2026-10-20 (task 3.11): the nine
 groups' fill (tasks 3.2 to 3.10) is merged, and the completeness check added seven engine-only rows, EX0025 to EX0031,
 and found no miss in either direction or against test262's parse-negative tests
-([its report](../../../docs/evidence/sjl-12-001/catalogue/completeness.md)). **Status:** filled. 278 rows; no cell is
-`unfilled`.
+([its report](../../../docs/evidence/sjl-12-001/catalogue/completeness.md)). **Revised again:** 2026-10-20, after
+review: the check had missed the SyntaxError steps of ShadowRealm's evaluation, now EP0015 to EP0018, and the cells of
+EX0008, EX0029, EE0039, EG0001, EE0140 and EP0006 to EP0008 were corrected (section 7). **Status:** filled. 282 rows;
+no cell is `unfilled`.
 
 **What it is.** [`early-errors.tsv`](early-errors.tsv) has one row per early-error rule of ECMA-262's ES2026 edition,
 with four families of its own beside them (decision D30 of Broiler.VM's JSD-0080, its home decision D31). For each
@@ -32,6 +34,7 @@ compares the identifying columns.
 | ES2026, the tag `es2026` | `tc39/ecma262@0248456c758431e4bb8e5d26333ff1865123c9cd` | `ce7bc30174061fd8d212270b81cf6511661180c1e174f6911d10ced0581527b0` (2,978,793 bytes) | Families EE, EA, EG |
 | `main`, its head on 2026-10-19 | `tc39/ecma262@4feb0272b799ea795c5eadee9b482aea0c10ce45` | `1f7935840bf249dbbfb32cc4d083114cea48bab4c513b7d7bed00387a3ebe89e` (3,090,376 bytes) | EP0001-EP0008 only |
 | `es2026-errata` (2026-07-28) | `tc39/ecma262@d89c03f2db8a597bc915b363a6518d0cc8acdbc0` | `032ecc740356b38f6846338d8c44536291a134a6ce60e651f935befb239cfc1a` (2,979,557 bytes) | The errata check |
+| `tc39/proposal-shadowrealm` `main`, its head on 2026-10-20 | `9ff2a01f1ec68a427f6f37ce710aa7cba8150678` | `1e20aea8b997471e0c157e3d0d2df5faebe4070d68739dfc5bbaad8ea48d1fe5` (28,416 bytes) | EP0015-EP0018 only: their texts are copied into the tool's table, which does not read the file when it runs |
 
 - **The edition is the one both repositories already pin.** Broiler.VM archives the file as
   `src/Broiler.VM.Profile.JavaScript/docs/specification/ecma-262-es2026-spec.html` (its JSD-0019 and rule N14); this
@@ -55,7 +58,7 @@ compares the identifying columns.
 | **EE** | EE0001-EE0213 | by clause | One top-level item of a "Static Semantics: Early Errors" list of the edition, in document order: 41 clauses, 213 rules, 323 production-rule pairs. EE0209-EE0213 are Annex B's (B.1.2.1) | `rule` |
 | **EA** | EA0001-EA0012 | 19, 20 | A step that throws a SyntaxError in eval or in a dynamic function: PerformEval 11.b and 11.e-h, EvalDeclarationInstantiation 3.a.i.1, 3.d.i.2.a.i.1 (with Annex B.3.4), 3.d.i.2.a.ii.1 and 7, CreateDynamicFunction 18, 20 and 24 | `step` |
 | **EG** | EG0001-EG0008 | 81, 83 | One Annex B syntax feature: the grammar-only extensions (B.1.1 HTML-like comments, B.1.2 the pattern grammar, B.3.3 function declarations in `if` clauses, B.3.5 initialisers in `for`-`in` heads) and the relaxations Annex B lets a parser make (B.3.1 labelled function declarations, B.3.2 block-level functions, B.3.4 `var` in `catch` blocks, B.3.9 call expressions as assignment targets) | `prose` |
-| **EP** | EP0001-EP0014 | 71, 72, 73 | A proposal's rule or construct that test262 `ccaac100` tests or either engine parses: explicit resource management (EP0001-EP0008, the eight rules `main` has merged), decorators (EP0009, EP0010), import phases (EP0011-EP0014: source-phase imports and `import defer`) | `rule`, `catalogue` |
+| **EP** | EP0001-EP0018 | 71 to 74 | A proposal's rule or construct that test262 `ccaac100` tests or either engine parses: explicit resource management (EP0001-EP0008, the eight rules `main` has merged), decorators (EP0009, EP0010), import phases (EP0011-EP0014: source-phase imports and `import defer`), ShadowRealm (EP0015-EP0018: the SyntaxError steps of PerformShadowRealmEval, which `ShadowRealm.prototype.evaluate` calls) | `rule`, `catalogue`, `step` |
 | **EX** | EX0001-EX0031 | 91, 92, 93 | A refusal no early-error rule of the edition makes: source text no production matches (EX0001-EX0010, EX0025), an engine's limits (EX0011-EX0016, EX0026-EX0028), an engine's policies (EX0017-EX0024, EX0029-EX0031) | `catalogue` |
 
 - **EA covers decision D30's "eval and dynamic functions".** Steps that throw a SyntaxError elsewhere are not rows,
@@ -64,7 +67,9 @@ compares the identifying columns.
   ParseScript and ParseModule (11.1.6, 16.1.5, 16.2.1.7.1) carry the grammar and the early errors that are already
   rows; the RegExp constructor, `JSON.parse`, `JSON.rawJSON` and the base64 and hex decoders are run-time; B.3.6 to
   B.3.8 are not syntax; Annex C restates strict-mode rules that are rows. If the fill or the completeness check
-  (3.11) finds an engine that refuses one of these at compile time, it is added as a row (section 3).
+  (3.11) finds an engine that refuses one of these at compile time, it is added as a row (section 3). A proposal's
+  steps of the same kind are EP rows: ShadowRealm's PerformShadowRealmEval parses source text as PerformEval does,
+  and its four SyntaxError steps are EP0015 to EP0018 (added on 2026-10-20, after review).
 - **EP rows are marked admitted or not per engine** (`vm_admits`, `js_admits`). The explicit-resource-management
   rows quote `main`. Broiler.VM's JSD-0034 pins the proposal itself at `38c13295`, whose Script-goal rule is worded
   by enclosing productions and which has no rule for `case` and `default` clauses; test262 `ccaac100`'s tests of
@@ -73,7 +78,10 @@ compares the identifying columns.
   proposal's default branch read on 2026-10-19 (decorators `24882c7b`, source-phase imports `360899f1`, `import
   defer` `b9eb1429`), the production where the proposal's source has one, and the construct in the catalogue's own
   words. test262 `ccaac100` has parse-negative tests for explicit resource management (61), source-phase imports
-  (128) and `import defer` (71), and positive syntax tests only for decorators.
+  (128) and `import defer` (71), and positive syntax tests only for decorators. ShadowRealm's rows quote
+  PerformShadowRealmEval's steps at `tc39/proposal-shadowrealm` `9ff2a01f`, the revision Broiler.VM's
+  `JavaScriptProfile` pins for its ShadowRealm surface (section 1); both engines implement it, and test262
+  `ccaac100` tests its step 2.b with run-time tests, none of them parse-negative.
 - **EX rows exist so that every refusal site maps to a row** (task 3.11's direction from the engines). The
   specification reports source text that matches no production only as a failure to parse; how an engine divides
   those failures, and how it words them, is its own, so they are EX rows like the limits and the policies. There
@@ -86,6 +94,9 @@ compares the identifying columns.
   BigInt literal's width; EX0029 to EX0031, a module specifier that is not well-formed Unicode, a compile request
   the engine cannot serve, and a private name in a dynamic function's source, which the edition's
   CreateDynamicFunction does not refuse and test262 expects refused.
+- **The review of the completeness check (2026-10-20) added four EP rows**, EP0015 to EP0018, the SyntaxError steps
+  of PerformShadowRealmEval. The check had read the edition's clauses and each engine's parser and compiler, and
+  ShadowRealm's evaluate parses source text in Broiler.JS's built-ins and in Broiler.VM's executor.
 - **A check that refuses more than its rule is not a row.** An engine defect of that kind (Broiler.JS's refusal of
   duplicate parameters in a sloppy generator, for one) maps to the row of the rule it implements, and the
   completeness report lists it as a finding. An EX row is a refusal an engine makes on purpose, which the shared
@@ -128,7 +139,7 @@ Tab-separated, one header line, LF line endings, no quoting; a cell never holds 
 | 3 | `anchor` | `<source>@<revision>#<clause id>`: `es2026@0248456c#...`, `ecma262@4feb0272#...`, or a proposal repository at a commit; `-` for EX |
 | 4 | `section` | The clause's number in that source (`13.15.1`, `B.3.4`); `-` without one |
 | 5 | `productions` | The grammar the rule applies to, one right-hand side per production joined by ` ;; `; `-` without one |
-| 6 | `ordinal` | EE and EP rules: the rule's place among the rules of the same productions (1, 2, ...); EA: the step number; EG: the paragraph of the clause (`p1`); `-` otherwise |
+| 6 | `ordinal` | EE and EP rules: the rule's place among the rules of the same productions (1, 2, ...); EA and EP steps: the step number; EG: the paragraph of the clause (`p1`); `-` otherwise |
 | 7 | `text_from` | `rule` (a list item of an Early Errors clause), `step` (an algorithm step), `prose` (a paragraph), `catalogue` (written here) |
 | 8 | `rule_sha10` | Section 3 |
 | 9 | `annexb` | The Annex B clauses the text refers to, `;`-separated; `annex-b` when the row's own clause is in Annex B; `-` |
@@ -136,9 +147,9 @@ Tab-separated, one header line, LF line endings, no quoting; a cell never holds 
 | 11 | `shared_code` | Section 5 |
 | 12 | `message_id` | Section 6 |
 | 13 | `vm_slice` | Where Broiler.VM's slice path checks the rule: `file:line` under `src/Broiler.VM.Profile.JavaScript.Compiler/`; `manifest` when the slice refuses the construct before the rule can apply (`SliceStaticSemantics.cs:607`, code 2104); or `none` with the search that found nothing |
-| 14 | `vm_wide_stage` | `parser`, `lowering`, `parser+lowering` or `none`; `runtime` or `lowering+runtime` for an EA step the executor checks when the eval runs (EA0006, EA0007, EA0009), as the edition does |
-| 15 | `vm_wide_site` | `file:line` under the same folder, `; `-separated; a site in another of Broiler.VM's folders (the executor's, for EA rows) is written from `src/`; `none` with the search |
-| 16 | `vm_code` | The registry code Broiler.VM emits (2001-2406), `;`-separated if more than one; `none` if it accepts; `-` where it emits no registry code (an EA step the executor checks, or an EA row whose refusal carries the code of the rule the evaluated or assembled source broke) |
+| 14 | `vm_wide_stage` | `parser`, `lowering`, `parser+lowering` or `none`; `runtime`, `lowering+runtime` or `parser+lowering+runtime` for an EA or EP step the executor checks when the evaluation runs (EA0006, EA0007, EA0009, EP0015), as the edition and the proposal do |
+| 15 | `vm_wide_site` | `file:line` under the same folder, `; `-separated; a site in another of Broiler.VM's folders (the executor's, for EA rows and EP0015) is written from `src/`; `none` with the search |
+| 16 | `vm_code` | The registry code Broiler.VM emits (2001-2406), `;`-separated if more than one; `none` if it accepts; `-` where it emits no registry code (an EA step the executor checks, or an EA or EP row whose refusal carries the code of the rule the evaluated or assembled source broke). A defensive check the parser leaves unreachable is named in `notes`, not here |
 | 17 | `js_stage` | `scanner`, `parser`, `SyntaxValidation`, `FastCompiler.EarlyErrors`, `Visit*` or `DirectEvalSupport`, `+`-joined; `runtime` for an EA step the runtime context checks (EA0006); `none` |
 | 18 | `js_site` | `file:line` under `Broiler.JS/` (`Broiler.JavaScript.Parser/FastParser.Statement.cs:481`), `; `-separated; `none` with the search |
 | 19 | `vm_admits` | EG and EP rows: `yes` or `no`, whether Broiler.VM admits the feature or the construct; `-` for the other families |
@@ -171,6 +182,7 @@ order. A code is permanent and names one row's refusal; it is never reused.
 | `71` explicit resource management | JSE7101-JSE7108 | EP0001-EP0008 | the proposal |
 | `72` decorators | JSE7201-JSE7202 | EP0009, EP0010 | |
 | `73` import phases | JSE7301-JSE7304 | EP0011-EP0014 | |
+| `74` ShadowRealm | JSE7401-JSE7404 | EP0015-EP0018 | |
 | `91` grammar failures | JSE9101-JSE9111 | EX0001-EX0010, EX0025 | the kind of refusal |
 | `92` limits | JSE9201-JSE9209 | EX0011-EX0016, EX0026-EX0028 | |
 | `93` policies | JSE9301-JSE9311 | EX0017-EX0024, EX0029-EX0031 | |
@@ -210,7 +222,7 @@ example `scope.lexical.duplicate`. The first segment is one of these namespaces:
 | `meta` | `new.target` and `import.meta` |
 | `class` | Class bodies, elements, private names, initialisers |
 | `module` | Imports, exports, the Module goal |
-| `eval` | The eval steps (EA) not covered by the identifiers below |
+| `eval` | The eval steps (EA), and ShadowRealm's evaluation step 2.b (EP0015), not covered by the identifiers below |
 | `dynamic-function` | CreateDynamicFunction's steps (EA) |
 | `annexb` | Annex B features refused where they do not apply (EG) |
 | `using`, `decorator`, `import-phase` | The proposals (EP) |
@@ -230,8 +242,8 @@ example `scope.lexical.duplicate`. The first segment is one of these namespaces:
    SJL-13 defines each identifier's arguments.
 
 **Identifiers bound now.** The conditions that recur across the fill's groups, matched by the rule's wording, and a
-few single-group conditions whose identifier the method was tried with; 159 rows in all with the `cover` rule
-after the table:
+few single-group conditions whose identifier the method was tried with; 162 rows in all with the `cover` rule
+after the table (159 before ShadowRealm's EP0016 to EP0018 were added, 2026-10-20):
 
 | Identifier | Condition | Rows |
 |---|---|---|
@@ -244,8 +256,8 @@ after the table:
 | `scope.catch.var-collision` | A `catch` parameter name is var-declared in the block | EE0067 |
 | `function.use-strict.non-simple-parameters` | A `"use strict"` directive in a function with a non-simple parameter list | EE0072, EE0085, EE0088, EE0091, EE0095, EE0099, EE0109, EE0113, EE0141, EE0145, EE0159 |
 | `strict.binding.eval-or-arguments` | `eval` or `arguments` bound in strict mode code | EE0005, EE0071, EE0098, EE0112, EE0148 |
-| `super.property.outside-method` | `super.x` or `super[x]` outside a method | EE0074, EE0075, EE0102, EE0103, EE0117, EE0118, EE0150, EE0151, EA0003 |
-| `super.call.outside-derived-constructor` | `super(...)` outside a derived class's constructor | EE0015, EE0076, EE0077, EE0093, EE0104, EE0105, EE0106, EE0119, EE0120, EE0121, EE0124, EE0126, EE0131, EE0139, EE0142, EE0152, EE0153, EA0004 |
+| `super.property.outside-method` | `super.x` or `super[x]` outside a method | EE0074, EE0075, EE0102, EE0103, EE0117, EE0118, EE0150, EE0151, EA0003, EP0017 |
+| `super.call.outside-derived-constructor` | `super(...)` outside a derived class's constructor | EE0015, EE0076, EE0077, EE0093, EE0104, EE0105, EE0106, EE0119, EE0120, EE0121, EE0124, EE0126, EE0131, EE0139, EE0142, EE0152, EE0153, EA0004, EP0018 |
 | `super.outside-method` | `super` in a script's or a module's own code | EE0162, EE0172 |
 | `function.parameters.yield` | A `yield` expression in parameters | EE0083, EE0094, EE0101, EE0107, EE0115, EE0156 |
 | `function.parameters.await` | An `await` expression in parameters | EE0084, EE0108, EE0116, EE0143, EE0146, EE0157 |
@@ -254,7 +266,7 @@ after the table:
 | `jump.continue.undefined-label` | `continue` names a label that does not enclose an iteration | EE0082, EE0137, EE0166, EE0176 |
 | `class.initializer.arguments` | `arguments` in a field initialiser or a static block | EE0130, EE0138, EA0005 |
 | `class.private-name.undeclared` | A private name no enclosing class declares | EE0167, EE0177, EA0009 |
-| `meta.new-target.outside-function` | `new.target` outside a non-arrow function | EE0163, EE0173, EA0002 |
+| `meta.new-target.outside-function` | `new.target` outside a non-arrow function | EE0163, EE0173, EA0002, EP0016 |
 | `statement.labelled-function` | A labelled function as the body of `if`, a loop or `with` | EE0045, EE0046, EE0047, EE0048, EE0049, EE0050, EE0052, EE0061 |
 | `declaration.let.bound-name` | `let` as a lexically bound name | EE0042, EE0055, EP0001, EP0004 |
 | `assignment.target.invalid` | The rule says AssignmentTargetType is ~invalid~ | EE0028, EE0029, EE0033, EE0034, EE0054 |
@@ -296,6 +308,7 @@ different text are:
 | `regexp.group-name.invalid-part` | A group name with a later code point that cannot continue an identifier | EE0199, EE0200 |
 | `regexp.class.negated-may-contain-strings` | A negated class, at the top or nested, that may contain strings | EE0206, EE0207 |
 | `eval.var.lexical-collision` | A var or function a sloppy direct eval declares has the name of a binding between the call and its variable environment | EA0007, EA0008 |
+| `eval.source.invalid` | Source text given to an evaluation, eval or `ShadowRealm.prototype.evaluate`, is not a Script or has an early error (one condition; EP0015 takes EA0001's identifier, 2026-10-20) | EA0001, EP0015 |
 | `using.declaration.no-disposal-scope` | A using or await using declaration directly in a statement list that disposes nothing (a case or default clause, a script's top level) | EP0006, EP0007, EP0008 |
 
 ## 7. The fill
@@ -323,6 +336,21 @@ left `unfilled`. The completeness check then added EX0025 to EX0031 in the tool'
 one site of EX0005 (`SliceTokenizer.cs:814`, an identifier's escape) to EX0025. Its report and inventories are in
 [`docs/evidence/sjl-12-001/catalogue/`](../../../docs/evidence/sjl-12-001/catalogue/completeness.md).
 
+**Revised on 2026-10-20, after review.** The committer added EP0015 to EP0018 in the tool's table (each with the
+family's next id and block 74's next code) and filled them, and corrected these cells, each confirmed by reading the
+sites at the heads and by the probes:
+- EX0008 names the lowering's two `return` refusals, `JsCompiler.Exceptions.cs:261` (2101) and `:275`, the 2207 that
+  JSD-0080 decision D12 keeps as coded, and the setter's 2102 (`JsParser.cs:4207`); its stage is `parser+lowering`
+  and its codes 2101, 2102, 2207 and 2209. The two defensive checks the inventory also assigns it (2104 and 2205)
+  are in its notes;
+- EX0029's notes say the refusal is partial: a bindingless `import "m";` reads its specifier without
+  `ModuleSpecifier` (`JsParser.cs:774-779`) and is admitted with a lone surrogate;
+- EE0039 cites `JsParser.cs:4468`, where an element with an initialiser is refused before the pattern is built;
+- EG0001's Broiler.JS site is `FastParser.SingleExpression.cs:225`, where both refusals are made, not
+  `FastParser.Block.cs:109`;
+- EE0140 and EP0006 to EP0008 name the defensive 2104 sites of D12 (`JsCompiler.Expressions.cs:314`,
+  `JsCompiler.ResourceScopes.cs:278`) in their notes, as EE0035 names `JsCompiler.Operators.cs:770`.
+
 ## 8. Re-running the tool
 
 From the repository root, with the three inputs fetched as the tool's header shows:
@@ -339,4 +367,5 @@ python3 -I docs/evidence/sjl-12-001/catalogue/check.py --vm <Broiler.VM at d82b0
 a rule; the completeness checker exits 1 when the code, the suite or the edition has a site, a test or a clause its
 inventories lack, or an inventory row names no catalogue row. On 2026-10-19 `check` found no difference at the
 skeleton and `diff` over the errata found no rule changed; on 2026-10-20 `check` found no difference over the filled
-278 rows and the completeness checker found no problem.
+278 rows and the completeness checker found no problem, and both did again over the 282 rows after the review's
+corrections.
