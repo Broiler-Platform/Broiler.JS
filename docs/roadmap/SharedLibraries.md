@@ -105,6 +105,47 @@ JSD in Broiler.VM's JavaScript profile series, and here.
 - **The non-standard extensions stay here** (SJL-D-17): the `m` literal suffix, `Number.prototype.clz`
   and `toLocaleString`'s .NET format strings. None is a shared operation.
 
+**Clause 7's measurement half: the owner's decision of 2026-10-20.** SJL-3's clause 7 asks, beside the pristine
+consumer and package checks, that this engine's measurement meet its predeclared rule, part B of
+[`decision-rule.md`](../evidence/sjl-3-001/decision-rule.md). Part B was taken on this repository's machine, which is
+not a controlled lane, so the run is void and was not judged; its arithmetic would fail clause 5 on `Literals` (bundle
+[`sjl-3-001`](../evidence/sjl-3-001/README.md), section 7). On 2026-10-20 the owner decided, as recommended, to leave
+this half unmet. The decision is taken under the owner's direction of 2026-10-18, "Please do all recommended decisions
+and skip waiting for review.", which changes no rule, in the work the owner's words of 2026-10-19 started: "Also
+continue with the other remaining SJL milestones". The programme's ledger is to record it, and a dated note under
+decision SJL-D-23 (`Broiler.VM/docs/javascript-shared-libraries/decisions.md`) the trigger below; both are filed in
+Broiler.VM apart from this record.
+- **What meets the clause.** Part B as written, on a controlled lane, at its own arms: B, the rule commit `1410079e`,
+  whose engine projects are byte-identical to the base `44a214dc`; and A, the after commit `ef676932`, with the rule
+  commit's workloads and harness. The void run was not judged, so that run would be part B's first judged run, at
+  full strength, and not a re-run.
+- **Why no lane exists.** This repository's machine is a container shared with other work, and every GitHub-hosted
+  runner, larger runners included, is a smoke lane: "GitHub-hosted runners remain smoke lanes, not controlled
+  acceptance hardware" ([`Measurement.md`](Measurement.md), "Controlled lanes and effective configuration"). Of the
+  missing lanes, Phase-0 says "Do not work around this" ([`Phase-0.md`](Phase-0.md), "What is left — acceptance
+  infrastructure").
+- **No revision onto a smoke lane is written.** Part B voids a smoke run, and a revision that admitted one would be
+  the workaround Phase-0 refuses. No record of the programme waives a clause: the only route past one is a gate
+  revision, which the trigger below leaves to a later dated choice.
+- **The route is Phase-0's item 0-8**: a dedicated host the owner provisions, linux-x64 first, recorded as
+  `Measurement.md` asks (the CPU model, microcode, core topology, memory, the OS, the power, governor and thermal
+  policy, and each child's effective configuration). The same lane serves SJL-7's part B here (JSD-0031 §4(b)'s fifth
+  reason, below), SJL-11's own measurement here, and SJL-14's clause 6, this engine's parse measurement. Only the
+  owner can provision it.
+- **If the original arms cannot be built on that lane**, a dated revision of part B moves both arms to the code then
+  current, as SJL-7's part B waits for a lane "at whatever commit is then current" ("After the evidence, 2026-10-17",
+  below). Its decision is weaker evidence, and it is part B's last measurement.
+- **If clause 5 fails there**, part B reads the failure as "a regression SJL-3 answers before it closes": this engine
+  fixes it, and a revised measurement follows under a dated revision, with arm A at the fix.
+- **The trigger.** The owner's next dated choice on this half is due when either (a) a controlled lane exists,
+  recorded as `Measurement.md` requires; or (b) this half, Broiler.VM's clause 13 if it is still open, and SJL-4's
+  clause 9, a Broiler.VM clause, are the only unmet clauses of SJL-3 to SJL-15 and SJL-17. At (b) the choice is
+  between waiting for a lane and a gate revision under SJL-D-23's alternative (b), which would need dated edits to the
+  programme's decision register, the milestone file, the ledger and this plan pair, and would be the first exit-gate
+  revision made after the evidence it concerns. The trigger is noted, not taken.
+- **What it changes.** No rule, no gate and no clause. SJL-3 stays `In progress`, and every milestone that may not
+  meet its gate before SJL-3 meets SJL-3's still waits. Nothing is accepted: no second holder exists to review it.
+
 **Numerics (SJL-4.1), filed 2026-10-13: all four sub-areas accepted.** Broiler.VM's record is
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0067-numerics-move-to-the-shared-algorithms-library.md`
 (JSD-0067), which states each condition for integer conversions and Float16, the Math kernels, exact
