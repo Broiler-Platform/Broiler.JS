@@ -1,0 +1,7 @@
+# imported: a void attempt at part A's base, taken by .github/workflows/test262-evidence.yml, not locally
+workflow run: https://github.com/Broiler-Platform/Broiler.JS/actions/runs/39335653429 (attempt 1), dispatched 2026-10-19T22:32:19Z, completed 2026-10-19T23:40:07Z
+tested commit: 4d813f2ac863895b9be5c4619b7886c9ddd71077 (the rule commit, which carries docs/evidence/sjl-12-001/decision-rule.md as it reads); dispatched ref refs/heads/main at the same commit (run.txt)
+configuration: part A's, in the runner's own zone (time_zone empty: TZ unset, UTC), with negative-metadata tests (include_negative true); includeNegative True in run.txt
+artifact: test262-evidence, id 12229603117, 3,531,464 bytes, sha256 22023f0310850eda5d7ddfff54dad41a1e3c1fb7b4aeb4ea24f30b28018a9241 (the zip as downloaded, the digest GitHub records)
+void: the run's conclusion is failure; its job collect failed at its step "Require a complete run", which wrote "The shards did not all run the same shell (shell-hashes.log)." and "The shards did not all run in the host time zone (host-zone.log)." and no other failure (GitHub's record of the run and that job's log, read 2026-10-20). The two records the step names are retained here: shell-hashes.log ("shards: 8; distinct lists: 2", shard 4's list differing) and host-zone.log ("shards: 8; in the expected zone: 7", shard 4 reading tzdata 2026e against the merging job's 2026c)
+retained: every file of the artifact, unchanged, in this directory (26 entries); this file and hashes.txt are the only ones added
