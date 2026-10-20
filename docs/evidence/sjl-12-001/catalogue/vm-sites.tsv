@@ -15,8 +15,8 @@ JsCompiler.Emission.cs:199	Intern	2302	TooManyConstants	the constant pool is ful
 JsCompiler.Eval.cs:282	TryEvalHops	2103	NestingTooDeep	evaluated source nests deeper than the scope-depth ceiling	EX0013	cell	cited in the site cells of the rows named
 JsCompiler.Eval.cs:309	EmitEvalName	2206	UnresolvableIdentifier	`arguments` names nothing inside a class field initialiser	EA0005	cell	cited in the site cells of the rows named
 JsCompiler.Eval.cs:394	CompileEvalProgram	2301	TooManyLocals	evaluated source declares too many bindings	EX0014	cell	cited in the site cells of the rows named
-JsCompiler.Exceptions.cs:261	CompileReturn	2101	UnexpectedToken	`return` has nothing to return from outside a function	EX0008	cell+assigned	`return` outside a function body: ReturnStatement exists only under [+Return] (grammar: no production admits the token where it stands)
-JsCompiler.Exceptions.cs:275	CompileReturn	2207	IllegalBreak	`return` has nothing to return from inside a class static block	EX0008	cell+assigned	`return` in a class static block: ClassStaticBlockStatementList is [~Return] (grammar; coded 2207, JSD-0080 D12's 2207 row, a D13 split candidate)
+JsCompiler.Exceptions.cs:261	CompileReturn	2101	UnexpectedToken	`return` has nothing to return from outside a function	EX0032	cell	cited in the site cells of the rows named
+JsCompiler.Exceptions.cs:275	CompileReturn	2207	IllegalBreak	`return` has nothing to return from inside a class static block	EX0033	cell	cited in the site cells of the rows named
 JsCompiler.Exceptions.cs:509	CompileJumpOut	2208	IllegalContinue	`continue` names no enclosing loop `break` names no enclosing loop or switch	EE0058;EE0082;EE0137;EE0166;EE0176	cell	cited in the site cells of the rows named
 JsCompiler.Exceptions.cs:510	CompileJumpOut	2207	IllegalBreak	`continue` names no enclosing loop `break` names no enclosing loop or switch	EE0059;EE0081;EE0136;EE0165;EE0175	cell	cited in the site cells of the rows named
 JsCompiler.Expressions.cs:107	CompileExpression	2101	UnexpectedToken	`new.target` is only admitted inside a function	EA0002;EE0163;EE0173;EP0016	cell	cited in the site cells of the rows named

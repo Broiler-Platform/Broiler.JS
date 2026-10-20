@@ -8,8 +8,10 @@ groups' fill (tasks 3.2 to 3.10) is merged, and the completeness check added sev
 and found no miss in either direction or against test262's parse-negative tests
 ([its report](../../../docs/evidence/sjl-12-001/catalogue/completeness.md)). **Revised again:** 2026-10-20, after
 review: the check had missed the SyntaxError steps of ShadowRealm's evaluation, now EP0015 to EP0018, and the cells of
-EX0008, EX0029, EE0039, EG0001, EE0140 and EP0006 to EP0008 were corrected (section 7). **Status:** filled. 282 rows;
-no cell is `unfilled`.
+EX0008, EX0029, EE0039, EG0001, EE0140 and EP0006 to EP0008 were corrected (section 7). **And by the owner's
+decision of 2026-10-20:** `return` where no [Return] parameter admits it, in a script's or a module's own statements
+(EX0032) and in a class static block (EX0033), has rows of its own and is no longer EX0008's (section 7).
+**Status:** filled. 284 rows; no cell is `unfilled`.
 
 **What it is.** [`early-errors.tsv`](early-errors.tsv) has one row per early-error rule of ECMA-262's ES2026 edition,
 with four families of its own beside them (decision D30 of Broiler.VM's JSD-0080, its home decision D31). For each
@@ -59,7 +61,7 @@ compares the identifying columns.
 | **EA** | EA0001-EA0012 | 19, 20 | A step that throws a SyntaxError in eval or in a dynamic function: PerformEval 11.b and 11.e-h, EvalDeclarationInstantiation 3.a.i.1, 3.d.i.2.a.i.1 (with Annex B.3.4), 3.d.i.2.a.ii.1 and 7, CreateDynamicFunction 18, 20 and 24 | `step` |
 | **EG** | EG0001-EG0008 | 81, 83 | One Annex B syntax feature: the grammar-only extensions (B.1.1 HTML-like comments, B.1.2 the pattern grammar, B.3.3 function declarations in `if` clauses, B.3.5 initialisers in `for`-`in` heads) and the relaxations Annex B lets a parser make (B.3.1 labelled function declarations, B.3.2 block-level functions, B.3.4 `var` in `catch` blocks, B.3.9 call expressions as assignment targets) | `prose` |
 | **EP** | EP0001-EP0018 | 71 to 74 | A proposal's rule or construct that test262 `ccaac100` tests or either engine parses: explicit resource management (EP0001-EP0008, the eight rules `main` has merged), decorators (EP0009, EP0010), import phases (EP0011-EP0014: source-phase imports and `import defer`), ShadowRealm (EP0015-EP0018: the SyntaxError steps of PerformShadowRealmEval, which `ShadowRealm.prototype.evaluate` calls) | `rule`, `catalogue`, `step` |
-| **EX** | EX0001-EX0031 | 91, 92, 93 | A refusal no early-error rule of the edition makes: source text no production matches (EX0001-EX0010, EX0025), an engine's limits (EX0011-EX0016, EX0026-EX0028), an engine's policies (EX0017-EX0024, EX0029-EX0031) | `catalogue` |
+| **EX** | EX0001-EX0033 | 91, 92, 93 | A refusal no early-error rule of the edition makes: source text no production matches (EX0001-EX0010, EX0025, EX0032, EX0033), an engine's limits (EX0011-EX0016, EX0026-EX0028), an engine's policies (EX0017-EX0024, EX0029-EX0031) | `catalogue` |
 
 - **EA covers decision D30's "eval and dynamic functions".** Steps that throw a SyntaxError elsewhere are not rows,
   and the reason is recorded here: GlobalDeclarationInstantiation (16.1.7) and a module's InitializeEnvironment
@@ -97,6 +99,15 @@ compares the identifying columns.
 - **The review of the completeness check (2026-10-20) added four EP rows**, EP0015 to EP0018, the SyntaxError steps
   of PerformShadowRealmEval. The check had read the edition's clauses and each engine's parser and compiler, and
   ShadowRealm's evaluate parses source text in Broiler.JS's built-ins and in Broiler.VM's executor.
+- **The owner's decision of 2026-10-20 added two EX rows**, EX0032 and EX0033: a `return` in a script's or a module's
+  own statements, and one in a class static block's. Both are grammar failures (the statement list has no [Return]
+  parameter), which Broiler.VM's lowering refuses after a complete parse and Broiler.JS's parser refuses at one
+  site, and both had been EX0008's, the generic unexpected token. Broiler.VM's mapping records them as split
+  candidates of 2101 and of 2207 (JSD-0080 decisions D12 and D13, which stay as written), and a split needs a
+  condition of its own: EX0008's is within 2101's published meaning. They are two rows, not one: a static block's
+  `return` is refused also when a function encloses the class, which tells the author something else, and Broiler.VM
+  reaches it with another registry code. The same decision keeps the catalogue's default for the nine checks that
+  refuse more than their rules (the completeness report's section 7): they stay findings, not rows (the next bullet).
 - **A check that refuses more than its rule is not a row.** An engine defect of that kind (Broiler.JS's refusal of
   duplicate parameters in a sloppy generator, for one) maps to the row of the rule it implements, and the
   completeness report lists it as a finding. An EX row is a refusal an engine makes on purpose, which the shared
@@ -183,7 +194,7 @@ order. A code is permanent and names one row's refusal; it is never reused.
 | `72` decorators | JSE7201-JSE7202 | EP0009, EP0010 | |
 | `73` import phases | JSE7301-JSE7304 | EP0011-EP0014 | |
 | `74` ShadowRealm | JSE7401-JSE7404 | EP0015-EP0018 | |
-| `91` grammar failures | JSE9101-JSE9111 | EX0001-EX0010, EX0025 | the kind of refusal |
+| `91` grammar failures | JSE9101-JSE9113 | EX0001-EX0010, EX0025, EX0032, EX0033 | the kind of refusal |
 | `92` limits | JSE9201-JSE9209 | EX0011-EX0016, EX0026-EX0028 | |
 | `93` policies | JSE9301-JSE9311 | EX0017-EX0024, EX0029-EX0031 | |
 
@@ -311,6 +322,17 @@ different text are:
 | `eval.source.invalid` | Source text given to an evaluation, eval or `ShadowRealm.prototype.evaluate`, is not a Script or has an early error (one condition; EP0015 takes EA0001's identifier, 2026-10-20) | EA0001, EP0015 |
 | `using.declaration.no-disposal-scope` | A using or await using declaration directly in a statement list that disposes nothing (a case or default clause, a script's top level) | EP0006, EP0007, EP0008 |
 
+**Identifiers coined since the fill.** The owner's decision of 2026-10-20 (section 2) coined two for its rows, and
+the committer checked that none of the 134 names either condition; 136 in all:
+
+| Identifier | Condition | Rows |
+|---|---|---|
+| `syntax.return.outside-function` | A `return` statement in a script's or a module's own statements, inside no function body | EX0032 |
+| `syntax.return.in-static-block` | A `return` statement in a class static block's statements, inside no function nested in the block, whether or not a function encloses the class | EX0033 |
+
+They are two conditions under rule 1, not one stated for two productions: a static block's `return` may stand
+inside a function, so "outside a function" would tell its author something false.
+
 ## 7. The fill
 
 Nine groups, one agent each, every row in exactly one group (tasks 3.2 to 3.10):
@@ -342,7 +364,7 @@ sites at the heads and by the probes:
 - EX0008 names the lowering's two `return` refusals, `JsCompiler.Exceptions.cs:261` (2101) and `:275`, the 2207 that
   JSD-0080 decision D12 keeps as coded, and the setter's 2102 (`JsParser.cs:4207`); its stage is `parser+lowering`
   and its codes 2101, 2102, 2207 and 2209. The two defensive checks the inventory also assigns it (2104 and 2205)
-  are in its notes;
+  are in its notes (the two `return` refusals moved to EX0032 and EX0033 the same day, below);
 - EX0029's notes say the refusal is partial: a bindingless `import "m";` reads its specifier without
   `ModuleSpecifier` (`JsParser.cs:774-779`) and is admitted with a lone surrogate;
 - EE0039 cites `JsParser.cs:4468`, where an element with an initialiser is refused before the pattern is built;
@@ -350,6 +372,26 @@ sites at the heads and by the probes:
   `FastParser.Block.cs:109`;
 - EE0140 and EP0006 to EP0008 name the defensive 2104 sites of D12 (`JsCompiler.Expressions.cs:314`,
   `JsCompiler.ResourceScopes.cs:278`) in their notes, as EE0035 names `JsCompiler.Operators.cs:770`.
+
+**Revised on 2026-10-20, by the owner's decision of that date** (section 2). The review of Broiler.VM's mapping
+found that the lowering's 2101 for `return` outside a function, filed under EX0008 within 2101's meaning, is one of
+the split candidates JSD-0080 decision D13 lists, and that the mapping could not record it while the condition shared
+EX0008's identifier. The owner took its option (a): the condition gets a row of its own, mapped split from 2101, and
+D13 stays as written. D12 keeps the 2207 for `return` in a static block as coded and makes it a catalogue row, and no
+row was exactly that condition, so it has its own too. The committer added both in the tool's table, each with the
+family's next id and block 91's next code, and filled them, each site opened at the heads and probed:
+- **EX0032** (`JSE9112`, `syntax.return.outside-function`): Broiler.VM's wide path at
+  `JsCompiler.Exceptions.cs:261` (lowering, 2101); the slice by manifest (its `ParseReturn`, `SliceParser.cs:540`,
+  checks no context, and the Return construct is refused 2104 at `SliceStaticSemantics.cs:607`); Broiler.JS at
+  `FastParser.Statement.cs:588` (parser);
+- **EX0033** (`JSE9113`, `syntax.return.in-static-block`): Broiler.VM's wide path at `JsCompiler.Exceptions.cs:275`
+  (lowering, 2207, which D12 keeps; its notes say it maps to 2207 as a split); the slice by manifest (the class);
+  Broiler.JS partial, at the same `:588`, which refuses it only where no function encloses the class.
+
+EX0008 gave up those cells: its stage is `parser` again, its sites `JsParser.cs:5930`, `:6604` and `:4207`, its codes
+2101, 2102 and 2209, and its `test262` cell no longer names `global-code/return.js` and
+`static-init-invalid-return.js`, which the new rows name. The inventories and `parse-negative.tsv` were regenerated
+(the completeness report's section 10).
 
 ## 8. Re-running the tool
 
@@ -368,4 +410,5 @@ a rule; the completeness checker exits 1 when the code, the suite or the edition
 inventories lack, or an inventory row names no catalogue row. On 2026-10-19 `check` found no difference at the
 skeleton and `diff` over the errata found no rule changed; on 2026-10-20 `check` found no difference over the filled
 278 rows and the completeness checker found no problem, and both did again over the 282 rows after the review's
-corrections.
+corrections and over the 284 rows after the owner's decision of 2026-10-20 (when `diff` over the errata again found no
+rule changed).

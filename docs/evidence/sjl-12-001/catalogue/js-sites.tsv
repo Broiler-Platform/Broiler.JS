@@ -226,7 +226,7 @@ Broiler.JavaScript.Parser/FastParser.Statement.cs:512	NestedFunctionShadowsParam
 Broiler.JavaScript.Parser/FastParser.Statement.cs:523	NestedFunctionShadowsParameter	SyntaxError	stream.Unexpected();		EX0008	assigned	grammar: no production admits the token where it stands
 Broiler.JavaScript.Parser/FastParser.Statement.cs:534	NestedFunctionShadowsParameter	SyntaxError	stream.Unexpected();		EX0008	assigned	`throw` followed by a line terminator (grammar)
 Broiler.JavaScript.Parser/FastParser.Statement.cs:542	NestedFunctionShadowsParameter	SyntaxError	stream.Unexpected();		EX0009	assigned	a throw statement's expression is missing (grammar: a token or construct the production requires is missing)
-Broiler.JavaScript.Parser/FastParser.Statement.cs:588	NestedFunctionShadowsParameter	SyntaxError	stream.Unexpected();		EX0008	assigned	`return` outside a function body (grammar: ReturnStatement only under [+Return])
+Broiler.JavaScript.Parser/FastParser.Statement.cs:588	NestedFunctionShadowsParameter	SyntaxError	stream.Unexpected();		EX0032;EX0033	cell	cited in the site cells of the rows named
 Broiler.JavaScript.Parser/FastParser.Statement.cs:617	NestedFunctionShadowsParameter	SyntaxError	stream.Unexpected();		EX0008	assigned	grammar: no production admits the token where it stands
 Broiler.JavaScript.Parser/FastParser.Statement.cs:653	NestedFunctionShadowsParameter	SyntaxError	new FastParseException(start,	'{(isAsync ?   :  )}' is not allowed at the top level of a script	EP0008	cell	cited in the site cells of the rows named
 Broiler.JavaScript.Parser/FastParser.Statement.cs:657	NestedFunctionShadowsParameter	SyntaxError	stream.Unexpected();		EX0008	assigned	grammar: no production admits the token where it stands

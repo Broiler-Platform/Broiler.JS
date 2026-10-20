@@ -511,6 +511,15 @@ EX_WRITTEN = [
            "constructor) whose source text holds a private name, refused as AllPrivateIdentifiersValid refuses one "
            "in a Script; the edition's CreateDynamicFunction has no step that refuses it, and test262 expects a "
            "SyntaxError."),
+    # Added on 2026-10-20 by the owner's decision of that date (the review of Broiler.VM's mapping, its option (a)),
+    # each taking the family's next id and block 91's next code: `return` where the statement list being parsed has
+    # no [Return] parameter, which both engines had refused under the generic condition of EX0008.
+    ("91", "Grammar: a ReturnStatement in the statements of a Script or a Module and inside no function body or class "
+           "static block: ScriptBody and ModuleItemList are parsed without the [Return] parameter, which only a "
+           "function body's FunctionStatementList sets."),
+    ("91", "Grammar: a ReturnStatement in the statements of a class static block and inside no function nested in the "
+           "block: ClassStaticBlockStatementList is parsed without the [Return] parameter, whether or not a function "
+           "encloses the class."),
 ]
 
 

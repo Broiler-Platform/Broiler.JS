@@ -1,8 +1,9 @@
 # The early-error catalogue's completeness (SJL-12.3, task 3.11)
 
-**Filed:** 2026-10-20, with the merge of the fill. **Revised:** 2026-10-20, after review (section 9). **Catalogue:**
+**Filed:** 2026-10-20, with the merge of the fill. **Revised:** 2026-10-20, after review (section 9), and by the
+owner's decision of the same day (section 10). **Catalogue:**
 [`Broiler.ECMAScript/docs/frontend/early-errors.tsv`](../../../../Broiler.ECMAScript/docs/frontend/early-errors.tsv)
-at this commit, 282 rows (278 when first filed). **Edition:** ES2026, `tc39/ecma262@0248456c` (`spec.html` SHA-256
+at this commit, 284 rows (278 when first filed, 282 after the review). **Edition:** ES2026, `tc39/ecma262@0248456c` (`spec.html` SHA-256
 `ce7bc301...`). **Heads read:** Broiler.VM `d82b07a` (its compiler and format sources equal `main` `046357b`),
 Broiler.JS `ec494f66` (`Broiler.JS/` equals `main` `1f91b8f1`), test262 `ccaac100`. **Owner and reviewer:** as the
 bundle's README says; besides its author, only the review that section 9 answers has read it.
@@ -22,7 +23,9 @@ judges the catalogue, not the engines; what it found about the engines is in sec
 **Rows added:** EX0025 to EX0031, in the tool's table (`scripts/frontend/ee_extract.py`), each with its block's next
 code and filled here (section 5). **Row corrected:** EX0005's `vm_wide_site` lost `SliceTokenizer.cs:814`, which is
 EX0025's. No other cell of the fill was changed. **On review (2026-10-20):** EP0015 to EP0018 were added the same way,
-and cells of EX0008, EX0029, EE0039, EG0001, EE0140 and EP0006 to EP0008 were corrected (section 9).
+and cells of EX0008, EX0029, EE0039, EG0001, EE0140 and EP0006 to EP0008 were corrected (section 9). **By the
+owner's decision of 2026-10-20:** EX0032 and EX0033 were added the same way and took EX0008's two `return` sites
+(section 10).
 
 ## 2. The merge
 
@@ -90,13 +93,13 @@ and cells of EX0008, EX0029, EE0039, EG0001, EE0140 and EP0006 to EP0008 were co
   at a parser site.
 
 **How each site maps to rows** (the `basis` column):
-- `cell`: a row's `vm_slice`, `vm_wide_site` or `js_site` cell cites the line (Broiler.VM 148 sites, Broiler.JS
-  147);
+- `cell`: a row's `vm_slice`, `vm_wide_site` or `js_site` cell cites the line (Broiler.VM 150 sites, Broiler.JS
+  148);
 - `assigned`: this check opened the site and assigned it, with the reason in the `reason` column (Broiler.VM 50,
-  Broiler.JS 248, of which 132 are the parser's generic `throw stream.Unexpected()` and `throw Unexpected()` sites,
+  Broiler.JS 247, of which 132 are the parser's generic `throw stream.Unexpected()` and `throw Unexpected()` sites,
   assigned to EX0008);
 - `cell+assigned`: cited by a row and given another row too, where the site also refuses something else (Broiler.VM
-  19, Broiler.JS 9). For example `JsParser.cs:6604`, the binding-name fall-through, is EE0005 to EE0009 and also
+  17, Broiler.JS 9). For example `JsParser.cs:6604`, the binding-name fall-through, is EE0005 to EE0009 and also
   refuses `var if`, a grammar failure (EX0008); `JsParser.cs:4312` is EE0064 and refuses every declaration as a
   statement body.
 
@@ -106,8 +109,8 @@ EX0009), second checks behind a parser check (the module collisions at `JsCompil
 `SliceSourceCompiler.cs:458`, `:474`, `:844`), and the seven new rows' sites. The three 2104-coded language rules
 of JSD-0080 decision D12 are `JsCompiler.Expressions.cs:314` (EX0008, EE0140), `JsCompiler.Operators.cs:770`
 (EE0035) and `JsCompiler.ResourceScopes.cs:278` (EP0006 to EP0008), each named in its rows' notes; 2207 for `return`
-in a static block (`JsCompiler.Exceptions.cs:275`) is EX0008, a grammar failure, whose cells name it since the review,
-with `return` outside a function (`:261`, 2101).
+in a static block (`JsCompiler.Exceptions.cs:275`) is EX0033, a grammar failure, and `return` outside a function
+(`:261`, 2101) is EX0032 (EX0008's cells named both after the review; section 10).
 
 **Outside the population, and why.** Run-time SyntaxErrors of the executors are not parse or early-error refusals
 and are not rows unless an EA or EP row names them: Broiler.VM's `JsEngine.Eval.cs` and `JsEngine.EvalDeclarations.cs`
@@ -147,6 +150,13 @@ PerformShadowRealmEval (section 3):
 | EP0017 | JSE7403 | `super.property.outside-method` | 2.f, SuperProperty | VM `JsCompiler.Calls.cs:535`, `JsCompiler.Operators.cs:191` (2101); JS `FastCompiler.VisitMemberExpression.cs:25` |
 | EP0018 | JSE7404 | `super.call.outside-derived-constructor` | 2.g, SuperCall | VM `JsCompiler.Calls.cs:609` (2101); JS `FastCompiler.VisitCallExpression.cs:393` |
 
+**Added by the owner's decision of 2026-10-20** (section 10), in the tool's table with block 91 (grammar failures):
+
+| Id | Code | Identifier | What it is | Sites |
+|---|---|---|---|---|
+| EX0032 | JSE9112 | `syntax.return.outside-function` | A `return` in a script's or a module's own statements | VM wide `JsCompiler.Exceptions.cs:261` (lowering, 2101); slice by manifest (`SliceParser.cs:540` checks no context; 2104 at `SliceStaticSemantics.cs:607`); JS `FastParser.Statement.cs:588` |
+| EX0033 | JSE9113 | `syntax.return.in-static-block` | A `return` in a class static block, a function enclosing the class or not | VM wide `JsCompiler.Exceptions.cs:275` (lowering, 2207); slice by manifest (the class); JS `FastParser.Statement.cs:588`, partial: only where no function encloses the class |
+
 **Not rows: defects.** A check that refuses more than its rule is an engine defect, not an engine-only refusal of
 the kind EX holds (`early-errors.md` section 2). Its site maps to the row of the rule it implements, and it is listed
 in section 7.
@@ -174,14 +184,16 @@ for a module variant only: its sites in both engines are generic refusal sites (
 [`parse-negative.tsv`](parse-negative.tsv) holds every test with its variants, its `esid`, those three sets, and both
 engines' first sites.
 
-**Result.** Every one of the 4,595 tests is explained by at least one row: 358 are named by a row's `test262` cell;
-3,908 more are refused at a site of an EE, EA, EG, EP or engine-limit or policy row; the remaining 329 are grammar
-failures (EX0001 to EX0010, EX0025), and each was read: numeric and BigInt literals that match no production (EX0003),
+**Result.** Every one of the 4,595 tests is explained by at least one row: 360 are named by a row's `test262` cell;
+3,908 more are refused at a site of an EE, EA, EG, EP or engine-limit or policy row; the remaining 327 are grammar
+failures (EX0001 to EX0010, EX0025, EX0032, EX0033), and each was read: numeric and BigInt literals that match no production (EX0003),
 `import()` with no argument or under `new`, imports and exports below a module's top level, private names where no
 production admits them, unary operators before `**`, `??` beside `||`, and the like. No test is explained only by an
 engine's limit or policy. (When first filed: 356, 3,909 and 330. Since the review, EX0008's cell names
 `global-code/return.js` and `static-init-invalid-return.js`, two of the 330, and `expressions/in/private-field-in.js`,
-`for (#field in value;;)`, read now, is a grammar failure, not EG0001's.)
+`for (#field in value;;)`, read now, is a grammar failure, not EG0001's. Since the owner's decision, those two
+tests are named by EX0032 and EX0033, and EX0032's cell also names `module-code/parse-err-return.js` and
+`statements/return/S12.9_A1_T1.js`, two of the 329: 360, 3,908 and 327.)
 
 **The review of the `esid`.** 857 tests name, in `esid`, a clause where the catalogue has rows. 332 of them are
 explained by rows of another clause (331 when first filed). Every one was read, by group:
@@ -189,7 +201,8 @@ explained by rows of another clause (331 when first filed). Every one was read, 
   `esid` names the class clause);
 - 79 regular-expression tests are pattern grammar failures, EE0019 (modifiers with no colon or with an escape,
   quantified lookbehinds);
-- 28 `ident-ref-*`, label and keyword tests are grammar failures (EX0008, EX0009);
+- 28 `ident-ref-*`, label and keyword tests are grammar failures (EX0008, EX0009; Broiler.JS refuses
+  `keywords/ident-ref-return.js` at EX0032's site);
 - 12 object-literal methods named by a private name are EE0016, a clause apart from method definitions';
 - 11 `await` bindings in a class static block are EE0009 (the block's statement list is [+Await]);
 - 4 are grammar failures that test262 files under a field initialiser's rules (an arrow with a block body as the left
@@ -234,7 +247,7 @@ only together (EA0010, EA0011) and quantifier bounds above `int.MaxValue` (EE018
 lone surrogate in a bindingless import's specifier (EX0029). Grammar failures Broiler.JS admits are recorded on the EX
 rows' and the groups' notes (a `const` declaration as a statement body, a class heritage parsed as an Expression,
 `if (a {}`, `\u{00_76}`, quantified lookbehinds, v-mode reserved punctuators and, found on review, `return` in a class
-static block, EX0008).
+static block whose class a function encloses, EX0033 since section 10).
 
 **Crashes, which are not refusals.** Broiler.JS's compile throws `NotImplementedException` on destructuring forms with
 a rest initialiser or a literal rest target (`[...x = 1] = []`, `([...x = []]) => {}`, `({...{a}} = o)`) and on
@@ -262,7 +275,8 @@ python3 -I docs/evidence/sjl-12-001/catalogue/check.py --vm <Broiler.VM at d82b0
 ```
 
 On 2026-10-20 it printed "217 VM emission sites, 61 VM regular-expression sites, 479 Broiler.JS throw sites, 4595
-parse-negative tests; 0 problems", at the first filing and again after the review's corrections. A copy with one VM
+parse-negative tests; 0 problems", at the first filing, again after the review's corrections, and again after the
+owner's decision (section 10). A copy with one VM
 site removed and one Broiler.JS site's rows emptied was refused with exactly those two problems.
 
 ## 9. Revised after review (2026-10-20)
@@ -282,7 +296,8 @@ and `check.py` pass.
   section 5 and `vm-sites.tsv`'s reason say so.
 - **EX0008 names the lowering's `return` refusals**: `JsCompiler.Exceptions.cs:261` (2101) and `:275` (2207, D12's
   row), with the setter's 2102 at `JsParser.cs:4207`; stage `parser+lowering`, codes 2101, 2102, 2207 and 2209, and
-  the two tests in its `test262` cell. Broiler.JS accepts `return` in a class static block (a gap, in its notes). The
+  the two tests in its `test262` cell (all moved to EX0032 and EX0033 the same day, section 10). Broiler.JS accepts
+  `return` in a class static block (a gap, in its notes; section 10 narrows it to a class inside a function). The
   defensive 2104 and 2205 checks the inventory assigns it are in its notes, not in `vm_code`, as EE0035 keeps its
   defensive 2104 out (`early-errors.md` section 4 says so now). EE0140 and EP0006 to EP0008 name D12's defensive 2104
   sites in their notes.
@@ -295,3 +310,46 @@ and `check.py` pass.
 What moved: `vm-sites.tsv`'s bases (`assigned` 53 to 50, `cell+assigned` 16 to 19), the default-assigned generic
 parser sites of `js-sites.tsv` (133 to 132), the classes of section 6 (356, 3,909 and 330 to 358, 3,908 and 329) and
 the `esid` review (331 to 332). No row was withdrawn and no id or code changed.
+
+## 10. Revised by the owner's decision (2026-10-20)
+
+The review of Broiler.VM's mapping found that the lowering's 2101 for `return` outside a function
+(`JsCompiler.Exceptions.cs:261`) was filed under EX0008 within 2101's meaning, while JSD-0080 decision D13 lists
+"2101, from the binder, for ... `return`" among the split candidates; the mapping could not record the split while the
+condition shared EX0008's message identifier. The owner's standing direction of 2026-10-18 takes the review's option
+(a) as the owner's decision of 2026-10-20: `return` outside a function body gets its own condition, mapped split from
+2101, and D13 stays as written. The same decision keeps this report's default for the nine checks that refuse more
+than their rules (section 7): they stay findings, not EX rows.
+
+- **EX0032** (`JSE9112`, `syntax.return.outside-function`): a `return` in a script's or a module's own statements.
+  Broiler.VM's wide parser admits it (`ParseReturn`, `JsParser.cs:2117-2131`, checks no context) and the lowering
+  refuses it at `JsCompiler.Exceptions.cs:261` (2101). The slice cell was opened: the slice's `ParseReturn`
+  (`SliceParser.cs:540-556`) checks no context either and builds the Return construct, which the manifest check
+  refuses (2104, `SliceStaticSemantics.cs:607`) wherever it stands, so the cell is `manifest`. Broiler.JS refuses it in
+  its parser at `FastParser.Statement.cs:588` (`functionDepth` 0).
+- **EX0033** (`JSE9113`, `syntax.return.in-static-block`): a `return` in a class static block. D12 keeps its 2207 and
+  makes it a catalogue row, and no row was exactly that condition (EX0008 is any unexpected token, and EX0032 a
+  `return` that no function encloses), so it has its own row: an author is told something else (the block may stand
+  inside a function), and Broiler.VM reaches it with another registry code. Its notes record the meaning it maps to:
+  2207 IllegalBreak, whose published meaning (a break with no enclosing breakable statement) does not cover it, a
+  split (D13's "2207, for `return`"). Broiler.VM refuses it at `JsCompiler.Exceptions.cs:275` (lowering, 2207); the
+  slice refuses the class by manifest. Broiler.JS partial: a static block does not raise `functionDepth`
+  (`FastParser.ObjectLiteral.cs:40-53`), so `:588` refuses it only where no function encloses the class, and
+  test262's `static-init-invalid-return.js`, whose class is inside a function, is accepted. That narrows section 9's
+  "Broiler.JS accepts `return` in a class static block".
+- **Probes** (2026-10-20, the review's Broiler.VM build of `d82b07a` and this check's Broiler.JS build of `ec494f66`):
+  `return;` and `if (true) { return 1; }` as sloppy and strict scripts and as a module: Broiler.VM's wide path 2101 at
+  `:261`, its slice 2104 for the Return construct, Broiler.JS refused at `:588`; `class C { static { return; } }`:
+  2207 at `:275`, the slice 2104, Broiler.JS refused at `:588`; the same class inside a function: 2207 at `:275`,
+  Broiler.JS accepts; a function nested in the block may `return` in both engines.
+
+What moved: EX0008's cells (stage `parser` again; sites `JsParser.cs:5930`, `:6604`, `:4207`; codes 2101, 2102,
+2209; its `test262` cell back to the three `asi` tests); `vm-sites.tsv`, where `:261` and `:275` are EX0032's and
+EX0033's by their cells (`cell` 148 to 150, `cell+assigned` 19 to 17); `js-sites.tsv`, where `:588` is EX0032's and
+EX0033's by their cells (`cell` 147 to 148, `assigned` 248 to 247); `parse-negative.tsv`, the rows of 14 tests
+(`global-code/return.js`, `module-code/parse-err-return.js`, `keywords/ident-ref-return.js`,
+`static-init-invalid-return.js` and the ten `statements/return/S12.9_A1_T*.js`); and the classes of section 6, 358,
+3,908 and 329 to 360, 3,908 and 327, since EX0032's cell names two tests that were grammar failures. The cross-check
+counts EX0032 and EX0033 among the grammar rows. The `esid` review is unchanged (332, the same tests). The
+populations are unchanged (217, 61, 479 and 4,595), `ee_extract.py check` finds 284 rows and no difference, `diff`
+over the errata changes no rule, and `check.py` reports 0 problems. No row was withdrawn and no id or code changed.
