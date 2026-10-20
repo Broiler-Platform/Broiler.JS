@@ -1,0 +1,62 @@
+site	message	rows	reason
+JsRegExpMatcher.cs:1604	Invalid capture group name	EE0019	a group specifier with no closing `>` (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:1608	Invalid capture group name	EE0197;EE0198;EE0199;EE0200;EE0019	a group specifier's name that is no RegExpIdentifierName (the Parser's pre-scan)
+JsRegExpMatcher.cs:1612	Duplicate capture group name	EE0184	a group name given twice (also refuses names in separate alternatives, an over-refusal; group 7)
+JsRegExpMatcher.cs:1805	Unmatched ')'	EE0019	an unmatched `)` (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:1818	Regular expression is nested too deeply	EX0026	a disjunction nested past MaximumNestingDepth (512)
+JsRegExpMatcher.cs:1901	Nothing to repeat	EE0019	nothing to repeat (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:1926	Nothing to repeat	EE0019	nothing to repeat (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:1955	Nothing to repeat	EE0019	nothing to repeat, a quantified assertion (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:1962	Nothing to repeat	EE0209;EE0019	a braced quantifier where an atom is expected (EE0209's site, group 7)
+JsRegExpMatcher.cs:1967	Lone quantifier brackets	EE0019	a lone quantifier bracket under u or v (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:1977	Lone quantifier brackets	EE0019	a lone quantifier bracket under u or v (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2047	Invalid group	EE0019	an invalid group, including a modifier letter outside ims (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2075	Invalid group	EE0019	an invalid group (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2087	Invalid group	EE0019	an invalid group (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2092	Repeated flag in modifiers	EE0186;EE0188;EE0189;EE0190	a modifier flag repeated, or both added and removed
+JsRegExpMatcher.cs:2109	Invalid group	EE0187;EE0019	`(?-:` with no flag on either side, or a modifier group that runs off the pattern
+JsRegExpMatcher.cs:2146	Invalid capture group name	EE0019	a group name with no closing `>` (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2153	Invalid group	EE0019	an invalid group (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2191	Unterminated group	EE0019	an unterminated group (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2327	numbers out of order in {} quantifier	EE0185	`{n,m}` with n greater than m
+JsRegExpMatcher.cs:2358	\\ at end of pattern	EE0019	`\` at the end of the pattern (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2402	Invalid escape	EE0192	a decimal escape above the group count under u or v
+JsRegExpMatcher.cs:2440	Invalid named reference	EE0019	an incomplete `\k` (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2447	Invalid named reference	EE0019	an incomplete `\k` (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2451	Invalid named reference	EE0197;EE0198;EE0199;EE0200;EE0019	a `\k<...>` name that is no RegExpIdentifierName
+JsRegExpMatcher.cs:2463	Invalid named capture referenced	EE0191	`\k<name>` naming no group
+JsRegExpMatcher.cs:2539	Invalid property name	EE0201;EE0202;EE0203;EE0204	a property escape whose name or value is not one (under u)
+JsRegExpMatcher.cs:2558	Invalid property name	EE0019	property-escape syntax (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2574	Invalid property name	EE0019	property-escape syntax (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2582	Invalid property name	EE0019	property-escape syntax (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2617	Regular expression is nested too deeply	EX0026	a character class nested past MaximumNestingDepth (512)
+JsRegExpMatcher.cs:2631	Unterminated character class	EE0019	an unterminated character class (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2645	Negated character class may contain strings	EE0206;EE0207	a negated class that may contain strings
+JsRegExpMatcher.cs:2680	Invalid set operation in character class	EE0019	v-mode class-set syntax (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2689	Invalid set operation in character class	EE0019	v-mode class-set syntax (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2707	Invalid set operation in character class	EE0019	v-mode class-set syntax (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2717	Invalid set operation in character class	EE0019	v-mode class-set syntax (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2751	Unterminated character class	EE0019	an unterminated character class (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2797	Range out of order in character class	EE0208	a v-mode ClassSetRange out of order
+JsRegExpMatcher.cs:2824	Invalid property name	EE0205	`\P{...}` of a property of strings
+JsRegExpMatcher.cs:2835	Invalid property name	EE0201;EE0202;EE0203	a property escape whose name or value is not one (under v)
+JsRegExpMatcher.cs:2914	Invalid escape	EE0019	`\q` without a brace (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2928	Unterminated character class	EE0019	an unterminated character class (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2973	Unterminated character class	EE0019	an unterminated character class (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:2982	\\ at end of pattern	EE0019	`\` at the end of the pattern (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3001	Invalid character class	EE0019	v-mode class-set syntax (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3009	Invalid character in character class	EE0019	v-mode class-set syntax (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3014	Invalid set operation in character class	EE0019	v-mode class-set syntax (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3139	Unterminated character class	EE0019	an unterminated character class (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3161	Invalid character class	EE0193;EE0195;EE0210;EE0212	a class escape at an end of a class range under u
+JsRegExpMatcher.cs:3181	Range out of order in character class	EE0194;EE0196;EE0211;EE0213	a class range out of order
+JsRegExpMatcher.cs:3215	\\ at end of pattern	EE0019	`\` at the end of the pattern (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3297	Invalid escape	EE0019	an invalid escape under u (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3317	Invalid property name	EE0019	`\p` under u where only a class escape may stand (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3325	Invalid escape	EE0019	an invalid escape under u (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3360	Invalid escape	EE0019	an invalid escape under u (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3399	Invalid escape	EE0019	an invalid escape under u (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3416	Invalid Unicode escape	EE0019	a malformed `\u{...}` (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3425	Invalid Unicode escape	EE0019	a malformed `\u{...}` (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3432	Invalid Unicode escape	EE0019	a malformed `\u{...}` (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
+JsRegExpMatcher.cs:3489	Invalid escape	EE0019	an invalid escape under u (pattern grammar: ParsePattern fails, so IsValidRegularExpressionLiteral is false (EE0019))
