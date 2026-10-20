@@ -98,6 +98,53 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
 next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
 
+## Public API changes, 2026-10-20 (the parser's and the compiler's explicit options, milestone SJL-12.5)
+
+Item 1 of milestone SJL-12.5, the explicit options (Broiler.VM's JSD-0080, decisions D19 and D29), replaces the
+ambient goal and top-level-`await` scopes of `Runtime`'s `CoreScript`, which were internal, with options every
+compile site passes: an immutable `FastParserOptions` the scanner, the token stream and the parser are made
+with, and `JSCompilationOptions.AllowTopLevelAwait`, which the code cache keys a compilation on. It applies
+decision SJL-D-25 by its default, forwarders: **no public member is removed or changes its signature**; every
+change is an added member, and three existing members change what they do, listed as such. The public API
+listings of `Parser`, `Runtime`, `Engine`, `Compiler`, `Modules` and `Portable.Compiler`, written by
+PublicApiGenerator 11.4.6 from `48fee2d3` and from this change, differ only by the members added below. The
+observable corrections, J1 and J2, are in [`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md).
+
+| Member | Assembly | Disposition | What it does now |
+| --- | --- | --- | --- |
+| `FastParserGoal` (`Script`, `Module`, and `Eval`, `FormalParameters` and `FunctionBody` reserved) | `Parser` | added | The goal symbol a parse starts from. The parser parses the first two; the options refuse the reserved three with `NotSupportedException` |
+| `FastParserOptions` (`Script`, `Module`, `Goal`, `AllowTopLevelAwait`, `UnicodeTables`, value equality) | `Parser` | added | An immutable record: the goal, the permission to await at the top level, and the provider of the scanner's lexical classes, typed by Broiler.Unicode's `IUnicodeTables`, whose default, null, is the engine's own tables. `Script` is a script without top-level `await` and `Module` a module with it |
+| `FastScanner(FastPool, in StringSpan, FastKeywordMap, FastParserOptions)`, `FastScanner.Options` | `Parser` | added | The scanner reads its first two tokens under the options: their goal decides whether HTML-like comments are comments, and their provider gives the lexical classes |
+| `FastTokenStream(in StringSpan, FastKeywordMap, FastParserOptions)`, `FastTokenStream(FastPool, in StringSpan, FastKeywordMap, FastParserOptions)`, `FastTokenStream.Options` | `Parser` | added | A stream whose scanner has the options. The options follow the keyword map, so a call that passes null for the map binds as before |
+| `FastParser(FastTokenStream, FastParserOptions)`, `FastParser.Options` | `Parser` | added | A parser with the options, which refuses a stream made with other options with `ArgumentException` |
+| `FastParser.ParseModule(in StringSpan, FastParserOptions)` | `Parser` | added | Parses the Module goal under the options, whose goal must be `Module` |
+| `FastScanner(FastPool, in StringSpan, FastKeywordMap)`, `FastTokenStream(in StringSpan, FastKeywordMap)`, `FastTokenStream(FastPool, in StringSpan, FastKeywordMap)`, `FastParser(FastTokenStream)` | `Parser` | kept, behaviour changed | Parse with `FastParserOptions.Script`, a script without top-level `await`, where they read the ambient scopes; `FastParser(FastTokenStream)` takes its stream's options. A public caller could reach the scopes only by parsing inside a compile that `CoreScript` ran, such as a host compiler's |
+| `FastParser.ParseModule(in StringSpan)` | `Parser` | kept, unchanged | Parses with `FastParserOptions.Module`, the goal and permission the two scopes it entered gave it |
+| `JSCompilationOptions.AllowTopLevelAwait` (`get; init;`) | `Runtime` | added | Whether the code compiled may await at its top level. A member of the record's body, so the constructor keeps its signature; as a member of the record it is in the code cache's key (`DictionaryCodeCache` compares and hashes the options) |
+| `JSCode.Key` | `Runtime` | kept, text changed | The options' text in the key now ends with `AllowTopLevelAwait = False` or `True`, as the record prints it. A host cache keyed on this text keys on the permission too |
+| `IJSCompiler.Compile(in StringSpan, in JSCompilationOptions, string, IList<string>, ICodeCache)` | `Runtime` | added, a default interface method; a **behavioural** change for a host's compiler | `CoreScript.Compile` calls it with the options it keys the compilation under. The default forwards a script without top-level `await` to the existing `Compile` and throws `NotSupportedException` naming the compiler's type for a module or a top-level `await`. A host compiler set as `CoreScript.Compiler` that implements only the existing member, and parsed with this engine's parser, compiled modules and top-level `await` before, through the ambient scopes; it is now refused them until it implements this member |
+| `DefaultJSCompiler.Register(Func<StringSpan, JSCompilationOptions, string, IList<string>, ICodeCache, BExpression<JSFunctionDelegate>>)` | `Engine` | added | Registers a compilation function of the options; the Compiler assembly's module initializer registers `FastCompiler`'s. The registration made last is the one used |
+| `DefaultJSCompiler.Compile(in StringSpan, in JSCompilationOptions, string, IList<string>, ICodeCache)` | `Engine` | added | Compiles with the registered function under the options. With a function without options registered, it forwards a script without top-level `await` and refuses anything else, as the interface's default does |
+| `DefaultJSCompiler.Register(Func<StringSpan, string, IList<string>, ICodeCache, BExpression<JSFunctionDelegate>>)`, `DefaultJSCompiler.Compile(in StringSpan, string, IList<string>, ICodeCache)` | `Engine` | kept, behaviour changed | A function registered without options compiles a script without top-level `await`, and a module or top-level `await` is refused through it, where the ambient scopes reached its parse. `Compile` without options compiles a script without top-level `await` |
+| `FastCompiler(in StringSpan, in JSCompilationOptions, string, IList<string>, ICodeCache)` | `Compiler` | added | Compiles a module when the options' `IsModule` is set and a script otherwise, parsing under the options' goal and permission |
+| `FastCompiler(in StringSpan, string, IList<string>, ICodeCache)` | `Compiler` | kept, behaviour changed | Compiles a script without top-level `await`, where it read the ambient scopes |
+
+**Removed internal and private members**, with no public surface: `CoreScript.AllowTopLevelAwait`,
+`AllowTopLevelAwaitScope`, `IsModuleGoal` and `ModuleGoalScope`, their two `AsyncLocal` depths and their
+token types (`Runtime`), which `Parser`, `Compiler`, `Engine` and `Modules` reached through
+`InternalsVisibleTo`; those grants stay, since each assembly still reaches other internals of `Runtime`.
+`SyntaxValidation.ValidateProgram` (`Compiler`, internal) takes the options the program was parsed under in
+place of its `isModule` flag.
+
+**Packages.** No reference changes. `Parser` still references `Runtime`, for the Unicode and
+regular-expression types item 4 of SJL-12.5 moves to `Ast`; the provider of `FastParserOptions` is typed by
+`Broiler.Unicode.Algorithms`' `IUnicodeTables`, which `Parser` already reached through `Runtime`.
+
+**Compatibility.** Binary-compatible: every public member is kept with its signature, and the interface's
+new member has a default. Source-compatible: the new constructors take their options after the keyword map,
+so no existing call becomes ambiguous. Behaviour changes for a host's own `IJSCompiler` and for the members
+listed as changed above.
+
 ## Public API changes, 2026-10-19 (the Temporal core moves to the shared library)
 
 Milestone SJL-10.5 moves the Temporal core onto `Broiler.ECMAScript.Algorithms`' `Broiler.ECMAScript.Temporal`, which

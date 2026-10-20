@@ -10,6 +10,75 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The parser and the compiler take explicit options; corrections J1 and J2 (2026-10-20, milestone SJL-12.5)
+
+The goal (script or module) and the permission to await at the top level reached the parser through two
+ambient scopes of `Runtime`'s `CoreScript`, which `EvalWithTopLevelAwaitAsync` and the module loader entered
+around a compile, and which flowed into everything the compile and the program then ran. They are options
+now: an immutable `FastParserOptions`, which the scanner, the token stream and the parser are made with, and
+`JSCompilationOptions.AllowTopLevelAwait`, which reaches the compiler through `IJSCompiler` and the code
+cache's key. Every compile site passes its own, and the scopes are deleted. This is item 1 of milestone
+SJL-12.5 (Broiler.VM's JSD-0080, decision D19); the two results that change are corrections J1 and J2 of
+bundle `sjl-12-001`'s rule (decision D21), listed here under decision SJL-D-16 (a). These names are SJL-12's,
+not the text area's correspondence rows of the same names.
+
+- **J1: code compiled while `EvalWithTopLevelAwaitAsync` runs, but not as its own program, is compiled as the
+  specification's goal without top-level `await`, as under `Eval`.** This covers direct and indirect `eval`,
+  `ShadowRealm.prototype.evaluate`, the `Function` constructor and the debugger's evaluate. Under
+  `EvalWithTopLevelAwaitAsync`, before and after:
+  - `eval('await 1')`, `(0, eval)('await 1')`, `eval("eval('await 1')")` and
+    `eval('for await (const v of []) {}')`, also after the program's own `await`: compiled with the
+    permission, each answered a Promise (as the program's result, which the method awaits, the survey's
+    probe at `24510b0e` saw `eval('await 1')` answer 1); now a `SyntaxError`, as under `Eval`;
+  - `new ShadowRealm().evaluate('await 1')`: a `TypeError` ("ShadowRealm cannot wrap non-callable objects",
+    the realm's code having compiled to a Promise); now the `SyntaxError` "ShadowRealm.prototype.evaluate:
+    the provided source text could not be parsed", as under `Eval`;
+  - `Function('}); await 1; ({')`, a body that closes the function: compiled, and answered a Promise; now a
+    `SyntaxError`, as under `Eval`.
+
+  A program's own top-level `await` is unchanged, and so is eval code that does not await.
+  `TopLevelAwaitEvalCodeTests` (Integration.Tests) holds these cases; run over `48fee2d3`, seven of its
+  eight fail, and the one that passes is the program keeping its permission.
+- **J2: the code cache keys a compilation on its top-level-`await` permission**, so one context no longer
+  answers a compilation from the other mode's entry. In a script `await (21)` calls a function named
+  `await`, and with the permission it awaits 21: with `globalThis.await = x => x * 2`, the same text
+  answered 42 against 21, or a Promise, by which of `Eval` and `EvalWithTopLevelAwaitAsync` compiled it first
+  in the context (the critic's probe at `24510b0e`). Each now answers per call: 42 under `Eval`, 21 under
+  `EvalWithTopLevelAwaitAsync`. `TopLevelAwaitCodeCacheTests` (Integration.Tests) holds the probe's cases;
+  run over `48fee2d3`, its two cases in one context fail, and the case in fresh contexts passes.
+- **The message "Unexpected await" is kept.** It is the refusal of a top-level `await` without the
+  permission, which the shell's retry reads (`Broiler.JavaScript/Program.cs`) to run a script again with it.
+- **New public members** (decisions D19 and D29; [`docs/public-api.md`](../docs/public-api.md) lists each with
+  its disposition), all added beside the existing ones, none removed:
+  - `Parser`: `FastParserGoal` (`Script`, `Module`, and `Eval`, `FormalParameters` and `FunctionBody`
+    reserved and refused); `FastParserOptions`, a sealed record with `Script`, `Module`, `Goal`,
+    `AllowTopLevelAwait` and `UnicodeTables` (a Broiler.Unicode `IUnicodeTables`, null for the engine's own
+    tables); the constructors `FastScanner(FastPool, in StringSpan, FastKeywordMap, FastParserOptions)`,
+    `FastTokenStream(in StringSpan, FastKeywordMap, FastParserOptions)`,
+    `FastTokenStream(FastPool, in StringSpan, FastKeywordMap, FastParserOptions)` and
+    `FastParser(FastTokenStream, FastParserOptions)`, which refuses a stream made with other options;
+    `FastParser.ParseModule(in StringSpan, FastParserOptions)`; and `Options` on the scanner, the stream and
+    the parser;
+  - `Runtime`: `JSCompilationOptions.AllowTopLevelAwait` (`get; init;`), and the default interface method
+    `IJSCompiler.Compile(in StringSpan, in JSCompilationOptions, string, IList<string>, ICodeCache)`;
+  - `Engine`: `DefaultJSCompiler.Register` with a function of the options, and
+    `DefaultJSCompiler.Compile(in StringSpan, in JSCompilationOptions, string, IList<string>, ICodeCache)`;
+  - `Compiler`: `FastCompiler(in StringSpan, in JSCompilationOptions, string, IList<string>, ICodeCache)`.
+- **A host's own `IJSCompiler`: a behavioural change.** `CoreScript.Compile` now calls the new `Compile` with
+  the options. Its default forwards a script without top-level `await` to the existing member and throws
+  `NotSupportedException`, naming the compiler's type, for a module or a top-level `await`. A host compiler
+  set as `CoreScript.Compiler` that implements only the existing member, and parsed with this engine's
+  parser, compiled modules and top-level `await` through the ambient scopes before; it now implements the
+  new member to compile them. A function registered with `DefaultJSCompiler.Register` without options is
+  refused them in the same way.
+- **The members without options compile a script without top-level `await`**: `FastScanner`'s and
+  `FastTokenStream`'s constructors without options (and `FastParser` over such a stream), `FastCompiler`'s
+  constructor without options, and `DefaultJSCompiler.Compile` without options. They read the ambient scopes
+  before, which a public caller reached only inside a compile `CoreScript` ran. `FastParser.ParseModule`
+  without options parses a module with the permission, as before.
+- **`JSCode.Key`'s text changed**: the options in it now end with `AllowTopLevelAwait = False` or `True`, and
+  a module's key carries `True`, since a module is compiled with the permission as an option.
+
 ### The for-loop's temporaries are numbered per parse (2026-10-20, milestone SJL-12.5)
 
 - **Two parses of one source give the same tree.** The parser names the temporaries of its
