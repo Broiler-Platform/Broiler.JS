@@ -40,8 +40,9 @@ cd $JS && python3 -I $P acceptance --base $B/parse-corpus-c.tsv.gz --after $B/pa
 # part C's control: the copy and its comparison, which must report the two planted differences (exit 0: reported)
 cd $JS && python3 -I $P control --base $B/parse-corpus-c.tsv.gz --out $B/parse-corpus-c-control.tsv.gz \
   --output $B/parse-corpus-c-control.json > $B/parse-corpus-c-control.out
-# (The three control files this wrote into base/ are not retained: the bundle keeps its controls under controls/,
-#  as its README's layout and the tool's README say. They were made again there, below.)
+# (Added 2026-10-20, when the base was committed. The three control files this wrote into base/ are not retained:
+#  the bundle keeps its controls under controls/, as its README's layout and the tool's README say. They were made
+#  again there, below.)
 # part D, read and not judged: runs 1, 2 and 3 over the population run 1 of part C accepted at P (exit 1: the
 # parser's process-wide temporary counter at this commit, which the rule expects the base to show; --require-pass
 # is not given, because the corpus commit has no for-loop pass)

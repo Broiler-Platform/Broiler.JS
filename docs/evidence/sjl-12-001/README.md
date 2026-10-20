@@ -30,9 +30,9 @@ frontend contract (SJL-12)", with Broiler.VM's JSD-0080,
 - Parts C and D's bases are taken at the corpus commit `1fe542ff`, with part C's control (section 1).
 - The after runs follow SJL-12.5's last item, the compiler's for-loop pass.
 
-*(Revised 2026-10-20, at SJL-12.4, when parts C and D's bases were committed. The state read "at SJL-12.5: rules only.
-Nothing here is a verdict, and no base has been taken.", and its second item "Parts C and D's bases follow SJL-12.4,
-which adds the parse corpus and the tool.")*
+*(Revised 2026-10-20, at SJL-12.4, when parts C and D's bases were committed. The state read "State, 2026-10-20, at
+SJL-12.5: rules only. Nothing here is a verdict, and no base has been taken.", and its second item "Parts C and D's
+bases follow SJL-12.4, which adds the parse corpus and the tool.")*
 
 *(Revised 2026-10-20, at SJL-12.5, when two dispatches of part A's base had ended void. The state read "State,
 2026-10-19, at SJL-12.1: rules only. Nothing here is a verdict, and nothing has been taken.", and its first item
@@ -180,10 +180,21 @@ stack of 0, so that K compiles on the tool's own thread ([`tools/parse-corpus/RE
   - 2 under `Broiler.ECMAScript/docs/`: the early-error catalogue;
   - 27 under `docs/`: this bundle's README, catalogue and tool, the plan pair, and bundle `sjl-3-001`'s README and
     manifest.
-- **It comes before every product change.** Read at the default branch, which is the corpus commit itself, `git log`
-  from the rule commit over the paths the condition lists names no commit. With `--full-history` it names
-  `b1ac1b8a` alone, a merge that took the rule commit into the catalogue's branch and changes no listed path against
-  the rule commit; it is itself an ancestor of the corpus commit. The condition is read again at the after commit.
+- **It comes before every product change, as this section reads the condition.** Read at the default branch, which is
+  the corpus commit itself, `git log` from the rule commit over the paths the condition lists names no commit. With
+  `--full-history` it names `b1ac1b8a` alone, the merge that took the rule commit into the catalogue's branch. Its
+  first parent, `a6b29eaf`, does not descend from the rule commit, and against it `b1ac1b8a` changes
+  `Broiler.ECMAScript/CHANGELOG.md`, a path the condition lists: what the default branch had changed there, which the
+  merge brought in. Against its second parent, the rule commit, it changes no path the condition lists, so on those
+  paths it holds the rule commit's files. This section reads a commit that "changes a path" as one that changes it
+  against the rule commit, and so reads `b1ac1b8a` as no product change. That is a reading, not something git
+  decides. On a reading that counts a change against either parent, `b1ac1b8a` is a product change after the rule
+  commit, the corpus commit descends from it and does not come before it, and the condition fails; the rule makes a
+  part whose corpus commit fails its conditions void. The condition is read again at the after commit.
+  *(Revised 2026-10-20, after review: the item began "It comes before every product change." and its third sentence
+  read "With `--full-history` it names `b1ac1b8a` alone, a merge that took the rule commit into the catalogue's
+  branch and changes no listed path against the rule commit; it is itself an ancestor of the corpus commit." That
+  `b1ac1b8a` is an ancestor of the corpus commit does not meet the condition, which asks the reverse.)*
 
 **The runs** ([`base/logs/runs.tsv`](base/logs/runs.tsv); each run's standard error in [`base/logs/`](base/logs/),
 its standard output empty).
