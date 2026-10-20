@@ -34,7 +34,9 @@ frontend contract (SJL-12)", with Broiler.VM's JSD-0080,
 - `corpus/`: the parse corpus's commit, its manifest's digest and the ancestry the rule's conditions ask for;
 - `after/`: the after runs of every part, each comparison's report and the table of every C1, M, X and D row;
 - `tools/`: the parse-corpus tool, added at SJL-12.4;
-- `controls/`: each control's patch or copy, and its output.
+- `controls/`: each control's patch or copy, and its output;
+- `catalogue/`: SJL-12.3's completeness check of the early-error catalogue (task 3.11), with the inventories it read
+  and the checker that re-runs it (added 2026-10-20). It is a record of the catalogue, not a part of this rule.
 
 **It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them.
 
