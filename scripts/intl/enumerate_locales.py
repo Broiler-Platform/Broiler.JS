@@ -11,9 +11,9 @@
 It writes docs/evidence/sjl-9-001/locales/ (or --out): `intl402.tsv` and `datasets.tsv`, one row per
 locale tag as written and per file that names it; `union.tsv`, one row per tag in BCP 47 case; and
 `uncounted.tsv`, the literals that look like tags but are not counted, so that a reader can check
-that none of them is a locale the lists miss. Milestone SJL-9 (work package SJL-9.1, task 1.2) uses them for decision D5's list of the locales whose
-data Broiler.JS embeds. The report is an input, so the same script runs again on the report taken at
-SJL-9's base commit.
+that none of them is a locale the lists miss. Milestone SJL-9 (work package SJL-9.1, task 1.2) uses
+them for decision D5's list of the locales whose data Broiler.JS embeds. The report is an input, so
+the same script runs again on the report taken at SJL-9's base commit.
 
 WHAT IS READ. The report is read from its path, and every other input from Git objects, never from a
 working tree:
@@ -41,13 +41,25 @@ seen. A literal names a locale tag when:
      getCanonicalLocales, supportedLocalesOf, the toLocale* methods, and localeCompare's second
      argument);
    - `slot`: it is, or is an element of an array literal that is, the value of a variable or property
-     whose name says locale or language tag (LOCALE_SLOT);
+     whose name says locale or language tag (LOCALE_SLOT; `localeMatcher` is an option, not a locale);
    - `sibling`: it sits beside a literal counted as `tag`: in the same flat array literal, in the same
      column of an array of array literals, or among the keys, or the values, of the same object literal;
-     and its slot's name holds no word for an option value (NOT_SIBLING_SLOT).
-   A single subtag needs `argument`, `slot` or `sibling`, because era codes, calendar names, units and
-   region codes are often two- or three-letter CLDR language codes.
-A literal that meets 1 and 2 but not 3 is written to `uncounted.tsv` with the contexts it was read in.
+     and its slot's name holds no word for an option value (NOT_SIBLING_SLOT);
+   - `wrapper`: it is, or is an element of an array literal that is, argument k of a call or `new` whose
+     callee is a function or class the same file declares (`function f(...)`, `f = function (...)`,
+     `f = (...) =>`, `class C ... { constructor(...) }`, `C = class ...`), when that declaration's
+     k-th parameter is named for a locale (LOCALE_SLOT); or argument 0 of a class that extends an
+     Intl constructor and declares no constructor of its own.
+   A single subtag needs `argument`, `slot`, `sibling` or `wrapper`, because era codes, calendar names,
+   units and region codes are often two- or three-letter CLDR language codes.
+`uncounted.tsv` lists, with the contexts each was read in, two kinds of literal a file does not count:
+- `position`: it meets 1 and 2, and no way of 3 counts it;
+- `language:<ways>`: it meets 1, and 3 would count it in a way other than `tag` alone (in `locale:`
+  metadata, or as `argument`, `slot`, `sibling` or `wrapper`), but rule 2 rejects its language, which
+  CLDR does not know (`tlh`, `zxx`, `zz`, `xyz-DE`). A literal with such a language that only `tag`
+  would count is not listed: calendar names (`islamic-civil`), time-zone links (`GB-Eire`), option
+  values (`maxSd-larger-minFd`) and tags over an invented language (`xx-1234`) are of that kind. No
+  language CLDR does not know has data to embed, so neither kind changes decision D5's list.
 
 THE OUTPUT. Every file starts with `#` lines that name its inputs: the report's path and SHA-256, the
 run its `run.txt` names, the suite revision, the Broiler.VM commit and the rules above in short. The
@@ -92,11 +104,12 @@ CLDR_FILES = {
     "available": CLDR + "availableLocales.json",
 }
 
-LOCALE_CALLS = {"Collator", "DateTimeFormat", "DisplayNames", "DurationFormat", "ListFormat", "Locale",
-                "NumberFormat", "PluralRules", "RelativeTimeFormat", "Segmenter", "Constructor",
-                "getCanonicalLocales", "supportedLocalesOf", "toLocaleString", "toLocaleDateString",
-                "toLocaleTimeString", "toLocaleUpperCase", "toLocaleLowerCase"}
-LOCALE_SLOT = re.compile(r"(?i)(locale|langtag|languagetag|^langs?$|^languages?$|^tags?\d*$)")
+INTL_CONSTRUCTORS = {"Collator", "DateTimeFormat", "DisplayNames", "DurationFormat", "ListFormat", "Locale",
+                     "NumberFormat", "PluralRules", "RelativeTimeFormat", "Segmenter"}
+LOCALE_CALLS = INTL_CONSTRUCTORS | {"Constructor", "getCanonicalLocales", "supportedLocalesOf", "toLocaleString",
+                                    "toLocaleDateString", "toLocaleTimeString", "toLocaleUpperCase",
+                                    "toLocaleLowerCase"}
+LOCALE_SLOT = re.compile(r"(?i)(locale(?!Matcher)|langtag|languagetag|^langs?$|^languages?$|^tags?\d*$)")
 NOT_TAG_SLOT = re.compile(r"(?i)(units?|calendars?|calendarIds?|timeZones?|currency|currencies|numberingSystems?|"
                           r"collations?|eras?)$")
 NOT_SIBLING_SLOT = re.compile(r"(?i:unit|calendar|timezone|currenc|numbering|collation|region|script|variant|key)"
@@ -460,22 +473,115 @@ def element_name(toks, k, close):
     return None
 
 
-def literals(src):
+def callee_at(toks, k):
+    """The dotted name the '(' at k calls: `Intl.DateTimeFormat` in `new Intl.DateTimeFormat(`, without
+    the keyword before it; the empty string when no name precedes it."""
+    c = k - 1
+    if c < 0 or toks[c][0] != "ident":
+        return ""
+    parts = [toks[c][1]]
+    while c >= 2 and toks[c - 1] in (("punct", "."), ("punct", "?.")) and toks[c - 2][0] == "ident":
+        parts[:0] = [toks[c - 2][1], toks[c - 1][1]]
+        c -= 2
+    return "".join(parts)
+
+
+def parameters(toks, k, close):
+    """The parameter names the '(' at k lists, in order; None for a destructured parameter."""
+    end = close.get(k, k)
+    names, i, start = [], k + 1, True
+    while i < end:
+        kind, text = toks[i]
+        if start and (kind, text) != ("punct", "..."):
+            names.append(text if kind == "ident" else None)
+            start = False
+        if kind == "punct" and text in ("(", "[", "{"):
+            i = close.get(i, i)
+        elif kind == "punct" and text == ",":
+            start = True
+        i += 1
+    return names
+
+
+def local_locale_calls(toks, close):
+    """{name: indices of the arguments that take a locale} for the functions and classes a file declares:
+    `function f(...)`, `f = function (...)`, `f = (...) =>`, `class C ... { constructor(...) }` and
+    `C = class ...`. An argument takes a locale when its parameter's name says locale or language tag
+    (LOCALE_SLOT); argument 0 does when a class extends an Intl constructor and declares no constructor."""
+    opener = {c: o for o, c in close.items()}
+    found = {}
+
+    def bound_name(s):
+        if s >= 1 and toks[s - 1] == ("ident", "async"):
+            s -= 1
+        if s >= 2 and toks[s - 1] == ("punct", "=") and toks[s - 2][0] == "ident":
+            return toks[s - 2][1]
+        return None
+
+    def add(names, indices):
+        for name in names:
+            if name is not None and indices:
+                found.setdefault(name, set()).update(indices)
+
+    def named_for_locale(params):
+        return {i for i, p in enumerate(params) if p is not None and LOCALE_SLOT.search(p)}
+
+    for k, (kind, text) in enumerate(toks):
+        if (kind, text) == ("ident", "function"):
+            j = k + 1
+            if j < len(toks) and toks[j] == ("punct", "*"):
+                j += 1
+            own = toks[j][1] if j < len(toks) and toks[j][0] == "ident" else None
+            if own is not None:
+                j += 1
+            if j < len(toks) and toks[j] == ("punct", "("):
+                add((own, bound_name(k)), named_for_locale(parameters(toks, j, close)))
+        elif (kind, text) == ("punct", "=>") and k:
+            if toks[k - 1] == ("punct", ")") and k - 1 in opener:
+                start = opener[k - 1]
+                params = parameters(toks, start, close)
+            elif toks[k - 1][0] == "ident":
+                start, params = k - 1, [toks[k - 1][1]]
+            else:
+                continue
+            add((bound_name(start),), named_for_locale(params))
+        elif (kind, text) == ("ident", "class"):
+            j = k + 1
+            own = toks[j][1] if j < len(toks) and toks[j][0] == "ident" and toks[j][1] != "extends" else None
+            if own is not None:
+                j += 1
+            base = ""
+            if j < len(toks) and toks[j] == ("ident", "extends"):
+                j += 1
+                while j < len(toks) and (toks[j][0] == "ident" or toks[j] == ("punct", ".")):
+                    base += toks[j][1]
+                    j += 1
+            if j >= len(toks) or toks[j] != ("punct", "{"):
+                continue
+            indices, i, end = None, j + 1, close.get(j, j)
+            while i < end:
+                if toks[i] == ("ident", "constructor") and toks[i + 1] == ("punct", "("):
+                    indices = named_for_locale(parameters(toks, i + 1, close))
+                    break
+                if toks[i][0] == "punct" and toks[i][1] in ("(", "[", "{"):
+                    i = close.get(i, i)
+                i += 1
+            if indices is None:
+                indices = {0} if base.split(".")[-1] in INTL_CONSTRUCTORS else set()
+            add((own, bound_name(k)), indices)
+    return found
+
+
+def literals(toks, close):
     """Every literal with its context: (value, context) where context is a dict with 'call' (callee and
     argument index), 'slot' (the name it is given) and 'group' (the key of the literals it stands beside)."""
-    toks = tokens(src)
-    close = closers(toks)
     stack, found = [], []
     for k, (kind, text) in enumerate(toks):
         frame = stack[-1] if stack else None
         if kind == "punct" and text in ("(", "[", "{"):
             prev = toks[k - 1] if k else None
             if text == "(":
-                parts, c = [], k - 1
-                while c >= 0 and (toks[c][0] == "ident" or toks[c] in (("punct", "."), ("punct", "?."))):
-                    parts.append(toks[c][1])
-                    c -= 1
-                stack.append(Frame("(", k, callee="".join(reversed(parts)), parent=frame))
+                stack.append(Frame("(", k, callee=callee_at(toks, k), parent=frame))
             elif text == "[":
                 index = prev is not None and ((prev[0] in ("ident", "str", "num") and prev[1] not in REGEX_AFTER_WORDS)
                                               or prev in (("punct", ")"), ("punct", "]")))
@@ -536,6 +642,14 @@ def is_locale_call(call):
     return name in LOCALE_CALLS and argument == 0
 
 
+def is_wrapper_call(call, local):
+    """Whether a literal is an argument that a function or class the same file declares takes a locale in."""
+    if call is None:
+        return False
+    callee, argument = call
+    return "." not in callee and argument in local.get(callee, ())
+
+
 def metadata_tags(src):
     """The tags of a test262 file's `locale:` metadata, as a YAML flow list or a block list."""
     m = METADATA.search(src)
@@ -565,36 +679,56 @@ def describe_context(context):
 
 
 def tags_named(src, languages):
-    """({tag as written: set of ways it is counted}, {literal not counted: set of its contexts}) for a file."""
+    """({tag as written: set of ways it is counted}, {literal not counted: (why, set of its contexts)}) for
+    a file. `why` is `position` for a literal that meets rules 1 and 2 where no way of rule 3 counts it,
+    and `language:<ways>` for one that meets rule 1 and that rule 3 would count in those ways, but whose
+    language rule 2 rejects."""
+    toks = tokens(src)
+    close = closers(toks)
+    local = local_locale_calls(toks, close)
     candidates = []
-    for value, context in literals(src):
+    for value, context in literals(toks, close):
         subtags = parse_tag(value)
-        if subtags is None or subtags[0] not in languages:
-            continue
-        candidates.append((value, subtags, context))
-    counted = {}
+        if subtags is not None:
+            candidates.append((value, subtags, context, subtags[0] in languages))
+    counted, rejected = {}, {}
+
+    def count(value, known, way, context):
+        if known:
+            counted.setdefault(value, set()).add(way)
+        else:
+            ways, contexts = rejected.setdefault(value, (set(), set()))
+            ways.add(way)
+            contexts.add(context)
+
     for value in metadata_tags(src):
         subtags = parse_tag(value)
-        if subtags is not None and subtags[0] in languages:
-            counted.setdefault(value, set()).add("metadata")
+        if subtags is not None:
+            count(value, subtags[0] in languages, "metadata", "metadata")
     groups = set()
-    for value, subtags, context in candidates:
+    for value, subtags, context, known in candidates:
         if len(subtags) > 1 and not NOT_TAG_SLOT.search(context["slot"] or ""):
-            counted.setdefault(value, set()).add("tag")
-            if context["group"] is not None:
+            count(value, known, "tag", describe_context(context))
+            if known and context["group"] is not None:
                 groups.add(context["group"])
     uncounted = {}
-    for value, subtags, context in candidates:
+    for value, subtags, context, known in candidates:
         slot = context["slot"] or ""
         if is_locale_call(context["call"]):
-            counted.setdefault(value, set()).add("argument")
+            count(value, known, "argument", describe_context(context))
         elif LOCALE_SLOT.search(slot):
-            counted.setdefault(value, set()).add("slot")
+            count(value, known, "slot", describe_context(context))
         elif context["group"] in groups and not NOT_SIBLING_SLOT.search(slot):
-            counted.setdefault(value, set()).add("sibling")
-        elif len(subtags) == 1 or NOT_TAG_SLOT.search(slot):
+            count(value, known, "sibling", describe_context(context))
+        elif is_wrapper_call(context["call"], local):
+            count(value, known, "wrapper", describe_context(context))
+        elif known and (len(subtags) == 1 or NOT_TAG_SLOT.search(slot)):
             uncounted.setdefault(value, set()).add(describe_context(context))
-    return counted, {value: contexts for value, contexts in uncounted.items() if value not in counted}
+    out = {value: ("position", contexts) for value, contexts in uncounted.items() if value not in counted}
+    for value, (ways, contexts) in rejected.items():
+        if ways - {"tag"}:
+            out[value] = ("language:" + ",".join(sorted(ways)), contexts)
+    return counted, out
 
 
 def cldr_languages(blobs):
@@ -647,8 +781,8 @@ def main(argv=None):
             counted, uncounted = tags_named(files[path], languages)
             for tag, ways in counted.items():
                 rows[source].append((tag, path, ",".join(sorted(ways))))
-            for literal, contexts in uncounted.items():
-                skipped.append((literal, path, "; ".join(sorted(contexts))))
+            for literal, (why, contexts) in uncounted.items():
+                skipped.append((literal, path, why, "; ".join(sorted(contexts))))
 
     def order(row):
         return (bcp47_case(parse_tag(row[0])), row[0], row[1])
@@ -669,9 +803,11 @@ def main(argv=None):
         "subtag, outside a unit, calendar, time-zone, currency, numbering-system, collation or era slot),",
         "`argument` (the locales argument of an Intl constructor, getCanonicalLocales, supportedLocalesOf,",
         "a toLocale* method or localeCompare), `slot` (the value of a variable or property named for a",
-        "locale or a language tag) or `sibling` (beside a `tag` literal in the same array, table column or",
-        "object). Tags computed at run time, and the harness files, are not read. See",
-        "scripts/intl/enumerate_locales.py.",
+        "locale or a language tag, localeMatcher excepted), `sibling` (beside a `tag` literal in the same",
+        "array, table column or object) or `wrapper` (an argument a function or class the same file",
+        "declares takes in a parameter named for a locale, or the first argument of a class that extends",
+        "an Intl constructor without a constructor of its own). Tags computed at run time, and the harness",
+        "files, are not read. See scripts/intl/enumerate_locales.py.",
     ]
     common = [
         "generated by scripts/intl/enumerate_locales.py; two runs over the same inputs write the same bytes",
@@ -707,13 +843,18 @@ def main(argv=None):
            *common],
           ["tag", "base", "language", "cldr-main", "intl402-files", "dataset-programs"], union_rows)
     write(os.path.join(args.out, "uncounted.tsv"),
-          ["Literals of the same files that are structurally valid tags with a CLDR language subtag but",
-           "that no rule counts (era codes, calendar names, units, region codes, values compared with a",
-           "result), one row per literal as written and per file, with the contexts it was read in: the",
-           "slot it is the value of, the call and argument it is passed to, and the kind of literal group",
-           "it sits in. A literal a file also counts is not listed. It is here so that a reader can check",
-           "that none is a locale the other files miss.", *common],
-          ["literal", "file", "contexts"], skipped)
+          ["Literals of the same files that are structurally valid tags but are not counted, one row per",
+           "literal as written and per file, with why and the contexts it was read in: the slot it is the",
+           "value of, the call and argument it is passed to, and the kind of literal group it sits in.",
+           "`why` is `position` for a literal whose language CLDR knows but that no way counts (era codes,",
+           "calendar names, units, region codes, values compared with a result); and `language:<ways>` for",
+           "one that sits where a locale goes, in the ways named, but whose language CLDR 48.2.0 does not",
+           "know (rule 2), so it has no data to embed. A literal with such a language that only the `tag`",
+           "way would count (a calendar name such as islamic-civil, a time-zone link such as GB-Eire, an",
+           "option value, a tag over an invented language such as xx-1234) is not listed. A literal a file",
+           "also counts is not listed. It is here so that a reader can check that none is a locale the",
+           "other files miss.", *common],
+          ["literal", "file", "why", "contexts"], skipped)
     return 0
 
 

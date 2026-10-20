@@ -16,9 +16,11 @@
 # subtag, outside a unit, calendar, time-zone, currency, numbering-system, collation or era slot),
 # `argument` (the locales argument of an Intl constructor, getCanonicalLocales, supportedLocalesOf,
 # a toLocale* method or localeCompare), `slot` (the value of a variable or property named for a
-# locale or a language tag) or `sibling` (beside a `tag` literal in the same array, table column or
-# object). Tags computed at run time, and the harness files, are not read. See
-# scripts/intl/enumerate_locales.py.
+# locale or a language tag, localeMatcher excepted), `sibling` (beside a `tag` literal in the same
+# array, table column or object) or `wrapper` (an argument a function or class the same file
+# declares takes in a parameter named for a locale, or the first argument of a class that extends
+# an Intl constructor without a constructor of its own). Tags computed at run time, and the harness
+# files, are not read. See scripts/intl/enumerate_locales.py.
 tag	file	counted-as
 aa-Latn-ET-x-private	test/intl402/Locale/constructor-non-iana-canon.js	sibling,tag
 aa-a-foo-x-a-foo-bar	test/intl402/language-tags-valid.js	slot,tag
@@ -35,6 +37,7 @@ ab-Cd	test/intl402/Intl/getCanonicalLocales/duplicates.js	argument,tag
 ab-cd	test/intl402/Intl/getCanonicalLocales/duplicates.js	argument,tag
 ab-cd	test/intl402/Intl/getCanonicalLocales/main.js	sibling,tag
 af	test/intl402/Intl/getCanonicalLocales/elements-not-reordered.js	argument
+ar	test/intl402/DateTimeFormat/prototype/formatToParts/main.js	wrapper
 ar	test/intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js	metadata,slot
 ar	test/intl402/Intl/supportedValuesOf/collations-accepted-by-Collator.js	metadata,slot
 ar	test/intl402/Locale/canonicalize-locale-list-take-locale.js	slot
@@ -134,11 +137,13 @@ de	test/intl402/Collator/prototype/resolvedOptions/resolved-collation-unicode-ex
 de	test/intl402/Collator/usage-de.js	argument,metadata
 de	test/intl402/Date/prototype/returns-same-results-as-DateTimeFormat.js	slot
 de	test/intl402/DateTimeFormat/prototype/format/bound-to-datetimeformat-instance.js	slot
+de	test/intl402/DateTimeFormat/prototype/formatToParts/main.js	wrapper
 de	test/intl402/DurationFormat/supportedLocalesOf/locales-specific.js	metadata,slot
 de	test/intl402/Intl/getCanonicalLocales/Locale-object.js	argument,sibling
 de	test/intl402/Intl/getCanonicalLocales/canonicalized-tags.js	sibling
 de	test/intl402/Intl/supportedValuesOf/collations-accepted-by-Collator.js	metadata,slot
 de	test/intl402/ListFormat/constructor/constructor/subclassing.js	slot
+de	test/intl402/Locale/subclassing.js	wrapper
 de	test/intl402/Number/prototype/toLocaleString/returns-same-results-as-NumberFormat.js	slot
 de	test/intl402/NumberFormat/prototype/format/bound-to-numberformat-instance.js	slot
 de	test/intl402/NumberFormat/prototype/format/format-fraction-digits-precision.js	slot
@@ -173,6 +178,7 @@ de	test/intl402/NumberFormat/prototype/format/format-rounding-priority-less-prec
 de	test/intl402/NumberFormat/prototype/format/format-rounding-priority-more-precision.js	slot
 de	test/intl402/NumberFormat/prototype/format/format-significant-digits-precision.js	slot
 de	test/intl402/NumberFormat/prototype/format/format-significant-digits.js	slot
+de	test/intl402/NumberFormat/prototype/formatToParts/main.js	wrapper
 de	test/intl402/NumberFormat/significant-digits-options-get-sequence.js	argument
 de	test/intl402/NumberFormat/test-option-roundingPriority-mixed-options.js	slot
 de	test/intl402/RelativeTimeFormat/constructor/constructor/subclassing.js	slot
@@ -627,7 +633,7 @@ en-US	test/intl402/DateTimeFormat/prototype/format/temporal-plaintime-formatting
 en-US	test/intl402/DateTimeFormat/prototype/format/temporal-plaintime-formatting-timezonename.js	metadata,slot,tag
 en-US	test/intl402/DateTimeFormat/prototype/format/temporal-plainyearmonth-formatting-datetime-style.js	metadata,slot,tag
 en-US	test/intl402/DateTimeFormat/prototype/format/temporal-plainyearmonth-formatting-timezonename.js	metadata,slot,tag
-en-US	test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js	argument,metadata,tag
+en-US	test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js	argument,metadata,tag,wrapper
 en-US	test/intl402/DateTimeFormat/prototype/formatRange/date-same-returns-single-date.js	metadata
 en-US	test/intl402/DateTimeFormat/prototype/formatRange/en-US.js	argument,metadata,tag
 en-US	test/intl402/DateTimeFormat/prototype/formatRange/fails-on-distinct-temporal-types.js	argument,tag
@@ -792,13 +798,13 @@ en-US-u-ca-gregory	test/intl402/DateTimeFormat/prototype/formatRange/temporal-pl
 en-US-u-ca-gregory	test/intl402/DateTimeFormat/prototype/formatRangeToParts/temporal-plainmonthday-formatting-timezonename.js	metadata,slot,tag
 en-US-u-ca-gregory	test/intl402/DateTimeFormat/prototype/formatToParts/temporal-plainmonthday-formatting-timezonename.js	metadata,slot,tag
 en-US-u-ca-gregory	test/intl402/Locale/constructor-options-region-valid.js	argument,tag
-en-US-u-hc-h11	test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js	tag
-en-US-u-hc-h12	test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js	tag
+en-US-u-hc-h11	test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js	tag,wrapper
+en-US-u-hc-h12	test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js	tag,wrapper
 en-US-u-hc-h12	test/intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-dateStyle.js	argument,tag
 en-US-u-hc-h12	test/intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-timeStyle.js	argument,tag
 en-US-u-hc-h12	test/intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle.js	argument,tag
-en-US-u-hc-h23	test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js	tag
-en-US-u-hc-h24	test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js	tag
+en-US-u-hc-h23	test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js	tag,wrapper
+en-US-u-hc-h24	test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js	tag,wrapper
 en-US-u-nu-arab	test/intl402/DateTimeFormat/prototype/format/numbering-system.js	metadata,slot,tag
 en-US-u-nu-arab	test/intl402/RelativeTimeFormat/prototype/format/en-us-numbering-systems.js	slot,tag
 en-US-u-nu-deva	test/intl402/DateTimeFormat/prototype/format/numbering-system.js	metadata,slot,tag
@@ -1165,6 +1171,8 @@ mo	test/intl402/Intl/getCanonicalLocales/non-iana-canon.js	slot
 mo	test/intl402/Locale/constructor-non-iana-canon.js	slot
 nb	test/intl402/Locale/constructor-options-language-grandfathered.js	argument
 pap	test/intl402/Locale/prototype/minimize/removing-likely-subtags-first-adds-likely-subtags.js	sibling
+pl	test/intl402/DateTimeFormat/prototype/formatToParts/main.js	wrapper
+pl	test/intl402/NumberFormat/prototype/formatToParts/main.js	wrapper
 pl-PL	test/intl402/RelativeTimeFormat/prototype/format/pl-pl-style-long.js	argument,metadata,tag
 pl-PL	test/intl402/RelativeTimeFormat/prototype/format/pl-pl-style-narrow.js	argument,metadata,tag
 pl-PL	test/intl402/RelativeTimeFormat/prototype/format/pl-pl-style-short.js	argument,metadata,tag

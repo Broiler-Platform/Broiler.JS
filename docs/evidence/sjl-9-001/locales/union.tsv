@@ -19,9 +19,11 @@
 # subtag, outside a unit, calendar, time-zone, currency, numbering-system, collation or era slot),
 # `argument` (the locales argument of an Intl constructor, getCanonicalLocales, supportedLocalesOf,
 # a toLocale* method or localeCompare), `slot` (the value of a variable or property named for a
-# locale or a language tag) or `sibling` (beside a `tag` literal in the same array, table column or
-# object). Tags computed at run time, and the harness files, are not read. See
-# scripts/intl/enumerate_locales.py.
+# locale or a language tag, localeMatcher excepted), `sibling` (beside a `tag` literal in the same
+# array, table column or object) or `wrapper` (an argument a function or class the same file
+# declares takes in a parameter named for a locale, or the first argument of a class that extends
+# an Intl constructor without a constructor of its own). Tags computed at run time, and the harness
+# files, are not read. See scripts/intl/enumerate_locales.py.
 tag	base	language	cldr-main	intl402-files	dataset-programs
 aa-Latn-ET-x-private	aa-Latn-ET	aa	yes	1	0
 aa-a-foo-x-a-foo-bar	aa	aa	yes	1	0
@@ -32,7 +34,7 @@ aae-Thai-CO	aae-Thai-CO	aae	no	1	0
 aar-x-private	aar	aar	yes	2	1
 ab-CD	ab-CD	ab	yes	2	0
 af	af	af	yes	1	0
-ar	ar	ar	yes	38	1
+ar	ar	ar	yes	39	1
 ar-001	ar-001	ar	yes	0	1
 ar-Arab	ar-Arab	ar	yes	1	0
 ar-EG	ar-EG	ar	yes	1	1
@@ -61,7 +63,7 @@ da-u-attr	da	da	yes	1	0
 da-u-attr-co-search	da	da	yes	1	0
 da-u-ca-gregory	da	da	yes	1	0
 da-u-ca-gregory-ca-buddhist	da	da	yes	1	0
-de	de	de	yes	57	12
+de	de	de	yes	60	12
 de-1901	de-1901	de	yes	1	0
 de-1996	de-1996	de	yes	1	1
 de-AT	de-AT	de	yes	8	7
@@ -312,6 +314,7 @@ nb	nb	nb	yes	1	0
 nl-BE	nl-BE	nl	yes	0	1
 no	no	no	yes	0	1
 pap	pap	pap	yes	1	0
+pl	pl	pl	yes	2	0
 pl-PL	pl-PL	pl	yes	6	0
 pt-BR	pt-BR	pt	yes	8	2
 pt-PT	pt-PT	pt	yes	1	0
