@@ -115,10 +115,11 @@ and skip waiting for review.", which changes no rule, in the work the owner's wo
 continue with the other remaining SJL milestones". The programme's ledger is to record it, and a dated note under
 decision SJL-D-23 (`Broiler.VM/docs/javascript-shared-libraries/decisions.md`) the trigger below; both are filed in
 Broiler.VM apart from this record.
-- **What meets the clause.** Part B as written, on a controlled lane, at its own arms: B, the rule commit `1410079e`,
-  whose engine projects are byte-identical to the base `44a214dc`; and A, the after commit `ef676932`, with the rule
-  commit's workloads and harness. The void run was not judged, so that run would be part B's first judged run, at
-  full strength, and not a re-run.
+- **What would meet the clause.** A MET reading of part B as written, on a controlled lane, at its own arms: B, the
+  rule commit `1410079e`, whose engine projects are byte-identical to the base `44a214dc`; and A, the after commit
+  `ef676932`, with the rule commit's workloads and harness *(corrected 2026-10-20, after review; read "**What meets
+  the clause.** Part B as written, on a controlled lane, at its own arms")*. The void run was not judged, so that run
+  would be part B's first judged run, at full strength, and not a re-run.
 - **Why no lane exists.** This repository's machine is a container shared with other work, and every GitHub-hosted
   runner, larger runners included, is a smoke lane: "GitHub-hosted runners remain smoke lanes, not controlled
   acceptance hardware" ([`Measurement.md`](Measurement.md), "Controlled lanes and effective configuration"). Of the

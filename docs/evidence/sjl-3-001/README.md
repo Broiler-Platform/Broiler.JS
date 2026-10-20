@@ -152,8 +152,11 @@ look at.
 *(Noted 2026-10-20. On 2026-10-20 the owner decided, as recommended and under the direction of
 2026-10-18, "Please do all recommended decisions and skip waiting for review.", which changes no
 rule, to leave clause 7's measurement half unmet and to write no revision of part B onto a smoke
-lane. Part B as written, on a controlled lane, at this sub-bundle's arms `1410079e` and `ef676932`,
-meets the half, and would be part B's first judged run.
+lane. Part B as written, on a controlled lane at this sub-bundle's arms `1410079e` and `ef676932`,
+would be part B's first judged run, and a MET reading of it would meet the half (corrected
+2026-10-20, after review; the sentence read "Part B as written, on a controlled lane, at this
+sub-bundle's arms `1410079e` and `ef676932`, meets the half, and would be part B's first judged
+run.").
 [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "Clause 7's measurement half: the owner's
 decision of 2026-10-20", records the route to such a lane, the fallbacks if the arms cannot be
 built there or clause 5 fails there, and when the owner's next dated choice is due. This section's
