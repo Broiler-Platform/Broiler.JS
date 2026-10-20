@@ -137,7 +137,8 @@ Broiler.VM apart from this record.
   current, as SJL-7's part B waits for a lane "at whatever commit is then current" ("After the evidence, 2026-10-17",
   below). Its decision is weaker evidence, and it is part B's last measurement.
 - **If clause 5 fails there**, part B reads the failure as "a regression SJL-3 answers before it closes": this engine
-  fixes it, and a revised measurement follows under a dated revision, with arm A at the fix.
+  fixes it, and one revised measurement follows under a dated revision, with arm A at the fix *(corrected
+  2026-10-20, after review; read "a revised measurement follows")*.
 - **The trigger.** The owner's next dated choice on this half is due when either (a) a controlled lane exists,
   recorded as `Measurement.md` requires; or (b) this half, Broiler.VM's clause 13 if it is still open, and SJL-4's
   clause 9, a Broiler.VM clause, are the only unmet clauses of SJL-3 to SJL-15 and SJL-17. At (b) the choice is
