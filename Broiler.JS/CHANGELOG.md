@@ -10,6 +10,20 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The for-loop's temporaries are numbered per parse (2026-10-20, milestone SJL-12.5)
+
+- **Two parses of one source give the same tree.** The parser names the temporaries of its
+  `for (let …)` and `for (const …)` desugaring by number, and the counter was one static for the
+  process: the names, and so the tree `FastParser` returns, depended on everything the process had
+  parsed before, on any thread. The counter is now the parser's own. Each parse numbers its
+  temporaries from 2, as the first parse in a process did.
+  - A temporary's name is never an identifier, so no source text names one. Code a direct `eval`
+    compiles is parsed on its own, so its temporaries are numbered from 2 as well, as the enclosing
+    code's are.
+  - This is item 2 of milestone SJL-12.5 (Broiler.VM's JSD-0080). The parser's architecture test,
+    `Broiler.JavaScript.Architecture.Tests`, holds the case: two parses of a source with every loop shape
+    the parser rewrites give equal tree dumps.
+
 ### Each scanner has its own end-of-file token (2026-10-20, milestone SJL-12.5)
 
 - **A parse no longer shares its end-of-file token with every other parse.** `FastScanner`'s end-of-file

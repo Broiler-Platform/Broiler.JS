@@ -34,10 +34,6 @@ public sealed class ParserArchitectureTests(ITestOutputHelper output)
     /// </summary>
     private static readonly string[] TodaysViolations =
     [
-        // Item 2, one temporary counter per parse.
-        Assembly + ": Broiler.JavaScript.Parser.FastParser.TempVarID is a mutable static field",
-        ParserFixtures.RepeatedViolation,
-
         // Item 4 (decision D20), no reference to Runtime.
         Assembly + " references the assembly Broiler.JavaScript.Runtime",
 
