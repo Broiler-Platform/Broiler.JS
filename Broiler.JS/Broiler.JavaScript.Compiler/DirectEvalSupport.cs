@@ -193,7 +193,8 @@ public static class DirectEvalSupport
             // JSTailCall sentinel (proper tail call); force it here so the call
             // actually runs even when the eval result is discarded.
             // Compiled under the context's own options, which are a script's: eval code is never a
-            // module (PerformEval parses it as a Script).
+            // module (PerformEval parses it as a Script), and never awaits at its top level, even
+            // when the code that called eval may.
             var result = JSTailCall.Resolve(
                 CoreScript.Compile(text, location, null, new TransientCodeCache(), compilationOptions: context.CompilationOptions)(new Arguments(@this ?? context)));
             if (declaredBindings?.Length > 0 && capturedBindings?.Length > 0)
@@ -666,11 +667,10 @@ public static class DirectEvalSupport
 
     /// <summary>
     /// The options eval code is parsed under, by the early-error parse and its scans here: the Script
-    /// goal, which is how PerformEval parses it. Until the runtime's ambient scopes are deleted, the
-    /// top-level-await scope's permission reaches it, as it reached the parser before.
+    /// goal, which is how PerformEval parses it, without top-level <c>await</c>, whatever the code
+    /// that called eval may do.
     /// </summary>
-    private static FastParserOptions EvalOptions()
-        => FastCompiler.ParserOptions(new JSCompilationOptions { AllowTopLevelAwait = CoreScript.AllowTopLevelAwait });
+    private static FastParserOptions EvalOptions() => FastParserOptions.Script;
 
     /// <summary>
     /// Runs the indirect-eval early errors over <paramref name="text"/> and reports whether

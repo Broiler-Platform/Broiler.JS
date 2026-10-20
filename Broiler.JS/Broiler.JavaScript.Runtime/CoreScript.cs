@@ -1,7 +1,6 @@
 using Broiler.JavaScript.Ast.Misc;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Broiler.JavaScript.Runtime;
@@ -53,59 +52,6 @@ public class CoreScript
     /// </summary>
     internal static Action<Func<Task>> RunAsyncPump;
 
-    private static readonly AsyncLocal<int> TopLevelAwaitScopeDepth = new();
-
-    internal static bool AllowTopLevelAwait => TopLevelAwaitScopeDepth.Value > 0;
-
-    internal static IDisposable AllowTopLevelAwaitScope()
-    {
-        TopLevelAwaitScopeDepth.Value++;
-        return new TopLevelAwaitScopeToken();
-    }
-
-    private sealed class TopLevelAwaitScopeToken : IDisposable
-    {
-        private bool disposed;
-
-        public void Dispose()
-        {
-            if (disposed)
-                return;
-
-            disposed = true;
-            TopLevelAwaitScopeDepth.Value = Math.Max(0, TopLevelAwaitScopeDepth.Value - 1);
-        }
-    }
-
-    // Whether the compile now running is parsing with the MODULE goal symbol. Ambient for the
-    // same reason AllowTopLevelAwait is: the parser is several assemblies away from the host and
-    // IJSCompiler.Compile does not carry compilation options. It is set from the resolved
-    // JSCompilationOptions inside Compile's factory, so the flag the parser reads and the flag in
-    // the code-cache key are the same value by construction and cannot drift apart.
-    private static readonly AsyncLocal<int> ModuleGoalDepth = new();
-
-    internal static bool IsModuleGoal => ModuleGoalDepth.Value > 0;
-
-    internal static IDisposable ModuleGoalScope()
-    {
-        ModuleGoalDepth.Value++;
-        return new ModuleGoalScopeToken();
-    }
-
-    private sealed class ModuleGoalScopeToken : IDisposable
-    {
-        private bool disposed;
-
-        public void Dispose()
-        {
-            if (disposed)
-                return;
-
-            disposed = true;
-            ModuleGoalDepth.Value = Math.Max(0, ModuleGoalDepth.Value - 1);
-        }
-    }
-
     private static IJSCompiler _compiler;
 
     /// <summary>
@@ -137,28 +83,25 @@ public class CoreScript
             // end starts recursing over the source. A cache *hit* never crosses the boundary.
             // Resolved once: the options carried in the cache key and the goal the factory
             // parses under both come from this single value.
+            //
+            // Without options of its own a compile takes the current context's, which are a
+            // script's: never a module unless isModule says so, and never permitted to await at
+            // the top level. Eval, indirect eval, the Function constructor, ShadowRealm's evaluate
+            // and the debugger's evaluate compile so.
             var options = compilationOptions ?? current.compilationOptions;
             if (isModule)
                 options = options with { IsModule = true };
 
-            var moduleGoal = options.IsModule;
+            // The compiler is told the options the compilation is keyed under, so the goal and the
+            // permission the parser reads and the ones in the code-cache key are one value: a
+            // module and a script, or a program with top-level await and one without, never share
+            // a compile.
             var jsc = new JSCode(
                 location,
                 code,
                 args,
                 () => ExpressionCompiler.CompilationStack.Run(
-                    () =>
-                    {
-                        // Entered around the FACTORY rather than around Compile, so it is
-                        // established exactly when the front end runs: a cache hit never reaches
-                        // here, and never needed to.
-                        using var goal = moduleGoal ? ModuleGoalScope() : null;
-                        // The compiler is told the options the compilation is keyed under. The
-                        // ambient top-level-await scope still adds its permission, as it reached the
-                        // parser before; it goes when every compile site passes its own.
-                        var compile = AllowTopLevelAwait ? options with { AllowTopLevelAwait = true } : options;
-                        return compiler.Compile(script, compile, location, args, codeCache);
-                    },
+                    () => compiler.Compile(script, options, location, args, codeCache),
                     script.Length),
                 options);
             return codeCache.GetOrCreate(in jsc);

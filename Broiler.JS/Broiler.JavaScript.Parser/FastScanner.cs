@@ -142,11 +142,11 @@ public class FastScanner
     }
 
     /// <summary>
-    /// A scanner over <paramref name="text"/> with the options of the parse in progress, which is a
-    /// script unless an ambient scope of the runtime's <c>CoreScript</c> says otherwise.
+    /// A scanner over <paramref name="text"/> with <see cref="FastParserOptions.Script"/>: a script
+    /// without top-level <c>await</c>, over the engine's own Unicode tables.
     /// </summary>
     public FastScanner(FastPool pool, in StringSpan text, FastKeywordMap keywords = null)
-        : this(pool, text, keywords, FastParserOptions.FromAmbientScopes())
+        : this(pool, text, keywords, FastParserOptions.Script)
     {
     }
 

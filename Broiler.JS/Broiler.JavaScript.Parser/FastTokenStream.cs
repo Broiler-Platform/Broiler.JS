@@ -78,12 +78,12 @@ public class FastTokenStream
     public FastParserOptions Options { get; }
 
     /// <summary>
-    /// A stream over <paramref name="text"/> with a pool of its own and the options of the parse in
-    /// progress, which is a script unless an ambient scope of the runtime's <c>CoreScript</c> says
-    /// otherwise.
+    /// A stream over <paramref name="text"/> with a pool of its own and
+    /// <see cref="FastParserOptions.Script"/>: a script without top-level <c>await</c>, over the
+    /// engine's own Unicode tables.
     /// </summary>
     public FastTokenStream(in StringSpan text, FastKeywordMap keywords = null)
-        : this(new FastPool(), text, keywords, FastParserOptions.FromAmbientScopes())
+        : this(new FastPool(), text, keywords, FastParserOptions.Script)
     {
     }
 
@@ -104,12 +104,12 @@ public class FastTokenStream
     }
 
     /// <summary>
-    /// A stream over <paramref name="text"/> drawing on <paramref name="pool"/>, with the options of the
-    /// parse in progress, which is a script unless an ambient scope of the runtime's <c>CoreScript</c>
-    /// says otherwise.
+    /// A stream over <paramref name="text"/> drawing on <paramref name="pool"/>, with
+    /// <see cref="FastParserOptions.Script"/>: a script without top-level <c>await</c>, over the
+    /// engine's own Unicode tables.
     /// </summary>
     public FastTokenStream(FastPool pool, in StringSpan text, FastKeywordMap keywords = null)
-        : this(pool, text, keywords, FastParserOptions.FromAmbientScopes())
+        : this(pool, text, keywords, FastParserOptions.Script)
     {
     }
 

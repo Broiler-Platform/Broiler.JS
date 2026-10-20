@@ -2659,6 +2659,9 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     /// <see cref="JSCompilationOptions.AllowTopLevelAwait"/> set, which the code cache keys it on, so a
     /// compile of the same text by <see cref="Eval"/> is never answered from this one's entry, nor this
     /// one from <see cref="Eval"/>'s.
+    /// Code the program compiles while it runs, by direct or indirect <c>eval</c>, the <c>Function</c>
+    /// constructor or <c>ShadowRealm.prototype.evaluate</c>, is compiled without the permission, as
+    /// under <see cref="Eval"/>: the permission is not ambient.
     /// </remarks>
     public async Task<JSValue> EvalWithTopLevelAwaitAsync(string code, string codeFilePath = null, JSValue @this = null)
     {
@@ -2670,7 +2673,6 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         // job it queues must not be handed to a pool thread beside it. The drain at the end of the
         // block returns the depth to zero, so anything settling later — a host Task-backed promise
         // this method then awaits — takes the pool exactly as it did before.
-        using (CoreScript.AllowTopLevelAwaitScope())
         using (microtasks.EnterExecution())
         {
             var fx = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache,

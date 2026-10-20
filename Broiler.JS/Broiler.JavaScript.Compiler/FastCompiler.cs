@@ -111,18 +111,12 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
     private static int anonymousProgramSequence;
 
     /// <summary>
-    /// Compiles <paramref name="code"/> under the goal and the top-level-await permission of the
-    /// compile in progress, which the runtime's ambient scopes describe.
+    /// Compiles <paramref name="code"/> as a script without top-level <c>await</c>.
     /// </summary>
     public FastCompiler(in StringSpan code, string location = null, IList<string> argsList = null, ICodeCache codeCache = null)
-        : this(code, AmbientOptions(), location, argsList, codeCache)
+        : this(code, default(JSCompilationOptions), location, argsList, codeCache)
     {
     }
-
-    // The options the runtime's ambient scopes describe, which the constructor without options
-    // compiles under until every compile site passes its own.
-    private static JSCompilationOptions AmbientOptions()
-        => new(IsModule: Runtime.CoreScript.IsModuleGoal) { AllowTopLevelAwait = Runtime.CoreScript.AllowTopLevelAwait };
 
     /// <summary>
     /// Compiles <paramref name="code"/> under <paramref name="options"/>: the parser parses the Module
