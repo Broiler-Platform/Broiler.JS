@@ -1,0 +1,12 @@
+parse-corpus: 0/106963
+parse-corpus: 10000/106963
+parse-corpus: 20000/106963
+parse-corpus: 30000/106963
+parse-corpus: 40000/106963
+parse-corpus: 50000/106963
+parse-corpus: 60000/106963
+parse-corpus: 70000/106963
+parse-corpus: 80000/106963
+parse-corpus: 90000/106963
+parse-corpus: 100000/106963
+parse-corpus: 106963 input variant(s), 213926 row(s), 165.9 s, written to /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl12/wp47/runs/js-c1.tsv.gz

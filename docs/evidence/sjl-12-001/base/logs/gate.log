@@ -1,0 +1,14 @@
+2026-10-20T12:37:06Z stage-a start
+2026-10-20T12:38:06Z gate build-js: idle (load 0.12 0.53 1.00 1/108 29279; no dotnet/python process) after 0s of waiting
+2026-10-20T12:40:39Z build-js: done: build-js	rc=0	wall=152.0s	maxrss=800MB	started=2026-10-20T12:38:07Z	ended=2026-10-20T12:40:39Z
+2026-10-20T12:43:24Z gate js-c1: NOT idle: load 1.20 1.52 1.35 1/109 30464; processes: none
+2026-10-20T12:45:24Z gate js-c1: idle (load 0.16 1.01 1.18 1/108 30588; no dotnet/python process) after 120s of waiting
+2026-10-20T12:48:17Z js-c1: done: js-c1	rc=0	wall=172.5s	maxrss=1713MB	started=2026-10-20T12:45:24Z	ended=2026-10-20T12:48:17Z
+2026-10-20T12:49:17Z gate js-c2: idle (load 0.45 0.89 1.10 1/105 30735; no dotnet/python process) after 0s of waiting
+2026-10-20T12:52:02Z js-c2: done: js-c2	rc=0	wall=165.2s	maxrss=1702MB	started=2026-10-20T12:49:17Z	ended=2026-10-20T12:52:02Z
+2026-10-20T12:53:02Z gate js-d1: idle (load 0.45 0.85 1.04 1/105 30890; no dotnet/python process) after 0s of waiting
+2026-10-20T12:53:33Z js-d1: done: js-d1	rc=0	wall=30.9s	maxrss=499MB	started=2026-10-20T12:53:02Z	ended=2026-10-20T12:53:33Z
+2026-10-20T12:54:33Z gate js-d2: idle (load 0.24 0.70 0.97 1/106 30986; no dotnet/python process) after 0s of waiting
+2026-10-20T12:55:04Z js-d2: done: js-d2	rc=0	wall=30.6s	maxrss=561MB	started=2026-10-20T12:54:34Z	ended=2026-10-20T12:55:04Z
+2026-10-20T12:56:04Z gate js-d3: idle (load 0.20 0.60 0.91 1/108 31083; no dotnet/python process) after 0s of waiting
+2026-10-20T12:56:47Z js-d3: done: js-d3	rc=0	wall=42.1s	maxrss=817MB	started=2026-10-20T12:56:04Z	ended=2026-10-20T12:56:47Z

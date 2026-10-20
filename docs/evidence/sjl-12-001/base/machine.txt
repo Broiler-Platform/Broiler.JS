@@ -1,0 +1,70 @@
+Bundle sjl-12-001, base runs of parts C and D (SJL-12.4 task 4.7), taken 2026-10-20 at the corpus commit
+1fe542ff459935586cdf495e4a0e3d798248948a (merge of Broiler-Platform/Broiler.JS#1062).
+
+THE MACHINE (named by its processor count, its SDK and its operating system)
+  processors   4 (nproc 4; lscpu: Intel(R) Xeon(R) Processor @ 2.10GHz, 1 socket, 4 cores, 1 thread per core)
+  SDK          .NET SDK 10.0.401 (commit e34a38d2ae, MSBuild 18.9.11+e34a38d2a), runtime Microsoft.NETCore.App 10.0.12, RID linux-x64
+  OS           Ubuntu 24.04.5 LTS, Linux 6.18.44-fc-v139 x86_64
+  memory       16093 MB (free -m)
+Every report's own header records the same: `#% runtime .NET 10.0.12`, `#% os Ubuntu 24.04.5 LTS X64`, `#% processors 4`.
+
+THE IDLE MACHINE
+No other build, test or run was taken on the machine while these runs were taken: the orchestrator had told
+every other agent not to build, test or run anything, and this work was the only process building or running.
+Before each run (and before the build) a gate looked at the machine:
+  - it let the previous run's load decay for 60 s, then read /proc/loadavg and listed every process whose
+    command is dotnet or python (ps -eo pid=,comm=,args=);
+  - it went ahead only when the 1-minute load average was at most 1.0 and no such process was running;
+    otherwise it polled every 2 minutes, for up to 30 minutes, recording each poll, and never killed anything;
+  - just before the run it recorded the load average, nproc, the OS and the head of `dotnet --info`
+    (logs/pre-run.txt), and just after the run the load average again.
+One gate waited (logs/gate.log): before part C run 1, at 12:43:24Z, the 1-minute load average was 1.20, left
+by this work's own Release build of the Broiler.VM slice compiler (ended 12:42:24Z); no dotnet or python process
+was running. The gate polled once more after 2 minutes, at 12:45:24Z, read 0.16 and went ahead. Every other
+gate went ahead at its first look. The gate read the 1-minute figure only. The 5- and 15-minute averages carry
+this work's own previous builds and runs (before part C run 1 they read 1.01 and 1.18, before part C run 2 0.89 and
+1.10, before part D run 1 0.85 and 1.04), and what they carried from before this work began: the 15-minute figure
+already read 1.00 before this work's first build, at the gate of the tool's build (2026-10-20T12:38:06Z, load 0.12
+0.53 1.00). What made that load cannot be told from the record: this work's own setup came before it, and so did a
+merge in the main checkout /home/user/Broiler.VM at 12:31:36Z (its reflog).
+
+One other session acted on the machine while this work was under way. At 2026-10-20T12:43:13Z it fetched and
+fast-forwarded the main checkout /home/user/Broiler.VM to ebf93cd (its reflog: "merge origin/main: Fast-forward").
+That was after the Broiler.VM slice compiler's build had ended (12:42:24Z) and before the gate of part C run 1 first
+looked at the machine (12:43:24Z), so during no run. It was a git operation, not a build, test or run, and it did
+not touch this work's checkout or anything of Broiler.JS.
+
+CORRECTED 2026-10-20, before these files were committed (verifier finding 3). The paragraph that begins "One gate
+waited" ended: "The 5- and 15-minute averages carry this work's own previous builds and runs (before part C run 1 they read 1.01
+and 1.18, before part C run 2 0.89 and 1.10, before part D run 1 0.85 and 1.04); no other process contributed to
+them." The record does not support the last clause, the paragraph did not say which figure the gate read, and it
+did not name the other session's fetch.
+
+THE ENVIRONMENT (the rule's: one thread, a stack of 256 MB, no LANG, TZ=UTC)
+Each run was launched as `env -u LANG TZ=UTC` through a Python wrapper that also strips every LC_* variable from
+the child's environment (Python's locale coercion adds LC_CTYPE); no BROILER_* variable was set. The tool's own
+guard accepted it, and every report's header reads `#% environment TZ=UTC LANG unset LC_* unset BROILER_* unset`,
+`#% threads 1` (2 for part D run 3), `#% thread-stack-bytes 268435456`, `#% compile-stack-bytes 0`,
+`#% culture (invariant)`, `#% time-zone UTC`.
+
+EACH RUN (logs/runs.tsv; wall-clock and peak memory are recorded, not measured: SJL-12 measures nothing)
+run                    exit  wall     peak RSS  started (UTC)         ended (UTC)           loadavg before                loadavg after
+build (Release)        0     152.0 s  800 MB    2026-10-20T12:38:07Z  2026-10-20T12:40:39Z  0.12 0.53 1.00 1/108 29306    2.65 1.52 1.31 1/106 29931
+part C run 1           0     172.5 s  1713 MB   2026-10-20T12:45:24Z  2026-10-20T12:48:17Z  0.16 1.01 1.18 1/108 30617    1.13 1.07 1.17 1/108 30706
+part C run 2           0     165.2 s  1702 MB   2026-10-20T12:49:17Z  2026-10-20T12:52:02Z  0.45 0.89 1.10 1/105 30764    1.24 1.04 1.11 1/105 30861
+part D run 1 manifest  0     30.9 s   499 MB    2026-10-20T12:53:02Z  2026-10-20T12:53:33Z  0.45 0.85 1.04 1/105 30917    0.67 0.86 1.04 1/105 30955
+part D run 2 reverse   0     30.6 s   561 MB    2026-10-20T12:54:34Z  2026-10-20T12:55:04Z  0.24 0.70 0.97 1/106 31013    0.54 0.73 0.97 1/106 31050
+part D run 3 threads 2 0     42.1 s   817 MB    2026-10-20T12:56:04Z  2026-10-20T12:56:47Z  0.20 0.60 0.91 1/108 31110    0.96 0.75 0.95 1/109 31172
+(The Broiler.VM slice compiler's build was taken between the tool's build and part C run 1, and the Broiler.VM
+runs of parts B and C from 12:57 to 13:40 UTC, after these.)
+
+THE CHECKOUT
+  a clean detached worktree of 1fe542ff459935586cdf495e4a0e3d798248948a (git status empty before and after the build),
+  the tool built in Release from clean with --artifacts-path to a new folder outside the tree: 0 errors and 56
+  distinct warnings, none from the tool (60 lines from Broiler.JavaScript.BuiltIns, 38 Expressions, 6 Engine,
+  6 Runtime, 2 Parser, each printed twice; logs/build.log.gz);
+  every report names each product assembly's informational version, 0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a,
+  and module version id; the assemblies as built: binaries.sha256;
+  conformance/parse/corpus.manifest SHA-256 1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc;
+  test262 read from a checkout at ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e with no local change (git status empty);
+  the tool checked every test262 input against the manifest's SHA-256 before it parsed anything.

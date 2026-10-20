@@ -1,0 +1,138 @@
+{
+  "admitted": 0,
+  "after": "docs/evidence/sjl-12-001/controls/parse-corpus-c-control.tsv.gz",
+  "afterAssemblies": [
+    [
+      "Broiler.JavaScript.Ast",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "77e2b5ac-2c40-4a70-b14c-4f4615e14c74"
+    ],
+    [
+      "Broiler.JavaScript.Parser",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "a9a83218-54bf-4f5f-bf3d-07f7450905c0"
+    ],
+    [
+      "Broiler.JavaScript.Compiler",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "ad5f272c-b5fb-4fda-94ae-4a998505cd75"
+    ],
+    [
+      "Broiler.JavaScript.Engine",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "e6d843c0-d985-42ba-b3fc-6302cb037c3d"
+    ],
+    [
+      "Broiler.JavaScript.Runtime",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "c877e12b-0b1d-49c4-9b1c-d0c3199eb656"
+    ]
+  ],
+  "allDifferencesAdmitted": false,
+  "base": "docs/evidence/sjl-12-001/base/parse-corpus-c.tsv.gz",
+  "baseAssemblies": [
+    [
+      "Broiler.JavaScript.Ast",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "77e2b5ac-2c40-4a70-b14c-4f4615e14c74"
+    ],
+    [
+      "Broiler.JavaScript.Parser",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "a9a83218-54bf-4f5f-bf3d-07f7450905c0"
+    ],
+    [
+      "Broiler.JavaScript.Compiler",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "ad5f272c-b5fb-4fda-94ae-4a998505cd75"
+    ],
+    [
+      "Broiler.JavaScript.Engine",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "e6d843c0-d985-42ba-b3fc-6302cb037c3d"
+    ],
+    [
+      "Broiler.JavaScript.Runtime",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "c877e12b-0b1d-49c4-9b1c-d0c3199eb656"
+    ]
+  ],
+  "controlReported": true,
+  "differences": [
+    {
+      "after": {
+        "message": "control: an outcome flipped from accepted",
+        "outcome": "refused",
+        "type": "control"
+      },
+      "base": {
+        "message": "-",
+        "outcome": "accepted",
+        "type": "-"
+      },
+      "entry": "P",
+      "id": "T000001",
+      "otherEntry": {
+        "after": {
+          "message": "-",
+          "outcome": "accepted",
+          "type": "-"
+        },
+        "base": {
+          "message": "-",
+          "outcome": "accepted",
+          "type": "-"
+        },
+        "entry": "K"
+      },
+      "variant": "strict",
+      "verdict": "unclassified"
+    },
+    {
+      "after": {
+        "message": "Unexpected legacy octal literal in strict mode [control]",
+        "outcome": "refused",
+        "type": "Broiler.JavaScript.Runtime.JSException:SyntaxError"
+      },
+      "base": {
+        "message": "Unexpected legacy octal literal in strict mode",
+        "outcome": "refused",
+        "type": "Broiler.JavaScript.Runtime.JSException:SyntaxError"
+      },
+      "entry": "K",
+      "id": "T000741",
+      "otherEntry": {
+        "after": {
+          "message": "-",
+          "outcome": "accepted",
+          "type": "-"
+        },
+        "base": {
+          "message": "-",
+          "outcome": "accepted",
+          "type": "-"
+        },
+        "entry": "P"
+      },
+      "variant": "strict",
+      "verdict": "unclassified"
+    }
+  ],
+  "manifestSha256": "1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc",
+  "notAdmitted": 2,
+  "part": "C",
+  "planted": [
+    [
+      "T000001",
+      "strict",
+      "P"
+    ],
+    [
+      "T000741",
+      "strict",
+      "K"
+    ]
+  ],
+  "rows": 213926,
+  "unusedClassifications": []
+}
