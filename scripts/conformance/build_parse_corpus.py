@@ -667,10 +667,13 @@ def command_import_js(arguments: argparse.Namespace) -> int:
     if not re.fullmatch(r"[0-9a-f]{40}", commit or ""):
         raise Refused("--commit must be the Broiler.JS commit's forty digits")
 
-    # (normalised bytes' SHA-256, goal) -> data, sites (site -> captures), whether normalising changed any text
+    # (normalised bytes' SHA-256, goal) -> data, and sites (site -> captures); the (input, site) pairs where a text
+    # the site captured was changed by normalising it; and each distinct captured text's SHA-256, with whether
+    # normalising changed it and whether it held a lone CR, for the counts printed at the end.
     inputs: dict[tuple[str, str], bytes] = {}
     sites: dict[tuple[str, str], collections.Counter] = collections.defaultdict(collections.Counter)
-    normalised: dict[tuple[str, str], bool] = collections.defaultdict(bool)
+    normalised: set[tuple[tuple[str, str], str]] = set()
+    texts: dict[str, tuple[str, bool, bool]] = {}
     records = 0
     for capture in arguments.capture:
         capture_dir = Path(capture)
@@ -691,9 +694,11 @@ def command_import_js(arguments: argparse.Namespace) -> int:
             decode(data, f"{capture_dir}/{raw_digest}.js")
             key = (sha256(data), goal)
             inputs[key] = data
-            sites[key][check_field(site, str(index))] += 1
+            site = check_field(site, str(index))
+            sites[key][site] += 1
             if data != raw:
-                normalised[key] = True
+                normalised.add((key, site))
+            texts[raw_digest] = (key[0], data != raw, b"\r" in raw.replace(b"\r\n", b""))
             records += 1
 
     root = corpus / "inputs" / "broiler-js"
@@ -702,23 +707,35 @@ def command_import_js(arguments: argparse.Namespace) -> int:
     root.mkdir(parents=True)
     lines = [
         "# The broiler-js inputs of the parse corpus: for each stored file, every test method whose run constructed a",
-        "# FastTokenStream over its text, with the number of times it did, and whether the stored text is the captured",
-        "# one LF-normalised. Written by scripts/conformance/build_parse_corpus.py import-js.",
+        "# FastTokenStream over its text, with the number of times it did, and whether a text that method's run",
+        "# captured held a CR, so that the stored text is that text LF-normalised. A stored text can also have been",
+        "# captured as it is stored, by the same method or by another; each method's line says which it saw.",
+        "# Written by scripts/conformance/build_parse_corpus.py import-js.",
         f"#% commit\t{commit}",
         "#% projects\t" + "\t".join(CAPTURED_PROJECTS),
         "path\tsha256\tgoal\tsite\tcaptures\tnormalised",
     ]
+    header = len(lines)
     for (digest, goal), data in sorted(inputs.items(), key=lambda item: (item[0][0], item[0][1])):
         path = f"inputs/broiler-js/{digest}{EXTENSION_BY_GOAL[goal]}"
         (corpus / path).write_bytes(data)
         for site, captures in sorted(sites[(digest, goal)].items()):
-            flag = "yes" if normalised[(digest, goal)] else "no"
+            flag = "yes" if ((digest, goal), site) in normalised else "no"
             lines.append(f"{path}\t{digest}\t{goal}\t{site}\t{captures}\t{flag}")
-    lines_sorted = lines[:6] + sorted(lines[6:])
+    lines_sorted = lines[:header] + sorted(lines[header:])
     (corpus / "provenance").mkdir(parents=True, exist_ok=True)
     (corpus / "provenance" / "broiler-js.tsv").write_bytes(("\n".join(lines_sorted) + "\n").encode("utf-8"))
-    changed = sum(1 for key in inputs if normalised[key])
-    print(f"broiler-js: {records} captures, {len(inputs)} inputs ({changed} changed by LF normalisation) at {commit}")
+    # Normalising changes a captured text where it holds a CR (CRLF, or a lone CR), and can make two captured texts
+    # one; an input is a normalised text under one goal, so the inputs a changed text gives are counted apart.
+    changed_texts = [text for text in texts.values() if text[1]]
+    lone_cr = sum(1 for text in changed_texts if text[2])
+    distinct = len({text[0] for text in texts.values()})
+    changed_inputs = len({key for key, _site in normalised})
+    print(
+        f"broiler-js: {records} captures of {len(texts)} distinct texts, {len(changed_texts)} of them changed by LF"
+        f" normalisation ({len(changed_texts) - lone_cr} holding CRLF alone, {lone_cr} a lone CR), {distinct} distinct"
+        f" texts after it; {len(inputs)} inputs, {changed_inputs} of them from a changed text, at {commit}"
+    )
     return 0
 
 

@@ -158,6 +158,8 @@ class StoredInputTests(unittest.TestCase):
                 (b"a\r\nb", "script", "P.Tests!T.One"),
                 (b"a\nb", "script", "P.Tests!T.Two"),
                 (b"a\nb", "module", "P.Tests!T.Three"),
+                (b"a\rb", "script", "P.Tests!T.Five"),
+                (b"c\r", "script", "P.Tests!T.Four"),
             ):
                 digest = B.sha256(text)
                 (capture / f"{digest}.js").write_bytes(text)
@@ -165,18 +167,43 @@ class StoredInputTests(unittest.TestCase):
             (capture / "index.tsv").write_text("\n".join(records) + "\n", encoding="utf-8")
             corpus = root / "corpus"
             arguments = B.argparse.Namespace(capture=[str(capture)], commit="c" * 40, corpus=str(corpus))
-            with contextlib.redirect_stdout(io.StringIO()):
+            printed = io.StringIO()
+            with contextlib.redirect_stdout(printed):
                 self.assertEqual(B.command_import_js(arguments), 0)
+            # Four distinct texts; three hold a CR (one CRLF, two a lone CR) and normalising makes three of them
+            # one, so two distinct texts remain; three inputs, the two script ones from a changed text.
+            self.assertEqual(
+                printed.getvalue(),
+                "broiler-js: 5 captures of 4 distinct texts, 3 of them changed by LF normalisation (1 holding CRLF"
+                " alone, 2 a lone CR), 2 distinct texts after it; 3 inputs, 2 of them from a changed text, at "
+                + "c" * 40 + "\n",
+            )
             digest = B.sha256(b"a\nb")
+            other = B.sha256(b"c\n")
             self.assertEqual((corpus / "inputs" / "broiler-js" / f"{digest}.js").read_bytes(), b"a\nb")
             self.assertEqual((corpus / "inputs" / "broiler-js" / f"{digest}.mjs").read_bytes(), b"a\nb")
+            self.assertEqual((corpus / "inputs" / "broiler-js" / f"{other}.js").read_bytes(), b"c\n")
             rows, commit = B.stored_rows(corpus, "broiler-js")
             self.assertEqual(commit, "c" * 40)
             self.assertEqual(
-                [(row.path, row.goal, row.variants, row.provenance) for row in rows],
-                [
-                    (f"inputs/broiler-js/{digest}.js", "script", "strict,sloppy", "P.Tests!T.One (+1)"),
+                sorted((row.path, row.goal, row.variants, row.provenance) for row in rows),
+                sorted([
+                    (f"inputs/broiler-js/{digest}.js", "script", "strict,sloppy", "P.Tests!T.Five (+2)"),
                     (f"inputs/broiler-js/{digest}.mjs", "module", "module", "P.Tests!T.Three"),
+                    (f"inputs/broiler-js/{other}.js", "script", "strict,sloppy", "P.Tests!T.Four"),
+                ]),
+            )
+            # The normalised flag is each site's own: T.One and T.Five captured forms of the script input that held a
+            # CR, T.Two only the form it is stored in.
+            _fields, records, _columns = B.read_provenance(corpus / "provenance" / "broiler-js.tsv")
+            self.assertEqual(
+                sorted((record[2], record[3], record[4], record[5]) for record in records),
+                [
+                    ("module", "P.Tests!T.Three", "1", "no"),
+                    ("script", "P.Tests!T.Five", "1", "yes"),
+                    ("script", "P.Tests!T.Four", "1", "yes"),
+                    ("script", "P.Tests!T.One", "1", "yes"),
+                    ("script", "P.Tests!T.Two", "1", "no"),
                 ],
             )
             # A stored file changed after the import no longer matches its provenance.

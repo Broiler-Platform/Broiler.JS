@@ -19,7 +19,7 @@ decision D32). No project item names the corpus.
 | `inputs/broiler-vm/` | Broiler.VM's inputs, stored |
 | `inputs/broiler-js/` | Broiler.JS's test inputs, stored |
 | `provenance/broiler-vm.tsv` | where each stored Broiler.VM input was taken from |
-| `provenance/broiler-js.tsv` | every test method whose run parsed each stored Broiler.JS input, with how many times |
+| `provenance/broiler-js.tsv` | every test method whose run parsed each stored Broiler.JS input, with how many times and whether a text it parsed held a CR |
 | `scripts/conformance/build_parse_corpus.py` | the builder that wrote all of it (outside this folder) |
 
 test262's inputs are not copied: each is named by its path in the suite at the pin and held by its SHA-256.
@@ -70,14 +70,32 @@ takes `strict,sloppy`. `sloppy` is the text as it is; `strict` is the strict pro
 tool composes it by text (Broiler.VM's rule, part B, has its wide path set the unit's ForceStrict and keep the text
 unchanged); `raw` is the text with no prologue and no harness; `module` and `json` are the text as it is.
 
+**A `json` row under this repository's rule.** The corpus has 13 rows of goal `json`: test262's 12 `_FIXTURE.json`
+files and one Broiler.VM input. They are inputs because the plan (JSD-0080 decision D33) and Broiler.VM's rule (part
+B, B1, whose variants include JSON) require JSON inputs. This repository's rule, part C, takes every input under its
+goal and each of its variants, but it names entry points for two goals only: P is a `FastParser` over a
+`FastTokenStream` and `ParseProgram`, or `FastParser.ParseModule` for the module goal, and K is `CoreScript.Compile`
+with the module flag. It gives three outcomes, accepted, refused and crashed, and requires every input and variant
+at both entry points. It names no JSON entry point and no fourth outcome. This is a difference between the plan and
+that rule, and the rule wins. Part C therefore reads a `json` row as its text says of every goal but the module
+goal: the text as it is, at P through `ParseProgram`, and at K through `CoreScript.Compile` with the module flag
+clear, answering accepted, refused or crashed like any other row. The text is parsed as a script, not as JSON. A
+part C tool reports these 13 rows that way and gives no row an outcome part C does not name. Broiler.VM's rule
+raises the same question for some rows: its B4 compiles each input by the slice front end under its goal, and the
+slice front end has only the script and module goals; its B2 composes each test262 input as the conformance root
+does, and the root never composes a fixture alone. That rule's bundle records how it reads those rows.
+
 **Text.** Every input is strict UTF-8 with no byte-order mark; a tool passes the decoded text on unchanged.
 Stored inputs hold no CR. test262 inputs are as the suite has them, and some hold CR, CRLF, U+2028 or U+2029 on
 purpose.
 
-**Fixed names.** A test262 input's source name, module key and script referrer is `/test262/` and its path (a
-composition's harness file is `/test262/harness/<name>`); a stored input's is `/parse-1/` and its path. A relative
-module specifier resolves against the importing module's name as a URL path does. Broiler.VM's rule (part B) fixes
-the names here because a module's key and a script's referrer reach its artifact's bytes.
+**Fixed names.** A test262 input's source name, module key and script referrer is `/test262/` and its path; a stored
+input's is `/parse-1/` and its path. A relative module specifier resolves against the importing module's name as a
+URL path does. Broiler.VM's rule (part B) fixes the names here because a module's key and a script's referrer reach
+its artifact's bytes. Only the input's own names are fixed. A harness file in a B2 composition keeps what the
+conformance root gives it at `889ea15` (`Test262Run`): the unit name `harness0`, `harness1` and so on, no referrer,
+and ForceStrict clear, because B2 composes each test as the root composes it and takes the root's own compile
+requests.
 
 ## The population
 
@@ -117,10 +135,27 @@ inputs, read as scripts, and marked `js-1-unwritten`.
 (545 tests) and `Broiler.JavaScript.Compiler.Tests` (1,443 tests) ran in Release at
 `4d813f2ac863895b9be5c4619b7886c9ddd71077`: 2,716 constructions (555 and 2,161), 2,203 distinct texts. The goal is
 `module` where the module goal was in force (`CoreScript.IsModuleGoal`) and `script` otherwise. Each text is
-LF-normalised (CRLF and lone CR become LF), which changed 188 of them, most of them C# raw string literals of a
-CRLF test file, and the corpus holds each (normalised text, goal) once: 2,204 inputs, stored as
-`inputs/broiler-js/<SHA-256>.js` or `.mjs`. One input begins with U+FFFD on purpose
-(`ParserTests.ParseProgram_ReplacementCharacter_SaysTheSourceWasMisdecoded`).
+LF-normalised (CRLF and lone CR become LF), as plan task 4.1 requires, and the corpus holds each (normalised text,
+goal) once: 2,204 inputs, stored as `inputs/broiler-js/<SHA-256>.js` or `.mjs`. One input begins with U+FFFD on
+purpose (`ParserTests.ParseProgram_ReplacementCharacter_SaysTheSourceWasMisdecoded`).
+
+**What LF normalisation changed.** It changed 191 of the 2,203 captured texts, which give 188 inputs. 182 of the 191
+hold CRLF: 178 are C# raw string literals in twelve test files whose lines end, wholly or in part, with CRLF, and 4
+are deliberate line-terminator cases. The other 9 hold a lone CR, and each is a deliberate line-terminator case.
+Normalising also made 10 captured texts equal to another, so 2,203 distinct texts became 2,193; 11 of those were
+captured under both goals, which gives the 2,204 inputs. Six of the 10 come from tests that pass one text with
+different line terminators on purpose, and those forms now share one stored input:
+`SeparatorAndLiteralScanningTests.EveryLineStartsAtColumnOne` and
+`TruncatedInputAndLineTerminatorTests.EveryLineTerminatorAdvancesTheLine` (each LF, CRLF and lone CR),
+`TruncatedInputAndLineTerminatorTests.ParseErrorsAfterLoneTerminatorsNameTheirOwnLine` (CRLF and lone CR) and
+`SeparatorAndLiteralScanningTests.MissingListSeparatorsAreASyntaxError` (LF and CRLF). The other 4 are CRLF copies,
+in `DeferredBodyReentryTests`, of programs that `CaptureLayoutTests` and `DeferralPopulationTests` hold with LF. The
+6 lone-CR texts that were not merged keep an input of their own, which holds LF where the test had CR: for example,
+with `\r` standing for the CR and `\\` for one backslash, `"open\rstring"`
+(`TruncatedInputAndLineTerminatorTests.TruncatedInputIsRejected`), and `/\\\rn/;` and `eval("'foo\\\\\r")`
+(`CompilerTests.Compile_Syntax_Errors_Are_Reported_For_Strict_And_Direct_Eval_Cases`). A CR, alone or before LF, is
+therefore in the corpus only where test262's inputs hold one. `provenance/broiler-js.tsv` says, for each test method
+and stored input, whether a text that method's run captured held a CR.
 
 **Not deduplicated across origins.** A text may be an input of two origins, or of two goals; each is its own row.
 
