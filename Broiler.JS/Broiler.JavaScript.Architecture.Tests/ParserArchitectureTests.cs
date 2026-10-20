@@ -56,14 +56,17 @@ public sealed class ParserArchitectureTests(ITestOutputHelper output)
         var reading = ParserClauses.Read(File.ReadAllBytes(path), Path.GetDirectoryName(path)!);
         Assert.Equal(Assembly, reading.Assembly);
 
-        List<string> fixtures;
-        using (var subject = new SubjectParser(path))
-            fixtures = ParserFixtures.Run(subject, output.WriteLine);
-
-        var found = reading.Violations.Concat(fixtures).Order(StringComparer.Ordinal).ToList();
-        foreach (var violation in found)
+        // The metadata clauses' violations are written before a fixture runs, and a fixture that
+        // cannot run is a violation of its own rather than an exception, so the output and the
+        // failure always name everything found.
+        foreach (var violation in reading.Violations)
             output.WriteLine("violation: " + violation);
 
+        var fixtures = ParserFixtures.Run(path, output.WriteLine);
+        foreach (var violation in fixtures)
+            output.WriteLine("violation: " + violation);
+
+        var found = reading.Violations.Concat(fixtures).Order(StringComparer.Ordinal).ToList();
         var listed = TodaysViolations.Order(StringComparer.Ordinal).ToList();
         var unlisted = found.Except(listed, StringComparer.Ordinal).ToList();
         var gone = listed.Except(found, StringComparer.Ordinal).ToList();
@@ -109,11 +112,14 @@ public sealed class ParserArchitectureTests(ITestOutputHelper output)
             + string.Join("\n  ", violations));
     }
 
-    /// <summary><see cref="ParserClauses.MutableTypes"/> is a copy of rule SL2's list, which is private; the copy is the list.</summary>
+    /// <summary>
+    /// <see cref="ParserClauses.MutableTypes"/> is a copy of rule SL2's list, which is private; the copy is the list.
+    /// The project copies <c>SharedRules.cs</c> into its output, so the test reads it there, wherever the build put it.
+    /// </summary>
     [Fact]
     public void The_list_of_mutable_types_is_rule_SL2s()
     {
-        var rules = Path.Combine(RepositoryRoot(), "Broiler.ECMAScript", "Broiler.ECMAScript.Architecture.Tests", "SharedRules.cs");
+        var rules = Path.Combine(AppContext.BaseDirectory, "rules", "SharedRules.cs");
         var source = File.ReadAllText(rules);
         var start = source.IndexOf("MutableTypes =", StringComparison.Ordinal);
         Assert.True(start >= 0, rules + " declares no MutableTypes");
@@ -130,17 +136,6 @@ public sealed class ParserArchitectureTests(ITestOutputHelper output)
         if (gone.Count > 0)
             report.Append("Listed violations the parser no longer has (remove their lines from TodaysViolations):\n  ").AppendJoin("\n  ", gone).Append('\n');
         return report.Append("Every violation found:\n  ").AppendJoin("\n  ", found).ToString();
-    }
-
-    private static string RepositoryRoot()
-    {
-        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "Broiler.JS.slnx")))
-                return directory.FullName;
-        }
-
-        throw new DirectoryNotFoundException("no Broiler.JS.slnx above " + AppContext.BaseDirectory);
     }
 }
 

@@ -33,5 +33,9 @@
   <ItemGroup>
     <Compile Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Architecture.Tests\AssemblyFacts.cs" Link="AssemblyFacts.cs" />
     <None Update="witnesses\*.witness" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Rule SL2's list, which the test compares with its copy. It is read from the output, not
+         found in the checkout, so the test runs wherever the build puts it (an artifacts path
+         outside the repository included). -->
+    <None Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Architecture.Tests\SharedRules.cs" Link="rules\SharedRules.cs" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

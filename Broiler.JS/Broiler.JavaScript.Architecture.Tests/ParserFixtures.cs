@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 
 namespace Broiler.JavaScript.Architecture.Tests;
@@ -11,7 +12,9 @@ namespace Broiler.JavaScript.Architecture.Tests;
 /// <c>for (let …)</c> loop parses to one for-statement whose initialiser is the declaration as
 /// written; two parses of one source give equal tree dumps; and concurrent parses of one source on
 /// four threads never end on another parse's token. Each answers null when it holds, or its
-/// violation, whose text never depends on the run; what it found is logged.
+/// violation, whose text never depends on the run; what it found is logged. A fixture that throws,
+/// or a build the fixtures cannot load, is reported as a violation naming the exception's type, and
+/// the exception is logged.
 /// </summary>
 internal static class ParserFixtures
 {
@@ -20,13 +23,20 @@ internal static class ParserFixtures
     internal const string ForLetViolation =
         "fixture: `" + ForLetSource + "` does not parse to one for-statement whose initialiser is the declaration as written";
 
-    /// <summary>A source with every loop shape the parser rewrites with temporaries today.</summary>
+    /// <summary>
+    /// A source with every loop shape the parser rewrites with temporaries today, so that each of the
+    /// four places the desugaring names one is reached: the carriers of a <c>let</c> loop's bindings,
+    /// a simple name and a pattern; the <c>started</c> flag of a <c>let</c> loop whose update holds a
+    /// closure; the head temporary of <c>for-of</c> and <c>for-in</c>; and the renamed bindings of a
+    /// <c>const</c> loop with a test.
+    /// </summary>
     internal const string RepeatedSource =
         "for (let i = 0; i < 3; i++) { }\n"
         + "for (const x of [1, 2]) { }\n"
         + "for (let k in { a: 1 }) { }\n"
         + "for (let [a, b] = [1, 2]; a < b; a++) { }\n"
         + "for (let j = 0, f = () => j; j < 2; j++) { f(); }\n"
+        + "for (let m = 0; m < 1; m++, (() => m)) { }\n"
         + "for (const c = 1; c < 1;) { }\n";
 
     internal const string RepeatedViolation = "fixture: two parses of one source give different tree dumps";
@@ -41,14 +51,46 @@ internal static class ParserFixtures
     internal const string ConcurrentViolation =
         "fixture: concurrent parses of one source on four threads ended on another parse's token";
 
-    /// <summary>Runs every fixture and returns the violations, in a fixed order.</summary>
-    internal static List<string> Run(SubjectParser subject, Action<string> log)
+    /// <summary>
+    /// Loads the parser at <paramref name="path"/>, runs every fixture against it and returns the
+    /// violations, in a fixed order. Nothing a fixture throws escapes: it is the fixture's violation.
+    /// </summary>
+    internal static List<string> Run(string path, Action<string> log)
     {
         var violations = new List<string>();
-        foreach (var fixture in new Func<SubjectParser, Action<string>, string?>[] { ForLet, Repeated, Concurrent })
+        SubjectParser subject;
+        try
         {
-            if (fixture(subject, log) is { } violation)
-                violations.Add(violation);
+            subject = new SubjectParser(path);
+        }
+        catch (Exception exception)
+        {
+            log("the fixtures could not load the judged parser: " + exception);
+            violations.Add("fixture: the judged parser could not be loaded to run the fixtures: " + exception.GetType().FullName);
+            return violations;
+        }
+
+        using (subject)
+        {
+            var fixtures = new (string Name, Func<SubjectParser, Action<string>, string?> Run)[]
+            {
+                ("`" + ForLetSource + "`", ForLet),
+                ("two parses of one source", Repeated),
+                ("concurrent parses of one source", Concurrent),
+            };
+            foreach (var (name, fixture) in fixtures)
+            {
+                try
+                {
+                    if (fixture(subject, log) is { } violation)
+                        violations.Add(violation);
+                }
+                catch (Exception exception)
+                {
+                    log("the fixture " + name + " could not run: " + exception);
+                    violations.Add("fixture: " + name + " could not run: " + exception.GetType().FullName);
+                }
+            }
         }
 
         return violations;
@@ -104,6 +146,13 @@ internal static class ParserFixtures
     /// copy, not the same string, so that a token's source tells which parse it came from. Every
     /// token the tree holds, and the token the end of the input links back to, must be this parse's.
     /// </summary>
+    /// <remarks>
+    /// A race shows only when the threads interleave at the wrong moment, so seeing one is a matter
+    /// of chance: a run that finds no foreign token does not prove there is no race. Over a parser
+    /// that shares its tokens (the rule commit's) a run on four cores sees one in a few percent of
+    /// the parses, but a runner with little real parallelism could see none; at the commit that
+    /// listed this fixture's violation, before item 3, such a run would have reported it as gone.
+    /// </remarks>
     private static string? Concurrent(SubjectParser subject, Action<string> log)
     {
         var tree = new TreeText(subject);
@@ -159,8 +208,9 @@ internal static class ParserFixtures
         workers.ForEach(static w => w.Start());
         workers.ForEach(static w => w.Join());
 
+        // A parse that threw is the fixture's failure, reported by Run under the exception's own type.
         if (failure is not null)
-            throw new InvalidOperationException("the concurrent fixture could not run", failure);
+            ExceptionDispatchInfo.Throw(failure);
 
         log("concurrent parses: " + parses + " parses of `" + ConcurrentSource + "` on " + Threads + " threads; " + foreign
             + " held another parse's token (" + nodes + " in the tree, " + links + " as the end of the input's link back)"

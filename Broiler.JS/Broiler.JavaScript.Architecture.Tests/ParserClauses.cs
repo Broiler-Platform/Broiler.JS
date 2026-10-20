@@ -29,6 +29,14 @@ internal sealed record ClauseReading(string Assembly, IReadOnlyList<string> Viol
 /// field, which <see cref="AssemblyFacts"/> leaves out, because a get-only static property is
 /// exactly an InitOnly static field (<c>FastKeywordMap.Instance</c> is one, which is why the rule
 /// excepts its type).
+/// <para>
+/// The last clause reads a field's declared type, as the rule words it, and not the object the field
+/// holds. So an InitOnly static field declared as <c>object</c>, as an interface, or as a type that
+/// with its base types declares no mutable instance field is accepted whatever it holds:
+/// <c>static readonly IList&lt;int&gt; X = new List&lt;int&gt;()</c> passes every clause, because rule
+/// SL2's list is matched against the declared type's name too. The test does not guard such a field;
+/// widening the clause would change part B's evidence, so the gap is stated here instead.
+/// </para>
 /// </remarks>
 internal static class ParserClauses
 {

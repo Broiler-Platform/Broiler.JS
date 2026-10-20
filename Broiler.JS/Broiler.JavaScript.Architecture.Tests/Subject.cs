@@ -44,8 +44,9 @@ internal static class Subject
 /// <summary>
 /// The judged parser, loaded with its dependencies from its own directory into a collectible load
 /// context, and driven by reflection, so that the behavioural fixtures run the build the metadata
-/// clauses read, whichever build that is. Only <c>Broiler.*</c> assemblies come from that directory;
-/// the platform's come from the default context.
+/// clauses read, whichever build that is. Only <c>Broiler.*</c> assemblies come from that directory,
+/// and one that is not there fails the load rather than coming from another build; the platform's
+/// come from the default context.
 /// </summary>
 internal sealed class SubjectParser : IDisposable
 {
@@ -149,7 +150,21 @@ internal sealed class SubjectParser : IDisposable
             if (name.Name is not { } simple || !simple.StartsWith("Broiler.", StringComparison.Ordinal))
                 return null;
             var candidate = Path.Combine(directory, simple + ".dll");
-            return File.Exists(candidate) ? LoadFromAssemblyPath(candidate) : null;
+            if (File.Exists(candidate))
+                return LoadFromAssemblyPath(candidate);
+
+            // A satellite assembly that is not there is a resource lookup falling back to the
+            // neutral culture, as it would anywhere.
+            if (!string.IsNullOrEmpty(name.CultureName))
+                return null;
+
+            // Falling back to the default context would run the judged parser against this test's
+            // build of the dependency, another commit's when the variable names another build, and
+            // nothing would say so.
+            throw new FileNotFoundException(
+                simple + ".dll, which the judged parser needs, is not in " + directory + ". Name the parser assembly in a build "
+                + "output that holds all its dependencies, such as a test or application project's, not the parser project's own.",
+                candidate);
         }
     }
 }
