@@ -14,10 +14,39 @@ Each entry has the headings **Added**, **Changed**, **Observable changes** and *
 
 ## Unreleased
 
-To be packed and published as `0.1.0-preview.7`, the stream keeping its `0.1.0` prefix while it is a preview: the
-owner approved its publication on 2026-10-19, for decision D12, and Broiler.VM admits the packages from its committed
-feed as published. *(Revised 2026-10-19; read "Not yet packed under a version of its own: the stream's next version is
-set when this entry is published.")*
+Not yet packed under a version of its own: the stream's next version is set when this entry is published.
+
+### Added
+
+None.
+
+### Changed
+
+None.
+
+### Observable changes
+
+None.
+
+### Data
+
+None.
+
+## 0.1.0-preview.7 — published to nuget.org
+
+*(Heading corrected 2026-10-19, when it was published; read "Unreleased". This entry was published as
+`0.1.0-preview.7` by `Publish shared libraries`, run 39312237448, on 2026-10-19, from `5ddee404`, whose library code
+is `6dbff805`'s, and tagged `ecmascript-v0.1.0-preview.7`.)*
+
+Packed and published as `0.1.0-preview.7`, the stream keeping its `0.1.0` prefix while it is a preview: the owner
+approved its publication on 2026-10-19, for decision D12. The next action is Broiler.VM's: it admits the packages to
+its committed feed as published, and takes decision D12 with them. *(Corrected 2026-10-19, after review; read "Packed
+and published as `0.1.0-preview.7`, the stream keeping its `0.1.0` prefix while it is a preview: the owner approved
+its publication on 2026-10-19, for decision D12, and Broiler.VM admits the packages from its committed feed as
+published." That read, until it was published, "To be packed and published as `0.1.0-preview.7`, the stream keeping
+its `0.1.0` prefix while it is a preview: the owner approved its publication on 2026-10-19, for decision D12, and
+Broiler.VM admits the packages from its committed feed as published." That read, until earlier the same day, "Not yet
+packed under a version of its own: the stream's next version is set when this entry is published.")*
 
 ### Added
 
