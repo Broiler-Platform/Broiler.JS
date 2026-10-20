@@ -1,13 +1,47 @@
 
 using Broiler.JavaScript.Ast.Misc;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.Parser;
 
 
+/// <summary>
+/// The parser: a recursive-descent parser over a <see cref="FastTokenStream"/>, which parses with the
+/// options the stream was made with.
+/// </summary>
+/// <param name="stream">The tokens to parse; the parser takes the stream's <see cref="FastTokenStream.Options"/>.</param>
 public partial class FastParser(FastTokenStream stream) : IParser
 {
     private readonly FastTokenStream stream = stream;
+
+    /// <summary>
+    /// A parser over <paramref name="stream"/> that parses with <paramref name="options"/>, which must be
+    /// the options the stream was made with: the scanner has read its first tokens under them, so a
+    /// parser with other options would parse tokens its own goal does not read.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">The stream was made with other options.</exception>
+    public FastParser(FastTokenStream stream, FastParserOptions options)
+        : this(MadeWith(stream, options))
+    {
+    }
+
+    private static FastTokenStream MadeWith(FastTokenStream stream, FastParserOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(options);
+        if (!options.Equals(stream.Options))
+            throw new ArgumentException(
+                "The token stream was made with other options than the parser's: the stream's are " + stream.Options
+                + " and the parser's " + options + ". Make the stream with the parser's options.",
+                nameof(options));
+
+        return stream;
+    }
+
+    /// <summary>The options this parser parses with: its stream's.</summary>
+    public FastParserOptions Options { get; } = stream?.Options ?? FastParserOptions.Script;
 
     public readonly FastScope variableScope = new FastScope();
 
@@ -39,15 +73,19 @@ public partial class FastParser(FastTokenStream stream) : IParser
     private bool inAsyncFunctionBody = false;
 
     /// <summary>
-    /// True when this compile parses with the MODULE goal symbol rather than the script one.
+    /// True when this parse has the MODULE goal symbol rather than the script one.
     /// </summary>
     /// <remarks>
-    /// Read once at construction, because the goal is a property of the compile rather than of a
-    /// position within it. It reaches the parser through <see cref="CoreScript"/>'s ambient scope,
-    /// which the host enters from the same resolved <c>JSCompilationOptions</c> that go into the
-    /// code-cache key — so a module and a script with identical text cannot share a compile.
+    /// Read once at construction, from the options the stream was made with, because the goal is a
+    /// property of the parse rather than of a position within it.
     /// </remarks>
-    private readonly bool isModuleGoal = Runtime.CoreScript.IsModuleGoal;
+    private readonly bool isModuleGoal = stream?.Options.IsModule ?? false;
+
+    /// <summary>
+    /// True when an <c>await</c> outside every function is an AwaitExpression and a top-level
+    /// <c>for await</c> a statement: a module, or a program the options let await at its top level.
+    /// </summary>
+    private readonly bool allowTopLevelAwait = stream?.Options.AllowTopLevelAwait ?? false;
 
     /// <summary>
     /// Where <c>await</c> may not be a BindingIdentifier: inside an async function body, and —
@@ -126,14 +164,26 @@ public partial class FastParser(FastTokenStream stream) : IParser
     /// contains a top-level <c>await</c> ([[HasTLA]]).
     /// </summary>
     /// <exception cref="FastParseException">The text is not a Module.</exception>
-    public static AstProgram ParseModule(in StringSpan code)
+    public static AstProgram ParseModule(in StringSpan code) => ParseModule(code, FastParserOptions.Module);
+
+    /// <summary>
+    /// Parses <paramref name="code"/> with the Module goal symbol under <paramref name="options"/>, whose
+    /// goal is <see cref="FastParserGoal.Module"/>: their top-level-<c>await</c> permission and their
+    /// provider apply. <see cref="ParseModule(in StringSpan)"/> parses with <see cref="FastParserOptions.Module"/>.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">The options' goal is not the Module goal.</exception>
+    /// <exception cref="FastParseException">The text is not a Module.</exception>
+    public static AstProgram ParseModule(in StringSpan code, FastParserOptions options)
     {
-        using var goal = Runtime.CoreScript.ModuleGoalScope();
-        using var topLevelAwait = Runtime.CoreScript.AllowTopLevelAwaitScope();
+        ArgumentNullException.ThrowIfNull(options);
+        if (!options.IsModule)
+            throw new ArgumentException("ParseModule parses the Module goal, and the options' goal is " + options.Goal + ".", nameof(options));
+
         var pool = new FastPool();
         try
         {
-            return new FastParser(new FastTokenStream(pool, code)).ParseProgram();
+            return new FastParser(new FastTokenStream(pool, code, null, options), options).ParseProgram();
         }
         finally
         {

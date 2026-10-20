@@ -1,7 +1,6 @@
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.ExpressionCompiler.Core;
-using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Parser;
 
@@ -400,7 +399,7 @@ partial class FastParser
             // `await` is a plain IdentifierReference, so `await + x` / `await(x)` must not
             // be mis-parsed as `await (+x)` / `await (x)` (which then fails the
             // top-level-await check). Module / TLA contexts keep the lookahead heuristic.
-            if (!CoreScript.AllowTopLevelAwait)
+            if (!allowTopLevelAwait)
                 return false;
 
             var next = stream.Next;

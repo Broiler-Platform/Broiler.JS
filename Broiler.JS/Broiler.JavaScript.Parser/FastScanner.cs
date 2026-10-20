@@ -2,6 +2,7 @@ using Broiler.ECMAScript;
 using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Runtime.Unicode;
+using Broiler.Unicode.Algorithms;
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -39,9 +40,17 @@ public class FastScanner
     private readonly FastKeywordMap keywords;
 
     // Annex B.1.1: HTML-like comments exist only in the Script goal. In module code `<!--` and
-    // `-->` are ordinary punctuators (and, where they cannot be, a SyntaxError). Read once, as the
-    // parser reads its own module-goal flag, from the ambient goal of the compile in progress.
-    private readonly bool htmlLikeComments = !Runtime.CoreScript.IsModuleGoal;
+    // `-->` are ordinary punctuators (and, where they cannot be, a SyntaxError). Set once, from the
+    // goal of the options the scanner is made with, before it reads its first token.
+    private readonly bool htmlLikeComments;
+
+    // The lexical classes of the provider the options name, or null for the engine's own tables,
+    // which JSUnicode answers (with its cache of the ASCII answers).
+    private readonly EcmaScriptLexical lexical;
+
+    /// <summary>The options the scanner was made with.</summary>
+    public FastParserOptions Options { get; }
+
     private int position = 0;
 
     // Positions are 1-based in both coordinates: the first character of every line, not only
@@ -132,11 +141,30 @@ public class FastScanner
         return new FastParseException(token, $"Unexpected character {description} at {Location}");
     }
 
+    /// <summary>
+    /// A scanner over <paramref name="text"/> with the options of the parse in progress, which is a
+    /// script unless an ambient scope of the runtime's <c>CoreScript</c> says otherwise.
+    /// </summary>
     public FastScanner(FastPool pool, in StringSpan text, FastKeywordMap keywords = null)
+        : this(pool, text, keywords, FastParserOptions.FromAmbientScopes())
     {
+    }
+
+    /// <summary>
+    /// A scanner over <paramref name="text"/> with <paramref name="options"/>: their goal decides
+    /// whether HTML-like comments are comments (only in a script), and their provider, when they name
+    /// one, gives the lexical classes. The scanner reads its first two tokens here.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+    public FastScanner(FastPool pool, in StringSpan text, FastKeywordMap keywords, FastParserOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
         this.pool = pool;
         Text = text;
         this.keywords = keywords ?? FastKeywordMap.Instance;
+        Options = options;
+        htmlLikeComments = !options.IsModule;
+        lexical = options.Lexical;
 
         nextToken = endOfFile;
         lastToken = emptyToken;
@@ -171,6 +199,20 @@ public class FastScanner
     // directly after that `)` apart from division — see ReadCommentsOrRegExOrSymbol.
     private readonly System.Collections.Generic.Stack<bool> parenIsStatementHead = new();
     private bool lastCloseParenEndedStatementHead;
+
+    // The lexical classes (ECMA-262 12.2 and 12.7), Broiler.Unicode's: over the provider the options
+    // name, or, without one, over the engine's own tables through JSUnicode.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool IsWhiteSpace(int codePoint)
+        => lexical is null ? JSUnicode.IsWhiteSpace(codePoint) : lexical.IsWhiteSpace(codePoint);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool IsIdentifierStart(int codePoint)
+        => lexical is null ? JSUnicode.IsIdentifierStart(codePoint) : lexical.IsIdentifierStart(codePoint);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool IsIdentifierPart(int codePoint)
+        => lexical is null ? JSUnicode.IsIdentifierPart(codePoint) : lexical.IsIdentifierPart(codePoint);
 
     // `if` / `for` / `while` / `with` are the statements whose parenthesised head is
     // followed by a Statement, so a `/` after the closing `)` begins a regular
@@ -387,7 +429,7 @@ public class FastScanner
         // WhiteSpace and LineTerminator (ECMA-262 12.2 and 12.3), Broiler.Unicode's over the pinned
         // Unicode 17.0.0 tables (SJL-7.5): U+FEFF is white space and U+0085 is neither, where
         // the runtime's white-space test held U+0085 and not U+FEFF.
-        while (JSUnicode.IsWhiteSpace(first) || JSUnicode.IsLineTerminator(first))
+        while (IsWhiteSpace(first) || JSUnicode.IsLineTerminator(first))
         {
             if (first.IsLineTerminator())
                 lineTerminator = true;
@@ -413,11 +455,11 @@ public class FastScanner
         if (skipped)
             state = Push();
 
-        if (first == '\\' || JSUnicode.IsIdentifierStart(first))
+        if (first == '\\' || IsIdentifierStart(first))
             return ReadIdentifier(state);
 
         if (char.IsHighSurrogate(first) && char.IsLowSurrogate(Next())
-            && JSUnicode.IsIdentifierStart(char.ConvertToUtf32(first, Next())))
+            && IsIdentifierStart(char.ConvertToUtf32(first, Next())))
             return ReadIdentifier(state);
 
         switch (first)
@@ -1711,7 +1753,7 @@ public class FastScanner
                     if (char.IsLowSurrogate(low))
                     {
                         var codePoint = char.ConvertToUtf32(current, low);
-                        if (!(start ? JSUnicode.IsIdentifierStart(codePoint) : JSUnicode.IsIdentifierPart(codePoint)))
+                        if (!(start ? IsIdentifierStart(codePoint) : IsIdentifierPart(codePoint)))
                             break;
 
                         if (builder != null)
@@ -1726,7 +1768,7 @@ public class FastScanner
                     }
                 }
 
-                if (!(start ? JSUnicode.IsIdentifierStart(current) : JSUnicode.IsIdentifierPart(current)))
+                if (!(start ? IsIdentifierStart(current) : IsIdentifierPart(current)))
                     break;
 
                 builder?.Append(current);
@@ -1792,7 +1834,7 @@ public class FastScanner
             }
         }
 
-        if (!(start ? JSUnicode.IsIdentifierStart(codePoint) : JSUnicode.IsIdentifierPart(codePoint)))
+        if (!(start ? IsIdentifierStart(codePoint) : IsIdentifierPart(codePoint)))
             throw Unexpected();
 
         return codePoint.FromCodePoint();
@@ -1832,7 +1874,7 @@ public class FastScanner
         FastToken CommitNumberToken(State s, TokenTypes type = TokenTypes.Number)
         {
             var p = Peek();
-            if (p != char.MaxValue && JSUnicode.IsIdentifierStart(p) && p != '$' && p != '@')
+            if (p != char.MaxValue && IsIdentifierStart(p) && p != '$' && p != '@')
                 throw Unexpected(); // identifier start after numeric literal
 
             // The value is the shared library's (SJL-3.5), which also refuses what the digit scan

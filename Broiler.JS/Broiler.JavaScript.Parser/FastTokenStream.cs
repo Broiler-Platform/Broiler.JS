@@ -72,11 +72,26 @@ public class FastTokenStream
     public readonly FastKeywordMap Keywords;
     FastToken current;
 
+    /// <summary>
+    /// The options the stream's scanner was made with, which a parser over the stream parses with.
+    /// </summary>
+    public FastParserOptions Options { get; }
+
+    /// <summary>
+    /// A stream over <paramref name="text"/> with a pool of its own and the options of the parse in
+    /// progress, which is a script unless an ambient scope of the runtime's <c>CoreScript</c> says
+    /// otherwise.
+    /// </summary>
     public FastTokenStream(in StringSpan text, FastKeywordMap keywords = null)
+        : this(new FastPool(), text, keywords, FastParserOptions.FromAmbientScopes())
     {
-        Pool = new FastPool();
-        Keywords = keywords ?? FastKeywordMap.Instance;
-        scanner = new FastScanner(Pool, text, Keywords);
+    }
+
+    /// <summary>A stream over <paramref name="text"/> with a pool of its own and <paramref name="options"/>.</summary>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+    public FastTokenStream(in StringSpan text, FastKeywordMap keywords, FastParserOptions options)
+        : this(new FastPool(), text, keywords, options)
+    {
     }
 
     internal bool LineTerminator()
@@ -88,11 +103,28 @@ public class FastTokenStream
         return false;
     }
 
+    /// <summary>
+    /// A stream over <paramref name="text"/> drawing on <paramref name="pool"/>, with the options of the
+    /// parse in progress, which is a script unless an ambient scope of the runtime's <c>CoreScript</c>
+    /// says otherwise.
+    /// </summary>
     public FastTokenStream(FastPool pool, in StringSpan text, FastKeywordMap keywords = null)
+        : this(pool, text, keywords, FastParserOptions.FromAmbientScopes())
     {
+    }
+
+    /// <summary>
+    /// A stream over <paramref name="text"/> drawing on <paramref name="pool"/>, with
+    /// <paramref name="options"/>, which its scanner reads its first two tokens under.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+    public FastTokenStream(FastPool pool, in StringSpan text, FastKeywordMap keywords, FastParserOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
         Pool = pool;
         Keywords = keywords ?? FastKeywordMap.Instance;
-        scanner = new FastScanner(pool, text, Keywords);
+        Options = options;
+        scanner = new FastScanner(pool, text, Keywords, options);
     }
 
     /// <summary>

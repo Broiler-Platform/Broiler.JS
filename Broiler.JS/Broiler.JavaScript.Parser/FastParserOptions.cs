@@ -98,6 +98,22 @@ public sealed record FastParserOptions
     /// <summary>Whether this is the Module goal.</summary>
     internal bool IsModule => goal == FastParserGoal.Module;
 
+    /// <summary>
+    /// The options the runtime's ambient goal and top-level-<c>await</c> scopes describe, which is what
+    /// the constructors without options parse until every compile site passes its own.
+    /// </summary>
+    internal static FastParserOptions FromAmbientScopes()
+    {
+        var module = Runtime.CoreScript.IsModuleGoal;
+        var topLevelAwait = Runtime.CoreScript.AllowTopLevelAwait;
+        return (module, topLevelAwait) switch
+        {
+            (false, false) => Script,
+            (true, true) => Module,
+            _ => new FastParserOptions { Goal = module ? FastParserGoal.Module : FastParserGoal.Script, AllowTopLevelAwait = topLevelAwait },
+        };
+    }
+
     /// <inheritdoc />
     public bool Equals(FastParserOptions? other) =>
         other is not null
