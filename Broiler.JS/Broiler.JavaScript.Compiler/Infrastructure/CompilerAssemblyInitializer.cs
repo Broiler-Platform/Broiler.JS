@@ -16,11 +16,12 @@ internal static class CompilerAssemblyInitializer
     [ModuleInitializer]
     internal static void Initialize()
     {
-        // Register the FastCompiler-based compilation pipeline.
+        // Register the FastCompiler-based compilation pipeline, which compiles under the options
+        // CoreScript.Compile keys the compilation under: its goal and its top-level-await permission.
         DefaultJSCompiler.Register(
-            (code, location, argsList, codeCache) =>
+            (code, options, location, argsList, codeCache) =>
             {
-                var compiler = new FastCompiler(code, location, argsList, codeCache);
+                var compiler = new FastCompiler(code, options, location, argsList, codeCache);
                 return compiler.Method;
             });
     }

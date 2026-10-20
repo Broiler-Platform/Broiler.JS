@@ -686,7 +686,7 @@ public static class DirectEvalSupport
             var parser = new FastParser(new FastTokenStream(pool, text));
             var program = parser.ParseProgram();
             ValidateDirectEvalEarlyErrors(program, allowSuperProperty, allowSuperCall, rejectArguments, rejectNewTarget);
-            SyntaxValidation.ValidateProgram(program, text, inheritStrictMode, lexicalBindings, privateNamesInScope);
+            SyntaxValidation.ValidateProgram(program, text, parser.Options, inheritStrictMode, lexicalBindings, privateNamesInScope);
             if (parameterBindings?.Length > 0
                 && SyntaxValidation.ContainsDirectEvalVarConflict(program.Statements, parameterBindings))
             {

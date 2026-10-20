@@ -153,7 +153,11 @@ public class CoreScript
                         // established exactly when the front end runs: a cache hit never reaches
                         // here, and never needed to.
                         using var goal = moduleGoal ? ModuleGoalScope() : null;
-                        return compiler.Compile(script, location, args, codeCache);
+                        // The compiler is told the options the compilation is keyed under. The
+                        // ambient top-level-await scope still adds its permission, as it reached the
+                        // parser before; it goes when every compile site passes its own.
+                        var compile = AllowTopLevelAwait ? options with { AllowTopLevelAwait = true } : options;
+                        return compiler.Compile(script, compile, location, args, codeCache);
                     },
                     script.Length),
                 options);

@@ -47,12 +47,29 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
     private static int _compilationCounter;
     private readonly int compilationId = System.Threading.Interlocked.Increment(ref _compilationCounter);
     private readonly bool isDirectEvalCompilation;
-    // True when this program is compiled under the ES module goal (the ambient the parser reads
-    // for the same reason — see FastParser.isModuleGoal). A module has its own module environment,
-    // so its top-level let/const/class bindings are module-scoped locals, NOT entries in the realm's
-    // shared global lexical environment the way a script's top-level lexicals are. VisitProgram uses
-    // this to skip the global-lexical publishing for a module.
-    private readonly bool isModuleCompilation = Runtime.CoreScript.IsModuleGoal;
+    // True when this program is compiled under the ES module goal (JSCompilationOptions.IsModule,
+    // which the parser is given as its goal for the same reason). A module has its own module
+    // environment, so its top-level let/const/class bindings are module-scoped locals, NOT entries
+    // in the realm's shared global lexical environment the way a script's top-level lexicals are.
+    // VisitProgram uses this to skip the global-lexical publishing for a module.
+    private readonly bool isModuleCompilation;
+
+    // The parser's options for a compilation's goal and top-level-await permission. The two common
+    // ones are the parser's own presets; the other two are made once here.
+    private static readonly FastParserOptions ScriptWithTopLevelAwait = FastParserOptions.Script with { AllowTopLevelAwait = true };
+    private static readonly FastParserOptions ModuleWithoutTopLevelAwait = FastParserOptions.Module with { AllowTopLevelAwait = false };
+
+    /// <summary>
+    /// The options the parser parses a compilation under: its goal, a module when
+    /// <see cref="JSCompilationOptions.IsModule"/> is set, and its permission to await at the top level.
+    /// </summary>
+    internal static FastParserOptions ParserOptions(in JSCompilationOptions options) => (options.IsModule, options.AllowTopLevelAwait) switch
+    {
+        (false, false) => FastParserOptions.Script,
+        (false, true) => ScriptWithTopLevelAwait,
+        (true, true) => FastParserOptions.Module,
+        (true, false) => ModuleWithoutTopLevelAwait,
+    };
     private readonly bool usesDirectEvalLocalVarEnvironment;
     private readonly string[] directEvalBindingNames;
     private readonly string[] directEvalLexicalBindingNames;
@@ -93,9 +110,31 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
     // confined to one thread, and a repeated name would defeat the point of numbering at all.
     private static int anonymousProgramSequence;
 
+    /// <summary>
+    /// Compiles <paramref name="code"/> under the goal and the top-level-await permission of the
+    /// compile in progress, which the runtime's ambient scopes describe.
+    /// </summary>
     public FastCompiler(in StringSpan code, string location = null, IList<string> argsList = null, ICodeCache codeCache = null)
+        : this(code, AmbientOptions(), location, argsList, codeCache)
+    {
+    }
+
+    // The options the runtime's ambient scopes describe, which the constructor without options
+    // compiles under until every compile site passes its own.
+    private static JSCompilationOptions AmbientOptions()
+        => new(IsModule: Runtime.CoreScript.IsModuleGoal) { AllowTopLevelAwait = Runtime.CoreScript.AllowTopLevelAwait };
+
+    /// <summary>
+    /// Compiles <paramref name="code"/> under <paramref name="options"/>: the parser parses the Module
+    /// goal when <see cref="JSCompilationOptions.IsModule"/> is set and the Script goal otherwise, with
+    /// the options' permission to await at the top level, and the program is compiled as a module or a
+    /// script to match.
+    /// </summary>
+    public FastCompiler(in StringSpan code, in JSCompilationOptions options, string location = null, IList<string> argsList = null, ICodeCache codeCache = null)
     {
         pool = new FastPool();
+        isModuleCompilation = options.IsModule;
+        var parserOptions = ParserOptions(options);
 
         // Code with no script of its own — eval, and the Function constructor's body — was named
         // "vm.js" without distinction, so every such program shared one name. A stack trace
@@ -124,12 +163,12 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         // add top level...
 
         var parserPool = new FastPool();
-        var parser = new FastParser(new FastTokenStream(parserPool, code));
+        var parser = new FastParser(new FastTokenStream(parserPool, code, null, parserOptions), parserOptions);
         var jScript = parser.ParseProgram();
         parserPool.Dispose();
         // Module code is strict from its first token, directive or not (ES2024 11.2.2).
-        SyntaxValidation.ValidateProgram(jScript, code.Value, inheritStrictMode: isModuleCompilation,
-            directEvalPrivateNames: directEvalPrivateNames, isModule: isModuleCompilation);
+        SyntaxValidation.ValidateProgram(jScript, code.Value, parserOptions, inheritStrictMode: isModuleCompilation,
+            directEvalPrivateNames: directEvalPrivateNames);
         // Module code is always strict code (ES2024 11.2.2), with or without a directive.
         var isStrictProgram = isModuleCompilation || HasUseStrictDirective(jScript);
 
