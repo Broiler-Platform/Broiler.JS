@@ -5,7 +5,6 @@ using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
-using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler;
 

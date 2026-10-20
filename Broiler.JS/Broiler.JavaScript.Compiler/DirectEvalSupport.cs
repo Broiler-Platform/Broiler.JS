@@ -670,7 +670,7 @@ public static class DirectEvalSupport
     /// goal, which is how PerformEval parses it, without top-level <c>await</c>, whatever the code
     /// that called eval may do.
     /// </summary>
-    private static FastParserOptions EvalOptions() => FastParserOptions.Script;
+    private static FastParserOptions EvalOptions => FastParserOptions.Script;
 
     /// <summary>
     /// Runs the indirect-eval early errors over <paramref name="text"/> and reports whether
@@ -687,7 +687,7 @@ public static class DirectEvalSupport
     /// </summary>
     private static AstProgram Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool rejectArguments = false, bool rejectNewTarget = false)
     {
-        var options = EvalOptions();
+        var options = EvalOptions;
         if (inheritStrictMode && ContainsStrictReservedWordUsage(text, options))
             throw JSEngine.NewSyntaxError("Unexpected strict mode reserved word");
 

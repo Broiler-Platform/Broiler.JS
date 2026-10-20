@@ -53,23 +53,6 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
     // in the realm's shared global lexical environment the way a script's top-level lexicals are.
     // VisitProgram uses this to skip the global-lexical publishing for a module.
     private readonly bool isModuleCompilation;
-
-    // The parser's options for a compilation's goal and top-level-await permission. The two common
-    // ones are the parser's own presets; the other two are made once here.
-    private static readonly FastParserOptions ScriptWithTopLevelAwait = FastParserOptions.Script with { AllowTopLevelAwait = true };
-    private static readonly FastParserOptions ModuleWithoutTopLevelAwait = FastParserOptions.Module with { AllowTopLevelAwait = false };
-
-    /// <summary>
-    /// The options the parser parses a compilation under: its goal, a module when
-    /// <see cref="JSCompilationOptions.IsModule"/> is set, and its permission to await at the top level.
-    /// </summary>
-    internal static FastParserOptions ParserOptions(in JSCompilationOptions options) => (options.IsModule, options.AllowTopLevelAwait) switch
-    {
-        (false, false) => FastParserOptions.Script,
-        (false, true) => ScriptWithTopLevelAwait,
-        (true, true) => FastParserOptions.Module,
-        (true, false) => ModuleWithoutTopLevelAwait,
-    };
     private readonly bool usesDirectEvalLocalVarEnvironment;
     private readonly string[] directEvalBindingNames;
     private readonly string[] directEvalLexicalBindingNames;
@@ -109,6 +92,23 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
     // Numbers the anonymous programs above. Static and interlocked because compilation is not
     // confined to one thread, and a repeated name would defeat the point of numbering at all.
     private static int anonymousProgramSequence;
+
+    // The parser's options for a compilation's goal and top-level-await permission. The two common
+    // ones are the parser's own presets; the other two are made once here.
+    private static readonly FastParserOptions ScriptWithTopLevelAwait = FastParserOptions.Script with { AllowTopLevelAwait = true };
+    private static readonly FastParserOptions ModuleWithoutTopLevelAwait = FastParserOptions.Module with { AllowTopLevelAwait = false };
+
+    /// <summary>
+    /// The options the parser parses a compilation under: its goal, a module when
+    /// <see cref="JSCompilationOptions.IsModule"/> is set, and its permission to await at the top level.
+    /// </summary>
+    private static FastParserOptions ParserOptions(in JSCompilationOptions options) => (options.IsModule, options.AllowTopLevelAwait) switch
+    {
+        (false, false) => FastParserOptions.Script,
+        (false, true) => ScriptWithTopLevelAwait,
+        (true, true) => FastParserOptions.Module,
+        (true, false) => ModuleWithoutTopLevelAwait,
+    };
 
     /// <summary>
     /// Compiles <paramref name="code"/> as a script without top-level <c>await</c>.
