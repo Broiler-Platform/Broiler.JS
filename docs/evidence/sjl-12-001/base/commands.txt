@@ -1,0 +1,72 @@
+# Bundle sjl-12-001, base runs of parts C and D at the corpus commit 1fe542ff459935586cdf495e4a0e3d798248948a
+# (SJL-12.4 task 4.7, 2026-10-20). Every command as it was run, in order. The variables expand to the exact paths.
+# Each tool run was launched through a wrapper (timed.py) that records the exit code, wall-clock and peak RSS and
+# strips LANG and every LC_* variable from the child's environment (Python's locale coercion adds LC_CTYPE); each
+# was preceded by the idle-machine gate that machine.txt describes. No BROILER_* variable was set.
+
+W=/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl12/wp47   # scratch folder
+JS=$W/js-corpus                                                                           # the clean checkout
+export PATH=/root/.dotnet:$PATH DOTNET_ROOT=/root/.dotnet
+
+# ---- the clean checkout (removed afterwards)
+git -C /home/user/broiler.js worktree add --detach $JS 1fe542ff459935586cdf495e4a0e3d798248948a
+
+# ---- the tool's build, in Release, from clean, against this commit's own projects (logs/build.log.gz)
+cd $JS && env -u LANG TZ=UTC dotnet build -c Release -nologo --disable-build-servers --artifacts-path $W/js-art \
+  $JS/docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj
+
+T=$W/js-art/bin/parse-corpus/release/parse-corpus.dll
+M=$JS/conformance/parse/corpus.manifest
+S=/home/user/tc39/test262          # a test262 checkout at ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e, no local change
+
+# ---- part C, twice (entry points P and K, one thread)
+cd $JS && env -u LANG TZ=UTC dotnet $T --manifest $M --test262 $S --out $W/runs/js-c1.tsv.gz                       # parse-corpus-c.tsv.gz
+cd $JS && env -u LANG TZ=UTC dotnet $T --manifest $M --test262 $S --out $W/runs/js-c2.tsv.gz                       # parse-corpus-c-run2.tsv.gz
+# ---- part D: run 1 in the manifest's order, run 2 in the reverse order, run 3 on two threads
+cd $JS && env -u LANG TZ=UTC dotnet $T --dump --order manifest --manifest $M --test262 $S --out $W/runs/js-d1.tsv.gz  # parse-corpus-d1.tsv.gz
+cd $JS && env -u LANG TZ=UTC dotnet $T --dump --order reverse --manifest $M --test262 $S --out $W/runs/js-d2.tsv.gz   # parse-corpus-d2.tsv.gz
+cd $JS && env -u LANG TZ=UTC dotnet $T --dump --threads 2 --manifest $M --test262 $S --out $W/runs/js-d3.tsv.gz       # parse-corpus-d3.tsv.gz
+# Standard output was empty for every run; standard error: logs/parse-corpus-*.stderr.txt. No --text: no dump text.
+
+# ---- the comparisons and the control, scripts/compliance/compare_parse_corpus.py as the corpus commit holds it, run
+#      from the checkout's root with docs/evidence/sjl-12-001/base a symbolic link to the staged base/ (removed
+#      afterwards), so every path in their output is the one the bundle commits. Standard error was empty.
+B=docs/evidence/sjl-12-001/base
+M=conformance/parse/corpus.manifest
+P=scripts/compliance/compare_parse_corpus.py
+# part C: run 1 against run 2 (exit 0: no difference)
+cd $JS && python3 -I $P acceptance --base $B/parse-corpus-c.tsv.gz --after $B/parse-corpus-c-run2.tsv.gz \
+  --manifest $M --output $B/parse-corpus-c-run1-run2.json > $B/parse-corpus-c-run1-run2.out
+# part C's control: the copy and its comparison, which must report the two planted differences (exit 0: reported)
+cd $JS && python3 -I $P control --base $B/parse-corpus-c.tsv.gz --out $B/parse-corpus-c-control.tsv.gz \
+  --output $B/parse-corpus-c-control.json > $B/parse-corpus-c-control.out
+# (The three control files this wrote into base/ are not retained: the bundle keeps its controls under controls/,
+#  as its README's layout and the tool's README say. They were made again there, below.)
+# part D, read and not judged: runs 1, 2 and 3 over the population run 1 of part C accepted at P (exit 1: the
+# parser's process-wide temporary counter at this commit, which the rule expects the base to show; --require-pass
+# is not given, because the corpus commit has no for-loop pass)
+cd $JS && python3 -I $P determinism --run1 $B/parse-corpus-d1.tsv.gz --run2 $B/parse-corpus-d2.tsv.gz \
+  --run3 $B/parse-corpus-d3.tsv.gz --population $B/parse-corpus-c.tsv.gz --manifest $M --output $B/parse-corpus-d.json > $B/parse-corpus-d.out
+gzip -n $B/parse-corpus-d.json
+gzip -n $B/parse-corpus-d.out
+
+# ---- added 2026-10-20, when the base was committed (verifier finding 1): part C's control made again under
+#      controls/, from the retained run 1 alone, by scripts/compliance/compare_parse_corpus.py as the corpus commit
+#      holds it, unchanged in the committing worktree /home/user/js-s12base (branch sjl-12-bases-js, from the default
+#      branch at the corpus commit 1fe542ff459935586cdf495e4a0e3d798248948a). The command is the control command of
+#      the tool's README (docs/evidence/sjl-12-001/tools/parse-corpus/README.md), run from that worktree's root, so
+#      its bundle-relative paths carry the bundle's folder and every path in the output is the one the bundle commits.
+#      No run was taken again. python3 is Python 3.13.16.
+B=docs/evidence/sjl-12-001/base
+C=docs/evidence/sjl-12-001/controls
+python3 -I scripts/compliance/compare_parse_corpus.py control --base $B/parse-corpus-c.tsv.gz \
+  --out $C/parse-corpus-c-control.tsv.gz --output $C/parse-corpus-c-control.json > $C/parse-corpus-c-control.out  # exit 0
+# controls/parse-corpus-c-control.tsv.gz is byte for byte the copy first written into base/ (cmp: no difference;
+# SHA-256 c8c56b4d722e97c4d4fe9f0a2885d35d71c4ab6e905d6f933ef2a57813b878eb), and controls/parse-corpus-c-control.out is
+# byte for byte the first one too. controls/parse-corpus-c-control.json differs from the first one in one line only,
+# which now reads "after": "docs/evidence/sjl-12-001/controls/parse-corpus-c-control.tsv.gz". Standard error was empty.
+
+# ---- the retained files: hashes.txt (sha256sum of every other retained file, from this folder)
+# (Added 2026-10-20, when the base was committed: base/hashes.txt is the SHA-256 of every other file of base/ and
+#  base/logs/, from base/. Part A's two void attempts, base/part-a-void-attempt-1/ and base/part-a-void-attempt-2/,
+#  controls/ and corpus/ each have their own hashes.txt, of every other file of that folder, from it.)

@@ -1,0 +1,124 @@
+# bundle sjl-12-001: the corpus commit's identity, its manifest's digest, and the path list and ancestry the
+# rule's three conditions read (the README's layout, corpus/). Written 2026-10-20T15:15:01Z from git reads
+# alone, in a worktree whose origin/main, the default branch as fetched, is 1fe542ff459935586cdf495e4a0e3d798248948a, when parts C and D's
+# base runs at the corpus commit were committed. Every command as it was run, with its output and exit code.
+rule-commit   4d813f2ac863895b9be5c4619b7886c9ddd71077
+corpus-commit 1fe542ff459935586cdf495e4a0e3d798248948a
+
+## the rule commit and the corpus commit
+$ git log -1 --format='commit %H%nparents %P%ncommitted %cI%nsubject %s' 4d813f2ac863895b9be5c4619b7886c9ddd71077
+commit 4d813f2ac863895b9be5c4619b7886c9ddd71077
+parents a640552a531b16529b6d8860b946139a0c5a9d93 57d5a2f5e4ea17daaf8afd083d0278e7e0160d09
+committed 2026-10-20T00:32:00+02:00
+subject Merge pull request #1059 from Broiler-Platform/claude/busy-lamport-m3yprr
+(exit 0)
+$ git log -1 --format='commit %H%nparents %P%ncommitted %cI%nsubject %s' 1fe542ff459935586cdf495e4a0e3d798248948a
+commit 1fe542ff459935586cdf495e4a0e3d798248948a
+parents 68f9a87a600d91ff27f150cc935d474cc0575324 cbbcfe16c75669aafd8958a08485741a7c1cbe78
+committed 2026-10-20T12:23:03+02:00
+subject Merge pull request #1062 from Broiler-Platform/claude/busy-lamport-m3yprr
+(exit 0)
+# the rule's file, the same blob at both:
+$ git rev-parse 4d813f2ac863895b9be5c4619b7886c9ddd71077:docs/evidence/sjl-12-001/decision-rule.md 1fe542ff459935586cdf495e4a0e3d798248948a:docs/evidence/sjl-12-001/decision-rule.md
+0214773394a83ac2af0ed5cec01b31b2a6971cce
+0214773394a83ac2af0ed5cec01b31b2a6971cce
+(exit 0)
+
+## its manifest's digest, and the tool and comparison the rule names at the corpus commit
+$ git show 1fe542ff459935586cdf495e4a0e3d798248948a:conformance/parse/corpus.manifest | sha256sum
+1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc  -
+(exit 0)
+$ git ls-tree -r --name-only 1fe542ff459935586cdf495e4a0e3d798248948a docs/evidence/sjl-12-001/tools/parse-corpus scripts/compliance/compare_parse_corpus.py
+docs/evidence/sjl-12-001/tools/parse-corpus/CanonicalDump.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/DumpWriter.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/Entries.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/Manifest.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/Program.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/README.md
+docs/evidence/sjl-12-001/tools/parse-corpus/Text.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj
+scripts/compliance/compare_parse_corpus.py
+(exit 0)
+
+## condition 1: it descends from the rule commit
+$ git merge-base --is-ancestor 4d813f2ac863895b9be5c4619b7886c9ddd71077 1fe542ff459935586cdf495e4a0e3d798248948a
+(exit 0)
+
+## condition 2: the paths git diff --name-only names between the two
+$ git diff --name-only 4d813f2ac863895b9be5c4619b7886c9ddd71077 1fe542ff459935586cdf495e4a0e3d798248948a | wc -l
+2308
+(exit 0)
+$ git diff --name-status 4d813f2ac863895b9be5c4619b7886c9ddd71077 1fe542ff459935586cdf495e4a0e3d798248948a | cut -f1 | sort | uniq -c
+   2303 A
+      5 M
+(exit 0)
+# by the rule's listed paths, each path counted under the first that holds it:
+$ git diff --name-only 4d813f2ac863895b9be5c4619b7886c9ddd71077 1fe542ff459935586cdf495e4a0e3d798248948a | awk '{ if (index($0, "conformance/parse/") == 1) k = "conformance/parse/"; else if (index($0, "scripts/") == 1) k = "scripts/"; else if (index($0, "docs/") == 1) k = "docs/"; else if (index($0, "Broiler.ECMAScript/docs/") == 1) k = "Broiler.ECMAScript/docs/"; else k = "OUTSIDE THE LISTED PATHS"; n[k]++ } END { for (k in n) printf "%6d %s\n", n[k], k }' | sort -k2
+     2 Broiler.ECMAScript/docs/
+  2274 conformance/parse/
+    27 docs/
+     5 scripts/
+(exit 0)
+# every path outside conformance/parse/:
+$ git diff --name-only 4d813f2ac863895b9be5c4619b7886c9ddd71077 1fe542ff459935586cdf495e4a0e3d798248948a | grep -v '^conformance/parse/'
+Broiler.ECMAScript/docs/frontend/early-errors.md
+Broiler.ECMAScript/docs/frontend/early-errors.tsv
+docs/evidence/sjl-12-001/README.md
+docs/evidence/sjl-12-001/catalogue/check.py
+docs/evidence/sjl-12-001/catalogue/completeness.md
+docs/evidence/sjl-12-001/catalogue/js-sites.tsv
+docs/evidence/sjl-12-001/catalogue/parse-negative.tsv
+docs/evidence/sjl-12-001/catalogue/probes/js/Program.cs
+docs/evidence/sjl-12-001/catalogue/probes/js/SiteProbe.csproj
+docs/evidence/sjl-12-001/catalogue/probes/vm/Program.cs
+docs/evidence/sjl-12-001/catalogue/probes/vm/SiteProbe.csproj
+docs/evidence/sjl-12-001/catalogue/probes/vm/instrument.py
+docs/evidence/sjl-12-001/catalogue/spec-syntaxerror-clauses.tsv
+docs/evidence/sjl-12-001/catalogue/vm-regexp-sites.tsv
+docs/evidence/sjl-12-001/catalogue/vm-sites.tsv
+docs/evidence/sjl-12-001/tools/parse-corpus-tests/CanonicalDumpTests.cs
+docs/evidence/sjl-12-001/tools/parse-corpus-tests/parse-corpus-tests.csproj
+docs/evidence/sjl-12-001/tools/parse-corpus/CanonicalDump.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/DumpWriter.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/Entries.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/Manifest.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/Program.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/README.md
+docs/evidence/sjl-12-001/tools/parse-corpus/Text.cs
+docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj
+docs/evidence/sjl-3-001/README.md
+docs/evidence/sjl-3-001/manifest.json
+docs/roadmap/SharedLibraries.md
+docs/roadmap/SharedLibraries.status.md
+scripts/compliance/compare_parse_corpus.py
+scripts/compliance/tests/test_compare_parse_corpus.py
+scripts/conformance/build_parse_corpus.py
+scripts/conformance/tests/test_build_parse_corpus.py
+scripts/frontend/ee_extract.py
+(exit 0)
+
+## condition 3: it is an ancestor of every commit after the rule commit that changes a path under
+## Broiler.JS/Broiler.JavaScript.*/, or under Broiler.ECMAScript/ outside Broiler.ECMAScript/docs/, read at the
+## default branch (1fe542ff459935586cdf495e4a0e3d798248948a). Without --full-history, git's TREESAME rule; with it, every commit that touches the paths
+## against any parent.
+$ git log --format='%H %s' 4d813f2ac863895b9be5c4619b7886c9ddd71077..1fe542ff459935586cdf495e4a0e3d798248948a -- 'Broiler.JS/Broiler.JavaScript.*/' 'Broiler.ECMAScript/' ':(exclude)Broiler.ECMAScript/docs/'
+(exit 0)
+$ git log --full-history --format='%H parents %P' 4d813f2ac863895b9be5c4619b7886c9ddd71077..1fe542ff459935586cdf495e4a0e3d798248948a -- 'Broiler.JS/Broiler.JavaScript.*/' 'Broiler.ECMAScript/' ':(exclude)Broiler.ECMAScript/docs/'
+b1ac1b8a756b5db6699b53fbb4bd4f4e06eae2dd parents a6b29eafba255dc0b43046ba8d0c217dad5e9d91 4d813f2ac863895b9be5c4619b7886c9ddd71077
+(exit 0)
+$ git merge-base --is-ancestor b1ac1b8a756b5db6699b53fbb4bd4f4e06eae2dd 1fe542ff459935586cdf495e4a0e3d798248948a
+(exit 0)
+# that merge takes the rule commit into a branch that does not descend from it: against its first parent it
+# changes what the default branch had changed there, and against its second parent, the rule commit, it changes
+# no path the condition lists:
+$ git merge-base --is-ancestor 4d813f2ac863895b9be5c4619b7886c9ddd71077 a6b29eafba255dc0b43046ba8d0c217dad5e9d91
+(exit 1)
+$ git diff --name-only a6b29eafba255dc0b43046ba8d0c217dad5e9d91 b1ac1b8a756b5db6699b53fbb4bd4f4e06eae2dd -- 'Broiler.JS/Broiler.JavaScript.*/' 'Broiler.ECMAScript/' ':(exclude)Broiler.ECMAScript/docs/'
+Broiler.ECMAScript/CHANGELOG.md
+(exit 0)
+$ git diff --name-only 4d813f2ac863895b9be5c4619b7886c9ddd71077 b1ac1b8a756b5db6699b53fbb4bd4f4e06eae2dd -- 'Broiler.JS/Broiler.JavaScript.*/' 'Broiler.ECMAScript/' ':(exclude)Broiler.ECMAScript/docs/' | wc -l
+0
+(exit 0)
+# every commit on the default branch after the corpus commit:
+$ git log --format='%H %s' 1fe542ff459935586cdf495e4a0e3d798248948a..1fe542ff459935586cdf495e4a0e3d798248948a
+(exit 0)
