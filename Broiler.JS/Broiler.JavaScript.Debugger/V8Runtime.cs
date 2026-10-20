@@ -94,8 +94,9 @@ public partial class V8Runtime(V8InspectorProtocol inspectorContext) : V8Protoco
 
         try
         {
-
-            var fx = CoreScript.Compile(a.FunctionDeclaration, codeCache: c.CodeCache);
+            // A script without top-level await under the options of the context it runs in, whose
+            // code cache it is kept in, whatever the calling code may do.
+            var fx = CoreScript.Compile(a.FunctionDeclaration, codeCache: c.CodeCache, compilationOptions: c.CompilationOptions);
             var previous = JSEngine.Current;
 
             try
@@ -129,7 +130,11 @@ public partial class V8Runtime(V8InspectorProtocol inspectorContext) : V8Protoco
         try
         {
             var injectedId = $"I-{Interlocked.Increment(ref nextInjectedId)}";
-            var fx = CoreScript.Compile(a.Expression);
+            // A script without top-level await under the options of the context the call names,
+            // or else the first, the one RunScript runs it in when its own call names none.
+            if (!inspectorContext.Contexts.TryGetValue(a.ExecutionContextId, out var c))
+                c = inspectorContext.Contexts.Values.FirstOrDefault();
+            var fx = CoreScript.Compile(a.Expression, compilationOptions: c?.CompilationOptions ?? default);
             
             inspectorContext.InjectedScripts.Add(injectedId, fx);
             return new V8ReturnValue { ScriptId = injectedId };
@@ -153,8 +158,9 @@ public partial class V8Runtime(V8InspectorProtocol inspectorContext) : V8Protoco
 
         try
         {
-
-            var fx = CoreScript.Compile(a.Expression);
+            // A script without top-level await under the options of the context it runs in,
+            // whatever the calling code may do.
+            var fx = CoreScript.Compile(a.Expression, compilationOptions: c.CompilationOptions);
             var previous = JSEngine.Current;
 
             try

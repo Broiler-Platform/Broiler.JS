@@ -84,11 +84,11 @@ public class CoreScript
             // Resolved once: the options carried in the cache key and the goal the factory
             // parses under both come from this single value.
             //
-            // Without options of its own a compile takes the current context's, which are a
-            // script's: never a module unless isModule says so, and never permitted to await at
-            // the top level. Eval, indirect eval, the Function constructor, ShadowRealm's evaluate
-            // and the debugger's evaluate compile so.
-            var options = compilationOptions ?? current.compilationOptions;
+            // Without options of its own a compile takes the current context's as a script's:
+            // never a module unless isModule says so, and never permitted to await at the top
+            // level, whatever the context's options say. The engine's own compile sites pass
+            // their options; this is what a host's call without options gets.
+            var options = compilationOptions ?? AsScript(current.compilationOptions);
             if (isModule)
                 options = options with { IsModule = true };
 
@@ -112,11 +112,18 @@ public class CoreScript
         }
     }
 
+    // A script's options under the context's host inputs: the Script goal, without top-level
+    // await. What a compile without options of its own takes, and what Evaluate, EvaluateAsync
+    // and EvaluateWithTasks compile under.
+    private static JSCompilationOptions AsScript(in JSCompilationOptions options)
+        => options with { IsModule = false, AllowTopLevelAwait = false };
+
     /// <summary>
     /// Evaluates JavaScript code synchronously, pumping an async message loop
     /// so that microtasks (e.g., resolved promises) are processed before
     /// returning the result.
     /// </summary>
+    /// <remarks>The code is compiled as a script without top-level <c>await</c>, under the current context's options.</remarks>
     /// <param name="code">The JavaScript source code to evaluate.</param>
     /// <param name="location">Optional source location for diagnostics.</param>
     /// <returns>The result of evaluating <paramref name="code"/>.</returns>
@@ -124,7 +131,7 @@ public class CoreScript
     {
         var result = JSValue.UndefinedValue;
         var ctx = GetCurrentContext();
-        var fx = Compile(code, location, codeCache: ctx.codeCache);
+        var fx = Compile(code, location, codeCache: ctx.codeCache, compilationOptions: AsScript(ctx.compilationOptions));
         
         RunAsyncPump(() =>
         {
@@ -138,6 +145,7 @@ public class CoreScript
     /// <summary>
     /// Evaluates JavaScript code synchronously in the current context.
     /// </summary>
+    /// <remarks>The code is compiled as a script without top-level <c>await</c>, under the current context's options.</remarks>
     /// <param name="code">The JavaScript source code to evaluate.</param>
     /// <param name="location">Optional source location for diagnostics.</param>
     /// <param name="codeCache">Optional code cache for compiled script reuse.</param>
@@ -145,7 +153,7 @@ public class CoreScript
     public static JSValue Evaluate(string code, string location = null, ICodeCache codeCache = null)
     {
         var ctx = GetCurrentContext();
-        var fx = Compile(code, location, null, codeCache ?? ctx.codeCache);
+        var fx = Compile(code, location, null, codeCache ?? ctx.codeCache, compilationOptions: AsScript(ctx.compilationOptions));
         // The script/eval completion value must be a materialized value, never an
         // unforced JSTailCall sentinel: a trailing call in the body is a tail call
         // only within the script, and this boundary must trampoline it.
@@ -156,6 +164,7 @@ public class CoreScript
     /// Evaluates JavaScript code asynchronously, awaiting any pending
     /// async operations before returning.
     /// </summary>
+    /// <remarks>The code is compiled as a script without top-level <c>await</c>, under the current context's options.</remarks>
     /// <param name="code">The JavaScript source code to evaluate.</param>
     /// <param name="location">Optional source location for diagnostics.</param>
     /// <param name="codeCache">Optional code cache for compiled script reuse.</param>
@@ -163,7 +172,7 @@ public class CoreScript
     public static async Task<JSValue> EvaluateAsync(string code, string location = null, ICodeCache codeCache = null)
     {
         var ctx = GetCurrentContext();
-        var fx = Compile(code, location, null, codeCache ?? ctx.codeCache);
+        var fx = Compile(code, location, null, codeCache ?? ctx.codeCache, compilationOptions: AsScript(ctx.compilationOptions));
         
         var result = fx(new Arguments(ctx.value));
         
