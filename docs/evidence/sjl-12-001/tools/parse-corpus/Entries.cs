@@ -15,7 +15,6 @@ internal readonly record struct Outcome(string Kind, string? Type, string? Messa
     internal const string Accepted = "accepted";
     internal const string Refused = "refused";
     internal const string Crashed = "crashed";
-    internal const string NotApplicable = "not-applicable";
 
     internal static Outcome Accept() => new(Accepted, null, null);
 
@@ -25,17 +24,18 @@ internal readonly record struct Outcome(string Kind, string? Type, string? Messa
 
 /// <summary>
 /// The two entry points of part C and the for-loop pass of part D. They name only members that
-/// exist at the corpus commit and at the after commit: the <c>FastParser(FastTokenStream)</c>
-/// constructor over <c>FastTokenStream(in StringSpan)</c> and <c>ParseProgram</c>,
-/// <c>FastParser.ParseModule</c>, and <c>CoreScript.Compile</c>.
+/// exist at the corpus commit and at the after commit; README.md beside this file lists them.
 /// </summary>
+/// <remarks>
+/// The rule gives the module goal <c>FastParser.ParseModule</c> and the module flag, and every
+/// other goal <c>ParseProgram</c> and no module flag, so a json row (a JSON module's text) is
+/// answered at P and K as the script goal's are, with its text unchanged.
+/// </remarks>
 internal static class Entries
 {
-    internal const string NoEntryPoint = "the goal json has no entry point in part C (P parses the script and module goals, K compiles a script or a module)";
-
     /// <summary>
     /// P, the parser alone: a <c>FastParser</c> over a <c>FastTokenStream</c> and
-    /// <c>ParseProgram</c> for the script goal, <c>FastParser.ParseModule</c> for the module goal.
+    /// <c>ParseProgram</c>, or <c>FastParser.ParseModule</c> for the module goal.
     /// Refused is a <c>FastParseException</c>; any other exception is a crash.
     /// </summary>
     /// <remarks>

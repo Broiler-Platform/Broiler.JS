@@ -2,8 +2,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
+using System.Runtime.CompilerServices;
 using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Misc;
 
@@ -11,17 +10,18 @@ namespace ParseCorpus;
 
 /// <summary>
 /// The canonical dump of a parsed tree (decision rule part D): each node's type, span, names, flags
-/// and children, in tree order, as ASCII text whose SHA-256 is what a run reports.
+/// and children, in tree order, as text whose SHA-256 is what a run reports.
 /// </summary>
 /// <remarks>
 /// <para>
 /// The dump is read from the tree by reflection, so it names no node member at compile time and
 /// needs no change when the after commit adds or removes one (item 5 adds <c>ContainsContinue</c>
-/// to the loop statements, for one). Everything a node holds publicly is in it: the public
-/// instance fields and the public readable properties of each type from <c>AstNode</c> down to the
-/// node's own, each type's members in declaration (metadata) order. <c>AstNode.Type</c>,
-/// <c>Start</c> and <c>End</c> make the line's head; <c>AstNode.Code</c>, the source text the span
-/// covers, is left out because the span already says it.
+/// to the loop statements, for one). Everything a node holds is in it: every instance field, public
+/// or not, and every public readable property, of each type from <c>AstNode</c> down to the node's
+/// own, each type's fields and then its properties in declaration (metadata) order. A
+/// compiler-generated backing field whose property is already written is left out.
+/// <c>AstNode.Type</c>, <c>Start</c> and <c>End</c> make the line's head; <c>AstNode.Code</c>, the
+/// source text the span covers, is left out because the span already says it.
 /// </para>
 /// <para>
 /// Names are written as they are, never renumbered: the parser's temporaries at the corpus commit
@@ -31,10 +31,16 @@ namespace ParseCorpus;
 /// in, so a list ordered by a hash (control K2) shows.
 /// </para>
 /// <para>
+/// The text grows linearly with the tree: each line starts with its depth as a number, never with
+/// indentation, and the text is streamed into the hash (<see cref="DumpWriter"/>) rather than held.
+/// The tree is walked with an explicit stack, so its depth costs no thread stack.
+/// </para>
+/// <para>
 /// Nothing in the text depends on the process: no object identity, hash code, address, culture or
-/// clock. Numbers use the invariant culture ("R" for doubles), enums their names, and every
-/// character outside printable ASCII is escaped as <c>\uXXXX</c> (UTF-16 code units, so a lone
-/// surrogate is kept). The format is set out in README.md beside this file.
+/// clock. Numbers use the invariant culture ("R" for doubles), enums their names, type names carry
+/// no assembly version, and every character of a value outside printable ASCII is escaped as
+/// <c>\uXXXX</c> (UTF-16 code units, so a lone surrogate is kept). The format is set out in
+/// README.md beside this file.
 /// </para>
 /// </remarks>
 internal static class CanonicalDump
@@ -42,41 +48,65 @@ internal static class CanonicalDump
     private static readonly ConcurrentDictionary<Type, Member[]> Members = new();
     private static readonly Type AstNodeType = typeof(AstNode);
 
-    internal static string Hash(string text)
+    /// <summary>Writes the dump of the tree under <paramref name="root"/>.</summary>
+    internal static void Write(DumpWriter writer, AstNode root)
     {
-        var bytes = Encoding.ASCII.GetBytes(text);
-        return Convert.ToHexStringLower(SHA256.HashData(bytes));
-    }
-
-    internal static string Of(AstNode root)
-    {
-        var writer = new StringBuilder();
         var ancestors = new HashSet<object>(ReferenceEqualityComparer.Instance);
-        WriteNested(writer, 0, "program", root, ancestors);
-        return writer.ToString();
+        var pending = new Stack<Step>();
+        pending.Push(new Step(StepKind.Nested, 0, "program", root));
+
+        while (pending.TryPop(out var step))
+        {
+            switch (step.Kind)
+            {
+                case StepKind.Leave:
+                    ancestors.Remove(step.Value!);
+                    break;
+                case StepKind.Inline:
+                    writer.Head(step.Depth, step.Label).Append(' ');
+                    WriteInline(writer, step.Value);
+                    writer.Append('\n');
+                    break;
+                default:
+                    Visit(writer, step, ancestors, pending);
+                    break;
+            }
+        }
     }
 
-    internal static string OfException(Exception exception)
-        => "throws " + exception.GetType().FullName + " " + Text.Quote(exception.Message) + "\n";
+    /// <summary>What is dumped in place of the prepared tree where the pass throws.</summary>
+    internal static void WriteException(DumpWriter writer, Exception exception)
+        => writer.Append("throws ").Append(exception.GetType().FullName ?? "?").Append(' ').Append(Text.Quote(exception.Message)).Append('\n');
 
-    private static void WriteNested(StringBuilder writer, int depth, string label, object value, HashSet<object> ancestors)
+    private enum StepKind
     {
-        Indent(writer, depth);
-        writer.Append(label).Append(':');
+        Nested,
+        Inline,
+        Leave,
+    }
+
+    private readonly record struct Step(StepKind Kind, int Depth, string Label, object? Value);
+
+    private static void Visit(DumpWriter writer, Step step, HashSet<object> ancestors, Stack<Step> pending)
+    {
+        var value = step.Value!;
+        writer.Head(step.Depth, step.Label);
 
         if (value is AstNode node)
         {
             if (!ancestors.Add(node))
             {
-                writer.Append(" cycle ").Append(node.GetType().FullName).Append('\n');
+                writer.Append(" cycle ").Append(TypeName(node.GetType())).Append('\n');
                 return;
             }
 
-            writer.Append(' ').Append(node.GetType().FullName)
+            writer.Append(' ').Append(TypeName(node.GetType()))
                 .Append(' ').Append(node.Type.ToString())
                 .Append(" @").Append(Span(node.Start, node.End));
-            WriteMembers(writer, depth, MembersOf(node.GetType()), node, ancestors);
-            ancestors.Remove(node);
+
+            // Popped after every nested member of the node has been written.
+            pending.Push(new Step(StepKind.Leave, step.Depth, step.Label, node));
+            WriteMembers(writer, step.Depth, MembersOf(node.GetType()), node, pending);
             return;
         }
 
@@ -86,21 +116,11 @@ internal static class CanonicalDump
             foreach (var item in sequence)
                 items.Add(item);
 
-            writer.Append(" list ").Append(items.Count.ToString(CultureInfo.InvariantCulture)).Append('\n');
-            for (var i = 0; i < items.Count; i++)
+            writer.Append(" list ").Append(items.Count).Append('\n');
+            for (var i = items.Count - 1; i >= 0; i--)
             {
-                var itemLabel = "[" + i.ToString(CultureInfo.InvariantCulture) + "]";
-                if (IsInline(items[i]))
-                {
-                    Indent(writer, depth + 1);
-                    writer.Append(itemLabel).Append(": ");
-                    WriteInline(writer, items[i]);
-                    writer.Append('\n');
-                }
-                else
-                {
-                    WriteNested(writer, depth + 1, itemLabel, items[i]!, ancestors);
-                }
+                var kind = IsInline(items[i]) ? StepKind.Inline : StepKind.Nested;
+                pending.Push(new Step(kind, step.Depth + 1, "[" + i.ToString(CultureInfo.InvariantCulture) + "]", items[i]));
             }
 
             return;
@@ -109,18 +129,22 @@ internal static class CanonicalDump
         // A value type that holds a node somewhere: VariableDeclarator, ObjectProperty, Case, a
         // tuple of a name and a literal.
         writer.Append(' ').Append(TypeName(value.GetType()));
-        WriteMembers(writer, depth, MembersOf(value.GetType()), value, ancestors);
+        WriteMembers(writer, step.Depth, MembersOf(value.GetType()), value, pending);
     }
 
-    private static void WriteMembers(StringBuilder writer, int depth, Member[] members, object owner, HashSet<object> ancestors)
+    // The inline members on the owner's line, then the nested ones, each on its own lines one
+    // level deeper, in member order (pushed in reverse, so the first is popped first).
+    private static void WriteMembers(DumpWriter writer, int depth, Member[] members, object owner, Stack<Step> pending)
     {
         var values = new object?[members.Length];
+        var inline = new bool[members.Length];
         for (var i = 0; i < members.Length; i++)
             values[i] = members[i].Read(owner);
 
         for (var i = 0; i < members.Length; i++)
         {
-            if (!IsInline(values[i]))
+            inline[i] = IsInline(values[i]);
+            if (!inline[i])
                 continue;
 
             writer.Append(' ').Append(members[i].Label).Append('=');
@@ -129,12 +153,10 @@ internal static class CanonicalDump
 
         writer.Append('\n');
 
-        for (var i = 0; i < members.Length; i++)
+        for (var i = members.Length - 1; i >= 0; i--)
         {
-            if (IsInline(values[i]))
-                continue;
-
-            WriteNested(writer, depth + 1, members[i].Label, values[i]!, ancestors);
+            if (!inline[i])
+                pending.Push(new Step(StepKind.Nested, depth + 1, members[i].Label, values[i]));
         }
     }
 
@@ -182,7 +204,7 @@ internal static class CanonicalDump
         return true;
     }
 
-    private static void WriteInline(StringBuilder writer, object? value)
+    private static void WriteInline(DumpWriter writer, object? value)
     {
         switch (value)
         {
@@ -255,7 +277,7 @@ internal static class CanonicalDump
         }
 
         // A class the dump does not know: its type, never its default ToString or identity.
-        writer.Append('<').Append(type.FullName).Append('>');
+        writer.Append('<').Append(TypeName(type)).Append('>');
     }
 
     private static string Span(FastToken? start, FastToken? end)
@@ -284,6 +306,8 @@ internal static class CanonicalDump
         return value.ToString("R", CultureInfo.InvariantCulture);
     }
 
+    // A type's full name without any assembly name or version: generic arguments are written
+    // by the same rule, inside <...>.
     private static string TypeName(Type type)
     {
         if (!type.IsGenericType)
@@ -297,8 +321,6 @@ internal static class CanonicalDump
         return name + "<" + string.Join(",", type.GetGenericArguments().Select(TypeName)) + ">";
     }
 
-    private static void Indent(StringBuilder writer, int depth) => writer.Append(' ', depth * 2);
-
     private static Member[] MembersOf(Type type) => Members.GetOrAdd(type, Collect);
 
     private static Member[] Collect(Type type)
@@ -310,29 +332,55 @@ internal static class CanonicalDump
 
         var members = new List<Member>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
+        const BindingFlags publicMembers = BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
+        const BindingFlags allFields = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly;
 
         foreach (var declaring in chain)
         {
-            var declared = new List<MemberInfo>();
-            declared.AddRange(declaring.GetFields(flags).OrderBy(field => field.MetadataToken));
-            declared.AddRange(declaring.GetProperties(flags)
+            var properties = declaring.GetProperties(publicMembers)
                 .Where(property => property.GetMethod is { IsPublic: true } && property.GetIndexParameters().Length == 0)
-                .OrderBy(property => property.MetadataToken));
+                .OrderBy(property => property.MetadataToken)
+                .ToList();
+            var written = properties.Select(property => property.Name).ToHashSet(StringComparer.Ordinal);
 
-            foreach (var member in declared)
+            // The product's own types give up their non-public fields too, so a flag or name the
+            // after commit keeps in an internal or private member is still in the dump. A type of
+            // the runtime's (a tuple, say) gives its public members alone.
+            var fields = declaring.GetFields(IsProductType(declaring) ? allFields : publicMembers)
+                .Where(field => BackingFieldOf(field) is not { } property || !written.Contains(property))
+                .OrderBy(field => field.MetadataToken);
+
+            var declared = new List<(string Name, MemberInfo Member)>();
+            declared.AddRange(fields.Select(field => (BackingFieldOf(field) ?? field.Name, (MemberInfo)field)));
+            declared.AddRange(properties.Select(property => (property.Name, (MemberInfo)property)));
+
+            foreach (var (name, member) in declared)
             {
-                if (declaring == AstNodeType && member.Name is "Type" or "Start" or "End" or "Code")
+                if (declaring == AstNodeType && name is "Type" or "Start" or "End" or "Code")
                     continue;
 
                 // A member that hides an inherited one of the same name (AstFunctionExpression's
                 // IsStatement) is written with its declaring type, so the two stay apart.
-                var label = seen.Add(member.Name) ? member.Name : declaring.Name + "." + member.Name;
+                var label = seen.Add(name) ? name : declaring.Name + "." + name;
                 members.Add(new Member(label, member));
             }
         }
 
         return members.ToArray();
+    }
+
+    private static bool IsProductType(Type type)
+        => type.Assembly.GetName().Name?.StartsWith("Broiler.", StringComparison.Ordinal) == true;
+
+    // The property an auto-property's compiler-generated backing field belongs to ("<Name>k__BackingField").
+    private static string? BackingFieldOf(FieldInfo field)
+    {
+        const string suffix = ">k__BackingField";
+        return field.IsDefined(typeof(CompilerGeneratedAttribute), inherit: false)
+            && field.Name.StartsWith('<')
+            && field.Name.EndsWith(suffix, StringComparison.Ordinal)
+                ? field.Name[1..^suffix.Length]
+                : null;
     }
 
     private sealed class Member(string label, MemberInfo member)

@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Parser;
 using Broiler.JavaScript.Runtime;
 
@@ -20,6 +21,13 @@ internal static class Program
 {
     /// <summary>The stack of every thread the tool parses or compiles on: 256 MB (rule part C).</summary>
     internal const int StackBytes = 256 * 1024 * 1024;
+
+    /// <summary>
+    /// <c>CompilationStack.SizeBytes</c> while the tool runs: 0, the product's opt-out for a host
+    /// that has sized its own thread, so that K compiles on the tool's thread of
+    /// <see cref="StackBytes"/> rather than on the product's 64 MB compile worker.
+    /// </summary>
+    internal const int CompileStackBytes = 0;
 
     private const string Usage = """
         usage:
@@ -53,6 +61,10 @@ internal static class Program
             Console.Error.WriteLine("parse-corpus: refused: " + refusal);
             return 2;
         }
+
+        // Before any compile: a source longer than CompilationStack.InlineSourceLengthLimit would
+        // otherwise be compiled on the product's own worker thread of 64 MB, not on the tool's.
+        CompilationStack.SizeBytes = CompileStackBytes;
 
         Manifest manifest;
         List<(int Row, string Variant)> items;
@@ -101,13 +113,7 @@ internal static class Program
                 var variant = items[i].Variant;
                 Progress(options, i, items.Count, row.Id, variant);
 
-                if (row.Goal == "json")
-                {
-                    var none = new Outcome(Outcome.NotApplicable, null, Entries.NoEntryPoint);
-                    results[i] = (none, none);
-                    continue;
-                }
-
+                // A json row takes the entry points the rule gives every goal but the module goal.
                 var text = Compose(manifest, variant, manifest.Load(options.Test262, row));
                 var module = variant == "module";
                 results[i] = (Entries.Parse(text, module, out _), Entries.Compile(text, module, row.SourceName));
@@ -145,7 +151,7 @@ internal static class Program
             results[s] = new DumpResult[items.Count];
 
         using var textSink = options.Text == null ? null : new TextSink(options.Text);
-        var texts = new string?[1];
+        var texts = new string[1];
 
         // On two threads every input is parsed and prepared twice at once, once on each: the
         // barrier's post-phase action reads the next input's text, then both threads start on it.
@@ -156,13 +162,14 @@ internal static class Program
             {
                 var item = items[order[phase]];
                 var row = manifest.Rows[item.Row];
-                texts[0] = row.Goal == "json" ? null : Compose(manifest, item.Variant, manifest.Load(options.Test262, row));
+                texts[0] = Compose(manifest, item.Variant, manifest.Load(options.Test262, row));
             }
         });
 
         RunOnThreads(slots.Length, (slot, ready, cancel) =>
         {
             using var context = Entries.NewContext();
+            using var dumper = new Dumper(textSink, slots[slot]);
             ready();
             for (var k = 0; k < order.Length; k++)
             {
@@ -173,7 +180,7 @@ internal static class Program
                     Progress(options, k, order.Length, row.Id, variant);
 
                 barrier.SignalAndWait(cancel);
-                results[slot][i] = DumpOne(texts[0], variant == "module", pass, textSink, $"{row.Id} {variant} {slots[slot]}");
+                results[slot][i] = DumpOne(texts[0], variant == "module", pass, dumper, $"{row.Id} {variant} {slots[slot]}");
             }
         });
 
@@ -196,51 +203,118 @@ internal static class Program
 
     private readonly record struct DumpResult(string Parse, string ParserHash, string Pass, string PassHash);
 
-    private static DumpResult DumpOne(string? text, bool module, ForLoopPass pass, TextSink? sink, string label)
+    private static DumpResult DumpOne(string text, bool module, ForLoopPass pass, Dumper dumper, string label)
     {
-        if (text == null)
-            return new DumpResult(Outcome.NotApplicable, "-", "-", "-");
-
         var parse = Entries.Parse(text, module, out var program);
         if (parse.Kind != Outcome.Accepted)
             return new DumpResult(parse.Kind, "-", "-", "-");
 
         // The parser's tree is dumped before the pass is called: the pass may prepare it in place.
-        var parserText = DumpText(() => CanonicalDump.Of(program!));
-        sink?.Write(label + " parser", parserText);
-        var parserHash = CanonicalDump.Hash(parserText);
+        var parserHash = dumper.Dump(label + " parser", writer => CanonicalDump.Write(writer, program!));
 
         if (!pass.Found)
             return new DumpResult(Outcome.Accepted, parserHash, "absent", "-");
 
-        string passText, passStatus;
+        AstProgram? prepared;
         try
         {
-            var prepared = pass.Prepare(program!);
-            passText = DumpText(() => prepared == null ? "program: null\n" : CanonicalDump.Of(prepared));
-            passStatus = "prepared";
+            prepared = pass.Prepare(program!);
         }
         catch (Exception exception)
         {
             // Where the pass throws, the dump is of the exception's type and message in its place.
-            passText = CanonicalDump.OfException(exception);
-            passStatus = "threw";
+            var thrown = dumper.Dump(label + " threw", writer => CanonicalDump.WriteException(writer, exception));
+            return new DumpResult(Outcome.Accepted, parserHash, "threw", thrown);
         }
 
-        sink?.Write(label + " " + passStatus, passText);
-        return new DumpResult(Outcome.Accepted, parserHash, passStatus, CanonicalDump.Hash(passText));
+        var passHash = dumper.Dump(label + " prepared", writer =>
+        {
+            if (prepared == null)
+                writer.Head(0, "program").Append(" null\n");
+            else
+                CanonicalDump.Write(writer, prepared);
+        });
+        return new DumpResult(Outcome.Accepted, parserHash, "prepared", passHash);
     }
 
-    // A dump that cannot be completed is recorded as the failure, so the run still completes.
-    private static string DumpText(Func<string> dump)
+    /// <summary>
+    /// A thread's dumps: its <see cref="DumpWriter"/> and, with <c>--text</c>, the scratch file
+    /// each dump's text goes to before it is copied whole into the text output, so that the two
+    /// threads of run 3 never wait for each other while they dump.
+    /// </summary>
+    internal sealed class Dumper : IDisposable
     {
-        try
+        /// <summary>The prefix of a hash column that says the dump could not be completed.</summary>
+        internal const string Failed = "dump-failed:";
+
+        private readonly DumpWriter writer = new();
+        private readonly TextSink? sink;
+        private readonly FileStream? scratch;
+
+        internal Dumper(TextSink? sink, string slot)
         {
-            return dump();
+            this.sink = sink;
+            if (sink != null)
+            {
+                scratch = new FileStream(
+                    sink.Path + ".slot-" + slot + ".part",
+                    FileMode.Create,
+                    FileAccess.ReadWrite,
+                    FileShare.None,
+                    bufferSize: 1 << 16,
+                    FileOptions.DeleteOnClose);
+            }
         }
-        catch (Exception exception)
+
+        /// <summary>
+        /// One dump's SHA-256, or, where it cannot be completed, <c>dump-failed:</c> and the
+        /// exception's type: never a hash of anything but the whole dump.
+        /// </summary>
+        internal string Dump(string label, Action<DumpWriter> write)
         {
-            return "dump failed " + exception.GetType().FullName + " " + Text.Quote(exception.Message) + "\n";
+            scratch?.SetLength(0);
+            writer.Start(scratch);
+            string? hash = null;
+            Exception? failure = null;
+            try
+            {
+                write(writer);
+                hash = writer.Finish();
+            }
+            catch (Exception exception)
+            {
+                failure = exception;
+            }
+
+            var atLineStart = writer.AtLineStart;
+            if (failure != null)
+            {
+                // Only to put the text written so far in the copy; the hash of a part is discarded.
+                try
+                {
+                    writer.Finish();
+                }
+                catch (Exception)
+                {
+                    // The failure already recorded is the one reported.
+                }
+            }
+
+            if (sink != null)
+            {
+                var trailer = failure == null
+                    ? null
+                    : (atLineStart ? "" : "\n") + "!dump-failed " + failure.GetType().FullName + " " + Text.Quote(failure.Message) + "\n";
+                sink.Write(label, scratch!, trailer);
+            }
+
+            return failure == null ? hash! : Failed + (failure.GetType().FullName ?? "?");
+        }
+
+        public void Dispose()
+        {
+            writer.Dispose();
+            scratch?.Dispose();
         }
     }
 
@@ -328,6 +402,7 @@ internal static class Program
             ("order", options.Order),
             ("threads", options.Threads.ToString(CultureInfo.InvariantCulture)),
             ("thread-stack-bytes", StackBytes.ToString(CultureInfo.InvariantCulture)),
+            ("compile-stack-bytes", CompilationStack.SizeBytes.ToString(CultureInfo.InvariantCulture) + "\tCompilationStack.SizeBytes: 0 compiles on the calling thread"),
             ("environment", "TZ=UTC\tLANG unset\tLC_* unset\tBROILER_* unset"),
             ("culture", CultureInfo.CurrentCulture.Name.Length == 0 ? "(invariant)" : CultureInfo.CurrentCulture.Name),
             ("time-zone", TimeZoneInfo.Local.Id),
@@ -337,6 +412,7 @@ internal static class Program
             ("context", "JSContext(experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026), one per thread"),
             ("strict-variant", "the manifest's strict-prologue followed by the text"),
             ("source-names", "virtual-root or stored-root followed by the path"),
+            ("json-goal", "the text unchanged at the entry points of every goal but module: ParseProgram, and CoreScript.Compile with isModule false"),
         };
 
         foreach (var assembly in ProductAssemblies())
@@ -403,26 +479,36 @@ internal static class Program
         return problems.Count == 0 ? null : string.Join("; ", problems);
     }
 
-    private sealed class TextSink : IDisposable
+    /// <summary>
+    /// The <c>--text</c> output: each dump's text after a line <c>=== &lt;label&gt;</c>, copied in
+    /// whole from the thread's scratch file under a lock.
+    /// </summary>
+    internal sealed class TextSink : IDisposable
     {
         private readonly Lock gate = new();
-        private readonly StreamWriter writer;
+        private readonly Stream output;
 
         internal TextSink(string path)
-            => writer = new StreamWriter(OpenOut(path), new UTF8Encoding(false)) { NewLine = "\n" };
+        {
+            Path = path;
+            output = OpenOut(path);
+        }
 
-        internal void Write(string label, string text)
+        internal string Path { get; }
+
+        internal void Write(string label, Stream text, string? trailer)
         {
             lock (gate)
             {
-                writer.Write("=== ");
-                writer.Write(label);
-                writer.Write('\n');
-                writer.Write(text);
+                output.Write(Encoding.UTF8.GetBytes("=== " + label + "\n"));
+                text.Position = 0;
+                text.CopyTo(output);
+                if (trailer != null)
+                    output.Write(Encoding.UTF8.GetBytes(trailer));
             }
         }
 
-        public void Dispose() => writer.Dispose();
+        public void Dispose() => output.Dispose();
     }
 
     private sealed class Options
