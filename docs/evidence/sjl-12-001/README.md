@@ -34,10 +34,10 @@ frontend contract (SJL-12)", with Broiler.VM's JSD-0080,
 Nothing here is a verdict, and no base has been taken.", and its second item "Parts C and D's bases follow SJL-12.4,
 which adds the parse corpus and the tool.")*
 
-*(Revised 2026-10-20, at SJL-12.5, when two dispatches of part A's base had ended void. The state read "at SJL-12.1:
-rules only. Nothing here is a verdict, and nothing has been taken.", and its first item "Part A's base is taken at the
-rule's commit by `test262 evidence`, with `include_negative` true. Part B's base is the rule commit's parser
-assembly, built when part B runs.")*
+*(Revised 2026-10-20, at SJL-12.5, when two dispatches of part A's base had ended void. The state read "State,
+2026-10-19, at SJL-12.1: rules only. Nothing here is a verdict, and nothing has been taken.", and its first item
+"Part A's base is taken at the rule's commit by `test262 evidence`, with `include_negative` true. Part B's base is
+the rule commit's parser assembly, built when part B runs.")*
 
 **What the bundle will hold:**
 - `base/`: part A's base run, imported unchanged with the digest of its zip, and parts C and D's base runs;
@@ -89,8 +89,12 @@ parse corpus's README names it as the rule commit ([`conformance/parse/README.md
 - **What ran.** Each was dispatched from `main` when `main` was the rule commit itself, and tested it: `run.txt` reads
   `dispatched ref: refs/heads/main at 4d813f2ac863895b9be5c4619b7886c9ddd71077` and the same tested commit. So the
   workflow and `scripts/compliance/` that ran are the rule commit's. Each ran with suite `ccaac100`, four workers, a
-  timeout of 30 s, timeouts run again, `time_zone` empty and negative-metadata tests included (`run.txt`'s inputs, and
-  `includeNegative: True`).
+  timeout of 30 s, timeouts run again and negative-metadata tests included (`run.txt`'s inputs, and
+  `includeNegative: True`), and with `time_zone` empty: `run.txt`'s inputs name no `time_zone`, and its host time
+  zone line and `host-zone.log` read `TZ` unset.
+  *(Revised 2026-10-20, after review: the sentence read "Each ran with suite `ccaac100`, four workers, a timeout of
+  30 s, timeouts run again, `time_zone` empty and negative-metadata tests included (`run.txt`'s inputs, and
+  `includeNegative: True`)." `run.txt`'s inputs hold no `time_zone`.)*
 - **Why each is void.** Each run's conclusion is failure. Its job `collect` failed at the workflow's step "Require a
   complete run", which wrote "The shards did not all run the same shell (shell-hashes.log)." and "The shards did not
   all run in the host time zone (host-zone.log)." and no other failure (GitHub's record of each run and that job's
