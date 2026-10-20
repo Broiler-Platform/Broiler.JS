@@ -11,8 +11,10 @@ reads them and does three things, each a subcommand:
     with its type. The script decides no class. A difference is admitted only when a classification
     file, written by a person and retained beside the report, names it with one of the rule's
     classes (M, X or D) and a reason, and the row meets that class's conditions as the rule states
-    them; the script checks the conditions it can read from the two runs and, for M, that the
-    changelog given with ``--changelog`` contains the old and the new message.
+    them; the script checks the conditions it can read from the two runs and the changelog given
+    with ``--changelog``: for M, that it contains the old and the new message; for X, that it
+    contains the text the classification cites (``"changelog"``) as the correction that names the
+    resolved crash.
 
 ``control``
     Part C's control: writes a copy of the base report with one outcome flipped (the first accepted
@@ -25,13 +27,17 @@ reads them and does three things, each a subcommand:
     run 1 (manifest order), run 2 (reverse order) and the two slots of run 3 (two threads) - for
     the parser's tree and for the for-loop pass's. The population is every input and variant
     accepted at entry point P in the part C report given with ``--population`` (the after run's),
-    or in run 1 if none is given. ``--require-pass`` fails the comparison unless every run found
-    the pass's entry point. ``--expect-differ`` turns the comparison into a control's check: it
-    succeeds only if at least one input's hashes differ between the two runs named.
+    or in run 1 if none is given. A dump the tool could not complete (``dump-failed:<type>`` in a
+    hash column) is a failure in any run, never an agreement. ``--require-pass`` fails the
+    comparison unless every run found the pass's entry point. ``--expect-differ`` turns the
+    comparison into a control's check: it succeeds only if at least one input's hashes differ
+    between the two runs named.
 
 Both runs of a comparison must be complete (every row the header announces, and the end line),
-over the same manifest (its SHA-256), with no ``--only`` selection; ``--manifest`` also checks the
-digest against the manifest file and the rows against the manifest's inputs and variants.
+over the same manifest (its SHA-256), with no ``--only`` selection, and every value must be one the
+tool writes. ``acceptance`` and ``determinism`` require ``--manifest``, the corpus commit's
+``conformance/parse/corpus.manifest``: its SHA-256 must be the runs', and the runs must report
+every input and variant it names (part C's completeness), at both entry points for part C.
 
 Exit status: 0 when every difference is admitted (``acceptance``), the control reports exactly its
 two differences (``control``), or the four hashes agree (``determinism``, or differ as expected
@@ -56,6 +62,12 @@ DUMP_COLUMNS = ["id", "variant", "slot", "parse", "parser-sha256", "pass", "pass
 MANIFEST_COLUMNS = "id\torigin\tpath\tsha256\tgoal\tvariants\tnegative\teval-family\tprovenance"
 ADMITTED_CLASSES = ("M", "X", "D")
 ENTRIES = ("P", "K")
+# Part C's outcomes, as the rule defines them.
+OUTCOMES = ("accepted", "refused", "crashed")
+# Part D's pass column: what the tool did with the for-loop pass for an accepted input.
+PASS_STATES = ("prepared", "threw", "absent")
+# A hash column's value where the tool could not complete the dump.
+DUMP_FAILED = "dump-failed:"
 # The message the parser's for-loop desugaring refuses with at the rule commit (class D).
 DESUGARING_MESSAGE = "Unknown token"
 CONTROL_SUFFIX = " [control]"
@@ -201,8 +213,55 @@ def acceptance_rows(report: Report) -> dict[tuple[str, str, str], tuple[str, str
         key = (row[0], row[1], row[2])
         if key in rows:
             raise NotComparable(f"{report.path}: the row {' '.join(key)} appears twice")
+        _check_outcome(report, key, (row[3], row[4], row[5]))
         rows[key] = (row[3], row[4], row[5])
     return rows
+
+
+def _check_outcome(report: Report, key: tuple[str, str, str], outcome: tuple[str, str, str]) -> None:
+    """A part C row must hold one of the rule's outcomes as the tool writes it."""
+    where = f"{report.path}: the row {' '.join(key)}"
+    if key[2] not in ENTRIES:
+        raise NotComparable(f"{where} names the entry point {key[2]!r}, not one of {', '.join(ENTRIES)}")
+    kind, kind_type, _ = outcome
+    if kind not in OUTCOMES:
+        raise NotComparable(f"{where} has the outcome {kind!r}, not one of {', '.join(OUTCOMES)}")
+    if kind == "accepted" and outcome[1:] != ("-", "-"):
+        raise NotComparable(f"{where} is accepted with a type or message")
+    if kind != "accepted" and kind_type == "-":
+        raise NotComparable(f"{where} is {kind} with no exception type")
+
+
+def is_hash(value: str) -> bool:
+    return len(value) == 64 and all(character in "0123456789abcdef" for character in value)
+
+
+def is_dump_failure(value: str) -> bool:
+    return value.startswith(DUMP_FAILED) and len(value) > len(DUMP_FAILED)
+
+
+def _check_dump_row(report: Report, row: list[str], pass_found: bool) -> None:
+    """A part D row must be one the tool writes: P's outcome, then the dumps it took."""
+    where = f"{report.path}: the row {row[0]} {row[1]} slot {row[2]}"
+    parse, parser_hash, pass_state, pass_hash = row[3:7]
+    if parse not in OUTCOMES:
+        raise NotComparable(f"{where} has the parse outcome {parse!r}, not one of {', '.join(OUTCOMES)}")
+    if parse != "accepted":
+        if (parser_hash, pass_state, pass_hash) != ("-", "-", "-"):
+            raise NotComparable(f"{where} is {parse} at P but has a dump")
+        return
+    if not (is_hash(parser_hash) or is_dump_failure(parser_hash)):
+        raise NotComparable(f"{where} has the parser dump {parser_hash!r}, neither a SHA-256 nor {DUMP_FAILED}<type>")
+    if pass_state not in PASS_STATES:
+        raise NotComparable(f"{where} has the pass state {pass_state!r}, not one of {', '.join(PASS_STATES)}")
+    if (pass_state == "absent") == pass_found:
+        raise NotComparable(f"{where} has the pass state {pass_state!r}, but the header says the pass was "
+                            + ("found" if pass_found else "not found"))
+    if pass_state == "absent":
+        if pass_hash != "-":
+            raise NotComparable(f"{where} has a pass dump with no pass")
+    elif not (is_hash(pass_hash) or (pass_state == "prepared" and is_dump_failure(pass_hash))):
+        raise NotComparable(f"{where} has the pass dump {pass_hash!r}, neither a SHA-256 nor {DUMP_FAILED}<type>")
 
 
 def _expected_acceptance_keys(manifest: Manifest) -> set[tuple[str, str, str]]:
@@ -233,6 +292,7 @@ def class_conditions(
     base: dict[tuple[str, str, str], tuple[str, str, str]],
     after: dict[tuple[str, str, str], tuple[str, str, str]],
     changelog: str | None,
+    given: dict[str, Any] | None = None,
 ) -> list[str]:
     """The conditions of the rule's class that this row does not meet (empty: all are met)."""
     identifier, variant, entry = key
@@ -258,6 +318,13 @@ def class_conditions(
             unmet.append("X needs a crash at the base")
         if not (now[0] == "accepted" or _is_syntax_error_refusal(now)):
             unmet.append("X needs acceptance, or a refusal with a SyntaxError, after")
+        cited = (given or {}).get("changelog") if isinstance(given, dict) else None
+        if changelog is None:
+            unmet.append("X needs the after commit's Broiler.JS/CHANGELOG.md (--changelog)")
+        elif not isinstance(cited, str) or not cited.strip():
+            unmet.append('X needs the classification to cite the changelog text that names the correction ("changelog")')
+        elif cited not in changelog:
+            unmet.append("the changelog does not contain the text the classification cites")
     elif klass == "D":
         other = (identifier, variant, "K")
         if entry != "P":
@@ -330,7 +397,7 @@ def compare_acceptance(
             used.add(label)
             klass = given.get("class") if isinstance(given, dict) else None
             reason = given.get("reason") if isinstance(given, dict) else None
-            unmet = class_conditions(str(klass), key, base, after, changelog) if klass else ["no class given"]
+            unmet = class_conditions(str(klass), key, base, after, changelog, given if isinstance(given, dict) else None) if klass else ["no class given"]
             if not reason:
                 unmet.append("no reason given")
             entry_record["classification"] = given
@@ -391,9 +458,11 @@ DUMP_RUNS = ("1", "2", "3A", "3B")
 
 def _dump_rows(report: Report, slots: tuple[str, ...]) -> dict[tuple[str, str], dict[str, tuple[str, str, str, str]]]:
     rows: dict[tuple[str, str], dict[str, tuple[str, str, str, str]]] = {}
+    pass_found = report.value("for-loop-pass").startswith("found")
     for row in report.rows:
         if row[2] not in slots:
             raise NotComparable(f"{report.path}: a row of slot {row[2]}, not one of {slots}")
+        _check_dump_row(report, row, pass_found)
         slot_rows = rows.setdefault((row[0], row[1]), {})
         if row[2] in slot_rows:
             raise NotComparable(f"{report.path}: the row {row[0]} {row[1]} slot {row[2]} appears twice")
@@ -458,9 +527,13 @@ def compare_determinism(
         problems = []
         if any(value[0] != "accepted" for value in values.values()):
             problems.append("parse")
-        if len({value[1] for value in values.values()}) != 1:
+        if any(is_dump_failure(value[1]) for value in values.values()):
+            problems.append("parser dump failed")
+        elif len({value[1] for value in values.values()}) != 1:
             problems.append("parser-sha256")
-        if len({(value[2], value[3]) for value in values.values()}) != 1:
+        if any(is_dump_failure(value[3]) for value in values.values()):
+            problems.append("pass dump failed")
+        elif len({(value[2], value[3]) for value in values.values()}) != 1:
             problems.append("pass")
         if expect_differ is not None:
             left, right = values[expect_differ[0]], values[expect_differ[1]]
@@ -504,9 +577,9 @@ def main(argv: list[str] | None = None) -> int:
     acceptance = commands.add_parser("acceptance", help="part C: the base run against the after run")
     acceptance.add_argument("--base", type=Path, required=True, help="the base run's report (the corpus commit)")
     acceptance.add_argument("--after", type=Path, required=True, help="the after run's report")
-    acceptance.add_argument("--manifest", type=Path, help="conformance/parse/corpus.manifest, to check the digest and the rows")
-    acceptance.add_argument("--classifications", type=Path, help='the classification file: {"id|variant|entry": {"class": "M", "reason": "..."}}')
-    acceptance.add_argument("--changelog", type=Path, help="the after commit's Broiler.JS/CHANGELOG.md, for class M")
+    acceptance.add_argument("--manifest", type=Path, required=True, help="the corpus commit's conformance/parse/corpus.manifest: the digest and every input and variant")
+    acceptance.add_argument("--classifications", type=Path, help='the classification file: {"id|variant|entry": {"class": "M", "reason": "..."}}; an X also cites "changelog"')
+    acceptance.add_argument("--changelog", type=Path, help="the after commit's Broiler.JS/CHANGELOG.md, for classes M and X")
     acceptance.add_argument("--output", type=Path, help="write the comparison here as JSON")
 
     control = commands.add_parser("control", help="part C's control: a copy of the base report with two planted differences")
@@ -519,7 +592,7 @@ def main(argv: list[str] | None = None) -> int:
     determinism.add_argument("--run2", type=Path, required=True, help="the dump run in the reverse order")
     determinism.add_argument("--run3", type=Path, required=True, help="the dump run on two threads")
     determinism.add_argument("--population", type=Path, help="the part C report whose P acceptances are the population")
-    determinism.add_argument("--manifest", type=Path, help="conformance/parse/corpus.manifest, to check the digest and the rows")
+    determinism.add_argument("--manifest", type=Path, required=True, help="the corpus commit's conformance/parse/corpus.manifest: the digest and every input and variant")
     determinism.add_argument("--require-pass", action="store_true", help="fail unless every run found the for-loop pass")
     determinism.add_argument("--expect-differ", metavar="RUN:RUN", help="a control: succeed only if some input differs between these runs (1, 2, 3A, 3B)")
     determinism.add_argument("--output", type=Path, help="write the comparison here as JSON")
@@ -542,6 +615,7 @@ def main(argv: list[str] | None = None) -> int:
                       f"{row['base']['outcome']} {row['base']['type']} -> {row['after']['outcome']} {row['after']['type']} {klass}".rstrip())
                 for condition in row.get("unmetConditions", []):
                     print(f"{'':<22}   unmet: {condition}")
+            print(f"manifest {result['manifestSha256']} ({args.manifest})")
             print(f"rows {result['rows']}; differences {len(result['differences'])}; admitted {result['admitted']}; "
                   f"not admitted {result['notAdmitted']}")
             return 0 if result["allDifferencesAdmitted"] else 1
@@ -581,6 +655,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"run {name}: for-loop pass {status}")
         for row in result["differences"]:
             print(f"differs {row['id']} {row['variant']}: {', '.join(row['differs'])}")
+        print(f"manifest {result['manifestSha256']} ({args.manifest})")
         print(f"population {result['population']}; differences {len(result['differences'])}")
         if expect is not None:
             count = result["expectDiffer"]["inputsThatDiffer"]

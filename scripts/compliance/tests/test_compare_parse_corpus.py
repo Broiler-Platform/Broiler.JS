@@ -29,7 +29,9 @@ MANIFEST_ROWS = [
     "V000001\tbroiler-vm\tinputs/c.json\t" + "2" * 64 + "\tjson\tjson\t-\tno\tjs-1",
 ]
 ACCEPTED = ("accepted", "-", "-")
-NOT_APPLICABLE = ("not-applicable", "-", "the\\u0020goal")
+# A JSON module's text, answered at the entry points of every goal but module.
+JSON_AT_P = ("refused", "Broiler.JavaScript.Ast.Misc.FastParseException", "Unexpected token :")
+JSON_AT_K = ("refused", "Broiler.JavaScript.Runtime.JSException:SyntaxError", "Unexpected token :")
 
 
 def manifest_text() -> str:
@@ -62,8 +64,8 @@ def acceptance_rows(overrides: dict[tuple[str, str, str], tuple[str, str, str]] 
         ("T000001", "sloppy", "K"): ACCEPTED,
         ("T000002", "module", "P"): ("refused", "Broiler.JavaScript.Ast.Misc.FastParseException", "Unknown token"),
         ("T000002", "module", "K"): ("crashed", "System.NotImplementedException", "The method or operation is not implemented."),
-        ("V000001", "json", "P"): NOT_APPLICABLE,
-        ("V000001", "json", "K"): NOT_APPLICABLE,
+        ("V000001", "json", "P"): JSON_AT_P,
+        ("V000001", "json", "K"): JSON_AT_K,
     }
     outcomes.update(overrides or {})
     return [key + value for key, value in outcomes.items()]
@@ -94,7 +96,10 @@ class CompareParseCorpusTests(unittest.TestCase):
     def run_main(self, *argv: str) -> tuple[int, str, str]:
         out, err = StringIO(), StringIO()
         with redirect_stdout(out), redirect_stderr(err):
-            code = comparer.main(list(argv))
+            try:
+                code = comparer.main(list(argv))
+            except SystemExit as exit_:
+                code = int(exit_.code or 0)
         return code, out.getvalue(), err.getvalue()
 
     # ---- part C ----------------------------------------------------------------------------
@@ -105,6 +110,25 @@ class CompareParseCorpusTests(unittest.TestCase):
         code, out, _ = self.run_main("acceptance", "--base", str(base), "--after", str(after), "--manifest", str(self.manifest))
         self.assertEqual(code, 0)
         self.assertIn("differences 0", out)
+        self.assertIn(f"manifest {self.digest}", out)
+
+    def test_acceptance_and_determinism_require_the_manifest(self) -> None:
+        base = self.acceptance("base.tsv")
+        code, _, err = self.run_main("acceptance", "--base", str(base), "--after", str(base))
+        self.assertEqual(code, 2)
+        self.assertIn("--manifest", err)
+        run = self.dump("d1.tsv", self.dump_rows("1"), "manifest", "1")
+        code, _, err = self.run_main("determinism", "--run1", str(run), "--run2", str(run), "--run3", str(run))
+        self.assertEqual(code, 2)
+        self.assertIn("--manifest", err)
+
+    def test_an_outcome_the_rule_does_not_define_is_not_comparable(self) -> None:
+        for outcome in (("acceptd", "-", "-"), ("not-applicable", "-", "-"), ("refused", "-", "no type"), ("accepted", "T", "-")):
+            with self.subTest(outcome=outcome):
+                report = self.acceptance("odd.tsv", {("T000001", "sloppy", "K"): outcome})
+                code, _, err = self.run_main("acceptance", "--base", str(report), "--after", str(report), "--manifest", str(self.manifest))
+                self.assertEqual(code, 2, err)
+                self.assertIn("T000001 sloppy K", err)
 
     def test_a_changed_outcome_is_a_difference_and_unclassified(self) -> None:
         base = self.acceptance("base.tsv")
@@ -144,12 +168,31 @@ class CompareParseCorpusTests(unittest.TestCase):
         result = comparer.compare_acceptance(comparer.read_report(base), comparer.read_report(after), classifications=classification, changelog="Unexpected token")
         self.assertEqual(result["differences"][0]["verdict"], "refused classification")
 
-    def test_class_x_admits_a_crash_resolved_at_k(self) -> None:
+    def test_class_x_admits_a_crash_resolved_at_k_that_the_changelog_names(self) -> None:
         base = self.acceptance("base.tsv")
         after = self.acceptance("after.tsv", {("T000002", "module", "K"): ("refused", "Broiler.JavaScript.Runtime.JSException:SyntaxError", "Unexpected token")})
-        classification = {"T000002|module|K": {"class": "X", "reason": "a correction the changelog names"}}
-        result = comparer.compare_acceptance(comparer.read_report(base), comparer.read_report(after), classifications=classification)
+        cited = "a module's compile no longer throws NotImplementedException"
+        classification = {"T000002|module|K": {"class": "X", "reason": "a correction the changelog names", "changelog": cited}}
+        result = comparer.compare_acceptance(comparer.read_report(base), comparer.read_report(after), classifications=classification,
+                                             changelog=f"### Fixed\n- {cited} (SJL-12.5).\n")
         self.assertEqual(result["differences"][0]["verdict"], "admitted")
+
+    def test_class_x_needs_the_changelog_to_contain_the_cited_correction(self) -> None:
+        base = self.acceptance("base.tsv")
+        after = self.acceptance("after.tsv", {("T000002", "module", "K"): ACCEPTED})
+        cited = "a module's compile no longer throws NotImplementedException"
+        cases = (
+            ({"class": "X", "reason": "r", "changelog": cited}, None, "--changelog"),
+            ({"class": "X", "reason": "r"}, cited, "cite the changelog"),
+            ({"class": "X", "reason": "r", "changelog": cited}, "### Fixed\n- something else\n", "does not contain"),
+        )
+        for given, changelog, unmet in cases:
+            with self.subTest(unmet=unmet):
+                result = comparer.compare_acceptance(comparer.read_report(base), comparer.read_report(after),
+                                                     classifications={"T000002|module|K": given}, changelog=changelog)
+                row = result["differences"][0]
+                self.assertEqual(row["verdict"], "refused classification")
+                self.assertTrue(any(unmet in condition for condition in row["unmetConditions"]), row["unmetConditions"])
 
     def test_class_x_refuses_a_crash_that_becomes_another_error(self) -> None:
         base = self.acceptance("base.tsv")
@@ -178,21 +221,21 @@ class CompareParseCorpusTests(unittest.TestCase):
     def test_runs_over_different_manifests_are_not_comparable(self) -> None:
         base = self.acceptance("base.tsv")
         other = self.write("after.tsv", report_text("acceptance", comparer.ACCEPTANCE_COLUMNS, acceptance_rows(), "f" * 64))
-        code, _, err = self.run_main("acceptance", "--base", str(base), "--after", str(other))
+        code, _, err = self.run_main("acceptance", "--base", str(base), "--after", str(other), "--manifest", str(self.manifest))
         self.assertEqual(code, 2)
         self.assertIn("different manifests", err)
 
     def test_a_run_without_its_end_line_is_not_comparable(self) -> None:
         base = self.acceptance("base.tsv")
         cut = self.write("cut.tsv", "\n".join(base.read_text(encoding="utf-8").split("\n")[:-2]) + "\n")
-        code, _, err = self.run_main("acceptance", "--base", str(base), "--after", str(cut))
+        code, _, err = self.run_main("acceptance", "--base", str(base), "--after", str(cut), "--manifest", str(self.manifest))
         self.assertEqual(code, 2)
         self.assertIn("end line", err)
 
     def test_a_partial_run_is_not_comparable(self) -> None:
         base = self.acceptance("base.tsv")
         partial = self.acceptance("partial.tsv", selection="only\tT000001")
-        code, _, err = self.run_main("acceptance", "--base", str(base), "--after", str(partial))
+        code, _, err = self.run_main("acceptance", "--base", str(base), "--after", str(partial), "--manifest", str(self.manifest))
         self.assertEqual(code, 2)
         self.assertIn("partial run", err)
 
@@ -227,24 +270,66 @@ class CompareParseCorpusTests(unittest.TestCase):
         rows = []
         for identifier, variant in (("T000001", "strict"), ("T000001", "sloppy"), ("T000002", "module"), ("V000001", "json")):
             if identifier == "V000001":
-                rows.append((identifier, variant, slot, "not-applicable", "-", "-", "-"))
+                rows.append((identifier, variant, slot, "refused", "-", "-", "-"))
             else:
                 rows.append((identifier, variant, slot, "accepted", parser, status, pass_hash))
         return rows
+
+    def determinism(self, run1: Path, run2: Path, run3: Path, *extra: str) -> tuple[int, str, str]:
+        return self.run_main("determinism", "--run1", str(run1), "--run2", str(run2), "--run3", str(run3), "--manifest", str(self.manifest), *extra)
 
     def test_four_equal_hashes_agree(self) -> None:
         run1 = self.dump("d1.tsv", self.dump_rows("1"), "manifest", "1")
         run2 = self.dump("d2.tsv", self.dump_rows("1"), "reverse", "1")
         run3 = self.dump("d3.tsv", self.dump_rows("A") + self.dump_rows("B"), "manifest", "2")
-        code, out, _ = self.run_main("determinism", "--run1", str(run1), "--run2", str(run2), "--run3", str(run3), "--manifest", str(self.manifest))
+        code, out, _ = self.determinism(run1, run2, run3)
         self.assertEqual(code, 0, out)
         self.assertIn("population 3; differences 0", out)
+
+    def test_a_dump_that_failed_is_a_failure_even_where_all_four_agree(self) -> None:
+        failed = comparer.DUMP_FAILED + "System.OutOfMemoryException"
+        run1 = self.dump("d1.tsv", self.dump_rows("1", parser=failed), "manifest", "1")
+        run2 = self.dump("d2.tsv", self.dump_rows("1", parser=failed), "reverse", "1")
+        run3 = self.dump("d3.tsv", self.dump_rows("A", parser=failed) + self.dump_rows("B", parser=failed), "manifest", "2")
+        code, out, _ = self.determinism(run1, run2, run3)
+        self.assertEqual(code, 1, out)
+        self.assertIn("differs T000001 strict: parser dump failed", out)
+
+    def test_a_pass_dump_that_failed_is_a_failure(self) -> None:
+        found = "found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare"
+        failed = comparer.DUMP_FAILED + "System.InvalidOperationException"
+        rows = self.dump_rows("1", pass_hash=failed, status="prepared")
+        run1 = self.dump("d1.tsv", rows, "manifest", "1", found)
+        run2 = self.dump("d2.tsv", rows, "reverse", "1", found)
+        run3 = self.dump("d3.tsv", self.dump_rows("A", pass_hash=failed, status="prepared")
+                         + self.dump_rows("B", pass_hash=failed, status="prepared"), "manifest", "2", found)
+        result = comparer.compare_determinism(*(comparer.read_report(path) for path in (run1, run2, run3)))
+        self.assertFalse(result["agree"])
+        self.assertTrue(all(row["differs"] == ["pass dump failed"] for row in result["differences"]))
+
+    def test_a_dump_value_the_tool_does_not_write_is_not_comparable(self) -> None:
+        cases = (
+            ("parser", "A" * 64, "absent", "-", "absent: none"),
+            ("parser", "dump failed", "absent", "-", "absent: none"),
+            ("pass state", "a" * 64, "prepared", "b" * 64, "absent: none"),
+            ("pass dump", "a" * 64, "threw", comparer.DUMP_FAILED + "X", "found: x"),
+            ("pass state", "a" * 64, "absent", "-", "found: x"),
+        )
+        for what, parser, status, pass_hash, passed in cases:
+            with self.subTest(what=what, status=status, passed=passed):
+                rows = self.dump_rows("1", parser=parser, pass_hash=pass_hash, status=status)
+                run = self.dump("bad.tsv", rows, "manifest", "1", passed)
+                good = self.dump("d2.tsv", self.dump_rows("1"), "reverse", "1")
+                three = self.dump("d3.tsv", self.dump_rows("A") + self.dump_rows("B"), "manifest", "2")
+                code, _, err = self.determinism(run, good, three)
+                self.assertEqual(code, 2, err)
+                self.assertIn(what, err)
 
     def test_require_pass_fails_when_the_pass_is_absent(self) -> None:
         run1 = self.dump("d1.tsv", self.dump_rows("1"), "manifest", "1")
         run2 = self.dump("d2.tsv", self.dump_rows("1"), "reverse", "1")
         run3 = self.dump("d3.tsv", self.dump_rows("A") + self.dump_rows("B"), "manifest", "2")
-        code, out, _ = self.run_main("determinism", "--run1", str(run1), "--run2", str(run2), "--run3", str(run3), "--require-pass")
+        code, out, _ = self.determinism(run1, run2, run3, "--require-pass")
         self.assertEqual(code, 1)
         self.assertIn("not found in every run", out)
 
@@ -276,15 +361,15 @@ class CompareParseCorpusTests(unittest.TestCase):
         run1 = self.dump("d1.tsv", self.dump_rows("1"), "manifest", "1")
         run2 = self.dump("d2.tsv", self.dump_rows("1", parser="e" * 64), "reverse", "1")
         run3 = self.dump("d3.tsv", self.dump_rows("A") + self.dump_rows("B"), "manifest", "2")
-        code, out, _ = self.run_main("determinism", "--run1", str(run1), "--run2", str(run2), "--run3", str(run3), "--expect-differ", "1:2")
+        code, out, _ = self.determinism(run1, run2, run3, "--expect-differ", "1:2")
         self.assertEqual(code, 0, out)
-        code, out, _ = self.run_main("determinism", "--run1", str(run1), "--run2", str(run2), "--run3", str(run3), "--expect-differ", "3A:3B")
+        code, out, _ = self.determinism(run1, run2, run3, "--expect-differ", "3A:3B")
         self.assertEqual(code, 1, out)
 
     def test_runs_in_the_wrong_order_are_not_comparable(self) -> None:
         run1 = self.dump("d1.tsv", self.dump_rows("1"), "manifest", "1")
         run3 = self.dump("d3.tsv", self.dump_rows("A") + self.dump_rows("B"), "manifest", "2")
-        code, _, err = self.run_main("determinism", "--run1", str(run1), "--run2", str(run1), "--run3", str(run3))
+        code, _, err = self.determinism(run1, run1, run3)
         self.assertEqual(code, 2)
         self.assertIn("not reverse", err)
 
