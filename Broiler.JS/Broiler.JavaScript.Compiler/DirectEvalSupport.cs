@@ -192,8 +192,11 @@ public static class DirectEvalSupport
             // BROILER_SCRIPT_HOST the trailing expression may be emitted as a
             // JSTailCall sentinel (proper tail call); force it here so the call
             // actually runs even when the eval result is discarded.
+            // Compiled under the context's own options, which are a script's: eval code is never a
+            // module (PerformEval parses it as a Script), and never awaits at its top level, even
+            // when the code that called eval may.
             var result = JSTailCall.Resolve(
-                CoreScript.Compile(text, location, null, new TransientCodeCache())(new Arguments(@this ?? context)));
+                CoreScript.Compile(text, location, null, new TransientCodeCache(), compilationOptions: context.CompilationOptions)(new Arguments(@this ?? context)));
             if (declaredBindings?.Length > 0 && capturedBindings?.Length > 0)
             {
                 foreach (var declaredBinding in declaredBindings)
@@ -663,6 +666,13 @@ public static class DirectEvalSupport
     }
 
     /// <summary>
+    /// The options eval code is parsed under, by the early-error parse and its scans here: the Script
+    /// goal, which is how PerformEval parses it, without top-level <c>await</c>, whatever the code
+    /// that called eval may do.
+    /// </summary>
+    private static FastParserOptions EvalOptions => FastParserOptions.Script;
+
+    /// <summary>
     /// Runs the indirect-eval early errors over <paramref name="text"/> and reports whether
     /// its body has any statements at all, so an inert body can skip compilation the same
     /// way <see cref="Execute"/> does.
@@ -677,16 +687,17 @@ public static class DirectEvalSupport
     /// </summary>
     private static AstProgram Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool rejectArguments = false, bool rejectNewTarget = false)
     {
-        if (inheritStrictMode && ContainsStrictReservedWordUsage(text))
+        var options = EvalOptions;
+        if (inheritStrictMode && ContainsStrictReservedWordUsage(text, options))
             throw JSEngine.NewSyntaxError("Unexpected strict mode reserved word");
 
         try
         {
             var pool = new FastPool();
-            var parser = new FastParser(new FastTokenStream(pool, text));
+            var parser = new FastParser(new FastTokenStream(pool, text, null, options), options);
             var program = parser.ParseProgram();
             ValidateDirectEvalEarlyErrors(program, allowSuperProperty, allowSuperCall, rejectArguments, rejectNewTarget);
-            SyntaxValidation.ValidateProgram(program, text, inheritStrictMode, lexicalBindings, privateNamesInScope);
+            SyntaxValidation.ValidateProgram(program, text, options, inheritStrictMode, lexicalBindings, privateNamesInScope);
             if (parameterBindings?.Length > 0
                 && SyntaxValidation.ContainsDirectEvalVarConflict(program.Statements, parameterBindings))
             {
@@ -715,10 +726,10 @@ public static class DirectEvalSupport
         }
     }
 
-    private static bool ContainsStrictReservedWordUsage(string text)
+    private static bool ContainsStrictReservedWordUsage(string text, FastParserOptions options)
     {
         var pool = new FastPool();
-        var stream = new FastTokenStream(pool, text);
+        var stream = new FastTokenStream(pool, text, null, options);
         FastToken previous = null;
 
         while (stream.Current.Type != TokenTypes.EOF)

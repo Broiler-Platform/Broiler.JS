@@ -3,7 +3,6 @@ using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
-using Broiler.JavaScript.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -53,7 +52,7 @@ partial class FastParser
         // non-async function it is a SyntaxError (test262 sm/AsyncGenerators/for-await-of-error);
         // without this guard the `await` reaches the compiler as an unsupported top-level await
         // and surfaces as an internal error rather than a SyntaxError.
-        if (awaitOf && !(inAsyncFunctionBody || (functionDepth == 0 && CoreScript.AllowTopLevelAwait)))
+        if (awaitOf && !(inAsyncFunctionBody || (functionDepth == 0 && allowTopLevelAwait)))
             throw new FastParseException(begin, "for await (... of ...) is only valid in async functions and modules");
 
         // A top-level `for await` awaits, so the program is async exactly as a top-level

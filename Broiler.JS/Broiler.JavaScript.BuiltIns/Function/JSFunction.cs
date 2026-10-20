@@ -1349,11 +1349,16 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         // would otherwise parse as a valid empty function. Compile each part on its
         // own (against the same assembled shape, with the other part empty) so such an
         // injection surfaces as a SyntaxError.
+        //
+        // Each part is a script without top-level await under the current context's options, as
+        // CoreScript.Evaluate compiles the whole below: the function's text is never a module, and
+        // never awaits at its own top level, even when the code that called the constructor may.
         var loc = location ?? "internal";
-        _ = CoreScript.Compile($"({functionKind} ({parameterText}\n) {{\n\n}})", loc, codeCache: null);
-        _ = CoreScript.Compile($"({functionKind} (\n) {{\n{bodyText}\n}})", loc, codeCache: null);
+        var compilationOptions = (JSEngine.Current as JSContext)?.CompilationOptions ?? default;
+        _ = CoreScript.Compile($"({functionKind} ({parameterText}\n) {{\n\n}})", loc, codeCache: null, compilationOptions: compilationOptions);
+        _ = CoreScript.Compile($"({functionKind} (\n) {{\n{bodyText}\n}})", loc, codeCache: null, compilationOptions: compilationOptions);
 
-        _ = CoreScript.Compile(source, loc, codeCache: null);
+        _ = CoreScript.Compile(source, loc, codeCache: null, compilationOptions: compilationOptions);
         return FinalizeDynamicFunction(CoreScript.Evaluate(source, loc, context?.CodeCache), specSource);
     }
 

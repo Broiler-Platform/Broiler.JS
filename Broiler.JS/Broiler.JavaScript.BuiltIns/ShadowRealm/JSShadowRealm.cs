@@ -99,10 +99,12 @@ public partial class JSShadowRealm : JSObject
             //   * abrupt completion while evaluating  -> throw a (wrapping) TypeError
             // Both errors must be created in the CALLER realm, so reset the current
             // context before constructing them.
+            // ParseScript: a script without top-level await under the realm's own options, even
+            // when the code that called evaluate may await at its top level.
             JSFunctionDelegate compiled;
             try
             {
-                compiled = CoreScript.Compile(sourceText, location, codeCache: evalRealm.CodeCache);
+                compiled = CoreScript.Compile(sourceText, location, codeCache: evalRealm.CodeCache, compilationOptions: evalRealm.CompilationOptions);
             }
             catch (Exception)
             {

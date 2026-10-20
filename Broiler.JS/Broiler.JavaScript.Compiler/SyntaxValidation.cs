@@ -5,25 +5,34 @@ using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
-using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler;
 
 internal static class SyntaxValidation
 {
+/// <summary>
+/// The early errors the parser does not check, over a program it parsed under <paramref name="options"/>:
+/// a top-level <c>await</c> the options do not permit, legacy octal literals in strict code, the eval
+/// and module declaration conflicts, and the control-flow and strict-mode rules.
+/// </summary>
+/// <param name="program">The parsed program.</param>
+/// <param name="sourceText">Its source, which the octal check scans again under the same options.</param>
+/// <param name="options">The options the program was parsed under: its goal and its top-level-await permission.</param>
 public static void ValidateProgram(
     AstProgram program,
     string sourceText,
+    FastParserOptions options,
     bool inheritStrictMode = false,
     IEnumerable<string> directEvalLexicalBindings = null,
-    IEnumerable<string> directEvalPrivateNames = null,
-    bool isModule = false)
+    IEnumerable<string> directEvalPrivateNames = null)
     {
-        if (program.IsAsync && !CoreScript.AllowTopLevelAwait)
+        // The message is the one the shell's retry reads (Broiler.JavaScript/Program.cs): a script
+        // refused for awaiting at its top level is run again with the permission.
+        if (program.IsAsync && !options.AllowTopLevelAwait)
             throw new FastParseException(program.Start, "Unexpected await");
 
         var strictProgram = inheritStrictMode || HasUseStrictDirective(program.Statements);
-        if (strictProgram && ContainsLegacyOctalLiteral(sourceText))
+        if (strictProgram && ContainsLegacyOctalLiteral(sourceText, options))
             throw new FastParseException(program.Start, "Unexpected legacy octal literal in strict mode");
 
         if (!strictProgram
@@ -35,7 +44,7 @@ public static void ValidateProgram(
 
         ValidateModuleEarlyErrors(program);
 
-        if (isModule)
+        if (options.Goal == FastParserGoal.Module)
             ValidateModuleDeclaredNames(program);
 
         new ControlFlowValidator().Visit(program);
@@ -355,13 +364,15 @@ public static void ValidateProgram(
         return false;
     }
 
-    private static bool ContainsLegacyOctalLiteral(string sourceText)
+    // Scans the source again under the options it was parsed under, so that the tokens are the
+    // parse's own: in a module, `<!--` and `-->` are punctuators rather than comments.
+    private static bool ContainsLegacyOctalLiteral(string sourceText, FastParserOptions options)
     {
         if (string.IsNullOrEmpty(sourceText))
             return false;
 
         var pool = new FastPool();
-        var stream = new FastTokenStream(pool, sourceText);
+        var stream = new FastTokenStream(pool, sourceText, null, options);
 
         while (stream.Current.Type != TokenTypes.EOF)
         {

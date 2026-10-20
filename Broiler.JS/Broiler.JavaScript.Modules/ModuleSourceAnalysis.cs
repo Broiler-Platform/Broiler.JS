@@ -47,7 +47,7 @@ internal sealed class ModuleSourceAnalysis
     /// source must already have compiled, so every early error has been reported.</summary>
     public static ModuleSourceAnalysis Parse(string code)
     {
-        var program = FastParser.ParseModule(code);
+        var program = FastParser.ParseModule(code, FastParserOptions.Module);
         var analysis = new ModuleSourceAnalysis { HasTopLevelAwait = program.IsAsync };
         analysis.Read(program);
         return analysis;

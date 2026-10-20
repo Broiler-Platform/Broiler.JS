@@ -1209,17 +1209,20 @@ public class JSModuleContext : JSContext
             return;
         }
 
+        // A CommonJS module is a script without top-level await, compiled as a function of its
+        // parameters, under this context's options.
         if (module.Kind == ModuleKind.CommonJs)
         {
-            module.Body = CoreScript.Compile(code, filePath, CommonJsParameters, codeCache: CodeCache);
+            module.Body = CoreScript.Compile(code, filePath, CommonJsParameters, codeCache: CodeCache, compilationOptions: CompilationOptions);
             return;
         }
 
         // Parsed with the module goal symbol and compiled as module code: strict, `await`
         // reserved and allowed at the top level, `this` undefined, and a module environment of
-        // its own (see FastCompiler's module prologue).
-        using (CoreScript.AllowTopLevelAwaitScope())
-            module.Body = CoreScript.Compile(code, filePath, ModuleParameters, codeCache: CodeCache, isModule: true);
+        // its own (see FastCompiler's module prologue). The goal and the permission are the
+        // compilation's options, which the code cache keys it on.
+        module.Body = CoreScript.Compile(code, filePath, ModuleParameters, codeCache: CodeCache,
+            compilationOptions: CompilationOptions with { IsModule = true, AllowTopLevelAwait = true });
 
         module.Analysis = ModuleSourceAnalysis.Parse(code);
         module.Kind = ModuleKind.SourceText;

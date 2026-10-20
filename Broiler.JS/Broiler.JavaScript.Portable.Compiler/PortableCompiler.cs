@@ -34,7 +34,9 @@ public sealed class PortableCompiler
         var pool = new FastPool();
         try
         {
-            var parser = new FastParser(new FastTokenStream(pool, source));
+            // A script without top-level await, over the engine's own Unicode tables.
+            var options = FastParserOptions.Script;
+            var parser = new FastParser(new FastTokenStream(pool, source, null, options), options);
             program = parser.ParseProgram();
         }
         finally

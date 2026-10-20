@@ -2630,15 +2630,16 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         // callback that evaluates more source while JavaScript is on the stack — must not drain.
         using var executionScope = microtasks.EnterExecution();
         @this ??= this;
+        // A script without top-level await, under this context's options.
         if (Debugger == null)
         {
-            var fx = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache);
+            var fx = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache, compilationOptions: CompilationOptions);
             return JSTailCall.Resolve(fx(new Arguments(@this)));
         }
 
         try
         {
-            var f = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache);
+            var f = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache, compilationOptions: CompilationOptions);
             Debugger.ScriptParsed(ID, code, codeFilePath);
             return JSTailCall.Resolve(f(new Arguments(@this)));
         }
@@ -2653,6 +2654,15 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     /// Evaluates JavaScript code with top-level <c>await</c> enabled, then waits
     /// for the returned promise and any pending host tasks before returning.
     /// </summary>
+    /// <remarks>
+    /// The permission is the program's own: it is compiled with
+    /// <see cref="JSCompilationOptions.AllowTopLevelAwait"/> set, which the code cache keys it on, so a
+    /// compile of the same text by <see cref="Eval"/> is never answered from this one's entry, nor this
+    /// one from <see cref="Eval"/>'s.
+    /// Code the program compiles while it runs, by direct or indirect <c>eval</c>, the <c>Function</c>
+    /// constructor or <c>ShadowRealm.prototype.evaluate</c>, is compiled without the permission, as
+    /// under <see cref="Eval"/>: the permission is not ambient.
+    /// </remarks>
     public async Task<JSValue> EvalWithTopLevelAwaitAsync(string code, string codeFilePath = null, JSValue @this = null)
     {
         using var realmScope = JSEngine.EnterContext(this);
@@ -2663,10 +2673,10 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         // job it queues must not be handed to a pool thread beside it. The drain at the end of the
         // block returns the depth to zero, so anything settling later — a host Task-backed promise
         // this method then awaits — takes the pool exactly as it did before.
-        using (CoreScript.AllowTopLevelAwaitScope())
         using (microtasks.EnterExecution())
         {
-            var fx = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache);
+            var fx = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache,
+                compilationOptions: CompilationOptions with { AllowTopLevelAwait = true });
             result = JSTailCall.Resolve(fx(new Arguments(@this)));
         }
 
