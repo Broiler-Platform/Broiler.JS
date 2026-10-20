@@ -466,6 +466,25 @@ EX_WRITTEN = [
            "(Broiler.JS's switch)."),
     ("93", "Policy: a construct the engine parses but does not compile (a meta property, or a form the "
            "compiler has no translation for)."),
+    # Added by the completeness check (task 3.11, 2026-10-19), each taking the family's next id and its block's
+    # next code: refusal sites the engines have that no row above explains.
+    ("91", "Grammar: a unicode escape sequence in an IdentifierName that the lexical grammar does not define: an "
+           "incomplete `\\u` escape, a `\\u{...}` escape with no digits or a digit that is not hexadecimal, or a "
+           "`\\u{...}` escape above 0x10FFFF."),
+    ("92", "Limit: a regular-expression pattern nested deeper than the engine's bound on groups and character "
+           "classes."),
+    ("92", "Limit: a JSON module nested deeper than the engine's bound."),
+    ("92", "Limit: a BigInt literal wider than the artifact format admits."),
+    ("93", "Policy: a module specifier that is not well-formed Unicode (it holds a lone surrogate), refused when "
+           "the source is parsed; the specification admits any StringLiteral as a ModuleSpecifier and leaves the "
+           "specifier to the host."),
+    ("93", "Policy: a compile request the engine cannot serve: an output form the declared feature manifest does "
+           "not define, a backend the build does not carry, or a backend's refusal of the unit. No property of "
+           "the source text is involved."),
+    ("93", "Policy: a dynamic function (the Function, GeneratorFunction, AsyncFunction or AsyncGeneratorFunction "
+           "constructor) whose source text holds a private name, refused as AllPrivateIdentifiersValid refuses one "
+           "in a Script; the edition's CreateDynamicFunction has no step that refuses it, and test262 expects a "
+           "SyntaxError."),
 ]
 
 

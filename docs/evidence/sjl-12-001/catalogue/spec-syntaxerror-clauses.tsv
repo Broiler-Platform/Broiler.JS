@@ -1,0 +1,30 @@
+section	clause	mentions	heading	rows	reason
+6.1.7.4	sec-well-known-intrinsic-objects	3	Well-Known Intrinsic Objects	-	the table of intrinsics names %SyntaxError%; no refusal
+7.1.13	sec-tobigint	1	ToBigInt ( _argument_: an ECMAScript language value, ): either a normal completion contain	-	run time: StringToBigInt fails on a String (BigInt(...)); early-errors.md section 2 excludes conversions
+11.1.6	sec-parsetext	2	Static Semantics: ParseText ( _sourceText_: a String or a sequence of Unicode code points,	EE0001-EE0213;EX0001-EX0010;EX0025	ParseText carries the grammar (EX grammar rows) and the early errors (EE rows)
+13.5.1.2	sec-delete-operator-runtime-semantics-evaluation	1	Runtime Semantics: Evaluation	EE0030	a note: the early-error rules keep a strict `delete` of a name from reaching the step
+16.1.5	sec-parse-script	1	ParseScript ( _sourceText_: ECMAScript source text, _realm_: a Realm Record, _hostDefined_	EE0001-EE0213;EX0001-EX0010;EX0025	ParseScript is ParseText with the goal Script
+16.1.7	sec-globaldeclarationinstantiation	3	GlobalDeclarationInstantiation ( _script_: a |Script| Parse Node, _env_: a Global Environm	-	run time against a realm (early-errors.md section 2); both engines throw it when a script is run: Broiler.VM src/Broiler.VM.Profile.JavaScript/JsEngine.EvalDeclarations.cs:296, :301, :366; Broiler.JS Broiler.JavaScript.Engine/JSContext.cs:1026, :1042
+16.2.1.6.1.1.1	sec-InnerModuleLoading	1	InnerModuleLoading ( _state_: a GraphLoadingState Record, _module_: a Module Record, ): ~u	-	module loading against a graph (section 2); the attribute refusals the engines make at compile are EX0021
+16.2.1.6.2	sec-example-cyclic-module-record-graphs	1	Example Cyclic Module Record Graphs	-	an example in prose; no refusal
+16.2.1.7.1	sec-parsemodule	1	ParseModule ( _sourceText_: ECMAScript source text, _realm_: a Realm Record, _hostDefined_	EE0001-EE0213;EX0001-EX0010;EX0025	ParseModule is ParseText with the goal Module
+16.2.1.7.3.1	sec-source-text-module-record-initialize-environment	2	InitializeEnvironment ( ): either a normal completion containing ~unused~ or a throw compl	-	module linking (ResolveExport fails, section 2); Broiler.VM src/Broiler.VM.Profile.JavaScript/JsEngine.Imports.cs:419
+17	sec-error-handling-and-language-extensions	2	Error Handling and Language Extensions	-	clause 17 names when errors are reported and forbids reporting other errors early; it bounds the EX policy rows (EX0018 and EX0019 are such refusals, recorded as engine-only)
+19.2.1.1	sec-performeval	5	PerformEval ( _x_: an ECMAScript language value, _strictCaller_: a Boolean, _direct_: a Bo	EA0001;EA0002;EA0003;EA0004;EA0005	the five SyntaxError steps of PerformEval
+19.2.1.3	sec-evaldeclarationinstantiation	4	EvalDeclarationInstantiation ( _body_: a |ScriptBody| Parse Node, _varEnv_: an Environment	EA0006;EA0007;EA0008;EA0009	the four SyntaxError steps of EvalDeclarationInstantiation
+19.2.6.7	sec-parsehexoctet	1	ParseHexOctet ( _string_: a String, _position_: a non-negative integer, ): either a non-ne	-	run time (URI and hex decoding; section 2)
+19.3.33	sec-constructor-properties-of-the-global-object-syntaxerror	1	SyntaxError ( . . . )	-	the global SyntaxError property; no refusal
+20.2.1.1.1	sec-createdynamicfunction	3	CreateDynamicFunction ( _constructor_: a constructor, _newTarget_: a constructor or *undef	EA0010;EA0011;EA0012	the three SyntaxError steps of CreateDynamicFunction; EX0031 records the refusal of a private name the edition lacks
+20.5.5.4	sec-native-error-types-used-in-this-standard-syntaxerror	3	SyntaxError	-	the definition of SyntaxError; no refusal
+20.5.6.1.1	sec-nativeerror	1	_NativeError_ ( _message_ [ , _options_ ] )	-	the NativeError constructors; no refusal
+22.2.2.2	sec-compilepattern	1	Runtime Semantics: CompilePattern ( _rer_: a RegExp Record, ): an Abstract Closure that ta	-	a note on pattern compilation at run time; the literal is refused earlier by EE0019
+22.2.3.3	sec-regexpinitialize	3	RegExpInitialize ( _obj_: an Object, _pattern_: an ECMAScript language value, _flags_: an 	-	run time: the RegExp constructor (section 2)
+22.2.3.4	sec-parsepattern	2	Static Semantics: ParsePattern ( _patternText_: a sequence of Unicode code points, _u_: a 	EE0019;EE0183-EE0208	ParsePattern returns the pattern grammar failures (EE0019) and the pattern early errors
+23.3.3.5	sec-decodefinalbase64chunk	2	DecodeFinalBase64Chunk ( _chunk_: a String of length 2 or 3, _throwOnExtraBits_: a Boolean	-	run time: base64 decoding (section 2)
+23.3.3.7	sec-frombase64	8	FromBase64 ( _string_: a String, _alphabet_: *"base64"* or *"base64url"*, _lastChunkHandli	-	run time: base64 decoding (section 2)
+23.3.3.8	sec-fromhex	3	FromHex ( _string_: a String, optional _maxLength_: a non-negative integer, ): a Record wi	-	run time: hex decoding (section 2)
+25.5.2.1	sec-ParseJSON	1	ParseJSON ( _text_: a String, ): either a normal completion containing a Record with field	-	run time: JSON.parse (section 2); EE0018 notes the __proto__ exception it makes
+25.5.3	sec-json.rawjson	3	JSON.rawJSON ( _text_ )	-	run time: JSON.rawJSON (section 2)
+B.1.2.9	sec-parsepattern-annexb	1	Static Semantics: ParsePattern ( _patternText_, _u_, _v_ )	EG0002;EE0209-EE0213	Annex B ParsePattern: the extended grammar and its rows
+C	sec-strict-mode-of-ecmascript	6	The Strict Mode of ECMAScript	-	Annex C restates strict-mode rules that are rows (EE0003-EE0006, EE0012, EE0030, EE0031, EE0060, EE0064, the eval and arguments rows)
+F	sec-additions-and-changes-that-introduce-incompatibilities-with-prior-editions	1	Additions and Changes That Introduce Incompatibilities with Prior Editions	-	Annex F, prose on past editions; no refusal

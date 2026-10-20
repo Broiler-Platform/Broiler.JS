@@ -3,8 +3,11 @@
 [← The shared frontend: design](design.md) · [Conventions](../conventions.md) ·
 [This repository's plan](../../../docs/roadmap/SharedLibraries.md)
 
-**Filed:** 2026-10-19, at milestone SJL-12.3 (task 3.1, the skeleton). **Status:** skeleton. Every row and its shared
-code are here; the columns read from the engines are `unfilled`, and tasks 3.2 to 3.10 fill them.
+**Filed:** 2026-10-19, at milestone SJL-12.3 (task 3.1, the skeleton). **Revised:** 2026-10-20 (task 3.11): the nine
+groups' fill (tasks 3.2 to 3.10) is merged, and the completeness check added seven engine-only rows, EX0025 to EX0031,
+and found no miss in either direction or against test262's parse-negative tests
+([its report](../../../docs/evidence/sjl-12-001/catalogue/completeness.md)). **Status:** filled. 278 rows; no cell is
+`unfilled`.
 
 **What it is.** [`early-errors.tsv`](early-errors.tsv) has one row per early-error rule of ECMA-262's ES2026 edition,
 with four families of its own beside them (decision D30 of Broiler.VM's JSD-0080, its home decision D31). For each
@@ -53,7 +56,7 @@ compares the identifying columns.
 | **EA** | EA0001-EA0012 | 19, 20 | A step that throws a SyntaxError in eval or in a dynamic function: PerformEval 11.b and 11.e-h, EvalDeclarationInstantiation 3.a.i.1, 3.d.i.2.a.i.1 (with Annex B.3.4), 3.d.i.2.a.ii.1 and 7, CreateDynamicFunction 18, 20 and 24 | `step` |
 | **EG** | EG0001-EG0008 | 81, 83 | One Annex B syntax feature: the grammar-only extensions (B.1.1 HTML-like comments, B.1.2 the pattern grammar, B.3.3 function declarations in `if` clauses, B.3.5 initialisers in `for`-`in` heads) and the relaxations Annex B lets a parser make (B.3.1 labelled function declarations, B.3.2 block-level functions, B.3.4 `var` in `catch` blocks, B.3.9 call expressions as assignment targets) | `prose` |
 | **EP** | EP0001-EP0014 | 71, 72, 73 | A proposal's rule or construct that test262 `ccaac100` tests or either engine parses: explicit resource management (EP0001-EP0008, the eight rules `main` has merged), decorators (EP0009, EP0010), import phases (EP0011-EP0014: source-phase imports and `import defer`) | `rule`, `catalogue` |
-| **EX** | EX0001-EX0024 | 91, 92, 93 | A refusal no early-error rule of the edition makes: source text no production matches (EX0001-EX0010), an engine's limits (EX0011-EX0016), an engine's policies (EX0017-EX0024) | `catalogue` |
+| **EX** | EX0001-EX0031 | 91, 92, 93 | A refusal no early-error rule of the edition makes: source text no production matches (EX0001-EX0010, EX0025), an engine's limits (EX0011-EX0016, EX0026-EX0028), an engine's policies (EX0017-EX0024, EX0029-EX0031) | `catalogue` |
 
 - **EA covers decision D30's "eval and dynamic functions".** Steps that throw a SyntaxError elsewhere are not rows,
   and the reason is recorded here: GlobalDeclarationInstantiation (16.1.7) and a module's InitializeEnvironment
@@ -77,6 +80,16 @@ compares the identifying columns.
   is one row per kind of refusal. EX0001 to EX0010 correspond one to one to Broiler.VM's grammar codes 2001 to
   2007, 2101, 2102 and 2401, so each of those codes has one engine-only row that can explain it where no rule of
   the edition reaches it (part E of Broiler.VM's rule).
+- **The completeness check (task 3.11) added seven EX rows**, each for refusal sites no row explained: EX0025, an
+  identifier's escape that names no code point (a second grammar row for 2005, beside EX0005's string escape);
+  EX0026 to EX0028, Broiler.VM's bounds on a regular-expression pattern's nesting and a JSON module's, and on a
+  BigInt literal's width; EX0029 to EX0031, a module specifier that is not well-formed Unicode, a compile request
+  the engine cannot serve, and a private name in a dynamic function's source, which the edition's
+  CreateDynamicFunction does not refuse and test262 expects refused.
+- **A check that refuses more than its rule is not a row.** An engine defect of that kind (Broiler.JS's refusal of
+  duplicate parameters in a sloppy generator, for one) maps to the row of the rule it implements, and the
+  completeness report lists it as a finding. An EX row is a refusal an engine makes on purpose, which the shared
+  front end may have to make too.
 
 ## 3. Row identity
 
@@ -123,15 +136,15 @@ Tab-separated, one header line, LF line endings, no quoting; a cell never holds 
 | 11 | `shared_code` | Section 5 |
 | 12 | `message_id` | Section 6 |
 | 13 | `vm_slice` | Where Broiler.VM's slice path checks the rule: `file:line` under `src/Broiler.VM.Profile.JavaScript.Compiler/`; `manifest` when the slice refuses the construct before the rule can apply (`SliceStaticSemantics.cs:607`, code 2104); or `none` with the search that found nothing |
-| 14 | `vm_wide_stage` | `parser`, `lowering`, `parser+lowering` or `none` |
-| 15 | `vm_wide_site` | `file:line` under the same folder, `; `-separated; `none` with the search |
-| 16 | `vm_code` | The registry code Broiler.VM emits (2001-2406), `;`-separated if more than one; `none` if it accepts |
-| 17 | `js_stage` | `scanner`, `parser`, `SyntaxValidation`, `FastCompiler.EarlyErrors`, `Visit*` or `DirectEvalSupport`, `+`-joined; `none` |
+| 14 | `vm_wide_stage` | `parser`, `lowering`, `parser+lowering` or `none`; `runtime` or `lowering+runtime` for an EA step the executor checks when the eval runs (EA0006, EA0007, EA0009), as the edition does |
+| 15 | `vm_wide_site` | `file:line` under the same folder, `; `-separated; a site in another of Broiler.VM's folders (the executor's, for EA rows) is written from `src/`; `none` with the search |
+| 16 | `vm_code` | The registry code Broiler.VM emits (2001-2406), `;`-separated if more than one; `none` if it accepts; `-` where it emits no registry code (an EA step the executor checks, or an EA row whose refusal carries the code of the rule the evaluated or assembled source broke) |
+| 17 | `js_stage` | `scanner`, `parser`, `SyntaxValidation`, `FastCompiler.EarlyErrors`, `Visit*` or `DirectEvalSupport`, `+`-joined; `runtime` for an EA step the runtime context checks (EA0006); `none` |
 | 18 | `js_site` | `file:line` under `Broiler.JS/` (`Broiler.JavaScript.Parser/FastParser.Statement.cs:481`), `; `-separated; `none` with the search |
 | 19 | `vm_admits` | EG and EP rows: `yes` or `no`, whether Broiler.VM admits the feature or the construct; `-` for the other families |
 | 20 | `js_admits` | The same for Broiler.JS |
 | 21 | `test262` | At least one path under `test/` at test262 `ccaac100`, `; `-separated; `none` with the search when test262 tests nothing for the row |
-| 22 | `status` | `both`, `vm-only`, `js-only` or `neither` (which engines refuse what the row refuses); `delegates` for a row that refuses nothing itself (EE0070, EE0097, EE0111 and EE0147 apply UniqueFormalParameters' rules); `withdrawn` (section 3); `unfilled` until filled |
+| 22 | `status` | `both`, `vm-only`, `js-only` or `neither` (which engines refuse what the row refuses; an engine that refuses part of it counts, and `notes` says which part it misses, as "partial" or "gap"); `delegates` for a row that refuses nothing itself (EE0070, EE0097, EE0111 and EE0147 apply UniqueFormalParameters' rules); `withdrawn` (section 3); `unfilled` until filled |
 | 23 | `notes` | Free text: an Annex B relaxation's site, a second stage, a difference between the engines; `-` |
 
 **The heads the sites are read at** (and cited by `file:line` at): Broiler.VM `d82b07a`, whose product sources are
@@ -158,9 +171,9 @@ order. A code is permanent and names one row's refusal; it is never reused.
 | `71` explicit resource management | JSE7101-JSE7108 | EP0001-EP0008 | the proposal |
 | `72` decorators | JSE7201-JSE7202 | EP0009, EP0010 | |
 | `73` import phases | JSE7301-JSE7304 | EP0011-EP0014 | |
-| `91` grammar failures | JSE9101-JSE9110 | EX0001-EX0010 | the kind of refusal |
-| `92` limits | JSE9201-JSE9206 | EX0011-EX0016 | |
-| `93` policies | JSE9301-JSE9308 | EX0017-EX0024 | |
+| `91` grammar failures | JSE9101-JSE9111 | EX0001-EX0010, EX0025 | the kind of refusal |
+| `92` limits | JSE9201-JSE9209 | EX0011-EX0016, EX0026-EX0028 | |
+| `93` policies | JSE9301-JSE9311 | EX0017-EX0024, EX0029-EX0031 | |
 
 - **Every row has its code now**, and the fill never makes one: a row added later takes its block's next code in
   the tool (section 3). The blocks 50 to 59 are kept free: a block that fills continues in the first of them, by a
@@ -263,6 +276,28 @@ Every other "must cover" rule takes `cover.` and the covered production in kebab
 `cover.parenthesized-expression`, EE0087 `cover.arrow-formal-parameters`, EE0155 `cover.async-arrow-head`, EP0003
 `cover.await-using-declaration-head`.
 
+**Identifiers the fill coined.** The fill (tasks 3.2 to 3.10) coined 94 identifiers under rule 5, each written with
+its condition in its group's scratch file, and the committer checked before the merge that no two of the 134
+identifiers name one condition. A coined identifier's condition is its row's rule text; those that span rows of
+different text are:
+
+| Identifier | Condition | Rows |
+|---|---|---|
+| `strict.reserved-word` | A word strict mode code reserves (`implements`, `interface`, `let`, `package`, `private`, `protected`, `public`, `static`, `yield`) used as an identifier in strict mode code | EE0006, EE0012 |
+| `identifier.await.in-module` | `await` used as an identifier in Module goal code | EE0007, EE0013 |
+| `identifier.yield.in-generator` | `yield` used as an identifier where the [Yield] parameter is set | EE0008, EE0010 |
+| `identifier.await.in-async` | `await` used as an identifier where the [Await] parameter is set | EE0009, EE0011 |
+| `strict.delete.unqualified-or-private` | `delete` of a bare name or of a private reference in strict mode code | EE0030, EE0031 |
+| `strict.labelled-function` | A function declaration as a LabelledItem in strict mode code | EE0064, EG0003 |
+| `regexp.modifiers.repeated-flag` | A modifier list that names a flag twice | EE0186, EE0188, EE0189 |
+| `regexp.class.range-endpoint-is-class` | A class escape (`\d`, `\p{...}`, ...) at either end of a class range | EE0193, EE0195, EE0210, EE0212 |
+| `regexp.class.range-out-of-order` | A class range whose first character is above its last | EE0194, EE0196, EE0208, EE0211, EE0213 |
+| `regexp.group-name.invalid-start` | A group name whose first code point cannot start an identifier | EE0197, EE0198 |
+| `regexp.group-name.invalid-part` | A group name with a later code point that cannot continue an identifier | EE0199, EE0200 |
+| `regexp.class.negated-may-contain-strings` | A negated class, at the top or nested, that may contain strings | EE0206, EE0207 |
+| `eval.var.lexical-collision` | A var or function a sloppy direct eval declares has the name of a binding between the call and its variable environment | EA0007, EA0008 |
+| `using.declaration.no-disposal-scope` | A using or await using declaration directly in a statement list that disposes nothing (a case or default clause, a script's top level) | EP0006, EP0007, EP0008 |
+
 ## 7. The fill
 
 Nine groups, one agent each, every row in exactly one group (tasks 3.2 to 3.10):
@@ -283,6 +318,11 @@ A fill agent writes its rows to its scratch file and never touches the catalogue
 `ee_extract.py check` then shows that no identifying column moved. Every site is read at the heads in section 4,
 including any a survey of SJL-12 already named.
 
+**Merged on 2026-10-19 (task 3.11).** Every row came from exactly one group, ids and order unchanged, and no cell was
+left `unfilled`. The completeness check then added EX0025 to EX0031 in the tool's table, filled them itself, and moved
+one site of EX0005 (`SliceTokenizer.cs:814`, an identifier's escape) to EX0025. Its report and inventories are in
+[`docs/evidence/sjl-12-001/catalogue/`](../../../docs/evidence/sjl-12-001/catalogue/completeness.md).
+
 ## 8. Re-running the tool
 
 From the repository root, with the three inputs fetched as the tool's header shows:
@@ -291,7 +331,12 @@ From the repository root, with the three inputs fetched as the tool's header sho
 python3 -I scripts/frontend/ee_extract.py check --edition es2026.html --later main.html \
     --catalogue Broiler.ECMAScript/docs/frontend/early-errors.tsv
 python3 -I scripts/frontend/ee_extract.py diff --edition es2026.html --other errata.html --other-pin errata
+python3 -I docs/evidence/sjl-12-001/catalogue/check.py --vm <Broiler.VM at d82b07a> --js . \
+    --test262 <test262 at ccaac100> --catalogue Broiler.ECMAScript/docs/frontend/early-errors.tsv --edition es2026.html
 ```
 
 `check` exits 1 when an identifying column differs; `diff` exits 1 when the other revision adds, removes or changes
-a rule. On 2026-10-19 `check` found no difference and `diff` over the errata found no rule changed.
+a rule; the completeness checker exits 1 when the code, the suite or the edition has a site, a test or a clause its
+inventories lack, or an inventory row names no catalogue row. On 2026-10-19 `check` found no difference at the
+skeleton and `diff` over the errata found no rule changed; on 2026-10-20 `check` found no difference over the filled
+278 rows and the completeness checker found no problem.
