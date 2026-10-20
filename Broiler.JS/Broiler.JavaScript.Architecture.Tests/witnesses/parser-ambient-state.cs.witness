@@ -1,0 +1,58 @@
+// The witness of the parser's architecture test (bundle sjl-12-001's rule, part B): one member per
+// shape the test must refuse. ParserArchitectureTests compiles it in memory, against the platform and
+// this engine's own assemblies, and reads the image as it reads the parser's.
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using Broiler.JavaScript.Ast;
+using Broiler.JavaScript.Ast.Expressions;
+using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.ExpressionCompiler.Core;
+using Broiler.JavaScript.Runtime;
+
+namespace Witness;
+
+public static class AmbientState
+{
+    // A mutable static counter, as the parser's temporary counter was.
+    public static int Parses;
+
+    // A static readonly field of a mutable class, as the scanner's end-of-file token was: every parse
+    // writes its links.
+    private static readonly FastToken EndOfInput = new(TokenTypes.EOF, string.Empty);
+
+    // A static readonly array.
+    private static readonly char[] Delimiters = ['(', ')'];
+
+    // A static readonly field of a mutable collection type.
+    private static readonly Dictionary<string, int> Seen = new();
+
+    // A [ThreadStatic] field.
+    [ThreadStatic]
+    private static int depth;
+
+    // An AsyncLocal, as the runtime's goal scopes are.
+    private static readonly AsyncLocal<bool> ModuleGoal = new();
+
+    // A ThreadLocal.
+    private static readonly ThreadLocal<int> Scratch = new();
+
+    // A settable static property.
+    public static string Mode { get; set; } = "script";
+
+    // A use of a Runtime type.
+    public static bool IsValue(object value) => value is JSValue;
+
+    // A use of the desugaring walkers.
+    public static AstNode Desugar(AstExpression update, IFastEnumerable<(string from, AstIdentifier temp)> changes)
+    {
+        var detector = new ClosureDetector();
+        detector.Visit(update);
+        if (!detector.Found && IdentifierNameCollector.Collect(update).Count == 0)
+            return update;
+        return AstIdentifierReplacer.Replace(update, changes);
+    }
+
+    public static int Use() =>
+        depth + Scratch.Value + (ModuleGoal.Value ? 1 : 0) + Delimiters.Length + Seen.Count + (EndOfInput.Next is null ? 0 : 1);
+}
