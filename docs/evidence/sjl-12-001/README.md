@@ -180,21 +180,27 @@ stack of 0, so that K compiles on the tool's own thread ([`tools/parse-corpus/RE
   - 2 under `Broiler.ECMAScript/docs/`: the early-error catalogue;
   - 27 under `docs/`: this bundle's README, catalogue and tool, the plan pair, and bundle `sjl-3-001`'s README and
     manifest.
-- **It comes before every product change, as this section reads the condition.** Read at the default branch, which is
-  the corpus commit itself, `git log` from the rule commit over the paths the condition lists names no commit. With
-  `--full-history` it names `b1ac1b8a` alone, the merge that took the rule commit into the catalogue's branch. Its
-  first parent, `a6b29eaf`, does not descend from the rule commit, and against it `b1ac1b8a` changes
-  `Broiler.ECMAScript/CHANGELOG.md`, a path the condition lists: what the default branch had changed there, which the
-  merge brought in. Against its second parent, the rule commit, it changes no path the condition lists, so on those
-  paths it holds the rule commit's files. This section reads a commit that "changes a path" as one that changes it
-  against the rule commit, and so reads `b1ac1b8a` as no product change. That is a reading, not something git
-  decides. On a reading that counts a change against either parent, `b1ac1b8a` is a product change after the rule
-  commit, the corpus commit descends from it and does not come before it, and the condition fails; the rule makes a
-  part whose corpus commit fails its conditions void. The condition is read again at the after commit.
+- **It comes before every product change.** Read at the default branch, which is the corpus commit itself, `git log`
+  from the rule commit over the paths the condition lists names no commit: no commit after the rule commit changes
+  one of them. With `--full-history` it also names `b1ac1b8a`, the merge that took the rule commit into the
+  catalogue's branch. On every path the condition lists, `b1ac1b8a` holds the rule commit's own files: against its
+  second parent, the rule commit, it changes none of them. Against its first parent, `a6b29eaf`, which does not
+  descend from the rule commit, it changes `Broiler.ECMAScript/CHANGELOG.md`, and only to the rule commit's own text
+  of that file, which the merge brought in. A merge that holds, on those paths, exactly what the rule commit holds makes
+  no change to them after the rule commit, so the condition holds. The condition is read again at the after commit.
   *(Revised 2026-10-20, after review: the item began "It comes before every product change." and its third sentence
   read "With `--full-history` it names `b1ac1b8a` alone, a merge that took the rule commit into the catalogue's
   branch and changes no listed path against the rule commit; it is itself an ancestor of the corpus commit." That
   `b1ac1b8a` is an ancestor of the corpus commit does not meet the condition, which asks the reverse.)*
+  *(Revised again 2026-10-20, by the single writer: the item's heading ended ", as this section reads the
+  condition.", and after "so on those paths it holds the rule commit's files." it read "This section reads a commit
+  that "changes a path" as one that changes it against the rule commit, and so reads `b1ac1b8a` as no product change.
+  That is a reading, not something git decides. On a reading that counts a change against either parent, `b1ac1b8a`
+  is a product change after the rule commit, the corpus commit descends from it and does not come before it, and the
+  condition fails; the rule makes a part whose corpus commit fails its conditions void." It was replaced because
+  `b1ac1b8a` adds, on the listed paths, nothing the rule commit does not already hold: what it differs by from its
+  first parent is the rule commit's own content, so counting that as a change after the rule commit would count the
+  rule commit against itself.)*
 
 **The runs** ([`base/logs/runs.tsv`](base/logs/runs.tsv); each run's standard error in [`base/logs/`](base/logs/),
 its standard output empty).
