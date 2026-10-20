@@ -1,0 +1,3 @@
+var before = f === undefined;
+try { throw null; } catch (f) {{ function f() { return 123; } }}
+[before, typeof f, f()].join("|");

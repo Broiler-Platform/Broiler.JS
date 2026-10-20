@@ -1,0 +1,1 @@
+var a = [1]; Object.freeze(a); var i = 0; a[i] = 99; String(a[0]);

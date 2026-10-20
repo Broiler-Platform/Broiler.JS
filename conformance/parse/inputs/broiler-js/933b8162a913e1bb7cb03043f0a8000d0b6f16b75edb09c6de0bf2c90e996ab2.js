@@ -1,0 +1,1 @@
+var f=function(a){if(a){return}return 'x'};String(f(true));

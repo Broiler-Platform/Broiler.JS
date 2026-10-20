@@ -1,0 +1,1 @@
+var o = { n: 1 }; with (o) { n++; } o.n;

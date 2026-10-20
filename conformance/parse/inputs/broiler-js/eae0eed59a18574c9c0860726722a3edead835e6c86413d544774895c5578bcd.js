@@ -1,0 +1,1 @@
+var f = function () { for (var i = 0; i < limit; i++) { } return i; };

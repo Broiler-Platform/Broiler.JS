@@ -1,0 +1,1 @@
+(function () { let v = 2; const k = 3; var r = function () { return v * k; }; v = v + 1; return r(); })()

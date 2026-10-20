@@ -1,0 +1,1 @@
+(function(){ var s = ''; var n = 0; while (n < 2) { s = s + String(t) + ','; var t = 1; n = n + 1; } return s; })()

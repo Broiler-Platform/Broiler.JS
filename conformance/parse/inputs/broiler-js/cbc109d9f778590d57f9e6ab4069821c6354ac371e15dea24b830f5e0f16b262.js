@@ -1,0 +1,1 @@
+(function(){ var s = 0; for (var i = 0; i < 4096; i++) { s = i & 4092; } return s; })()

@@ -1,0 +1,1 @@
+(function (a) { try { throw 2; } catch (e) { } return a; })(1)

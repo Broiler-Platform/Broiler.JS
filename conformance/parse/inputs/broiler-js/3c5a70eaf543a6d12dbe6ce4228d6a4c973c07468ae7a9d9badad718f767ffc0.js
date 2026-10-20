@@ -1,0 +1,1 @@
+var s='';loop:for(var a=0;a<3;a++){for(var b=0;b<3;b++){if(b>a)continue loop;s+=''+a+b;}}s;

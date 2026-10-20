@@ -1,0 +1,1 @@
+var o = {}; Object.defineProperty(o, 'x', { value: 0, writable: true, enumerable: false, configurable: true }); for (var i = 0; i < 500; i++) o.x = i; o.x;

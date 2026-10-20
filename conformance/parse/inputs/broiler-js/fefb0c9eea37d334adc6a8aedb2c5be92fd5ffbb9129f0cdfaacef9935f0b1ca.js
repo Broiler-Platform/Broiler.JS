@@ -1,0 +1,1 @@
+function g() { return a[1 }

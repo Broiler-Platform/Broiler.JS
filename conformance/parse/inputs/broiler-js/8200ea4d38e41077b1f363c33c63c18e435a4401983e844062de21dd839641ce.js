@@ -1,0 +1,1 @@
+(function(){ var i = 5; var a = [i]; return a[0] + ',' + typeof a[0]; })()

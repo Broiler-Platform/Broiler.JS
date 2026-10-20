@@ -1,0 +1,1 @@
+(function(){ return (function (a) { var v = a.x * 2 + 1; var s = 0; for (var i = 0; i < 3; i++) s += 1; return s; })({ x: 1 }); })()

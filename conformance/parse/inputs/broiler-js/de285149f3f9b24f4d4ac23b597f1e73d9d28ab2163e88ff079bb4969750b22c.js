@@ -1,0 +1,1 @@
+(function(_){ _.f = function(){ return nosuchvalue; }; })(globalThis.NS)

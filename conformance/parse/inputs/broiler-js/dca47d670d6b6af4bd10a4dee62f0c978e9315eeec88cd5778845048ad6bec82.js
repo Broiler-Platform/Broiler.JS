@@ -1,0 +1,1 @@
+(function(){ var c = 1; if (c) { var x = 5; } return x + ',' + typeof x; })()

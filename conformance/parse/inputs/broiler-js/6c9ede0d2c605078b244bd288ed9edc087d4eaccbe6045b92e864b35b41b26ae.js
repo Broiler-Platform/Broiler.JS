@@ -1,0 +1,1 @@
+(function(){ var i = 5; return ((i & 7) << 2) | 1; })()

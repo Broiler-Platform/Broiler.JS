@@ -1,0 +1,1 @@
+var o = { a: 1, b: 2, c: 3 }; delete o.b; o.b = 9; Object.keys(o).join(',');

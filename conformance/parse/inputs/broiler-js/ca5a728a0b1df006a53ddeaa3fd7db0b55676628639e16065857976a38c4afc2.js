@@ -1,0 +1,1 @@
+(function(){ let v = 1; { let v = v_outer_missing_guard(); } return v; })()

@@ -1,0 +1,1 @@
+class C { #m() { return 1; } get method() { return this.#m; } }

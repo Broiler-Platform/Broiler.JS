@@ -1,0 +1,1 @@
+(function(){ var f = (a) => a * 2; let v = 3.5; return f(v); })()

@@ -1,0 +1,1 @@
+(function () { var s = 0; try { throw 'e'; } catch (s) { return s; } })()

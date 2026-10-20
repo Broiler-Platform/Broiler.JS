@@ -1,0 +1,1 @@
+import('./mod.js', { with: { type: 'json' } },);

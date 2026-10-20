@@ -1,0 +1,1 @@
+(function(){ var x = 4; x <<= 2; return x; })()

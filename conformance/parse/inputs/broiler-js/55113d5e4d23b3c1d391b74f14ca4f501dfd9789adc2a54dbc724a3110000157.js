@@ -1,0 +1,1 @@
+(function () { var s = 0; do { var s = 'd'; } while (false); return s; })()

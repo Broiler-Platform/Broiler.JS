@@ -1,0 +1,1 @@
+function f(o){ var c = 2 * o.x; c++; return c; } f({ x: 1 });

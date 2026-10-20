@@ -1,0 +1,1 @@
+gg = 3; function f(){ var r = gg; var c = 2 * r; c++; return c + r; } f();

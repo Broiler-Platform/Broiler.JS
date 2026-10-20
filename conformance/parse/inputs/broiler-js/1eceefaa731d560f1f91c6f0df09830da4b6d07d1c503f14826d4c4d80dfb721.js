@@ -1,0 +1,1 @@
+let f = () => { import(import(import('./mod.js'))); };

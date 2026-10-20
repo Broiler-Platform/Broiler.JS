@@ -1,0 +1,1 @@
+(function promoted(n) { return n + 1; })

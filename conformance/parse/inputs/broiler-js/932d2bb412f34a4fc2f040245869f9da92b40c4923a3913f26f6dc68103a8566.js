@@ -1,0 +1,1 @@
+String((function(){ var b = 42; var s = []; var f = eval('0,function(){ s.push(function(){ return b; }); }'); f(); return s[0](); })())

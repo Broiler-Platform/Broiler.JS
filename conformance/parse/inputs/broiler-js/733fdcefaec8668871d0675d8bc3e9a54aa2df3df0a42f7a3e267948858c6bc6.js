@@ -1,0 +1,1 @@
+(function(){ var o = { x: 'abc' }; var y = o.x++; return y + ',' + typeof y; })()

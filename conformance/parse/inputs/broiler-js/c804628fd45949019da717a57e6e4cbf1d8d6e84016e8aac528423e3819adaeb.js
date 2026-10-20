@@ -1,0 +1,1 @@
+(function (a, ...rest) { return a + rest.length; })

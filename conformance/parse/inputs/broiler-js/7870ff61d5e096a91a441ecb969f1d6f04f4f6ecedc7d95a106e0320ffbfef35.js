@@ -1,0 +1,1 @@
+(function(){ var s = 0; for (var i = 0; i < 10; i++) { s = s + 1; } if (s > 100) { var t = 1; } return s + ',' + String(t); })()

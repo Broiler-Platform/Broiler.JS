@@ -1,0 +1,1 @@
+var r; try { throw {x: 10, y: 20}; } catch({x, y}) { r = x + y; } r

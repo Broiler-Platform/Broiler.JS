@@ -1,0 +1,1 @@
+(function(){ var a = [Infinity, 0]; return a[0] % a[1]; })()

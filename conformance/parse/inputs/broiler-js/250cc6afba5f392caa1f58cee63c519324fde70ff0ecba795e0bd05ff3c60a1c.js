@@ -1,0 +1,1 @@
+(function(){ var v = 1, c = 32; return v >> c; })()

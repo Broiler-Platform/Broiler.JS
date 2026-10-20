@@ -1,0 +1,1 @@
+(function () { return 'none'; })(1)

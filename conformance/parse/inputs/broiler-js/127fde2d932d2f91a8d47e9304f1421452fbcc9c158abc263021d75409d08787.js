@@ -1,0 +1,1 @@
+(function(){ var i = 5; var f = function () { return i; }; i = 6; return f(); })()

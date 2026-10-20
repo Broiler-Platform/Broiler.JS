@@ -1,0 +1,1 @@
+(function (a) { var f = []; for (var i = 0; i < 3; i++) f.push(function () { return a; }); a = 9; return f.map(function (g) { return g(); }).join(','); })(1)

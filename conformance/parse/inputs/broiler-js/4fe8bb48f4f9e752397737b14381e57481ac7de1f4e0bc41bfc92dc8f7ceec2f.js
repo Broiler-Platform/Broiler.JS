@@ -1,0 +1,1 @@
+var src = {}; src.m = 1; src.n = 2; src.o = 3; JSON.stringify(Object.assign({}, src));

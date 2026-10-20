@@ -1,0 +1,1 @@
+String((function(){ try { var config = { hosts: null }; for (var h of config.hosts) { } } catch (e) { return e.message; } return 'no throw'; })())

@@ -1,0 +1,1 @@
+(function(){ var o = { x: NaN }; var y = o.x++; return y + ',' + o.x; })()

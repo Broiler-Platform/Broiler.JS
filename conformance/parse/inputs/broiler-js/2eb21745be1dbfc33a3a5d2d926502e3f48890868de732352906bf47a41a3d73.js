@@ -1,0 +1,1 @@
+String((function(){ var b = 1; try { var f = eval('0,function(){return zzNope;}'); return f(); } catch (x) { return x.constructor.name; } })())

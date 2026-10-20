@@ -1,0 +1,1 @@
+var o = 'abc'; for (var i = 0; i <= 9; i++) o.tag = i; String(o.tag);

@@ -1,0 +1,1 @@
+String((function(){ globalThis.gg1 = 'global'; var f = eval('0,function(){return gg1;}'); return f(); })())

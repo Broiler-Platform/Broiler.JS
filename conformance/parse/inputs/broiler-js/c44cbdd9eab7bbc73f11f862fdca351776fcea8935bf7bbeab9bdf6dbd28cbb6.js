@@ -1,0 +1,1 @@
+Function("({ g\\u0065t foo() { return 0; } })")

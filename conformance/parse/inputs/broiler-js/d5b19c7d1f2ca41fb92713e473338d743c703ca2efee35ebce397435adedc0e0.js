@@ -1,0 +1,1 @@
+String((function(){ var b = 42; var f = eval('0,function(){ return [0].map(function(){ return b; })[0]; }'); return f(); })())

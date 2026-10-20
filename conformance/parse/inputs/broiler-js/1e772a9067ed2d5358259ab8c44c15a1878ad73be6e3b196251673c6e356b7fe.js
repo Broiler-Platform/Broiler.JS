@@ -1,0 +1,1 @@
+(function () { var v = 1; var r = function () { return v; }; try { v = v + 1; throw 0; } catch (e) { v = v + 10; } finally { v = v + 100; } return r(); })()

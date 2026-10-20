@@ -1,0 +1,1 @@
+function f(n){ var c = 2 * n; c++; return c; } f(5);

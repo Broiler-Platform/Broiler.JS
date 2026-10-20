@@ -1,0 +1,1 @@
+(function(){ var s = 0; lbl: { if (!s) break lbl; var v = 1; } return String(v); })()

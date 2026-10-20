@@ -1,0 +1,1 @@
+Object.getOwnPropertyDescriptor(/foo/, 'lastIndex').writable

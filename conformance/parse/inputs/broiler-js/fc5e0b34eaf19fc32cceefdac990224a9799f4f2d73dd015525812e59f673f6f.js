@@ -1,0 +1,1 @@
+var o = new Int32Array(4); for (var i = 0; i <= 9; i++) o.tag = i; o.tag + ',' + o.length;

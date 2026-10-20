@@ -1,0 +1,1 @@
+try { throw {}; } catch ({ f }) { { function f() {} } } typeof f;

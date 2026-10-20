@@ -1,0 +1,1 @@
+var s = '1'; s++; String(s - 1);

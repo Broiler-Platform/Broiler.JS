@@ -1,0 +1,1 @@
+String((function(){ try { var o = { '0': 1 }; var k = 0; return String(o[k]); } catch (e) { return 'threw: ' + e.message; } return 'no throw'; })())

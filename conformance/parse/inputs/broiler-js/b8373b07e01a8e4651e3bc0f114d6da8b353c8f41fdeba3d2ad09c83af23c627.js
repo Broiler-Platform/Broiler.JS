@@ -1,0 +1,1 @@
+var o = {}; var i = 0; i = 1/0; o[i] = 'written'; String(o['Infinity']);

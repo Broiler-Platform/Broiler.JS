@@ -1,0 +1,1 @@
+String((function(){ try { var rows = []; return rows[0].name; } catch (e) { return e.message; } return 'no throw'; })())

@@ -1,0 +1,1 @@
+'use strict';(function what() { return typeof this; })

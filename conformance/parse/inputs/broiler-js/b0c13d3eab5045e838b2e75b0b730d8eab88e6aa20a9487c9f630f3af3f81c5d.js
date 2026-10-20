@@ -1,0 +1,1 @@
+(function(){ var s = ''; for (var i = 0; i < 2; i++) { s = s + String(t) + ','; var t = 1; } return s; })()

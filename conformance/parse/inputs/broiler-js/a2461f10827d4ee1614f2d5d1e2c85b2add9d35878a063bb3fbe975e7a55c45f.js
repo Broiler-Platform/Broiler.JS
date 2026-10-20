@@ -1,0 +1,1 @@
+(function () { calls++; return 10; })

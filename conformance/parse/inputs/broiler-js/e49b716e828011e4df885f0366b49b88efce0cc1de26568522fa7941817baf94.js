@@ -1,0 +1,1 @@
+(function (a) { a *= 3; return a; })(2)

@@ -1,0 +1,1 @@
+const {false: a, true: b} = c;

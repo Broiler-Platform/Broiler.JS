@@ -1,0 +1,3 @@
+var before = f === undefined;
+try { throw null; } catch (f) { switch (1) { case 1: function f() { return 123; } } }
+[before, typeof f, f()].join("|");

@@ -1,0 +1,1 @@
+(function(){ var a = [NaN, 1, 2]; return a[0] + a[1] + a[2]; })()

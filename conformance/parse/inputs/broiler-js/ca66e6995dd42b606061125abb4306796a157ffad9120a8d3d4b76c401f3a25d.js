@@ -1,0 +1,1 @@
+(function(){ let v = 1; v = v / 0; return v; })()

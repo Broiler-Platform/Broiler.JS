@@ -1,0 +1,1 @@
+(function () { var s = 0; for (var { a: s } of [{ a: 'p' }]) { } return s; })()

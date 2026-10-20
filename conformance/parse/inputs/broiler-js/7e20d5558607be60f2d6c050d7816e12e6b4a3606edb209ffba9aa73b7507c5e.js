@@ -1,0 +1,10 @@
+var a = [];
+a[0] = 'zero';
+a[1] = 'one';
+a[4294967294] = 'max';
+a['1.5'] = 'frac';
+a['-1'] = 'neg';
+a['NaN'] = 'nan';
+a['Infinity'] = 'inf';
+a['4294967295'] = 'above';
+var i = 0; i = 2; String(a[i]);

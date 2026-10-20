@@ -1,0 +1,1 @@
+(function(){ try { globalThis.NS = {}; (0,eval)('(function(_){ _.f = function(){ return nosuchvalue; }; })(globalThis.NS)'); (0,eval)('(function(){ return globalThis.NS.f(); })()'); } catch (e) { return e.stack; } })()

@@ -1,0 +1,1 @@
+(function(){ var one = 1; var z = 0 * (0 - one); return (1 / z) + ',' + Object.is(z, -0); })()

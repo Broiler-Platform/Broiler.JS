@@ -1,0 +1,1 @@
+(function(){ var r = String(x); var x = 5; return r + ',' + x; })()

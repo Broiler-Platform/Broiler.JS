@@ -1,0 +1,1 @@
+class C { static *#m([]) { return 1; } }

@@ -1,0 +1,1 @@
+var f = function (o) { with (o) { y; } };

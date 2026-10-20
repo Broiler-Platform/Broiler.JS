@@ -1,0 +1,1 @@
+function f(){ var a = []; var c = 2 * a; c++; return c; } f();

@@ -1,0 +1,1 @@
+eval("2; for (var k in { a: 1 }) { 3; }")

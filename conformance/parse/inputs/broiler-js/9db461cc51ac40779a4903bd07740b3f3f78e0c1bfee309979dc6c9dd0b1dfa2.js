@@ -1,0 +1,1 @@
+(function(){ let i = 3.5; var s = 0; for (let i = 0; i < 3; i++) { s = s + i; } return i; })()

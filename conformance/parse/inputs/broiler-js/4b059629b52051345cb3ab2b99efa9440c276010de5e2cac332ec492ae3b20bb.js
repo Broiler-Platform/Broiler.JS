@@ -1,0 +1,1 @@
+Function("var a, b; ({ a: (b = 7)} = { b: 1 });")

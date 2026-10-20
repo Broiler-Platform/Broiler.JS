@@ -1,0 +1,1 @@
+(function (a) { with ({ a: 9 }) { var inner = a; } return inner + ',' + a; })(1)

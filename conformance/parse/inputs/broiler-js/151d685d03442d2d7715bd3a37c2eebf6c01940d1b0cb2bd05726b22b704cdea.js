@@ -1,0 +1,1 @@
+(function(){ var a = 7, b = 3; return a % b; })()

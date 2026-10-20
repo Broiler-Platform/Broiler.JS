@@ -1,0 +1,1 @@
+(function(){ var s = 0; for (var i = 0; i < 2048; i++) { s = i & 1023; } return s; })()

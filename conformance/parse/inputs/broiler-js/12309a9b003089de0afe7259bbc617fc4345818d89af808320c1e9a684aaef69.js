@@ -1,0 +1,1 @@
+(function(){ var s = 0; for (var i = 0; i < 4; i++) s += i * i / 2 - i * 2 + 1; return s; })()

@@ -1,0 +1,1 @@
+0,function(){ return function(){ return function(){ return b; }; }; }

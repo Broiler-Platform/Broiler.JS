@@ -1,0 +1,1 @@
+(function(){ var o = { a: 1 }; var s = 0; if (s) { s += o.a; } return s; })()

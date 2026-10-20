@@ -1,0 +1,1 @@
+(function (a) { arguments[0] = 9; return a; })(3)

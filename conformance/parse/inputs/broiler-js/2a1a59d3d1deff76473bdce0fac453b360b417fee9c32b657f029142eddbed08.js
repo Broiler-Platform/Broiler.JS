@@ -1,0 +1,1 @@
+(function(){ var a = 2, b = 3, c = 0; c = a * b + a / b * 0 + (a - b); return c; })()

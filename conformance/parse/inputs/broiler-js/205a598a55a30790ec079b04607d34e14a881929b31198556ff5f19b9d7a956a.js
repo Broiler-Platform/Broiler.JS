@@ -1,0 +1,1 @@
+var o = {}; var i = 0; i = 4294967295; o[i] = 'written'; String(o['4294967295']);

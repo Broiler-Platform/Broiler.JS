@@ -1,0 +1,1 @@
+async () => class { x = await 1 };

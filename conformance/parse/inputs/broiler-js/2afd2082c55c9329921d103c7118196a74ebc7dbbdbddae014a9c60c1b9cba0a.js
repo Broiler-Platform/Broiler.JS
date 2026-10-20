@@ -1,0 +1,1 @@
+String((function(){ var b = 21; var f = eval('0,function(x){ return b + (x|0); }'); new Set([1]).forEach(f); return 'ran'; })())

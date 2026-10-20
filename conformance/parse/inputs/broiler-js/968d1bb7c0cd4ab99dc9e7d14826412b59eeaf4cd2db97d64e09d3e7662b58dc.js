@@ -1,0 +1,1 @@
+(function () { var s = 0; { s = 'q'; } return s; })()

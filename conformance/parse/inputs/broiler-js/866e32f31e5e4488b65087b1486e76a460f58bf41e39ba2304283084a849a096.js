@@ -1,0 +1,1 @@
+(function(){ var x = 1n; var y = x + 1n; return typeof y + ':' + y; })()

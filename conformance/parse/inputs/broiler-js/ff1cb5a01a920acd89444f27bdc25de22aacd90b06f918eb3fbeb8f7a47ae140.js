@@ -1,0 +1,1 @@
+(function(){ var n = 0 / 0, x = 5; return String(x <= n); })()

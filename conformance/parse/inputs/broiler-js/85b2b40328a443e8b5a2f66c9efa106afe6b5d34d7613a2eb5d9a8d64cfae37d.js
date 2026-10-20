@@ -1,0 +1,1 @@
+var a = ['a','b','c']; var out = []; for (var i = 0; i < 3; i++) out.push(a[i]); out.join(',');

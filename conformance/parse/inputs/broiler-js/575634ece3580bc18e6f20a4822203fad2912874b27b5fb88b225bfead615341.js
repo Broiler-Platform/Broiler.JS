@@ -1,0 +1,1 @@
+import('./mod.js').then(m => m);

@@ -1,0 +1,1 @@
+String((function(){ var b = 21; var f = eval('0,function(x){ return b + (x|0); }'); return new Int32Array([1]).filter(f).length; })())

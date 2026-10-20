@@ -1,0 +1,1 @@
+(function (a) { return a.x; })({ x: 1 })

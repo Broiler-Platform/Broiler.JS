@@ -1,0 +1,1 @@
+(function(){ var fs = []; for (const x of [1, 2, 3]) { fs.push(function () { return x; }); } return fs[0]() + ',' + fs[2](); })()

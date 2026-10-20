@@ -1,0 +1,1 @@
+var o = { x: 0 }; var k = 'x'; for (var i = 0; i < 200; i++) o[k] = i; o.x;

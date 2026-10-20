@@ -1,0 +1,1 @@
+(function(){ var s = 0; try { for (var i = 0; i < 5; i++) { s += i; if (i == 2) throw 1; } } catch (e) {} return s + ',' + i; })()

@@ -1,0 +1,1 @@
+/[\p{Alphabetic}\P{ASCII_Hex_Digit}]/v;

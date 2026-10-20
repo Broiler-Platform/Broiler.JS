@@ -1,0 +1,1 @@
+var o = { x: 0 }; for (var i = 0; i <= 9; i++) o.x = i; Object.defineProperty(o, 'x', { writable: false }); o.x = 99; o.x;

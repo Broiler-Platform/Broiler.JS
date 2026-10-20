@@ -1,0 +1,1 @@
+(function(){ var a = [Infinity, Infinity]; return a[0] - a[1]; })()

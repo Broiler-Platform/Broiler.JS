@@ -1,0 +1,1 @@
+var f = function () { for (const it of items) { it; } };

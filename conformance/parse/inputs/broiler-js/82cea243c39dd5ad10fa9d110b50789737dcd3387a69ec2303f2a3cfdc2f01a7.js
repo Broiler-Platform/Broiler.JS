@@ -1,0 +1,1 @@
+(function (undefined) { return typeof undefined; })(1)

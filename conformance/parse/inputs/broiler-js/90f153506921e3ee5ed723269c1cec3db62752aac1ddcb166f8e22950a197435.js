@@ -1,0 +1,1 @@
+(function(){ var s = 0; while (s) var t = 1; return String(t); })()

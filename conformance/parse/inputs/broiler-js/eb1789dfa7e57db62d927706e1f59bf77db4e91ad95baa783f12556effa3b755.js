@@ -1,0 +1,1 @@
+(function () { var a = [[0]], i = 0; a[i][i] = 7; return a[0][0]; })()

@@ -1,0 +1,1 @@
+(function () { var s = 0; for (var s of ['a']) { } return s; })()

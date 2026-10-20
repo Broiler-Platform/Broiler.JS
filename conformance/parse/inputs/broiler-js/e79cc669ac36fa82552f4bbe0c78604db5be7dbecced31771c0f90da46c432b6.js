@@ -1,0 +1,1 @@
+(function make() { return new Box().v; })

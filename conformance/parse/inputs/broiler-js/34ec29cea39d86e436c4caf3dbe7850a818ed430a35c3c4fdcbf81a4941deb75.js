@@ -1,0 +1,1 @@
+var o = { x: undefined }; var r = o.x++; r + '|' + o.x;
