@@ -6,14 +6,20 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Runtime;
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Globalization;
 
 namespace Broiler.JavaScript.Parser;
 
 
 partial class FastParser
 {
-    private static int TempVarID = 1;
+    /// <summary>
+    /// The number of the last temporary the <c>for</c>-loop desugaring named. A temporary's name is its
+    /// number, which is never an identifier, from 2 on in each parse. The counter is this parser's, so
+    /// two parses of one source name their temporaries alike; it was a process-wide static, and a tree
+    /// depended on what the process had parsed before (milestone SJL-12.5, item 2).
+    /// </summary>
+    private int TempVarID = 1;
 
     /// <summary>
     /// Number of <c>continue</c> statements parsed so far by this parser instance, incremented in
@@ -25,6 +31,8 @@ partial class FastParser
     /// position (a <c>switch</c> case's statements, for one).
     /// </summary>
     private int ParsedContinueCount;
+
+    private string NewTempName() => (++TempVarID).ToString(CultureInfo.InvariantCulture);
 
     /// <summary>
     /// For ( in
@@ -752,7 +760,7 @@ partial class FastParser
             {
                 case FastNodeType.Identifier:
                     var id = e as AstIdentifier;
-                    var tempID = Interlocked.Increment(ref TempVarID).ToString();
+                    var tempID = NewTempName();
                     // Preserve the original binding name for NamedEvaluation: a binding such
                     // as `[f = () => {}]` must name the anonymous initializer "f", not the
                     // synthetic temp this rename introduces.
@@ -916,7 +924,7 @@ partial class FastParser
                     var nameEn = boundNames.GetFastEnumerator();
                     while (nameEn.MoveNext(out var origName))
                     {
-                        var tempID = Interlocked.Increment(ref TempVarID).ToString();
+                        var tempID = NewTempName();
                         var temp = new AstIdentifier(d.Identifier.Start, tempID) { InferenceName = origName.Value };
 
                         tempDeclarations.Add(new VariableDeclarator(temp, new AstIdentifier(d.Identifier.Start, origName.Value)));
@@ -932,7 +940,7 @@ partial class FastParser
                 }
                 else
                 {
-                    var tid = Interlocked.Increment(ref TempVarID).ToString();
+                    var tid = NewTempName();
                     var id = new AstIdentifier(d.Identifier.Start, tid);
 
                     tempDeclarations.Add(new VariableDeclarator(id, d.Init));
@@ -960,7 +968,7 @@ partial class FastParser
             AstIdentifier startedFlag = null;
             if (incrementAtTop)
             {
-                var flagId = Interlocked.Increment(ref TempVarID).ToString();
+                var flagId = NewTempName();
                 startedFlag = new AstIdentifier(declaration.Start, flagId);
                 tempDeclarations.Add(new VariableDeclarator(startedFlag, new AstLiteral(TokenTypes.False, declaration.Start)));
             }

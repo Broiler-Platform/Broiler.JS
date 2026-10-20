@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The parser's architecture test (milestone SJL-12, work package SJL-12.5; Broiler.VM's JSD-0080,
+    decision D25). It holds the clauses of part B of docs/evidence/sjl-12-001/decision-rule.md over
+    the Broiler.JavaScript.Parser assembly and asserts the exact list of the violations the parser
+    has today; each later item of SJL-12.5 shrinks the list, until it is empty. There is no rule
+    register: the list is the register.
+
+    The metadata clauses read the assembly without loading it, through the shared folder's
+    AssemblyFacts, linked rather than copied, and the witness is compiled in memory with Roslyn and
+    read the same way. The behavioural fixtures run the parser, so they load the assembly they judge
+    into a load context of its own: when BROILER_ARCH_PARSER_ASSEMBLY names another build of the
+    parser (the rule commit's, for part B's base), every clause, the fixtures included, judges that
+    build. The parser and the runtime are referenced only so that their builds are beside this
+    assembly: the parser is the default subject, and the witness names a Runtime type.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Broiler.JavaScript.Parser\Broiler.JavaScript.Parser.csproj" />
+    <ProjectReference Include="..\Broiler.JavaScript.Runtime\Broiler.JavaScript.Runtime.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Architecture.Tests\AssemblyFacts.cs" Link="AssemblyFacts.cs" />
+    <None Update="witnesses\*.witness" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Rule SL2's list, which the test compares with its copy. It is read from the output, not
+         found in the checkout, so the test runs wherever the build puts it (an artifacts path
+         outside the repository included). -->
+    <None Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Architecture.Tests\SharedRules.cs" Link="rules\SharedRules.cs" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

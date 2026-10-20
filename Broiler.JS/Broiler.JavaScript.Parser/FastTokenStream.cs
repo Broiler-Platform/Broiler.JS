@@ -43,9 +43,9 @@ public class FastTokenStream
         if (stopped == null || ReferenceEquals(stopped, c))
             return Unexpected();
 
-        // The EOF token is a shared singleton with no source position, so it can only be
-        // named, not located — and naming it is the important case: it is what a truncated
-        // script (a response that ended early) looks like from in here.
+        // The EOF token is the scanner's own placeholder, with no source position, so it can
+        // only be named, not located — and naming it is the important case: it is what a
+        // truncated script (a response that ended early) looks like from in here.
         var where = stopped.Type == TokenTypes.EOF
             ? "the end of the script"
             : stopped.Span.Offset > c.Span.Offset

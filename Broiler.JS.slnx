@@ -12,6 +12,7 @@
     <Project Path="Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/Broiler.ECMAScript.Generation.Tests.csproj" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="Broiler.JS/Broiler.JavaScript.Architecture.Tests/Broiler.JavaScript.Architecture.Tests.csproj" />
     <Project Path="Broiler.JS/Broiler.JavaScript.Ast.Tests/Broiler.JavaScript.Ast.Tests.csproj" />
     <Project Path="Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Broiler.JavaScript.BuiltIns.Tests.csproj" />
     <Project Path="Broiler.JS/Broiler.JavaScript.Clr.Tests/Broiler.JavaScript.Clr.Tests.csproj" />
