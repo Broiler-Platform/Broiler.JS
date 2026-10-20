@@ -1,0 +1,1 @@
+(function read(p) { var t = p.a + ':' + p.b + ':' + p.c; return t; })

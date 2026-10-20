@@ -1,0 +1,1 @@
+(function (a) { return typeof a; function a() {} })(7)

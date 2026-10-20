@@ -1,0 +1,1 @@
+(function two(p) { var t = p.x; return t; })

@@ -1,0 +1,1 @@
+(function () { return arguments.length; })(1, 2, 3)

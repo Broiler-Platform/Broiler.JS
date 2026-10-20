@@ -1,0 +1,1 @@
+(function(){ var a = [1, 3]; var y = a[1]--; return y + ',' + a[1]; })()

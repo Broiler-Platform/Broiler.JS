@@ -1,0 +1,1 @@
+String((function(){ try { function pick(k) { return undefined; } return pick('a').b; } catch (e) { return e.message; } return 'no throw'; })())

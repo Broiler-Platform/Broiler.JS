@@ -1,0 +1,1 @@
+(function(){ var o = { a: 1 }; var s = 0; for (var i = 0; i < 50; i++) { s += o.a; } return s; })()

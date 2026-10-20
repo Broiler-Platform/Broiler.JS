@@ -1,0 +1,1 @@
+(function () { class C { set v(x) { this._v = x * 2; } get v() { return this._v; } } var c = new C(); c.v = 3; return c.v; })()

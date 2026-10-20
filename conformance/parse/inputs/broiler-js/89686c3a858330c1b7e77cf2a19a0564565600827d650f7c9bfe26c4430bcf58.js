@@ -1,0 +1,1 @@
+(function(){ function* g() { const v = 2; let s = 0; for (var i = 0; i < 3; i++) { s = s + v; yield s; } } var it = g(); it.next(); it.next(); return it.next().value; })()

@@ -1,0 +1,1 @@
+(function () { class C { constructor(v) { this.v = v; } m(x) { return this.v + x; } } return new C(1).m(2); })()

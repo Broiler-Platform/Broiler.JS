@@ -1,0 +1,1 @@
+(function(){ function C() { this.n = 1; } var v = new C(); var s = 0; for (var i = 0; i < 3; i++) s += 1; return s; })()

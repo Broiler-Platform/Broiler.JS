@@ -1,0 +1,1 @@
+var f=(a)=>{if(a){return}return 'x'};String(f(true));

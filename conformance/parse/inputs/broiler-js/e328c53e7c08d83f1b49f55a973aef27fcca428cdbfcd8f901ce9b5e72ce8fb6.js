@@ -1,0 +1,1 @@
+function f(a, b) { var c = a + b; return c; } f(1, 2);

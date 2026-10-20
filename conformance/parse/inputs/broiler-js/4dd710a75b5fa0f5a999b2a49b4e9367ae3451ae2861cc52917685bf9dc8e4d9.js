@@ -1,0 +1,1 @@
+delete 'hello'[4]

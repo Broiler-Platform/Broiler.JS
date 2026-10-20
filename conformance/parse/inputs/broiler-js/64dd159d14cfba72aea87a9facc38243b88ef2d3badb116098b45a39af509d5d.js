@@ -1,0 +1,1 @@
+0,function(){ return [0].map(function(){ return b; })[0]; }

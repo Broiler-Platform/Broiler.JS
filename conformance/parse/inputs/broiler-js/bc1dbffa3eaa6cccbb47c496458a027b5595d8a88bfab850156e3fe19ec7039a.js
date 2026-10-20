@@ -1,0 +1,1 @@
+(function(){ var i = 5; var o = { v: i }; return o.v + ',' + typeof o.v; })()

@@ -1,0 +1,1 @@
+var o = Object.create(null); o.q = 1; o.p = 2; Object.keys(o).join(',');

@@ -1,0 +1,1 @@
+(function(a0, d0 = 0, d1 = 0, d2 = 0) {}).length

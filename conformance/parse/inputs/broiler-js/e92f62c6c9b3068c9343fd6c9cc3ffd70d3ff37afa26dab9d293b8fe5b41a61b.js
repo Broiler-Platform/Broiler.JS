@@ -1,0 +1,1 @@
+(function(){ var o = { x: 1 }; var v = o.x; var s = 0; for (var i = 0; i < 3; i++) s += v; return s; })()

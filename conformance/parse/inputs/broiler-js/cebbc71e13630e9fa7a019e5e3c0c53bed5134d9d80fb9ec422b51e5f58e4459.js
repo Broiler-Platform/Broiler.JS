@@ -1,0 +1,1 @@
+(function(){ return globalThis.NS.mod(1)(); })()

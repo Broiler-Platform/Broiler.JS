@@ -1,0 +1,1 @@
+(function (eval) { return eval; })(1)

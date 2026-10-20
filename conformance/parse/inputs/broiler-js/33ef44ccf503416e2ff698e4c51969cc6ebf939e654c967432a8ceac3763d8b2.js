@@ -1,0 +1,1 @@
+(function(){ var n = null; return n | 5; })()

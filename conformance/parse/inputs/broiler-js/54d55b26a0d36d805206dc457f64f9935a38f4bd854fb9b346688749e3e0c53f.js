@@ -1,0 +1,1 @@
+(function () { var v = 0/0; var r = function () { return v; }; return String(r()); })()

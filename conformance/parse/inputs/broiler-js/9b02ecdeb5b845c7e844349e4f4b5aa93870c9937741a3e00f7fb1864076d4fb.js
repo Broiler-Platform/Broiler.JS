@@ -1,0 +1,1 @@
+(function(){ var x = 1; x = x + 'a'; return typeof x + ':' + x; })()

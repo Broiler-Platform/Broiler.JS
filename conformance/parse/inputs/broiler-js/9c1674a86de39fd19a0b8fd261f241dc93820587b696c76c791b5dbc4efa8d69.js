@@ -1,0 +1,1 @@
+async function run() { for await (const value of source) { value; } }

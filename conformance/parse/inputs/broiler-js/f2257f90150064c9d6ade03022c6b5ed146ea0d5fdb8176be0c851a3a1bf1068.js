@@ -1,0 +1,1 @@
+(function(){ var big = 4294967296; var m = 0 - 1; return big & m; })()

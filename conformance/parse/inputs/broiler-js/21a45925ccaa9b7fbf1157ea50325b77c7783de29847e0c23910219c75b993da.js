@@ -1,0 +1,1 @@
+(function(){ var x = 1; with ({ x: 5 }) { return x; } })()

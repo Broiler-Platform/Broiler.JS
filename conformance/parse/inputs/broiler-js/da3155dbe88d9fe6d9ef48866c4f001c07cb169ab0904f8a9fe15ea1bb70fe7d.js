@@ -1,0 +1,1 @@
+var o = { x: 5 }; var r = ++o.x; r + '|' + o.x;

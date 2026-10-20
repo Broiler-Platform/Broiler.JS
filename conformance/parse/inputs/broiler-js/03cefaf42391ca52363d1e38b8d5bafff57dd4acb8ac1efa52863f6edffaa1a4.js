@@ -1,0 +1,1 @@
+eval('"use strict"; var _f = function (param, param) { };');

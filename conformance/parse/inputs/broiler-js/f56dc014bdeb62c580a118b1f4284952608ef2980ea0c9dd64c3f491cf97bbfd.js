@@ -1,0 +1,1 @@
+var f = function ({ a, b = fallback }) { return a + b; };

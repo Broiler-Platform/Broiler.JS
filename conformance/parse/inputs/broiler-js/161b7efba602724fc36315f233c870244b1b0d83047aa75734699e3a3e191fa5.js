@@ -1,0 +1,1 @@
+function a() { var q = 1; return (function () { return q; })(); } a();

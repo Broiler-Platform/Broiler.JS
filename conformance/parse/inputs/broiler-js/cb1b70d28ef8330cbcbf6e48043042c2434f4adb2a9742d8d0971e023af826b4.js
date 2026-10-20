@@ -1,0 +1,1 @@
+String((function(){ var b = 42; var f = eval('(function(){ return b; })'); return f(); })())

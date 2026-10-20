@@ -1,0 +1,1 @@
+var f = function () { { let x = 1; } return x; };

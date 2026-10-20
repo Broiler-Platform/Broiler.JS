@@ -1,0 +1,1 @@
+(function(){ var s = 0; { { var v = 3.5; } } for (var i = 0; i < 10; i++) { s = s + v * 2; } return s; })()

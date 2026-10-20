@@ -1,0 +1,1 @@
+var s = { a: 1 }; Object.seal(s); s.a = 2; s.b = 3; s.a + ',' + s.b;

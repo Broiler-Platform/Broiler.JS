@@ -1,0 +1,1 @@
+(function(){ var a = 100, b = 5, c = 2; return (a / b / c) + ',' + (a / (b / c)); })()

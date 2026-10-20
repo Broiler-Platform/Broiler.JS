@@ -1,0 +1,1 @@
+var n=0;for(;;){n++;if(n>2)break}n;

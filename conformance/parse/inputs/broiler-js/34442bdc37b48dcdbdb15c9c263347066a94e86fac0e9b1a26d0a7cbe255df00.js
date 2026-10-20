@@ -1,0 +1,1 @@
+class C { static #ZW_\u200C_NJ() {} }

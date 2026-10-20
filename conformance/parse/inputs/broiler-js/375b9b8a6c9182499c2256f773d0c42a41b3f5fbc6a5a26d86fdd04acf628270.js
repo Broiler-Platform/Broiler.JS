@@ -1,0 +1,1 @@
+var f = function (a) { return function (b) { return a + b + c; }; };

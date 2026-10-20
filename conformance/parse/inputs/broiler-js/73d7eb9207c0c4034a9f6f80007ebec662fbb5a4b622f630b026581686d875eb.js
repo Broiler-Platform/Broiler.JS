@@ -1,0 +1,1 @@
+(function(){ var s = 0; var fs = []; for (var i = 0; i < 3; i++) { fs.push(function () { return s; }); s = i; } return fs[0]() + ',' + fs[2](); })()

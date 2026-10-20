@@ -1,0 +1,1 @@
+(function (a, b) { b = 2; return arguments.length + ':' + arguments[1]; })(1)

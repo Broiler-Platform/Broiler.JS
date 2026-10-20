@@ -1,0 +1,1 @@
+var f = function (o) { return { a: 1, b: o.c }; };

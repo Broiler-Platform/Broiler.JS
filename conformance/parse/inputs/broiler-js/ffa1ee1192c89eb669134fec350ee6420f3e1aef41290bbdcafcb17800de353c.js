@@ -1,0 +1,1 @@
+function f(x) { return x; } var s = 0; for (var i = 0; i < 10; i++) s = f(i) + 1; s;

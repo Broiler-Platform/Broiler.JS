@@ -1,0 +1,1 @@
+var o = { x: 5n }; o.x *= 2n; (typeof o.x) + '|' + o.x;

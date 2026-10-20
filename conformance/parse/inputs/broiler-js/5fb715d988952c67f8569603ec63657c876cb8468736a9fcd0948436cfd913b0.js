@@ -1,0 +1,1 @@
+function never() { var 1invalid = 2; } 'reached';

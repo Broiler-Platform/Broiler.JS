@@ -1,0 +1,1 @@
+for(var i=0,f=function(){return "a" in b};i<1;i++);

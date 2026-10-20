@@ -1,0 +1,1 @@
+(function read(p) { var t = p[0]; return t; })

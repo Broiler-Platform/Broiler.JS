@@ -1,0 +1,1 @@
+(function(){ var c = 0; if (c) { var x = 5; } return String(x); })()

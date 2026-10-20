@@ -1,0 +1,1 @@
+(function(){ var s = 'a'; var g = function () { return s; }; s = s + 'b'; return g(); })()

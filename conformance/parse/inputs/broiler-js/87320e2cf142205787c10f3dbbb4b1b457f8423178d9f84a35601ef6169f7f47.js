@@ -1,0 +1,1 @@
+eval("5; do { switch ('a') { case 'a': { 6; continue; } default: } } while (false)")

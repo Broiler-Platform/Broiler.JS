@@ -1,0 +1,1 @@
+(function () { var v = 0; var w = function () { v = v + 5; }; var r = function () { return v; }; w(); w(); return r(); })()

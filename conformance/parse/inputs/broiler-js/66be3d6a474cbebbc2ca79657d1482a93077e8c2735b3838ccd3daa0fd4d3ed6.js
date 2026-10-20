@@ -1,0 +1,1 @@
+(function(){ var o = { m: function(){ return this.v; }, v: 9 }; return o.m(); })()

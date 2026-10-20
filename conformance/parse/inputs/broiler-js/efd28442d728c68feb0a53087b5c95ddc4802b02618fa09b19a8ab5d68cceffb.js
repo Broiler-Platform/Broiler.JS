@@ -1,0 +1,1 @@
+var a = []; var i = 3; String(a[i] = 7);

@@ -1,0 +1,1 @@
+globalThis.NS.mod = (function(_){ return function(){ return nosuchvalue; }; });

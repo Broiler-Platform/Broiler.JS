@@ -1,0 +1,1 @@
+(function () { var o = {}, i = 0; for (i = 0; i < 3; i++) { o.x = i; } return o.x + '|' + i; })()

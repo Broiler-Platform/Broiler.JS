@@ -1,0 +1,1 @@
+(function(){ var s = 0; try { s = q(); var t = 1; } catch (e) { s = String(t); } return s; })()

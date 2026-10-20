@@ -1,0 +1,1 @@
+/\p{rgiemoji}/v

@@ -1,0 +1,1 @@
+(function(){ 'use strict'; l\u0065t: 42; })()

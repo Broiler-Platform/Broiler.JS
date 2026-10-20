@@ -1,0 +1,1 @@
+0,function(){ s.push(function(){ return b; }); }

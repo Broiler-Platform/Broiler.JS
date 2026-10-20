@@ -1,0 +1,1 @@
+if (0) label: function f() {}

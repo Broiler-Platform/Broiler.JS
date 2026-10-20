@@ -1,0 +1,1 @@
+(function(){ let v = 3.5; eval('1'); return v; })()

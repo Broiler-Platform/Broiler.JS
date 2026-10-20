@@ -1,0 +1,1 @@
+var f = function () { var [m, n] = src; return m + n; };

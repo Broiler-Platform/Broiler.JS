@@ -1,0 +1,1 @@
+(function(){ var i = 0; var r = ++i; return r + ',' + i; })()

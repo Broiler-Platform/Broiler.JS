@@ -1,0 +1,1 @@
+var f = function (x) { return x + 1; }; var g = function () { var s = 0; for (var i = 0; i < 20; i++) s += f(i); return s; }; g;

@@ -1,0 +1,1 @@
+String((function(){ try { var averyLongNameHolderObjectForTheTest = { nestedContainerWithAnotherLongName: {} }; return averyLongNameHolderObjectForTheTest.nestedContainerWithAnotherLongName.missingIntermediateValue.finalProperty; } catch (e) { return e.message; } return 'no throw'; })())

@@ -1,0 +1,1 @@
+var a = []; var i = 3; a[i] = 'x'; String(a.length);

@@ -1,0 +1,1 @@
+(function(){ try { (0,eval)('nosuchvalue;'); } catch (e) { return e.stack; } })()

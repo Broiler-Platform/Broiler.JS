@@ -1,0 +1,1 @@
+(function () { var s = 0; var g = function () { s = undefined; }; g(); return String(s); })()

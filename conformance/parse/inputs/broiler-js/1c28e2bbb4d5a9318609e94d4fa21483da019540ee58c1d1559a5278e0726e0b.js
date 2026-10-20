@@ -1,0 +1,1 @@
+(function (a) { a = 11; return arguments[0]; })(3)

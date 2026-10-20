@@ -1,0 +1,1 @@
+(function(){ var a = [1], b = ['x']; return b[0] + a[0]; })()

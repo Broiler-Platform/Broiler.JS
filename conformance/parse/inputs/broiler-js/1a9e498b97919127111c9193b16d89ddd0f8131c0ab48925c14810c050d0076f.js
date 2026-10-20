@@ -1,0 +1,1 @@
+function f(){ var c = 2 * 10; c++; return c; } f();

@@ -1,0 +1,1 @@
+(function () { var r = g(); var s = 0; function g() { return inner(); function inner() { return s; } } return String(r); })()

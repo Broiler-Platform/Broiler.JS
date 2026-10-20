@@ -1,0 +1,1 @@
+"use strict"; var o = Object.freeze({ noconfig: 1 }); delete o.noconfig;

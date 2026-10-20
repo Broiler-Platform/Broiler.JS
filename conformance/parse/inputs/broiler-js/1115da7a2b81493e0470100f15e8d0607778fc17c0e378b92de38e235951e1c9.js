@@ -1,0 +1,1 @@
+(function () { var s = 1; { var s; } return s; })()

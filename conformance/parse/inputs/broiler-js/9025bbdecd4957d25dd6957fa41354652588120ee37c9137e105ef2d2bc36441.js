@@ -1,0 +1,1 @@
+(function(){ const v = 5; var g = function () { return v; }; return g(); })()

@@ -1,0 +1,1 @@
+(function(){ var b = !1; [].forEach(function () { b = !0; }); return String(b === false); })()

@@ -1,0 +1,1 @@
+(function (a, b) { return (() => arguments[0])() + a + b; })

@@ -1,0 +1,1 @@
+var a = ['a','b']; var n = null; var i = 1; a?.[i] + '|' + String(n?.[i]);

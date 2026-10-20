@@ -1,0 +1,1 @@
+/[^\p{RGI_Emoji}&&\q{ab}]/v

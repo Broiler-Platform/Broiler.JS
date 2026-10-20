@@ -1,0 +1,1 @@
+(function () { var s = 0; for (s in { k: 1 }) { } return s; })()

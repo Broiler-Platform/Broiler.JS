@@ -1,0 +1,1 @@
+var o = [1, 2, 3]; for (var i = 0; i <= 9; i++) o.length = 1; o.length + ',' + o.join(',');

@@ -1,0 +1,1 @@
+(function(){ let v = 0; v = v / 0; return String(v); })()

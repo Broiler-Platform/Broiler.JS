@@ -1,0 +1,1 @@
+(function () { let v = 1; { let w = 2; return w; } })()

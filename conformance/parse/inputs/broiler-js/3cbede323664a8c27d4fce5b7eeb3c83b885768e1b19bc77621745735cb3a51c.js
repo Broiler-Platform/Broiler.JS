@@ -1,0 +1,1 @@
+function b(x) { return x + 4; } String(b(3));

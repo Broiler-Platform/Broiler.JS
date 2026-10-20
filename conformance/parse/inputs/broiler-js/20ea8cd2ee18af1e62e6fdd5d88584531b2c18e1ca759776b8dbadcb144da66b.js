@@ -1,0 +1,1 @@
+(function(){ var o = { x: -0 }; var y = o.x++; return (1 / y) + ',' + Object.is(y, -0) + ',' + o.x; })()

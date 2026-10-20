@@ -1,0 +1,1 @@
+class C { async get foo() { return 1; } }

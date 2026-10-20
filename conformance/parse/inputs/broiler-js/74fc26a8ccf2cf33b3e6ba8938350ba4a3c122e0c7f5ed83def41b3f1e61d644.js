@@ -1,0 +1,1 @@
+(function(){ var x = 1; eval('x = 9'); return x; })()

@@ -1,0 +1,1 @@
+var obj = { async run(value) { await value; } };

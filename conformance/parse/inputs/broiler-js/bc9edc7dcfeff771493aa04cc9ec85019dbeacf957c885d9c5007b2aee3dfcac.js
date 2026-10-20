@@ -1,0 +1,1 @@
+(function(){ function C(v){ this.v = v; } C.prototype.get = function(){ return this.v; }; return new C(4).get(); })()

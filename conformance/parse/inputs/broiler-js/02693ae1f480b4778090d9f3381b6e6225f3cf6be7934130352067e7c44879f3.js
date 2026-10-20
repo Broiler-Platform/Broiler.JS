@@ -1,0 +1,1 @@
+var o = {}; var i = 0; i = -0; o[i] = 'written'; String(o['0']);

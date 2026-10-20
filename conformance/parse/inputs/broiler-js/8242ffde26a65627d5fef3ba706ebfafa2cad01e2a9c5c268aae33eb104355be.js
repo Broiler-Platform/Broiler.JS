@@ -1,0 +1,1 @@
+(function(x) { const x = 1; })

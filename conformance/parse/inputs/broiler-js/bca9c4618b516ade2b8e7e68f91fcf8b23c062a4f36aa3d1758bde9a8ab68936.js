@@ -1,0 +1,1 @@
+'use strict';(function poke(n) { var t = n; undeclaredGlobal = t; return t; })

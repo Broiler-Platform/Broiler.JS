@@ -1,0 +1,1 @@
+var w='';var i=0;wl:while(i<3){i++;for(var j=0;j<3;j++){if(j===1)continue wl;w+=''+i+j;}}w;
