@@ -138,22 +138,32 @@ public class FastScanner
         Text = text;
         this.keywords = keywords ?? FastKeywordMap.Instance;
 
+        nextToken = EOF;
+        lastToken = EmptyToken;
+        lastSignificantToken = EmptyToken;
+        Token = EmptyToken;
+
         Token = ReadToken();
         nextToken = ReadToken();
         Token.Next = nextToken;
         nextToken.Previous = Token;
     }
 
-    private static readonly FastToken EmptyToken = new(TokenTypes.Empty, string.Empty);
-    private static readonly FastToken EOF = new(TokenTypes.EOF, string.Empty);
-    private FastToken nextToken = EOF;
+    // The two placeholder tokens are this scanner's own. The scanner links the end-of-file token into
+    // the token list (its Previous is the last token read), and a statement that ends at the end of
+    // the input reads that link back. One instance shared by every scanner let a parse on another
+    // thread overwrite the link between this parse's write and its read, so a statement could end
+    // on another source's token.
+    private readonly FastToken EmptyToken = new(TokenTypes.Empty, string.Empty);
+    private readonly FastToken EOF = new(TokenTypes.EOF, string.Empty);
+    private FastToken nextToken;
 
-    private FastToken lastToken = EmptyToken;
+    private FastToken lastToken;
 
     // The last token that was not a LineTerminator. `lastToken` alone cannot answer
     // "what precedes this `(`" because a head may be written across lines
     // (`if\n(a)`), and the paren bookkeeping below needs the significant token.
-    private FastToken lastSignificantToken = EmptyToken;
+    private FastToken lastSignificantToken;
 
     // One entry per currently-open `(`: whether it opened the head of an
     // `if` / `for` / `while` / `with` statement. Popped by the matching `)` into
@@ -183,7 +193,7 @@ public class FastScanner
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get; private set;
-    } = EmptyToken;
+    }
 
     public void ConsumeToken()
     {

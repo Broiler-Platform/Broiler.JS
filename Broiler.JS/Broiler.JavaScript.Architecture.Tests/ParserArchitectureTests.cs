@@ -38,11 +38,6 @@ public sealed class ParserArchitectureTests(ITestOutputHelper output)
         Assembly + ": Broiler.JavaScript.Parser.FastParser.TempVarID is a mutable static field",
         ParserFixtures.RepeatedViolation,
 
-        // Item 3, an end-of-file token per scanner.
-        Assembly + ": Broiler.JavaScript.Parser.FastScanner.EmptyToken is a static readonly Broiler.JavaScript.Ast.Misc.FastToken, whose type declares the mutable instance fields Next, Previous",
-        Assembly + ": Broiler.JavaScript.Parser.FastScanner.EOF is a static readonly Broiler.JavaScript.Ast.Misc.FastToken, whose type declares the mutable instance fields Next, Previous",
-        ParserFixtures.ConcurrentViolation,
-
         // Item 4 (decision D20), no reference to Runtime.
         Assembly + " references the assembly Broiler.JavaScript.Runtime",
 
@@ -113,8 +108,6 @@ public sealed class ParserArchitectureTests(ITestOutputHelper output)
     public void The_witness_is_refused_for_each_shape(string shape, string refusal)
     {
         var violations = WitnessReading.Value.Violations;
-        foreach (var violation in violations)
-            output.WriteLine("witness violation: " + violation);
         Assert.True(violations.Any(v => v.Contains(refusal, StringComparison.Ordinal)),
             "The witness's " + shape + " is not refused: no violation contains \"" + refusal + "\". The witness's violations:\n  "
             + string.Join("\n  ", violations));

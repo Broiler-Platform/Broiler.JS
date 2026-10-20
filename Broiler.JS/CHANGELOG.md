@@ -10,6 +10,20 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### Each scanner has its own end-of-file token (2026-10-20, milestone SJL-12.5)
+
+- **A parse no longer shares its end-of-file token with every other parse.** `FastScanner`'s end-of-file
+  and empty placeholder tokens were static: one `FastToken` of each for the process. The scanner writes
+  the end-of-file token's `Previous` link as it reads, and a statement that ends at the end of its input
+  reads that link back, so while another thread parsed, a statement could end on the other parse's
+  token: its `End` was a token of another source, and its `Code` was measured against it. Each scanner
+  now has its own two tokens, with the same type and empty text as before, and `AstNode.Code` still
+  answers a node that ends at the end-of-file token with its first token's span.
+  - A parse that runs alone is unchanged.
+  - This is item 3 of milestone SJL-12.5 (Broiler.VM's JSD-0080). The parser's architecture test,
+    `Broiler.JavaScript.Architecture.Tests` (part B of bundle `sjl-12-001`'s rule), holds the case: four
+    threads parse one source 20,000 times each, and no parse holds another parse's token.
+
 ### The Temporal core moves to the shared library (2026-10-19, milestone SJL-10.5)
 
 The Temporal core is `Broiler.ECMAScript.Algorithms`' `Broiler.ECMAScript.Temporal`, which `BuiltIns` takes by
