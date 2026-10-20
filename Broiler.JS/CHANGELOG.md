@@ -17,9 +17,14 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
   process: the names, and so the tree `FastParser` returns, depended on everything the process had
   parsed before, on any thread. The counter is now the parser's own. Each parse numbers its
   temporaries from 2, as the first parse in a process did.
-  - A temporary's name is never an identifier, so no source text names one. Code a direct `eval`
-    compiles is parsed on its own, so its temporaries are numbered from 2 as well, as the enclosing
-    code's are.
+  - A temporary's name is never an identifier, so no source text names one. Code a direct or
+    indirect `eval` compiles is parsed on its own, so its temporaries are numbered from 2 as well and
+    take the same names as the calling code's, which under the one counter they never did. The names
+    meet but the bindings do not: an eval's temporary is its own, never the caller's of the same
+    name. `ForLoopTemporaryEvalTests` holds the shapes in which the calling code reads its temporary
+    again after an eval ran (a `for (const …;;)` loop with no test and no update, a `let` loop's
+    update, in a function, a script, a generator, an async function and a `with` body); each gives
+    what it gave under the one counter.
   - This is item 2 of milestone SJL-12.5 (Broiler.VM's JSD-0080). The parser's architecture test,
     `Broiler.JavaScript.Architecture.Tests`, holds the case: two parses of a source with every loop shape
     the parser rewrites give equal tree dumps.
