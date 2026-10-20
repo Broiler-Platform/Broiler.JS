@@ -138,10 +138,10 @@ public class FastScanner
         Text = text;
         this.keywords = keywords ?? FastKeywordMap.Instance;
 
-        nextToken = EOF;
-        lastToken = EmptyToken;
-        lastSignificantToken = EmptyToken;
-        Token = EmptyToken;
+        nextToken = endOfFile;
+        lastToken = emptyToken;
+        lastSignificantToken = emptyToken;
+        Token = emptyToken;
 
         Token = ReadToken();
         nextToken = ReadToken();
@@ -154,8 +154,8 @@ public class FastScanner
     // the input reads that link back. One instance shared by every scanner let a parse on another
     // thread overwrite the link between this parse's write and its read, so a statement could end
     // on another source's token.
-    private readonly FastToken EmptyToken = new(TokenTypes.Empty, string.Empty);
-    private readonly FastToken EOF = new(TokenTypes.EOF, string.Empty);
+    private readonly FastToken emptyToken = new(TokenTypes.Empty, string.Empty);
+    private readonly FastToken endOfFile = new(TokenTypes.EOF, string.Empty);
     private FastToken nextToken;
 
     private FastToken lastToken;
@@ -376,7 +376,7 @@ public class FastScanner
         char first = Peek();
 
         if (first == char.MaxValue && AtEnd)
-            return EOF;
+            return endOfFile;
 
         // following logic will
         // skip consecutive line breaks
@@ -408,7 +408,7 @@ public class FastScanner
         // either; it falls through to UnexpectedCharacter below, which names it,
         // rather than silently ending the program here.
         if (first == char.MaxValue && AtEnd)
-            return EOF;
+            return endOfFile;
 
         if (skipped)
             state = Push();
