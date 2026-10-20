@@ -1,0 +1,37 @@
+# broiler-js sjl-9-001 reference 1
+#
+# The reference that bundle sjl-9-001's decision rule names for part C (class R, and the one run of part
+# C's programs at the after commit's time) and that decision D17 names for the Intl vectors: the newest
+# Node.js release whose process.versions.cldr begins "48". Found on 2026-10-20, at milestone SJL-9.1
+# (work package SJL-9.1, task 1.2).
+#
+# HOW IT WAS FOUND. The release index (`index` below, as read on 2026-10-20, digest `index-sha256`)
+# names each release's date and files but no ICU or CLDR version, so a release's CLDR was read from its
+# own linux-x64 tarball, the binary it holds answering `node -p 'JSON.stringify(process.versions)'`,
+# newest release first by the index's dates. The newest date in the index is 2026-10-14, which two
+# releases carry: v26.12.0 and v24.22.0. Both answer cldr 48.0 and icu 78.3; v24.22.0 answers tz 2026c.
+# The reference is v26.12.0: the higher version of the two, the index's first entry, and the release
+# whose tz is 2026e, the tzdb release the programme pins (Broiler.VM's JSD-0076).
+#
+# HOW IT IS HELD. The tarball was retrieved twice, each time into its own empty directory, and both
+# copies have the same SHA-256 (`tarball-sha256`, once per retrieval), which is also the digest the
+# release's own SHASUMS256.txt lists for it (`shasums-line`). `process.versions` is the binary's answer,
+# as printed. The tarballs were deleted after, so a later run retrieves the tarball again and checks it
+# against this digest.
+#
+# THE CLDR RELEASE. process.versions.cldr reads 48.0, the CLDR version ICU 78.3 reports; the Intl data
+# the data home generates at SJL-9.2, and this engine embeds at its cut-over, is CLDR 48.2.0's (decision
+# D10's pin). Where CLDR 48.1 or 48.2 changed a value, the reference and the data can differ; part C's
+# class R admits a line only when this engine's answer equals the reference's line.
+
+release v26.12.0
+release-date 2026-10-14
+index https://nodejs.org/dist/index.json
+index-sha256 b52f521b8e24898364b74f03596afef1f97c1448014df7c2b5ebdcd2b69ca4a9
+tarball https://nodejs.org/dist/v26.12.0/node-v26.12.0-linux-x64.tar.xz
+tarball-bytes 34060244
+tarball-sha256 fd47865ecd6391ebb431fc815e01b9135bf83ded5cf373247e9331e196b7aded
+tarball-sha256 fd47865ecd6391ebb431fc815e01b9135bf83ded5cf373247e9331e196b7aded
+shasums https://nodejs.org/dist/v26.12.0/SHASUMS256.txt
+shasums-line fd47865ecd6391ebb431fc815e01b9135bf83ded5cf373247e9331e196b7aded  node-v26.12.0-linux-x64.tar.xz
+process.versions {"node":"26.12.0","acorn":"8.19.0","ada":"4.0.0","amaro":"1.1.11","ares":"1.34.8","brotli":"1.2.0","cldr":"48.0","icu":"78.3","libffi":"3.8.0","lief":"1.0.0","llhttp":"9.4.3","merve":"1.2.2","modules":"147","napi":"10","nbytes":"0.1.4","ncrypto":"0.0.1","nghttp2":"1.70.0","nghttp3":"","ngtcp2":"","openssl":"3.5.9","simdjson":"5.0.3","simdutf":"7.7.0","sqlite":"3.54.0","tz":"2026e","undici":"8.11.2","unicode":"17.0","uv":"1.52.1","uvwasi":"0.0.23","v8":"14.6.202.34-node.39","zlib":"1.3.2.1-motley-456ae73","zstd":"1.5.7"}
