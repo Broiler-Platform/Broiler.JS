@@ -1,0 +1,1 @@
+(function(){ var a = [0, -1]; return 1 / (a[0] * a[1]); })()

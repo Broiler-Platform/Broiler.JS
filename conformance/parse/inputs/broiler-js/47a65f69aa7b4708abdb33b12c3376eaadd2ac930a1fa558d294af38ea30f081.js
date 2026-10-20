@@ -1,0 +1,1 @@
+(function (a) { return arguments[0] + ':' + a; })(3)

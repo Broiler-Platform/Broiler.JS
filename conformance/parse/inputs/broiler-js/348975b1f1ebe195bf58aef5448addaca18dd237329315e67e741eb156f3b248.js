@@ -1,0 +1,1 @@
+function f({null: a}) { return a; }

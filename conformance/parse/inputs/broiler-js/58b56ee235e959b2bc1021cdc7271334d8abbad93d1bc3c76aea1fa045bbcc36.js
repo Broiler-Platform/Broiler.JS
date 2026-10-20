@@ -1,0 +1,1 @@
+if (true) export var x;

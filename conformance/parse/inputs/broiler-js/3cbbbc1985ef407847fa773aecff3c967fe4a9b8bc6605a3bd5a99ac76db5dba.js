@@ -1,0 +1,1 @@
+String((function(){ var b = 21; var f = eval('0,function(x){ return b + (x|0); }'); return [2,1].sort(f).length; })())

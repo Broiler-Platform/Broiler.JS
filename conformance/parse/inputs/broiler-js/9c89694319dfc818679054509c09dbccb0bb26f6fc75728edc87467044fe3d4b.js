@@ -1,0 +1,1 @@
+(function(){ var i = 5; return JSON.stringify({ a: i }); })()

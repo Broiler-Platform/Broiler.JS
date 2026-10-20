@@ -1,0 +1,1 @@
+var obj = {}; obj.\u0063onst = 42;

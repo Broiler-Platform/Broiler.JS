@@ -1,0 +1,1 @@
+(function(){ 'use strict'; st\u0061tic: 42; })()

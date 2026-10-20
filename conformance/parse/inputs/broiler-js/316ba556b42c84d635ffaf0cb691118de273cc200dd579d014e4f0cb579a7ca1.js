@@ -1,0 +1,1 @@
+var o = { x: 1 }; var v = 2; o.x += v; o.x;

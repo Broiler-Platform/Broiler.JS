@@ -1,0 +1,1 @@
+(function () { var s = 0; var g = function () { s = {}; }; g(); return typeof s; })()

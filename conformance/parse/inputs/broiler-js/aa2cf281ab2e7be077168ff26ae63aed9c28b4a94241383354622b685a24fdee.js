@@ -1,0 +1,1 @@
+(function(){ var a = [5, 3, 1]; return a[0] | a[1] | a[2]; })()

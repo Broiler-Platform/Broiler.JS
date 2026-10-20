@@ -1,0 +1,1 @@
+(function(){ var f = () => { const v = 2; let s = 0; for (var i = 0; i < 3; i++) { s = s + v; } return s; }; return f(); })()

@@ -1,0 +1,1 @@
+for (let q = 0; q < 1; q++) { var x; } (function() { return delete x; })

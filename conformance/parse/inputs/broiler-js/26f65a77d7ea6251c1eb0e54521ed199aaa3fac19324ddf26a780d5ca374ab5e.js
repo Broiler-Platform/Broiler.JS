@@ -1,0 +1,1 @@
+(function(){ var s = 4, a = [3]; return s + a[0] * 1.5; })()

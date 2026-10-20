@@ -1,0 +1,1 @@
+String((function(){ var o = { b: 21 }; var f; with (o) { f = function(x){ return b + x; }; } return [1].map(f)[0]; })())

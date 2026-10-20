@@ -1,0 +1,1 @@
+var o = Object.create(null); o.x = 1; var s = 0; for (var i = 0; i < 500; i++) s += o.x; s;

@@ -1,0 +1,1 @@
+(function () { var o = { m(x) { return x + 1; } }; return o.m(1); })()

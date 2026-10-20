@@ -1,0 +1,1 @@
+(function(){ var q = 1; var v = typeof q; var s = 0; for (var i = 0; i < 3; i++) s += 1; return s; })()

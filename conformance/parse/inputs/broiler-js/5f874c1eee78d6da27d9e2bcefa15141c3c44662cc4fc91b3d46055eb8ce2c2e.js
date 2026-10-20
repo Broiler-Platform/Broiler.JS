@@ -1,0 +1,1 @@
+class C { static { this.value = 42; } } C.value;

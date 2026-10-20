@@ -1,0 +1,1 @@
+(function () { arguments = 42; return arguments; })(1, 2, 3);

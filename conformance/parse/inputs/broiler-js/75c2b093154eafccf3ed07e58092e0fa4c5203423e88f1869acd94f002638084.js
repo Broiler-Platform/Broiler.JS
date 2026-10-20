@@ -1,0 +1,1 @@
+(function () { var a = [], i = 0; for (i = 0; i < 3; i++) { a[i] = i + 0.5; } return a.join(); })()

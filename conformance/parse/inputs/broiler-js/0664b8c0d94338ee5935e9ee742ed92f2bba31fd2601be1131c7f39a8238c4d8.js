@@ -1,0 +1,1 @@
+(function (a) { 'use strict'; a = 11; return arguments[0]; })(3)

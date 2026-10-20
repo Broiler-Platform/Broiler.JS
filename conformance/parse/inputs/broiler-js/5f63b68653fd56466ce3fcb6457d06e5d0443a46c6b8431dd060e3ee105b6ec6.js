@@ -1,0 +1,1 @@
+(function(){ var i = 255; return i.toString(16); })()

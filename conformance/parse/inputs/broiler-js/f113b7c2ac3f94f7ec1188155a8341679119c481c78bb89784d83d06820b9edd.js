@@ -1,0 +1,1 @@
+async function run() { for await ([x] of [[1]]) { x; } }

@@ -1,0 +1,1 @@
+(function read(p) { var t = p.length; return t; })

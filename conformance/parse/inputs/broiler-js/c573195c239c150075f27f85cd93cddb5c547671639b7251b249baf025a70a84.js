@@ -1,0 +1,1 @@
+var h=-1;function f(n){for(var i=0;i<n;i++){if(i===2){h=i;return}}h=99}f(1);h;

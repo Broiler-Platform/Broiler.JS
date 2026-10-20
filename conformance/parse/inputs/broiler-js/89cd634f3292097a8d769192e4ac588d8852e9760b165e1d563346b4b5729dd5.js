@@ -1,0 +1,1 @@
+(function(){ var s = '6'; return s & 3; })()

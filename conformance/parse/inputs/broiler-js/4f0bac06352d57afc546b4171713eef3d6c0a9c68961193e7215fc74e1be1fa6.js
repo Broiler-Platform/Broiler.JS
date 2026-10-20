@@ -1,0 +1,1 @@
+(function(){ var s = ''; for (var k in { a: 1 }) s += typeof k; return s; })()

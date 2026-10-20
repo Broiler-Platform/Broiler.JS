@@ -1,0 +1,1 @@
+(function(){ var x = 0; for (var i = 0; i < 10; i++) x += 0.1; return x.toFixed(4); })()

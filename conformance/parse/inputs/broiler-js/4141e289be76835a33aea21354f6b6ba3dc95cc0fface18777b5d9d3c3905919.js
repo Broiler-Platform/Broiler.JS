@@ -1,0 +1,1 @@
+var s = 'abc'; var i = 0; i = 1; String(s[i]);

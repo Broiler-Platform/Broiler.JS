@@ -1,0 +1,1 @@
+function f(n){var h=-1;for(var i=0;i<n;i++){if(i===2){h=i;return h}}return h}f(5);

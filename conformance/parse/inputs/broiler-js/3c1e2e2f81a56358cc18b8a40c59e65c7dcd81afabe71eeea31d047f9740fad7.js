@@ -1,0 +1,1 @@
+String((function(){ try { var u; var r; for (var i = 0; i < 4; i++) { r = u[i]; } return r; } catch (e) { return 'threw: ' + e.message; } return 'no throw'; })())

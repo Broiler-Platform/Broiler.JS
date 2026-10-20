@@ -1,0 +1,1 @@
+String((function(){ var b = 1; var f = eval('0,function(){ return zzNopeCallback; }'); try { return [0].map(f)[0]; } catch (e) { return e.constructor.name; } })())

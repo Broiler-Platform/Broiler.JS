@@ -1,0 +1,1 @@
+(function (a) { return delete a; })(1)

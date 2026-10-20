@@ -1,0 +1,1 @@
+String((function(){ var b = function(a, c){ return a + c; }; var w = 5; var f = (function(e){ return eval(e); })('0,function(){return b(2,w);}'); return f(); })())

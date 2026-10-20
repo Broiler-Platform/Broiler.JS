@@ -1,0 +1,1 @@
+String((function(){ try { var n = null; var k = 360; n[k] = 1; } catch (e) { return e.message; } return 'no throw'; })())

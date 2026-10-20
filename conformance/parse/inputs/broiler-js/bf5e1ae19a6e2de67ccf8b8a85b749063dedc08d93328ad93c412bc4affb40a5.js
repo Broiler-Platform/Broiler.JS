@@ -1,0 +1,1 @@
+(function(){ var a = 0 - 1, b = 0.5; return String(a ** b); })()

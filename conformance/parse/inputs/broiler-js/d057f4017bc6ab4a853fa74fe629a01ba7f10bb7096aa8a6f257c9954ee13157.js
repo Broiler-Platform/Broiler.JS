@@ -1,0 +1,1 @@
+(function(){ var u; return u | 0; })()

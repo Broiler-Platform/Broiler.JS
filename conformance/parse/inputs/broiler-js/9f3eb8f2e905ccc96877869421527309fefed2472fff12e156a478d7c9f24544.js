@@ -1,0 +1,1 @@
+(function(){ var x = 0; for (var i = 0; i < 100000; i++) x += 1; return x; })()

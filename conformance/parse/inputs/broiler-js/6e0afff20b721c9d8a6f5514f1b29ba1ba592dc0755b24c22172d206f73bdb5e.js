@@ -1,0 +1,1 @@
+(function(){ var x = 5; return String(x <= x) + ',' + String(x >= x); })()

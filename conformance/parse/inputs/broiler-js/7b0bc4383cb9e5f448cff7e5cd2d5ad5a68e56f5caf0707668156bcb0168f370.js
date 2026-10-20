@@ -1,0 +1,1 @@
+(function(){ try { globalThis.NS = {}; (0,eval)('globalThis.NS.mod = (function(_){ return function(){ return nosuchvalue; }; });'); (0,eval)('(function(){ return globalThis.NS.mod(1)(); })()'); } catch (e) { return e.stack; } })()

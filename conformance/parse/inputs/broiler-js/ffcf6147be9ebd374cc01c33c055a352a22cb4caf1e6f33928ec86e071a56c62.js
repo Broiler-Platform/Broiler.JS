@@ -1,0 +1,1 @@
+(function(){ var s = 0; for (var i = 0; i < 2; i++) { s = s + 1; } if (s) { var t = 1; } else { var t = 2; } return s + ',' + t; })()

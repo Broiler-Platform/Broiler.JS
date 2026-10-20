@@ -1,0 +1,1 @@
+var r; try { throw [1, 2, 3]; } catch([a, b, c]) { r = a + b + c; } r

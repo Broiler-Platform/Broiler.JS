@@ -1,0 +1,1 @@
+String((function(){ try { var u; var k = { toString: function(){ throw new Error('key coerced'); } }; u[k] = 1; } catch (e) { return e.message; } return 'no throw'; })())

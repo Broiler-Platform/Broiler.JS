@@ -1,0 +1,1 @@
+class C { static { let value = 1; let await; await; } }

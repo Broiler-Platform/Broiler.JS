@@ -1,0 +1,1 @@
+(function(){ var s = 0; try { var t = 1; } finally { s = String(t); } return s; })()

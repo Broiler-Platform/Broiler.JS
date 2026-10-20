@@ -1,0 +1,1 @@
+var await = 1; async function f() { return class { x = await; }; }

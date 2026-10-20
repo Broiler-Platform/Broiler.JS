@@ -1,0 +1,1 @@
+var o = {}; var s = ''; for (o.x of [1, 2, 3]) s += o.x; s + ',' + o.x;

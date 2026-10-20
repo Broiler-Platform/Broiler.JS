@@ -1,0 +1,1 @@
+(function d(n, m) { var t = n + (m === undefined ? base : m); return t; })

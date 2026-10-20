@@ -1,0 +1,1 @@
+var f = function () { eval('x = 1'); };

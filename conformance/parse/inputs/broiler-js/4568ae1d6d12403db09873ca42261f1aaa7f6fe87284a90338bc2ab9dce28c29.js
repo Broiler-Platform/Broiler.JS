@@ -1,0 +1,1 @@
+(function () { var s = 0; try { var s = 't'; } catch (e) { } return s; })()

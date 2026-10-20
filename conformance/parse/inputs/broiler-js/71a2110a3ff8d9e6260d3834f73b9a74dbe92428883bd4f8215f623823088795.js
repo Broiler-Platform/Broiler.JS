@@ -1,0 +1,1 @@
+async function run() { for await (async of source) { } }

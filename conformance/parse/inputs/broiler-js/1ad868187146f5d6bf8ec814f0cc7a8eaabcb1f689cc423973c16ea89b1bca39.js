@@ -1,0 +1,1 @@
+(function(){ const x = 1.5; var s = 0; for (const x of [1, 2, 3]) { s = s + x; } return x; })()

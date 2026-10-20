@@ -1,0 +1,4 @@
+(function (
+) {
+for (var foo o\u0066 [1]) ;
+})

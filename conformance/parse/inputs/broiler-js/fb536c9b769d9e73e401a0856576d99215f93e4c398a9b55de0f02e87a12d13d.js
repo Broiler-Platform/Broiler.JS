@@ -1,0 +1,1 @@
+var f = function () { try { } catch (q) { } return e; };

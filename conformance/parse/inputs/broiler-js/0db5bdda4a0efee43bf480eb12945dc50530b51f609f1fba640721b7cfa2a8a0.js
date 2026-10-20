@@ -1,0 +1,1 @@
+typeof ('hello' + 42)

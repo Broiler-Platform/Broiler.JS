@@ -1,0 +1,1 @@
+(function(){ var v = 0 - 8; return v >>> 1; })()

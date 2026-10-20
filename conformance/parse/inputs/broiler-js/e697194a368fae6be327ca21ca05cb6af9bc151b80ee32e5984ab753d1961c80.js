@@ -1,0 +1,1 @@
+(function(){ var a = [1n, 2n, 3n]; return String(a[0] + a[1] + a[2]); })()

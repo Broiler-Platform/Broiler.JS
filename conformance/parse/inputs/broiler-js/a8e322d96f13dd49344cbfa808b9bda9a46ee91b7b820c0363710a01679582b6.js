@@ -1,0 +1,1 @@
+(function(){ var o = { valueOf: function () { return 12; } }; return o & 5; })()

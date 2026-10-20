@@ -1,0 +1,1 @@
+(function read() { var t = make().x; return t; })

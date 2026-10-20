@@ -1,0 +1,1 @@
+var o = { x: 1 }; var r = ++o.x; r + ',' + o.x;

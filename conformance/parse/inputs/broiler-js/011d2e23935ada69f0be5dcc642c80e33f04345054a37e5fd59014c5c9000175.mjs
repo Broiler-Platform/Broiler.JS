@@ -1,0 +1,1 @@
+export default class {} export const y = 1;

@@ -1,0 +1,1 @@
+var o = {}; o.a = 1; o.b = 2; o.c = 3; Object.keys(o); o.d = 4; o.e = 5; Object.keys(o).join(',');

@@ -1,0 +1,1 @@
+(function(){ var s = 0; for (var i = 0; i < 1024; i++) { s = s ^ i ^ s; } return s | 1023; })()

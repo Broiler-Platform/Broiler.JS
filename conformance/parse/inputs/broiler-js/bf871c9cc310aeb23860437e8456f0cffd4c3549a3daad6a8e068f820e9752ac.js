@@ -1,0 +1,1 @@
+(function(){ var a = [2], b = ['3']; return a[0] * b[0]; })()

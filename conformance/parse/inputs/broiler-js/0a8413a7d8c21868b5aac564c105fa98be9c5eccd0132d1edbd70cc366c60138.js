@@ -1,0 +1,1 @@
+(function(){ var s = 0; do { var t = 2; s = s + t; } while (s < 4); return s; })()

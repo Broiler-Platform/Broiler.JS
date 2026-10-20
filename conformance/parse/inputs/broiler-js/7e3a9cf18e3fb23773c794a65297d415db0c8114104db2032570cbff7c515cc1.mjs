@@ -1,0 +1,1 @@
+export default async function f() {} export const y = 1;

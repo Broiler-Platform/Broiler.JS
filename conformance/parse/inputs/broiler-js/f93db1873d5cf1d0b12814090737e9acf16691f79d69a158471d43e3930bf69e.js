@@ -1,0 +1,1 @@
+(function(){ var i = 42; return i; })()

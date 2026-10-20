@@ -1,0 +1,1 @@
+(function(){ var a = [1]; var v = a[0]; var s = 0; for (var i = 0; i < 3; i++) s += v; return s; })()

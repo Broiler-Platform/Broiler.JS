@@ -1,0 +1,1 @@
+(function(){ var i = 0; var a = []; a.push(i++); a.push(i++); return a.join(',') + ',' + i; })()

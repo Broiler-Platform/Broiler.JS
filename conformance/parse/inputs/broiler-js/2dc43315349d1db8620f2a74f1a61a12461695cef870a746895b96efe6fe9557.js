@@ -1,0 +1,1 @@
+var f = function () { return function () { return outer; }; };

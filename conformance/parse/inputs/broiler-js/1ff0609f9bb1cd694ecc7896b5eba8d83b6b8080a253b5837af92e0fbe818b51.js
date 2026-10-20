@@ -1,0 +1,1 @@
+(function(){ var o = { valueOf: function () { return 3; } }; var a = [o, 4]; return a[0] + a[1]; })()

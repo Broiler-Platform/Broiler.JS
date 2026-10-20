@@ -1,0 +1,1 @@
+(function(){ var i = 1; var a = ['a', 'b', 'c']; return a[i]; })()

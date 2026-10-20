@@ -1,0 +1,1 @@
+({ async get foo() { return 1; } });

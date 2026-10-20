@@ -1,0 +1,1 @@
+/\p{IsGreek}/u

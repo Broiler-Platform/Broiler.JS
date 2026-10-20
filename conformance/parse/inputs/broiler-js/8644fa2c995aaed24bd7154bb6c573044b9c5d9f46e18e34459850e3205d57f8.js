@@ -1,0 +1,1 @@
+eval("L: { 'a'; break L; }")

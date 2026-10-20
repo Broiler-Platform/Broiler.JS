@@ -1,0 +1,1 @@
+export async function f() {} export { f as g };

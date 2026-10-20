@@ -1,0 +1,1 @@
+/\p{Script=Katakana_Or_Hiragana}/u

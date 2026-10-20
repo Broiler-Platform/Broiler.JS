@@ -1,0 +1,1 @@
+(function () { var s = 0; var { a: { b: s } } = { a: { b: 'deep' } }; return s; })()

@@ -1,0 +1,1 @@
+(0, eval)('typeof y; class y {}');

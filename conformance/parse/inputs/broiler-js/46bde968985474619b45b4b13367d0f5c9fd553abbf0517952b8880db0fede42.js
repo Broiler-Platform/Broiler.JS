@@ -1,0 +1,1 @@
+2; switch ('a') { case 'a': { 3; break; } default: }

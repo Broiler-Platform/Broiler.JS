@@ -1,0 +1,1 @@
+var o = { x: 0 }; for (var i = 0; i <= 9; i++) o.x = i; Object.seal(o); o.x = 99; o.x;

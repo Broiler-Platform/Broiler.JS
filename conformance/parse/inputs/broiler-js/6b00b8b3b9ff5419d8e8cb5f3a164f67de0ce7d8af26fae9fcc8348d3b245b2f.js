@@ -1,0 +1,1 @@
+Function('"use strict"; function f() {} ++f();');

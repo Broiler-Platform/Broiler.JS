@@ -1,0 +1,1 @@
+var run = async value => await value;

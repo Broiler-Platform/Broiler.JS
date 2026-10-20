@@ -1,0 +1,1 @@
+(function(){ var v = 0 / 0; var w = 5; return v & w; })()

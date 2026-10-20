@@ -1,0 +1,1 @@
+var f = function () { var { p: q } = src; return q; };

@@ -1,0 +1,1 @@
+function C() { this.x = 0; } var o = new C(); for (var i = 0; i < 500; i++) o.x = i; o.x;

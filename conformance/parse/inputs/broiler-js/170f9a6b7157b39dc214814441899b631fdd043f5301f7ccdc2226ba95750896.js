@@ -1,0 +1,1 @@
+new Function('x','x','return x')(1,2)

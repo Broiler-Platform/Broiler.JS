@@ -1,0 +1,1 @@
+(function (a) { var x = a + 1; var y = x * 2; return y; })(20);

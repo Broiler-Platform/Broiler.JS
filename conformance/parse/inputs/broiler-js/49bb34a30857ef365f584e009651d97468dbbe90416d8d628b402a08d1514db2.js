@@ -1,0 +1,1 @@
+function C() { this.a = 1; this.b = 2; this.c = 3; } var o = new C(); Object.keys(o).join(',');

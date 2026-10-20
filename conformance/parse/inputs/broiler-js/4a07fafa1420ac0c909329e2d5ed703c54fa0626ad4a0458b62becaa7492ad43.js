@@ -1,0 +1,1 @@
+function g(n) { return n < 1 ? 0 : g(n - 1); } g(3);

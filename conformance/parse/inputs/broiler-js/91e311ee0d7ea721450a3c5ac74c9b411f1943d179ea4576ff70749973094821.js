@@ -1,0 +1,1 @@
+(function(){ var z = 0; return Object.is(z, 0) + ',' + Object.is(z, -0); })()

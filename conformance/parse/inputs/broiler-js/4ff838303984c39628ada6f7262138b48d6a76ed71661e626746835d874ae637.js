@@ -1,0 +1,1 @@
+(function(){ var a = 5, b = 0; return String(a % b); })()

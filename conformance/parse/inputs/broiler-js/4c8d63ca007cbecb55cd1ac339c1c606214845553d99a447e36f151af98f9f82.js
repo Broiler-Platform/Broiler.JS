@@ -1,0 +1,1 @@
+(function(){ var a = 1, b = 0; return String(a / b) + ',' + String((0 - a) / b); })()

@@ -1,0 +1,1 @@
+(function(){ var s = 0; for (var i = 0; i < 3; i++) { var q = i; } return String(q); })()

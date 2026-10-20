@@ -1,0 +1,1 @@
+function f(x) { return Math.abs(x); } f(-1);

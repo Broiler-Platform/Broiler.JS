@@ -1,0 +1,1 @@
+(function(){ var big = 4294967295; return big | 0; })()

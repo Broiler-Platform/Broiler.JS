@@ -1,0 +1,1 @@
+(function callee(x) { return x + 1; })

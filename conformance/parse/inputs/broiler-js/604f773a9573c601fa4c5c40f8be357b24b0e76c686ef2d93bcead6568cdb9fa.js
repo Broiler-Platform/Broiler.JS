@@ -1,0 +1,1 @@
+(function(){ var one = 1; var z = 0 * (0 - one); return String(1 / (z + 0)); })()

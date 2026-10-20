@@ -1,0 +1,1 @@
+(function(){ var a = [4294967297, 1]; return a[0] & a[1]; })()

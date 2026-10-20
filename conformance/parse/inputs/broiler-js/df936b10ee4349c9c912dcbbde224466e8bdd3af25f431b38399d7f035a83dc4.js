@@ -1,0 +1,1 @@
+(function(){ var z = 0, nz = 0 * (0 - 1); return String(z <= nz) + ',' + String(z == nz); })()

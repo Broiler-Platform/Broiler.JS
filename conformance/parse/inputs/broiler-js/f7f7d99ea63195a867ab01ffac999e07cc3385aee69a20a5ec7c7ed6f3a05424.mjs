@@ -1,0 +1,1 @@
+export default function () {} export const y = 1;

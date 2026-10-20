@@ -1,0 +1,1 @@
+var t = new Int32Array([10, 20, 30]); var i = 0; i = 1.5; t[i] = 99; String(t[1]);

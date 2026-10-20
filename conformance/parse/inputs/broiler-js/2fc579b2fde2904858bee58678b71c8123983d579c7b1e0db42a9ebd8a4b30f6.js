@@ -1,0 +1,1 @@
+var p = { v: 1 }; var a = [4]; var r = (a[0] * 2 * 3) + p.v; r;

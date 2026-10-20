@@ -1,0 +1,1 @@
+(function(){ function* g() { let v = 3.5; yield v; yield v * 2; } var it = g(); return it.next().value + ',' + it.next().value; })()

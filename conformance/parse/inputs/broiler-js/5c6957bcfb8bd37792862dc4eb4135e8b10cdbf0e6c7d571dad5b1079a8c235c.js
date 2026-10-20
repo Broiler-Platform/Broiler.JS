@@ -1,0 +1,1 @@
+(function(){ const v = 7; return v & 3; })()

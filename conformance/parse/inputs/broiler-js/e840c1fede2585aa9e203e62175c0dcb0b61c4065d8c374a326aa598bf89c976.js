@@ -1,0 +1,1 @@
+(function(){ function g(a) { a = 5; return arguments[0]; } return g(1); })()

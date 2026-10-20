@@ -1,0 +1,1 @@
+var inner = function () { return q; }; inner;
