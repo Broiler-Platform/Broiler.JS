@@ -105,7 +105,7 @@ ambient goal and top-level-`await` scopes of `Runtime`'s `CoreScript`, which wer
 compile site passes: an immutable `FastParserOptions` the scanner, the token stream and the parser are made
 with, and `JSCompilationOptions.AllowTopLevelAwait`, which the code cache keys a compilation on. It applies
 decision SJL-D-25 by its default, forwarders: **no public member is removed or changes its signature**; every
-change is an added member, and three existing members change what they do, listed as such. The public API
+change is an added member, and existing members that change what they do are listed as such. The public API
 listings of `Parser`, `Runtime`, `Engine`, `Compiler`, `Modules` and `Portable.Compiler`, written by
 PublicApiGenerator 11.4.6 from `48fee2d3` and from this change, differ only by the members added below. The
 observable corrections, J1 and J2, are in [`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md).
@@ -118,10 +118,11 @@ observable corrections, J1 and J2, are in [`Broiler.JS/CHANGELOG.md`](../Broiler
 | `FastTokenStream(in StringSpan, FastKeywordMap, FastParserOptions)`, `FastTokenStream(FastPool, in StringSpan, FastKeywordMap, FastParserOptions)`, `FastTokenStream.Options` | `Parser` | added | A stream whose scanner has the options. The options follow the keyword map, so a call that passes null for the map binds as before |
 | `FastParser(FastTokenStream, FastParserOptions)`, `FastParser.Options` | `Parser` | added | A parser with the options, which refuses a stream made with other options with `ArgumentException` |
 | `FastParser.ParseModule(in StringSpan, FastParserOptions)` | `Parser` | added | Parses the Module goal under the options, whose goal must be `Module` |
-| `FastScanner(FastPool, in StringSpan, FastKeywordMap)`, `FastTokenStream(in StringSpan, FastKeywordMap)`, `FastTokenStream(FastPool, in StringSpan, FastKeywordMap)`, `FastParser(FastTokenStream)` | `Parser` | kept, behaviour changed | Parse with `FastParserOptions.Script`, a script without top-level `await`, where they read the ambient scopes; `FastParser(FastTokenStream)` takes its stream's options. A public caller could reach the scopes only by parsing inside a compile that `CoreScript` ran, such as a host compiler's |
+| `FastScanner(FastPool, in StringSpan, FastKeywordMap)`, `FastTokenStream(in StringSpan, FastKeywordMap)`, `FastTokenStream(FastPool, in StringSpan, FastKeywordMap)`, `FastParser(FastTokenStream)` | `Parser` | kept, behaviour changed | Parse with `FastParserOptions.Script`, a script without top-level `await`, where they read the ambient scopes; `FastParser(FastTokenStream)` takes its stream's options. A public caller met the scopes inside a compile that `CoreScript` ran, such as a host compiler's, and, for the top-level-`await` permission, anywhere while a program `EvalWithTopLevelAwaitAsync` was given ran, its continuations included |
 | `FastParser.ParseModule(in StringSpan)` | `Parser` | kept, unchanged | Parses with `FastParserOptions.Module`, the goal and permission the two scopes it entered gave it |
 | `JSCompilationOptions.AllowTopLevelAwait` (`get; init;`) | `Runtime` | added | Whether the code compiled may await at its top level. A member of the record's body, so the constructor keeps its signature; as a member of the record it is in the code cache's key (`DictionaryCodeCache` compares and hashes the options) |
 | `JSCode.Key` | `Runtime` | kept, text changed | The options' text in the key now ends with `AllowTopLevelAwait = False` or `True`, as the record prints it. A host cache keyed on this text keys on the permission too |
+| `CoreScript.Compile(in StringSpan, string, IList<string>, ICodeCache, JSCompilationOptions?, bool)` without options, `CoreScript.Evaluate`, `CoreScript.EvaluateAsync`, `CoreScript.EvaluateWithTasks` | `Runtime` | kept, behaviour changed | Compile a script without top-level `await` (`Compile` a module when `isModule` is set, still without the permission), taking the current context's other options. While a program `EvalWithTopLevelAwaitAsync` was given ran, they took its permission from the ambient scope (correction J1) |
 | `IJSCompiler.Compile(in StringSpan, in JSCompilationOptions, string, IList<string>, ICodeCache)` | `Runtime` | added, a default interface method; a **behavioural** change for a host's compiler | `CoreScript.Compile` calls it with the options it keys the compilation under. The default forwards a script without top-level `await` to the existing `Compile` and throws `NotSupportedException` naming the compiler's type for a module or a top-level `await`. A host compiler set as `CoreScript.Compiler` that implements only the existing member, and parsed with this engine's parser, compiled modules and top-level `await` before, through the ambient scopes; it is now refused them until it implements this member |
 | `DefaultJSCompiler.Register(Func<StringSpan, JSCompilationOptions, string, IList<string>, ICodeCache, BExpression<JSFunctionDelegate>>)` | `Engine` | added | Registers a compilation function of the options; the Compiler assembly's module initializer registers `FastCompiler`'s. The registration made last is the one used |
 | `DefaultJSCompiler.Compile(in StringSpan, in JSCompilationOptions, string, IList<string>, ICodeCache)` | `Engine` | added | Compiles with the registered function under the options. With a function without options registered, it forwards a script without top-level `await` and refuses anything else, as the interface's default does |
@@ -141,9 +142,16 @@ regular-expression types item 4 of SJL-12.5 moves to `Ast`; the provider of `Fas
 `Broiler.Unicode.Algorithms`' `IUnicodeTables`, which `Parser` already reached through `Runtime`.
 
 **Compatibility.** Binary-compatible: every public member is kept with its signature, and the interface's
-new member has a default. Source-compatible: the new constructors take their options after the keyword map,
-so no existing call becomes ambiguous. Behaviour changes for a host's own `IJSCompiler` and for the members
-listed as changed above.
+new member has a default. Source-compatible but for one call. The parser's new constructors take their
+options after the keyword map, so no call to the existing ones becomes ambiguous. A `null` second argument to
+`IJSCompiler.Compile`, `DefaultJSCompiler.Compile` or `FastCompiler`'s constructor binds the member without
+options, which alone accepts it, and a `default` one binds it too, since C# prefers its by-value
+`string location` to the new member's `in` options. The exception is `DefaultJSCompiler.Register(null)` or
+`Register(default)`: it compiled, and could only throw `ArgumentNullException`, and it no longer compiles
+(CS0121), since the literal converts to both overloads' delegate types; a lambda binds by its number of
+parameters, as before. A compile of each of these shapes against `48fee2d3`'s assemblies and against this
+change's showed so. Behaviour changes for a host's own `IJSCompiler` and for the members listed as changed
+above.
 
 ## Public API changes, 2026-10-19 (the Temporal core moves to the shared library)
 
