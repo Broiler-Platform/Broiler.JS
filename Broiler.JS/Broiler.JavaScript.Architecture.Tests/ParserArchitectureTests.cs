@@ -34,10 +34,6 @@ public sealed class ParserArchitectureTests(ITestOutputHelper output)
     /// </summary>
     private static readonly string[] TodaysViolations =
     [
-        // Item 4 (decision D20) removed the reference to Runtime: the Unicode and regular-expression
-        // types the parser read there moved to Ast, and item 1 (decision D19), the explicit options,
-        // had already removed its reads of CoreScript's ambient goal and top-level-await scopes.
-
         // Item 5 (decision D22), the for-loop desugaring moves to the compiler's pass.
         Assembly + " names the desugaring walker Broiler.JavaScript.Ast.AstIdentifierReplacer",
         Assembly + " names the desugaring walker Broiler.JavaScript.Ast.ClosureDetector",
