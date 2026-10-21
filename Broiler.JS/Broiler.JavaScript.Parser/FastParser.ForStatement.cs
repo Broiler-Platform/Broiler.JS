@@ -25,9 +25,10 @@ partial class FastParser
     /// exactly one place (FastParser.Statement.cs's <c>Continue</c>). A for-statement snapshots it
     /// around its body parse: an unchanged count proves the body holds no <c>continue</c> at all, in
     /// any statement position, which lets the `for (let …)` lowering skip a per-iteration try/finally.
-    /// An AST search would be the obvious alternative, but a single missed <c>continue</c> there turns
-    /// a working loop into an infinite one, and the shared AST walkers do not reach every statement
-    /// position (a <c>switch</c> case's statements, for one).
+    /// The loop records the answer as its <c>ContainsContinue</c>. An AST search would be the obvious
+    /// alternative, but a single missed <c>continue</c> there turns a working loop into an infinite
+    /// one, and the shared AST walkers do not reach every statement position (a <c>switch</c> case's
+    /// statements, for one).
     /// </summary>
     private int ParsedContinueCount;
 
@@ -280,15 +281,17 @@ partial class FastParser
             var continuesBeforeBody = ParsedContinueCount;
 
             AstStatement statement;
+            bool containsContinue;
             if (stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
             {
                 if (!Block(out var block))
                     throw stream.Unexpected();
 
+                containsContinue = ParsedContinueCount != continuesBeforeBody;
                 if (newScope && declaration != null && !cStyleUsing)
                 {
                     (beginNode, statement, update, test) = Desugar(declaration, block.Statements, update, test,
-                        cStyle: !@in && !of, bodyContainsContinue: ParsedContinueCount != continuesBeforeBody, block);
+                        cStyle: !@in && !of, bodyContainsContinue: containsContinue, block);
                 }
                 else
                 {
@@ -307,9 +310,10 @@ partial class FastParser
                 // body as written, before that rewrite.
                 ThrowIfLabelledFunctionLoopBody(statement);
 
+                containsContinue = ParsedContinueCount != continuesBeforeBody;
                 if (newScope && declaration != null && !cStyleUsing)
                     (beginNode, statement, update, test) = Desugar(declaration, new Sequence<AstStatement>(1) { statement }, update, test,
-                        cStyle: !@in && !of, bodyContainsContinue: ParsedContinueCount != continuesBeforeBody);
+                        cStyle: !@in && !of, bodyContainsContinue: containsContinue);
             }
             else throw stream.Unexpected();
 
@@ -321,7 +325,8 @@ partial class FastParser
             {
                 node = new AstForInStatement(begin, PreviousToken, beginNode, inTarget, statement)
                 {
-                    HeadTdzNames = headTdzNames
+                    HeadTdzNames = headTdzNames,
+                    ContainsContinue = containsContinue
                 };
                 scope.GetVariables();
 
@@ -332,14 +337,18 @@ partial class FastParser
             {
                 node = new AstForOfStatement(begin, PreviousToken, beginNode, ofTarget, statement, awaitOf)
                 {
-                    HeadTdzNames = headTdzNames
+                    HeadTdzNames = headTdzNames,
+                    ContainsContinue = containsContinue
                 };
                 scope.GetVariables();
 
                 return true;
             }
 
-            var forStatement = new AstForStatement(begin, PreviousToken, beginNode, test, update, statement);
+            var forStatement = new AstForStatement(begin, PreviousToken, beginNode, test, update, statement)
+            {
+                ContainsContinue = containsContinue
+            };
             // Wrap a C-style `await using` for-loop in a block so its lexical environment
             // (which owns the disposable resources) is established and torn down — disposing
             // the resources — around the entire loop.

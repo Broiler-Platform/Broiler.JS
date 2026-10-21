@@ -30,4 +30,10 @@
     <InternalsVisibleTo Include="Broiler.JavaScript.BuiltIns" />
     <InternalsVisibleTo Include="Broiler.JavaScript.Ast.Tests" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- The loops' ContainsContinue is internal: the parser records it and the compiler's for-loop pass
+         reads it (milestone SJL-12.5, item 5; Broiler.VM's JSD-0080, decision D22). -->
+    <InternalsVisibleTo Include="Broiler.JavaScript.Compiler" />
+  </ItemGroup>
 </Project>
