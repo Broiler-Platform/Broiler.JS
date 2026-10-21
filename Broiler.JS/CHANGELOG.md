@@ -10,6 +10,38 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The for-loop desugaring moves from the parser to a preparation pass of the compiler (2026-10-21, milestone SJL-12.5)
+
+The parser returns every `for`, `for-in` and `for-of` loop as written: the head's declaration, test and update,
+and the body. Until this change `FastParser.ParseProgram` and `FastParser.ParseModule` rewrote a loop whose head
+declares `let`, `const`, `using` or `await using` bindings into per-iteration carriers, set `HeadTdzNames` on a
+lexical `for-in` or `for-of` loop, and wrapped a C-style `await using` loop in the block that disposes it. The
+compiler now does all three in a preparation pass of its own, `ForLoopPreparation` (internal), which runs right
+after it parses a program, in `FastCompiler` and in `DirectEvalSupport`, before any validation reads the tree, and
+emits the trees the parser emitted. This is item 5 of milestone SJL-12.5 (Broiler.VM's JSD-0080, decisions D22 and
+D23). Nothing a script can observe changes. No public member is added, removed or changed: the public API
+listings of `Ast`, `Parser`, `Compiler`, `Engine` and `Runtime`, written by PublicApiGenerator 11.4.6 from
+`792ff56e` and from this change, are identical. [`docs/public-api.md`](../docs/public-api.md) records it.
+
+- **A program that reads the parser's tree sees the loops as written.** `HeadTdzNames` is null on the parser's
+  loops, and a lexical head is the declaration as written, with no temporaries. A host that compiles the parser's
+  tree itself, rather than through `FastCompiler`, gets the loops unprepared.
+- **The temporaries are named `<d>:<n>`** (decision D22): `d` is the direct-eval nesting depth the compilation
+  inherits and `n` counts the temporaries of one pass, from 1. They were per-parse numbers from 2. A name with a
+  colon is never an identifier, the names depend on nothing but the tree and the depth, and direct eval code,
+  compiled one level deeper than its caller, never names a carrier its caller's carriers could share.
+- **A loop records whether its body holds a `continue`** (`ContainsContinue`, internal), as the parser counts them,
+  and the pass reads it to decide whether a `let` loop copies its bindings back in a `finally`. `Ast` grants its
+  internals to `Compiler` for it, and `JSContext` gains the internal `DirectEvalCompilationDepth` the pass's names
+  read.
+- **The rewrite's refusal moves with it.** A binding the rename cannot handle, which the parser refused with
+  "Unknown token", is refused by the compile, at the same token with the same message; the parser alone now
+  accepts it.
+- **The parser's architecture test** (`Architecture.Tests`) asserts that the parser has no violation: the three
+  desugaring walkers, `AstIdentifierReplacer`, `IdentifierNameCollector` and `ClosureDetector`, leave the parser
+  (`Ast` still declares them, and only the pass uses them), and a `for (let …)` loop parses to one for-statement
+  whose initialiser is the declaration as written. The test's list of violations, empty now, goes.
+
 ### The parser no longer references the runtime; the Unicode tables and the regular-expression checks move to `Ast` (2026-10-21, milestone SJL-12.5)
 
 The parser reached five types in `Runtime`: the Unicode adapter `JSUnicode`, over the tables the runtime embedded,
