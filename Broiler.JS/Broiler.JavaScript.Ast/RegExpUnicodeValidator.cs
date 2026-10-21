@@ -1,3 +1,7 @@
+// Moved from Broiler.JavaScript.Runtime with its namespace, which keeps a type forwarder to it, and
+// compiled as it was there, outside a nullable context, so its public signature reads as it did.
+#nullable disable
+
 namespace Broiler.JavaScript.Runtime;
 
 /// <summary>
@@ -5,6 +9,12 @@ namespace Broiler.JavaScript.Runtime;
 /// Unicode (u) flag. Shared by the lexer (regex literals) and the RegExp
 /// constructor so both reject the same set of patterns.
 /// </summary>
+/// <remarks>
+/// Held by <c>Broiler.JavaScript.Ast</c> since milestone SJL-12.5, below the parser and the runtime, so
+/// that the parser checks a literal without referencing the runtime (Broiler.VM's JSD-0080, decision
+/// D20). <c>Broiler.JavaScript.Runtime</c> forwards the type here, so an assembly built against it
+/// still binds.
+/// </remarks>
 public static class RegExpUnicodeValidator
 {
     /// <summary>

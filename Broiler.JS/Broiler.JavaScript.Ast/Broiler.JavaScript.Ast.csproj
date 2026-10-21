@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Description>Broiler.JS JavaScript syntax tree: the expression, statement, pattern, and misc AST nodes the parser produces and the compiler consumes.</Description>
+    <Description>Broiler.JS JavaScript syntax tree: the expression, statement, pattern, and misc AST nodes the parser produces and the compiler consumes, with the Unicode tables and the regular-expression pattern checks the parser and the built-ins share.</Description>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
@@ -22,11 +22,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The Unicode tables and their adapter are internal, as they were in Broiler.JavaScript.Runtime:
-         the parser's scanner and regular-expression literal check read them, the built-ins' RegExp,
-         String and Intl read them, and the tests hold the tables equal to the generator's output. -->
+    <!-- The Unicode tables, their adapter and the pattern's name checks are internal, as they were in
+         Broiler.JavaScript.Runtime: the parser's scanner and regular-expression literal check read
+         them, the built-ins' RegExp, String and Intl read them, and the tests hold the tables equal to
+         the generator's output. -->
     <InternalsVisibleTo Include="Broiler.JavaScript.Parser" />
-    <InternalsVisibleTo Include="Broiler.JavaScript.Runtime" />
     <InternalsVisibleTo Include="Broiler.JavaScript.BuiltIns" />
     <InternalsVisibleTo Include="Broiler.JavaScript.Ast.Tests" />
   </ItemGroup>
