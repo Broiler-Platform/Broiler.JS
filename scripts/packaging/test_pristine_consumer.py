@@ -31,9 +31,13 @@ SHARED_PREFIX = "Broiler.ECMAScript."
 # added Broiler.Unicode.Segmentation, and the Runtime's Broiler.Unicode.Algorithms below.
 BUILT_INS_DEPENDENCIES = {"Broiler.Regex", "Broiler.Unicode.Cldr.LocaleData", "Broiler.Unicode.Segmentation"}
 
-# The packages Broiler.JavaScript.Runtime declares (milestone SJL-7.5): the Unicode area's code package,
-# whose tables the Runtime embeds. No package that carries tables is among them.
-RUNTIME_DEPENDENCIES = {"Broiler.Unicode.Algorithms"}
+# The Unicode area's code package, whose tables Broiler.JavaScript.Ast embeds, which Ast's package declares.
+# No package that carries tables is among them. Until 2026-10-21 the Runtime package was checked for it
+# (milestone SJL-7.5), when the Runtime embedded the tables; milestone SJL-12.5 moved the tables and the
+# package reference to Ast (Broiler.VM's JSD-0080, decision D20), so the Ast package is checked for it,
+# and the Runtime package, which reaches the tables through Ast, is checked for Ast.
+AST_DEPENDENCIES = {"Broiler.Unicode.Algorithms"}
+RUNTIME_DEPENDENCIES = {"Broiler.JavaScript.Ast"}
 
 
 def run(arguments: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> None:
@@ -263,6 +267,12 @@ def main() -> int:
             raise RuntimeError(
                 f"BuiltIns package is missing runtime dependencies: {sorted(missing_runtime_dependencies)}"
             )
+        ast_package = next(
+            path for (package_id, _), path in identities.items() if package_id == "Broiler.JavaScript.Ast"
+        )
+        missing_ast_dependencies = AST_DEPENDENCIES - package_dependencies(ast_package)
+        if missing_ast_dependencies:
+            raise RuntimeError(f"Ast package is missing dependencies: {sorted(missing_ast_dependencies)}")
         runtime_package = next(
             path for (package_id, _), path in identities.items() if package_id == "Broiler.JavaScript.Runtime"
         )
