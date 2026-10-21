@@ -12,9 +12,6 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="coverlet.collector" />
-    <!-- Test-only: the owner's generator, which UnicodeTableRegenerationTests runs over the pinned
-         archive to hold the embedded tables byte for byte (decision SJL-D-6 (c)). -->
-    <PackageReference Include="Broiler.Unicode.Generation" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Broiler.JavaScript.Runtime\Broiler.JavaScript.Runtime.csproj" />

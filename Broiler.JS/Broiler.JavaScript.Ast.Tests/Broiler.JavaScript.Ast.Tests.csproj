@@ -12,6 +12,12 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="coverlet.collector" />
+    <!-- Test-only: the owner's generator, which UnicodeTableRegenerationTests runs over the pinned
+         archive to hold the embedded tables byte for byte (decision SJL-D-6 (c)), and the owner's
+         segmenter, which the built-ins build over the tables and the test builds over them too. The
+         tables and these tests moved here from Broiler.JavaScript.Runtime at milestone SJL-12.5. -->
+    <PackageReference Include="Broiler.Unicode.Generation" />
+    <PackageReference Include="Broiler.Unicode.Segmentation" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Broiler.JavaScript.Ast\Broiler.JavaScript.Ast.csproj" />

@@ -67,4 +67,4 @@ data/unicode/pins/README.md text eol=lf
 data/unicode/pins/ecma262/ECMA-alternative-copyright-notice.txt text eol=lf
 # The tables generated from that archive are compared with the generator's output byte for byte, and
 # the generator writes LF line endings.
-Broiler.JS/Broiler.JavaScript.Runtime/Unicode/JSUnicodeTableData.g.cs text eol=lf
+Broiler.JS/Broiler.JavaScript.Ast/Unicode/JSUnicodeTableData.g.cs text eol=lf

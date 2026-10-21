@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Core.Tests")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Clr")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Compiler")]
-[assembly: InternalsVisibleTo("Broiler.JavaScript.Parser")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Engine")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Modules")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.BuiltIns")]
@@ -13,3 +12,9 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Broiler.JavaScript.LinqExpressions")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Runtime.Tests")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Engine.Benchmarks")]
+
+// The public types milestone SJL-12.5 moved to Broiler.JavaScript.Ast with their namespace, so that the
+// parser reaches them without referencing this assembly (Broiler.VM's JSD-0080, decision D20). An
+// assembly built against this one still binds to them through these forwarders.
+[assembly: TypeForwardedTo(typeof(Broiler.JavaScript.Runtime.RegExpUnicodeValidator))]
+[assembly: TypeForwardedTo(typeof(Broiler.JavaScript.Runtime.CancellableDisposableAction))]

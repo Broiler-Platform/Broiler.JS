@@ -1,7 +1,7 @@
 using Broiler.JavaScript.Runtime.Unicode;
 using Broiler.Unicode.Algorithms;
 
-namespace Broiler.JavaScript.Runtime.Tests;
+namespace Broiler.JavaScript.Ast.Tests;
 
 /// <summary>
 /// The engine's adapter over Broiler.Unicode's lexical classes (milestone SJL-7.5): its ASCII cache is the

@@ -1,15 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Description>Broiler.JS JavaScript syntax tree: the expression, statement, pattern, and misc AST nodes the parser produces and the compiler consumes.</Description>
+    <Description>Broiler.JS JavaScript syntax tree: the expression, statement, pattern, and misc AST nodes the parser produces and the compiler consumes, with the Unicode tables and the regular-expression pattern checks the parser and the built-ins share.</Description>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The Unicode area's algorithms (milestone SJL-7.5), over the tables this assembly embeds
+         (Unicode/JSUnicodeTableData.g.cs), for the parser and the built-ins. The tables
+         and this reference moved here from Broiler.JavaScript.Runtime at milestone SJL-12.5, so that
+         the parser reads them without referencing the runtime (Broiler.VM's JSD-0080, decision D20). -->
+    <PackageReference Include="Broiler.Unicode.Algorithms" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- StringSpan's obsolete trims forward to the shared white-space set (milestone SJL-7.5). -->
     <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The Unicode tables, their adapter and the pattern's name checks are internal, as they were in
+         Broiler.JavaScript.Runtime: the parser's scanner and regular-expression literal check read
+         them, the built-ins' RegExp, String and Intl read them, and the tests hold the tables equal to
+         the generator's output. -->
+    <InternalsVisibleTo Include="Broiler.JavaScript.Parser" />
+    <InternalsVisibleTo Include="Broiler.JavaScript.BuiltIns" />
+    <InternalsVisibleTo Include="Broiler.JavaScript.Ast.Tests" />
   </ItemGroup>
 </Project>

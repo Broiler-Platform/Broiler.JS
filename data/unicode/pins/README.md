@@ -33,13 +33,18 @@ Two files of the owner's directory are not copied: its README, which this file r
 
 ## How the pin is enforced
 
-`Broiler.JS/Broiler.JavaScript.Runtime.Tests/UnicodeTableRegenerationTests.cs` runs the owner's generator,
+`Broiler.JS/Broiler.JavaScript.Ast.Tests/UnicodeTableRegenerationTests.cs` runs the owner's generator,
 the test-only package `Broiler.Unicode.Generation`, over this archive and holds the embedded tables,
-`Broiler.JS/Broiler.JavaScript.Runtime/Unicode/JSUnicodeTableData.g.cs`, equal to its output byte for byte
+`Broiler.JS/Broiler.JavaScript.Ast/Unicode/JSUnicodeTableData.g.cs`, equal to its output byte for byte
 (the programme's rule SL7). The generator refuses any file whose length, SHA-256 or version header is not
 what the pin records. The same test holds this pin equal to the one the generator package carries, which
 is the owner's, entry by entry (the shape of Broiler.VM's rule I4). **The pin moves only by a dated
 decision that moves the owner's and Broiler.VM's in the same change**, never here alone.
+
+*Revised 2026-10-21, at milestone SJL-12.5, when the tables and their test moved, unchanged, from
+`Broiler.JavaScript.Runtime` and its tests to `Broiler.JavaScript.Ast` and its tests: the paragraph's two
+paths read `Broiler.JS/Broiler.JavaScript.Runtime.Tests/UnicodeTableRegenerationTests.cs` and
+`Broiler.JS/Broiler.JavaScript.Runtime/Unicode/JSUnicodeTableData.g.cs`.*
 
 **Every archived file is binary in [`.gitattributes`](../../../.gitattributes)**, so no checkout filter
 rewrites a line ending and moves a hash on one platform.

@@ -34,12 +34,6 @@ public sealed class ParserArchitectureTests(ITestOutputHelper output)
     /// </summary>
     private static readonly string[] TodaysViolations =
     [
-        // Item 4 (decision D20), no reference to Runtime. Item 1 (decision D19), the explicit options,
-        // removed the parser's reads of CoreScript's ambient goal and top-level-await scopes, which the
-        // clauses saw only through this reference; the Unicode and regular-expression types item 4
-        // moves keep it until then.
-        Assembly + " references the assembly Broiler.JavaScript.Runtime",
-
         // Item 5 (decision D22), the for-loop desugaring moves to the compiler's pass.
         Assembly + " names the desugaring walker Broiler.JavaScript.Ast.AstIdentifierReplacer",
         Assembly + " names the desugaring walker Broiler.JavaScript.Ast.ClosureDetector",

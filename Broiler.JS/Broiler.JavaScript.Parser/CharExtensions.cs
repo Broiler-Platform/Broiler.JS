@@ -91,5 +91,6 @@ public static class CharExtensions
         => ch is '\n' or '\r' or '\u2028' or '\u2029';
 
     // IdentifierStartChar, IdentifierPartChar and WhiteSpace are Broiler.Unicode's, over this engine's
-    // pinned Unicode 17.0.0 tables (milestone SJL-7.5): JSUnicode in Broiler.JavaScript.Runtime.
+    // pinned Unicode 17.0.0 tables (milestone SJL-7.5): JSUnicode, which Broiler.JavaScript.Ast holds
+    // since milestone SJL-12.5.
 }

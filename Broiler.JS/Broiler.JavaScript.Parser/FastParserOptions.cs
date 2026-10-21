@@ -74,7 +74,8 @@ public sealed record FastParserOptions
     /// <summary>
     /// The provider the scanner's lexical classes come from: IdentifierStartChar, IdentifierPartChar
     /// and WhiteSpace, as Broiler.Unicode's <see cref="EcmaScriptLexical"/> reads them from these
-    /// tables. Null, the default, is the engine's own tables, the Unicode version its pin names.
+    /// tables. Null, the default, is the engine's own tables, the Unicode version its pin names, which
+    /// <c>Broiler.JavaScript.Ast</c> holds below the parser; no default throws.
     /// </summary>
     /// <remarks>
     /// The provider is read through when it is set. A regular-expression literal's early errors do

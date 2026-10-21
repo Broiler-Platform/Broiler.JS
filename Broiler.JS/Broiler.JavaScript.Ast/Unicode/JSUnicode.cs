@@ -8,7 +8,8 @@ namespace Broiler.JavaScript.Runtime.Unicode;
 /// <summary>
 /// The owner's Unicode algorithms over this engine's tables (milestone SJL-7.5): one instance of each,
 /// built the first time it is read and shared by every reader, since each is immutable and safe to share
-/// between threads. The parser, the runtime and the built-ins reach them here.
+/// between threads. The parser and the built-ins reach them here, in <c>Broiler.JavaScript.Ast</c>, which
+/// holds them below both since milestone SJL-12.5 (Broiler.VM's JSD-0080, decision D20).
 /// </summary>
 /// <remarks>
 /// Each instance sits in a holder of its own, so that the first identifier a script scans builds the

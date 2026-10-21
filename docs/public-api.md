@@ -11,7 +11,7 @@ Broiler.JS exposes its public API through .NET assemblies rather than a single m
 | `Broiler.JavaScript.Engine` | Execution host | `JSEngine`, `JSContext`, `JavaScriptBootstrap`, context builders/profiles, feature flags, and engine-level extensions. |
 | `Broiler.JavaScript.Runtime` | Runtime values | `JSValue`, `Arguments`, value factories, and runtime conversion helpers. |
 | `Broiler.JavaScript.Parser` | Source parsing | `FastParser` and parser primitives that produce AST structures. |
-| `Broiler.JavaScript.Ast` | Syntax tree model | Expression, statement, pattern, and misc AST nodes used by parser and compiler projects. |
+| `Broiler.JavaScript.Ast` | Syntax tree model | Expression, statement, pattern, and misc AST nodes used by parser and compiler projects; and the Unicode tables and the regular-expression checks the parser and the built-ins share, with two public types in the namespace `Broiler.JavaScript.Runtime`, `RegExpUnicodeValidator` and `CancellableDisposableAction`, which `Runtime` forwards here *(added 2026-10-21, at milestone SJL-12.5, when they moved from `Runtime`; see "Public API changes, 2026-10-21" below)*. |
 | `Broiler.JavaScript.Expressions` | Backend-neutral expression model | `BExpression` nodes, converters, and backend contracts used by the JavaScript compiler and execution back ends. |
 | `Broiler.JavaScript.ExpressionCompiler` | Dynamic-IL emission backend | The `System.Reflection.Emit` implementation; consumers that need only the model should reference `Broiler.JavaScript.Expressions`. |
 | `Broiler.JavaScript.LinqExpressions` | JavaScript expression lowering helpers | Builders that connect runtime values to the expression compiler. |
@@ -97,6 +97,56 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 "`NumericKeys`".* *Revised again 2026-10-15, at milestone SJL-5.5, when the text area moved in: the
 row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
 next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
+
+## Public API changes, 2026-10-21 (the parser no longer references the runtime, milestone SJL-12.5)
+
+Item 4 of milestone SJL-12.5 (Broiler.VM's JSD-0080, decisions D20 and D29) moves the types the parser
+reached in `Runtime` down to `Ast`, which `Runtime` and `Parser` both reference, so that `Parser` no longer
+references `Runtime`. Of the six `Runtime` types the parser's metadata named, `CoreScript` was already out of its
+reach, item 1 having replaced its ambient scopes with options; the other five move, with the Unicode tables they
+read. Each type moves with its namespace and its visibility. So the parser's source and metadata still name
+`Broiler.JavaScript.Runtime` and `Broiler.JavaScript.Runtime.Unicode`: those names are the five moved types', which
+keep their namespaces (a forwarder needs its type's full name), and the types they resolve to are `Ast`'s. The
+milestone's clause that the parser references no `Runtime` type is read by assembly, as part B of bundle
+sjl-12-001's rule reads it: the parser's metadata has no `AssemblyRef` to `Broiler.JavaScript.Runtime`. It
+applies decision SJL-D-25 by its default, forwarders, and its (b), an obsolete mark: **no public member is
+removed, and none changes its signature**. The public API listings of `Ast`, `Runtime`, `Parser`, `BuiltIns`,
+`Compiler` and `Engine`, written by PublicApiGenerator 11.4.6 from `2345da11` and from this change, differ only by
+the two types below, listed under `Ast` where they were listed under `Runtime`, and by the obsolete mark. Nothing
+observable changes: the tables are the same bytes, and the moved checks are the same code.
+
+| Member | Assembly | Disposition | What it does now |
+| --- | --- | --- | --- |
+| `RegExpUnicodeValidator` (`IsValidUnicodePattern(string)`), namespace `Broiler.JavaScript.Runtime` | `Ast`; `Runtime` forwards it | moved, forwarded | Unchanged. The regular-expression literal's check in the parser and the `RegExp` constructor in `BuiltIns` call it, so both still refuse the same patterns. It is compiled outside a nullable context, as it was, so its signature reads as before |
+| `CancellableDisposableAction` (its constructor, `Cancel`, `Commit`, `Commit<T>`, `Dispose`), namespace `Broiler.JavaScript.Runtime` | `Ast`; `Runtime` forwards it | moved, forwarded | Unchanged. `FastTokenStream.UndoMark` returns it |
+| `FastTokenStream.UndoMark()` | `Parser` | kept, obsolete (SJL-D-25 (b)) | Unchanged; its `[Obsolete]` message names the replacement, `Current` to mark the position and `Reset(FastToken)` to return to it. Nothing in this repository calls it. Removing it is SJL-D-25 (c), which waits for a recorded check of its consumers |
+| `FastParserOptions.UnicodeTables` | `Parser` | kept, unchanged | Still null by default, and null is still the engine's own tables, now held by `Ast`; options keep their equality, and a parser still accepts a stream made with equal options. No default throws |
+
+**Moved internal types**, with no public surface, from `Runtime` to `Ast`, each with its namespace:
+`JSUnicodeTables` (the `IUnicodeTables` provider), `JSUnicodeTableData` (the generated tables,
+`Unicode/JSUnicodeTableData.g.cs`, regenerated byte for byte but for the two header lines that name the test that
+regenerates it) and `JSUnicode`, in `Broiler.JavaScript.Runtime.Unicode`, with `JSUnicodePropertyNames`; and
+`RegExpGroupNames`, in `Broiler.JavaScript.Runtime`. `Ast` grants its internals to `Parser`, `BuiltIns` and its
+tests, which read them; `Runtime` no longer grants its internals to `Parser`. The tests that hold the tables,
+`UnicodeTableRegenerationTests` and `JSUnicodeTests`, move from `Runtime`'s tests to `Ast`'s.
+
+**Packages.** The `Parser` package no longer depends on `Runtime`. **This is source-breaking for a transitive
+user**: a project that references `Broiler.JavaScript.Parser` and not `Broiler.JavaScript.Runtime`, and names a
+`Runtime` type such as `JSValue`, no longer compiles (CS0246) until it references `Runtime` itself. The two moved
+public types still compile through `Parser` alone, since `Ast` comes with it. The `Ast` package now depends on
+`Broiler.Unicode.Algorithms`, which `Runtime` depended on directly and now reaches through `Ast`; `Parser`, whose
+`FastParserOptions` names its `IUnicodeTables`, reaches it through `Ast` too. No package is added.
+
+**Compatibility.** Binary-compatible: an assembly built against `2345da11`'s `Runtime` that calls
+`RegExpUnicodeValidator`, `CancellableDisposableAction` and `UndoMark` ran unchanged against this change's
+assemblies, the two types loading from `Ast` through `Runtime`'s forwarders. That holds where `Runtime` is
+deployed, since the forwarders are `Runtime`'s. A library built against the earlier `Parser` package alone that
+names a `Runtime` type, the two forwarded types and `UndoMark`'s return type included, refers to
+`Broiler.JavaScript.Runtime` in its metadata, so it needs `Runtime` in the application's package graph, which
+`Parser` no longer brings: without it the library fails with a `FileNotFoundException` when it runs, before anyone
+recompiles it, and the forwarders cannot help, being in the missing assembly. Source-compatible but for the
+transitive user above, and for a call of `UndoMark`, which now warns (CS0618), and fails a build that treats
+warnings as errors.
 
 ## Public API changes, 2026-10-20 (the parser's and the compiler's explicit options, milestone SJL-12.5)
 
