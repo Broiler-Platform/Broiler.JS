@@ -28,7 +28,8 @@ SHARED_PREFIX = "Broiler.ECMAScript."
 # The packages Broiler.JavaScript.BuiltIns declares, as its project file references them. This list
 # named Broiler.DateTime and Broiler.Unicode.Properties until 2026-10-12, which BuiltIns no longer
 # references; it now names what the project does (repaired at milestone SJL-2.13). Milestone SJL-7.5
-# added Broiler.Unicode.Segmentation, and the Runtime's Broiler.Unicode.Algorithms below.
+# added Broiler.Unicode.Segmentation, and the Runtime's Broiler.Unicode.Algorithms (Ast's since
+# milestone SJL-12.5) below.
 BUILT_INS_DEPENDENCIES = {"Broiler.Regex", "Broiler.Unicode.Cldr.LocaleData", "Broiler.Unicode.Segmentation"}
 
 # The Unicode area's code package, whose tables Broiler.JavaScript.Ast embeds, which Ast's package declares.
