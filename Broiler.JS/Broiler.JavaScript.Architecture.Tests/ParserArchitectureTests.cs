@@ -32,14 +32,7 @@ public sealed class ParserArchitectureTests(ITestOutputHelper output)
     /// The violations the parser has today, each under the item of SJL-12.5 (the milestone's
     /// numbering, Broiler.VM's JSD-0080) that removes it.
     /// </summary>
-    private static readonly string[] TodaysViolations =
-    [
-        // Item 5 (decision D22), the for-loop desugaring moves to the compiler's pass.
-        Assembly + " names the desugaring walker Broiler.JavaScript.Ast.AstIdentifierReplacer",
-        Assembly + " names the desugaring walker Broiler.JavaScript.Ast.ClosureDetector",
-        Assembly + " names the desugaring walker Broiler.JavaScript.Ast.IdentifierNameCollector",
-        ParserFixtures.ForLetViolation,
-    ];
+    private static readonly string[] TodaysViolations = [];
 
     private static readonly Lazy<ClauseReading> WitnessReading = new(static () =>
         ParserClauses.Read(WitnessImage.Compile("parser-ambient-state.cs.witness"), AppContext.BaseDirectory));

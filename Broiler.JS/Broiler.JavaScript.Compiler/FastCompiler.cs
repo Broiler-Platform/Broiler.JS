@@ -160,6 +160,9 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         var parser = new FastParser(new FastTokenStream(parserPool, code, null, parserOptions), parserOptions);
         var jScript = parser.ParseProgram();
         parserPool.Dispose();
+        // The parser builds every loop as written; the for-loop pass rewrites the let/const/using
+        // heads into the shapes the rest of the compiler lowers, before validation reads the tree.
+        jScript = ForLoopPreparation.Prepare(jScript, 0);
         // Module code is strict from its first token, directive or not (ES2024 11.2.2).
         SyntaxValidation.ValidateProgram(jScript, code.Value, parserOptions, inheritStrictMode: isModuleCompilation,
             directEvalPrivateNames: directEvalPrivateNames);

@@ -1,11 +1,7 @@
 ﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
-using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
 
 namespace Broiler.JavaScript.Parser;
 
@@ -13,26 +9,22 @@ namespace Broiler.JavaScript.Parser;
 partial class FastParser
 {
     /// <summary>
-    /// The number of the last temporary the <c>for</c>-loop desugaring named. A temporary's name is its
-    /// number, which is never an identifier, from 2 on in each parse. The counter is this parser's, so
-    /// two parses of one source name their temporaries alike; it was a process-wide static, and a tree
-    /// depended on what the process had parsed before (milestone SJL-12.5, item 2).
-    /// </summary>
-    private int TempVarID = 1;
-
-    /// <summary>
     /// Number of <c>continue</c> statements parsed so far by this parser instance, incremented in
     /// exactly one place (FastParser.Statement.cs's <c>Continue</c>). A for-statement snapshots it
     /// around its body parse: an unchanged count proves the body holds no <c>continue</c> at all, in
-    /// any statement position, which lets the `for (let …)` lowering skip a per-iteration try/finally.
-    /// The loop records the answer as its <c>ContainsContinue</c>. An AST search would be the obvious
-    /// alternative, but a single missed <c>continue</c> there turns a working loop into an infinite
-    /// one, and the shared AST walkers do not reach every statement position (a <c>switch</c> case's
-    /// statements, for one).
+    /// any statement position, and the loop records the answer as its <c>ContainsContinue</c>. The
+    /// compiler's for-loop pass reads it to let the `for (let …)` lowering skip a per-iteration
+    /// try/finally. An AST search would be the obvious alternative, but a single missed
+    /// <c>continue</c> there turns a working loop into an infinite one, and the shared AST walkers do
+    /// not reach every statement position (a <c>switch</c> case's statements, for one).
     /// </summary>
+    /// <remarks>
+    /// The parser builds every loop as written. Rewriting a <c>let</c>, <c>const</c> or <c>using</c>
+    /// head into per-iteration carriers is the compiler's preparation pass, <c>ForLoopPreparation</c>
+    /// (milestone SJL-12.5, item 5; Broiler.VM's JSD-0080, decision D22), which also names the
+    /// temporaries, so the parser holds no counter for them.
+    /// </remarks>
     private int ParsedContinueCount;
-
-    private string NewTempName() => (++TempVarID).ToString(CultureInfo.InvariantCulture);
 
     /// <summary>
     /// For ( in
@@ -68,8 +60,6 @@ partial class FastParser
 
         AstNode? beginNode;
 
-        // desugar let/const in following scope
-        bool newScope = false;
         AstVariableDeclaration? declaration = null;
         var scope = variableScope.Push(begin, FastNodeType.ForStatement);
 
@@ -103,14 +93,12 @@ partial class FastParser
                         if (!VariableDeclarationStatement(out declaration, FastVariableKind.Let))
                             throw stream.Unexpected();
                         beginNode = declaration;
-                        newScope = true;
                         break;
 
                     case FastKeywords.@const:
                         if (!VariableDeclarationStatement(out declaration, FastVariableKind.Const))
                             throw stream.Unexpected();
                         beginNode = declaration;
-                        newScope = true;
                         break;
 
                     case FastKeywords.var:
@@ -129,16 +117,15 @@ partial class FastParser
                 // `for (using x of …)` / `for (await using x of …)`: a lexical,
                 // disposed-per-iteration binding (only valid in a for-of head).
                 beginNode = declaration;
-                newScope = true;
             }
             else if (TryParseForUsingLexicalDeclaration(out declaration))
             {
                 // C-style `for (using x = …; …; …)` / `for (await using x = …; …; …)`:
                 // a LexicalDeclaration whose `using` / `await using` bindings are disposed
-                // once when the loop's lexical environment is torn down (see the cStyleUsing
-                // handling below, which keeps the declaration intact instead of desugaring it).
+                // once when the loop's lexical environment is torn down (the compiler's
+                // for-loop pass keeps the declaration intact instead of desugaring it, and
+                // wraps the loop in the block whose scope disposes them).
                 beginNode = declaration;
-                newScope = true;
             }
             else if (current.Keyword == FastKeywords.async && TryParseAsyncForOfTarget(out var asyncTarget))
             {
@@ -262,70 +249,43 @@ partial class FastParser
             if (awaitOf && !of)
                 throw stream.Unexpected();
 
-
-            // A C-style `for (await using …; …; …)` head is NOT desugared into per-iteration
-            // carriers: per spec the LexicalDeclaration is instantiated once in the loop's
-            // lexical environment and its resources are disposed once, when that environment
-            // is torn down. Keeping the declaration intact as the loop init (and wrapping the
-            // whole `for` in a block scope below) lets the scope's disposal machinery dispose
-            // them at loop exit — and dispose any already-initialized resource if a later
-            // initializer in the BindingList throws. (A plain `using` C-style head is a
-            // SyntaxError, rejected during parsing; the for-of / for-in `using` heads keep
-            // their per-iteration desugaring.)
-            var cStyleUsing = declaration is { Using: true } && !@in && !of;
-
-            // Snapshot before the body is parsed; Desugar (called from inside the branches below,
-            // after the body is in hand) compares it to learn whether the body can `continue`. The
-            // head's test/update are already parsed, so a `continue` buried in a closure there cannot
-            // pollute the count — and nested loops each capture their own snapshot.
+            // Snapshot before the body is parsed, and compared after it, to learn whether the body
+            // can `continue`; the loop records the answer. The head's test/update are already parsed,
+            // so a `continue` buried in a closure there cannot pollute the count — and nested loops
+            // each capture their own snapshot.
             var continuesBeforeBody = ParsedContinueCount;
 
+            // The loop is built as written: the head's declaration, test and update, and the body.
+            // The compiler's for-loop pass (ForLoopPreparation) rewrites a let/const/using head into
+            // per-iteration carriers, names the head's TDZ bindings, and wraps a C-style `using`
+            // loop in the block that disposes its resources, before SyntaxValidation reads the tree.
             AstStatement statement;
-            bool containsContinue;
             if (stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
             {
                 if (!Block(out var block))
                     throw stream.Unexpected();
 
-                containsContinue = ParsedContinueCount != continuesBeforeBody;
-                if (newScope && declaration != null && !cStyleUsing)
-                {
-                    (beginNode, statement, update, test) = Desugar(declaration, block.Statements, update, test,
-                        cStyle: !@in && !of, bodyContainsContinue: containsContinue, block);
-                }
-                else
-                {
-                    statement = block;
-                }
-
+                statement = block;
             }
             else if (NonDeclarativeStatement(out statement))
             {
                 // A LabelledStatement whose item is a FunctionDeclaration is never a
                 // legal loop body (`for (…) label: function f(){}`), in either strict
                 // or sloppy mode. SyntaxValidation catches this for a non-lexical head,
-                // but a let/const/using for-in/for-of/C-style head is rewritten by
-                // Desugar below into a synthetic per-iteration block, hiding the raw
-                // labelled statement from the validator — so reject it here, on the
-                // body as written, before that rewrite.
+                // but a let/const/using for-in/for-of/C-style head is rewritten by the
+                // compiler's for-loop pass into a synthetic per-iteration block before
+                // validation, hiding the raw labelled statement from the validator — so
+                // reject it here, on the body as written.
                 ThrowIfLabelledFunctionLoopBody(statement);
-
-                containsContinue = ParsedContinueCount != continuesBeforeBody;
-                if (newScope && declaration != null && !cStyleUsing)
-                    (beginNode, statement, update, test) = Desugar(declaration, new Sequence<AstStatement>(1) { statement }, update, test,
-                        cStyle: !@in && !of, bodyContainsContinue: containsContinue);
             }
             else throw stream.Unexpected();
 
-            IFastEnumerable<StringSpan>? headTdzNames = null;
-            if (newScope && declaration != null)
-                headTdzNames = GetBindingNames(declaration);
+            var containsContinue = ParsedContinueCount != continuesBeforeBody;
 
             if (@in)
             {
                 node = new AstForInStatement(begin, PreviousToken, beginNode, inTarget, statement)
                 {
-                    HeadTdzNames = headTdzNames,
                     ContainsContinue = containsContinue
                 };
                 scope.GetVariables();
@@ -337,7 +297,6 @@ partial class FastParser
             {
                 node = new AstForOfStatement(begin, PreviousToken, beginNode, ofTarget, statement, awaitOf)
                 {
-                    HeadTdzNames = headTdzNames,
                     ContainsContinue = containsContinue
                 };
                 scope.GetVariables();
@@ -345,16 +304,10 @@ partial class FastParser
                 return true;
             }
 
-            var forStatement = new AstForStatement(begin, PreviousToken, beginNode, test, update, statement)
+            node = new AstForStatement(begin, PreviousToken, beginNode, test, update, statement)
             {
                 ContainsContinue = containsContinue
             };
-            // Wrap a C-style `await using` for-loop in a block so its lexical environment
-            // (which owns the disposable resources) is established and torn down — disposing
-            // the resources — around the entire loop.
-            node = cStyleUsing
-                ? new AstBlock(begin, PreviousToken, new Sequence<AstStatement>(1) { forStatement })
-                : forStatement;
             scope.GetVariables();
         }
         finally
@@ -592,126 +545,6 @@ partial class FastParser
                 ? expr.ToPattern()
                 : lhs;
 
-        static IFastEnumerable<StringSpan> GetBindingNames(AstVariableDeclaration declaration)
-        {
-            var names = new Sequence<StringSpan>();
-            var en = declaration.Declarators.GetFastEnumerator();
-            while (en.MoveNext(out var d))
-                CollectBindingNames(d.Identifier, names);
-            return names;
-        }
-
-        /// <summary>
-        /// True when a statement at the top level of the loop body declares a name the head
-        /// also binds — or, for a head whose test and update are evaluated in the same block,
-        /// a name one of them reads — so the body must keep its own scope instead of being
-        /// spliced into the per-iteration block (see the call site).
-        /// </summary>
-        /// <remarks>
-        /// Only the body's OWN declarations can collide: anything inside a nested block, loop
-        /// or function already has a scope of its own. A `var` cannot collide either — it is
-        /// hoisted to the enclosing function, and a `var` sharing a name with a lexical head
-        /// binding is an early error the validator reports.
-        /// </remarks>
-        static bool BodyShadowsHeadBinding(
-            AstVariableDeclaration declaration,
-            IFastEnumerable<AstStatement> body,
-            HashSet<string>? headExpressionNames = null)
-        {
-            var headNames = new Sequence<StringSpan>();
-            var headEn = declaration.Declarators.GetFastEnumerator();
-            while (headEn.MoveNext(out var headDeclarator))
-                CollectBindingNames(headDeclarator.Identifier, headNames);
-
-            var hasHeadExpressionNames = headExpressionNames is { Count: > 0 };
-            if (headNames.Count == 0 && !hasHeadExpressionNames)
-                return false;
-
-            bool IsHeadName(StringSpan name)
-            {
-                foreach (var headName in headNames)
-                {
-                    if (string.Equals(headName.Value, name.Value, StringComparison.Ordinal))
-                        return true;
-                }
-
-                return hasHeadExpressionNames
-                    && name.Value != null
-                    && headExpressionNames!.Contains(name.Value);
-            }
-
-            var statements = body.GetFastEnumerator();
-            while (statements.MoveNext(out var statement))
-            {
-                switch (statement)
-                {
-                    case AstVariableDeclaration { Kind: not FastVariableKind.Var } lexical:
-                        var bodyNames = new Sequence<StringSpan>();
-                        var declarators = lexical.Declarators.GetFastEnumerator();
-                        while (declarators.MoveNext(out var declarator))
-                            CollectBindingNames(declarator.Identifier, bodyNames);
-
-                        foreach (var bodyName in bodyNames)
-                        {
-                            if (IsHeadName(bodyName))
-                                return true;
-                        }
-                        break;
-
-                    case AstExpressionStatement
-                    {
-                        Expression: AstClassExpression { IsDeclaration: true, Identifier: { } classIdentifier }
-                    }:
-                        if (IsHeadName(classIdentifier.Name))
-                            return true;
-                        break;
-
-                    case AstExpressionStatement
-                    {
-                        Expression: AstFunctionExpression { IsStatement: true, Id: { } functionIdentifier }
-                    }:
-                        if (IsHeadName(functionIdentifier.Name))
-                            return true;
-                        break;
-                }
-            }
-
-            return false;
-        }
-
-        static void CollectBindingNames(AstExpression expression, Sequence<StringSpan> names)
-        {
-            switch (expression.Type)
-            {
-                case FastNodeType.Identifier:
-                    names.Add((expression as AstIdentifier)!.Name);
-                    break;
-
-                case FastNodeType.BinaryExpression:
-                    CollectBindingNames((expression as AstBinaryExpression)!.Left, names);
-                    break;
-
-                case FastNodeType.SpreadElement:
-                    CollectBindingNames((expression as AstSpreadElement)!.Argument, names);
-                    break;
-
-                case FastNodeType.ArrayPattern:
-                    var elements = (expression as AstArrayPattern)!.Elements.GetFastEnumerator();
-                    while (elements.MoveNext(out var element))
-                    {
-                        if (element != null)
-                            CollectBindingNames(element, names);
-                    }
-                    break;
-
-                case FastNodeType.ObjectPattern:
-                    var properties = (expression as AstObjectPattern)!.Properties.GetFastEnumerator();
-                    while (properties.MoveNext(out var property))
-                        CollectBindingNames(property.Value, names);
-                    break;
-            }
-        }
-
         bool ExpressionList(out AstExpression? node)
         {
             var list = new Sequence<AstExpression>();
@@ -759,402 +592,6 @@ partial class FastParser
 
             considerInOfAsOperators = true;
             return true;
-        }
-
-        // modify the node as well...
-        AstExpression AssignTempNames(Sequence<(string id, AstIdentifier temp)> list, Sequence<StringSpan> hoisted, AstExpression e)
-        {
-            switch (e.Type)
-            {
-                case FastNodeType.Identifier:
-                    var id = e as AstIdentifier;
-                    var tempID = NewTempName();
-                    // Preserve the original binding name for NamedEvaluation: a binding such
-                    // as `[f = () => {}]` must name the anonymous initializer "f", not the
-                    // synthetic temp this rename introduces.
-                    var temp = new AstIdentifier(id!.Start, tempID) { InferenceName = id.Name.Value };
-
-                    hoisted.Add(id.Name);
-                    list.Add((id.Name.Value!, temp));
-
-                    return temp;
-
-                case FastNodeType.EmptyExpression:
-                    return e;
-
-                case FastNodeType.BinaryExpression:
-                    var binary = e as AstBinaryExpression;
-                    if (binary!.Operator != TokenTypes.Assign)
-                        throw new FastParseException(e.Start, $"Unknown token");
-
-                    return new AstBinaryExpression(AssignTempNames(list, hoisted, binary.Left), binary.Operator, binary.Right);
-
-                case FastNodeType.SpreadElement:
-                    var spreadElement = e as AstSpreadElement;
-                    return new AstSpreadElement(spreadElement!.Start, spreadElement.End, AssignTempNames(list, hoisted, spreadElement.Argument));
-
-                case FastNodeType.ObjectPattern:
-                    var pattern = e as AstObjectPattern;
-                    var pat = (pattern!.Properties as Sequence<ObjectProperty>)!;
-
-                    for (int i = 0; i < pat.Count; i++)
-                    {
-                        var property = pat[i];
-
-                        // Object rest (`{...rest}`) stores the rest target in the key as a
-                        // SpreadElement, and the compiler reads it from the key — not the
-                        // value (the parser shares the same node for both). Rewrite the key
-                        // once and keep both sides in sync, otherwise the generated temp
-                        // binding for the rest target is never declared and resolving it
-                        // throws "<temp> is not defined".
-                        if (property.Key != null && property.Key.Type == FastNodeType.SpreadElement)
-                        {
-                            var renamedRest = AssignTempNames(list, hoisted, property.Key);
-                            pat[i] = new ObjectProperty(renamedRest, renamedRest, property.Init, property.Spread, property.Computed);
-                            continue;
-                        }
-
-                        pat[i] = new ObjectProperty(property.Key, AssignTempNames(list, hoisted, property.Value), property.Init, property.Spread, property.Computed);
-                    }
-
-                    return pattern;
-
-                case FastNodeType.ArrayPattern:
-                    var arrayPattern = e as AstArrayPattern;
-                    var elements = (arrayPattern!.Elements as Sequence<AstExpression>)!;
-
-                    for (int i = 0; i < elements.Count; i++)
-                    {
-                        var property = elements[i];
-                        elements[i] = AssignTempNames(list, hoisted, property);
-                    }
-
-                    return arrayPattern;
-
-                default:
-                    throw new FastParseException(e.Start, $"Unknown token");
-            }
-        }
-
-        (AstNode beginNode, AstStatement statement, AstExpression? update, AstExpression? test) Desugar(AstVariableDeclaration declaration, IFastEnumerable<AstStatement> body,
-            AstExpression? update, AstExpression? test, bool cStyle, bool bodyContainsContinue, AstBlock? sourceBlock = null)
-        {
-            // The head's bindings and the body's belong to DIFFERENT scopes: the loop's
-            // per-iteration environment holds the head's, and a Block body opens its own
-            // environment nested inside it, so a body-level `let`/`const`/`class`/`function`
-            // may shadow a head binding of the same name. Splicing the body's statements in
-            // beside the synthetic head declaration put both in ONE block, which made the two
-            // declarations collide:
-            //   for (const x of xs) { const x = 5; }   threw "Cannot assign to read only
-            //                                          variable" — the body initializer was
-            //                                          assigning the head's binding
-            //   for (let i = 0; i < 2; i++) { let i = 9; }   ran once instead of twice — the
-            //                                          body's 9 was copied back into the
-            //                                          loop carrier as the next `i`
-            // Source written by hand rarely shadows a loop variable with its own name, but a
-            // minifier renames the head binding and the body binding independently and lands
-            // on one short name for both. Nest only when a name actually collides: the
-            // ordinary loop body keeps its single flat block scope, and with it the shape the
-            // per-iteration lowering below was tuned around.
-            //
-            // A `let` head also MOVES the test (and a closure-carrying update) into that block —
-            // see the injection below — so for it the body shares a scope with the head's own
-            // expressions too, and a body declaration shadows every name they read, not only the
-            // loop variable's:
-            //   const n = 3; for (let r = 1; r <= n; ++r) { const n = 1; }
-            // read the body's `n` in the test and threw "Cannot access 'n' before initialization"
-            // on the first evaluation, one iteration before that binding exists. Which names the
-            // test and update read is what decides it, so collect them alongside the head's.
-            var headExpressionNames = cStyle && declaration.Kind == FastVariableKind.Let
-                ? IdentifierNameCollector.Collect(test, update)
-                : null;
-            var nestBody = sourceBlock != null
-                && BodyShadowsHeadBinding(declaration, body, headExpressionNames);
-
-            var statementList = new Sequence<AstStatement>(nestBody ? 2 : body.Count + 1) { null! };
-            if (nestBody)
-                statementList.Add(sourceBlock!);
-            else
-                statementList.AddRange(body);
-
-            // for-of and for-in does not require identifier replacement
-            // instead they need single identifier as a temp variable
-
-            // both test/update are null for for-of and for-in
-
-            var requiresReplacement = update != null || test != null;
-
-            var tempDeclarations = new Sequence<VariableDeclarator>();
-            var scopedDeclarations = new Sequence<VariableDeclarator>();
-            var list = new Sequence<(string id, AstIdentifier temp)>();
-            var hoisted = new Sequence<StringSpan>();
-
-            // For a C-style `for (let …; test; update)` head whose bindings are all simple
-            // identifiers, keep the original names bound in the loop's own lexical scope (the head's
-            // "init" declaration) alongside the synthetic per-iteration carriers. This lets a closure
-            // created inside an initializer (e.g. `for (let i = (f = () => i, 0); …)`) capture the
-            // loop variable instead of throwing "i is not defined": the closure resolves to this
-            // loop-scope binding, which the per-iteration copies never reassign (matching the spec's
-            // single loop environment). The carrier is seeded from it, so the initializer's side
-            // effects still run exactly once. `const` heads keep the original lowering — a `const`
-            // carrier cannot be mutated by an update.
-            //
-            // This applies even to a head with no test and no update (`for (let x = init; ;)`): an
-            // initializer closure must still resolve the loop binding, not the enclosing scope's
-            // same-named variable (test262 sm/lexical-environment/for-loop's `for (let outer = (save =
-            // function () { return outer; }); ;) break;`, where save() must return the loop `outer`).
-            //
-            // Restricted to a C-style head (`!@in && !of`): Desugar is shared with for-in / for-of,
-            // whose heads also have no test/update but bind the loop variable from each enumerated
-            // value (handled by VisitForIn/OfStatement), not from a carrier — they must keep the
-            // plain lowering.
-            var useLoopEnv = cStyle && declaration.Kind == FastVariableKind.Let;
-
-            var en = declaration.Declarators.GetFastEnumerator();
-            while (en.MoveNext(out var d))
-            {
-                if (useLoopEnv)
-                {
-                    // Keep the original binding — a simple identifier OR a destructuring pattern
-                    // (`{[++q]: r}`, `[a, b]`, …) — bound once in the head's own lexical scope, so a
-                    // closure created in a later declarator's initializer (`s = () => r`) resolves the
-                    // earlier binding instead of throwing "r is not defined" (test262 sm bug-1216623).
-                    // Per spec the loop runs in a single environment whose values are copied per
-                    // iteration; the body re-declares each name from a carrier (built below) so closures
-                    // in the head capture the original binding while the loop variable still advances.
-                    tempDeclarations.Add(new VariableDeclarator(d.Identifier, d.Init));
-
-                    // One per-iteration carrier per bound name, seeded from the original binding. For a
-                    // simple identifier this is the single name; for a pattern it is each destructured
-                    // name (collected in declaration order so a carrier never precedes its source).
-                    var boundNames = new Sequence<StringSpan>();
-                    CollectBindingNames(d.Identifier, boundNames);
-                    var nameEn = boundNames.GetFastEnumerator();
-                    while (nameEn.MoveNext(out var origName))
-                    {
-                        var tempID = NewTempName();
-                        var temp = new AstIdentifier(d.Identifier.Start, tempID) { InferenceName = origName.Value };
-
-                        tempDeclarations.Add(new VariableDeclarator(temp, new AstIdentifier(d.Identifier.Start, origName.Value)));
-
-                        hoisted.Add(origName);
-                        list.Add((origName.Value!, temp));
-                    }
-                }
-                else if (requiresReplacement)
-                {
-                    var id = AssignTempNames(list, hoisted, d.Identifier);
-                    tempDeclarations.Add(new VariableDeclarator(id, d.Init));
-                }
-                else
-                {
-                    var tid = NewTempName();
-                    var id = new AstIdentifier(d.Identifier.Start, tid);
-
-                    tempDeclarations.Add(new VariableDeclarator(id, d.Init));
-                    scopedDeclarations.Add(new VariableDeclarator(d.Identifier, id));
-                }
-            }
-
-            var changes = list;
-
-            // The per-iteration body block re-binds each name from its carrier (`let x = <carrier>`).
-            // `changes` is empty for a no-replacement non-loop-env head (its scopedDeclarations were
-            // populated directly above), so this is a no-op there.
-            foreach (var (id, temp) in changes)
-                scopedDeclarations.Add(new VariableDeclarator(new AstIdentifier(temp.Start, id), temp));
-
-            // A closure created in the increment must capture the SAME per-iteration environment the
-            // following test and body run in: ForBodyEvaluation copies the loop bindings AFTER the
-            // body, then evaluates the increment in that fresh environment, which the next test/body
-            // then share. Model this by running the increment at the TOP of the per-iteration body
-            // block — guarded by a loop-scoped "started" flag so it is skipped on the first pass — and
-            // copying each per-iteration binding back into its carrier (see below) before the next
-            // iteration's increment reads it (test262 sm/lexical-environment/for-loop's "incr"
-            // closures). Only a loop-env update that actually contains a closure needs this.
-            var incrementAtTop = useLoopEnv && update != null && ContainsClosure(update);
-            AstIdentifier startedFlag = null;
-            if (incrementAtTop)
-            {
-                var flagId = NewTempName();
-                startedFlag = new AstIdentifier(declaration.Start, flagId);
-                tempDeclarations.Add(new VariableDeclarator(startedFlag, new AstLiteral(TokenTypes.False, declaration.Start)));
-            }
-
-            // ForBodyEvaluation performs CreatePerIterationEnvironment AFTER the body and BEFORE the
-            // increment, seeding the next iteration from the values the body last saw. So a mutation the
-            // BODY makes to a loop binding has to reach the next iteration: copy each per-iteration
-            // binding back into its carrier at the end of the body. Without the copy an empty increment
-            // left nothing to advance the carrier and the loop re-read the seed value forever —
-            // `for (let x = 0; x < 10;) { x++; }` never terminated (test262
-            // language/statements/continue/no-label-continue and its six siblings).
-            //
-            // `continue` jumps past the end of the body straight to the increment, so a body that can
-            // `continue` takes the copy in a `finally`; one that cannot only needs it as a trailing
-            // statement, which keeps the hot `for (let i = 0; i < n; i++)` shape free of a per-iteration
-            // try/finally frame (worth ~25% on a tight counting loop). ParsedContinueCount is what
-            // decides, because it cannot report a false negative — see its documentation. `break` and
-            // `return` need no copy either way: they leave the loop, and the carrier is never read again.
-            if (useLoopEnv && changes.Count > 0)
-            {
-                var copyBackStatements = new Sequence<AstStatement>();
-                foreach (var (id, temp) in changes)
-                    copyBackStatements.Add(new AstExpressionStatement(new AstBinaryExpression(
-                        new AstIdentifier(temp.Start, temp.Name.Value), TokenTypes.Assign, new AstIdentifier(temp.Start, id))));
-
-                if (incrementAtTop || bodyContainsContinue)
-                {
-                    // Wrap the user body in `try { … } finally { <carrier> = x; … }`. Rebuild
-                    // statementList ([0] is the scoped-decl slot).
-                    var bodyStatements = new Sequence<AstStatement>();
-                    for (int bi = 1; bi < statementList.Count; bi++)
-                        bodyStatements.Add(statementList[bi]);
-
-                    var tryBody = new AstBlock(declaration.Start, declaration.End, bodyStatements);
-                    var finallyBody = new AstBlock(declaration.Start, declaration.End, copyBackStatements);
-                    statementList = [null!, new AstTryStatement(declaration.Start, declaration.End, tryBody, null, null, finallyBody)];
-                }
-                else
-                {
-                    statementList.AddRange(copyBackStatements);
-                }
-            }
-
-            if (requiresReplacement)
-            {
-                if (test != null)
-                {
-                    if (useLoopEnv)
-                    {
-                        // Per-iteration test binding: a closure created in the loop test
-                        // (`for (let i = 0; a.push(() => i), i < 5; ++i) {}`) must capture
-                        // that iteration's `i`, not the shared carrier. Evaluate the test
-                        // against the body block's fresh per-iteration binding by injecting
-                        // `if (!test) break;` at the top of the body block (right after
-                        // `let i = <carrier>`) and dropping the outer loop test. The test
-                        // keeps referencing the original name, which now resolves to the
-                        // per-iteration binding; its side effects and the final
-                        // loop-terminating evaluation still run exactly as before.
-                        var notTest = new AstUnaryExpression(test.Start, test, UnaryOperator.Negate);
-                        var breakStatement = new AstBreakStatement(test.Start, test.End);
-                        statementList.Insert(1, new AstIfStatement(test.Start, test.End, notTest, breakStatement));
-                        test = null;
-                    }
-                    else
-                    {
-                        test = AstIdentifierReplacer.Replace(test, changes) as AstExpression;
-                    }
-                }
-
-                if (update != null)
-                {
-                    if (incrementAtTop)
-                    {
-                        // `if (started) { <update>; } else { started = true; }`, inserted ABOVE the
-                        // test so the increment runs before the test in the shared per-iteration
-                        // environment, and is skipped on the first iteration. The update keeps
-                        // referencing the original names (which resolve to the per-iteration bindings).
-                        var guard = new AstIfStatement(update.Start, update.End,
-                            new AstIdentifier(startedFlag.Start, startedFlag.Name.Value),
-                            new AstExpressionStatement(update),
-                            new AstExpressionStatement(new AstBinaryExpression(
-                                new AstIdentifier(startedFlag.Start, startedFlag.Name.Value),
-                                TokenTypes.Assign,
-                                new AstLiteral(TokenTypes.True, declaration.Start))));
-                        statementList.Insert(1, guard);
-                        update = null;
-                    }
-                    else
-                    {
-                        update = AstIdentifierReplacer.Replace(update, changes) as AstExpression;
-                    }
-                }
-            }
-
-            // NOTE: for a no-closure update the carrier is mutated directly by the (replaced) outer
-            // loop update, and the per-iteration body re-binds each name from that carrier — closures
-            // in the test/body still capture the correct per-iteration value (test262
-            // let-closure-inside-condition). The end-of-body copy above runs first, so the update reads
-            // the value the body left behind, matching ForBodyEvaluation's
-            // CreatePerIterationEnvironment-then-increment order.
-
-            // The per-iteration scoped declaration carries the original head's
-            // `using` / `await using` disposal markers, so a `for (using x of …)`
-            // binding is disposed at the end of each iteration's block scope.
-            statementList[0] = new AstVariableDeclaration(declaration.Start, declaration.End, scopedDeclarations, declaration.Kind, declaration.Using, declaration.AwaitUsing);
-
-            // The loop-env lowering keeps the carriers as `let` in the head's own lexical scope
-            // (visible to test/update, shadowed in the body); `const` heads keep a `const` carrier;
-            // every other head uses a function-scoped `var` carrier as before.
-            var tempDeclarationKind = useLoopEnv
-                ? FastVariableKind.Let
-                : requiresReplacement && declaration.Kind == FastVariableKind.Const
-                    ? FastVariableKind.Const
-                    : FastVariableKind.Var;
-            var r = new AstVariableDeclaration(declaration.Start, declaration.End, tempDeclarations, tempDeclarationKind);
-            var last = body.Count == 0 ? declaration : body.Last();
-            var block = new AstBlock(r.Start, last.End, statementList);
-
-            // The synthetic per-iteration block replaces the original loop body
-            // block, so it must also carry that body's hoisted bindings (e.g. a
-            // nested `function` declaration). Otherwise the declaration is not
-            // hoisted into this block scope and a closure over the per-iteration
-            // loop variable captures an uninitialised slot. Merge those names with
-            // the loop's own per-iteration binding names (`hoisted`).
-            // When the body was nested rather than spliced it is still its own block, and it
-            // keeps carrying its own hoisting scope and Annex B names — re-hoisting them into
-            // the synthetic outer block would bind them one scope too high.
-            var combinedHoisting = CombineHoisting(
-                useLoopEnv || requiresReplacement ? hoisted : null,
-                nestBody ? null : sourceBlock?.HoistingScope);
-            if (combinedHoisting != null)
-                block.HoistingScope = combinedHoisting;
-
-            if (!nestBody && sourceBlock?.AnnexBFunctionNames != null)
-                block.AnnexBFunctionNames = sourceBlock.AnnexBFunctionNames;
-
-            return (r, block, update, test);
-        }
-
-        static bool ContainsClosure(AstNode node)
-        {
-            var detector = new ClosureDetector();
-            detector.Visit(node);
-            return detector.Found;
-        }
-
-        static IFastEnumerable<StringSpan>? CombineHoisting(
-            IFastEnumerable<StringSpan>? loopBindings,
-            IFastEnumerable<StringSpan>? bodyHoisting)
-        {
-            var hasLoop = loopBindings != null && loopBindings.Count > 0;
-            var hasBody = bodyHoisting != null && bodyHoisting.Count > 0;
-
-            if (!hasLoop && !hasBody)
-                return null;
-            if (!hasBody)
-                return loopBindings;
-            if (!hasLoop)
-                return bodyHoisting;
-
-            var merged = new Sequence<StringSpan>();
-            var seen = new HashSet<string>(StringComparer.Ordinal);
-
-            var loopEn = loopBindings!.GetFastEnumerator();
-            while (loopEn.MoveNext(out var name))
-            {
-                if (seen.Add(name.Value))
-                    merged.Add(name);
-            }
-
-            var bodyEn = bodyHoisting!.GetFastEnumerator();
-            while (bodyEn.MoveNext(out var name))
-            {
-                if (seen.Add(name.Value))
-                    merged.Add(name);
-            }
-
-            return merged;
         }
 
         // Rejects a LabelledStatement whose (possibly multiply-labelled) item is a

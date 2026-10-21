@@ -695,7 +695,8 @@ public static class DirectEvalSupport
         {
             var pool = new FastPool();
             var parser = new FastParser(new FastTokenStream(pool, text, null, options), options);
-            var program = parser.ParseProgram();
+            // The for-loop pass prepares the tree before any check reads it, as FastCompiler does.
+            var program = ForLoopPreparation.Prepare(parser.ParseProgram(), 0);
             ValidateDirectEvalEarlyErrors(program, allowSuperProperty, allowSuperCall, rejectArguments, rejectNewTarget);
             SyntaxValidation.ValidateProgram(program, text, options, inheritStrictMode, lexicalBindings, privateNamesInScope);
             if (parameterBindings?.Length > 0
