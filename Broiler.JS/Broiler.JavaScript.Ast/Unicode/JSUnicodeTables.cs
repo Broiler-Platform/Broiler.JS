@@ -14,9 +14,16 @@ namespace Broiler.JavaScript.Runtime.Unicode;
 /// <remarks>
 /// <para>
 /// <c>JSUnicodeTableData.g.cs</c> beside this file is generated, and
-/// <c>Broiler.JavaScript.Runtime.Tests</c>' <c>UnicodeTableRegenerationTests</c> regenerates it from the
+/// <c>Broiler.JavaScript.Ast.Tests</c>' <c>UnicodeTableRegenerationTests</c> regenerates it from the
 /// pinned archive and holds it equal byte for byte (the shared JavaScript libraries programme's rule SL7,
 /// in its shape for this engine). A change belongs in the generator or the pin, never in the file.
+/// </para>
+/// <para>
+/// The tables are held by <c>Broiler.JavaScript.Ast</c>, below the runtime and the parser, so that the
+/// parser reads them without referencing the runtime (milestone SJL-12.5, Broiler.VM's JSD-0080,
+/// decision D20); they moved here from <c>Broiler.JavaScript.Runtime</c> with their namespace. They are
+/// the default provider of the parser's options: a <c>FastParserOptions</c> whose provider is null scans
+/// over them.
 /// </para>
 /// <para>
 /// <b>The case-folding tables are left out</b>: this engine's folding under <c>u</c> and <c>v</c> is

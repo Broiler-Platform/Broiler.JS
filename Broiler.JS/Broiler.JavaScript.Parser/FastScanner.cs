@@ -45,7 +45,7 @@ public class FastScanner
     private readonly bool htmlLikeComments;
 
     // The lexical classes of the provider the options name, or null for the engine's own tables,
-    // which JSUnicode answers (with its cache of the ASCII answers).
+    // the ones Broiler.JavaScript.Ast holds, which JSUnicode answers (with its cache of the ASCII answers).
     private readonly EcmaScriptLexical lexical;
 
     /// <summary>The options the scanner was made with.</summary>
