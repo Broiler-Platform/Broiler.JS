@@ -421,6 +421,16 @@ public class FastTokenStream
         return current;
     }
 
+    /// <summary>
+    /// A mark of the current position, which returns the stream to it when disposed unless cancelled or
+    /// committed first.
+    /// </summary>
+    /// <remarks>
+    /// Obsolete since milestone SJL-12.5, under decision SJL-D-25 (b): the parser does not call it, and
+    /// <see cref="Current"/> with <see cref="Reset(FastToken)"/> does what it does without an allocation.
+    /// It is kept, unchanged, until a recorded check of its consumers allows its removal (SJL-D-25 (c)).
+    /// </remarks>
+    [Obsolete("Read Current to mark the position and call Reset(FastToken) to return to it. UndoMark is kept until a recorded check of its consumers allows its removal (decision SJL-D-25 (c)).")]
     public CancellableDisposableAction UndoMark()
     {
         var i = current;

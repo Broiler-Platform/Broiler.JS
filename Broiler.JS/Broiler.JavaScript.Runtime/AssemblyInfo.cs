@@ -18,3 +18,4 @@ using System.Runtime.CompilerServices;
 // parser reaches them without referencing this assembly (Broiler.VM's JSD-0080, decision D20). An
 // assembly built against this one still binds to them through these forwarders.
 [assembly: TypeForwardedTo(typeof(Broiler.JavaScript.Runtime.RegExpUnicodeValidator))]
+[assembly: TypeForwardedTo(typeof(Broiler.JavaScript.Runtime.CancellableDisposableAction))]
