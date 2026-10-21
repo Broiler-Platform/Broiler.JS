@@ -21,7 +21,19 @@ namespace Broiler.JavaScript.Compiler;
 /// <para>
 /// The parser did this as it parsed until milestone SJL-12.5, item 5 (Broiler.VM's JSD-0080, decision
 /// D22), which leaves the parser a tree without desugaring. The pass emits the shapes the parser
-/// emitted, node for node.
+/// emitted, node for node; only the temporaries' names differ.
+/// </para>
+/// <para>
+/// <b>Temporaries' names</b> (decision D22) are <c>&lt;d&gt;:&lt;n&gt;</c>: <c>d</c> is the direct-eval
+/// nesting depth the compilation inherits, and <c>n</c> counts the temporaries this pass names, from 1.
+/// A name with a colon is never an identifier, so no program can name, declare or shadow a temporary.
+/// The names depend on nothing but the tree and the depth, so two passes over one tree name alike,
+/// whatever ran before or beside them. And they differ from an enclosing compilation's: direct eval
+/// code is compiled at one more depth than the code that calls <c>eval</c>, so a <c>var</c> carrier a
+/// sloppy direct eval declares in its caller's variable environment never meets the caller's own. The
+/// parser's names until item 5 were per-parse numbers from 2, which a direct eval's carriers shared with
+/// its caller's; the compilation's identifier is not used, because it comes from a process-wide
+/// counter.
 /// </para>
 /// <para>
 /// <b>What it reads from the parser.</b> A loop's head and body as written, and the one fact a search of
@@ -55,8 +67,9 @@ internal static class ForLoopPreparation
     /// </summary>
     /// <param name="program">The parser's tree, which this changes.</param>
     /// <param name="directEvalDepth">
-    /// The direct-eval nesting depth the compilation inherits: 0 for a program, and one more than the
-    /// depth of the compilation that calls <c>eval</c> for direct eval code.
+    /// The direct-eval nesting depth the compilation inherits, the <c>d</c> of the temporaries' names: 0
+    /// for a program, and one more than the depth of the compilation that calls <c>eval</c> for direct
+    /// eval code.
     /// </param>
     /// <exception cref="FastParseException">
     /// A head's binding pattern holds a target the rewrite cannot rename ("Unknown token"), as the parser
@@ -67,22 +80,28 @@ internal static class ForLoopPreparation
         ArgumentNullException.ThrowIfNull(program);
         ArgumentOutOfRangeException.ThrowIfNegative(directEvalDepth);
 
-        new Preparer().Visit(program);
+        new Preparer(directEvalDepth).Visit(program);
         return program;
     }
 
     /// <summary>
+    /// The name of the <paramref name="number"/>th temporary a pass at <paramref name="directEvalDepth"/>
+    /// names: <c>&lt;d&gt;:&lt;n&gt;</c>, in the invariant culture.
+    /// </summary>
+    internal static string TemporaryName(int directEvalDepth, int number)
+        => directEvalDepth.ToString(CultureInfo.InvariantCulture) + ":" + number.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>
     /// One pass over one program: the walk, and the temporaries' counter, which is this pass's alone.
     /// </summary>
-    private sealed class Preparer : AstMapVisitor<AstNode>
+    private sealed class Preparer(int directEvalDepth) : AstMapVisitor<AstNode>
     {
         private readonly HashSet<object> preparedLists = new(System.Collections.Generic.ReferenceEqualityComparer.Instance);
 
-        // The number of the last temporary this pass named. A temporary's name is its number, which is
-        // never an identifier, from 2 on in each pass, as the parser named them.
-        private int tempVarID = 1;
+        // The number of temporaries this pass has named.
+        private int temporaries;
 
-        private string NewTempName() => (++tempVarID).ToString(CultureInfo.InvariantCulture);
+        private string NewTempName() => TemporaryName(directEvalDepth, ++temporaries);
 
         // ---- statement lists: updated in place ----------------------------------------------------
 

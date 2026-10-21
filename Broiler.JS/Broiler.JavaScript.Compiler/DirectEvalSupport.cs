@@ -119,7 +119,7 @@ public static class DirectEvalSupport
             if (inheritStrictMode)
                 text = "\"use strict\";\n" + text;
 
-            program = Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall, rejectArguments: inFieldInitializer, rejectNewTarget: rejectNewTarget);
+            program = Validate(text, DirectEvalDepth(), inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall, rejectArguments: inFieldInitializer, rejectNewTarget: rejectNewTarget);
 
             // Nothing to run: PerformEval owes an empty StatementList the undefined completion,
             // and a body with no statements declares nothing, so none of the scope, activation
@@ -678,14 +678,24 @@ public static class DirectEvalSupport
     /// way <see cref="Execute"/> does.
     /// </summary>
     public static bool ValidateIndirectEval(string text)
-        => Validate(text, false, false, null, null, null, false, false, rejectNewTarget: true)
+        => Validate(text, 0, false, false, null, null, null, false, false, rejectNewTarget: true)
             .Statements.Count > 0;
+
+    /// <summary>
+    /// The direct-eval depth the code a direct eval compiles inherits: one more than the running code's,
+    /// because <see cref="Execute"/> compiles it under one more <c>PushDirectEvalCompilation</c>. The
+    /// for-loop pass names the temporaries of the program it validates by it, as FastCompiler names those
+    /// of the program it compiles (Broiler.VM's JSD-0080, decision D22). Without a context the code is
+    /// evaluated as a program of its own, at 0.
+    /// </summary>
+    private static int DirectEvalDepth()
+        => JSEngine.Current is JSContext context ? context.DirectEvalCompilationDepth + 1 : 0;
 
     /// <summary>
     /// Enforces the eval early errors and returns the program they were checked against, so
     /// the caller can reuse that parse rather than paying for another one.
     /// </summary>
-    private static AstProgram Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool rejectArguments = false, bool rejectNewTarget = false)
+    private static AstProgram Validate(string text, int directEvalDepth, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool rejectArguments = false, bool rejectNewTarget = false)
     {
         var options = EvalOptions;
         if (inheritStrictMode && ContainsStrictReservedWordUsage(text, options))
@@ -696,7 +706,7 @@ public static class DirectEvalSupport
             var pool = new FastPool();
             var parser = new FastParser(new FastTokenStream(pool, text, null, options), options);
             // The for-loop pass prepares the tree before any check reads it, as FastCompiler does.
-            var program = ForLoopPreparation.Prepare(parser.ParseProgram(), 0);
+            var program = ForLoopPreparation.Prepare(parser.ParseProgram(), directEvalDepth);
             ValidateDirectEvalEarlyErrors(program, allowSuperProperty, allowSuperCall, rejectArguments, rejectNewTarget);
             SyntaxValidation.ValidateProgram(program, text, options, inheritStrictMode, lexicalBindings, privateNamesInScope);
             if (parameterBindings?.Length > 0

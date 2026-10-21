@@ -927,6 +927,14 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     }
 
     public bool IsCompilingDirectEval => directEvalCompilationDepth > 0;
+
+    /// <summary>
+    /// How many direct evals the code compiled now is nested in: 0 outside every direct eval, and one more
+    /// for each direct eval whose compilation and evaluation are running. Indirect eval sets it to 0 while
+    /// it runs (<see cref="SuspendDirectEvalOverlays"/>). The compiler's for-loop pass names its
+    /// temporaries by it, so a direct eval's never meet its caller's (Broiler.VM's JSD-0080, decision D22).
+    /// </summary>
+    internal int DirectEvalCompilationDepth => directEvalCompilationDepth;
     public bool UsesDirectEvalLocalVarEnvironment => directEvalLocalVarEnvironmentDepth > 0;
     public string[] DirectEvalPrivateNamesInScope => directEvalPrivateNameScopes.Count == 0 ? null : directEvalPrivateNameScopes[^1];
     public string[] DirectEvalBindingNamesInScope => directEvalBindingNameScopes.Count == 0 ? null : directEvalBindingNameScopes[^1];
