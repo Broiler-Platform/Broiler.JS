@@ -6,10 +6,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <!-- No reference to Broiler.JavaScript.Runtime (milestone SJL-12.5, Broiler.VM's JSD-0080, decision
+       D20): the Unicode tables and the regular-expression checks the parser reads are Ast's, and
+       Broiler.Unicode.Algorithms, whose IUnicodeTables types the options' provider, comes with Ast. -->
   <ItemGroup>
     <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Ast\Broiler.JavaScript.Ast.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj" />
-    <ProjectReference Include="..\Broiler.JavaScript.Runtime\Broiler.JavaScript.Runtime.csproj" />
   </ItemGroup>
 </Project>
