@@ -105,9 +105,13 @@ Broiler-Platform/Broiler.JS#1068 (`c29d653f`). This section lists what decision 
 the disposition each public member the items changed has under decision SJL-D-25, which decisions D20 and D29
 apply here; the sections below, one per item, hold the detail. Items 2 and 3, one temporary counter per parse and
 an end-of-file token per scanner (Broiler-Platform/Broiler.JS#1064, `48fee2d3`), changed private members only and
-have no section. **No public member is removed at SJL-12.5. One signature changes in place,
-`DirectEvalSupport.Execute`'s, with nothing standing for the old one: that is none of SJL-D-25's dispositions**,
-and it is listed below as what it is.
+have no section. **One public method's signature is replaced in place: `DirectEvalSupport.Execute`'s old
+signature is removed, which breaks binary compatibility, with no forwarder, no obsolete overload and none of
+SJL-D-25's dispositions. Every other public member the items changed is kept, forwarded or added.** Whether that
+removal is the stop of the programme's risk D6, "a public member removed without its recorded disposition"
+(Broiler.VM's `docs/javascript-shared-libraries/risks.md`), or an exception to decision D29's forwarders by default
+that the owner accepts, is the owner's to decide, and no decision on it is recorded. A forwarder for the old
+signature would be a product change: made before the after runs, it would move the after commit, `c29d653f`.
 
 **What decision D29 asks recorded, and where:**
 - the new overloads, `JSCompilationOptions.AllowTopLevelAwait`, the `IJSCompiler` default method as a
@@ -130,13 +134,15 @@ removal in a major version, with a recorded check of the consumers.
 | The constructors without options of `FastScanner`, `FastTokenStream`, `FastParser` and `FastCompiler`; `DefaultJSCompiler.Register` and `DefaultJSCompiler.Compile` without options; `CoreScript.Compile` without options, `CoreScript.Evaluate`, `EvaluateAsync` and `EvaluateWithTasks` | 1 | Kept, with their signatures; what each does changed, as the item's section lists |
 | `IJSCompiler.Compile(in StringSpan, in JSCompilationOptions, string, IList<string>, ICodeCache)` | 1 | Added, a default interface method: a behavioural change for a host's compiler that implements only the existing member |
 | `JSCode.Key` | 1 | Kept; its text changed |
-| The other members item 1 lists | 1 | Added, beside the existing ones |
+| The members item 1's section lists as added | 1 | Added, beside the existing ones |
 | `FastParser.ParseProgram`, `FastParser.ParseModule`, and the public field `HeadTdzNames` of `AstForInStatement` and `AstForOfStatement` | 5 | Kept, with their signatures; the parser returns a `for` loop as written, and no longer sets `HeadTdzNames` |
-| `DirectEvalSupport.Execute` | 5 | Changed in place: `int directEvalDepth = 1` inserted before `tailCall`. The old signature is not kept, and no forwarder or obsolete overload stands for it, so code built against it must be rebuilt. None of (a) to (c): recorded, not disposed of |
+| `DirectEvalSupport.Execute` | 5 | Changed in place: `int directEvalDepth = 1` inserted before `tailCall`. The old signature is removed, and no forwarder or obsolete overload stands for it, so code built against it must be rebuilt: a call compiled against it finds no such method. None of (a) to (c): recorded, not disposed of, and left to the owner |
 
-**Nothing is removed under (c).** The check of the consumers that (c) requires, for `UndoMark`, for the members
-without options and for the hosts' own `IJSCompiler` implementations, is not made: Broiler.JSeal and
-Broiler.HtmlBridge, the downstream consumers, cannot be read from where these records are written.
+**No member is removed under (c).** The check of the consumers that (c) requires is not made: for `UndoMark`, for
+the members without options, for the hosts' own `IJSCompiler` implementations, nor for the callers of
+`DirectEvalSupport.Execute`'s old signature, code compiled against `792ff56e`'s `Compiler` or an earlier one, whose
+removal it would have needed. Broiler.JSeal and Broiler.HtmlBridge, the downstream consumers, cannot be read from
+where these records are written.
 
 *(Added 2026-10-25, at SJL-12.5's records.)*
 
@@ -154,9 +160,12 @@ the method evaluates the code with `CoreScript.Evaluate` (`DirectEvalSupport.cs:
 context to read a depth from, is at 0; and eval code that is exactly one call of the intrinsic `eval` with a
 constant string is not compiled, its constant being validated and run in its place at the outer eval code's depth
 (`DirectEvalSupport.cs:150-157`). Neither is observable, since no script sees a temporary's name. *(Corrected
-2026-10-25, at SJL-12.5's records, after review; no code changed. The second sentence began "It is the
+2026-10-25, at SJL-12.5's records, after review; no code changed. The third sentence began "It is the
 direct-eval depth the method validates and compiles the eval code at, by which", which the path without a
-`JSContext` does not do, and named neither path.)* The old signature is gone, so code compiled against it must be
+`JSContext` does not do, and named neither path. The product's own remarks,
+`DirectEvalSupport.cs:92-93` and `ForLoopPreparation.cs:34-36`, still say that the eval code is validated and
+compiled at that depth: a change to them would move the after commit, so they are left to the first product change
+to those files after the after runs.)* The old signature is gone, so code compiled against it must be
 rebuilt; a call that passes its arguments by position up to `catchParameterNames`, and `tailCall` by name, compiles
 unchanged. No other public member is added, removed or changed: the public API listings of `Ast`, `Parser`,
 `Compiler`, `Engine` and `Runtime`, written by PublicApiGenerator 11.4.6 from `792ff56e` and from this change,
