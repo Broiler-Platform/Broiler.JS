@@ -1479,12 +1479,18 @@ engine's in-place preparation.** *(Added 2026-10-25, at SJL-12.5's records.)* Th
     change to those files after the after runs, since a change to them would move the after commit.
   - **Decision D29's "forwarders by default"** is not applied to one member: `DirectEvalSupport.Execute`, which
     compiled code calls, gained a parameter in place. Its old signature is removed, which breaks binary
-    compatibility, with no forwarder, no obsolete overload and none of SJL-D-25's dispositions, and no check of its
-    callers is made. Whether that is the stop of the programme's risk D6, "a public member removed without its
-    recorded disposition", or an exception the owner accepts, is the owner's to decide; no decision on it is
-    recorded. A forwarder made before the after runs would move the after commit.
+    compatibility, with no forwarder and no obsolete overload. Its disposition was taken 2026-10-25, as
+    recommended, under the owner's direction of 2026-10-18 ("Please do all recommended decisions and skip waiting
+    for review."), which changes no rule: SJL-D-25 option (c), removal, with the consumer check recorded in
+    [`docs/public-api.md`](../public-api.md). Broiler.JSeal (`ebb5e6ac`) and Broiler.HtmlBridge
+    (`3baa48c5`) refer to no `DirectEvalSupport`, and the old signature's only caller is code the compiler emitted.
+    The removal fits the programme's risk D6 in Broiler.VM's `docs/javascript-shared-libraries/risks.md`, whose
+    stop is "a public member removed without its recorded disposition", since its disposition is recorded. A
+    folder of `AssemblyCodeCache`, the console host's persistent code cache, written before the change must be
+    cleared after updating, since the cache's key does not change from one build to the next; keying it on the
+    build is a suggested follow-up. The decision changes no product file, so the after commit stays `c29d653f`.
   - **SJL-D-25 (b)** is an obsolete forwarder with a removal version; `UndoMark`'s obsolete mark names no version and
-    leaves its removal to (c)'s consumer check, which cannot be made here.
+    leaves its removal to (c)'s consumer check, which these records do not make for it.
   - **The rule's part C admits a third class**, D: an input the parser's for-loop desugaring refused at the base,
     which the parser alone accepts after and the whole compile refuses after as it did at the base. The bullet on
     the rule above names J1, J2 and a resolved crash only. Bundle `sjl-12-001`'s README, section 2, names before
@@ -1497,8 +1503,9 @@ engine's in-place preparation.** *(Added 2026-10-25, at SJL-12.5's records.)* Th
   pins the catalogue's bytes.
 - **MOD-M2-4 is closed**, in [`Modernization.md`](Modernization.md), as decision D28 says.
 - **Next: the after runs**, at the after commit: part A by `test262 evidence`, and parts B, C and D on the local
-  machine; then the bundle's README reads each part against the rule. Nothing here is a verdict. The owner's
-  reading of `DirectEvalSupport.Execute`'s removed signature, above, is open beside them.
+  machine; then the bundle's README reads each part against the rule. Nothing here is a verdict. The follow-up
+  the disposition of `DirectEvalSupport.Execute`'s old signature suggests, above, is a product change, and so comes
+  after them.
 
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 4 to 6, and its half of shared
 clauses 7 and 8, are read by the programme's ledger. **SJL-12 may not meet its gate before SJL-3 meets SJL-3's.**

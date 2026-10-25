@@ -106,12 +106,15 @@ the disposition each public member the items changed has under decision SJL-D-25
 apply here; the sections below, one per item, hold the detail. Items 2 and 3, one temporary counter per parse and
 an end-of-file token per scanner (Broiler-Platform/Broiler.JS#1064, `48fee2d3`), changed private members only and
 have no section. **One public method's signature is replaced in place: `DirectEvalSupport.Execute`'s old
-signature is removed, which breaks binary compatibility, with no forwarder, no obsolete overload and none of
-SJL-D-25's dispositions. Every other public member the items changed is kept, forwarded or added.** Whether that
-removal is the stop of the programme's risk D6, "a public member removed without its recorded disposition"
-(Broiler.VM's `docs/javascript-shared-libraries/risks.md`), or an exception to decision D29's forwarders by default
-that the owner accepts, is the owner's to decide, and no decision on it is recorded. A forwarder for the old
-signature would be a product change: made before the after runs, it would move the after commit, `c29d653f`.
+signature is removed, which breaks binary compatibility, with no forwarder and no obsolete overload. Its
+disposition is SJL-D-25's (c), removal, with the check of its consumers recorded below. Every other public member
+the items changed is kept, forwarded or added.** **Taken 2026-10-25, as recommended**, under the owner's direction
+of 2026-10-18 ("Please do all recommended decisions and skip waiting for review."), which changes no rule:
+SJL-D-25 option (c), removal, with the consumer check recorded here. The removal fits the programme's risk D6
+(Broiler.VM's `docs/javascript-shared-libraries/risks.md`), whose stop is "a public member removed without its
+recorded disposition", since its disposition is now recorded. (c) names removal in a major version: this engine's
+packages are `0.1.0` previews, and the repository's README calls the public API unstable, with breaking changes
+possible without notice. The decision changes no product file, so the after commit stays `c29d653f`.
 
 **What decision D29 asks recorded, and where:**
 - the new overloads, `JSCompilationOptions.AllowTopLevelAwait`, the `IJSCompiler` default method as a
@@ -136,13 +139,33 @@ removal in a major version, with a recorded check of the consumers.
 | `JSCode.Key` | 1 | Kept; its text changed |
 | The members item 1's section lists as added | 1 | Added, beside the existing ones |
 | `FastParser.ParseProgram`, `FastParser.ParseModule`, and the public field `HeadTdzNames` of `AstForInStatement` and `AstForOfStatement` | 5 | Kept, with their signatures; the parser returns a `for` loop as written, and no longer sets `HeadTdzNames` |
-| `DirectEvalSupport.Execute` | 5 | Changed in place: `int directEvalDepth = 1` inserted before `tailCall`. The old signature is removed, and no forwarder or obsolete overload stands for it, so code built against it must be rebuilt: a call compiled against it finds no such method. None of (a) to (c): recorded, not disposed of, and left to the owner |
+| `DirectEvalSupport.Execute` | 5 | (c): changed in place, `int directEvalDepth = 1` inserted before `tailCall`, and the old signature removed, with no forwarder or obsolete overload; its consumer check is below. A call compiled against the old signature finds no such method, so code built against it must be rebuilt; and a source call that passes `tailCall` by position must also be edited, since a `bool` does not convert to the `int` now in that place. A source call that passes `tailCall` by name, or not at all, compiles unchanged |
 
-**No member is removed under (c).** The check of the consumers that (c) requires is not made: for `UndoMark`, for
-the members without options, for the hosts' own `IJSCompiler` implementations, nor for the callers of
-`DirectEvalSupport.Execute`'s old signature, code compiled against `792ff56e`'s `Compiler` or an earlier one, whose
-removal it would have needed. Broiler.JSeal and Broiler.HtmlBridge, the downstream consumers, cannot be read from
-where these records are written.
+**One member is removed under (c): `DirectEvalSupport.Execute`'s old signature.** The check of its consumers,
+made 2026-10-25: Broiler-Platform/Broiler.JSeal at `ebb5e6ac0ed8921e224d822e6aa7d26404a3a079` and
+Broiler-Platform/Broiler.HtmlBridge at `3baa48c5f2b1ec5a04d6bfc0fb6c5c84edf9f0bc`, the downstream consumers,
+contain no reference to `DirectEvalSupport`. Neither keeps compiled code beyond its process: Broiler.HtmlBridge
+caches it in memory, in `DictionaryCodeCache` (`Registration.cs:99`, `:310`), and Broiler.JSeal installs no code
+cache of its own, passing the context's (`BroilerJsRealm.Modules.cs:113`), which `JSContext` makes in memory
+(`JSContext.cs:1961-1963`). No test of this repository calls the method. The old signature's only caller is code
+the compiler emitted: `FastCompiler` binds the method by its parameter types
+(`FastCompiler.VisitCallExpression.cs:16-18`, the old ones at `792ff56e`), so what can still call the old signature
+after this change is code an earlier build compiled and kept.
+
+**What follows: a persistent code cache written before this change must be cleared after updating.**
+`AssemblyCodeCache` (`Broiler.JS/Broiler.JavaScript/AssemblyCodeCache.cs`), the persistent code cache of the
+console host `BroilerJS`, keys and checks each entry on the `AssemblyName.Version` of the assembly that defines it
+(`:55`, `:99`, `:200`). That version is `0.0.0.0` at every build of this repository: Nerdbank.GitVersioning writes
+it, and the repository has no `version.json` (read from the `BroilerJS.Version.cs` it generated in a Release build
+of this change on 2026-10-25). Keying on the engine's own assemblies would not tell builds apart either: every
+`0.1.0` preview carries `0.1.0.0` (`eng/Broiler.Packaging.props`, `VersionPrefix` `0.1.0`). So a cache folder
+written before this change can serve code that calls the old signature, which then finds no such method; such a
+folder must be cleared after updating. The host is not packaged, and its `Program.cs:36` leaves the cache
+commented out, so only a host that constructs the cache itself holds such a folder. A follow-up is suggested: key
+the cache on the build. It is a product change, and so comes after the after runs.
+
+The check of the consumers that (c) requires is not made for `UndoMark`, for the members without options, nor for
+the hosts' own `IJSCompiler` implementations, and none of them is removed.
 
 *(Added 2026-10-25, at SJL-12.5's records.)*
 
