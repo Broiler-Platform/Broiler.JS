@@ -173,6 +173,36 @@ Tab-separated, one header line, LF line endings, no quoting; a cell never holds 
 `main` `046357b`; Broiler.JS `ec494f66`, whose product sources are `main` `1f91b8f1`. Every site is opened, not
 guessed: a site that cannot be found is `none` with the search that was run.
 
+**Paths that moved after the heads** *(noted 2026-10-25, at milestone SJL-12.5's records)*. Item 4 of SJL-12.5
+(Broiler-Platform/Broiler.JS#1066, merged as `792ff56e` on 2026-10-21) moved three files the catalogue cites from
+`Broiler.JavaScript.Runtime/` to `Broiler.JavaScript.Ast/`, so 22 rows' `js_site` cells, and the `notes` of eight of
+them, name paths that `main` no longer has. They are read at the heads above, as every site is; on `main` from
+`792ff56e`, read them at these paths:
+
+| Cited at the heads | On `main` from `792ff56e` | Lines |
+|---|---|---|
+| `Broiler.JavaScript.Runtime/RegExpGroupNames.cs` | `Broiler.JavaScript.Ast/RegExpGroupNames.cs` | The same: the file moved unchanged |
+| `Broiler.JavaScript.Runtime/Unicode/JSUnicodePropertyNames.cs` | `Broiler.JavaScript.Ast/Unicode/JSUnicodePropertyNames.cs` | The same: the file moved unchanged |
+| `Broiler.JavaScript.Runtime/RegExpUnicodeValidator.cs` | `Broiler.JavaScript.Ast/RegExpUnicodeValidator.cs` | Ten lines later, after the header and remarks the move added: `:68` is `:78`, `:202` is `:212` and `:317` is `:327` |
+
+The rows, by the file they cite:
+- `RegExpGroupNames.cs`: EE0184 (`:168`, `:151`), EE0197 (`:244`, `:220`), EE0198 (`:244`), EE0199 (`:247`,
+  `:293`) and EE0200 (`:247`), with the `notes` of EE0198 to EE0200; and, in the search of a `none` cell, EE0186 to
+  EE0190 (with the comment at `:89`) and EX0026;
+- `RegExpUnicodeValidator.cs`: EE0192 (`:68`), EE0193, EE0195, EE0210 and EE0212 (`:317`); and, in the search of a
+  `none` cell, EE0183 (`:202`), EE0186 to EE0190 and EX0026;
+- `Unicode/JSUnicodePropertyNames.cs`: EE0201 and EE0202 (`:64`), EE0203 and EE0204 (`:70`) and EE0205 (`:68`),
+  with the `notes` of all five.
+
+**`early-errors.tsv` is not changed for them**, and is not to be changed for a moved path: Broiler.VM's mapping,
+`src/Broiler.VM.Profile.JavaScript/docs/diagnostics/frontend-mapping.tsv`, names this catalogue by commit
+(`b1ac1b8a`) and by the SHA-256 of its bytes (`7a9109b0db685df98a7327cd95b9337cc538337f834fe4f22692b249058aa4f1`),
+and Broiler.VM's bundle `sjl-12-001` retains a copy of those bytes, so a rewritten cell would break the pin for no
+change of any rule, code or verdict. The cells stay the heads' reading, and this note is the reading
+on `main`. Sites in files that still exist are read at the heads too: SJL-12.5 changed several of the parser's and
+the compiler's files, so a cited line there can name other text on `main` (`FastScanner.cs:1453` among them). This
+note lists only the paths `main` no longer has.
+
 ## 5. Shared codes
 
 **Form:** `JSE` and four digits, `JSEbbnn`. `bb` is the row's block, `nn` its place in the block, from `01`, in row
