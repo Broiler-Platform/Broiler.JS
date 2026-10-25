@@ -1478,8 +1478,8 @@ engine's in-place preparation.** *(Added 2026-10-25, at SJL-12.5's records.)* Th
     leaves its removal to (c)'s consumer check, which cannot be made here.
   - **The rule's part C admits a third class**, D: an input the parser's for-loop desugaring refused at the base,
     which the parser alone accepts after and the whole compile refuses after as it did at the base. The bullet on
-    the rule above names J1, J2 and a resolved crash only. Bundle `sjl-12-001`'s README, section 2, names before the after runs how it reads class D,
-    whose population at the base is empty.
+    the rule above names J1, J2 and a resolved crash only. Bundle `sjl-12-001`'s README, section 2, names before
+    the after runs how it reads class D, whose population at the base is empty.
 - **The stale records the reviews found are corrected**, each by a dated note that quotes what it replaced:
   [`docs/architecture/dependencies.md`](../architecture/dependencies.md), on the tables' home and on the
   `Engine → Parser → Runtime` edge; [`Assemblies.status.md`](Assemblies.status.md), on that edge; this plan's SJL-7.5

@@ -87,14 +87,14 @@ namespaces `Broiler.JavaScript.Runtime` and `Broiler.JavaScript.Runtime.Unicode`
 types', which keep their namespaces (a forwarder needs its type's full name), and the types they resolve to are
 `Ast`'s. The milestone's clause that the parser references no `Runtime` type is read by assembly, as part B of
 bundle sjl-12-001's rule reads it: the parser's metadata has no `AssemblyRef` to `Broiler.JavaScript.Runtime`.
-It is not read as "nothing the parser references names a `Runtime` type": `Expressions`, which the parser
-references, names `Runtime`'s `JSValue` by string, `Type.GetType("Broiler.JavaScript.Runtime.JSValue,
-Broiler.JavaScript.Runtime")` in `JSClassBuilder.Initialize`
+This is item 4 of milestone SJL-12.5 (Broiler.VM's JSD-0080, decisions D20 and D29). Nothing a script can
+observe changes: the tables are the same bytes, the checks the same code, and the literal and the `RegExp`
+constructor still refuse the same patterns. The clause is not read as "nothing the parser references names a
+`Runtime` type": `Expressions`, which the parser references, looks up `Runtime`'s `JSValue` by name,
+`Type.GetType("Broiler.JavaScript.Runtime.JSValue, Broiler.JavaScript.Runtime")` in `JSClassBuilder.Initialize`
 (`Broiler.JavaScript.Expressions/Expressions/JSClassBuilder.cs:26`), which `BuiltIns`' module initializer alone
 calls. The lookup predates SJL-12 (`44a214dc`), makes no `AssemblyRef`, and is unchanged. *(Added 2026-10-25, at
-SJL-12.5's records, after review.)* This is item 4 of milestone SJL-12.5 (Broiler.VM's JSD-0080, decisions D20
-and D29). Nothing a script can observe changes: the tables are the same bytes, the checks the same code, and the
-literal and the `RegExp` constructor still refuse the same patterns.
+SJL-12.5's records, after review.)*
 [`docs/public-api.md`](../docs/public-api.md) lists each member with its disposition.
 
 - **The moved public types keep a forwarder** in `Runtime`: `RegExpUnicodeValidator` and

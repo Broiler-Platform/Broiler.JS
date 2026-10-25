@@ -152,7 +152,7 @@ validates the eval code at, and compiles it at in a `JSContext`, by which the pa
 is that of eval called from code compiled outside any direct eval. Where the current engine is not a `JSContext`,
 the method evaluates the code with `CoreScript.Evaluate` (`DirectEvalSupport.cs:239`), whose compile, with no
 context to read a depth from, is at 0; and eval code that is exactly one call of the intrinsic `eval` with a
-constant string is not compiled, its constant being validated and run in its place at the same depth
+constant string is not compiled, its constant being validated and run in its place at the outer eval code's depth
 (`DirectEvalSupport.cs:150-157`). Neither is observable, since no script sees a temporary's name. *(Corrected
 2026-10-25, at SJL-12.5's records, after review; no code changed. The second sentence began "It is the
 direct-eval depth the method validates and compiles the eval code at, by which", which the path without a
@@ -180,16 +180,17 @@ read. Each type moves with its namespace and its visibility. So the parser's sou
 `Broiler.JavaScript.Runtime` and `Broiler.JavaScript.Runtime.Unicode`: those names are the five moved types', which
 keep their namespaces (a forwarder needs its type's full name), and the types they resolve to are `Ast`'s. The
 milestone's clause that the parser references no `Runtime` type is read by assembly, as part B of bundle
-sjl-12-001's rule reads it: the parser's metadata has no `AssemblyRef` to `Broiler.JavaScript.Runtime`. It is not
-read as "nothing the parser references names a `Runtime` type": `Expressions`, which the parser references, looks
-up `Runtime`'s `JSValue` by name, `Type.GetType("Broiler.JavaScript.Runtime.JSValue, Broiler.JavaScript.Runtime")`
-in `JSClassBuilder.Initialize` (`Broiler.JavaScript.Expressions/Expressions/JSClassBuilder.cs:26`), which only
-`BuiltIns`' module initializer calls; the lookup predates SJL-12 (`44a214dc`), makes no `AssemblyRef`, and is
-unchanged *(added 2026-10-25, at SJL-12.5's records, after review)*. It applies decision SJL-D-25 by its default, forwarders, and its (b), an obsolete mark: **no public member is
+sjl-12-001's rule reads it: the parser's metadata has no `AssemblyRef` to `Broiler.JavaScript.Runtime`. It
+applies decision SJL-D-25 by its default, forwarders, and its (b), an obsolete mark: **no public member is
 removed, and none changes its signature**. The public API listings of `Ast`, `Runtime`, `Parser`, `BuiltIns`,
 `Compiler` and `Engine`, written by PublicApiGenerator 11.4.6 from `2345da11` and from this change, differ only by
 the two types below, listed under `Ast` where they were listed under `Runtime`, and by the obsolete mark. Nothing
-observable changes: the tables are the same bytes, and the moved checks are the same code.
+observable changes: the tables are the same bytes, and the moved checks are the same code. The clause is not read
+as "nothing the parser references names a `Runtime` type": `Expressions`, which the parser references, looks up
+`Runtime`'s `JSValue` by name, `Type.GetType("Broiler.JavaScript.Runtime.JSValue, Broiler.JavaScript.Runtime")` in
+`JSClassBuilder.Initialize` (`Broiler.JavaScript.Expressions/Expressions/JSClassBuilder.cs:26`), which only
+`BuiltIns`' module initializer calls; the lookup predates SJL-12 (`44a214dc`), makes no `AssemblyRef`, and is
+unchanged *(added 2026-10-25, at SJL-12.5's records, after review)*.
 
 | Member | Assembly | Disposition | What it does now |
 | --- | --- | --- | --- |
