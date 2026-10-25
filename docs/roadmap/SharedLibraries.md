@@ -75,7 +75,9 @@ width at SJL-4; SJL-D-19's providers at SJL-6; SJL-D-20 and SJL-D-21 at SJL-8; S
 at SJL-9; SJL-D-11 and SJL-D-12 at SJL-12, with SJL-D-12's `Ast` and `Parser` disposition at SJL-14;
 SJL-D-7, SJL-D-8 and SJL-D-13 are Broiler.VM's alone, and ask nothing of this repository. *(Noted 2026-10-19, at
 SJL-12.1: SJL-D-11 and SJL-D-12 are recorded in "The frontend contract (SJL-12)" below, filed that day with the
-contract record as work package SJL-12.2.)*
+contract record as work package SJL-12.2.)* *(Noted 2026-10-25, at SJL-11.1: SJL-D-14, in the table above, is also
+recorded as the regular-expression area applies it, in "Area verdicts", "Regular expressions (SJL-11.1)", with
+Broiler.VM's JSD-0081.)*
 
 ## Area verdicts
 
@@ -1264,6 +1266,149 @@ takes the decision with `0.1.0-preview.7`. The paragraph above is left as writte
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses are judged in its own bundle of the
 same name, and SJL-10 may not meet its gate before SJL-3, SJL-6 and SJL-8 meet theirs.
 
+**Regular expressions (SJL-11.1), filed 2026-10-25: all six sub-areas accepted, placed with Broiler.RegEx under its
+owner conditions, decision SJL-D-14 recorded, and the owner's decisions of 2026-10-20 and 2026-10-21 recorded.**
+- **The records.** Broiler.VM's record is
+  `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0081-regular-expressions-move-to-broiler-regex-under-its-owner-conditions.md`
+  (JSD-0081), decided on 2026-10-21. It states each condition of the extraction gate for syntax and early errors with
+  literal validation (S), compilation and matching (M), the budget and the limits (B), flags (F), `RegExp.escape` and
+  `source` (T) and the use of Unicode data (U), each on its own, and records decision SJL-D-14 as this area applies it.
+- **Its input** is `Broiler.VM/docs/evidence/sjl-11-001/correspondence.md`, the correspondence from code. It read this
+  repository at `1f91b8f1`, Broiler.VM at `aaa39fb`, and Broiler.Regex `0.1.0-preview.4`, which this engine restores
+  for every `u` and `v` pattern, at `c1422f4d`. Every cell of this engine's that a row rests on was run through the
+  shell: each pattern by three paths, the constructor, the literal evaluated and the literal never evaluated, and the
+  case-insensitive rows again under `tr-TR` and `lt-LT`. Where the shell's fallback to .NET hides the package's own
+  answer, the package was called directly. Every probe and answer is retained beside it. Its section "Revisions" reads
+  this repository's `792ff56e`, where SJL-12.5 moved the validators to `Broiler.JavaScript.Ast` with comments and a
+  forwarder as their only change, and finds that no cell could answer differently there.
+- **SJL-11 started before SJL-7, which it waits on, and SJL-3 met their gates**, at the owner's words of 2026-10-19,
+  "Also continue with the other remaining SJL milestones", which the programme's ledger records in Broiler.VM's own
+  change for SJL-11.1. SJL-11 may not meet its gate before SJL-7 meets SJL-7's, and so not before SJL-3 meets SJL-3's.
+- **The owner's direction.** On 2026-10-18 the owner wrote: "Please do all recommended decisions and skip waiting for
+  review." Each decision SJL-11's plan left open is taken as it recommends, and recorded as the owner's dated decision
+  in JSD-0081: D1 to D40 on 2026-10-20, and D41 on 2026-10-21. Where the correspondence showed a recommendation's text
+  to be wrong, JSD-0081 records the decision corrected and quotes the text it replaces. **It changes no rule**: nothing
+  is accepted without review, and the gate waits as above. In this record a decision is "decision Dn" and a row of the
+  correspondence "row Xn". This record carries decisions D7, D10, D20 to D23, D33 and D34.
+
+This repository's part of it:
+- **The home is Broiler.RegEx**, under decision SJL-D-14 (a), as the table above says. Its package `Broiler.Regex` is
+  fixed to the area design's requirements 1 to 11, which its roadmap numbers R1 to R11 and adopts as owner conditions
+  by its dated record of 2026-10-20. The fix is a new backtracking machine written there, with Broiler.VM's matcher as
+  its specification and no code ported (decision D5). **If a condition is not met by the end of SJL-11.2, the area is
+  refused** (decision D1): neither engine moves onto the package, and this engine keeps its translator and its routing
+  with a source pointer to JSD-0081.
+- **The sub-area verdicts, as this engine meets them:**
+  - **S**: the literal check, `Parser`'s `RegExpValidator` with its three prechecks and a .NET `Regex`, becomes
+    Broiler.Regex's validate entry, and the constructor's prechecks and translator its compile;
+  - **M**: the translator to .NET's `Regex` and the routing to Broiler.Regex's continuation closures become the new
+    backend, for every pattern;
+  - **B**: the policies below;
+  - **F** and **T**: `ParseFlags`, `BuildFlagsString` and the escape helpers become Broiler.Regex's flag parser and
+    text helpers (R9);
+  - **U**: Broiler.Regex reads Unicode data through the Unicode owner's provider (R11, decision D11), so .NET's casing
+    data leaves the area and the last old-family tables leave this engine's closure.
+
+  This engine keeps its `RegExp` objects, `lastIndex`, the `Symbol` protocols, species, `GetSubstitution`'s
+  evaluation, its legacy statics (`LegacyRegExpState`), argument conversion and its errors.
+- **The policies (decisions D7 and D10).** This engine passes **no meter**, as in every shared area. It passes
+  Broiler.VM's frame ceiling `1 << 20`, trail ceiling `1 << 21` and nesting limit 512, depth counted as Broiler.VM's
+  matcher counts it: the pattern's own disjunction is depth 1, each group adds 1, and under `v` each class adds 1, so
+  511 nested groups are accepted and 512 refused. A limit exceeded is a catchable `RangeError`, and the nesting status a
+  `SyntaxError`.
+  - **This engine's deeper patterns, which it accepts today at every depth that does not end its process (rows S3 and
+    S3b), become listed refusals**, class C3 of its rule (SJL-D-16), and so does a test262 row that reaches a ceiling,
+    shown by a library run under the same policy (decision D39).
+  - **The spent-allowance no-match becomes a correction**: a catastrophic `u` or `v` pattern runs to the
+    specification's answer, as its non-`u` patterns already do through .NET, listed as a behaviour change.
+  - **SJL-11.6's adversarial corpus "in both engines" holds here for the classes that complete**; the unbounded
+    classes, K catastrophic backtracking and A alternation without quantifiers, are judged at library level by
+    Broiler.RegEx's rule. Broiler.VM's milestone file records the revision, quoting its text.
+- **The corrections (decision D23)**, each to be listed in `Broiler.JS/CHANGELOG.md` at SJL-11.5 under decision
+  SJL-D-16 (a), with its row. The milestone's list is revised by row, and Broiler.VM's milestone file quotes the old
+  text. Loose property names and invalid group names were corrected at SJL-7.5 and by
+  [#1041](https://github.com/Broiler-Platform/Broiler.JS/pull/1041), so their prechecks are deleted rather than
+  corrected. The list:
+  - case-insensitive matching through .NET: M2 (bundle `sjl-7-001`'s F2), M2a under `tr-TR` and under `lt-LT`, and
+    M2b; and U3, by data decision (class C5, SJL-D-6 (c));
+  - .NET's line terminators: M3 (W5), with `$` without `m`;
+  - `lastIndex` inside a surrogate pair: M4's matches of half a pair. **SJL-11.5's step out of a pair moves only the
+    matcher's start, never the reported `"index"` or substring**: the specification reports `lastIndex`, as this
+    engine does today, and Broiler.VM's report of the pair's start is that engine's correction under the same row;
+  - `source` rewriting: T1;
+  - the literal check: S2b, S7, S8 (test262's breaking-change patterns and two more `v`-mode classes) and S11 (the
+    invalid modifiers and `v`-mode classes this engine refuses only when the literal is evaluated), their literal path
+    closed by decision D22's re-pointing, and S7's and S8's constructor path, where the library's refusal is caught
+    and .NET admits the translation, by the translator's retirement. Rows S7, S8 and S11 between them explain every
+    test262 file on a regular-expression path that this engine failed in bundle
+    [`sjl-10-001`](../evidence/sjl-10-001/README.md)'s after run, but `test/built-ins/RegExp/proto-from-ctor-realm.js`,
+    a realm test; the rule names each file;
+  - an escaped duplicate name in one alternative: S2a;
+  - a class that joins a lead-surrogate escape to a braced trail escape: S10's class case;
+  - with Broiler.Regex's `0.1.0-preview.4`: the budget's no-match, shortened match, wrong index and flipped look-around
+    (B1 to B3); the stack guard's fallback, to .NET and to no match (B5); the process aborts of a flat sequence and of
+    deep nesting (B8 and S3b); and the look-behind back-reference inside a pair (M7);
+  - `String.prototype.search`'s direct call: M6.
+
+  **Not on it:** `\0` before a non-ASCII digit, which is Broiler.Regex's alone and not observable here (row S4); and an
+  invalid literal read as division, which stays SJL-14's (row S9).
+- **What the engines already answer alike** stays as it is: S2 at engine level, S4, S6 (exact property names in both
+  since SJL-7.5), M1, M2c, M5's answers, F1 to F3 but S11's late refusals, T4, T5, U1 and U2. T2, whether a `/` in a
+  class is escaped in `source`, is implementation-defined. **M4's empty match** from a `lastIndex` inside a pair is a
+  defect of the specification's text, classed implementation-defined by decision D41 until the text is corrected.
+- **The scanner (decision D22).** SJL-11.5 deletes `DecodeBracedUnicodeEscapes` and the parenthesis-balance patch,
+  which corrects `source` (row T1), and re-points the scanner's `RegExpValidator.IsValid` call to the validate entry,
+  which corrects the literal path's rows S2b, S7, S8 and S11. **The division fallback stays, SJL-14's**, listed (row
+  S9). Broiler.VM's JSD-0080, decision D23, listed the braced-escape decoding for SJL-14; a dated note there records
+  that SJL-11.5 deletes it, or SJL-14 if SJL-11 has not.
+- **The deletion list (decision D20)**, as JSD-0081's X6 states it for this engine:
+  - the translator, every member from `ClampLargeQuantifiers` to `HexValue` that is not object-model code, and
+    `JSRegExp.UnicodeSets`;
+  - `RegexTiering` and `RegexTieringDiagnostics`; the routing, `GapScan`, `TryRouteToBroiler` and `FromNet`; the
+    overflow fallback; the .NET `value` field; and both `CreateRegex` overloads;
+  - `Parser`'s `RegExpValidator`; the regular-expression prechecks of `RegExpGroupNames` and `JSUnicodePropertyNames`,
+    now in `Broiler.JavaScript.Ast`; and the scanner's braced-escape decoding and parenthesis-balance patch;
+  - `ParseFlags` and `BuildFlagsString`, and the escape helpers `Escape`, `TryAppendEscape` and
+    `EscapePatternSource`, onto Broiler.Regex's flag parser and text helpers (R9);
+  - `String.prototype.search`'s direct `value.Match` call;
+  - the tests and the benchmarks that test only the deleted members: `RegExpTranslatorFallbackTests`,
+    `RegexTieringTests`, the clamp parts of `Issue810RegExpLargeQuantifierTests`, `RegexTieringMetrics`, and
+    `RegexProfileMetrics`' .NET rows or the whole file. The tests of behaviour that stays are rewritten onto the
+    adapter.
+- **Decision SJL-D-25 (decision D21).** `RegexTiering`, `RegexTieringDiagnostics` and both `CreateRegex` overloads:
+  **(c), removal**, with a consumer check. An organisation-wide code search of 2026-10-19 found no use of them outside
+  this repository but Broiler.Unicode's test-only copies; SJL-11.5 runs it again and records its queries and results
+  in [`docs/public-api.md`](../public-api.md). Their own tests are deleted with them, and
+  `SharedUnicodeTests.cs:204-235` is rewritten. `RegExpUnicodeValidator`: **(a)**, a forwarder to the validate
+  entry. `JSRegExp.Match`, `Split` and `Replace`: kept, their bodies re-pointed. `CaptureGroupMap`: kept if used,
+  else (b).
+- **The version and the pin (decision D12).** Broiler.Regex's SJL-11 surface ships as `0.2.0-preview.1`, and it breaks
+  the `0.1` surface this engine calls today. **This engine moves its pin only at SJL-11.5**, and no release of either
+  engine depends on `0.2` before both cut-overs have merged.
+- **The component's test262 (decision D14).** Broiler.RegEx's CI runs a host job through this engine's shell, at a
+  commit of this repository that its roadmap names by a dated record, with the candidate package from a local feed:
+  SJL-11.5's branch until it merges, then the default branch. So that branch exists early (decision D35), and the
+  commit the record names is kept reachable.
+- **Outside the area, and left to their owners:** the .NET `Regex` uses in `JSIntl` (SJL-9's), `DateParser` and the
+  compiler's deferred bodies (decision D34).
+- **The rule**, [`docs/evidence/sjl-11-001/decision-rule.md`](../evidence/sjl-11-001/decision-rule.md), is committed
+  before any code of the area, with part B's workloads and part C's programs under the bundle's `inputs/`. Its parts:
+  - A, test262 per path in UTC with negative-metadata tests, its classes naming every correction above by row, and the
+    test262 files of rows S7, S8 and S11 by name;
+  - B, this engine's measurement, over a new benchmark class, `RegExpBenchmarks`, that a later inputs commit adds,
+    reading the workloads verbatim (decision D17). It is not a gate clause: a NOT MET is recorded in the cut-over
+    record as "a slower but bounded matcher", and the part is void on a lane that is not controlled (decision D19);
+  - C, the adversarial programs, written by Broiler.RegEx's `eng/adversarial-programs.py --engine broiler-js` from its
+    corpus, whose SHA-256 the manifest names (decision D37);
+  - D, the regular-expression vectors under the invariant culture, `tr-TR` and `lt-LT` (decision D33);
+  - E, the deletion list, by a search and a scoped metadata check, with a control (decision D34).
+
+  Every base is taken at the first parent of the merge that lands SJL-11.5, under a hold (decision D16).
+
+None of it is accepted: no second holder exists to review it. Broiler.VM's clauses and the component's are judged in
+their own bundles of the same name, and SJL-11 may not meet its gate before SJL-7 meets SJL-7's, and so not before
+SJL-3 meets SJL-3's.
+
 ## The frontend contract (SJL-12)
 
 SJL-12 is not an area milestone: it applies no extraction gate, so its record is here and not under "Area verdicts",
@@ -1368,7 +1513,11 @@ This repository's part of it:
   - **What "does not desugar" reaches** (decision D23): the for-loop desugaring. The synthetic block Annex B gives a
     function declaration that is the whole of an `if` clause (`FastParser.Statement.cs`), and the rewrite of a
     regular-expression literal's `\u{…}` escapes (`FastScanner.cs`), introduce no temporary and restructure no
-    control flow. They stay until SJL-14, whose shared tree keeps raw facts.
+    control flow. They stay until SJL-14, whose shared tree keeps raw facts. *(Noted 2026-10-25, at SJL-11.1, by
+    Broiler.VM's JSD-0081, decision D22. The sentence reads "They stay until SJL-14", and the second of them is the
+    rewrite of a regular-expression literal's `\u{…}` escapes. SJL-11.5 deletes that one, with the scanner's
+    parenthesis-balance patch, or SJL-14 does if SJL-11 has not; it stays at SJL-12, as decided. Section "Area
+    verdicts", "Regular expressions (SJL-11.1)", records the deletion.)*
   - **What "reads no ambient state" reaches** (decision D24): the `Parser` assembly's own declarations and
     references. `StackSegment`'s `[ThreadStatic]` flag and its environment variable, `CompilationStack`'s statics,
     `Ast`'s `FastToken.Empty` and `ArraySpan<T>.Empty`, and `FastCompiler`'s read of `JSEngine.Current` for direct
@@ -1464,7 +1613,7 @@ the summary here does not replace them.
 | **SJL-6** — Date | As above, with the provider interfaces of SJL-D-19 and Date storage migrated | Its Broiler.JS clauses, the non-UTC host run included |
 | **SJL-7** — Unicode | Move off host Unicode data onto the owner's API | Its Broiler.JS clauses: no host Unicode API in the areas covered |
 | **SJL-8** — time zones and calendars | Move the generators and pins here and `Temporal` off host zones and .NET calendars | Its Broiler.JS clauses, the reference datasets included |
-| **SJL-11** — regular expressions | After Broiler.Regex meets every requirement and implements duplicate named groups, retire the translator and the validators | Clauses 4 to 7: translator gone, test262 `RegExp` per path, duplicate named groups still working, corrections listed; `Component.md` §3 closed |
+| **SJL-11** — regular expressions | After Broiler.Regex meets every requirement and implements duplicate named groups, retire the translator, the routing and `RegExpValidator`, re-point the scanner's literal check to Broiler.Regex's validate entry, and keep `RegExpUnicodeValidator` as a forwarder to it *(revised 2026-10-25, at SJL-11.1, by Broiler.VM's JSD-0081, decisions D21 and D22; read "After Broiler.Regex meets every requirement and implements duplicate named groups, retire the translator and the validators")* | Clauses 4 to 7: translator gone, test262 `RegExp` per path, duplicate named groups still working, corrections listed; `Component.md` §3 closed |
 | **SJL-10** — Temporal core | The area's library work and cut-over | Its Broiler.JS clauses, the polyfill dataset included |
 | **SJL-9** — locale data and Intl | Move the CLDR generator and pins here; host globalization only behind the optional provider (SJL-D-22 (c)) | Its Broiler.JS clauses |
 | **SJL-17** — collation | Share the collation algorithm after SJL-9 | Its Broiler.JS clauses: host collation only behind the optional provider |

@@ -121,13 +121,26 @@ Broiler.Regex is routed only for a conservative set of semantic gaps; the .NET
 translator still handles the rest and still owns `Split`/`Replace`.
 
 The component-owned work is tracked in
-[`Broiler.Regex/docs/roadmap.md`](../../Broiler.Regex/docs/roadmap.md).
+[`Broiler.Regex/docs/roadmap.md`](https://github.com/Broiler-Platform/broiler.regex/blob/main/docs/roadmap.md).
 Broiler.JS owns the integration gate:
 
 - route only features the native engine implements and tests;
 - compare both backends during expansion;
 - move `Exec`, `Split`, and `Replace` to one match-data abstraction; and
 - retire the translator only after the pinned RegExp corpus is clean.
+
+*(Noted 2026-10-25, at milestone SJL-11.1 of the shared JavaScript libraries programme. The section's first
+paragraph read: "Broiler.Regex is routed only for a conservative set of semantic gaps; the .NET translator still
+handles the rest and still owns `Split`/`Replace`." It is stale: every `u` and `v` pattern Broiler.Regex builds, and
+the non-`u` shapes `GapScan` names, are routed to it (`JSRegExp.Broiler.cs`'s `TryRouteToBroiler`), and `Split` and
+`Replace` iterate whichever engine a pattern was routed to. The component's roadmap is `docs/roadmap.md` in the
+Broiler.RegEx repository; the link above read `../../Broiler.Regex/docs/roadmap.md`, a path this repository does not
+have, and now names that file in the Broiler.RegEx repository. **The section is superseded by
+SJL-11**, whose area verdict is [`SharedLibraries.md`](SharedLibraries.md)'s "Regular expressions (SJL-11.1)":
+Broiler.Regex is fixed to the requirements R1 to R11, and at SJL-11.5 every pattern goes through it and the
+translator, the routing and the .NET `Regex` field retire, judged by bundle
+[`sjl-11-001`](../evidence/sjl-11-001/decision-rule.md)'s rule rather than by the integration gate above. **The
+section closes at SJL-11.5.**)*
 
 ## 4. Performance and deployment evidence
 
