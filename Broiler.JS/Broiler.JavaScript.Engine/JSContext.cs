@@ -928,13 +928,43 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
     public bool IsCompilingDirectEval => directEvalCompilationDepth > 0;
 
+    // The direct-eval depth of the eval code DirectEvalSupport.Execute is compiling now; 0 at any other time.
+    private int directEvalCodeDepth;
+
     /// <summary>
-    /// How many direct evals the code compiled now is nested in: 0 outside every direct eval, and one more
-    /// for each direct eval whose compilation and evaluation are running. Indirect eval sets it to 0 while
-    /// it runs (<see cref="SuspendDirectEvalOverlays"/>). The compiler's for-loop pass names its
-    /// temporaries by it, so a direct eval's never meet its caller's (Broiler.VM's JSD-0080, decision D22).
+    /// The direct-eval nesting depth of the program being compiled now, the <c>d</c> by which the compiler's
+    /// for-loop pass names its temporaries (Broiler.VM's JSD-0080, decision D22): while
+    /// <c>DirectEvalSupport.Execute</c> compiles direct eval code, the depth it compiles that code at, which
+    /// is one more than the depth the code that calls <c>eval</c> was compiled at; for every other
+    /// compilation 0 - a script, a module, an indirect eval, a <c>Function</c> constructor's body, even one
+    /// compiled while a direct eval runs. It is a compile-time depth, not a count of the evals running, so a
+    /// function compiled in eval code names its own direct evals' temporaries one level deeper than its own,
+    /// whenever it is called.
     /// </summary>
-    internal int DirectEvalCompilationDepth => directEvalCompilationDepth;
+    internal int DirectEvalCodeDepth => directEvalCodeDepth;
+
+    /// <summary>
+    /// Sets <see cref="DirectEvalCodeDepth"/> to <paramref name="depth"/> until the returned scope is
+    /// disposed. <c>DirectEvalSupport.Execute</c> holds it around the compile of the eval code alone, not
+    /// around its evaluation, so a compilation that code starts as it runs reads 0.
+    /// </summary>
+    internal IDisposable CompileDirectEvalCodeAt(int depth) => new DirectEvalCodeDepthScope(this, depth);
+
+    private sealed class DirectEvalCodeDepthScope : IDisposable
+    {
+        private readonly JSContext context;
+        private readonly int previous;
+
+        public DirectEvalCodeDepthScope(JSContext context, int depth)
+        {
+            this.context = context;
+            previous = context.directEvalCodeDepth;
+            context.directEvalCodeDepth = depth;
+        }
+
+        public void Dispose() => context.directEvalCodeDepth = previous;
+    }
+
     public bool UsesDirectEvalLocalVarEnvironment => directEvalLocalVarEnvironmentDepth > 0;
     public string[] DirectEvalPrivateNamesInScope => directEvalPrivateNameScopes.Count == 0 ? null : directEvalPrivateNameScopes[^1];
     public string[] DirectEvalBindingNamesInScope => directEvalBindingNameScopes.Count == 0 ? null : directEvalBindingNameScopes[^1];

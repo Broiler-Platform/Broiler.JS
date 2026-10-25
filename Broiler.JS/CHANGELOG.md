@@ -19,21 +19,35 @@ lexical `for-in` or `for-of` loop, and wrapped a C-style `await using` loop in t
 compiler now does all three in a preparation pass of its own, `ForLoopPreparation` (internal), which runs right
 after it parses a program, in `FastCompiler` and in `DirectEvalSupport`, before any validation reads the tree, and
 emits the trees the parser emitted. This is item 5 of milestone SJL-12.5 (Broiler.VM's JSD-0080, decisions D22 and
-D23). Nothing a script can observe changes. No public member is added, removed or changed: the public API
-listings of `Ast`, `Parser`, `Compiler`, `Engine` and `Runtime`, written by PublicApiGenerator 11.4.6 from
-`792ff56e` and from this change, are identical. [`docs/public-api.md`](../docs/public-api.md) records it.
+D23). Nothing a script can observe changes. One public member changes: `DirectEvalSupport.Execute`, the method the
+compiled code calls for a direct eval, gains a parameter (below). No other public member is added, removed or
+changed: the public API listings of `Ast`, `Parser`, `Compiler`, `Engine` and `Runtime`, written by
+PublicApiGenerator 11.4.6 from `792ff56e` and from this change, differ in that one member alone.
+[`docs/public-api.md`](../docs/public-api.md) records it.
 
 - **A program that reads the parser's tree sees the loops as written.** `HeadTdzNames` is null on the parser's
   loops, and a lexical head is the declaration as written, with no temporaries. A host that compiles the parser's
   tree itself, rather than through `FastCompiler`, gets the loops unprepared.
 - **The temporaries are named `<d>:<n>`** (decision D22): `d` is the direct-eval nesting depth the compilation
   inherits and `n` counts the temporaries of one pass, from 1. They were per-parse numbers from 2. A name with a
-  colon is never an identifier, the names depend on nothing but the tree and the depth, and direct eval code,
-  compiled one level deeper than its caller, never names a carrier its caller's carriers could share.
+  colon is never an identifier, and the names depend on nothing but the tree and the depth. `d` is a compile-time
+  depth: direct eval code is at one more than the depth the code that calls `eval` was compiled at, which the
+  compiler passes as a constant of the call it emits, and every other compilation (a script, a module, an indirect
+  eval, a `Function` constructor's body, even one compiled while a direct eval runs) is at 0. Along a chain of
+  direct evals, then, each eval code's carriers are named apart from those of every compilation enclosing it,
+  however late the calling code runs: a function compiled in eval code and called after that eval returned names
+  its own direct evals' carriers one level deeper than its own. Two direct evals from the same code are both one
+  level deeper than it and may name alike; neither encloses the other.
+- **`DirectEvalSupport.Execute` takes the depth of the eval code**, `int directEvalDepth = 1`, a new parameter
+  before its last, `tailCall`: the depth it validates and compiles the eval code at. The compiler passes its own
+  depth + 1; the default, 1, is that of eval called from code compiled outside any direct eval. A call that
+  passes its arguments by position up to `catchParameterNames` and `tailCall` by name compiles unchanged; code
+  compiled against the old signature must be rebuilt.
 - **A loop records whether its body holds a `continue`** (`ContainsContinue`, internal), as the parser counts them,
   and the pass reads it to decide whether a `let` loop copies its bindings back in a `finally`. `Ast` grants its
-  internals to `Compiler` for it, and `JSContext` gains the internal `DirectEvalCompilationDepth` the pass's names
-  read.
+  internals to `Compiler` for it. `JSContext` gains the internal `DirectEvalCodeDepth`, the depth `FastCompiler`
+  names a program's temporaries by, which `DirectEvalSupport` sets around the compile of eval code alone
+  (`CompileDirectEvalCodeAt`).
 - **The rewrite's refusal moves with it.** A binding the rename cannot handle, which the parser refused with
   "Unknown token", is refused by the compile, at the same token with the same message; the parser alone now
   accepts it.

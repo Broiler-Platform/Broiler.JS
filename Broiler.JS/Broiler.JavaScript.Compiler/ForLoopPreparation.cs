@@ -28,12 +28,24 @@ namespace Broiler.JavaScript.Compiler;
 /// nesting depth the compilation inherits, and <c>n</c> counts the temporaries this pass names, from 1.
 /// A name with a colon is never an identifier, so no program can name, declare or shadow a temporary.
 /// The names depend on nothing but the tree and the depth, so two passes over one tree name alike,
-/// whatever ran before or beside them. And they differ from an enclosing compilation's: direct eval
-/// code is compiled at one more depth than the code that calls <c>eval</c>, so a <c>var</c> carrier a
-/// sloppy direct eval declares in its caller's variable environment never meets the caller's own. The
-/// parser's names until item 5 were per-parse numbers from 2, which a direct eval's carriers shared with
-/// its caller's; the compilation's identifier is not used, because it comes from a process-wide
-/// counter.
+/// whatever ran before or beside them.
+/// </para>
+/// <para>
+/// <c>d</c> is a compile-time depth. Direct eval code is at one more than the depth the code that calls
+/// <c>eval</c> was compiled at: <see cref="FastCompiler"/> passes its own depth + 1 as a constant of every
+/// direct eval call it emits, and <see cref="DirectEvalSupport"/> validates and compiles the eval code at
+/// that depth. Every other compilation - a script, a module, an indirect eval, a <c>Function</c>
+/// constructor's body, even one compiled while a direct eval runs - is at 0, since no direct eval
+/// encloses it. Along a chain of direct evals, then, each eval code's <c>d</c> is greater than that of the
+/// code that calls it and of every compilation enclosing that, so the names differ from an enclosing
+/// compilation's carriers: a <c>var</c> carrier a sloppy direct eval declares in its caller's variable
+/// environment never shares a name with the caller's own, however late the caller runs - a function
+/// compiled in eval code and called after that eval returned among them. Two direct evals from the same
+/// code are both at its depth + 1 and may name alike; neither encloses the other. The depth is not read
+/// from the number of evals running when the code is compiled, which a function called after its eval
+/// returned would undercount. The parser's names until item 5 were per-parse numbers from 2, which a
+/// direct eval's carriers shared with its caller's; the compilation's identifier is not used, because it
+/// comes from a process-wide counter.
 /// </para>
 /// <para>
 /// <b>What it reads from the parser.</b> A loop's head and body as written, and the one fact a search of
@@ -68,8 +80,8 @@ internal static class ForLoopPreparation
     /// <param name="program">The parser's tree, which this changes.</param>
     /// <param name="directEvalDepth">
     /// The direct-eval nesting depth the compilation inherits, the <c>d</c> of the temporaries' names: 0
-    /// for a program, and one more than the depth of the compilation that calls <c>eval</c> for direct
-    /// eval code.
+    /// for a program, and for direct eval code one more than the depth the code that calls <c>eval</c> was
+    /// compiled at.
     /// </param>
     /// <exception cref="FastParseException">
     /// A head's binding pattern holds a target the rewrite cannot rename ("Unknown token"), as the parser
