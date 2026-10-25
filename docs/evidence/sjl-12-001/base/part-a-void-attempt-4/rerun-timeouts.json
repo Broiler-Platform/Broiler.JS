@@ -1,0 +1,164 @@
+{
+  "suiteRef": "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e",
+  "broilerDll": "/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll",
+  "testTimeoutSeconds": 30.0,
+  "memoryLimitMb": 0,
+  "maxWorkers": 1,
+  "shuffleSeed": null,
+  "includeNegative": true,
+  "prioritizeFragile": false,
+  "promotedCount": 0,
+  "requestedPaths": [
+    "test/staging/sm/regress/regress-1507322-deep-weakmap.js"
+  ],
+  "expandedPaths": [
+    "test/staging/sm/regress/regress-1507322-deep-weakmap.js"
+  ],
+  "selectionMode": "requested",
+  "selectionLabel": "rerun-failed",
+  "runnerOs": "Linux",
+  "runnerArch": "X64",
+  "dotnetVersion": "10.0.402",
+  "minifier": "terser",
+  "referenceEngine": "node",
+  "minifierVersion": "5.50.0",
+  "minifierProfile": "test262-safe-mangle-v2",
+  "minifierTimeoutSeconds": 30.0,
+  "minifierOptions": {
+    "compress": false,
+    "mangle": true,
+    "mangleProperties": false,
+    "mangleEval": false,
+    "reserveQuotedNames": true,
+    "toplevel": false,
+    "keepFunctionNames": true,
+    "keepClassNames": true,
+    "module": false,
+    "asciiOnly": false,
+    "comments": false,
+    "semicolons": true
+  },
+  "minifierHostExternNames": 0,
+  "variants": [
+    "original",
+    "terser"
+  ],
+  "expectedVariantCountPerPath": 2,
+  "variantSummary": {
+    "original": {
+      "total": 1,
+      "executed": 1,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "timedOut": 1,
+      "notApplicable": 0
+    },
+    "terser": {
+      "total": 1,
+      "executed": 1,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "timedOut": 1,
+      "notApplicable": 0
+    }
+  },
+  "hostModes": [
+    "script",
+    "module",
+    "raw"
+  ],
+  "hostModeSummary": {
+    "script": {
+      "selected": 2,
+      "executed": 2,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "timedOut": 2,
+      "notApplicable": 0
+    },
+    "module": {
+      "selected": 0,
+      "executed": 0,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "timedOut": 0,
+      "notApplicable": 0
+    },
+    "raw": {
+      "selected": 0,
+      "executed": 0,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "timedOut": 0,
+      "notApplicable": 0
+    }
+  },
+  "pathSummary": {
+    "total": 1,
+    "executed": 1,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "timedOut": 1
+  },
+  "candidateCount": 1,
+  "selectedCountBeforeSharding": 1,
+  "shardCount": 1,
+  "shardIndex": 0,
+  "subsetPatterns": [],
+  "featurePatterns": [],
+  "featureMatch": "any",
+  "total": 2,
+  "executed": 2,
+  "passed": 0,
+  "failed": 0,
+  "failedPaths": [],
+  "skipped": 0,
+  "timedOut": 2,
+  "timedOutPaths": [
+    "test/staging/sm/regress/regress-1507322-deep-weakmap.js"
+  ],
+  "notApplicable": 0,
+  "results": [
+    {
+      "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+      "status": "timedOut",
+      "reason": "timed out after 30s",
+      "stdout": "",
+      "stderr": "",
+      "variant": "original",
+      "sourceSizeBytes": 504,
+      "features": [
+        "host-gc-required"
+      ],
+      "flags": [],
+      "durationMs": 30036.496
+    },
+    {
+      "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+      "status": "timedOut",
+      "reason": "timed out after 30s",
+      "stdout": "",
+      "stderr": "",
+      "variant": "terser",
+      "minifier": "terser",
+      "minifierVersion": "5.50.0",
+      "minifierProfile": "test262-safe-mangle-v2",
+      "minificationDurationMs": 78.277,
+      "minifierInputBytes": 425,
+      "minifiedSourceSizeBytes": 207,
+      "minificationRatio": 0.487059,
+      "sourceSizeBytes": 504,
+      "features": [
+        "host-gc-required"
+      ],
+      "flags": [],
+      "durationMs": 30117.242
+    }
+  ]
+}

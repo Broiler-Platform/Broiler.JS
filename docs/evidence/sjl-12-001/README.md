@@ -23,12 +23,17 @@ frontend contract (SJL-12)", with Broiler.VM's JSD-0080,
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in Broiler.VM).
 **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State, 2026-10-20, at SJL-12.4: the rule, and parts C and D's bases. Nothing here is a verdict.**
-- Part A's base is not yet taken. Two dispatches of `test262 evidence` at the rule commit, with `include_negative`
-  true, are void; they are retained and named, not judged (section 1). Part B's base is the rule commit's parser
-  assembly, built when part B runs.
+**State, 2026-10-25, at SJL-12.5: the rule, and parts A, C and D's bases. Nothing here is a verdict.**
+- Part A's base is taken at the rule commit by `test262 evidence`, with `include_negative` true: the fifth dispatch,
+  on 2026-10-25. The four before it are void; they are retained and named, not judged (section 1). Part B's base is
+  the rule commit's parser assembly, built when part B runs.
 - Parts C and D's bases are taken at the corpus commit `1fe542ff`, with part C's control (section 1).
 - The after runs follow SJL-12.5's last item, the compiler's for-loop pass.
+
+*(Revised 2026-10-25, at SJL-12.5, when part A's base was taken. The state read "State, 2026-10-20, at SJL-12.4: the
+rule, and parts C and D's bases. Nothing here is a verdict.", and its first item "Part A's base is not yet taken. Two
+dispatches of `test262 evidence` at the rule commit, with `include_negative` true, are void; they are retained and
+named, not judged (section 1). Part B's base is the rule commit's parser assembly, built when part B runs.")*
 
 *(Revised 2026-10-20, at SJL-12.4, when parts C and D's bases were committed. The state read "State, 2026-10-20, at
 SJL-12.5: rules only. Nothing here is a verdict, and no base has been taken.", and its second item "Parts C and D's
@@ -51,6 +56,9 @@ the rule commit's parser assembly, built when part B runs.")*
 *(Added 2026-10-20, at SJL-12.5: `base/` also holds two void attempts at part A's base, each in its own folder named
 as void, so that none of their files can be taken for the base's or overwrite another's (section 1).)*
 
+*(Added 2026-10-25, at SJL-12.5: part A's base is in its own folder, `base/part-a/`, apart from parts C and D's
+files, and `base/` holds four void attempts, each in its own folder named as void (section 1).)*
+
 **It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them.
 
 The owner's direction of 2026-10-18, "Please do all recommended decisions and skip waiting for review.", under which
@@ -61,21 +69,30 @@ Broiler.VM judges its own half in its own bundle of the same name. This bundle r
 
 ## 1. The bases (2026-10-20)
 
-**Written 2026-10-20.** This section reads what this bundle retains of the bases. It judges nothing: the rule compares
-each base with a run at the after commit, which does not exist yet.
+**Written 2026-10-20; part A's base added 2026-10-25.** This section reads what this bundle retains of the bases. It
+judges nothing: the rule compares each base with a run at the after commit, which does not exist yet.
 
 | Part | Commit | Taken | Retained in |
 |---|---|---|---|
-| A | The rule commit, `4d813f2ac863895b9be5c4619b7886c9ddd71077` | Not yet taken. Two attempts, on 2026-10-19 and 2026-10-20, are void | [`base/part-a-void-attempt-1/`](base/part-a-void-attempt-1/imported.txt), [`base/part-a-void-attempt-2/`](base/part-a-void-attempt-2/imported.txt) |
+| A | The rule commit, `4d813f2ac863895b9be5c4619b7886c9ddd71077` | 2026-10-25, 13:06Z to 14:11Z, by `test262 evidence`. Four attempts before it, from 2026-10-19 to 2026-10-21, are void | [`base/part-a/`](base/part-a/imported.txt); the void attempts in [`base/part-a-void-attempt-1/`](base/part-a-void-attempt-1/imported.txt) to [`base/part-a-void-attempt-4/`](base/part-a-void-attempt-4/imported.txt) |
 | C and D | The corpus commit, `1fe542ff459935586cdf495e4a0e3d798248948a` | 2026-10-20, 12:38Z to 12:57Z, on the programme's local machine | [`base/`](base/) |
 | C's control | Made from part C's base report alone | 2026-10-20 | [`controls/`](controls/) |
+
+*(Revised 2026-10-25, at SJL-12.5, when part A's base was taken. Part A's row read "Not yet taken. Two attempts, on
+2026-10-19 and 2026-10-20, are void" in its third column, and named the first two void attempts' folders alone in its
+fourth; the section's first words read "**Written 2026-10-20.**")*
 
 Part B's base, the rule commit's parser assembly, is built when part B runs, and is not in this bundle.
 
 ### Part A's base, at the rule commit
 
-**Part A's base is not yet taken.** Two dispatches of `test262 evidence` at the rule commit are void. Each is
-retained, unchanged, in its own folder named as void, and neither is the base.
+**Part A's base is taken: the fifth dispatch of `test262 evidence` at the rule commit, on 2026-10-25.** It is
+retained, unchanged, in [`base/part-a/`](base/part-a/imported.txt). The four dispatches before it are void. Each is
+retained, unchanged, in its own folder named as void, and none is the base.
+
+*(Revised 2026-10-25, at SJL-12.5. The paragraph read "**Part A's base is not yet taken.** Two dispatches of `test262
+evidence` at the rule commit are void. Each is retained, unchanged, in its own folder named as void, and neither is
+the base.")*
 
 **The rule commit** is `4d813f2ac863895b9be5c4619b7886c9ddd71077`, the default-branch merge of Broiler.JS#1059, which
 carries [`decision-rule.md`](decision-rule.md) as it reads, with the corrections its section "Revisions" lists. The
@@ -85,20 +102,33 @@ parse corpus's README names it as the rule commit ([`conformance/parse/README.md
 |---|---|---|---|---|
 | 1, void | [39335653429](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/39335653429) | 2026-10-19 22:32Z, 23:40Z | id 12229603117, `22023f0310850eda5d7ddfff54dad41a1e3c1fb7b4aeb4ea24f30b28018a9241` | [`base/part-a-void-attempt-1/`](base/part-a-void-attempt-1/imported.txt) |
 | 2, void | [39379425075](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/39379425075) | 2026-10-20 06:16Z, 07:23Z | id 12246874482, `25d837f27a47552b3e718481b794e52d05896289e204a14dcf7430fcdeb416fa` | [`base/part-a-void-attempt-2/`](base/part-a-void-attempt-2/imported.txt) |
+| 3, void | [39452789227](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/39452789227) | 2026-10-20 15:55Z, 17:01Z | id 12282379197, `d078977e128ba0b4dcb362bc8b8acaa76ba4459ae40c3c521a87807f78b18e84` | [`base/part-a-void-attempt-3/`](base/part-a-void-attempt-3/imported.txt) |
+| 4, void | [39566106261](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/39566106261) | 2026-10-21 08:00Z, 09:08Z | id 12333646224, `c761cbff4c3c92c30abb6f909d461b93e3d33c3b7a3ba5667c0a9570107f245a` | [`base/part-a-void-attempt-4/`](base/part-a-void-attempt-4/imported.txt) |
+| 5, the base | [40196127730](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/40196127730) | 2026-10-25 13:06Z, 14:11Z | id 12601938718, `c6bef549d49f7ddad3f714518a88cdca0462ab027652b61393ffaa4bc0e1b80a` | [`base/part-a/`](base/part-a/imported.txt) |
 
-- **What ran.** Each was dispatched from `main` when `main` was the rule commit itself, and tested it: `run.txt` reads
-  `dispatched ref: refs/heads/main at 4d813f2ac863895b9be5c4619b7886c9ddd71077` and the same tested commit. So the
-  workflow and `scripts/compliance/` that ran are the rule commit's. Each ran with suite `ccaac100`, four workers, a
+*(Rows 3 to 5 added 2026-10-25, at SJL-12.5.)*
+
+- **What ran.** Attempts 1 and 2 were dispatched from `main` when `main` was the rule commit itself, and tested it:
+  `run.txt` reads `dispatched ref: refs/heads/main at 4d813f2ac863895b9be5c4619b7886c9ddd71077` and the same tested
+  commit. So the workflow and `scripts/compliance/` that ran are the rule commit's. Attempts 3, 4 and 5 were
+  dispatched from later commits of `main`, `17b91384`, `2345da11` and `792ff56e`, each of which descends from the rule
+  commit and holds `.github/workflows/test262-evidence.yml` as the rule commit's own blob, `7158fb2a`; each named the
+  rule commit as the commit to test, and `run.txt` reads it as the tested commit. Both of the workflow's checkouts,
+  the shards' and the merging job's, are of the tested commit, so the shard action and `scripts/compliance/` that ran
+  are the rule commit's in these three as well. Each attempt ran with suite `ccaac100`, four workers, a
   timeout of 30 s, timeouts run again and negative-metadata tests included (`run.txt`'s inputs, and
   `includeNegative: True`), and with `time_zone` empty: `run.txt`'s inputs name no `time_zone`, and its host time
   zone line and `host-zone.log` read `TZ` unset.
   *(Revised 2026-10-20, after review: the sentence read "Each ran with suite `ccaac100`, four workers, a timeout of
   30 s, timeouts run again, `time_zone` empty and negative-metadata tests included (`run.txt`'s inputs, and
   `includeNegative: True`)." `run.txt`'s inputs hold no `time_zone`.)*
-- **Why each is void.** Each run's conclusion is failure. Its job `collect` failed at the workflow's step "Require a
-  complete run", which wrote "The shards did not all run the same shell (shell-hashes.log)." and "The shards did not
-  all run in the host time zone (host-zone.log)." and no other failure (GitHub's record of each run and that job's
-  log, read 2026-10-20). The two records the step names are retained in each folder:
+  *(Revised 2026-10-25, at SJL-12.5, when attempts 3 to 5 were added. The item began "Each was dispatched from `main`
+  when `main` was the rule commit itself, and tested it:", and its last sentence began "Each ran with suite".)*
+- **Why attempts 1 to 4 are void.** Each run's conclusion is failure. Its job `collect` failed at the workflow's step
+  "Require a complete run", which wrote "The shards did not all run the same shell (shell-hashes.log)." and "The
+  shards did not all run in the host time zone (host-zone.log)." and no other failure (GitHub's record of each run
+  and that job's log, read 2026-10-20 for attempts 1 and 2 and 2026-10-25 for attempts 3 and 4). The two records the
+  step names are retained in each folder:
   - **Attempt 1.** [`shell-hashes.log`](base/part-a-void-attempt-1/shell-hashes.log) reads "shards: 8; distinct
     lists: 2": shard 4's list, `a6515ae3...`, against the other seven's, `433ab0c7...`.
     [`host-zone.log`](base/part-a-void-attempt-1/host-zone.log) reads "shards: 8; in the expected zone: 7": shard 4
@@ -107,15 +137,58 @@ parse corpus's README names it as the rule commit ([`conformance/parse/README.md
     lists: 2": shards 0, 4, 6 and 7, `433ab0c7...`, against shards 1, 2, 3 and 5, `a6515ae3...`; and "the re-run's
     shell does NOT hash as the shards' did". [`host-zone.log`](base/part-a-void-attempt-2/host-zone.log) reads
     "shards: 8; in the expected zone: 4": shards 0, 4, 6 and 7 read tzdata 2026c, against the merging job's 2026e.
-  - In both attempts every shard reads `TZ` unset and UTC +0000 at both instants, and the shards fall into the same
-    two groups by their shell's list as by their tzdata release. `run.txt` records the merging job's runner image, `ubuntu24`
-    20261012.334.1 in attempt 1 and 20261018.339.1 in attempt 2; the artifact records no shard's image.
-- **Named, not judged.** Neither attempt is part A's base, and nothing here reads their rows: this section quotes no
-  total and compares nothing with them.
-- **Retained unchanged.** Each folder holds every file of its artifact, 26 entries, each compared with its entry in
-  the zip, none differing. Beside them are `imported.txt`, which records the run, the artifact's id and the digest of
-  the zip as downloaded, which is the digest GitHub records, and why the attempt is void; and `hashes.txt`, the
-  SHA-256 of every other file of the folder. `sha256sum -c hashes.txt`, run in each folder, passes.
+  - **Attempt 3.** [`shell-hashes.log`](base/part-a-void-attempt-3/shell-hashes.log) reads "shards: 8; distinct
+    lists: 2": shards 0, 1 and 4, `433ab0c7...`, against shards 2, 3, 5, 6 and 7, `a6515ae3...`.
+    [`host-zone.log`](base/part-a-void-attempt-3/host-zone.log) reads "shards: 8; in the expected zone: 3": shards
+    0, 1 and 4 read tzdata 2026c, the merging job's, and the other five 2026e.
+  - **Attempt 4.** [`shell-hashes.log`](base/part-a-void-attempt-4/shell-hashes.log) reads "shards: 8; distinct
+    lists: 2": shard 5's list, `433ab0c7...`, against the other seven's, `a6515ae3...`; and "the re-run's shell does
+    NOT hash as the shards' did". [`host-zone.log`](base/part-a-void-attempt-4/host-zone.log) reads "shards: 8; in
+    the expected zone: 1": shard 5 reads tzdata 2026c, the merging job's, and the other seven 2026e.
+  - In all four attempts every shard reads `TZ` unset and UTC +0000 at both instants, and the shards fall into the
+    same two groups by their shell's list as by their tzdata release. `run.txt` records the merging job's runner
+    image, `ubuntu24` 20261012.334.1 in attempts 1, 3 and 4 and 20261018.339.1 in attempt 2; the artifact records no
+    shard's image.
+  *(Revised 2026-10-25, at SJL-12.5, when attempts 3 and 4 were added. The item's heading read "Why each is void.",
+  its third sentence ended "(GitHub's record of each run and that job's log, read 2026-10-20).", and its last
+  sub-item began "In both attempts" and read "`ubuntu24` 20261012.334.1 in attempt 1 and 20261018.339.1 in attempt
+  2".)*
+- **Why attempt 5 is the base.** Its conclusion is success, and so is every job's, the step "Require a complete run"
+  of job `collect` among them (GitHub's record of the run and its jobs, read 2026-10-25). The records that step reads
+  are retained in [`base/part-a/`](base/part-a/imported.txt):
+  - [`shell-hashes.log`](base/part-a/shell-hashes.log) reads "shards: 8; distinct lists: 1", every shard's list
+    `433ab0c7...`, and "the re-run's shell hashes as the shards' did";
+  - [`host-zone.log`](base/part-a/host-zone.log) reads "shards: 8; in the expected zone: 8": every shard, and the
+    merging job, reads `TZ` unset, UTC +0000 at both instants and tzdata 2026c;
+  - [`merge.log`](base/part-a/merge.log) reads "0 incomplete shard(s)", and [`run.txt`](base/part-a/run.txt) names
+    the suite commit `ccaac100` and `includeNegative: True`;
+  - the one path that timed out was run again alone, as the rule says, and both the run and the re-run are retained
+    ([`timed-out-paths.txt`](base/part-a/timed-out-paths.txt), [`rerun-timeouts.log`](base/part-a/rerun-timeouts.log),
+    [`rerun-timeouts.json`](base/part-a/rerun-timeouts.json)).
+
+  **Its runners.** Every shard's job and job `collect` ran on one image, `ubuntu-26.04` version 20261012.163.1, as
+  the head of each job's own log reads it; those heads are copied into
+  [`runner-images.txt`](base/part-a/runner-images.txt). `run.txt`'s runner line, which the workflow writes from the
+  merging job's `ImageOS` and `ImageVersion`, reads `ubuntu26` 20261023.163.3. The two are recorded as each source
+  gives them; the rule reads neither, and judges the runners by their shells' lists and their host-zone records.
+  Attempts 1 to 4 ran on `ubuntu24` images.
+- **What the after run must match.** The rule asks that "both runs' host-zone records read alike, line for line: TZ
+  unset, UTC +0000 at both instants, and one tzdata release". The base's record reads tzdata 2026c. If the after
+  run's reads another release, the rule's own words apply: "if the two runs' host-zone records differ, because the
+  runners' tzdata moved between them, the part is not judged until the base is taken again at the same commit in the
+  after run's zone record."
+- **Named, not judged.** No void attempt is part A's base, and nothing here reads their rows: this section quotes no
+  total and compares nothing with them. The base's rows are read at the after commit only, by the rule's comparison;
+  this section quotes no total of the base either.
+  *(Revised 2026-10-25, at SJL-12.5. The item read "Neither attempt is part A's base, and nothing here reads their
+  rows: this section quotes no total and compares nothing with them.")*
+- **Retained unchanged.** Each of the five folders holds every file of its artifact, 26 entries, each compared with
+  its entry in the zip, none differing. Beside them are `imported.txt`, which records the run, the artifact's id and
+  the digest of the zip as downloaded, which is the digest GitHub records, and why the attempt is void or complete;
+  in `base/part-a/` only, `runner-images.txt`; and `hashes.txt`, the SHA-256 of every other file of the folder.
+  `sha256sum -c hashes.txt`, run in each folder, passes.
+  *(Revised 2026-10-25, at SJL-12.5. The item began "Each folder holds", and named no `runner-images.txt` and no
+  complete attempt.)*
 
 ### Parts C and D's bases, at the corpus commit
 
@@ -273,5 +346,7 @@ flipped and one message changed, which the comparison must report as two differe
   The copy is byte for byte the first one, `c8c56b4d...`, its standard output is byte for byte the first, and its JSON
   differs from the first only in the path it names for the copy.
 
-**Retained and checked.** In each of `base/`, `base/part-a-void-attempt-1/`, `base/part-a-void-attempt-2/`,
-`controls/` and `corpus/`, `sha256sum -c hashes.txt`, run in the folder, passes.
+**Retained and checked.** In each of `base/`, `base/part-a/`, `base/part-a-void-attempt-1/` to
+`base/part-a-void-attempt-4/`, `controls/` and `corpus/`, `sha256sum -c hashes.txt`, run in the folder, passes.
+*(Revised 2026-10-25, at SJL-12.5. The list read "`base/`, `base/part-a-void-attempt-1/`,
+`base/part-a-void-attempt-2/`, `controls/` and `corpus/`".)*
