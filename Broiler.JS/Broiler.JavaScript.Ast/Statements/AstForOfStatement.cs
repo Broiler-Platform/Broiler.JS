@@ -13,6 +13,12 @@ public class AstForOfStatement(FastToken token, FastToken previousToken, AstNode
     public readonly AstStatement Body = statement;
     public readonly bool IsAwait = isAwait;
 
+    /// <summary>
+    /// Whether the parser parsed a <c>continue</c> statement while it parsed <see cref="Body"/>; see
+    /// <see cref="AstForStatement.ContainsContinue"/>.
+    /// </summary>
+    internal bool ContainsContinue;
+
     public override string ToString() => IsAwait
         ? $"for await ({Init} of {Target}) {{ {Body} }}"
         : $"for ({Init} of {Target}) {{ {Body} }}";

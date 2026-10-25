@@ -98,6 +98,29 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
 next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
 
+## Public API changes, 2026-10-21 (the for-loop desugaring moves to the compiler, milestone SJL-12.5)
+
+Item 5 of milestone SJL-12.5 (Broiler.VM's JSD-0080, decisions D22 and D23) moves the rewrite of a `for`,
+`for-in` or `for-of` loop whose head declares `let`, `const`, `using` or `await using` bindings from the parser into
+an internal preparation pass of the compiler, `ForLoopPreparation`. **One public member changes**:
+`DirectEvalSupport.Execute` (`Compiler`), the method the compiled code calls for a direct eval, gains the parameter
+`int directEvalDepth = 1`, inserted before its last parameter, `tailCall`. It is the direct-eval depth the method
+validates and compiles the eval code at, by which the pass names that code's temporaries (decision D22): the
+compiler passes one more than the depth the calling code was compiled at, and the default, 1, is that of eval
+called from code compiled outside any direct eval. The old signature is gone, so code compiled against it must be
+rebuilt; a call that passes its arguments by position up to `catchParameterNames`, and `tailCall` by name, compiles
+unchanged. No other public member is added, removed or changed: the public API listings of `Ast`, `Parser`,
+`Compiler`, `Engine` and `Runtime`, written by PublicApiGenerator 11.4.6 from `792ff56e` and from this change,
+differ in that one member alone. What changes besides is what a public member returns: `FastParser.ParseProgram`
+and `FastParser.ParseModule` return such a loop as written, where they returned it rewritten into per-iteration
+carriers, and they no longer set the public field `HeadTdzNames` of `AstForInStatement` and `AstForOfStatement`,
+nor wrap a C-style `await using` loop in a block; `FastCompiler` does all three before it validates or lowers the
+tree, as the parser did, so nothing a script can observe changes. The new members are internal:
+`ContainsContinue` on the three loop nodes, which the parser sets and the pass reads, and
+`JSContext.DirectEvalCodeDepth` with `JSContext.CompileDirectEvalCodeAt`, the depth `FastCompiler` names a
+program's temporaries by and the scope in which `DirectEvalSupport.Execute` sets it for the compile of eval code;
+`Ast` grants its internals to `Compiler`.
+
 ## Public API changes, 2026-10-21 (the parser no longer references the runtime, milestone SJL-12.5)
 
 Item 4 of milestone SJL-12.5 (Broiler.VM's JSD-0080, decisions D20 and D29) moves the types the parser

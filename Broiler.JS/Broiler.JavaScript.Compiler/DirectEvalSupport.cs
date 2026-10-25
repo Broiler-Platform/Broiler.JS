@@ -89,8 +89,16 @@ public static class DirectEvalSupport
         }
     }
 
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, FrameToken activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, string[] evalVarEnvNames = null, JSValue directEvalNewTarget = null, string[] catchParameterNames = null, bool tailCall = false)
+    // directEvalDepth is the direct-eval depth the eval code is validated and compiled at, the d of the
+    // for-loop pass's temporaries (Broiler.VM's JSD-0080, decision D22): one more than the depth the code
+    // that calls eval was compiled at, which the compiler passes as a constant in the call it emits, so it
+    // holds however late that code runs. 1, the default, is eval called from code compiled outside any
+    // direct eval. tailCall stays the last parameter: the IL generator re-emits a call in tail position
+    // with one more argument, true, after all the others.
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, FrameToken activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, string[] evalVarEnvNames = null, JSValue directEvalNewTarget = null, string[] catchParameterNames = null, int directEvalDepth = 1, bool tailCall = false)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(directEvalDepth);
+
         if (!IsDirectEval(callee))
         {
             // An `eval(...)` whose callee is not %eval% is an ordinary call. When it
@@ -119,7 +127,7 @@ public static class DirectEvalSupport
             if (inheritStrictMode)
                 text = "\"use strict\";\n" + text;
 
-            program = Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall, rejectArguments: inFieldInitializer, rejectNewTarget: rejectNewTarget);
+            program = Validate(text, directEvalDepth, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall, rejectArguments: inFieldInitializer, rejectNewTarget: rejectNewTarget);
 
             // Nothing to run: PerformEval owes an empty StatementList the undefined completion,
             // and a body with no statements declares nothing, so none of the scope, activation
@@ -195,8 +203,13 @@ public static class DirectEvalSupport
             // Compiled under the context's own options, which are a script's: eval code is never a
             // module (PerformEval parses it as a Script), and never awaits at its top level, even
             // when the code that called eval may.
-            var result = JSTailCall.Resolve(
-                CoreScript.Compile(text, location, null, new TransientCodeCache(), compilationOptions: context.CompilationOptions)(new Arguments(@this ?? context)));
+            // The compile alone runs at directEvalDepth, the depth it names its for-loop temporaries by and
+            // passes on, one deeper, to the direct evals it emits; a compile the eval code starts as it runs
+            // (the Function constructor's, an indirect eval's) is at 0 again.
+            JSFunctionDelegate compiled;
+            using (context.CompileDirectEvalCodeAt(directEvalDepth))
+                compiled = CoreScript.Compile(text, location, null, new TransientCodeCache(), compilationOptions: context.CompilationOptions);
+            var result = JSTailCall.Resolve(compiled(new Arguments(@this ?? context)));
             if (declaredBindings?.Length > 0 && capturedBindings?.Length > 0)
             {
                 foreach (var declaredBinding in declaredBindings)
@@ -678,14 +691,14 @@ public static class DirectEvalSupport
     /// way <see cref="Execute"/> does.
     /// </summary>
     public static bool ValidateIndirectEval(string text)
-        => Validate(text, false, false, null, null, null, false, false, rejectNewTarget: true)
+        => Validate(text, 0, false, false, null, null, null, false, false, rejectNewTarget: true)
             .Statements.Count > 0;
 
     /// <summary>
     /// Enforces the eval early errors and returns the program they were checked against, so
     /// the caller can reuse that parse rather than paying for another one.
     /// </summary>
-    private static AstProgram Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool rejectArguments = false, bool rejectNewTarget = false)
+    private static AstProgram Validate(string text, int directEvalDepth, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool rejectArguments = false, bool rejectNewTarget = false)
     {
         var options = EvalOptions;
         if (inheritStrictMode && ContainsStrictReservedWordUsage(text, options))
@@ -695,7 +708,8 @@ public static class DirectEvalSupport
         {
             var pool = new FastPool();
             var parser = new FastParser(new FastTokenStream(pool, text, null, options), options);
-            var program = parser.ParseProgram();
+            // The for-loop pass prepares the tree before any check reads it, as FastCompiler does.
+            var program = ForLoopPreparation.Prepare(parser.ParseProgram(), directEvalDepth);
             ValidateDirectEvalEarlyErrors(program, allowSuperProperty, allowSuperCall, rejectArguments, rejectNewTarget);
             SyntaxValidation.ValidateProgram(program, text, options, inheritStrictMode, lexicalBindings, privateNamesInScope);
             if (parameterBindings?.Length > 0

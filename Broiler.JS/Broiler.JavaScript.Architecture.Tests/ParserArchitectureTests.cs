@@ -18,34 +18,22 @@ namespace Broiler.JavaScript.Architecture.Tests;
 /// assembly beside this one, or the one <c>BROILER_ARCH_PARSER_ASSEMBLY</c> names.
 /// </summary>
 /// <remarks>
-/// The test asserts the exact list of the parser's violations, <see cref="TodaysViolations"/>. Each
-/// item of SJL-12.5 that removes a violation removes its line in the same change, so the list only
-/// shrinks, and at the item that lands the for-loop pass it is empty and the test asserts none. A
-/// violation the list does not hold fails the test, and so does a listed one the parser no longer
-/// has. Every violation the run finds is written to the test's output and named in a failure.
+/// The test asserts that the parser has no violation. Until SJL-12.5 was complete it asserted the exact
+/// list of the parser's violations, and each item removed its lines in the change that removed the
+/// violation; item 5, the compiler's for-loop pass, removed the last of them (the three desugaring
+/// walkers and the <c>for (let …)</c> fixture), and the list went with it. Every violation a run finds
+/// is written to the test's output and named in the failure, so a run over the rule commit's parser
+/// (<c>BROILER_ARCH_PARSER_ASSEMBLY</c>) fails naming each one, as part B expects at the base.
 /// </remarks>
 public sealed class ParserArchitectureTests(ITestOutputHelper output)
 {
     private const string Assembly = Subject.AssemblyName;
 
-    /// <summary>
-    /// The violations the parser has today, each under the item of SJL-12.5 (the milestone's
-    /// numbering, Broiler.VM's JSD-0080) that removes it.
-    /// </summary>
-    private static readonly string[] TodaysViolations =
-    [
-        // Item 5 (decision D22), the for-loop desugaring moves to the compiler's pass.
-        Assembly + " names the desugaring walker Broiler.JavaScript.Ast.AstIdentifierReplacer",
-        Assembly + " names the desugaring walker Broiler.JavaScript.Ast.ClosureDetector",
-        Assembly + " names the desugaring walker Broiler.JavaScript.Ast.IdentifierNameCollector",
-        ParserFixtures.ForLetViolation,
-    ];
-
     private static readonly Lazy<ClauseReading> WitnessReading = new(static () =>
         ParserClauses.Read(WitnessImage.Compile("parser-ambient-state.cs.witness"), AppContext.BaseDirectory));
 
     [Fact]
-    public void The_parser_has_exactly_the_listed_violations()
+    public void The_parser_has_no_violations()
     {
         var path = Subject.Locate();
         output.WriteLine("subject: " + path + (Subject.Named is null ? "" : " (named by " + Subject.Variable + ")"));
@@ -64,10 +52,7 @@ public sealed class ParserArchitectureTests(ITestOutputHelper output)
             output.WriteLine("violation: " + violation);
 
         var found = reading.Violations.Concat(fixtures).Order(StringComparer.Ordinal).ToList();
-        var listed = TodaysViolations.Order(StringComparer.Ordinal).ToList();
-        var unlisted = found.Except(listed, StringComparer.Ordinal).ToList();
-        var gone = listed.Except(found, StringComparer.Ordinal).ToList();
-        Assert.True(unlisted.Count == 0 && gone.Count == 0, Report(path, found, unlisted, gone));
+        Assert.True(found.Count == 0, Report(path, found));
     }
 
     /// <summary>Non-vacuity: the clauses read a real parser, and at least one InitOnly static field they accepted.</summary>
@@ -125,15 +110,10 @@ public sealed class ParserArchitectureTests(ITestOutputHelper output)
         Assert.Equal(listed, ParserClauses.MutableTypes);
     }
 
-    private static string Report(string path, List<string> found, List<string> unlisted, List<string> gone)
-    {
-        var report = new StringBuilder("The parser at " + path + " does not have exactly the listed violations.\n");
-        if (unlisted.Count > 0)
-            report.Append("Violations the list does not hold:\n  ").AppendJoin("\n  ", unlisted).Append('\n');
-        if (gone.Count > 0)
-            report.Append("Listed violations the parser no longer has (remove their lines from TodaysViolations):\n  ").AppendJoin("\n  ", gone).Append('\n');
-        return report.Append("Every violation found:\n  ").AppendJoin("\n  ", found).ToString();
-    }
+    private static string Report(string path, List<string> found)
+        => new StringBuilder("The parser at " + path + " has " + found.Count + " violation(s):\n  ")
+            .AppendJoin("\n  ", found)
+            .ToString();
 }
 
 /// <summary>

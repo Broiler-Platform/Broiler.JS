@@ -24,11 +24,13 @@ internal static class ParserFixtures
         "fixture: `" + ForLetSource + "` does not parse to one for-statement whose initialiser is the declaration as written";
 
     /// <summary>
-    /// A source with every loop shape the parser rewrites with temporaries today, so that each of the
-    /// four places the desugaring names one is reached: the carriers of a <c>let</c> loop's bindings,
-    /// a simple name and a pattern; the <c>started</c> flag of a <c>let</c> loop whose update holds a
-    /// closure; the head temporary of <c>for-of</c> and <c>for-in</c>; and the renamed bindings of a
-    /// <c>const</c> loop with a test.
+    /// A source with every loop shape the parser rewrote with temporaries until SJL-12.5's item 5, so
+    /// that each of the four places the desugaring named one is reached: the carriers of a <c>let</c>
+    /// loop's bindings, a simple name and a pattern; the <c>started</c> flag of a <c>let</c> loop whose
+    /// update holds a closure; the head temporary of <c>for-of</c> and <c>for-in</c>; and the renamed
+    /// bindings of a <c>const</c> loop with a test. The parser now builds these loops as written, and
+    /// the compiler's for-loop pass names the temporaries; a parser that named any from a shared
+    /// counter again would make the two dumps differ.
     /// </summary>
     internal const string RepeatedSource =
         "for (let i = 0; i < 3; i++) { }\n"
