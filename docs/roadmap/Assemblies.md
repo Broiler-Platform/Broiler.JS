@@ -361,6 +361,14 @@ is that removal, promoted from hygiene to blocker.**
 Runtime` creates a return edge if `Engine` and `Runtime` become one project. Keep them
 separate unless the MOD-M2 shells prove another ownership cut acyclic.
 
+*(Noted 2026-10-25, at the shared JavaScript libraries programme's SJL-12.5: "`Engine → Parser →
+Runtime` creates a return edge" no longer holds. SJL-12.5's item 4 removed the `Parser` →
+`Runtime` edge (Broiler-Platform/Broiler.JS#1066, merged as `792ff56e` on 2026-10-21), so no
+project edge makes the fold cyclic, read from the project files at `c29d653f`. The instruction
+stands: Modernization's MOD-M2-4, closed on 2026-10-25, keeps `Engine` and `Runtime` separate
+unless an independently measured deployment or startup result justifies a merge. The paragraph is
+left as written.)*
+
 Split `LinqExpressions` and `Compiler` by semantic ownership, not directory or current
 backend: binding, scope, early errors, hoisting, numeric-local analysis, and shared IR belong
 in FrontEnd/Semantics; only IL-specific lowering/emission belongs in the IL composition. The

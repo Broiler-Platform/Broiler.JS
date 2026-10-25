@@ -6,6 +6,13 @@ census below is preserved as a dated snapshot, but its conclusion that the wider
 no rescope is superseded: the proposed Base and Core folds create project cycles. MOD-M2 must
 produce the replacement graph before further consolidation.
 
+*(Noted 2026-10-25, at the shared JavaScript libraries programme's SJL-12.5: of the folds that
+"create project cycles", the Core fold no longer does by a project edge. SJL-12.5's item 4
+removed the `Parser` → `Runtime` edge (Broiler-Platform/Broiler.JS#1066, merged as `792ff56e` on
+2026-10-21), and Modernization's MOD-M2-4 closed on 2026-10-25; the Base fold's cycle stands.
+The paragraph is left as written; "That does not validate the old target diagram", below, records
+the graph.)*
+
 The later component split also supersedes the old sketch's aspirational
 `Broiler.JS.Bytecode`, `.Bytecode.Compiler`, and `.Aot` ownership. This status remains the
 evidence ledger for the Broiler.JS graph only; generic VM/catalog or WebAssembly progress is
@@ -294,7 +301,10 @@ gate grows.
 ## What the replacement A-0 / MOD-M2 must add to this file
 
 1. **A generated project and source-edge graph**, with the two known cycles called out and
-   every proposed consolidation represented by buildable project shells.
+   every proposed consolidation represented by buildable project shells. *(Noted 2026-10-25,
+   at the shared JavaScript libraries programme's SJL-12.5: of "the two known cycles", the
+   Core↔Parser one went with the `Parser` → `Runtime` edge (Broiler-Platform/Broiler.JS#1066,
+   `792ff56e`), when Modernization's MOD-M2-4 closed; the Base↔Ast one stands.)*
 2. **A type/file assignment for FrontEnd/Semantics**, including parser, binding, scope,
    early errors, hoisting, numeric-local analysis, and shared IR; the bytecode and IL shells
    must both consume it without referencing each other.
