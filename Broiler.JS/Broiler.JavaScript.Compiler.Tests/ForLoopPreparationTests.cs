@@ -3,8 +3,11 @@ using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler.Core;
+using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.Parser;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler.Tests;
 
@@ -127,7 +130,7 @@ public sealed class ForLoopPreparationTests
         var program = Prepared(source, depth);
         string Name(int n) => depth + ":" + n;
 
-        Assert.Equal(new[] { Name(1), Name(2), Name(3) }, Temporaries(program).Order(StringComparer.Ordinal));
+        Assert.Equal(new[] { Name(1), Name(2), Name(3) }, Temporaries(source, program).Order(StringComparer.Ordinal));
 
         // The inner loop is prepared first, so its carrier is the first; the outer loop's carrier, the
         // second, is declared beside the binding it copies; the for-in loop's, the third, comes last.
@@ -142,50 +145,68 @@ public sealed class ForLoopPreparationTests
 
     /// <summary>
     /// Two passes over two parses of one source name alike, whatever was prepared before or between; a
-    /// temporary's name is never an identifier.
+    /// temporary's name is never an identifier. The temporaries are found by what the pass adds, not by how
+    /// they are spelt: every name in the prepared tree that the parsed tree does not hold, which must be
+    /// <c>0:1</c> to <c>0:4</c> here (two carriers for <c>a</c> and <c>b</c>, one for <c>m</c>, and the
+    /// flag of an update that holds a closure), and the identifiers without a colon are the parsed tree's,
+    /// none added.
     /// </summary>
     [Fact]
     public void The_temporaries_do_not_depend_on_what_was_prepared_before()
     {
         const string source = "for (let [a, b] = [1, 2]; a < b; a++) { } for (let m = 0; m < 1; m++, (() => m)) { }";
-        var first = Temporaries(Prepared(source));
+        var first = Prepared(source);
         _ = Prepared("for (let q = 0; q < 1; q++) { for (let r = 0; r < 1; r++) {} }");
-        var second = Temporaries(Prepared(source));
+        var second = Prepared(source);
 
-        Assert.NotEmpty(first);
-        Assert.Equal(first, second);
-        Assert.All(first, static name => Assert.Contains(':', name));
+        var temporaries = Temporaries(source, first);
+        Assert.Equal(new[] { "0:1", "0:2", "0:3", "0:4" }, temporaries.Order(StringComparer.Ordinal));
+        Assert.All(temporaries, static name => Assert.Matches(@"^0:[1-9][0-9]*$", name));
+        Assert.Equal(Names(first), Names(second));
+
+        var parsedIdentifiers = Names(Parse(source)).Where(static name => !name.Contains(':')).Order(StringComparer.Ordinal);
+        var preparedIdentifiers = Names(first).Where(static name => !name.Contains(':')).Order(StringComparer.Ordinal);
+        Assert.Equal(parsedIdentifiers, preparedIdentifiers);
     }
 
     /// <summary>
-    /// Direct eval code is prepared one level deeper than the code that calls it, so loops in both, with
-    /// carriers in one variable environment, keep their own values.
+    /// Loops in direct eval code and in the code that calls it, whose <c>var</c> carriers a sloppy direct
+    /// eval declares in one variable environment, keep their own values; the last row's function is
+    /// compiled in eval code and called after that eval returned. These rows give the same results at
+    /// <c>792ff56e</c>, where the parser named the carriers of both from 2: they check that the values
+    /// survive the move of the rewrite, not that the names differ. The names are checked by
+    /// <see cref="ForLoopPreparationDepthTests"/>.
     /// </summary>
     [Theory]
     [InlineData("(function () { var r = []; var n = 0; for (const x = 7; ;) { r.push(x); if (++n > 2) break; eval(\"for (const y of ['a']) {}\"); } return r.join(); })()", "7,7,7")]
     [InlineData("(function () { var s = ''; for (let i = 0; i < 2; i++) { eval(\"for (let j = 0; j < 2; j++) { s += i + '' + j + ','; }\"); } return s; })()", "00,01,10,11,")]
     [InlineData("(function () { var s = ''; for (const x of [1, 2]) { eval(\"for (const y of [3]) { s += x + '' + y; }\"); } return s; })()", "1323")]
+    [InlineData("var f = eval(\"(function () { var r = [], n = 0; for (const x = 7; ;) { r.push(x); if (++n > 2) break; eval(\\\"for (const y of ['a']) {}\\\"); } return r.join(); })\"); f()", "7,7,7")]
     public void Loops_in_direct_eval_code_keep_their_values_beside_the_callers(string source, string expected)
     {
         using var context = new JSContext();
         Assert.Equal(expected, context.Eval(source).ToString());
     }
 
-    private static List<string> Temporaries(AstNode program)
+    // The names the pass added to the parse of source: those of the prepared tree the parsed one does not hold.
+    private static List<string> Temporaries(string source, AstNode prepared)
+        => Names(prepared).Except(Names(Parse(source)), StringComparer.Ordinal).ToList();
+
+    private static List<string> Names(AstNode program)
     {
         var names = new List<string>();
-        var collector = new TemporaryCollector(names);
+        var collector = new NameCollector(names);
         collector.Visit(program);
         return names;
     }
 
-    // Every identifier whose name holds a colon, in the order the walk meets them, each once.
-    private sealed class TemporaryCollector(List<string> names) : AstReduce
+    // Every identifier's name, in the order the walk meets them, each once.
+    private sealed class NameCollector(List<string> names) : AstReduce
     {
         protected override AstNode VisitIdentifier(Broiler.JavaScript.Ast.AstIdentifier identifier)
         {
             var name = identifier.Name.Value;
-            if (name != null && name.Contains(':') && !names.Contains(name))
+            if (name != null && !names.Contains(name))
                 names.Add(name);
             return identifier;
         }
@@ -196,6 +217,135 @@ public sealed class ForLoopPreparationTests
             if (declarator.Init != null)
                 Visit(declarator.Init);
             return declarator;
+        }
+    }
+}
+
+/// <summary>
+/// The collection of the tests that replace <c>CoreScript.Compiler</c>, which is process-wide: it runs
+/// alone, after the collections that run in parallel.
+/// </summary>
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class CompilerReplacementCollection
+{
+    public const string Name = "Replaces CoreScript.Compiler";
+}
+
+/// <summary>
+/// The depth the temporaries of direct eval code are named by (decision D22), through the real path: the
+/// constant the compiler emits for each direct eval, <c>DirectEvalSupport.Execute</c>, and the compile of the
+/// eval code. A compiler that wraps the engine's records, for each program compiled, the depth the context
+/// holds for it (<c>JSContext.DirectEvalCodeDepth</c>, internal, read by name) and the temporaries the
+/// compiled tree declares.
+/// </summary>
+/// <remarks>
+/// The wrapper compiles exactly as the engine's compiler does, and is in place for the length of one test, in
+/// a collection that runs alone.
+/// </remarks>
+[Collection(CompilerReplacementCollection.Name)]
+public sealed class ForLoopPreparationDepthTests
+{
+    private static readonly PropertyInfo DirectEvalCodeDepth = typeof(JSContext)
+        .GetProperty("DirectEvalCodeDepth", BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+    private static readonly string[] Markers = ["/*S*/", "/*E1*/", "/*E2*/", "/*E3*/", "/*F1*/", "/*I1*/", "/*E4*/"];
+
+    /// <summary>
+    /// A script (S) calls a direct eval (E1) that returns a function; the function, called after E1 returned,
+    /// calls a direct eval (E2). Direct eval code E3 calls the Function constructor (F1), and an indirect eval
+    /// (I1) calls a direct eval (E4). Each program carries its own marker first, and the markers of the code it
+    /// compiles later only inside string literals. E2 is two levels deep although only one direct eval runs
+    /// when it is compiled: the depth is the compile-time depth of the code that calls <c>eval</c>, plus one.
+    /// F1 and I1 are at 0, as no direct eval encloses them, and E4 one deeper than I1.
+    /// </summary>
+    [Fact]
+    public void Direct_eval_code_is_one_level_deeper_than_the_code_that_calls_it_was_compiled()
+    {
+        const string script = """
+            /*S*/ for (const s of [0]) {}
+            var f = eval("/*E1*/ for (const a of [1]) {} (function () { return eval('/*E2*/ for (const b of [2]) {} 2'); })");
+            var r = [f()];
+            r.push(eval("/*E3*/ new Function('/*F1*/ for (const c of [3]) {} return 3')()"));
+            r.push((0, eval)("/*I1*/ for (const d of [4]) {} eval('/*E4*/ for (const e of [5]) {} 5')"));
+            r.join()
+            """;
+
+        var records = new List<(string Marker, int Depth, string[] Temporaries)>();
+        var original = CoreScript.Compiler;
+        CoreScript.Compiler = new RecordingCompiler(original, records);
+        string result;
+        try
+        {
+            using var context = new JSContext();
+            result = context.Eval(script).ToString();
+        }
+        finally
+        {
+            CoreScript.Compiler = original;
+        }
+
+        Assert.Equal("2,3,5", result);
+
+        (int Depth, string Temporary) Expected(string marker) => marker switch
+        {
+            "/*S*/" => (0, "0:1"),
+            "/*E1*/" => (1, "1:1"),
+            "/*E2*/" => (2, "2:1"),
+            "/*E3*/" => (1, null),
+            "/*F1*/" => (0, "0:1"),
+            "/*I1*/" => (0, "0:1"),
+            "/*E4*/" => (1, "1:1"),
+            _ => throw new InvalidOperationException(marker),
+        };
+
+        Assert.Equal(Markers.Order(StringComparer.Ordinal), records.Select(static r => r.Marker).Distinct().Order(StringComparer.Ordinal));
+        Assert.All(records, record =>
+        {
+            var (depth, temporary) = Expected(record.Marker);
+            Assert.True(depth == record.Depth, record.Marker + " was compiled at depth " + record.Depth + ", not " + depth);
+            Assert.Equal(temporary == null ? [] : new[] { temporary }, record.Temporaries);
+        });
+    }
+
+    // Records each compile of a program that holds a marker: the program's own marker (the first in its text),
+    // the depth the context holds as the compiler reads it, and the temporaries the compiled tree declares.
+    private sealed class RecordingCompiler(IJSCompiler inner, List<(string Marker, int Depth, string[] Temporaries)> records) : IJSCompiler
+    {
+        public BExpression<JSFunctionDelegate> Compile(in StringSpan code, string location = null, IList<string> argsList = null, ICodeCache codeCache = null)
+        {
+            var depth = Depth();
+            return Record(code.Value, depth, inner.Compile(code, location, argsList, codeCache));
+        }
+
+        public BExpression<JSFunctionDelegate> Compile(in StringSpan code, in JSCompilationOptions options, string location = null, IList<string> argsList = null, ICodeCache codeCache = null)
+        {
+            var depth = Depth();
+            return Record(code.Value, depth, inner.Compile(code, options, location, argsList, codeCache));
+        }
+
+        private static int Depth() => JSEngine.Current is JSContext context ? (int)DirectEvalCodeDepth.GetValue(context)! : -1;
+
+        private BExpression<JSFunctionDelegate> Record(string text, int depth, BExpression<JSFunctionDelegate> compiled)
+        {
+            var marker = Markers
+                .Select(m => (Marker: m, Index: text.IndexOf(m, StringComparison.Ordinal)))
+                .Where(static m => m.Index >= 0)
+                .OrderBy(static m => m.Index)
+                .Select(static m => m.Marker)
+                .FirstOrDefault();
+            if (marker == null)
+                return compiled;
+
+            var printed = new StringWriter();
+            compiled.Print(new System.CodeDom.Compiler.IndentedTextWriter(printed));
+            var temporaries = System.Text.RegularExpressions.Regex.Matches(printed.ToString(), @"JSVariable (\d+:\d+);")
+                .Select(static m => m.Groups[1].Value)
+                .Distinct()
+                .Order(StringComparer.Ordinal)
+                .ToArray();
+            lock (records)
+                records.Add((marker, depth, temporaries));
+            return compiled;
         }
     }
 }
