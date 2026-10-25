@@ -29,6 +29,8 @@ frontend contract (SJL-12)", with Broiler.VM's JSD-0080,
   the rule commit's parser assembly, built when part B runs.
 - Parts C and D's bases are taken at the corpus commit `1fe542ff`, with part C's control (section 1).
 - The after runs follow SJL-12.5's last item, the compiler's for-loop pass.
+- Section 2 names, before any after run, how this README reads part C's class D *(added 2026-10-25, at SJL-12.5's
+  records)*.
 
 *(Revised 2026-10-25, at SJL-12.5, when part A's base was taken. The state read "State, 2026-10-20, at SJL-12.4: the
 rule, and parts C and D's bases. Nothing here is a verdict.", and its first item "Part A's base is not yet taken. Two
@@ -350,3 +352,34 @@ flipped and one message changed, which the comparison must report as two differe
 `base/part-a-void-attempt-4/`, `controls/` and `corpus/`, `sha256sum -c hashes.txt`, run in the folder, passes.
 *(Revised 2026-10-25, at SJL-12.5. The list read "`base/`, `base/part-a-void-attempt-1/`,
 `base/part-a-void-attempt-2/`, `controls/` and `corpus/`".)*
+
+## 2. Readings named before the after runs
+
+**Written 2026-10-25, at SJL-12.5's records, before any run at the after commit is taken.** This section names how
+this README will read the rule where a change SJL-12.5 merged raises a question the rule's words answer only when
+read against it. It revises no rule: [`decision-rule.md`](decision-rule.md) is unchanged, and where a reading here
+and the rule differ, the rule decides. It judges nothing, and it holds no figure.
+
+**Part C's class D** *(named 2026-10-25)*. The rule admits as class D "an input refused at entry point P at the base
+by the parser's for-loop desugaring itself (AssignTempNames in
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.ForStatement.cs at the rule commit, whose message is "Unknown
+token"), accepted at P after, and refused at K after with the exception type and message it had at K at the base;
+each listed with its outcomes at both entry points".
+- **Its population is empty at the base.** Part C's base report,
+  [`base/parse-corpus-c.tsv.gz`](base/parse-corpus-c.tsv.gz) (run 1, whose SHA-256, `0c007acd...`,
+  [`base/hashes.txt`](base/hashes.txt) records), holds no row whose message is "Unknown token", at P or at K, and
+  run 2 is the same file byte for byte. That message is the refusal of `AssignTempNames`, its two
+  `throw new FastParseException(e.Start, $"Unknown token")` at the rule commit and at the corpus commit
+  (`FastParser.ForStatement.cs:772` and `:819`), which item 5 moved into the compiler's pass
+  (`Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs:629` and `:676` at the after commit). So no input
+  of the corpus is in class D's population, and no difference of the after run can be admitted as class D.
+- **A K refusal that differs from the base's is outside D.** Item 5's changelog entry, at the after commit, says
+  that the compile refuses such a binding "at the same token with the same message, when nothing later in the
+  source fails first": the parser now parses the whole program before the pass runs, so a parse error later in the
+  source, or an early error the parser raises after the loop, is the one reported. A row whose K refusal after
+  differs from the base's because a later failure now comes first fails D's last condition, the exception type and
+  message it had at K at the base, and so is not in D: this README will report it as a regression, not admit it.
+  Class M admits a changed message only as the rule says, where `Broiler.JS/CHANGELOG.md` at the after commit
+  lists the change by its old and new text.
+- **Class M's changelog is the after commit's.** The rule reads class M's listing in `Broiler.JS/CHANGELOG.md` "at
+  the after commit", so what SJL-12.5's records add to the changelog after that commit admits no row as class M.
