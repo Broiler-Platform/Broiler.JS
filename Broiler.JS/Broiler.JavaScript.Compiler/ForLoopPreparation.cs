@@ -65,11 +65,17 @@ namespace Broiler.JavaScript.Compiler;
 /// </para>
 /// <para>
 /// <b>In place.</b> A rewritten loop is a new node, so the statement list that holds it is updated in
-/// place, and a statement that holds it directly (an <c>if</c>, a loop, a label, a <c>with</c>) is
-/// rebuilt with its other members as they were. Every statement list the parser builds is a
-/// <see cref="Sequence{T}"/>. Expressions are never rebuilt: a loop inside one is inside a function's or
-/// a class's body, whose statement lists are updated in place. Each statement list is prepared once,
+/// place, and a statement that holds it directly (an <c>if</c>, a loop, a label, a <c>with</c>, a
+/// <c>try</c>) is rebuilt with its other members as they were. Every statement list the parser builds is
+/// a <see cref="Sequence{T}"/>. Expressions are never rebuilt: a loop inside one is inside a function's
+/// or a class's body, whose statement lists are updated in place. Each statement list is prepared once,
 /// even where the tree reaches it twice.
+/// </para>
+/// <para>
+/// <b>Cost.</b> The pass is one more walk of every program the compiler compiles, whether or not it
+/// holds a lexical <c>for</c> head, and of the code of an eval, direct or indirect, up to twice: once for
+/// <see cref="DirectEvalSupport"/>'s validation and once for its compile. The parser's rewrite cost no
+/// walk of its own. That cost is not measured, and nothing here claims a speed.
 /// </para>
 /// </remarks>
 internal static class ForLoopPreparation
@@ -741,8 +747,9 @@ internal static class ForLoopPreparation
             //
             // Restricted to a C-style head (`!@in && !of`): Desugar is shared with for-in / for-of,
             // whose heads also have no test/update but bind the loop variable from each enumerated
-            // value (handled by VisitForIn/OfStatement), not from a carrier — they must keep the
-            // plain lowering.
+            // value (lowered by FastCompiler's VisitForInStatement and VisitForOfStatement, in
+            // Statements/FastCompiler.VisitFor.cs), not from a carrier — they must keep the plain
+            // lowering.
             var useLoopEnv = cStyle && declaration.Kind == FastVariableKind.Let;
 
             var en = declaration.Declarators.GetFastEnumerator();

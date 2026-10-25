@@ -45,12 +45,23 @@ PublicApiGenerator 11.4.6 from `792ff56e` and from this change, differ in that o
   compiled against the old signature must be rebuilt.
 - **A loop records whether its body holds a `continue`** (`ContainsContinue`, internal), as the parser counts them,
   and the pass reads it to decide whether a `let` loop copies its bindings back in a `finally`. `Ast` grants its
-  internals to `Compiler` for it. `JSContext` gains the internal `DirectEvalCodeDepth`, the depth `FastCompiler`
+  internals to `Compiler` for it. It is internal rather than a public init-only property because the tree's
+  public members are the frontend's contract, and which raw facts a shared tree publishes is SJL-14's to decide
+  (JSD-0080, decision D23); the grant is wider than the one field, since `Compiler` could now reach every internal
+  of `Ast`, the Unicode tables, their adapter and the regular-expression checks among them, though it reads only
+  `ContainsContinue`. `JSContext` gains the internal `DirectEvalCodeDepth`, the depth `FastCompiler`
   names a program's temporaries by, which `DirectEvalSupport` sets around the compile of eval code alone
   (`CompileDirectEvalCodeAt`).
 - **The rewrite's refusal moves with it.** A binding the rename cannot handle, which the parser refused with
-  "Unknown token", is refused by the compile, at the same token with the same message; the parser alone now
-  accepts it.
+  "Unknown token", is refused by the compile, at the same token with the same message, when nothing later in the
+  source fails first; the parser alone now accepts it. The parser's rewrite refused it while the loop was parsed,
+  before any later token was read, but the parser now parses the whole program before the pass runs, so a parse
+  error later in the source, or an early error the parser raises after the loop, is now the one reported. No input
+  of the parse corpus is refused with "Unknown token" at `792ff56e`.
+- **The pass costs a walk.** It walks every program the compiler compiles once more, whether or not the program
+  holds a lexical `for` head, and the code of an eval, direct or indirect, up to twice (for `DirectEvalSupport`'s
+  validation and for its compile); the parser's rewrite took no walk of its own. The cost is not measured, and no
+  speed is claimed.
 - **The parser's architecture test** (`Architecture.Tests`) asserts that the parser has no violation: the three
   desugaring walkers, `AstIdentifierReplacer`, `IdentifierNameCollector` and `ClosureDetector`, leave the parser
   (`Ast` still declares them, and only the pass uses them), and a `for (let …)` loop parses to one for-statement
