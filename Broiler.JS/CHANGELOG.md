@@ -37,12 +37,21 @@ PublicApiGenerator 11.4.6 from `792ff56e` and from this change, differ in that o
   direct evals, then, each eval code's carriers are named apart from those of every compilation enclosing it,
   however late the calling code runs: a function compiled in eval code and called after that eval returned names
   its own direct evals' carriers one level deeper than its own. Two direct evals from the same code are both one
-  level deeper than it and may name alike; neither encloses the other.
+  level deeper than it and may name alike; neither encloses the other. Eval code that is exactly one call of the
+  intrinsic `eval` with a constant string is not compiled: `DirectEvalSupport` validates and runs the constant as
+  the eval's code in its place (`TryGetNestedDirectEvalText`, `DirectEvalSupport.cs:150-157`), at the outer eval
+  code's depth, not one deeper; the outer code, never compiled, has no carriers for the inner code's to meet.
+  *(Added 2026-10-25, at SJL-12.5's records, after review.)*
 - **`DirectEvalSupport.Execute` takes the depth of the eval code**, `int directEvalDepth = 1`, a new parameter
-  before its last, `tailCall`: the depth it validates and compiles the eval code at. The compiler passes its own
-  depth + 1; the default, 1, is that of eval called from code compiled outside any direct eval. A call that
-  passes its arguments by position up to `catchParameterNames` and `tailCall` by name compiles unchanged; code
-  compiled against the old signature must be rebuilt.
+  before its last, `tailCall`: the depth it validates the eval code at, and compiles it at in a `JSContext`. Where
+  the current engine is not a `JSContext`, `Execute` evaluates the code with `CoreScript.Evaluate`
+  (`DirectEvalSupport.cs:239`), whose compile reads its depth from the context and, with none, compiles at 0,
+  though the code was validated at `directEvalDepth`; the temporaries' names are not observable from scripts, so
+  no result differs. The compiler passes its own depth + 1; the default, 1, is that of eval called from code
+  compiled outside any direct eval. A call that passes its arguments by position up to `catchParameterNames` and
+  `tailCall` by name compiles unchanged; code compiled against the old signature must be rebuilt. *(Corrected
+  2026-10-25, at SJL-12.5's records, after review; no code changed. The first sentence ended "the depth it
+  validates and compiles the eval code at.", which the path without a `JSContext` does not do.)*
 - **A loop records whether its body holds a `continue`** (`ContainsContinue`, internal), as the parser counts them,
   and the pass reads it to decide whether a `let` loop copies its bindings back in a `finally`. `Ast` grants its
   internals to `Compiler` for it. It is internal rather than a public init-only property because the tree's
@@ -78,9 +87,14 @@ namespaces `Broiler.JavaScript.Runtime` and `Broiler.JavaScript.Runtime.Unicode`
 types', which keep their namespaces (a forwarder needs its type's full name), and the types they resolve to are
 `Ast`'s. The milestone's clause that the parser references no `Runtime` type is read by assembly, as part B of
 bundle sjl-12-001's rule reads it: the parser's metadata has no `AssemblyRef` to `Broiler.JavaScript.Runtime`.
-This is item 4 of milestone SJL-12.5 (Broiler.VM's JSD-0080, decisions D20 and D29). Nothing a script can
-observe changes: the tables are the same bytes, the checks the same code, and the literal and the `RegExp`
-constructor still refuse the same patterns.
+It is not read as "nothing the parser references names a `Runtime` type": `Expressions`, which the parser
+references, names `Runtime`'s `JSValue` by string, `Type.GetType("Broiler.JavaScript.Runtime.JSValue,
+Broiler.JavaScript.Runtime")` in `JSClassBuilder.Initialize`
+(`Broiler.JavaScript.Expressions/Expressions/JSClassBuilder.cs:26`), which `BuiltIns`' module initializer alone
+calls. The lookup predates SJL-12 (`44a214dc`), makes no `AssemblyRef`, and is unchanged. *(Added 2026-10-25, at
+SJL-12.5's records, after review.)* This is item 4 of milestone SJL-12.5 (Broiler.VM's JSD-0080, decisions D20
+and D29). Nothing a script can observe changes: the tables are the same bytes, the checks the same code, and the
+literal and the `RegExp` constructor still refuse the same patterns.
 [`docs/public-api.md`](../docs/public-api.md) lists each member with its disposition.
 
 - **The moved public types keep a forwarder** in `Runtime`: `RegExpUnicodeValidator` and

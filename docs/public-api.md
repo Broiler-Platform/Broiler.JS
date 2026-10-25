@@ -98,6 +98,48 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
 next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
 
+## Milestone SJL-12.5's public API: the closing record (2026-10-25)
+
+Milestone SJL-12.5's five items (Broiler.VM's JSD-0080, decisions D19 to D29) are merged, the last of them in
+Broiler-Platform/Broiler.JS#1068 (`c29d653f`). This section lists what decision D29 asks this file to record and
+the disposition each public member the items changed has under decision SJL-D-25, which decisions D20 and D29
+apply here; the sections below, one per item, hold the detail. Items 2 and 3, one temporary counter per parse and
+an end-of-file token per scanner (Broiler-Platform/Broiler.JS#1064, `48fee2d3`), changed private members only and
+have no section. **No public member is removed at SJL-12.5. One signature changes in place,
+`DirectEvalSupport.Execute`'s, with nothing standing for the old one: that is none of SJL-D-25's dispositions**,
+and it is listed below as what it is.
+
+**What decision D29 asks recorded, and where:**
+- the new overloads, `JSCompilationOptions.AllowTopLevelAwait`, the `IJSCompiler` default method as a
+  **behavioural** change for a host's own compiler, and `JSCode.Key`'s changed text: "Public API changes,
+  2026-10-20", item 1 (Broiler-Platform/Broiler.JS#1065, `2345da11`);
+- `UndoMark` obsolete, and the `Parser` package's dependency on `Runtime` dropped, which breaks a transitive user at
+  the source level and, where nothing else deploys `Runtime`, at run time: "Public API changes, 2026-10-21 (the
+  parser no longer references the runtime)", item 4 (Broiler-Platform/Broiler.JS#1066, `792ff56e`).
+
+[`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md) lists corrections J1 and J2 and each of these, in its
+entries for items 1, 4 and 5.
+
+**The dispositions.** SJL-D-25's are (a) a forwarder, (b) an obsolete forwarder with a removal version, and (c)
+removal in a major version, with a recorded check of the consumers.
+
+| Member | Item | Disposition |
+| --- | --- | --- |
+| `RegExpUnicodeValidator` and `CancellableDisposableAction`, namespace `Broiler.JavaScript.Runtime` | 4 | (a): moved to `Ast`, and `Runtime` forwards each (`[TypeForwardedTo]`); binary-compatible where `Runtime` is deployed |
+| `FastTokenStream.UndoMark()` | 4 | (b): kept unchanged and marked obsolete. Its message names no removal version, which (b) asks for; it says the member is kept until a recorded check of its consumers allows its removal, which is (c) |
+| The constructors without options of `FastScanner`, `FastTokenStream`, `FastParser` and `FastCompiler`; `DefaultJSCompiler.Register` and `DefaultJSCompiler.Compile` without options; `CoreScript.Compile` without options, `CoreScript.Evaluate`, `EvaluateAsync` and `EvaluateWithTasks` | 1 | Kept, with their signatures; what each does changed, as the item's section lists |
+| `IJSCompiler.Compile(in StringSpan, in JSCompilationOptions, string, IList<string>, ICodeCache)` | 1 | Added, a default interface method: a behavioural change for a host's compiler that implements only the existing member |
+| `JSCode.Key` | 1 | Kept; its text changed |
+| The other members item 1 lists | 1 | Added, beside the existing ones |
+| `FastParser.ParseProgram`, `FastParser.ParseModule`, and the public field `HeadTdzNames` of `AstForInStatement` and `AstForOfStatement` | 5 | Kept, with their signatures; the parser returns a `for` loop as written, and no longer sets `HeadTdzNames` |
+| `DirectEvalSupport.Execute` | 5 | Changed in place: `int directEvalDepth = 1` inserted before `tailCall`. The old signature is not kept, and no forwarder or obsolete overload stands for it, so code built against it must be rebuilt. None of (a) to (c): recorded, not disposed of |
+
+**Nothing is removed under (c).** The check of the consumers that (c) requires, for `UndoMark`, for the members
+without options and for the hosts' own `IJSCompiler` implementations, is not made: Broiler.JSeal and
+Broiler.HtmlBridge, the downstream consumers, cannot be read from where these records are written.
+
+*(Added 2026-10-25, at SJL-12.5's records.)*
+
 ## Public API changes, 2026-10-21 (the for-loop desugaring moves to the compiler, milestone SJL-12.5)
 
 Item 5 of milestone SJL-12.5 (Broiler.VM's JSD-0080, decisions D22 and D23) moves the rewrite of a `for`,
@@ -105,9 +147,16 @@ Item 5 of milestone SJL-12.5 (Broiler.VM's JSD-0080, decisions D22 and D23) move
 an internal preparation pass of the compiler, `ForLoopPreparation`. **One public member changes**:
 `DirectEvalSupport.Execute` (`Compiler`), the method the compiled code calls for a direct eval, gains the parameter
 `int directEvalDepth = 1`, inserted before its last parameter, `tailCall`. It is the direct-eval depth the method
-validates and compiles the eval code at, by which the pass names that code's temporaries (decision D22): the
-compiler passes one more than the depth the calling code was compiled at, and the default, 1, is that of eval
-called from code compiled outside any direct eval. The old signature is gone, so code compiled against it must be
+validates the eval code at, and compiles it at in a `JSContext`, by which the pass names that code's temporaries
+(decision D22): the compiler passes one more than the depth the calling code was compiled at, and the default, 1,
+is that of eval called from code compiled outside any direct eval. Where the current engine is not a `JSContext`,
+the method evaluates the code with `CoreScript.Evaluate` (`DirectEvalSupport.cs:239`), whose compile, with no
+context to read a depth from, is at 0; and eval code that is exactly one call of the intrinsic `eval` with a
+constant string is not compiled, its constant being validated and run in its place at the same depth
+(`DirectEvalSupport.cs:150-157`). Neither is observable, since no script sees a temporary's name. *(Corrected
+2026-10-25, at SJL-12.5's records, after review; no code changed. The second sentence began "It is the
+direct-eval depth the method validates and compiles the eval code at, by which", which the path without a
+`JSContext` does not do, and named neither path.)* The old signature is gone, so code compiled against it must be
 rebuilt; a call that passes its arguments by position up to `catchParameterNames`, and `tailCall` by name, compiles
 unchanged. No other public member is added, removed or changed: the public API listings of `Ast`, `Parser`,
 `Compiler`, `Engine` and `Runtime`, written by PublicApiGenerator 11.4.6 from `792ff56e` and from this change,
@@ -131,8 +180,12 @@ read. Each type moves with its namespace and its visibility. So the parser's sou
 `Broiler.JavaScript.Runtime` and `Broiler.JavaScript.Runtime.Unicode`: those names are the five moved types', which
 keep their namespaces (a forwarder needs its type's full name), and the types they resolve to are `Ast`'s. The
 milestone's clause that the parser references no `Runtime` type is read by assembly, as part B of bundle
-sjl-12-001's rule reads it: the parser's metadata has no `AssemblyRef` to `Broiler.JavaScript.Runtime`. It
-applies decision SJL-D-25 by its default, forwarders, and its (b), an obsolete mark: **no public member is
+sjl-12-001's rule reads it: the parser's metadata has no `AssemblyRef` to `Broiler.JavaScript.Runtime`. It is not
+read as "nothing the parser references names a `Runtime` type": `Expressions`, which the parser references, looks
+up `Runtime`'s `JSValue` by name, `Type.GetType("Broiler.JavaScript.Runtime.JSValue, Broiler.JavaScript.Runtime")`
+in `JSClassBuilder.Initialize` (`Broiler.JavaScript.Expressions/Expressions/JSClassBuilder.cs:26`), which only
+`BuiltIns`' module initializer calls; the lookup predates SJL-12 (`44a214dc`), makes no `AssemblyRef`, and is
+unchanged *(added 2026-10-25, at SJL-12.5's records, after review)*. It applies decision SJL-D-25 by its default, forwarders, and its (b), an obsolete mark: **no public member is
 removed, and none changes its signature**. The public API listings of `Ast`, `Runtime`, `Parser`, `BuiltIns`,
 `Compiler` and `Engine`, written by PublicApiGenerator 11.4.6 from `2345da11` and from this change, differ only by
 the two types below, listed under `Ast` where they were listed under `Runtime`, and by the obsolete mark. Nothing
