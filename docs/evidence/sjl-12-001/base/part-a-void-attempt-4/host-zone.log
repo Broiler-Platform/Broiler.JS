@@ -1,0 +1,42 @@
+# The zone each shard's tests ran in, against the merging job's own.
+expected: TZ: unset
+expected: 2021-01-15T12:00:00Z: UTC +0000
+expected: 2021-07-15T12:00:00Z: UTC +0000
+expected: tzdata: 2026c
+host-zone-shard-0.txt: differs
+  TZ: unset
+  2021-01-15T12:00:00Z: UTC +0000
+  2021-07-15T12:00:00Z: UTC +0000
+  tzdata: 2026e
+host-zone-shard-1.txt: differs
+  TZ: unset
+  2021-01-15T12:00:00Z: UTC +0000
+  2021-07-15T12:00:00Z: UTC +0000
+  tzdata: 2026e
+host-zone-shard-2.txt: differs
+  TZ: unset
+  2021-01-15T12:00:00Z: UTC +0000
+  2021-07-15T12:00:00Z: UTC +0000
+  tzdata: 2026e
+host-zone-shard-3.txt: differs
+  TZ: unset
+  2021-01-15T12:00:00Z: UTC +0000
+  2021-07-15T12:00:00Z: UTC +0000
+  tzdata: 2026e
+host-zone-shard-4.txt: differs
+  TZ: unset
+  2021-01-15T12:00:00Z: UTC +0000
+  2021-07-15T12:00:00Z: UTC +0000
+  tzdata: 2026e
+host-zone-shard-5.txt: as expected
+host-zone-shard-6.txt: differs
+  TZ: unset
+  2021-01-15T12:00:00Z: UTC +0000
+  2021-07-15T12:00:00Z: UTC +0000
+  tzdata: 2026e
+host-zone-shard-7.txt: differs
+  TZ: unset
+  2021-01-15T12:00:00Z: UTC +0000
+  2021-07-15T12:00:00Z: UTC +0000
+  tzdata: 2026e
+shards: 8; in the expected zone: 1
