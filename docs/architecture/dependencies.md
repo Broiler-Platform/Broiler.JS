@@ -57,8 +57,13 @@ The previous fifteen-assembly diagram is retained as a superseded design record 
 
 - merging `Storage` with `Expressions` creates a return edge through `Storage → Ast →
   Expressions`;
-- merging `Runtime` with `Engine` creates a return edge through `Engine → Parser → Runtime`;
-  and
+- merging `Runtime` with `Engine` created a return edge through `Engine → Parser → Runtime` until
+  milestone SJL-12.5 of the shared JavaScript libraries programme removed the `Parser` → `Runtime`
+  edge (Broiler-Platform/Broiler.JS#1066, merged as `792ff56e` on 2026-10-21), which closed
+  Modernization's MOD-M2-4. Read from the project files at `c29d653f`, no project edge makes that
+  merge cyclic now, and MOD-M2-4 keeps the two separate unless a measured deployment or startup
+  result justifies a merge *(revised 2026-10-25, at SJL-12.5; the item read "merging `Runtime` with
+  `Engine` creates a return edge through `Engine → Parser → Runtime`;")*; and
 - moving all of `Compiler` into an IL assembly would strand binding, early-error, hoisting,
   scope, and analysis work that the IL and bytecode back ends must share.
 
@@ -68,7 +73,7 @@ The project-shell spike must prove an acyclic graph around these canonical hypot
 | --- | --- | --- |
 | Expression model | `Expressions` | Backend-neutral and Emit-free; already structurally established |
 | Syntax and storage | `Ast`, `Storage` | Remain separate until the real edges prove a safe consolidation |
-| FrontEnd/Semantics | `Parser` plus backend-neutral binding, scope, early-error, hoisting, and analysis code extracted from `Compiler`/lowering | Shared by IL and bytecode; references neither back end. **It becomes the shared frontend, `Broiler.ECMAScript.Frontend`**, consumed by both of this engine's back ends (the IL compiler and the portable compiler) and by Broiler.VM's lowering; the programme's SJL-12 to SJL-15 deliver it *(revised 2026-10-12)* |
+| FrontEnd/Semantics | `Parser` plus backend-neutral binding, scope, early-error, hoisting, and analysis code extracted from `Compiler`/lowering | Shared by IL and bytecode; references neither back end. **It becomes the shared frontend, `Broiler.ECMAScript.Frontend`**, consumed by both of this engine's back ends (the IL compiler and the portable compiler) and by Broiler.VM's lowering; the programme's SJL-12 to SJL-15 deliver it *(revised 2026-10-12)*. `Parser`, this boundary's syntax half, references `Ast`, `Expressions` and `Broiler.ECMAScript.Algorithms` alone since SJL-12.5's item 4 removed its reference to `Runtime` (Broiler-Platform/Broiler.JS#1066, `792ff56e`), so it references no back end and no runtime; and since item 5 (Broiler-Platform/Broiler.JS#1068, `c29d653f`) it no longer desugars `for` loops, which a preparation pass of `Compiler` now does, one more piece of the analysis this row would extract from `Compiler`. `Expressions` still looks up `Runtime`'s `JSValue` by name (`JSClassBuilder.cs:26`), with no reference *(added 2026-10-25, at SJL-12.5, when Modernization's MOD-M2-4 closed)* |
 | Runtime and engine services | `Runtime`, `Engine` | Remain separate unless project shells prove a consolidation acyclic |
 | IL back end | expression emitter, IL-specific lowering, `AssemblyCodeCache`, and `ILPack` | The only backend boundary allowed to use `System.Reflection.Emit` |
 | Composition and features | hosting, built-ins, optional hosts, IL and NativeAOT compositions | Back ends and VM language profiles are registered explicitly; reduced compositions publish their omissions |
@@ -99,10 +104,11 @@ publish-and-run gate decide whether the hypotheses become the target.
   and FrontEnd/Semantics is intended; reaching the IL emitter is not.
 - The Regex and Unicode components are **published packages**, not nested components:
   `BuiltIns` references `Broiler.Regex`, `Broiler.Unicode.Cldr.LocaleData` and
-  `Broiler.Unicode.Segmentation`; `Runtime` references `Broiler.Unicode.Algorithms`, the Unicode area's
-  code package, and embeds the tables it reads (`Runtime/Unicode/JSUnicodeTableData.g.cs`, generated from
+  `Broiler.Unicode.Segmentation`; `Ast` references `Broiler.Unicode.Algorithms`, the Unicode area's
+  code package, which the projects above it reach through it, and embeds the tables they read
+  (`Ast/Unicode/JSUnicodeTableData.g.cs`, generated from
   [`data/unicode/pins/`](../../data/unicode/pins/README.md) by the owner's generator, which
-  `Runtime.Tests` alone references, as `Broiler.Unicode.Generation`). No project references a package that
+  `Ast.Tests` alone references, as `Broiler.Unicode.Generation`). No project references a package that
   carries Unicode tables. `Broiler.Unicode.Properties` and `Broiler.Unicode.Emoji.StringProperties` still
   arrive through `Broiler.Regex`'s package dependencies until milestone SJL-11 moves Broiler.Regex onto the
   owner's code packages, and no code of this engine calls them; `UnicodeDependencyTests` holds that by the
@@ -114,7 +120,12 @@ publish-and-run gate decide whether the hypotheses become the target.
   packages under decision SJL-D-6 (c): the bullet's first sentence read "`BuiltIns` references
   `Broiler.Regex` and `Broiler.Unicode.Cldr.LocaleData`, and receives `Broiler.Unicode.Properties` and
   `Broiler.Unicode.Emoji.StringProperties` through `Broiler.Regex`'s package dependencies, calling both
-  directly as well.")*
+  directly as well.")* *(Revised 2026-10-25, at the programme's SJL-12.5, whose item 4 moved the
+  reference, the tables and their test from `Runtime` to `Ast` (Broiler-Platform/Broiler.JS#1066,
+  `792ff56e`): the clause read "`Runtime` references `Broiler.Unicode.Algorithms`, the Unicode area's
+  code package, and embeds the tables it reads (`Runtime/Unicode/JSUnicodeTableData.g.cs`, generated
+  from [`data/unicode/pins/`](../../data/unicode/pins/README.md) by the owner's generator, which
+  `Runtime.Tests` alone references, as `Broiler.Unicode.Generation`)".)*
 - `Ast` references the shared `Broiler.ECMAScript.Algorithms`, as `Parser`, `Runtime`, `BuiltIns`,
   `Storage` and `Expressions` do: `StringSpan`'s obsolete trims forward to its white-space set. *(Added
   2026-10-16, at milestone SJL-7.5.)*

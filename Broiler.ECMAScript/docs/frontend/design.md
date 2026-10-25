@@ -92,6 +92,11 @@ and its cooked template tokens inform the new tree.
 The last two introduce no temporary and restructure no control flow. They stay in Broiler.JS's parser until SJL-14,
 and the shared tree does none of the three.
 
+*(Noted 2026-10-25, at SJL-12.5's records: the first has moved. Since item 5 of SJL-12.5
+(Broiler-Platform/Broiler.JS#1068, `c29d653f`), Broiler.JS's parser returns a `for` loop as written, and the
+compiler's preparation pass, `ForLoopPreparation`, rewrites it before any validation reads the tree; the parser
+rewrites the other two, as above.)*
+
 ## 3. Diagnostics
 
 Decision SJL-D-11, taken on 2026-10-11 and recorded at SJL-12.2. Each diagnostic carries:
@@ -185,7 +190,12 @@ them onto it:
   ambient state; one temporary counter per parse; an end-of-file token per scanner; no reference from `Parser` to
   `Runtime`, the Unicode and regular-expression types it used moved to `Broiler.JavaScript.Ast` behind Broiler.Unicode's
   `IUnicodeTables`; the `for`-loop desugaring moved into the compiler's preparation pass; and an architecture test
-  with a witness. This repository's plan records each decision.
+  with a witness. This repository's plan records each decision. *(Noted 2026-10-25, at SJL-12.5's records: every
+  item is merged, the last in Broiler-Platform/Broiler.JS#1068 (`c29d653f`), and this repository's plan,
+  "The frontend contract (SJL-12)", names each item's change. The reference is absent by assembly: `Parser`'s
+  metadata names no `Runtime` assembly, but it still names the moved types' `Broiler.JavaScript.Runtime`
+  namespaces, which their forwarders keep, and `Expressions`, which it references, looks up `Runtime`'s `JSValue`
+  by name (`JSClassBuilder.cs:26`), as it did before SJL-12.)*
 - **Broiler.VM, SJL-12.6** (decisions D10 to D18): deterministic ordering first, in a merge of its own, with the
   standing checks that stage JSB-1 asks for (decision D14); the binder separated from emission; the lowering's
   language early errors moved into it, a binder refusal skipping the lowering; structured template tokens, with the

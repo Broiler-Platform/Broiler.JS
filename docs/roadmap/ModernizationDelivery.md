@@ -229,7 +229,10 @@ production files.
    the shells restore and compile.
 3. Resolve `Storage → Ast → Expressions` before considering a Storage/Expressions fold.
 4. Inventory `Parser → Runtime`; remove/invert it where sound or preserve Parser, Runtime, and
-   Engine as separate boundaries.
+   Engine as separate boundaries. *(Noted 2026-10-25, at the shared JavaScript libraries
+   programme's SJL-12.5: done. Its item 4 removed the edge on 2026-10-21
+   (Broiler-Platform/Broiler.JS#1066, `792ff56e`), and [`Modernization.md`](Modernization.md)'s
+   MOD-M2-4 closed on 2026-10-25; `Runtime` and `Engine` stay separate.)*
 5. Specify a backend-neutral FrontEnd/Semantics boundary for binding, scopes, early errors,
    hoisting, free-name/numeric analysis, shared IR, and lowering.
 6. Prove the LinqExpressions and backend-contract cuts without exposing `DynamicMethod`, Emit,
