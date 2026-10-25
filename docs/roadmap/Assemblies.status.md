@@ -33,7 +33,7 @@ recorded under `Broiler.VM/docs/roadmap.md` and does not change any state below.
 | Structurally landed | **A-1 through S-6**; A-3's explicit registration slice |
 | Acceptance open | **A-1/S-7** — pinned test262 and repository validation |
 | Superseded | The initial A-0 no-rescope conclusion and A-5 Core fold |
-| Blocked on | **MOD-M2 verified graph** — project shells must resolve the Base↔Ast cycle and establish FrontEnd/Semantics ownership *(revised 2026-10-25, at the shared JavaScript libraries programme's SJL-12.5, when Modernization's MOD-M2-4 closed: the Core↔Parser cycle went with the `Parser` → `Runtime` edge, below; the cell read "project shells must resolve the Base↔Ast and Core↔Parser cycles and establish FrontEnd/Semantics ownership")* |
+| Blocked on | **MOD-M2 verified graph** — project shells must resolve the Base↔Ast cycle and establish FrontEnd/Semantics ownership *(revised 2026-10-25, at the shared JavaScript libraries programme's SJL-12.5, when Modernization's MOD-M2-4 closed: the Core↔Parser cycle went with the `Parser` → `Runtime` edge on 2026-10-21, below; the cell read "project shells must resolve the Base↔Ast and Core↔Parser cycles and establish FrontEnd/Semantics ownership")* |
 | Next | Finish S-7 independently; then build MOD-M2 shells and a whole-tree/profile-classified Emit, dynamic-code, and name-probing census |
 
 **A-1's structural change has landed; its acceptance has not.**
@@ -161,8 +161,9 @@ Broiler.JavaScript.LinqExpressions-> Ast, Engine, ExpressionCompiler, Runtime, S
 as written. Of the three references its line "`Broiler.JavaScript.Parser -> Ast,
 ExpressionCompiler, Runtime`" names, only `Ast` remains: `ExpressionCompiler` gave way to
 `Expressions` at A-1, and `Runtime` went at SJL-12.5's item 4 (Broiler-Platform/Broiler.JS#1066,
-`792ff56e`). `Parser` references `Ast`, `Expressions` and `Broiler.ECMAScript.Algorithms` alone,
-and Modernization's MOD-M2-4 closed with the `Runtime` edge.)*
+merged as `792ff56e` on 2026-10-21). `Parser` references `Ast`, `Expressions` and
+`Broiler.ECMAScript.Algorithms` alone, and Modernization's MOD-M2-4, which the edge's removal
+answered, closed on 2026-10-25.)*
 
 It contains `System.Reflection.Emit` in ~40 files. **So there is no subset of the current
 graph that runs JavaScript without dynamic code**, which is the whole of why
@@ -303,8 +304,9 @@ gate grows.
 1. **A generated project and source-edge graph**, with the two known cycles called out and
    every proposed consolidation represented by buildable project shells. *(Noted 2026-10-25,
    at the shared JavaScript libraries programme's SJL-12.5: of "the two known cycles", the
-   Core↔Parser one went with the `Parser` → `Runtime` edge (Broiler-Platform/Broiler.JS#1066,
-   `792ff56e`), when Modernization's MOD-M2-4 closed; the Base↔Ast one stands.)*
+   Core↔Parser one went with the `Parser` → `Runtime` edge on 2026-10-21
+   (Broiler-Platform/Broiler.JS#1066, `792ff56e`); Modernization's MOD-M2-4 closed on
+   2026-10-25; the Base↔Ast one stands.)*
 2. **A type/file assignment for FrontEnd/Semantics**, including parser, binding, scope,
    early errors, hoisting, numeric-local analysis, and shared IR; the bytecode and IL shells
    must both consume it without referencing each other.

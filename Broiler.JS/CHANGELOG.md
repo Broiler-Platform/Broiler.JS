@@ -52,7 +52,7 @@ PublicApiGenerator 11.4.6 from `792ff56e` and from this change, differ in that o
   `tailCall` by name compiles unchanged; code compiled against the old signature must be rebuilt. *(Corrected
   2026-10-25, at SJL-12.5's records, after review; no code changed. The first sentence ended "the depth it
   validates and compiles the eval code at.", which the path without a `JSContext` does not do. The product's own
-  remarks, `DirectEvalSupport.cs:92-93` and `ForLoopPreparation.cs:34-36`, still say so: a change to them would
+  remarks, `DirectEvalSupport.cs:92-93` and `ForLoopPreparation.cs:34-37`, still say so: a change to them would
   move the after commit, so they are left to the first product change to those files after the after runs.)*
 - **A loop records whether its body holds a `continue`** (`ContainsContinue`, internal), as the parser counts them,
   and the pass reads it to decide whether a `let` loop copies its bindings back in a `finally`. `Ast` grants its
