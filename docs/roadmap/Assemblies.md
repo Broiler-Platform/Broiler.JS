@@ -128,6 +128,13 @@ decision the engine has already made at run time.
 > `Engine + Runtime` cyclic. Moving all of `Compiler` to IL would also put binding, scope,
 > early-error, hoisting, and analysis work needed by both back ends behind the IL boundary.
 > Modernization MOD-M2 must replace this sketch with project shells that build.
+>
+> *Noted 2026-10-25, at the shared JavaScript libraries programme's SJL-12.5: the second of the
+> two merges is no longer cyclic by a project edge. SJL-12.5's item 4 removed the `Parser` →
+> `Runtime` edge (Broiler-Platform/Broiler.JS#1066, `792ff56e`), and Modernization's MOD-M2-4
+> closed with it, keeping `Engine` and `Runtime` separate unless a measured result justifies a
+> merge. The paragraph above is left as written; [`Assemblies.status.md`](Assemblies.status.md)
+> records the graph.*
 
 > **Ownership changed after this sketch was written.** Its `Broiler.JS.Bytecode`,
 > `.Bytecode.Compiler`, and `.Aot` rows are retained as design history, not proposed package

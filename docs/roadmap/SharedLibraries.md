@@ -615,10 +615,16 @@ there after the cut-over, as before it.
 `0.1.0-preview.4` of `Broiler.Unicode.Algorithms` and `Broiler.Unicode.Segmentation`, which nuget.org serves.
 **Decision SJL-D-6 (c) is applied as recorded**: [`data/unicode/pins/`](../../data/unicode/pins/README.md) is
 a byte-for-byte copy of the owner's pin, the tables the owner's generator writes from it are embedded in
-`Broiler.JavaScript.Runtime` (`JSUnicodeTableData.g.cs`), and `UnicodeTableRegenerationTests` runs the
-generator and compares its output byte for byte, as rule SL7 does for the owner. This engine references no
-package that carries tables directly; `Broiler.Unicode.Properties` and the emoji package still arrive in the
-closure through Broiler.Regex's dependencies until SJL-11, and no code of this engine calls them.
+this engine, in `Broiler.JavaScript.Runtime` at this cut-over and in `Broiler.JavaScript.Ast` since SJL-12.5
+(`Unicode/JSUnicodeTableData.g.cs`), and `UnicodeTableRegenerationTests`, in `Runtime`'s tests then and in
+`Ast`'s since SJL-12.5, runs the generator and compares its output byte for byte, as rule SL7 does for the
+owner. This engine references no package that carries tables directly; `Broiler.Unicode.Properties` and the
+emoji package still arrive in the closure through Broiler.Regex's dependencies until SJL-11, and no code of
+this engine calls them. *(Revised 2026-10-25, at SJL-12.5's records: item 4 of SJL-12.5 moved the tables and
+their test, unchanged, from `Runtime` to `Ast` (Broiler-Platform/Broiler.JS#1066, `792ff56e`). The sentence read
+"the tables the owner's generator writes from it are embedded in `Broiler.JavaScript.Runtime`
+(`JSUnicodeTableData.g.cs`), and `UnicodeTableRegenerationTests` runs the generator and compares its output byte
+for byte".)*
 - **The deletion list is absent**, with what JSD-0074 added to it: the search for its members finds nothing,
   and the search for host Unicode APIs finds each of its hits outside the areas covered (bundle
   [`sjl-7-001`](../evidence/sjl-7-001/README.md), section 3, which lists them by milestone).
