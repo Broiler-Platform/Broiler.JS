@@ -1337,10 +1337,12 @@ This repository's part of it:
     engine does today, and Broiler.VM's report of the pair's start is that engine's correction under the same row;
   - `source` rewriting: T1;
   - the literal check: S2b, S7, S8 (test262's breaking-change patterns and two more `v`-mode classes) and S11 (the
-    invalid modifiers and `v`-mode classes this engine refuses only when the literal is evaluated), closed by decision
-    D22's re-pointing. Between them these three rows explain every test262 file on a regular-expression path that this
-    engine failed in bundle [`sjl-10-001`](../evidence/sjl-10-001/README.md)'s after run, but one realm test; the rule
-    names each file;
+    invalid modifiers and `v`-mode classes this engine refuses only when the literal is evaluated), their literal path
+    closed by decision D22's re-pointing, and S7's and S8's constructor path, where the library's refusal is caught
+    and .NET admits the translation, by the translator's retirement. Rows S7, S8 and S11 between them explain every
+    test262 file on a regular-expression path that this engine failed in bundle
+    [`sjl-10-001`](../evidence/sjl-10-001/README.md)'s after run, but `test/built-ins/RegExp/proto-from-ctor-realm.js`,
+    a realm test; the rule names each file;
   - an escaped duplicate name in one alternative: S2a;
   - a class that joins a lead-surrogate escape to a braced trail escape: S10's class case;
   - with Broiler.Regex's `0.1.0-preview.4`: the budget's no-match, shortened match, wrong index and flipped look-around
@@ -1377,8 +1379,9 @@ This repository's part of it:
   **(c), removal**, with a consumer check. An organisation-wide code search of 2026-10-19 found no use of them outside
   this repository but Broiler.Unicode's test-only copies; SJL-11.5 runs it again and records its queries and results
   in [`docs/public-api.md`](../public-api.md). Their own tests are deleted with them, and
-  `SharedUnicodeTests.cs:204-235` is rewritten. `RegExpUnicodeValidator`: **(a)**, a forwarder to the validate entry. `JSRegExp.Match`, `Split` and
-  `Replace`: kept, their bodies re-pointed. `CaptureGroupMap`: kept if used, else (b).
+  `SharedUnicodeTests.cs:204-235` is rewritten. `RegExpUnicodeValidator`: **(a)**, a forwarder to the validate
+  entry. `JSRegExp.Match`, `Split` and `Replace`: kept, their bodies re-pointed. `CaptureGroupMap`: kept if used,
+  else (b).
 - **The version and the pin (decision D12).** Broiler.Regex's SJL-11 surface ships as `0.2.0-preview.1`, and it breaks
   the `0.1` surface this engine calls today. **This engine moves its pin only at SJL-11.5**, and no release of either
   engine depends on `0.2` before both cut-overs have merged.
@@ -1393,8 +1396,8 @@ This repository's part of it:
   - A, test262 per path in UTC with negative-metadata tests, its classes naming every correction above by row, and the
     test262 files of rows S7, S8 and S11 by name;
   - B, this engine's measurement, over a new benchmark class, `RegExpBenchmarks`, that a later inputs commit adds,
-    reading the workloads verbatim (decision D17). It is not a gate clause: a NOT MET is recorded in the cut-over record as "a
-    slower but bounded matcher", and the part is void on a lane that is not controlled (decision D19);
+    reading the workloads verbatim (decision D17). It is not a gate clause: a NOT MET is recorded in the cut-over
+    record as "a slower but bounded matcher", and the part is void on a lane that is not controlled (decision D19);
   - C, the adversarial programs, written by Broiler.RegEx's `eng/adversarial-programs.py --engine broiler-js` from its
     corpus, whose SHA-256 the manifest names (decision D37);
   - D, the regular-expression vectors under the invariant culture, `tr-TR` and `lt-LT` (decision D33);
@@ -1510,7 +1513,11 @@ This repository's part of it:
   - **What "does not desugar" reaches** (decision D23): the for-loop desugaring. The synthetic block Annex B gives a
     function declaration that is the whole of an `if` clause (`FastParser.Statement.cs`), and the rewrite of a
     regular-expression literal's `\u{…}` escapes (`FastScanner.cs`), introduce no temporary and restructure no
-    control flow. They stay until SJL-14, whose shared tree keeps raw facts.
+    control flow. They stay until SJL-14, whose shared tree keeps raw facts. *(Noted 2026-10-25, at SJL-11.1, by
+    Broiler.VM's JSD-0081, decision D22. The sentence reads "They stay until SJL-14", and the second of them is the
+    rewrite of a regular-expression literal's `\u{…}` escapes. SJL-11.5 deletes that one, with the scanner's
+    parenthesis-balance patch, or SJL-14 does if SJL-11 has not; it stays at SJL-12, as decided. Section "Area
+    verdicts", "Regular expressions (SJL-11.1)", records the deletion.)*
   - **What "reads no ambient state" reaches** (decision D24): the `Parser` assembly's own declarations and
     references. `StackSegment`'s `[ThreadStatic]` flag and its environment variable, `CompilationStack`'s statics,
     `Ast`'s `FastToken.Empty` and `ArraySpan<T>.Empty`, and `FastCompiler`'s read of `JSEngine.Current` for direct

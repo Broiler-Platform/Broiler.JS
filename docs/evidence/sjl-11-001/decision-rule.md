@@ -13,6 +13,11 @@ still work"), SJL-11.6's adversarial corpus in this engine, and this engine's me
 maintainer. **Reviewer:** none. Every role this rule names is held by one person (the programme records this as
 Broiler.VM's exception EX-30), and this rule does not claim that anyone independent has read it.
 
+*Revised 2026-10-25, the day it was written, after review, before any run and before this change reached the default
+branch: part A's MET line admits a row passing at the base that fails after under either kind of class C3, where it
+read "outside C3 (L)", so that kind (E), row M4's empty match, admits a move in either direction, as its definition
+says. Nothing else changed.*
+
 **What this file is.** Five predeclared decisions, one per part.
 - **The templates.** Part A is template T2 of the programme's validation document
   (`Broiler.VM/docs/javascript-shared-libraries/validation.md` section 4), part B T5. Part C is resource accounting
@@ -114,7 +119,7 @@ admitted difference classes:
   C3 implementation-defined, of two kinds: (L) a limit - a row passing at the base that after throws this engine's RangeError for Broiler.Regex's frame or trail ceiling, or its SyntaxError for the nesting limit (JSD-0081 decisions D7, D10 and D39); each listed with the limit it reached, shown by the row's pattern and subject run through Broiler.Regex at library level under the same policy, whose LimitExceeded status names that limit; the library run is retained; and (E) a row whose verdict moves only because this engine's answer to the empty match from a lastIndex inside a surrogate pair under u or v moves (row M4's empty match), which JSD-0081 decision D41 classes implementation-defined until the specification's text is corrected; listed with the row and the decision
   C5 data policy by decision - a row whose verdict changes because Unicode 17.0.0's data through the Unicode owner's provider replaces the runtime's in a construct the translator delegated to .NET (a character class or case-insensitive matching without u), under SJL-D-6 (c); each listed with its row (row U3)
 every other difference is a regression, including a row that passes at the base and fails, times out or is skipped after, and a row whose verdict moves between failed, timed out and skipped without a class
-MET if and only if both runs are complete (every expected shard reported, no configuration failure, one suite revision, one shell, every shard in the zone, includeNegative true in both), the two runs' host-zone records read alike, the script finds them comparable, every duplicate-named-groups row passes at both commits, no row passing at the base fails, times out or is skipped after outside C3 (L), and every changed verdict is in C1, C3 or C5 and is listed.
+MET if and only if both runs are complete (every expected shard reported, no configuration failure, one suite revision, one shell, every shard in the zone, includeNegative true in both), the two runs' host-zone records read alike, the script finds them comparable, every duplicate-named-groups row passes at both commits, no row passing at the base fails, times out or is skipped after outside C3, of either kind, and every changed verdict is in C1, C3 or C5 and is listed.
 NOT MET otherwise; and if the two runs' host-zone records differ, because the runners' tzdata moved between them, the part is not judged until the base is taken again at the same commit in the after run's zone record.
 ```
 
