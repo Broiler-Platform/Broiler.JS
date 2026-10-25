@@ -1431,6 +1431,64 @@ This repository's part of it:
   Parts C and D's bases are taken at the commit that adds the parse corpus, under the conditions the rule states
   (decision D9). No part runs in a zone with daylight-saving time: nothing SJL-12.5 changes reads the host's zone.
 
+**SJL-12.3 to SJL-12.5, merged 2026-10-20 to 2026-10-25: the catalogue, the corpus and the bases, and this
+engine's in-place preparation.** *(Added 2026-10-25, at SJL-12.5's records.)* The list above is SJL-12.1's, and its
+"today" is 2026-10-19's. What merged since:
+- **SJL-12.3, the early-error catalogue** (Broiler-Platform/Broiler.JS#1061, merged as `68f9a87a` on 2026-10-20):
+  [`early-errors.tsv`](../../Broiler.ECMAScript/docs/frontend/early-errors.tsv) beside the design document, with
+  [`early-errors.md`](../../Broiler.ECMAScript/docs/frontend/early-errors.md), its extractor and its completeness
+  check. Broiler.VM's mapping names it by commit and SHA-256.
+- **SJL-12.4, the parse corpus** (Broiler-Platform/Broiler.JS#1062, `1fe542ff`, 2026-10-20, the rule's corpus
+  commit): `conformance/parse/`, the bundle's tool and `scripts/compliance/compare_parse_corpus.py`.
+- **The bases**, in bundle [`sjl-12-001`](../evidence/sjl-12-001/README.md): parts C and D's at the corpus commit,
+  with part C's control (Broiler-Platform/Broiler.JS#1063, `17b91384`, 2026-10-20); and part A's at the rule
+  commit, `test262 evidence` run 40196127730, the fifth dispatch, the four before it void and retained
+  (Broiler-Platform/Broiler.JS#1067, `2faf464b`, 2026-10-25). Part B's base is built when part B runs.
+- **SJL-12.5, item by item**, in decision D26's order:
+  - **the architecture test, with items 3 and 2** (tasks 5.1 to 5.3; Broiler-Platform/Broiler.JS#1064, `48fee2d3`,
+    2026-10-20): `Broiler.JavaScript.Architecture.Tests`, with part B's clauses and its witness, asserting the exact
+    list of the parser's violations; `FastScanner`'s end-of-file and empty tokens per scanner; the for-loop
+    temporaries numbered per parse;
+  - **item 1, explicit options** (task 5.4; Broiler-Platform/Broiler.JS#1065, `2345da11`, 2026-10-20):
+    `FastParserOptions` through every compile site, `JSCompilationOptions.AllowTopLevelAwait` in the cache's key and
+    the `IJSCompiler` default method; `CoreScript`'s ambient scopes deleted; corrections J1 and J2 listed in the
+    changelog;
+  - **item 4, no `Runtime` reference** (task 5.5; Broiler-Platform/Broiler.JS#1066, `792ff56e`, 2026-10-21): the five
+    types and the Unicode tables moved to `Ast`, which took the reference to `Broiler.Unicode.Algorithms`, with a
+    forwarder in `Runtime` for each of the two public ones; `UndoMark` obsolete; `Parser`'s reference to `Runtime`
+    removed. The reference is absent by assembly, as part B of the rule reads the clause: the parser still names the
+    moved types' `Runtime` namespaces, which their forwarders keep, and `Expressions`, which it references, looks up
+    `Runtime`'s `JSValue` by name (`JSClassBuilder.cs:26`), unchanged since before SJL-12;
+  - **item 5, the for-loop pass** (task 5.6; Broiler-Platform/Broiler.JS#1068, `c29d653f`, 2026-10-25):
+    `ForLoopPreparation.Prepare` after the parse, in `FastCompiler` and in `DirectEvalSupport`, before
+    `SyntaxValidation`, emitting the shapes the parser emitted; `ContainsContinue` recorded by the parser; the three
+    walkers out of the parser; the architecture test's list empty. Its merge is **the after commit** the rule names;
+  - **the records** (task 5.7, this change): [`docs/public-api.md`](../public-api.md)'s closing record of SJL-12.5's
+    public API, with SJL-D-25's dispositions; the changelog's corrections; MOD-M2-4 closed; and the stale records
+    below. They change no product path, so the after commit stays the last product change before the after runs.
+- **Where what merged differs from the decisions as written above**, each recorded where it merged:
+  - **Decision D22's "distinct from an enclosing compilation's carriers"** holds along a chain of direct evals, by a
+    compile-time depth the compiler passes into each direct eval it emits. Two direct evals from the same code may
+    name alike, since neither encloses the other. Where the current engine is not a `JSContext`, eval code is
+    validated at its depth and compiled at 0, and eval code that is one call of the intrinsic `eval` with a
+    constant runs at the outer eval's depth. No temporary's name is observable from scripts.
+  - **Decision D29's "forwarders by default"** has one exception: `DirectEvalSupport.Execute`, which compiled code
+    calls, gained a parameter in place, with nothing standing for its old signature.
+  - **SJL-D-25 (b)** is an obsolete forwarder with a removal version; `UndoMark`'s obsolete mark names no version and
+    leaves its removal to (c)'s consumer check, which cannot be made here.
+  - **The rule's part C admits a third class**, D: an input the parser's for-loop desugaring refused at the base,
+    which the parser alone accepts after and the whole compile refuses after as it did at the base. The bullet on
+    the rule above names J1, J2 and a resolved crash only. Bundle `sjl-12-001`'s README, section 2, names before the after runs how it reads class D,
+    whose population at the base is empty.
+- **The stale records the reviews found are corrected**, each by a dated note that quotes what it replaced:
+  [`docs/architecture/dependencies.md`](../architecture/dependencies.md), on the tables' home and on the
+  `Engine → Parser → Runtime` edge; [`Assemblies.status.md`](Assemblies.status.md), on that edge; this plan's SJL-7.5
+  record, on the tables' home; and the early-error catalogue's citations of the moved files, read in
+  `early-errors.md`, since Broiler.VM's mapping pins the catalogue's bytes.
+- **MOD-M2-4 is closed**, in [`Modernization.md`](Modernization.md), as decision D28 says.
+- **Next: the after runs**, at the after commit: part A by `test262 evidence`, and parts B, C and D on the local
+  machine; then the bundle's README reads each part against the rule. Nothing here is a verdict.
+
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 4 to 6, and its half of shared
 clauses 7 and 8, are read by the programme's ledger. **SJL-12 may not meet its gate before SJL-3 meets SJL-3's.**
 
@@ -1464,7 +1522,7 @@ the summary here does not replace them.
 | **SJL-1** — the shared conformance vectors | Write the vector schema, the validator and its negative-control file, then the number vectors, then the engine-level runner | Home clauses 1 to 3: the validator refuses the malformed control and any vector without an independent source; every number vector has provenance; the engine-level run is retained with every difference classified under `docs/evidence/sjl-1-001/decision-rule.md` |
 | **SJL-2** — the admission path | Create the shared folder with its conventions, the `SL` rules, the API baseline, the assurance gate, the version stream and the Native AOT probe *(corrected 2026-10-12: the list named "the prefix reservation" before the probe, which the owner withdrew)* | Clauses 7 to 10: SL1 to SL10 `Active` with witnesses; the API baseline and the assurance gate in CI, each watched failing on an injected drift; the probe pre-release packs, restores and passes package validation; the Native AOT probe publishes with zero warnings and runs |
 | **SJL-3** — number conversion, the pilot | Implement the algorithms library's number area; run the reference arms; cut this engine over from `Parser`, `Runtime` and `BuiltIns` | Clauses 1 to 7: the library under the conventions with its vectors and reference arms classified; every deletion-list member gone and every public disposition applied; test262 per path with no path passing at base failing after; corrections in the changelog; the measurement under `docs/evidence/sjl-3-001/decision-rule.md` |
-| **SJL-12** — the frontend contract and in-place preparation | Remove the parser's ambient state, mutable statics, `Runtime` references and parse-time desugaring in place (Modernization's MOD-M2-4 closes with it, and the contract supersedes MOD-M2-5's boundary specification; MOD-M2-3 is not part of it), record the frontend contract here, and keep the early-error catalogue and the parse corpus's home *(revised 2026-10-19, at SJL-12.1, under Broiler.VM's JSD-0080, decision D28; read "Remove the parser's ambient state, mutable statics, `Runtime` references and parse-time desugaring in place (Modernization MOD-M2-3 to MOD-M2-5 are this half), and record the frontend contract here")* | Clauses 1 to 3, and this repository's half of shared clauses 7 and 8: an architecture test with a witness enforces the parser's independence; test262 per path meets the rule; the contract record is in this plan; the early-error catalogue is retained here, and the parse corpus and this engine's baselines over it *(revised 2026-10-19, at SJL-12.1; read "Clauses 1 to 3: an architecture test with a witness enforces the parser's independence; test262 per path meets the rule; the contract record is in this plan")* |
+| **SJL-12** — the frontend contract and in-place preparation | Remove the parser's ambient state, mutable statics, `Runtime` references and parse-time desugaring in place (Modernization's MOD-M2-4 closes with it, and the contract supersedes MOD-M2-5's boundary specification; MOD-M2-3 is not part of it), record the frontend contract here, and keep the early-error catalogue and the parse corpus's home *(revised 2026-10-19, at SJL-12.1, under Broiler.VM's JSD-0080, decision D28; read "Remove the parser's ambient state, mutable statics, `Runtime` references and parse-time desugaring in place (Modernization MOD-M2-3 to MOD-M2-5 are this half), and record the frontend contract here")*. *(Noted 2026-10-25, at SJL-12.5's records: the removal is merged, SJL-12.5's items 1 to 5, with MOD-M2-4 closed, and the catalogue and the corpus are here; the after runs of bundle `sjl-12-001` are next, as [`SharedLibraries.status.md`](SharedLibraries.status.md) says.)* | Clauses 1 to 3, and this repository's half of shared clauses 7 and 8: an architecture test with a witness enforces the parser's independence; test262 per path meets the rule; the contract record is in this plan; the early-error catalogue is retained here, and the parse corpus and this engine's baselines over it *(revised 2026-10-19, at SJL-12.1; read "Clauses 1 to 3: an architecture test with a witness enforces the parser's independence; test262 per path meets the rule; the contract record is in this plan")* |
 | **SJL-4** — numerics | The area's library work and cut-over; SJL-D-15 recorded | Its Broiler.JS clauses: deletion list absent, dispositions recorded, test262 per path, vectors, corrections listed |
 | **SJL-5** — text algorithms | As above | Its Broiler.JS clauses |
 | **SJL-6** — Date | As above, with the provider interfaces of SJL-D-19 and Date storage migrated | Its Broiler.JS clauses, the non-UTC host run included |
