@@ -620,11 +620,12 @@ this engine, in `Broiler.JavaScript.Runtime` at this cut-over and in `Broiler.Ja
 `Ast`'s since SJL-12.5, runs the generator and compares its output byte for byte, as rule SL7 does for the
 owner. This engine references no package that carries tables directly; `Broiler.Unicode.Properties` and the
 emoji package still arrive in the closure through Broiler.Regex's dependencies until SJL-11, and no code of
-this engine calls them. *(Revised 2026-10-25, at SJL-12.5's records: item 4 of SJL-12.5 moved the tables and
-their test, unchanged, from `Runtime` to `Ast` (Broiler-Platform/Broiler.JS#1066, `792ff56e`). The sentence read
-"the tables the owner's generator writes from it are embedded in `Broiler.JavaScript.Runtime`
-(`JSUnicodeTableData.g.cs`), and `UnicodeTableRegenerationTests` runs the generator and compares its output byte
-for byte".)*
+this engine calls them. *(Revised 2026-10-25, at SJL-12.5's records: item 4 of SJL-12.5 moved the tables, the
+same data with the two header comment lines that name the test project changed, and their test, with its
+namespace and the paths and header lines it compares, from `Runtime` to `Ast` (Broiler-Platform/Broiler.JS#1066,
+`792ff56e`). The sentence read "the tables the owner's generator writes from it are embedded in
+`Broiler.JavaScript.Runtime` (`JSUnicodeTableData.g.cs`), and `UnicodeTableRegenerationTests` runs the generator
+and compares its output byte for byte".)*
 - **The deletion list is absent**, with what JSD-0074 added to it: the search for its members finds nothing,
   and the search for host Unicode APIs finds each of its hits outside the areas covered (bundle
   [`sjl-7-001`](../evidence/sjl-7-001/README.md), section 3, which lists them by milestone).
@@ -1441,9 +1442,10 @@ engine's in-place preparation.** *(Added 2026-10-25, at SJL-12.5's records.)* Th
 - **SJL-12.4, the parse corpus** (Broiler-Platform/Broiler.JS#1062, `1fe542ff`, 2026-10-20, the rule's corpus
   commit): `conformance/parse/`, the bundle's tool and `scripts/compliance/compare_parse_corpus.py`.
 - **The bases**, in bundle [`sjl-12-001`](../evidence/sjl-12-001/README.md): parts C and D's at the corpus commit,
-  with part C's control (Broiler-Platform/Broiler.JS#1063, `17b91384`, 2026-10-20); and part A's at the rule
-  commit, `test262 evidence` run 40196127730, the fifth dispatch, the four before it void and retained
-  (Broiler-Platform/Broiler.JS#1067, `2faf464b`, 2026-10-25). Part B's base is built when part B runs.
+  with part C's control and part A's first two dispatches, which are void (Broiler-Platform/Broiler.JS#1063,
+  `17b91384`, 2026-10-20); and part A's at the rule commit, `test262 evidence` run 40196127730, the fifth dispatch,
+  retained with the third and fourth, which are void (Broiler-Platform/Broiler.JS#1067, `2faf464b`, 2026-10-25).
+  Part B's base is built when part B runs.
 - **SJL-12.5, item by item**, in decision D26's order:
   - **the architecture test, with items 3 and 2** (tasks 5.1 to 5.3; Broiler-Platform/Broiler.JS#1064, `48fee2d3`,
     2026-10-20): `Broiler.JavaScript.Architecture.Tests`, with part B's clauses and its witness, asserting the exact
@@ -1470,24 +1472,33 @@ engine's in-place preparation.** *(Added 2026-10-25, at SJL-12.5's records.)* Th
   - **Decision D22's "distinct from an enclosing compilation's carriers"** holds along a chain of direct evals, by a
     compile-time depth the compiler passes into each direct eval it emits. Two direct evals from the same code may
     name alike, since neither encloses the other. Where the current engine is not a `JSContext`, eval code is
-    validated at its depth and compiled at 0, and eval code that is one call of the intrinsic `eval` with a
-    constant runs at the outer eval's depth. No temporary's name is observable from scripts.
-  - **Decision D29's "forwarders by default"** has one exception: `DirectEvalSupport.Execute`, which compiled code
-    calls, gained a parameter in place, with nothing standing for its old signature.
+    validated at its depth and compiled at 0; and where eval code is one call of the intrinsic `eval` with a
+    constant, the constant is validated and run in its place at that eval code's depth, not one deeper. No
+    temporary's name is observable from scripts. The product's remarks that say eval code is validated and compiled
+    at its depth, `DirectEvalSupport.cs:92-93` and `ForLoopPreparation.cs:34-36`, are left to the first product
+    change to those files after the after runs, since a change to them would move the after commit.
+  - **Decision D29's "forwarders by default"** is not applied to one member: `DirectEvalSupport.Execute`, which
+    compiled code calls, gained a parameter in place. Its old signature is removed, which breaks binary
+    compatibility, with no forwarder, no obsolete overload and none of SJL-D-25's dispositions, and no check of its
+    callers is made. Whether that is the stop of the programme's risk D6, "a public member removed without its
+    recorded disposition", or an exception the owner accepts, is the owner's to decide; no decision on it is
+    recorded. A forwarder made before the after runs would move the after commit.
   - **SJL-D-25 (b)** is an obsolete forwarder with a removal version; `UndoMark`'s obsolete mark names no version and
     leaves its removal to (c)'s consumer check, which cannot be made here.
   - **The rule's part C admits a third class**, D: an input the parser's for-loop desugaring refused at the base,
     which the parser alone accepts after and the whole compile refuses after as it did at the base. The bullet on
     the rule above names J1, J2 and a resolved crash only. Bundle `sjl-12-001`'s README, section 2, names before
     the after runs how it reads class D, whose population at the base is empty.
-- **The stale records the reviews found are corrected**, each by a dated note that quotes what it replaced:
-  [`docs/architecture/dependencies.md`](../architecture/dependencies.md), on the tables' home and on the
-  `Engine → Parser → Runtime` edge; [`Assemblies.status.md`](Assemblies.status.md), on that edge; this plan's SJL-7.5
-  record, on the tables' home; and the early-error catalogue's citations of the moved files, read in
-  `early-errors.md`, since Broiler.VM's mapping pins the catalogue's bytes.
+- **The stale records the reviews found are corrected**, each by a dated note, which quotes what it replaced where it
+  replaced text: [`docs/architecture/dependencies.md`](../architecture/dependencies.md), on the tables' home and on
+  the `Engine → Parser → Runtime` edge; [`Assemblies.md`](Assemblies.md) and
+  [`Assemblies.status.md`](Assemblies.status.md), on that edge; this plan's SJL-7.5 record, on the tables' home; and
+  the early-error catalogue's citations of the moved files, read in `early-errors.md`, since Broiler.VM's mapping
+  pins the catalogue's bytes.
 - **MOD-M2-4 is closed**, in [`Modernization.md`](Modernization.md), as decision D28 says.
 - **Next: the after runs**, at the after commit: part A by `test262 evidence`, and parts B, C and D on the local
-  machine; then the bundle's README reads each part against the rule. Nothing here is a verdict.
+  machine; then the bundle's README reads each part against the rule. Nothing here is a verdict. The owner's
+  reading of `DirectEvalSupport.Execute`'s removed signature, above, is open beside them.
 
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 4 to 6, and its half of shared
 clauses 7 and 8, are read by the programme's ledger. **SJL-12 may not meet its gate before SJL-3 meets SJL-3's.**
