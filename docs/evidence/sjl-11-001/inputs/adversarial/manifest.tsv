@@ -1,0 +1,55 @@
+# Adversarial programs for broiler-js, written by Broiler.RegEx's eng/adversarial-programs.py --engine broiler-js from that repository's tests/Adversarial/corpus.tsv.
+# corpus: tests/Adversarial/corpus.tsv
+# corpus-sha256: 1a0f8c56bb970fa784fc6e573e9968e939d298d3e912320ed8c1a407fa997dd5
+# broiler-regex-commit: c2aa77167cb3ded40ef50b5c3eeae26f8f7c0b54
+# generator-format: 1
+# engine: broiler-js
+# wall-clock-limit-seconds: 300
+# run: each program alone, one process of the shell BroilerJS with --script-host and the invariant culture; it prints one line, 'adversarial-outcome <id> <outcome>'
+id	class	op	program	program-sha256	pattern-code-units	subject-code-units	declared-outcome
+L01	L	match@0	L01.js	fc36725737289b43a3921f41912a2c3885464228442c6f742070dba34e7fd56c	19	25	completed null
+L02	L	match@0	L02.js	8dd438ff20fe63d21aa5d5227ab4c3be1cd5ed8d900eb37fc390b35f2768b77b	19	25	completed null
+L03	L	match@0	L03.js	3e1462650e1d3b680fbbfa00d6dfdc8fe6e7ff6f9ff6593da73113f7f6023d33	19	25	completed 0,0 -
+L04	L	match@0	L04.js	fa5fb9ae6e40d03c5dfafc98a71174d8c91027b14aaa70af0ab7910bcf9fe1e7	20	25	completed 25,25 -
+L05	L	match@0	L05.js	ddc84e755cd0ca34e7b1166fc07a7d7f21efc81ed1bb7ed2a53f1b8182401b37	20	25	completed null
+W01	W	match@0	W01.js	0167e1fe2290a452578c2fce4213dd85baf79c0951af58b460a5c9ca494823e6	14	25	completed 0,25 -
+W02	W	match@0	W02.js	3c9ddb8ecd37f5a83035b08907efeb5f3e2be28994f6727fd4cc1831c9fe5d8b	14	25	completed 0,25 -
+G01	G	match@0	G01.js	7014f22271e821411397a34f0d5d4a083d307badb17b798507d3195344fa15d1	4	10000001	completed 0,10000001
+G02	G	match@0	G02.js	6a0d0392205567dd7071fe890e7621519eef9fc952b64f33fe3c4a02a57db910	4	10000001	completed 0,10000001
+G03	G	match@0	G03.js	6cc3423fa6055327f8eda7967ad09d49f15324b1c381742f0fa085f5e37d1bcf	6	10000001	completed 0,10000001
+M01	M	match@0	M01.js	29c3c1aa9e7da73349cf7e47ce561704837c3c7d54bf829ad6502c5676485c2a	10	8388609	threw RangeError
+M02	M	match@0	M02.js	1ea45020103da1ff7ee4d2f2af51344a2694fa240da65dd1709aaa379b35e2c8	11	8388609	threw RangeError
+N01	N	match@0	N01.js	91ca66f9216ecfa0da92a0e4f968b00308b5603101263068a65911c424bfb1ba	1023	1	completed 0,1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+N02	N	compile	N02.js	f4c87a675d49d8fa2db8563f17256d0e7f27ca960caf5ace5322c64781eb8a2f	1025	0	threw SyntaxError
+N04	N	compile	N04.js	c55c955735f431bde211852756094e76e9bdfd8761d710f9857a7d6e826b8887	40001	0	threw SyntaxError
+N05	N	compile	N05.js	34d3fa80fa3a5825275f29651519051f7cd97eb6aaab562a5439d0f6afa6c61d	2000001	0	threw SyntaxError
+N07	N	match@0	N07.js	1253b0f7b2c30b22a665a9856ada94f5e1b06143ffabc8503ba58e8238cdc0a7	2045	1	completed 0,1
+N08	N	compile	N08.js	e45b2438de45d79d8568dbff48219024845a3ef1e407ea8dc90fc3aeb2bfdd6a	2049	0	threw SyntaxError
+N10	N	compile	N10.js	d0d31f9bee531a6058721c8a78a51ea07ae6e4fd08f8b324eb3fde4dd46b272d	80001	0	threw SyntaxError
+N11	N	compile	N11.js	b8b35931ba7e13fe8b4507f4c6bb027cc7c654da97ae8e6629b4708c5987d5ff	4000001	0	threw SyntaxError
+N13	N	match@0	N13.js	f61ef235c90ceb6069a908e650a47ff37a5538a0da11eaee46292b1552e988ba	1023	1	completed 0,1
+N14	N	compile	N14.js	15cd65c6da1b9066f683517f47a36c1c4028b1f9c2a60eaa5bd566bbcc959b78	1025	0	threw SyntaxError
+N16	N	compile	N16.js	bdcf42e1c113cb677a2746a25c4a1372f8e76424879317ceca23f9e8ee219fb6	40001	0	threw SyntaxError
+N17	N	compile	N17.js	be0c81ddfa218606a2306785cf0ea27068c01b1103566b50411e80688b234cc4	2000001	0	threw SyntaxError
+F01	F	match@0	F01.js	fbcc49761b79bfda05eec6cba1df1142b36ff68e815552fe2772467f6f35d824	200000	0	completed 0,0
+F02	F	match@0	F02.js	40330403530bc5a016ebae375501be3c4832008be9d8d1278af7c382d2c0babb	200000	0	completed 0,0
+F03	F	match@0	F03.js	22751fd53ba2c16bfc4c28ee1b773f1f2c716d5e89ea0f626513cad501631403	500000	100000	completed 0,100000
+F04	F	match@0	F04.js	7d10660d820a692fbc7f4632d81181f1f644899fbee254416a85ca005694cbe1	700000	100000	completed 0,100000
+V01	V	compile	V01.js	a22a78ceffac629f299154a9350a6b6c235251ff5df6c0544cb5dc48d908b286	252	0	completed null
+V02	V	compile	V02.js	82dc26d0e90f2286a7d43134fef4dd75f60af8d2971f5b6c4a6ff1b861bba0ea	252	0	completed null
+V03	V	compile	V03.js	6d677f2fa183cde0f66740e356f37838c0e8574906ad3444b1c6ff0dfbe8f628	252	0	completed null
+V04	V	compile	V04.js	9d8203a69c422c787e0e3597c91316c64d8315a305a697a83673b1df6e398e6f	652	0	completed null
+V05	V	compile	V05.js	7d2cf3f6cb5be1bc565c84caaef6ce28aa1f1102ac41bb854feea8e8e7d5e1ad	652	0	completed null
+O01	O	match@0	O01.js	7b84deab0db0c9038d5893fdc1284fe9aa405ecc1c4e62b0b4ea6801f53e5d16	14	13	completed 0,13 -
+O02	O	match@0	O02.js	d8bea16d098597d087df69382b99beba7ad3bdf50f40bd6fd0567b654bb3c418	19	13	completed null
+O03	O	match@0	O03.js	4f50ebe66a49d291466c5832447cb4b1cf974b7a9093388ebadf9d4b35e89cbb	20	13	completed 13,13 -
+O04	O	match@0	O04.js	1e01169bbd78aa73b4f8600920c064cd5c68a2245a2f422486e8d90ff284175b	6	13	completed 0,13 12
+O07	O	match@0	O07.js	ba39dcb82a7b62c5f3fcfcd6ffca8ce776e84ab7f1277f8eccb64049a154d911	15	1	completed 0,1 - 1
+O08	O	match@0	O08.js	f5f6c50c92afb6c17bd5728d1b81903221e101e9c74aa5eb7e1bba37797ad5be	24	2	completed 0,2 - 1
+O09	O	anchored@0	O09.js	ac0ff20c031294535717ed426ced6484230dcd34075c7d3c392aa0d35d75425e	1	2	completed null
+O10	O	anchored@1	O10.js	4416ed7207474c47aa3476e00b5d34b634ffceec5d7a22883a88e6a0c5948a6d	1	2	completed 1,2
+O11	O	match@1	O11.js	cacde3f6f554e8af361c6983646d957c9b9da91895c06d4c37d1500a0e6f48de	1	3	completed 2,3
+O13	O	match@0	O13.js	323ef9c3249511cb98364a19c1972cccadf6a6c9d2e7381ccbbeb01071399ee6	7	101	completed 0,101
+O14	O	match@0	O14.js	5fb7c89e2c544295fa3db5bf97288d8fc24d1b1b79253bfdf81a28e465a00df3	10	201	completed 0,201
+O15	O	match@0	O15.js	25049a22ccb1eacfaaaa759745faef96fd86c0343c7e4bacd26487bd9d6b1ba8	11	101	completed 0,101 1
+O18	O	compile	O18.js	5f65f9d168b15f965626b27aacd71fece51d9285578b183183bb8a1c5991a259	12	0	threw SyntaxError
