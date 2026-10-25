@@ -378,8 +378,11 @@ each listed with its outcomes at both entry points".
   source fails first": the parser now parses the whole program before the pass runs, so a parse error later in the
   source, or an early error the parser raises after the loop, is the one reported. A row whose K refusal after
   differs from the base's because a later failure now comes first fails D's last condition, the exception type and
-  message it had at K at the base, and so is not in D: this README will report it as a regression, not admit it.
-  Class M admits a changed message only as the rule says, where `Broiler.JS/CHANGELOG.md` at the after commit
-  lists the change by its old and new text.
+  message it had at K at the base, and so is not in D. Class M admits a refusal of the same type whose message
+  differs only where `Broiler.JS/CHANGELOG.md` at the after commit lists that change by its old and new text, and
+  item 5's entry there, the one that describes the reordering, lists no message by its old and new text. So this
+  README will report such a row as a regression, not admit it, unless another entry of the after commit's changelog
+  lists that row's own change by its old and new text, in which case the rule admits it as M and this README will
+  name the entry.
 - **Class M's changelog is the after commit's.** The rule reads class M's listing in `Broiler.JS/CHANGELOG.md` "at
   the after commit", so what SJL-12.5's records add to the changelog after that commit admits no row as class M.
