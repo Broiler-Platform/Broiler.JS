@@ -47,6 +47,10 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
     private static int _compilationCounter;
     private readonly int compilationId = System.Threading.Interlocked.Increment(ref _compilationCounter);
     private readonly bool isDirectEvalCompilation;
+    // The direct-eval depth this program is compiled at (Broiler.VM's JSD-0080, decision D22): the d of
+    // its for-loop temporaries, and one less than the depth every direct eval it emits compiles its code
+    // at. 0 but for direct eval code, which DirectEvalSupport.Execute compiles at its caller's depth + 1.
+    private readonly int directEvalDepth;
     // True when this program is compiled under the ES module goal (JSCompilationOptions.IsModule,
     // which the parser is given as its goal for the same reason). A module has its own module
     // environment, so its top-level let/const/class bindings are module-scoped locals, NOT entries
@@ -148,6 +152,7 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         this.location = location;
         var context = JSEngine.Current as JSContext;
         isDirectEvalCompilation = context?.IsCompilingDirectEval ?? false;
+        directEvalDepth = context?.DirectEvalCodeDepth ?? 0;
         usesDirectEvalLocalVarEnvironment = context?.UsesDirectEvalLocalVarEnvironment ?? false;
         directEvalBindingNames = isDirectEvalCompilation ? context?.DirectEvalBindingNamesInScope : null;
         directEvalLexicalBindingNames = isDirectEvalCompilation ? context?.DirectEvalLexicalBindingNamesInScope : null;
@@ -160,6 +165,10 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         var parser = new FastParser(new FastTokenStream(parserPool, code, null, parserOptions), parserOptions);
         var jScript = parser.ParseProgram();
         parserPool.Dispose();
+        // The parser builds every loop as written; the for-loop pass rewrites the let/const/using
+        // heads into the shapes the rest of the compiler lowers, before validation reads the tree. Its
+        // temporaries are named by the direct-eval depth this compilation is at (decision D22).
+        jScript = ForLoopPreparation.Prepare(jScript, directEvalDepth);
         // Module code is strict from its first token, directive or not (ES2024 11.2.2).
         SyntaxValidation.ValidateProgram(jScript, code.Value, parserOptions, inheritStrictMode: isModuleCompilation,
             directEvalPrivateNames: directEvalPrivateNames);

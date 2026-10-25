@@ -12,5 +12,11 @@ public class AstForInStatement(FastToken token, FastToken previousToken, AstNode
     public readonly AstExpression Target = target;
     public readonly AstStatement Body = statement;
 
+    /// <summary>
+    /// Whether the parser parsed a <c>continue</c> statement while it parsed <see cref="Body"/>; see
+    /// <see cref="AstForStatement.ContainsContinue"/>.
+    /// </summary>
+    internal bool ContainsContinue;
+
     public override string ToString() => $"for ({Init} in {Target}) {{ {Body} }}";
 }
