@@ -1,0 +1,28 @@
+message	identifiers
+keyword is only valid inside a derived class constructor	super.call.outside-derived-constructor
+keyword is only valid inside a method or constructor	super.property.outside-method super.outside-method
+^Assignment to eval or arguments is not allowed in strict mode	assignment.target.invalid
+^Cannot use 'import\.meta' outside a module	meta.import-meta.outside-module
+^Delete of an unqualified identifier in strict mode	strict.delete.unqualified-or-private
+^Duplicate export name	module.export.duplicate
+^Duplicate parameter name not allowed in this context	scope.parameter.duplicate
+^Export '.*' is not defined in module	module.export.undeclared
+^Getter must not have any formal parameters	syntax.token.unexpected syntax.token.missing
+^Setter must have exactly one formal parameter	syntax.token.unexpected syntax.token.missing
+^Setter function argument must not be a rest parameter	syntax.token.unexpected syntax.token.missing
+^Identifier '.*' has already been declared	scope.lexical.duplicate scope.lexical.var-collision
+^Illegal break statement	jump.break.no-target jump.break.undefined-label
+^Illegal continue statement	jump.continue.no-iteration jump.continue.undefined-label
+^In strict mode code, functions can only be declared at top level or inside a block	strict.labelled-function annexb.if-function.strict
+^Invalid catch parameter name in strict mode	strict.binding.eval-or-arguments
+^Invalid declaration in strict mode	strict.binding.eval-or-arguments strict.reserved-word
+^Invalid function name in strict mode	strict.binding.eval-or-arguments
+^Invalid label name in strict mode	strict.reserved-word
+^Invalid left-hand side expression for update	assignment.target.invalid
+^Invalid left-hand side in assignment	assignment.target.invalid assignment.target.not-simple
+^Invalid parameter name in strict mode	strict.binding.eval-or-arguments strict.reserved-word
+^Invalid parenthesized destructuring pattern	assignment.target.not-simple cover.assignment-pattern
+^Private name is not declared in an enclosing class	object.method.private-name class.private-name.undeclared
+^Strict mode code may not include a with statement	strict.with
+^Unexpected legacy octal literal in strict mode	strict.legacy-octal-literal strict.legacy-octal-escape
+^Octal escape sequences are not allowed in strict mode	strict.legacy-octal-escape

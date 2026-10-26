@@ -35,6 +35,11 @@ Test-only, as Broiler.Unicode.Generation is: engines' tests run it, and it carri
 home** of milestone SJL-8.2 (`Broiler.ECMAScript.Generation.Time`), ported from Broiler.VM's architecture tests;
 its inputs and tables are [`data/time/`](data/time/README.md). Not yet published. \|")*
 
+The frontend's area verdict is filed, and its design document now records the library's names, request and result
+(its section 9), with the stage table [`docs/frontend/stages.tsv`](docs/frontend/stages.tsv) beside the early-error
+catalogue; the library's row is added to the table above when SJL-13.2's first stage lands. *(Added 2026-10-26, at
+milestone SJL-13.1.)*
+
 ## Pins
 
 - **Specification:** the ECMA-262 commit `conformance/vectors/sources/ecma262.pin` names.
