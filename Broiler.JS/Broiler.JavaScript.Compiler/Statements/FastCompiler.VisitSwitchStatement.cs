@@ -112,8 +112,10 @@ partial class FastCompiler
                             functionInitializers.Add(CreateSwitchFunctionInitializer(labeledFunction));
                             break;
 
+                        // A case's statements track their own values, as a block's do; the compiled
+                        // value of one is not its completion value (see TrackCompletion).
                         case AstStatement stmt:
-                            body.Add(TrackCompletion(VisitStatement(stmt)));
+                            body.Add(VisitStatement(stmt));
                             break;
 
                         default:

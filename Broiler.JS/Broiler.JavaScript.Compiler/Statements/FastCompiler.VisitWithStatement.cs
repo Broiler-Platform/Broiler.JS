@@ -18,7 +18,8 @@ partial class FastCompiler
         BExpression body;
         try
         {
-            body = TrackCompletion(Visit(withStatement.Body)) ?? BExpression.Empty;
+            // The body's statements track their own values; its compiled value is not one (see TrackCompletion).
+            body = Visit(withStatement.Body) ?? BExpression.Empty;
         }
         finally
         {

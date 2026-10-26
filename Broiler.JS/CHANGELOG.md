@@ -10,6 +10,62 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### A statement whose body ends in a declaration completes with the body's last value (2026-10-26)
+
+In script and eval code, a loop, an `if`, a `switch`, a `with` or a labeled statement whose body ended in a
+declaration completed with the value the declaration compiles to, where the specification gives the value of the
+last value-bearing statement before it, or the statement's own `undefined` when there is none. Checked against
+Node 22's `eval`:
+
+| source | before | now, and the spec's |
+|---|---|---|
+| `for (var i = 0; i < 2; i++) { 1; var x = 2; }` | 2 | 1 |
+| `for (var i = 0; i < 2; i++) { 1; function f() {} }` | the function | 1 |
+| `for (var i = 0; i < 2; i++) { 1; class C {} }` | the class | 1 |
+| `1; for (const x of [1, 2]) { let y = x; }` | 2 | undefined |
+| `1; if (true) { 2; var y = 3; }` | 3 | 2 |
+| `1; if (true) function f() {}` | the function | undefined |
+| `1; switch (1) { case 1: 2; var y = 3; }` | 3 | 2 |
+| `1; with ({}) { var y = 3; }` | 3 | undefined |
+| `1; L: var x = 2;` | 2 | 1 |
+| `1; L: {}` | undefined | 1 |
+
+- **Only a value-bearing statement records a completion value.** The compiler keeps the completion value in
+  completion variables: an expression statement assigns its value to them (`TrackCompletion`), and `if`, the loops,
+  `switch`, `try` and `with` each own one that starts as `undefined` and is copied outwards when the statement
+  ends (`PropagateCompletion`). The loops, `if`, `switch`, `with` and the labeled statement also assigned their
+  body's *compiled* value, which is the value of the body's last compiled expression. A trailing `var`, `let` or
+  `const` declaration compiles to a value, and so does a function or class declaration, which
+  `VisitExpressionStatement` deliberately leaves untracked; that value then reached the enclosing statement. The
+  compound statements no longer track their body's compiled value. Their bodies' statements already track
+  themselves, which is all a program and a block have always relied on, so the same statements at a program's top
+  level or in a plain block were right before (`eval('1; var x = 2')` is 1).
+- **A labeled statement passes its item's completion through, an empty one included.** It applies no
+  UpdateEmpty(…, undefined) of its own, unlike `if`, the loops, `switch`, `try` and `with`. It had its own completion
+  variable, reset to `undefined` and copied outwards, so `1; L: {}` and `1; L: { break L; }` completed with
+  undefined, and `1; L: var x = 2;` would have too once the declaration's value stopped counting. A labeled
+  statement that is not a loop is now emitted as its body and its break label, the form a generator already used,
+  with no completion variable and no try/finally around the body. Its scope keeps the label-only mark of the entry
+  below, so an unlabeled `break` or `continue` inside it still reaches the enclosing loop or `switch`.
+- **An `if` whose branch is an Annex B function declaration** (`if (x) function f() {}`) completes with undefined,
+  as a branch that completes empty does, not with the function.
+- **What does not change.** `try` already relied on its statements alone. Function bodies, generator and async ones
+  among them, track no completion values, and their control flow is the same: `break` out of a labeled block or a
+  labeled `try` in a generator or across an `await` behaves as before. The statements `ForLoopPreparation` adds to a C-style loop with
+  a `let` head (the `if (!test) break;` at the top of the body and the copy back into the carriers) are an `if` and
+  expression statements, so they still count: `1; for (let i = 0; i < 2; i++) { 3; }` completes with undefined
+  before and after this change, where the spec gives 3. The persistent code cache keys its entries on the
+  compiler's build, so it compiles cached scripts again.
+- **Tests.** `CompilerTests` (Compiler.Tests) gains
+  `Compile_Statement_Completion_Skips_Declarations_Ending_A_Loop_Body`,
+  `Compile_Statement_Completion_Skips_Declarations_Ending_A_Branch_Case_Or_With_Body`,
+  `Compile_Labeled_Statement_Completes_With_Its_Items_Completion`,
+  `Compile_Statement_Completion_Skips_Declarations_Ending_A_Body_In_Eval_Code` and
+  `Compile_Labeled_Block_Break_Leaves_The_Block_In_Generators_And_Async_Functions`. Test262 at the pinned ref
+  (`ccaac100`), `language/statements`, `language/eval-code` and `annexB/language` with the negative tests (10,529
+  paths), passes 10,200 paths before and after this change, and `compare_test262_paths.py` finds no changed
+  verdict; the 97 `cptn` tests among them pass on both sides.
+
 ### An unlabeled `break` or `continue` skips an enclosing labelled block (2026-10-26)
 
 - **An unlabeled `break` leaves the innermost loop or `switch`.** ECMA-262 makes the innermost

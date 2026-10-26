@@ -2622,6 +2622,107 @@ public class CompilerTests
     }
 
     [Fact(Timeout = 600000)]
+    public void Compile_Statement_Completion_Skips_Declarations_Ending_A_Loop_Body()
+    {
+        using var ctx = new JSContext();
+
+        // A declaration completes empty, so a body that ends in one completes with the last
+        // value-bearing statement before it — never with the value the declaration compiles to.
+        Assert.Equal(1.0, ctx.Eval("for (var i = 0; i < 2; i++) { 1; var x = 2; }", "x.js").DoubleValue);
+        Assert.Equal(1.0, ctx.Eval("for (var i = 0; i < 2; i++) { 1; let x = 2; }", "x.js").DoubleValue);
+        Assert.Equal(1.0, ctx.Eval("for (var i = 0; i < 2; i++) { 1; function f() {} }", "x.js").DoubleValue);
+        Assert.Equal(1.0, ctx.Eval("for (var i = 0; i < 2; i++) { 1; class C {} }", "x.js").DoubleValue);
+        Assert.Equal(1.0, ctx.Eval("var n = 0; while (n < 2) { n++; function g() {} }", "x.js").DoubleValue);
+        Assert.Equal(2.0, ctx.Eval("1; do { 2; var y = 3; } while (false)", "x.js").DoubleValue);
+        Assert.Equal(2.0, ctx.Eval("1; for (var k in { a: 1 }) { 2; const z = 3; }", "x.js").DoubleValue);
+
+        // With no value-bearing statement in it, the loop completes with its own undefined.
+        Assert.True(ctx.Eval("1; for (var x of [1, 2]) { let y = x; }", "x.js").IsUndefined);
+        Assert.True(ctx.Eval("1; for (const x of [1, 2]) { let y = x; }", "x.js").IsUndefined);
+        Assert.True(ctx.Eval("1; for (var i = 0; i < 2; i++) var z = 9;", "x.js").IsUndefined);
+    }
+
+    [Fact(Timeout = 600000)]
+    public void Compile_Statement_Completion_Skips_Declarations_Ending_A_Branch_Case_Or_With_Body()
+    {
+        using var ctx = new JSContext();
+
+        Assert.Equal(2.0, ctx.Eval("1; if (true) { 2; var y = 3; }", "x.js").DoubleValue);
+        Assert.Equal(2.0, ctx.Eval("1; if (false) {} else { 2; let y = 3; }", "x.js").DoubleValue);
+        Assert.Equal(2.0, ctx.Eval("1; switch (1) { case 1: 2; var y = 3; }", "x.js").DoubleValue);
+        Assert.Equal(2.0, ctx.Eval("1; switch (1) { case 1: 2; class D {} }", "x.js").DoubleValue);
+        Assert.Equal(2.0, ctx.Eval("1; with ({}) { 2; var w = 3; }", "x.js").DoubleValue);
+
+        // if, switch and with complete with undefined when nothing in them has a value: an empty
+        // block, a declaration, an Annex B FunctionDeclaration as a branch.
+        Assert.True(ctx.Eval("1; if (true) {}", "x.js").IsUndefined);
+        Assert.True(ctx.Eval("1; if (true) { var y = 3; }", "x.js").IsUndefined);
+        Assert.True(ctx.Eval("1; if (true) function h() {}", "x.js").IsUndefined);
+        Assert.True(ctx.Eval("1; if (false) 2; else function h() {}", "x.js").IsUndefined);
+        Assert.True(ctx.Eval("1; switch (1) { case 1: let q = 5; }", "x.js").IsUndefined);
+        Assert.True(ctx.Eval("1; with ({}) { var w = 3; }", "x.js").IsUndefined);
+    }
+
+    [Fact(Timeout = 600000)]
+    public void Compile_Labeled_Statement_Completes_With_Its_Items_Completion()
+    {
+        using var ctx = new JSContext();
+
+        // A LabelledStatement passes its item's completion through, an empty one included; it has
+        // no UpdateEmpty(…, undefined) of its own, unlike if, the loops, switch, try and with.
+        Assert.Equal(2.0, ctx.Eval("1; L: { 2; var x = 3; }", "x.js").DoubleValue);
+        Assert.Equal(1.0, ctx.Eval("1; L: var x = 2;", "x.js").DoubleValue);
+        Assert.Equal(1.0, ctx.Eval("1; L: function f() {}", "x.js").DoubleValue);
+        Assert.Equal(1.0, ctx.Eval("1; L: {}", "x.js").DoubleValue);
+        Assert.Equal(1.0, ctx.Eval("1; L: { break L; }", "x.js").DoubleValue);
+        Assert.Equal(2.0, ctx.Eval("1; L: { 2; M: { break L; } }", "x.js").DoubleValue);
+
+        // A statement inside it that completes with undefined still does so.
+        Assert.True(ctx.Eval("1; L: { 2; if (true) break L; }", "x.js").IsUndefined);
+        Assert.True(ctx.Eval("1; L: { try { break L; } finally {} }", "x.js").IsUndefined);
+    }
+
+    [Fact(Timeout = 600000)]
+    public void Compile_Statement_Completion_Skips_Declarations_Ending_A_Body_In_Eval_Code()
+    {
+        using var ctx = new JSContext();
+
+        Assert.Equal(1.0, ctx.Eval("""eval("for (var i = 0; i < 2; i++) { 1; function f() {} }")""").DoubleValue);
+        Assert.Equal(2.0, ctx.Eval("""(function () { return eval("1; if (true) { 2; let y = 3; }"); })()""").DoubleValue);
+        Assert.Equal(1.0, ctx.Eval("""(function () { return eval("1; L: var x = 2;"); })()""").DoubleValue);
+        Assert.Equal(2.0, ctx.Eval("""(function () { "use strict"; return eval("1; switch (1) { case 1: 2; class K {} }"); })()""").DoubleValue);
+    }
+
+    [Fact(Timeout = 600000)]
+    public async Task Compile_Labeled_Block_Break_Leaves_The_Block_In_Generators_And_Async_Functions()
+    {
+        using var ctx = new JSContext();
+
+        // A labeled block is emitted without a completion variable everywhere now, so a `break`
+        // out of it has to keep working where completion values are not tracked at all.
+        var generator = ctx.Eval("""
+            function* g() {
+                L: { yield 1; break L; yield 0; }
+                M: try { yield 2; break M; } finally { yield 3; }
+                yield 4;
+            }
+            [...g()].join()
+            """);
+        Assert.Equal("1,2,3,4", generator.ToString());
+
+        var asyncFunction = await ctx.ExecuteAsync("""
+            (async function () {
+                var out = [];
+                L: { await null; out.push('a'); break L; out.push('x'); }
+                M: try { await null; out.push('b'); break M; } finally { out.push('c'); }
+                out.push(eval('1; L: var x = 2;'));
+                return out.join();
+            })()
+            """);
+        Assert.Equal("a,b,c,1", asyncFunction.ToString());
+    }
+
+    [Fact(Timeout = 600000)]
     public void Compile_ScriptGoal_AllowsAwaitAsIdentifier()
     {
         using var ctx = new JSContext();

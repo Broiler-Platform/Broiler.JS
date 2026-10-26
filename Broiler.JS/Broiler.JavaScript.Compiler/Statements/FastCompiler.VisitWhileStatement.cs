@@ -17,7 +17,8 @@ partial class FastCompiler
 
         using var completion = completionScopes.Push(completionVar);
         using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, continueTarget, false, label) { CompletionVariable = completionVar });
-        var body = TrackCompletion(Visit(whileStatement.Body));
+        // The body's statements track their own values; its compiled value is not one (see TrackCompletion).
+        var body = Visit(whileStatement.Body);
         var test = BExpression.Not(JSValueBuilder.BooleanValue(Visit(whileStatement.Test)));
         var loop = BExpression.Loop(BExpression.Block(BExpression.IfThen(test, BExpression.Goto(breakTarget)), body), breakTarget, continueTarget);
 

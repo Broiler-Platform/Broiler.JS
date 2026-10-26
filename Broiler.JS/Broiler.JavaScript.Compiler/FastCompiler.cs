@@ -419,6 +419,14 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
             BExpression.TryFinally(body, BExpression.Call(strictScope, DisposeMethod)));
     }
 
+    // Records a value-bearing statement's value in every completion variable up to the nearest
+    // null boundary (a function body, a finally block). Only a statement that produces a value
+    // itself calls it — an expression statement (VisitExpressionStatement). A compound statement
+    // (if, a loop, switch, try, with) owns a `#cv` that its body's statements write through this,
+    // and propagates it outwards; it must never track its body's COMPILED value as well. A block
+    // compiles to its last expression's value, and a trailing declaration compiles to a value too,
+    // so `do { 1; var x = 2; } while (false)` would complete with 2 where the spec gives the last
+    // value-bearing statement's 1. VisitProgram and VisitBlock rely on the same contract.
     private BExpression TrackCompletion(BExpression result)
     {
         if (result == null || !typeof(JSValue).IsAssignableFrom(result.Type))

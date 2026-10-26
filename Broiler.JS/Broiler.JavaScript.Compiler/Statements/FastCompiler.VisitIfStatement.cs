@@ -32,16 +32,21 @@ partial class FastCompiler
         var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
         var outerCompletionVars = GetCompletionVariables();
         using var completion = completionScopes.Push(completionVar);
+        // The branches' statements track their own values into `#cv`, which starts as undefined:
+        // that is UpdateEmpty(stmtCompletion, undefined), so a branch that completes empty — `{}`,
+        // a declaration, an Annex B FunctionDeclaration — leaves the if undefined. ToJSValue only
+        // gives the Condition's arms one type; their compiled values are not completion values
+        // (see TrackCompletion) and are discarded.
         var trueCase = ifStatement.True is AstExpressionStatement { Expression: AstFunctionExpression trueFunctionDeclaration }
-            ? TrackCompletion(VisitRuntimeFunctionDeclaration(trueFunctionDeclaration, implicitBlockScoped: true).ToJSValue())
-            : TrackCompletion(VisitStatement(ifStatement.True).ToJSValue());
+            ? VisitRuntimeFunctionDeclaration(trueFunctionDeclaration, implicitBlockScoped: true).ToJSValue()
+            : VisitStatement(ifStatement.True).ToJSValue();
 
         BExpression result;
         if (ifStatement.False != null)
         {
             var elseCase = ifStatement.False is AstExpressionStatement { Expression: AstFunctionExpression falseFunctionDeclaration }
-                ? TrackCompletion(VisitRuntimeFunctionDeclaration(falseFunctionDeclaration, implicitBlockScoped: true).ToJSValue())
-                : TrackCompletion(VisitStatement(ifStatement.False).ToJSValue());
+                ? VisitRuntimeFunctionDeclaration(falseFunctionDeclaration, implicitBlockScoped: true).ToJSValue()
+                : VisitStatement(ifStatement.False).ToJSValue();
             result = BExpression.Condition(test, trueCase, elseCase);
         }
         else
