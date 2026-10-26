@@ -44,7 +44,7 @@ partial class FastCompiler
                     // pending-completion unwinding of an enclosing finally.
                     if (scope.Top.Function?.Generator == true)
                     {
-                        var genLoopScope = new LoopScope(breakTarget, null, false, label);
+                        var genLoopScope = new LoopScope(breakTarget, null, false, label) { IsLabelOnly = true };
                         using var gs = scope.Top.Loop.Push(genLoopScope);
                         return BExpression.Block(
                             VisitStatement(labeledStatement.Body),
@@ -54,7 +54,7 @@ partial class FastCompiler
 
                     var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
                     var outerCompletionVars = GetCompletionVariables();
-                    var loopScope = new LoopScope(breakTarget, null, false, label) { CompletionVariable = completionVar };
+                    var loopScope = new LoopScope(breakTarget, null, false, label) { IsLabelOnly = true, CompletionVariable = completionVar };
                     using var completion = completionScopes.Push(completionVar);
                     using var s = scope.Top.Loop.Push(loopScope);
                     var body = TrackCompletion(VisitStatement(labeledStatement.Body));
