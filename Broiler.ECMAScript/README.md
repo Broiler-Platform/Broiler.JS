@@ -22,10 +22,12 @@ them. *(Revised 2026-10-17, at milestone SJL-8.2, when the generator's row was a
 "Further libraries (the frontend, Intl, the data generators) are added by the milestones that create
 them.")* The frontend's design document, the contract it is built to, is
 [`docs/frontend/design.md`](docs/frontend/design.md), filed before any of its code; milestone SJL-13 creates the
-library. *(Added 2026-10-19, at milestone SJL-12.1.)* Its area verdict is filed, and the design document now records
-the library's names, request and result (its section 9), with the stage table
-[`docs/frontend/stages.tsv`](docs/frontend/stages.tsv) beside the early-error catalogue; the library's row is added to
-the table above when SJL-13.2's first stage lands. *(Added 2026-10-26, at milestone SJL-13.1.)*
+library. *(Added 2026-10-19, at milestone SJL-12.1.)*
+
+The frontend's area verdict is filed, and its design document now records the library's names, request and result
+(its section 9), with the stage table [`docs/frontend/stages.tsv`](docs/frontend/stages.tsv) beside the early-error
+catalogue; the library's row is added to the table above when SJL-13.2's first stage lands. *(Added 2026-10-26, at
+milestone SJL-13.1.)*
 
 ## Pins
 

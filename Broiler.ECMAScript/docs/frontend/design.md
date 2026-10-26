@@ -103,7 +103,8 @@ and its cooked template tokens inform the new tree.
 The last two introduce no temporary and restructure no control flow. They stay in Broiler.JS's parser until SJL-14,
 and the shared tree does none of the three.
 
-*(Noted 2026-10-26, at SJL-13.1: "They stay in Broiler.JS's parser until SJL-14" no longer holds for the second.
+*(Noted 2026-10-26, at SJL-13.1: "They stay in Broiler.JS's parser until SJL-14" no longer holds for the
+regular-expression literal's `\u{…}` escapes, the third item.
 Broiler.VM's JSD-0081, decision D22, has SJL-11.5 delete the rewrite of a regular-expression literal's `\u{…}`
 escapes, with the scanner's parenthesis-balance patch, or SJL-14 if SJL-11 has not landed; the notes JSD-0081 filed in
 JSD-0080 and in this repository's plan did not reach this document. The synthetic block Annex B gives a function

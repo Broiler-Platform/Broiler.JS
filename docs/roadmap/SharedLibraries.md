@@ -1759,7 +1759,7 @@ request decided, the stage table and the classification filed, and the owner's d
   probe and answer is retained beside it.
 - **SJL-13 started at the owner's words of 2026-10-25**, "Continue with the remaining SJL milestones", which the
   programme's ledger reads in its SJL-13.0 entry, in Broiler.VM's own change for SJL-13.1, as the choice to start
-  SJL-13, and SJL-14 and SJL-15, which file their own start entries. That is a reading of the owner's words, not a
+  SJL-13; SJL-14 and SJL-15 file their own start entries, reading the same words the same way. That is a reading of the owner's words, not a
   decision taken under the direction below (decision D1). SJL-13 may not meet its gate before SJL-12, SJL-3 and SJL-7
   meet theirs.
 - **The owner's direction.** On 2026-10-18 the owner wrote: "Please do all recommended decisions and skip waiting for
@@ -1872,7 +1872,11 @@ This repository's part of it:
   supported maximum. **The left-operand gap is closed in the library** in all four shapes Broiler.VM's base compiles
   past its bound: a binary chain whose first operand is a parenthesised chain, a template whose substitution holds
   one, a binary chain whose first operand is a member or call chain, and a member or call chain whose object is a
-  parenthesised binary chain. Each such refusal is an implementation limit, never a correction. This engine's
+  parenthesised binary chain. Each such refusal is an implementation limit, never a correction. **The tree depth is
+  charged as Broiler.VM's `JsParser.Deepen` charges it**: one level for each node a binary chain or a member or call
+  chain adds, and none for a parenthesis, a template or a substitution; and a left operand's spine adds its own length
+  to the chain it begins, so a chain of `a` nodes as the left operand of a chain of `b` nodes is charged `a + b`. The
+  home's rule, part G, reads that charge at the bound (its `docs/evidence/sjl-13-001/inputs/README.md`). This engine's
   acceptances past the bound become listed refusals at SJL-14 (JSD-0080, decision D27).
 - **The vectors** (decision D25, as revised): a `syntax` area in schema 1, at a corpus revision before the library's
   first code, with both engines' first runs classified, and no schema revision. `op` names the parse (`ParseScript`,
@@ -2011,6 +2015,10 @@ This repository's part of it:
     default, and **no default throws**. `CancellableDisposableAction` moves to `Ast` with a
     forwarder, and `UndoMark` is marked `[Obsolete]` (SJL-D-25 (b)); removing it waits for a recorded check of its
     consumers. SJL-13 defines the shared provider, and the tables move once more then.
+    *(Noted 2026-10-26, at SJL-13.1: "SJL-13 defines the shared provider, and the tables move once more then." no
+    longer holds. The library's provider is Broiler.Unicode's `IUnicodeTables`, which this engine's options already
+    take, and SJL-13 changes nothing of this engine (Broiler.VM's JSD-0083, decisions D8 and D9). The tables' next
+    move is SJL-14's, whose decision D50 gives their home.)*
   - **One counter per parse, and an end-of-file token per scanner**, the milestone's items 2 and 3.
   - **The for-loop pass** (decision D22): a preparation pass of the compiler after `ParseProgram`, in `FastCompiler`
     and in `DirectEvalSupport`, before `SyntaxValidation`, emitting today's shapes exactly. The parser records
