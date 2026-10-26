@@ -172,6 +172,7 @@ public sealed class AssemblyCodeCache : ICodeCache, IDisposable
         var compiled = expression.CompileToStaticMethod(type, methodBuilder, true);
         var method = type.CreateType()!.GetMethod(compiled.Name, BindingFlags.Public | BindingFlags.Static)
             ?? throw new MissingMethodException("Generated script entry point was not found.");
+        IgnoreAccessChecksToReferencedAssemblies(assembly, module);
         var inMemoryFactory = method.CreateDelegate<Func<JSFunctionDelegate>>();
 
         var generator = new Lokad.ILPack.AssemblyGenerator();
@@ -209,6 +210,41 @@ public sealed class AssemblyCodeCache : ICodeCache, IDisposable
 
         Quarantine(paths);
         return inMemoryFactory();
+    }
+
+    /// <summary>
+    /// The compiler emits accesses to internal engine members, which the in-memory path
+    /// reaches from dynamic methods that skip visibility checks. A persisted entry is
+    /// reloaded as an ordinary assembly, so it names every assembly its code references
+    /// in an <c>IgnoresAccessChecksToAttribute</c>; the runtime matches that attribute by
+    /// name, so the entry defines its own copy.
+    /// </summary>
+    private static void IgnoreAccessChecksToReferencedAssemblies(AssemblyBuilder assembly, ModuleBuilder module)
+    {
+        var referenced = assembly.GetReferencedAssemblies();
+        if (referenced.Length == 0)
+            return;
+
+        var attribute = module.DefineType(
+            "System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute",
+            TypeAttributes.NotPublic | TypeAttributes.Sealed | TypeAttributes.Class,
+            typeof(Attribute));
+        attribute.SetCustomAttribute(new CustomAttributeBuilder(
+            typeof(AttributeUsageAttribute).GetConstructor([typeof(AttributeTargets)])!,
+            [AttributeTargets.Assembly],
+            [typeof(AttributeUsageAttribute).GetProperty(nameof(AttributeUsageAttribute.AllowMultiple))!],
+            [true]));
+        var baseConstructor = typeof(Attribute)
+            .GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, Type.EmptyTypes)!;
+        var il = attribute.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, [typeof(string)])
+            .GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Call, baseConstructor);
+        il.Emit(OpCodes.Ret);
+        var constructor = attribute.CreateType()!.GetConstructor([typeof(string)])!;
+
+        foreach (var name in referenced)
+            assembly.SetCustomAttribute(new CustomAttributeBuilder(constructor, [name.Name]));
     }
 
     private string ComputeCacheKey(in JSCode code)

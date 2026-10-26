@@ -10,6 +10,22 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The persistent code cache runs code that reaches the engine's internals (2026-10-26)
+
+- **A script persisted by `AssemblyCodeCache`, the console host's persistent code cache, now runs when its code
+  touches an internal engine member.** The compiler emits accesses to internal members (`JSVariable.IsReadOnly`,
+  `JSValue.BooleanTrue`, `JSObjectStatic.RequireObjectCoercible`, among others), which the in-memory path reaches
+  from dynamic methods that skip visibility checks. The cache reloads an entry as an ordinary assembly, so a private
+  class field, an object rest pattern, a destructuring `catch` parameter, a closure over a `let` loop variable or a
+  `using` declaration compiled, persisted, and then failed with a `FieldAccessException` or `MethodAccessException`.
+  Each entry now defines its own `System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute` and names in it
+  every assembly its code references. This gives the persisted code the same reach as the in-memory path.
+  `Phase3CompilerSpecializationTests.PersistentCache_RunsCodeThatReachesEngineInternals_FromAColdEntry`
+  (Compiler.Tests) holds the cases.
+- **An entry written before this change is not read.** Its code carries no such attribute and would fail again.
+  This change alters `BroilerJS`, and with it the module version id the cache keys every entry on (the entry
+  below), so this build looks for each script under a key no earlier build wrote. No public member changes.
+
 ### The console host's persistent code cache keys its entries on the engine's build (2026-10-26)
 
 `AssemblyCodeCache` (`Broiler.JS/Broiler.JavaScript/AssemblyCodeCache.cs`), the persistent code cache of the
