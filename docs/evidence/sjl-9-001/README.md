@@ -121,7 +121,7 @@ same.
 ## The data home
 
 SJL-9.2b built the data home, [`Broiler.ECMAScript/data/intl/`](../../../Broiler.ECMAScript/data/intl/README.md), on
-2026-10-26, on branch `sjl-9-2b-home` (JSD-0082's decisions D5 and D10 to D12). The data home's clauses 1 to 3 are
+2026-10-26, on branch `sjl-9-2b-home` (JSD-0082's decisions D5, D10 to D12 and D21). The data home's clauses 1 to 3 are
 judged by the tests it commits, each with its control; this section records how its inputs were read and how its byte
 identity with Broiler.VM was shown. It holds no size: the tables' sizes are in the change's pull request.
 
@@ -156,7 +156,30 @@ identity with Broiler.VM was shown. It holds no size: the tables' sizes are in t
   every numbering system's symbols (decision D21). Rule SL7 regenerates them and compares them byte for byte, its
   witness refused; `IntlCompletenessTests` holds exit clause 3 for both lists, with decision D34's keys for every locale
   of Broiler.JS's list and the values D34 and D21 name (two-digit hours for `af` and `lt`; `.` for `da`, `en-DK`, `id`
-  and `si`; root's `arab` symbols under `und`).
+  and `si`; root's `arab` symbols under `und`; `ko`'s, `sv`'s, `ur`'s and `nb`'s own `arab` symbols).
+- **Decision D21's symbols, read from CLDR's XML.** A `cldr-json` `numbers.json` carries the symbols of a locale's
+  default, native, traditional and finance numbering systems only, and decision D21 asks for each system's own symbols
+  through the locale's parent chain to root. CLDR 48.2.0's `common/main` XML states `arab` or `arabext` symbols, and for
+  `sv` a `fullwide` clock separator, for 14 locales of the list whose `numbers.json` leaves those systems out: `ar`,
+  `ar-EG`, `az`, `fa`, `fr`, `fr-CA`, `ko`, `nb`, `no`, `sv`, `ur`, `uz`, `uz-Cyrl` and `zh-Hant`. Read with root's
+  symbols alone, the table gave 59 of their values as root's or as the `latn` ones. The pin's third block archives the
+  XML files of the list's 67 main-data locales other than `und` and of `en-001`, the one locale on their parent chains
+  outside the list: 68 files, retrieved twice on 2026-10-26 from the CLDR repository at the tag `release-48-2` into two
+  directories found byte-identical, with the `root.xml` retrieved beside them equal to Broiler.VM's. The generator
+  writes each locale's own values as `symbols@<system>.<name>` lines, the first value up its chain below root, and
+  `IntlCompletenessTests` holds every symbol of every main-data locale, read as a formatter reads the table (the
+  locale's line, then `und`'s, then its `latn` symbol), to CLDR's XML resolution, with a removed line as its control;
+  the same test finds every system `numbers.json` carries equal to the XML's resolution. The reading takes values at
+  the `contributed` level `cldr-json` carries: `fr.xml`'s `arab` and `arabext` minus signs, `arab` percent sign,
+  `arabext` plus sign and both approximately signs are draft `unconfirmed`, so `fr` and `fr-CA` keep root's for those
+  (12 values), as `ab.xml`'s unconfirmed `latn` decimal separator `,` is absent from `ab/numbers.json` and as the
+  reference Node 22 (ICU 77.1) writes `fr-u-nu-arab`'s minus sign as root's, U+061C U+002D. The reference writes
+  `ko-u-nu-arab`'s minus sign as U+200F U+002D and `sv-u-nu-arab`'s as U+061C U+2212 with U+00A0 between groups, as the
+  table now does. **Two readings depart from JSD-0082's text**, for the owner to confirm: decision D21 names only
+  `root.xml` beside `cldr-json` ("the generator reads root's from that file"), and the other locales' XML files are
+  this home's reading of its "through the locale's parent chain to root"; and decision D10 describes the superset's
+  extra files as "from the same packages", while these come from the CLDR repository at the tag Broiler.VM's own
+  `root.xml` came from, which Broiler.VM's `repository-source` line names. Each of Broiler.VM's entries is unchanged.
 - **What CLDR 48.2.0 does not carry**, read, not decided: 34 per-locale `languages.json`, `scripts.json`,
   `territories.json` or `variants.json` files of `cldr-localenames-full` for locales of Broiler.JS's list, which the
   home's [`cldr/README.md`](../../../Broiler.ECMAScript/data/intl/cldr/README.md) lists and the display-name table

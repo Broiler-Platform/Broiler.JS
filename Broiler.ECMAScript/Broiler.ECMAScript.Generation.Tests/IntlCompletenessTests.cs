@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Xml;
+using System.Xml.Linq;
 using Broiler.ECMAScript.Generation.Intl;
 using Broiler.ECMAScript.Runners;
 using Xunit;
@@ -91,7 +93,8 @@ public sealed class IntlCompletenessTests
     /// <summary>
     /// Decision D34's data, as the decision states it for Broiler.JS's list: two-digit hours for <c>af</c> and
     /// <c>lt</c> (row U14), and <c>.</c> as the clock's separator for <c>da</c>, <c>en-DK</c>, <c>id</c> and
-    /// <c>si</c> (row U13); and decision D21's root symbols for <c>arab</c>.
+    /// <c>si</c> (row U13); and decision D21's symbols: root's for <c>arab</c>, and a locale's own where CLDR's XML
+    /// states them and its <c>numbers.json</c> does not.
     /// </summary>
     [Fact]
     public void Decision_D34_s_and_D21_s_data_are_what_the_decisions_state()
@@ -107,8 +110,120 @@ public sealed class IntlCompletenessTests
         Assert.Contains("und|symbols@arab.minusSign|\\u061C-", numbers);
         Assert.DoesNotContain(numbers, static line => line.StartsWith("und|symbols@beng.", StringComparison.Ordinal));
 
+        // A LOCALE'S OWN, from common/main/<locale>.xml, which cldr-json's numbers.json leaves out: ko's minus sign,
+        // sv's group and minus sign, ur's decimal separator, and nb's clock separator through its parent no.
+        Assert.Contains("ko|symbols@arab.minusSign|\\u200F-", numbers);
+        Assert.Contains("sv|symbols@arab.group|\\u00A0", numbers);
+        Assert.Contains("sv|symbols@arab.minusSign|\\u061C\\u2212", numbers);
+        Assert.Contains("ur|symbols@arab.decimal|\\u060C", numbers);
+        Assert.Contains("nb|symbols@arab.timeSeparator|.", numbers);
+
+        // fr's own arab minus sign is draft "unconfirmed", below the level cldr-json carries, so root's applies;
+        // its plus sign is "contributed" and is fr's.
+        Assert.DoesNotContain(numbers, static line => line.StartsWith("fr|symbols@arab.minusSign|", StringComparison.Ordinal));
+        Assert.Contains("fr|symbols@arab.plusSign|\\u200F+", numbers);
+
         // Broiler.VM's tables carry the latn symbols alone (decision D21).
         Assert.DoesNotContain(Lines(BroilerVm.Value["NumberLocales"]), static line => line.Contains("|symbols@", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Decision D21 for every main-data locale of Broiler.JS's list: each symbol of each numbering system other than
+    /// <c>latn</c> that CLDR states for the locale, its parent chain or root - read as a formatter reads the table:
+    /// the locale's own <c>symbols@</c> line, else <c>und</c>'s, else the locale's <c>latn</c> symbol - is CLDR
+    /// 48.2.0's, as its <c>common/main</c> XML resolves it: the first value up the chain to root that is not the
+    /// inheritance marker, an <c>alt</c> form or below draft <c>contributed</c>, else, where root aliases the system,
+    /// the locale's <c>latn</c> symbol. The systems <c>numbers.json</c> carries are held to the XML the same way.
+    /// </summary>
+    [Fact]
+    public void Every_locale_s_numbering_system_symbols_are_CLDR_s()
+    {
+        Assert.Empty(SymbolViolations(BroilerJs.Value));
+    }
+
+    /// <summary>The control: one locale's own symbol removed is reported, with CLDR's value and the one the table now gives.</summary>
+    [Fact]
+    public void A_locale_s_own_symbol_missing_is_reported()
+    {
+        var without = Without(BroilerJs.Value, "NumberLocales", static line => line.StartsWith("ko|symbols@arab.minusSign|", StringComparison.Ordinal));
+        Assert.Contains("ko symbols@arab.minusSign: CLDR \\u200F-, the table \\u061C-", SymbolViolations(without));
+    }
+
+    /// <summary>Every symbol of Broiler.JS's list whose value the number table, read as a formatter reads it, does not give as CLDR's XML resolves it.</summary>
+    private static List<string> SymbolViolations(IntlTables tables)
+    {
+        var archive = IntlDataHome.CldrFiles(IntlDataHome.Current, IntlDataHome.ReadCldrPin(IntlDataHome.Current));
+        var list = IntlDataHome.ReadList(IntlDataHome.Current, IntlDataHome.BroilerJsList);
+        var parents = Parents();
+        var table = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
+        foreach (var line in Lines(tables["NumberLocales"]))
+        {
+            var fields = line.Split('|', 3);
+            if (!table.TryGetValue(fields[0], out var keys))
+                table[fields[0]] = keys = new Dictionary<string, string>(StringComparer.Ordinal);
+            keys[fields[1]] = fields[2];
+        }
+
+        var stated = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>(StringComparer.Ordinal);
+        Dictionary<string, Dictionary<string, string>> Stated(string tag)
+        {
+            if (stated.TryGetValue(tag, out var known))
+                return known;
+
+            var systems = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
+            using var reader = XmlReader.Create(new MemoryStream(archive["cldr-48.2.0/common/main/" + tag.Replace('-', '_') + ".xml"]), new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore });
+            var document = XDocument.Load(reader, LoadOptions.PreserveWhitespace);
+            foreach (var symbols in document.Root!.Elements("numbers").Elements("symbols"))
+            {
+                var system = (string?)symbols.Attribute("numberSystem");
+                if (system is null or "latn" || symbols.Elements("alias").Any())
+                    continue;
+                var values = systems.TryGetValue(system, out var some) ? some : systems[system] = new Dictionary<string, string>(StringComparer.Ordinal);
+                foreach (var symbol in symbols.Elements())
+                {
+                    if (symbol.Attribute("alt") is null && symbol.Value != "↑↑↑" && (string?)symbol.Attribute("draft") is not ("unconfirmed" or "provisional"))
+                        values[symbol.Name.LocalName] = symbol.Value;
+                }
+            }
+
+            return stated[tag] = systems;
+        }
+
+        var violations = new List<string>();
+        foreach (var locale in list.MainDataLocales)
+        {
+            var chain = new List<string>();
+            for (var tag = locale; tag != "und"; tag = parents.TryGetValue(tag, out var parent) ? parent : tag.Contains('-', StringComparison.Ordinal) ? tag[..tag.LastIndexOf('-')] : "und")
+                chain.Add(tag);
+            chain.Add("root");
+
+            using var json = JsonDocument.Parse(archive["cldr-48.2.0/json/cldr-numbers-full/main/" + locale + "/numbers.json"]);
+            var numbers = json.RootElement.GetProperty("main").GetProperty(locale).GetProperty("numbers");
+            var latn = numbers.GetProperty("symbols-numberSystem-latn").EnumerateObject()
+                .Where(static symbol => !symbol.Name.Contains("-alt-", StringComparison.Ordinal))
+                .ToDictionary(static symbol => symbol.Name, static symbol => symbol.Value.GetString()!, StringComparer.Ordinal);
+            var systems = chain.SelectMany(tag => Stated(tag).Keys)
+                .Concat(numbers.EnumerateObject().Select(static property => property.Name).Where(static name => name.StartsWith("symbols-numberSystem-", StringComparison.Ordinal)).Select(static name => name["symbols-numberSystem-".Length..]))
+                .Where(static system => system != "latn")
+                .ToHashSet(StringComparer.Ordinal);
+
+            foreach (var system in systems.Order(StringComparer.Ordinal))
+            {
+                var names = chain.SelectMany(tag => Stated(tag).TryGetValue(system, out var values) ? values.Keys.ToList() : new List<string>()).Concat(latn.Keys).ToHashSet(StringComparer.Ordinal);
+                foreach (var name in names.Order(StringComparer.Ordinal))
+                {
+                    var cldr = chain.Select(tag => Stated(tag).TryGetValue(system, out var values) && values.TryGetValue(name, out var value) ? value : null).FirstOrDefault(static value => value is not null)
+                        ?? latn.GetValueOrDefault(name);
+                    var key = "symbols@" + system + "." + name;
+                    var written = table[locale].GetValueOrDefault(key) ?? table["und"].GetValueOrDefault(key) ?? table[locale].GetValueOrDefault("symbols." + name);
+                    var expected = cldr is null ? null : CldrTableGenerator.Escape(cldr);
+                    if (!string.Equals(expected, written, StringComparison.Ordinal))
+                        violations.Add(locale + " " + key + ": CLDR " + (expected ?? "none") + ", the table " + (written ?? "none"));
+                }
+            }
+        }
+
+        return violations;
     }
 
     /// <summary>Every way <paramref name="tables"/> fail the completeness reading for <paramref name="list"/>.</summary>

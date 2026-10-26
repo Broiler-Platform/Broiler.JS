@@ -219,7 +219,8 @@ in this engine reads them.
   [`data/intl/cldr/`](Broiler.ECMAScript/data/intl/cldr/README.md), each file held by its length and SHA-256 in
   `cldr.pin`: Broiler.VM's pinned files, byte-for-byte copies of Broiler.VM's at its commit `4cf9ca44` (the
   `cldr-json` packages' files from the npm registry, and the collation files, `common/main/root.xml` and the UCA
-  files from the CLDR repository), and this engine's extra main-data files from the same `cldr-json` packages.
+  files from the CLDR repository), and this engine's extra files: main-data files from the same `cldr-json`
+  packages, and `common/main` XML files of its locales from the CLDR repository at the same tag.
   They are © Unicode, Inc., under the Unicode License v3 below; the archive keeps the licence text it was
   published with as `cldr-LICENSE.txt`, the same licence, whose copyright line reads "Copyright © 2004-2026
   Unicode, Inc.". **Every table in `data/intl/generated/` is derived from them and remains subject to that

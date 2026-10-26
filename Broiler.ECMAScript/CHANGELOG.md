@@ -60,9 +60,11 @@ records list what each observes.
 ### Data
 
 - The Intl data home, [`data/intl/`](data/intl/README.md), outside every package (milestone SJL-9.2b;
-  JSD-0082's decisions D5, D10 and D12): CLDR **48.2.0**'s JSON files and `cldr.pin`, its UCA **17.0.0** - every
-  entry of Broiler.VM's pin at `4cf9ca44` byte for byte, and the main-data files Broiler.JS's locale list needs
-  from the same sixteen packages, each package's tarball checked against its recorded integrity; the Unicode
+  JSD-0082's decisions D5, D10, D12 and D21): CLDR **48.2.0**'s files - the `cldr-json` files, and from the CLDR
+  repository the collation, root and UCA files and the `common/main` XML files decision D21 reads - and `cldr.pin`,
+  its UCA **17.0.0**: every entry of Broiler.VM's pin at `4cf9ca44` byte for byte, the main-data files Broiler.JS's
+  locale list needs from the same packages, each package's tarball checked against its recorded integrity, and the
+  XML files of the list's locales and their parents, retrieved twice from the CLDR repository's tag; the Unicode
   Character Database **17.0.0**'s `UnicodeData.txt` and `PropList.txt` and `ucd.pin`, each entry equal to
   Broiler.Unicode's pin entry for the same file; each embedding's locale list, `broiler-vm.txt` and
   `broiler-js.txt`, per decision D5; and Broiler.JS's tables generated from them with their manifest. Rule SL7

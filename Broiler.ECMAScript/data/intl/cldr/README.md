@@ -7,7 +7,8 @@ licence text, archived here unmodified. [`cldr.pin`](cldr.pin) records each file
 Broiler.VM's decision JSD-0082 (milestone SJL-9.1 of the shared JavaScript libraries programme) makes this pin
 a **superset of Broiler.VM's** `src/tests/cldr/pins/cldr.pin` (decision D10): every line of that pin from
 `data` to its last `file` line is in this one, unchanged and in its order, and the `file` lines after them name
-Broiler.JS's extra main-data files, from the same npm packages at the same version.
+Broiler.JS's extra files: main-data files from the same npm packages at the same version, and CLDR's `common/main`
+XML files that decision D21 reads, from the CLDR repository at the tag Broiler.VM's `common/main/root.xml` came from.
 
 ## Where it came from
 
@@ -27,12 +28,22 @@ directories that `cmp` found byte-identical, and each was checked against the sh
 `json-integrity` line states (Broiler.VM's lines, unchanged) before any file was read from it. Every npm file
 Broiler.VM's lines name was found byte-identical to its member of the same tarballs.
 
+**Broiler.JS's `common/main` XML files** were added on 2026-10-26 for decision D21: Broiler.JS's number table carries
+each numbering system's own symbols for every locale of its list, through the locale's parent chain to root, and a
+cldr-json `numbers.json` carries the symbols of a locale's default, native, traditional and finance systems only. The
+generator reads the other systems' symbols from `common/main/<locale>.xml` for every main-data locale of the list but
+`und` (whose file is Broiler.VM's `root.xml`) and for every locale on their parent chains below root, by
+`parentLocales.json` or by truncation, which adds `en_001.xml`. They were retrieved twice from
+`https://raw.githubusercontent.com/unicode-org/cldr/release-48-2/common/main/`, the pin's `repository-source`, into two
+directories found byte-identical, and the `root.xml` retrieved with them equals Broiler.VM's. They state no version and
+are held by their hashes alone.
+
 | | |
 |---|---|
 | Version | **CLDR 48.2.0**; UCA **17.0.0**, the Unicode version of [`../ucd/`](../ucd/README.md) |
-| Files | `cldr-48.2.0/common/` (Broiler.VM's collation files, `common/main/root.xml` and the UCA files) and `cldr-48.2.0/json/<package>/` (the cldr-json files), each at its path in its source |
+| Files | `cldr-48.2.0/common/` (Broiler.VM's collation files, `common/main/root.xml` and the UCA files; Broiler.JS's `common/main/<locale>.xml` files) and `cldr-48.2.0/json/<package>/` (the cldr-json files), each at its path in its source |
 | Licence | [`cldr-LICENSE.txt`](cldr-LICENSE.txt), the CLDR repository's `LICENSE` at the tag `release-48-2`: the Unicode License v3 (SPDX `Unicode-3.0`) |
-| Retrieved | Broiler.VM's files by Broiler.VM, 2026-10-04 and 2026-10-05; the extra files 2026-10-26; each **twice**, byte-identical |
+| Retrieved | Broiler.VM's files by Broiler.VM, 2026-10-04 and 2026-10-05; the extra files and the XML files 2026-10-26; each **twice**, byte-identical |
 
 ### The names files CLDR does not carry
 

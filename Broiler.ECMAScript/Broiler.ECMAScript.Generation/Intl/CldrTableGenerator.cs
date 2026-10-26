@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   39
-// Annotated:        39/39
+// Relevant units:   43
+// Annotated:        43/43
 // Exempt:           0
-// Human-reviewed:   0/39
+// Human-reviewed:   0/43
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         3/3
 // Resource impact:  8/10 max
-// Unverified:       39
+// Unverified:       43
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Xml;
 using System.Xml.Linq;
 using Broiler.ECMAScript.Generation.Time;
 
@@ -451,13 +452,17 @@ public static partial class CldrTableGenerator
     /// <summary>
     /// Each main-data locale's number data for <c>latn</c>, its JSON flattened to dotted keys; its duration
     /// patterns; and with <see cref="IntlNumberingSymbols.EveryNumberingSystem"/> its other numbering systems'
-    /// symbols, and root's own for <c>und</c>.
+    /// symbols - those its <c>numbers.json</c> carries, and those CLDR's <c>common/main</c> XML states on its
+    /// parent chain (<see cref="OwnSymbols"/>), root's own for <c>und</c>.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 D21 D34 number data via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=F989B0
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 D21 D34 number data via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=A229DB
     // Broiler-Human:        PENDING
     private static IEnumerable<string> NumberLocales(Archive archive, ImmutableArray<string> languages, IntlNumberingSymbols symbols)
     {
         var lines = new List<string>();
+        var parents = symbols == IntlNumberingSymbols.EveryNumberingSystem
+            ? ParentLocales(archive)
+            : FrozenDictionary<string, string>.Empty;
 
         foreach (var language in languages)
         {
@@ -491,9 +496,9 @@ public static partial class CldrTableGenerator
                 }
             }
 
-            if (symbols == IntlNumberingSymbols.EveryNumberingSystem && language == "und")
+            if (symbols == IntlNumberingSymbols.EveryNumberingSystem)
             {
-                lines.AddRange(RootSymbols(archive, numbers));
+                lines.AddRange(OwnSymbols(archive, language, numbers, parents));
             }
 
             // THE DURATION PATTERNS, which say whether a digital duration writes its hours with two
@@ -510,31 +515,120 @@ public static partial class CldrTableGenerator
         return lines.Order(StringComparer.Ordinal);
     }
 
-    /// <summary>
-    /// Root's own symbols for each numbering system <c>common/main/root.xml</c> states them for and
-    /// <c>und/numbers.json</c> does not - <c>arab</c> and <c>arabext</c> - as <c>und</c> lines. A system root
-    /// aliases to the locale's <c>latn</c> symbols carries no line.
-    /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D21 root numbering-system symbols; IP=Low; Security=Medium; Resources=3; Fingerprint=7AFCBA
+    /// <summary>CLDR's inheritance marker, which a locale's XML writes for a value it takes from its parent.</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D21 numbering-system symbols UTS 35 inheritance marker; IP=Low; Security=Low; Resources=0; Fingerprint=8B51DA
     // Broiler-Human:        PENDING
-    private static IEnumerable<string> RootSymbols(Archive archive, JsonElement undNumbers)
-    {
-        var root = XDocument.Parse(Encoding.UTF8.GetString(archive.Bytes(Root + "common/main/root.xml")));
-        var numbers = root.Descendants("numbers").Single();
+    private const string InheritanceMarker = "↑↑↑";
 
-        foreach (var system in numbers.Elements("symbols"))
+    /// <summary>
+    /// A locale's own symbols for each numbering system other than <c>latn</c> that CLDR's <c>common/main</c> XML
+    /// states on its parent chain and its <c>numbers.json</c> does not carry (decision D21; cldr-json writes only
+    /// a locale's default, native, traditional and finance systems), as <c>symbols@&lt;system&gt;.&lt;name&gt;</c>
+    /// lines. For each symbol the value is the first one up the chain - the locale, then its parent by
+    /// <c>parentLocales.json</c> or by truncation, down to but not including root - that
+    /// <see cref="StatedSymbols"/> reads. For <c>und</c> the chain is root alone. A symbol the chain below root
+    /// does not state carries no line under the locale: its value is <c>und</c>'s line, root's, or where root
+    /// aliases the system to <c>latn</c>, the locale's <c>latn</c> symbol.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D21 numbering-system symbols through the parent chain; IP=Low; Security=Medium; Resources=3; Fingerprint=088AE8
+    // Broiler-Human:        PENDING
+    private static IEnumerable<string> OwnSymbols(Archive archive, string language, JsonElement numbers, FrozenDictionary<string, string> parents)
+    {
+        var chain = new List<string>();
+
+        if (language == "und")
+        {
+            chain.Add("root");
+        }
+        else
+        {
+            for (var tag = language; tag is not ("und" or "root"); tag = Parent(tag, parents))
+            {
+                if (chain.Count == 16)
+                {
+                    throw new InvalidDataException("the parent chain of " + language + " does not reach root");
+                }
+
+                chain.Add(tag);
+            }
+        }
+
+        var values = new SortedDictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var tag in chain)
+        {
+            foreach (var (system, name, value) in StatedSymbols(archive, tag))
+            {
+                if (!numbers.TryGetProperty("symbols-numberSystem-" + system, out _))
+                {
+                    values.TryAdd(system + "." + name, value);
+                }
+            }
+        }
+
+        return values.Select(pair => language + "|symbols@" + pair.Key + "|" + Escape(pair.Value));
+    }
+
+    /// <summary>A CLDR locale's parent: the one <c>parentLocales.json</c> names, else the tag less its last subtag, else root.</summary>
+    // Broiler-AI:           Origin=AI; Spec=UTS 35 parent locales for JSD-0082 D21; IP=Low; Security=Low; Resources=0; Fingerprint=239E06
+    // Broiler-Human:        PENDING
+    private static string Parent(string tag, FrozenDictionary<string, string> parents) =>
+        parents.TryGetValue(tag, out var stated) ? stated : tag.LastIndexOf('-') is > 0 and var dash ? tag[..dash] : "root";
+
+    /// <summary>CLDR's <c>parentLocales.json</c> map, by BCP 47 tag; <c>und</c> names root.</summary>
+    // Broiler-AI:           Origin=AI; Spec=UTS 35 parent locales for JSD-0082 D21; IP=Low; Security=Low; Resources=1; Fingerprint=5140F5
+    // Broiler-Human:        PENDING
+    private static FrozenDictionary<string, string> ParentLocales(Archive archive) =>
+        archive.Json("json/cldr-core/supplemental/parentLocales.json")
+            .GetProperty("supplemental").GetProperty("parentLocales").GetProperty("parentLocale")
+            .EnumerateObject()
+            .ToFrozenDictionary(static entry => entry.Name, static entry => entry.Value.GetString()!, StringComparer.Ordinal);
+
+    /// <summary>
+    /// The symbols one CLDR locale's <c>common/main/&lt;locale&gt;.xml</c> states for each numbering system other
+    /// than <c>latn</c>: each <c>symbols</c> element's children, less the inheritance marker, an <c>alt</c> form and
+    /// a value of draft <c>unconfirmed</c> or <c>provisional</c> - below the <c>contributed</c> level the cldr-json
+    /// files carry. Root's alias of a system to the locale's <c>latn</c> symbols states nothing; an alias anywhere
+    /// else is refused, as nothing here resolves one.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D21 numbering-system symbols from CLDR XML; IP=Low; Security=Medium; Resources=3; Fingerprint=AF9C71
+    // Broiler-Human:        PENDING
+    private static IEnumerable<(string System, string Name, string Value)> StatedSymbols(Archive archive, string tag)
+    {
+        var path = Root + "common/main/" + tag.Replace('-', '_') + ".xml";
+        XDocument document;
+
+        using (var reader = XmlReader.Create(new MemoryStream(archive.Bytes(path)), new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore }))
+        {
+            document = XDocument.Load(reader, LoadOptions.PreserveWhitespace);
+        }
+
+        foreach (var system in document.Root!.Elements("numbers").Elements("symbols"))
         {
             var name = (string?)system.Attribute("numberSystem");
 
-            if (name is null || name == "latn" || system.Elements("alias").Any() ||
-                undNumbers.TryGetProperty("symbols-numberSystem-" + name, out _))
+            if (name is null || name == "latn")
             {
                 continue;
             }
 
-            foreach (var symbol in system.Elements().Where(static element => element.Attribute("alt") is null))
+            if (system.Elements("alias").Any())
             {
-                yield return "und|symbols@" + name + "." + symbol.Name.LocalName + "|" + Escape(symbol.Value);
+                if (tag == "root")
+                {
+                    continue;
+                }
+
+                throw new InvalidDataException(path + " aliases the " + name + " symbols, and only root's aliases are read");
+            }
+
+            foreach (var symbol in system.Elements())
+            {
+                if (symbol.Attribute("alt") is null && symbol.Value != InheritanceMarker &&
+                    (string?)symbol.Attribute("draft") is not ("unconfirmed" or "provisional"))
+                {
+                    yield return (name, symbol.Name.LocalName, symbol.Value);
+                }
             }
         }
     }

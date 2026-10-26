@@ -1524,7 +1524,12 @@ This repository's part of it:
   regional `ar-*` among them); for `sr`, `sr-Cyrl` and `sr-Latn`, CLDR's `hms` duration pattern writes `.` while
   their `timeSeparator` is `:`, which decision D34, reading the separator, leaves at `:`; and CLDR 48.2.0 lacks 34
   per-locale names files for the list's locales, and calendar type or metazone names for a few of them, which the
-  home's README and the bundle list.)*
+  home's README and the bundle list. Decision D21 asks for each numbering system's own symbols through the locale's
+  parent chain to root, and names only `common/main/root.xml` beside `cldr-json`, whose `numbers.json` carries a
+  locale's default, native, traditional and finance systems alone; the home therefore also pins CLDR's `common/main`
+  XML for the list's main-data locales and their parents, from the CLDR repository's tag `release-48-2`, and the
+  generator writes each locale's own symbols from it, a reading of D21 and of D10's "from the same packages" that the
+  bundle's section states for the owner to confirm.)*
 - **The data contract** (decision D8): two layers, the tables as an `IIntlDataSet` and the questions as an
   `ILocaleData`, which this engine's host-culture provider also implements, ordered by `CompositeLocaleData`: the
   shared data first, then the optional secondary provider, then the parent and root. Broiler.VM keeps its

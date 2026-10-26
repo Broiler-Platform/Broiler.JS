@@ -32,11 +32,13 @@ public enum IntlNumberingSymbols
     Latin = 0,
 
     /// <summary>
-    /// Besides the <c>latn</c> symbols, each numbering system's own CLDR symbols: those a locale's
-    /// <c>numbers.json</c> states, as <c>symbols@&lt;system&gt;.&lt;name&gt;</c> keys of the number table, and
-    /// for <c>und</c>, root's own from <c>common/main/root.xml</c> (<c>arab</c> and <c>arabext</c>), which the
-    /// <c>cldr-json</c> package's root file leaves out. A system no locale on the parent chain states is
-    /// written in the locale's <c>latn</c> symbols, as root's aliases say.
+    /// Besides the <c>latn</c> symbols, each numbering system's own CLDR symbols, as
+    /// <c>symbols@&lt;system&gt;.&lt;name&gt;</c> keys of the number table: those a locale's <c>numbers.json</c>
+    /// states; those its <c>common/main</c> XML and its parent chain's below root state for the systems
+    /// <c>numbers.json</c> leaves out; and for <c>und</c>, root's own from <c>common/main/root.xml</c>
+    /// (<c>arab</c> and <c>arabext</c>), which the <c>cldr-json</c> package's root file leaves out. A symbol no
+    /// locale on the parent chain states is root's, under <c>und</c>, or where root aliases the system, the
+    /// locale's <c>latn</c> symbol.
     /// </summary>
     EveryNumberingSystem = 1,
 }

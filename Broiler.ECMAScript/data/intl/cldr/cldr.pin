@@ -5,7 +5,9 @@
 # libraries programme), and the CLDR licence text. Broiler.VM's decision JSD-0082 (decisions D10 and
 # D11) makes this pin a superset of Broiler.VM's src/tests/cldr/pins/cldr.pin: every line of that pin
 # from `data` to its last `file` line is below, unchanged and in its order, and the `file` lines after
-# them name this repository's extra main-data files, from the same npm packages at the same version.
+# them name this repository's extra files: main-data files from the same npm packages at the same
+# version, and CLDR's common/main XML files for decision D21, from the CLDR repository at the tag
+# Broiler.VM's common/main/root.xml came from.
 #
 # WHERE BROILER.VM'S FILES CAME FROM. They are byte-for-byte copies of Broiler.VM's src/tests/cldr/pins/
 # at Broiler.VM 4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f, the merge that carries its SJL-9 rules, kept
@@ -36,11 +38,23 @@
 # 2026-10-18 that the programme's recommended decisions be taken; no permission specific to this
 # retrieval was given, and that is recorded here rather than implied.
 #
+# EXTENDED AGAIN 2026-10-26 FOR DECISION D21. Broiler.JS's number table carries each numbering
+# system's own symbols for every locale of its list, through the locale's parent chain to root. A
+# cldr-json numbers.json carries the symbols of a locale's default, native, traditional and finance
+# systems only, so the generator reads the others from CLDR's XML: common/main/<locale>.xml for every
+# main-data locale of the list but und, whose root.xml is Broiler.VM's entry, and for every locale on
+# their parent chains below root (parentLocales.json's parent, or the tag less its last subtag), which
+# adds en_001.xml. They were retrieved twice by Claude on 2026-10-26 from
+# https://raw.githubusercontent.com/unicode-org/cldr/release-48-2/common/main/ (the repository-source
+# line below) into two directories that `diff -r` found byte-identical, and root.xml, retrieved with
+# them, equals Broiler.VM's entry. The files are unmodified; the same owner's direction applies.
+#
 # WHAT A LINE MEANS. As in Broiler.VM's pin: `file <path relative to this directory> <bytes> <sha256>`.
 # A supplemental JSON file states its CLDR major version, a package.json its package version and the
 # UCA files their UCA version, which the generator's IntlCldrPin compares with the pinned ones; the
-# main-data files, the bcp47 files, the collation XML and the licence state none and are held by their
-# hashes alone. The two CollationTest files are test-only input: no table is generated from them.
+# main-data files, JSON and XML, the bcp47 files, the collation XML and the licence state none and are
+# held by their hashes alone. The two CollationTest files are test-only input: no table is generated
+# from them.
 
 data unicode-common-locale-data-repository
 version 48.2.0
@@ -1998,3 +2012,73 @@ file cldr-48.2.0/json/cldr-units-full/main/zh-Hans/units.json 105772 80d33ab4655
 file cldr-48.2.0/json/cldr-units-full/main/zh-Hant/units.json 108359 7cce7ef30c5df399d226f3b845d427df52812ba3a5aac1c7a582f3f8132ffb6a
 file cldr-48.2.0/json/cldr-units-full/main/zh/units.json 105741 892a3c32a31e8871bb646f9a22d0a9ba9f889b11a18119d7444079ab81b8429c
 file cldr-48.2.0/json/cldr-units-full/main/zu/units.json 112850 9672a70ee4e342ed37269aa0c3315dd27c137887586d65ef090753a8f658cb5b
+
+# Broiler.JS's common/main XML files, added 2026-10-26 for decision D21 (see above).
+file cldr-48.2.0/common/main/aa.xml 8869 f26361d135168a9cdde2c8dd6304ed270a3a698134eab6adc6079f10498bd733
+file cldr-48.2.0/common/main/ab.xml 227194 eea0799e3cf3c918c8ca629d85454c275a32887f85d071c8e554c548e6ef5378
+file cldr-48.2.0/common/main/af.xml 397172 20b451a89365e131dea91d7d2d40e41080272b6f7c3316786da209bcff30398f
+file cldr-48.2.0/common/main/ar.xml 730729 94b2fea65038e61fa34b9b3efd728ab55e12c77644e61d283e63464ff57e13b7
+file cldr-48.2.0/common/main/ar_EG.xml 977 5b80cfe93e16c89b23dcd046ec76d9e39781386e6dfdfa7bb2d8f6dbc87955a7
+file cldr-48.2.0/common/main/az.xml 438786 36a770b21b3a3d9eb2f93145539e446a2325feb11bd28e9a92890255a3024cce
+file cldr-48.2.0/common/main/bg.xml 482849 05bcf474ad3dc89fbc0216955a3a6279d1aad884e916cade8ff36a22dbca95b7
+file cldr-48.2.0/common/main/cs.xml 1052014 151aa6e1d2e24c75e03b0332a8c41d7481fdc994c9b5b04c9e92da48142da063
+file cldr-48.2.0/common/main/da.xml 480559 b5aa90916fab9a53b85db89dd5a77ca24f6ec088e002be56493f9b11bd1a540a
+file cldr-48.2.0/common/main/de.xml 612275 15dbc0a59d188b243b9bd781ae245267f700ec8cd1b1d93ed760e5dd1b3cc1c6
+file cldr-48.2.0/common/main/de_AT.xml 5492 b48fa2fd12087c52a0028056785da175cba1fb4bd12e0ecc2979934a1fbb7693
+file cldr-48.2.0/common/main/de_CH.xml 470449 d54cf4b09296aa0ff3941729cb79dc793a3a4fb9a50bb282835642954f5b381d
+file cldr-48.2.0/common/main/en.xml 478790 67607f4c9cf57157e70564987d8ae92a9ddcd73c00a2f1cd6abf79524a969cbd
+file cldr-48.2.0/common/main/en_001.xml 76202 193f863c209a257ceed90d112a59b43a994dde966e7c5d80c13c6477809dfc10
+file cldr-48.2.0/common/main/en_150.xml 2576 fe49bcac02d9c969efb3913afa96936eec7cfbc0b56c87aafdfc9137fef216ec
+file cldr-48.2.0/common/main/en_AU.xml 443940 ac6d40150795bf2df3c41b89e97cd4fab25d4c28de0f2a1987507854a481305b
+file cldr-48.2.0/common/main/en_DK.xml 4418 fabf4169214a628fcc316f2092d639b2c0e8d4d66d92cdbf08931b2728f55da6
+file cldr-48.2.0/common/main/en_FR.xml 573 a7ae2764db02040fe2e510a948b5110a10c6934ec0258a83c0fdc661f39a1b07
+file cldr-48.2.0/common/main/en_GB.xml 485360 5261b3507bf6a396ba22114d1ce5107760f5d14a1752b2689e082ef2958fe97c
+file cldr-48.2.0/common/main/en_IN.xml 431125 5c8f11f9f188a3f4c17c3e95c45091aba8d2b1bfda4cdc11081e8b9a7a9d2bd5
+file cldr-48.2.0/common/main/en_NZ.xml 6642 13b49791ce5ae1885cfa9e7da4da3ddd75c63d21f4d21259cdaf82774b4ab2e1
+file cldr-48.2.0/common/main/en_Shaw.xml 112580 2cabc888672ac74e4835deac2cfba4dd87646e55947ba065d20219aebc1f7da5
+file cldr-48.2.0/common/main/es.xml 485669 727d29597d9e0e4f7a1951ebb26aca2f063f89d07190c933ee56451c01334d27
+file cldr-48.2.0/common/main/es_419.xml 409031 19b75df6f5c4961ef91cdb855d0f876726b6e2fc2a5b7c0c2a8c0694597f83ca
+file cldr-48.2.0/common/main/fa.xml 502533 f71b3b72c6713a4963213f2f1e7452131fa3a4f31201a6d9d6339bb3b340c8f5
+file cldr-48.2.0/common/main/ff.xml 31975 19f1eea0278f6a47849d92133af9e78798cd0bfaf6d3eed819fa100bb9f73203
+file cldr-48.2.0/common/main/fil.xml 517524 35db740e7e262d673979c2ffdbcd2aa1cd603bdc849f579bc47e272bc87304c0
+file cldr-48.2.0/common/main/fr.xml 615203 ebc67e303a56940609c892ededb3697e3b291466cf9622dd2c389ad48872e98f
+file cldr-48.2.0/common/main/fr_CA.xml 438859 a97a8db94d3985e98153bccd654fcd3d561508a53dad6b643c2ff51d74743b5b
+file cldr-48.2.0/common/main/gv.xml 19647 c210a5cef5d74a4fb22ef864ba3215b9d622783331b9345099a80b1121a71b78
+file cldr-48.2.0/common/main/he.xml 638968 7ad7f3e74991ad8f1114af6a17b282e6293a930479ff64c8198ea74786f125ac
+file cldr-48.2.0/common/main/hi.xml 582873 5fa900f98f3f4ca70f73af23925783f73c62856d84892be9f364e05f4f10b261
+file cldr-48.2.0/common/main/hy.xml 511492 2969da48d175030ebb1f734630400f95b6604ccb6e89e085cbffb31d593c0d5d
+file cldr-48.2.0/common/main/id.xml 490015 361f434ecedb64caba5ab9be046d51540673f890a8d7b0c6a4ba8f9a960f21e5
+file cldr-48.2.0/common/main/it.xml 443952 cf1e21c333efa6b61c769be824f8a410503f210f60ee157fa40ed12950dcd632
+file cldr-48.2.0/common/main/ja.xml 526626 24bc2347a4fc2d1d331f122f5f4c4f05ce435513f4f5280b16a428aad8753fdc
+file cldr-48.2.0/common/main/jbo.xml 1413 bc0d66130d1b8741478d403e0300bfbdc66c6f27cb3270d71444078e07fd6b01
+file cldr-48.2.0/common/main/ko.xml 515573 d2f0deacc2773eb4f5d9b6afc0f853a5dcd96ca1f0d26341a65c717407edde56
+file cldr-48.2.0/common/main/ln.xml 64429 55c6e138b7befc8ca4bee9330b9c9d5920e57d86b708149e1bfac772d84d1d76
+file cldr-48.2.0/common/main/lt.xml 840842 da63b7b3e57e9a3910cb93bd736e897c0b33cf39762fd4e25bc41186c4d89911
+file cldr-48.2.0/common/main/nb.xml 434 2218b336e54cd0b0474d628c36a88cda121cfaf433d4c82207a4c7a2c287061f
+file cldr-48.2.0/common/main/nl.xml 921785 34f1b135e0d5a27a8059c9a4183b54fc548e2b14a8211437d9717fff719203d0
+file cldr-48.2.0/common/main/nl_BE.xml 11634 ec2d3fb4e2e75943e814dd88006e19cbb5e9a9b94b40b3ecdd99340764ea1f3e
+file cldr-48.2.0/common/main/no.xml 837058 8440d3a2c31dcd172bbb8d36a503c338b0f2afa04c2f1b2e21ae47bdb7542a19
+file cldr-48.2.0/common/main/pap.xml 132817 3abd932fd2895871ec87f031ab0ee7151710271b5b48a246c5bac57d75c3b032
+file cldr-48.2.0/common/main/pl.xml 778747 57ebc68f595f449b56ca2a046a3045ff86f16194a45fc0c105e8fa5cae0fc66c
+file cldr-48.2.0/common/main/pt.xml 500742 8e8bf8174c5b9138f32f6851a337877d175ca171e1a664f758f27f5d12e68b4f
+file cldr-48.2.0/common/main/pt_PT.xml 432527 53a86f2bb02e7ff9fad112880f7660964f9abeeca0c3ea8b1ccd3a1d8a244ef9
+file cldr-48.2.0/common/main/ro.xml 594423 31a9355f0fffde6c862c9da547b50dcd6913d142c8dc3d71b77c848ee3439a21
+file cldr-48.2.0/common/main/ru.xml 987515 a90f5d3e76d18e00ee430c369809a1e19f3a1bdf32f86abc0cb3a5f416de18fb
+file cldr-48.2.0/common/main/sa.xml 45810 41dc74d9c3ba414bdbae4ed790e39bba69f05fbb37b7c9c5b3e844906f60bf9a
+file cldr-48.2.0/common/main/si.xml 466220 565328265a5fcf39994df2a0577971edfb37ef51d767b3fd3f55e96b1b68fa09
+file cldr-48.2.0/common/main/sl.xml 763385 ad6125d044801afe5c9df6e827f8b49aa4d6cad391d748667e6f2c53f02649f6
+file cldr-48.2.0/common/main/sr.xml 674652 a2778298b40581863c38973d248ef5092a0ae7b8d57f463c24614c89e3a16f50
+file cldr-48.2.0/common/main/sr_Cyrl.xml 458 a0051594df2123b3c5475a5de0a3b20a015f1eb1291be1281f4b549fae782266
+file cldr-48.2.0/common/main/sr_Latn.xml 616597 f2176e522d003a85d8b6a9d89939def82493ab6d618134286c15a998827e8f47
+file cldr-48.2.0/common/main/sv.xml 563934 78a0810bda53074d3f612c2a4204c9181c4535af9d6390d81192e37022275124
+file cldr-48.2.0/common/main/th.xml 554934 01cfee1630fc9c0cdc8196ac8632d173493694e18e2ae9e061b945ecd91809ed
+file cldr-48.2.0/common/main/tr.xml 480024 97a18c0727e1e34c297b3fc08ce5d1470ef1b87558fc0e81bdee3336d0241910
+file cldr-48.2.0/common/main/ur.xml 454451 4e8a57befb8ac8b2902fe5cc764aecd1d7db44134d49fb8ce0bab40e7ae8e214
+file cldr-48.2.0/common/main/uz.xml 400882 3de666d980e8ce44381b44fc0ce55d33035c14ba40dcbfa31aae22b412d18cd1
+file cldr-48.2.0/common/main/uz_Cyrl.xml 158138 60cd40881781734f9626b2499c2856761a3f68bf9fccfec5bb8d6aa0ffaa8946
+file cldr-48.2.0/common/main/yi.xml 73473 8defeac0978c6b3fc4b2fd98b8a3c86cd0cf162c43e7d801a9af6d450de51f58
+file cldr-48.2.0/common/main/zh.xml 626269 b1ef8bcadcf19fa8914d9ba812a7bcec124c72fecbf4acea02e4c8bd2fe51866
+file cldr-48.2.0/common/main/zh_Hans.xml 458 138d8d3b9b646ab10d30628911ce79426ed86d308b13e988fc69f57bc16c91e2
+file cldr-48.2.0/common/main/zh_Hans_SG.xml 13739 d920abb71b6dbab8fda7a02c15eaaddb15128c7f6fff1f3946b4152a3c46e116
+file cldr-48.2.0/common/main/zh_Hant.xml 779004 3af22c10d26b47fec92cbb1aeab62e057a45caf8760860dbbe6fdb548a24bc64
+file cldr-48.2.0/common/main/zu.xml 430863 e309dd4e1d9c864c7e03a0ac592a6b910d97e7c3bf93f7d2d6b7a53f29201ee0
