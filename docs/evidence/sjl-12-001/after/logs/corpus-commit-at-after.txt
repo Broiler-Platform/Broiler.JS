@@ -2,6 +2,9 @@
 # section 1 says ("The condition is read again at the after commit."), from git reads alone, written
 # 2026-10-26T05:34:57Z at the import (SJL-12 WP7.6), in the committing worktree, whose origin/main, the default branch
 # as fetched, is a6c68dd4bd771ac358f4083e4789cd5c86e29330. Every command as it was run, with its output and exit code.
+# (Added 2026-10-26, after review: a command printed here as "$ git ..." ran as "git -C /home/user/js-s12w76 ...", the
+# committing worktree, which the other commands print in full; the script that wrote this record printed the one
+# form without the -C. Run in that worktree, the two forms are the same command.)
 rule-commit   4d813f2ac863895b9be5c4619b7886c9ddd71077
 corpus-commit 1fe542ff459935586cdf495e4a0e3d798248948a
 after-commit  c29d653f5f93b66b5e0efdbe506205a5347fc18a

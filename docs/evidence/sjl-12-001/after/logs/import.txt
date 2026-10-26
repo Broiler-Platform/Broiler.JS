@@ -1,9 +1,18 @@
 # bundle sjl-12-001 (Broiler.JS): how WP7.5's local after outputs of parts B, C and D were imported into after/
 # and controls/, written 2026-10-26T05:33:14Z at the import (SJL-12 WP7.6). Files were copied (cp -p semantics), moved and
-# edited as listed here, and nothing else was changed. No run was taken again: the one script run at the import
-# is part C's read-only comparison, again, into a separate standard-error file (parse-corpus-c-comparison-again.txt).
-# <scratch> names the session's scratch folder, under which WP7.5's folders wp7/js (this folder as the runner
-# wrote it) and wp7/jsw (its scripts, checkouts and raw runs) were.
+# edited as listed here, and nothing else was changed. No run of WP7.5's was taken again: of WP7.5's outputs, the
+# one script run again at the import is part C's read-only comparison, into a separate standard-error file
+# (parse-corpus-c-comparison-again.txt). Part A's comparison, which is not one of WP7.5's outputs, also ran at the
+# import (the bundle's README, section 4).
+# <scratch> names the session's scratch folder, under which WP7.5's folders sjl12/wp7/js (this folder as the runner
+# wrote it) and sjl12/wp7/jsw (its scripts, checkouts and raw runs) were.
+# (Revised 2026-10-26, after review. The third and fourth lines read "edited as listed here, and nothing else was
+# changed. No run was taken again: the one script run at the import is part C's read-only comparison, again, into
+# a separate standard-error file (parse-corpus-c-comparison-again.txt)."; the last two read "<scratch> names the
+# session's scratch folder, under which WP7.5's folders wp7/js (this folder as the runner wrote it) and wp7/jsw (its
+# scripts, checkouts and raw runs) were."; the note under "## copied" and the section "## appended" are new. The
+# record was first written before the dated note at the end of after/commands.txt was appended, so it listed that
+# file's substitution alone, with the SHA-256 after the substitution, which is not the committed file's.)
 
 ## left out
   runner-report.md: the runner's report, read by the README and not retained; its facts are in commands.txt,
@@ -11,6 +20,11 @@
   hashes.txt and controls/hashes.txt: the runner's, made again after the import (after/hashes.txt, controls/hashes.txt)
 
 ## copied (134 files): every other file of wp7/js to after/, and of wp7/js/controls to controls/
+  Note (added 2026-10-26, after review): controls/part-d-k-reverted-rows-against-after.txt, copied unchanged, opens
+    with two lines that are not about its rows: "$ sha256sum docs/evidence/sjl-12-001/base/parse-corpus-c.tsv.gz (in
+    the after commit's checkout)" and the hash that printed, 0c007acd090994ea0818bed1ccb34d7d6141958327b4d6a8aac74b1ced288748,
+    the one base/hashes.txt records. WP7.5's comparison step (its s4) wrote there, before the reverted copy's rows,
+    the SHA-256 of the base report that part C's comparison read in the after commit's checkout.
 
 ## moved: the standard error of the control comparisons, which the runner wrote to logs/ (checker item 7)
   after/logs/part-d-k1.stderr.txt -> controls/logs/part-d-k1.stderr.txt (unchanged, sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855)
@@ -50,3 +64,6 @@
   controls/logs/part-d-k2-d3.stderr.txt: 1 occurrence(s); before sha256 52988094ba16127e1d29eead3a0d804c985c19dc12c12709ec262b89bab9c53a, after c56a79735d8c48e3370caaef1cc40e8460bfa97d4663b5435f1721a5f8baaca1
   controls/part-b-k-reverted.log: 3 occurrence(s); before sha256 f5c01853f69895d3fb22192c85879e0ac02e6e01119a1b27769e3102b36933c7, after 8304a3d33fa4852485c29f0dac33ac2a34e4b1737ece4b1c07aae642768bd220
   controls/part-b-k.log: 8 occurrence(s); before sha256 cf42db0de1e0302d125fac312672dbaaea1f00ebb20c0bede33685586d7cf24d, after 3e31e9809516645465d19c36eaf8c53dc5307f1f9db32970cd473011b6612382
+
+## appended after the <scratch> substitution (added 2026-10-26, after review)
+  after/commands.txt: lines 129 to 148, a blank line and the dated note that begins "# ==== Added 2026-10-26, at the import into the bundle (SJL-12 WP7.6), after every run above.", appended after the substitution above and after this record was first written; lines 1 to 128 are the substitution's output unchanged; before sha256 80a9927b4e224dc12fe6c5540a28246a7698c95cb4ac286c394f254ff788c43a (the substitution's, above), after 3461b862f578a6d62d3a1ddd6057dffd3d820a545f38e46f61f59aac5ea1b97f (the file as committed)

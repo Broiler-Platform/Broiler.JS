@@ -1673,7 +1673,9 @@ files each part reads ([`sjl-12-001`](../evidence/sjl-12-001/README.md), section
   classes M, X and D list no row.
 - **Part D, determinism** (section 7): the pass's entry point, `ForLoopPreparation.Prepare`, is found in each run,
   and no input of the population differs between the two orders and the two threads. Controls K1 and K2 are
-  detected, and each agrees again after its checked revert.
+  detected. Each revert is checked against the after commit, and the copy, built again after both reverts, agrees
+  again *(revised 2026-10-26, after review; the item ended "Controls K1 and K2 are detected, and each agrees again
+  after its checked revert.", but no run was taken between the two reverts)*.
 - **This repository's clauses** (section 8): clauses 1 and 2 are met on these records, and clause 3 on the record
   above; this repository's half of shared clauses 7 and 8, the early-error catalogue and the parse corpus with its
   baselines, is retained.

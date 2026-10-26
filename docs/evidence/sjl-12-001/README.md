@@ -73,8 +73,11 @@ files, and `base/` holds four void attempts, each in its own folder named as voi
 *(Added 2026-10-26, at SJL-12's after evidence: part A's after run is in its own folder, `after/part-a/`, with the
 rule's comparison of it with the base in `after/part-a/comparison/`; parts B, C and D's after runs are in `after/`,
 their records in `after/logs/`; controls K, K1 and K2 are in `controls/`, beside part C's, with their records in
-`controls/logs/`. The table of every C1, M, X and D row is in sections 4 and 6, where each is empty: no verdict and
-no acceptance changed (section 3).)*
+`controls/logs/`. The layout's bullet for `after/` reads "the after runs of every part, each comparison's report and
+the table of every C1, M, X and D row"; the tables are not in `after/` but in this README, C1's in section 4 and M,
+X and D's in section 6, where each is empty: no verdict and no acceptance changed (sections 4 and 6).)*
+*(Revised 2026-10-26, after review: the note's last sentence read "The table of every C1, M, X and D row is in
+sections 4 and 6, where each is empty: no verdict and no acceptance changed (section 3).")*
 
 **It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them.
 
@@ -424,14 +427,23 @@ SJL-12.5's records, #1070 (`a6c68dd4`). Against the after commit they change fil
 lists ([`after/logs/corpus-commit-at-after.txt`](after/logs/corpus-commit-at-after.txt)).
 
 **The corpus commit's three conditions, read again at the after commit**, as section 1 says they would be
-([`after/logs/corpus-commit-at-after.txt`](after/logs/corpus-commit-at-after.txt), from git alone). All three hold.
+([`after/logs/corpus-commit-at-after.txt`](after/logs/corpus-commit-at-after.txt), from git alone). All three hold,
+the third as section 1 reads it.
 - **It descends from the rule commit**, and the after commit descends from it.
 - **It names only the listed paths.** The same paths, grouped under the same listed paths, as
   [`corpus/corpus-commit.txt`](corpus/corpus-commit.txt) records.
-- **It comes before every product change.** Every commit between the rule commit and the after commit that changes a
+- **It comes before every product change**, as section 1 reads the condition. Without `--full-history`, `git log`
+  names 31 commits between the rule commit and the after commit that change a listed path, and each descends from
+  the corpus commit. With `--full-history` it names 37, and one of them, `b1ac1b8a`, the merge section 1 reads, does
+  not descend from the corpus commit: it is an ancestor of it. Against its second parent, the rule commit, it changes
+  no listed path; against its first parent, `a6b29eaf`, it changes `Broiler.ECMAScript/CHANGELOG.md` alone, to the
+  rule commit's own text of that file. Section 1 reads a commit that changes no listed path against the rule commit
+  as no product change after it, and on that reading the condition holds.
+  *(Revised 2026-10-26, after review: the paragraph's first sentence ended "All three hold.", and the item read "**It
+  comes before every product change.** Every commit between the rule commit and the after commit that changes a
   listed path descends from the corpus commit. The one exception is `b1ac1b8a`, the merge section 1 reads, which is
   an ancestor of the corpus commit and changes no listed path against the rule commit. This holds without
-  `--full-history` and with it.
+  `--full-history` and with it." Without `--full-history`, git does not name `b1ac1b8a` at all.)*
 - **A correction to `corpus/corpus-commit.txt`'s reading, which the bundle keeps as it was committed.** The pathspec
   that record used for the first listed path, `Broiler.JS/Broiler.JavaScript.*/`, matches no file, because of its
   trailing slash. Git matches a wildcard pathspec against each file's path, and a file's path never ends in a slash.
@@ -483,10 +495,18 @@ then part C, then part D with its controls. Each was taken once, and none was ta
   these began, and no other build, test or run was taken on the machine while they ran.
 - **The checkouts.** Three clean detached worktrees were used: the after commit, the rule commit, and a scratch copy of
   the after commit for the controls. Each records `git rev-parse HEAD`, `git status --porcelain` and
-  `--porcelain --ignored` as made, before and after each build, and after the runs, as section 1 asked of the after
-  runs ([`logs/checkout-*.txt`](after/logs/checkout-after-commit-made.txt),
+  `--porcelain --ignored` as made, before and after each build but one, and after the runs, as section 1 asked of
+  the after runs ([`logs/checkout-*.txt`](after/logs/checkout-after-commit-made.txt),
   [`controls/logs/checkout-k-*.txt`](controls/logs/checkout-k-made.txt)). Each is empty, except that the scratch
-  copy's records taken with a control applied show that control's one changed file.
+  copy's records taken with a control applied show that control's one changed file. The one build without a record
+  before it is part B's build of the scratch copy after K's revert. K's revert check,
+  [`controls/part-b-k-revert-check.txt`](controls/part-b-k-revert-check.txt), taken before that build, stands in:
+  it records `HEAD`, both `git diff --exit-code` and `git status --porcelain`, which is empty, and holds no
+  `--porcelain --ignored`. The record after that build,
+  [`checkout-k-after-build-k-reverted.txt`](controls/logs/checkout-k-after-build-k-reverted.txt), is empty with
+  `--ignored` as well.
+  *(Revised 2026-10-26, after review: the item read "before and after each build, and after the runs, as section 1
+  asked of the after runs", and its last two sentences are new.)*
 - **The tool** is the corpus commit's, the same blob at the after commit. It was built in Release from clean at the
   after commit, against that commit's own projects, with no error and the base's 56 distinct warnings, none of them
   the tool's ([`logs/build.log`](after/logs/build.log)). Every after report of parts C and D names the after commit's
@@ -506,7 +526,10 @@ then part C, then part D with its controls. Each was taken once, and none was ta
 
 **What the import changed** ([`after/logs/import.txt`](after/logs/import.txt), which lists every change with each
 file's SHA-256 before and after it). A read-only check of WP7.5's outputs found four things to fix in the files and one
-record to add. Each was done here, and nothing was run again but one read-only comparison.
+record to add. Each was done here. Of WP7.5's runs and comparisons, none was taken again but part C's read-only
+comparison. Part A's comparison, which is this work's and not WP7.5's, was also run at the import (section 4).
+*(Revised 2026-10-26, after review: the paragraph's last sentence read "Each was done here, and nothing was run again
+but one read-only comparison.")*
 - **Part C's comparison's standard error was lost.** WP7.5 wrote it to `logs/parse-corpus-c.stderr.txt`, and then
   wrote the tool's run's standard error over it under the same name. The comparison was run again at the import, the
   same script on the same retained files. Its standard output and JSON are WP7.5's byte for byte, and its standard
@@ -523,7 +546,12 @@ record to add. Each was done here, and nothing was run again but one read-only c
 - **The corpus commit's third condition** is read again at the after commit, which WP7.5's
   [`logs/after-commit.txt`](after/logs/after-commit.txt) did not do (above).
 - **What is not retained.** WP7.5's runner report is not retained, because its facts are in `commands.txt`,
-  `machine.txt` and `logs/`, and this section reads it. `commands.txt` ends with a dated note on each of these changes.
+  `machine.txt` and `logs/`, and this section reads it. `commands.txt` ends with a dated note on each of these changes,
+  appended after the scratch folder's path was written `<scratch>` in it; `import.txt` lists the note as a change of
+  its own, with the file's SHA-256 before and after it.
+  *(Revised 2026-10-26, after review: the item ended "`commands.txt` ends with a dated note on each of these
+  changes." `import.txt` gave that file's SHA-256 after the path's change alone, not the committed file's; it now
+  lists the note, under a dated heading.)*
 
 **Retained and checked.** In each of `after/`, `after/part-a/` and `controls/`, `sha256sum -c hashes.txt`, run in the
 folder, passes. `after/hashes.txt` covers `after/` and `after/logs/`; `after/part-a/hashes.txt` covers
@@ -578,8 +606,15 @@ at the base. No test262 suite total is read here: totals decide nothing.
 
 The retained logs and report name this repository's checkout as `<repo>` and the scratch folder as `<scratch>`. The
 comparison and its checks were run twice at the import, at 05:31Z and at 05:34Z on 2026-10-26, the second time only
-so that the retained logs name the scratch folder as the other records do. Both printed the same lines, and the
-second run's files are the ones retained.
+so that the retained logs name the scratch folder as the other records do. The second run's files are the ones
+retained. The first run's were written over by the second and are not retained, so that the first printed the same
+lines rests on this account alone. Before the import, at 05:28Z, the comparison alone was run once more, as a first
+look, over the base's retained files and the after run's as extracted from its artifact; its JSON, not retained,
+differs from the retained [`comparison.json`](after/part-a/comparison/comparison.json) only in the paths of the
+after run's re-run report. The comparison reads only what the bundle retains, each run's `test262-results.json.gz`,
+decompressed, and `rerun-timeouts.json`, in `base/part-a/` and `after/part-a/`, and can be run again from them.
+*(Revised 2026-10-26, after review: the paragraph's last sentence read "Both printed the same lines, and the second
+run's files are the ones retained."; the first look at 05:28Z was not named.)*
 
 ## 5. Part B - the parser's architecture test and its witness: MET
 
@@ -614,7 +649,11 @@ outcome, exception type and message. It was given the manifest and the after com
 classification file. It prints "differences 0; admitted 0; not admitted 0" and exits 0
 ([`after/parse-corpus-c.out`](after/parse-corpus-c.out), [`after/parse-corpus-c.json`](after/parse-corpus-c.json);
 its standard error, empty, in
-[`after/logs/parse-corpus-c-comparison.stderr.txt`](after/logs/parse-corpus-c-comparison.stderr.txt)).
+[`after/logs/parse-corpus-c-comparison.stderr.txt`](after/logs/parse-corpus-c-comparison.stderr.txt)). The base
+report it read, in the after commit's checkout, has the SHA-256 `0c007acd…` that [`base/hashes.txt`](base/hashes.txt)
+records. WP7.5's comparison step wrote that check as the first two lines of
+[`controls/part-d-k-reverted-rows-against-after.txt`](controls/part-d-k-reverted-rows-against-after.txt), ahead of
+that file's own rows *(added 2026-10-26, after review; `after/logs/import.txt` notes it too)*.
 
 | Part C's condition | This run |
 |---|---|
@@ -657,8 +696,16 @@ run 3's two threads. It prints "population 101562; differences 0" and exits 0
 
 **What it says.** At the after commit the parser's dump no longer depends on how many loops the same process parsed
 before it, which section 1 recorded of the base. The pass's temporaries are numbered per pass (JSD-0080, decision
-D22). A process-wide counter in them, and a hash order in the tree, are each detected, and each revert restores the
-after commit's dumps exactly.
+D22), at the direct-eval depth the tool gives the pass, 0, a program's
+([`tools/parse-corpus/Entries.cs`](tools/parse-corpus/Entries.cs)). The tool prepares each input as a program and
+runs no code, so no direct eval's code is prepared, and part D reads nothing of D22's "distinct from an enclosing
+compilation's carriers", which holds only along a chain of direct evals (section 9). A process-wide counter in the
+temporaries, and a hash order in the tree, are each detected. Each revert is checked to give back the after commit's
+files, and the copy, built again after both reverts, gives the after commit's dumps exactly; no run was taken
+between the two reverts.
+*(Revised 2026-10-26, after review: the paragraph's last two sentences read "The pass's temporaries are numbered per
+pass (JSD-0080, decision D22). A process-wide counter in them, and a hash order in the tree, are each detected, and
+each revert restores the after commit's dumps exactly.")*
 
 ## 8. This repository's clauses, read from the records
 
@@ -692,3 +739,30 @@ and its half of shared clauses 7 and 8, are judged in its bundle of the same nam
 - **JSD-0080's decision D21 lists corrections J1 and J2**, and the rule admits them in part A as class C1, with
   resolved compile crashes; part A shows no changed verdict. That is not a disagreement: the rule admits such rows,
   and does not require that there be any.
+- **The findings against JSD-0080 that SJL-12.5's records name** *(added 2026-10-26, after review)*, in
+  [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "The frontend contract (SJL-12)", under "Where what merged
+  differs from the decisions as written above", and in [`docs/public-api.md`](../../public-api.md):
+  - decision D22's "distinct from an enclosing compilation's carriers" holds only along a chain of direct evals: two
+    direct evals from the same code may name alike, eval code is compiled at depth 0 where the engine is not a
+    `JSContext`, and a constant run in place of a call of the intrinsic `eval` runs at the depth of the eval code
+    that holds it, not one deeper;
+  - decision D29's "forwarders by default" is not applied to `DirectEvalSupport.Execute`, whose signature changed in
+    place; the removal of its old signature is taken under SJL-D-25 (c), with the consumer check that
+    `docs/public-api.md` records;
+  - SJL-D-25 (b) asks for a removal version, and `UndoMark`'s obsolete mark names none.
+
+  None of them bears on a part's reading. Part D's tool prepares each input as a program, at depth 0, and runs no
+  code, so it reaches no direct eval (section 7), and parts A and C show no difference. Part B's clauses are on the
+  Parser assembly's statics, ambient state, references and walkers, and no member's disposition is among them.
+  Decision D20, as JSD-0080 records it, has `Ast` take over `Runtime`'s reference to `Broiler.Unicode.Algorithms`
+  with the moved types, which is what merged, so it is not among these findings.
+- **Two ways of writing the scratch folder's path** *(added 2026-10-26, after review)*. `base/commands.txt` and five
+  of `base/logs/`' standard-error files, those of part C's runs 1 and 2 and of part D's runs 1 to 3, write the path in
+  full, as they were committed when the bases were taken; no file `base/` held is edited. `after/` and `controls/`
+  write it `<scratch>`, as bundles `sjl-8-001` and `sjl-10-001` do (section 3).
+- **The bundle's size, and no `manifest.json`** *(added 2026-10-26, after review)*. The after evidence adds about
+  twice what `base/` holds, nearly three quarters of it in `controls/`: the three runs of each of part D's controls
+  K1 and K2 and of the copy after their reverts, which the rule retains with their output. No file is over 50 MB.
+  The bundles whose evidence a collector gathered, `sjl-0-001`, `sjl-3-001` to `sjl-8-001` and `sjl-10-001`, each
+  hold the `manifest.json` their collector wrote. This bundle has no collector, and its rule names no manifest. Its
+  folders of runs each record their files' SHA-256 in their own `hashes.txt` (sections 1 and 3).
