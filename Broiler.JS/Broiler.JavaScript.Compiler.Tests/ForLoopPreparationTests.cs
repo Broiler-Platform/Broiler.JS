@@ -119,6 +119,26 @@ public sealed class ForLoopPreparationTests
     }
 
     /// <summary>
+    /// The labels of a C-style <c>await using</c> loop go inside the block the pass wraps it in, each label
+    /// of a chain in its order, so they still label the loop and <c>continue</c> can target them. The
+    /// parser left them outside, where they labelled the block.
+    /// </summary>
+    [Fact]
+    public void The_pass_puts_a_using_loops_labels_inside_its_block()
+    {
+        static AstStatement Body(AstProgram program)
+            => Assert.Single(((AstBlock)((Broiler.JavaScript.Ast.Expressions.AstFunctionExpression)((AstExpressionStatement)program.Statements[0]).Expression).Body).Statements);
+
+        const string usingLoop = "async function f() { A: B: for (await using x = null; false; ) { continue A; } }";
+        Assert.IsType<AstLabeledStatement>(Body(Parse(usingLoop)));
+        var block = Assert.IsType<AstBlock>(Body(Prepared(usingLoop)));
+        var a = Assert.IsType<AstLabeledStatement>(Assert.Single(block.Statements));
+        var b = Assert.IsType<AstLabeledStatement>(a.Body);
+        Assert.Equal(new[] { "A", "B" }, new[] { a.Label.Span.Value, b.Label.Span.Value });
+        Assert.True(Assert.IsType<AstVariableDeclaration>(Assert.IsType<AstForStatement>(b.Body).Init).Using);
+    }
+
+    /// <summary>
     /// The temporaries' names (decision D22): <c>&lt;d&gt;:&lt;n&gt;</c>, by the direct-eval depth and a
     /// counter of the pass from 1, in the order the parser named them (a loop after the loops inside it).
     /// </summary>
