@@ -1,0 +1,31 @@
+# broiler-js unicode data pin 1
+#
+# The Unicode Character Database files the shared Intl data home's generator reads (work package
+# SJL-9.2b of the shared JavaScript libraries programme), and the Unicode licence text. Broiler.VM's
+# decision JSD-0082 (decision D12) has the generator read General_Category, the canonical
+# decompositions, the canonical combining classes and Unified_Ideograph through a ported subset of
+# Broiler.VM's UnicodeDatabase, from these two files, an explicit and pinned input: Broiler.VM hands
+# its own pinned copies, and this home hands these.
+#
+# WHERE THEY CAME FROM. Byte-for-byte copies of Broiler.VM's src/tests/unicode/pins/ at Broiler.VM
+# 4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f, kept at the same paths below this pin's directory; nothing
+# was retrieved again. Broiler.VM's pin records how they were taken: from the source below, retrieved
+# twice on 2026-09-22 into two directories found byte-identical. The single-valued lines below are
+# Broiler.VM's pin's own for these files.
+#
+# WHAT A LINE MEANS. `file <path relative to this directory> <bytes> <sha256>`, as in Broiler.Unicode's
+# and Broiler.VM's pins. Each `file` line equals the line Broiler.Unicode's own pin, the owner's
+# (decision SJL-D-6; Broiler.Unicode.Generation's UnicodePin.Owner()), gives the same file, which
+# Broiler.ECMAScript.Generation.Tests holds. UnicodeData.txt carries no header line and is held by its
+# hash alone; PropList.txt names its version in its header; the licence states none.
+
+data unicode-character-database
+version 17.0.0
+source https://www.unicode.org/Public/17.0.0/ucd/
+licence-source https://www.unicode.org/license.txt
+retrieved 2026-09-22
+retrievals 2 byte-identical
+archived yes
+file ucd-17.0.0/PropList.txt 145465 130dcddcaadaf071008bdfce1e7743e04fdfbc910886f017d9f9ac931d8c64dd
+file ucd-17.0.0/UnicodeData.txt 2198209 2e1efc1dcb59c575eedf5ccae60f95229f706ee6d031835247d843c11d96470c
+file unicode-LICENSE.txt 1995 e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96

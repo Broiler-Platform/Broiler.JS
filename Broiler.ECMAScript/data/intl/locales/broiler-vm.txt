@@ -1,0 +1,25 @@
+# broiler-js intl locale list 1: Broiler.VM's embedding
+#
+# Decision D5 of Broiler.VM's JSD-0082 (milestone SJL-9.1 of the shared JavaScript libraries
+# programme): Broiler.VM's list stays de, de-DE, en, en-US and und, so that the home's generator, with
+# this list and its other parameters at their defaults, writes Broiler.VM's JsCldrTables.g.cs byte
+# for byte under its rule N28. It does not grow: SJL-D-22's size budget binds it, and an addition is a
+# dated data decision with its measured size. The list is Broiler.VM's CldrTableGenerator's
+# SupportedLocales and NumberLanguages at Broiler.VM 4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f, as
+# statements: de and en carry their own main data; de-DE and en-US are CLDR's default content of de
+# and en and read their data through them; und, root, carries none in this embedding, since Broiler.VM
+# resolves a locale its data lacks to its default locale, en-US.
+#
+# `locale <tag>` names a locale the data supports, `locale <tag> main` one whose own CLDR main data
+# is written, and `supplemental <language>` a language whose plural, ordinal, plural-range and
+# day-period rules are written. Ordinal order, each tag once. Broiler.ECMAScript.Generation's
+# IntlLocaleList reads this text.
+
+locale de main
+locale de-DE
+locale en main
+locale en-US
+locale und
+
+supplemental de
+supplemental en
