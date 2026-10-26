@@ -1,4 +1,5 @@
-"""Tests of the reference datasets' copies and their harness (bundles sjl-8-001's and sjl-10-001's rules, part C).
+"""Tests of the reference datasets' copies and their harness (bundles sjl-8-001's and sjl-10-001's rules, part C, and
+bundle sjl-9-001's, parts C and D).
 
 The copies are held to datasets.pin on every run; the harness's line split, divergences and comparison are
 held to what Broiler.VM's IntlChecks.RetainedMatches does; its transport from the driver, its reports and its
@@ -31,6 +32,18 @@ COPIES_SJL_10 = ("temporal-calendars.js", "temporal-calendars.polyfill-e8cc03fc.
 COPIES = COPIES_SJL_8 + COPIES_SJL_10
 BROILER_VM_9508BD5 = "9508bd5b9b6d0f6d009418dda351fb0e7d846745"
 BROILER_VM_14072B0 = "14072b02027cde4c0fa83e5a0d2f1ac7e68b1f36"
+# The commit that carries Broiler.VM's bundle sjl-9-001 rule, which the Intl area's copies come from (SJL-9.2).
+BROILER_VM_4CF9CA4 = "4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f"
+# Each Intl program, its retained answer's suffix, and the Broiler.VM directory it came from.
+INTL_SOURCES = {
+    **{name: ("icu-77.1", f"src/tests/cldr/{name}") for name in
+       ("dates", "displaynames", "durations", "lists", "locales", "numbers", "plurals", "relativetimes", "segments")},
+    "temporal-intl": ("polyfill-e8cc03fc", "src/tests/temporal/intl"),
+    "calendar-formats": ("polyfill-e8cc03fc", "src/tests/temporal/calendars-intl"),
+    "zone-names": ("polyfill-e8cc03fc", "src/tests/temporal/zone-names"),
+}
+INTL_COPIES = tuple(name for program, (suffix, _) in INTL_SOURCES.items()
+                    for name in (f"{program}.js", f"{program}.{suffix}.txt", f"{program}.divergences.txt"))
 
 
 def driver_escape(text: str) -> str:
@@ -48,15 +61,24 @@ def driver_stdout(program_file: str, program_text: str, completion: str) -> str:
             f"reference-dataset-completion string {H.utf16_length(completion)} {driver_escape(completion)}\n")
 
 
-def read_copy(name: str) -> str:
-    return H.read_all_text((H.DATASETS / name).read_bytes())
+def read_copy(name: str, directory: Path = H.DATASETS) -> str:
+    return H.read_all_text((directory / name).read_bytes())
 
 
-def vm_answer(program: H.Program) -> list[str]:
+def vm_answer(program: H.Program, directory: Path = H.DATASETS) -> list[str]:
     """Broiler.VM's own answer, as its check holds it: the retained answer with the divergences applied."""
-    retained = H.split_retained(read_copy(program.answer))
-    replaced = H.read_divergences(read_copy(program.divergences))
+    retained = H.split_retained(read_copy(program.answer, directory))
+    replaced = H.read_divergences(read_copy(program.divergences, directory))
     return H.expected_answer(retained, replaced, len(retained)).lines
+
+
+def broiler_vm_checkout() -> Path | None:
+    """A Broiler.VM checkout holding the commits the pins name: BROILER_VM, or one beside this repository."""
+    import os
+    for candidate in (os.environ.get("BROILER_VM"), str(H.REPOSITORY.parent / "Broiler.VM")):
+        if candidate and (Path(candidate) / ".git").exists():
+            return Path(candidate)
+    return None
 
 
 class PinTests(unittest.TestCase):
@@ -141,6 +163,95 @@ class PinTests(unittest.TestCase):
             self.assertTrue(line.endswith(": text: unset"), line)
         for name in COPIES:
             self.assertNotIn(b"\r", (H.DATASETS / name).read_bytes(), name)
+
+
+class IntlPinTests(unittest.TestCase):
+    """The Intl area's copies (milestone SJL-9.2), held to their own pin as the time area's are."""
+
+    def setUp(self) -> None:
+        self.pin = H.read_pin((H.INTL_DATASETS / H.PIN_NAME).read_text(encoding="utf-8"))
+
+    def test_every_copy_equals_its_line(self) -> None:
+        self.assertEqual([], H.verify_copies(H.INTL_DATASETS, self.pin))
+        H.load_datasets(H.INTL_DATASETS)
+
+    def test_the_pin_names_broiler_vm_4cf9ca4_and_the_twelve_programs(self) -> None:
+        self.assertEqual((BROILER_VM_4CF9CA4,), self.pin.source_commits)
+        self.assertEqual(set(INTL_COPIES), set(self.pin.files))
+        self.assertEqual(
+            [(name, f"{name}.js", f"{name}.{suffix}.txt", f"{name}.divergences.txt")
+             for name, (suffix, _) in INTL_SOURCES.items()],
+            [(p.name, p.program, p.answer, p.divergences) for p in self.pin.programs])
+        self.assertEqual(H.INTL_PROGRAMS, tuple(p.name for p in self.pin.programs))
+        for name, (suffix, directory) in INTL_SOURCES.items():
+            self.assertEqual(f"{directory}/{name}.js", self.pin.files[f"{name}.js"].source_path)
+            self.assertEqual(f"{directory}/{name}.{suffix}.txt", self.pin.files[f"{name}.{suffix}.txt"].source_path)
+            self.assertEqual(f"{directory}/divergences.txt", self.pin.files[f"{name}.divergences.txt"].source_path)
+
+    def test_each_git_blob_id_is_the_copy_s_own(self) -> None:
+        for pinned in self.pin.files.values():
+            data = (H.INTL_DATASETS / pinned.name).read_bytes()
+            blob = hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+            self.assertEqual(pinned.blob, blob, pinned.name)
+
+    def test_each_blob_is_the_one_broiler_vm_s_rule_commit_names(self) -> None:
+        checkout = broiler_vm_checkout()
+        if checkout is None:
+            self.skipTest("no Broiler.VM checkout (BROILER_VM, or one beside this repository)")
+        for pinned in self.pin.files.values():
+            process = subprocess.run(["git", "-C", str(checkout), "rev-parse", f"{pinned.source_commit}:{pinned.source_path}"],
+                                     capture_output=True, text=True, check=False)
+            if process.returncode != 0:
+                self.skipTest(f"{checkout} does not hold Broiler.VM {pinned.source_commit}")
+            self.assertEqual(pinned.blob, process.stdout.strip(), pinned.name)
+
+    def test_the_directory_holds_the_copies_the_pin_and_the_readme_alone(self) -> None:
+        self.assertEqual(set(INTL_COPIES) | {H.PIN_NAME, "README.md"}, {p.name for p in H.INTL_DATASETS.iterdir()})
+
+    def test_no_program_is_pinned_in_both_collections(self) -> None:
+        time = H.read_pin((H.DATASETS / H.PIN_NAME).read_text(encoding="utf-8"))
+        self.assertEqual(set(), {p.name for p in time.programs} & {p.name for p in self.pin.programs})
+        self.assertEqual(set(), set(time.files) & set(self.pin.files))
+
+    def test_a_copy_whose_digest_differs_is_refused_and_the_harness_does_not_run(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            copy = Path(scratch) / "intl"
+            shutil.copytree(H.INTL_DATASETS, copy)
+            path = copy / "zone-names.polyfill-e8cc03fc.txt"
+            data = bytearray(path.read_bytes())
+            data[100] ^= 0x01
+            path.write_bytes(bytes(data))
+            problems = H.verify_copies(copy, self.pin)
+            self.assertEqual(1, len(problems))
+            self.assertIn("zone-names.polyfill-e8cc03fc.txt: SHA-256", problems[0])
+            with self.assertRaises(H.HarnessError):
+                H.load_datasets(copy)
+            with mock.patch("sys.stderr"), mock.patch("sys.stdout"):
+                self.assertEqual(2, H.main(["verify", "--intl-datasets", str(copy)]))
+                self.assertEqual(2, H.main(["verify", "--collection", "intl", "--intl-datasets", str(copy)]))
+                self.assertEqual(0, H.main(["verify", "--collection", "time", "--intl-datasets", str(copy)]))
+            calls = []
+            with mock.patch.object(H.subprocess, "run", lambda *a, **k: calls.append(a)), \
+                    mock.patch("sys.stderr"), mock.patch("sys.stdout"):
+                self.assertEqual(2, H.main(["run", "--bundle", "sjl-9-001", "--intl-datasets", str(copy),
+                                            "--shell", str(path), "--out", str(Path(scratch) / "out")]))
+            self.assertEqual([], calls)
+
+    def test_no_end_of_line_conversion_touches_the_copies(self) -> None:
+        try:
+            process = subprocess.run(["git", "-C", str(H.REPOSITORY), "check-attr", "text", "--",
+                                      *(f"conformance/datasets/intl/{name}" for name in INTL_COPIES)],
+                                     capture_output=True, text=True, check=False)
+        except OSError:
+            self.skipTest("git is not available")
+        if process.returncode != 0:
+            self.skipTest("not a git work tree")
+        lines = process.stdout.splitlines()
+        self.assertEqual(len(INTL_COPIES), len(lines))
+        for line in lines:
+            self.assertTrue(line.endswith(": text: unset"), line)
+        for name in INTL_COPIES:
+            self.assertNotIn(b"\r", (H.INTL_DATASETS / name).read_bytes(), name)
 
 
 class LineSemanticsTests(unittest.TestCase):
@@ -267,6 +378,22 @@ class TheDatasetsTests(unittest.TestCase):
             _, results = H.compare_program(read_copy(program.answer), read_copy(program.divergences), changed)
             self.assertEqual([700 % len(changed) + 1], [r.number for r in results if not r.equal])
 
+    def test_the_intl_programs_as_broiler_vm_s_checks_read_them(self) -> None:
+        # Every check of the Intl area asks that each divergence be used and that the retained answer have more
+        # lines than its floor; Broiler.VM's own answer, the expected one, then equals the expected answer.
+        for program in H.load_datasets(H.INTL_DATASETS).programs:
+            retained = H.split_retained(read_copy(program.answer, H.INTL_DATASETS))
+            replaced = H.read_divergences(read_copy(program.divergences, H.INTL_DATASETS))
+            expected = H.expected_answer(retained, replaced, len(retained))
+            self.assertGreater(len(retained), H.VM_LEAST[program.name], program.name)
+            self.assertEqual(len(replaced), expected.used, program.name)
+            answer = vm_answer(program, H.INTL_DATASETS)
+            _, results = H.compare_program(read_copy(program.answer, H.INTL_DATASETS),
+                                           read_copy(program.divergences, H.INTL_DATASETS), answer)
+            self.assertTrue(all(r.equal for r in results), program.name)
+            control = H.negative_control(expected, answer, results)
+            self.assertTrue(control["shownAsDifference"] and control["otherLinesUnchanged"], program.name)
+
     def test_the_control_takes_the_first_equal_line(self) -> None:
         expected, results = H.compare_program("A => 1\nB => 2\nC => 3\n", "", ["A => 0", "B => 2", "C => 3"])
         control = H.negative_control(expected, ["A => 0", "B => 2", "C => 3"], results)
@@ -278,16 +405,30 @@ class BundleTests(unittest.TestCase):
     """Each bundle names its rule, a file of this repository, and programs the pin holds."""
 
     def test_each_bundle_s_rule_and_programs(self) -> None:
-        pin = H.load_datasets(H.DATASETS)
-        self.assertEqual({"sjl-8-001": ("timezones", "temporal"), "sjl-10-001": ("temporal", "temporal-calendars")},
+        self.assertEqual({"sjl-8-001": ("timezones", "temporal"), "sjl-10-001": ("temporal", "temporal-calendars"),
+                          "sjl-9-001": (*INTL_SOURCES, "timezones")},
                          {name: bundle.programs for name, bundle in H.BUNDLES.items()})
+        self.assertEqual({"sjl-8-001": ("time",), "sjl-10-001": ("time",), "sjl-9-001": ("intl", "time")},
+                         {name: bundle.collections for name, bundle in H.BUNDLES.items()})
         for name, bundle in H.BUNDLES.items():
             self.assertEqual(name, bundle.name)
-            self.assertEqual(f"docs/evidence/{name}/decision-rule.md, part C", bundle.rule)
+            parts = "parts C and D" if name == "sjl-9-001" else "part C"
+            self.assertEqual(f"docs/evidence/{name}/decision-rule.md, {parts}", bundle.rule)
             self.assertTrue((H.REPOSITORY / bundle.rule.split(",")[0]).is_file(), bundle.rule)
+            sources = H.load_sources(bundle, H.COLLECTIONS)
             for program in bundle.programs:
                 self.assertIn(program, H.VM_LEAST)
-                pin.program(program)
+                H.source_of(sources, program).pin.program(program)
+        sources = H.load_sources(H.BUNDLES["sjl-9-001"], H.COLLECTIONS)
+        self.assertEqual("time", H.source_of(sources, "timezones").collection)
+        self.assertEqual("intl", H.source_of(sources, "zone-names").collection)
+
+    def test_a_program_pinned_in_two_collections_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            twin = Path(scratch) / "intl"
+            shutil.copytree(H.DATASETS, twin)
+            with self.assertRaises(H.HarnessError):
+                H.load_sources(H.BUNDLES["sjl-9-001"], {"time": H.DATASETS, "intl": twin})
 
     def test_a_bundle_s_population_is_its_programs_three_files_each(self) -> None:
         pin = H.load_datasets(H.DATASETS)
@@ -360,6 +501,14 @@ class TransportTests(unittest.TestCase):
                                            "LC_CTYPE": "C.UTF-8", "TZ": "America/New_York", "DOTNET_NOLOGO": "1"})
         self.assertEqual({"PATH": "/bin", "TZ": "UTC", "DOTNET_NOLOGO": "1"}, environment)
 
+    def test_the_child_has_invariant_globalization_only_when_asked(self) -> None:
+        parent = {"PATH": "/bin", "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "true"}
+        self.assertEqual({"PATH": "/bin", "TZ": "UTC"}, H.child_environment(parent))
+        self.assertEqual({"PATH": "/bin", "TZ": "UTC", "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1"},
+                         H.child_environment(parent, invariant=True))
+        self.assertEqual({"PATH": "/bin", "TZ": "UTC", "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1"},
+                         H.child_environment({"PATH": "/bin"}, invariant=True))
+
 
 class ReportTests(unittest.TestCase):
     def test_a_field_reads_back_exactly(self) -> None:
@@ -428,7 +577,14 @@ class CompareTests(unittest.TestCase):
             with mock.patch("sys.stderr"):
                 self.assertEqual(2, H.main(["compare", "--base", str(root / "base"), "--after", str(root / "after"),
                                             "--out", str(root / "out3")]))
+            summary["bundle"] = None
             del summary["bundle"]
+            summary["invariantGlobalization"] = True
+            (root / "after" / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+            with mock.patch("sys.stderr"):
+                self.assertEqual(2, H.main(["compare", "--base", str(root / "base"), "--after", str(root / "after"),
+                                            "--out", str(root / "out4")]))
+            del summary["invariantGlobalization"]
             summary["copies"] = {"a": "2"}
             (root / "after" / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
             with mock.patch("sys.stderr"):
@@ -440,11 +596,13 @@ class RunTests(unittest.TestCase):
     """The run command end to end, with a stand-in for the shell that answers as Broiler.VM does, but for
     one changed line of temporal.js."""
 
-    def run_bundle(self, root: Path, *options: str) -> tuple[int, list[tuple[str, str | None, bool]]]:
-        pin = H.load_datasets(H.DATASETS)
-        answers = {p.program: "\n".join(vm_answer(p)) for p in pin.programs}
+    def run_bundle(self, root: Path, *options: str, environment: dict[str, str] | None = None
+                   ) -> tuple[int, list[tuple[str, str | None, bool]]]:
+        answers = {p.program: "\n".join(vm_answer(p, directory))
+                   for directory in (H.DATASETS, H.INTL_DATASETS) for p in H.load_datasets(directory).programs}
         answers["temporal.js"] = answers["temporal.js"].replace(" => 1/false", " => 1/true", 1)
         calls = []
+        self.environments = []
 
         def fake_run(command, **kwargs):
             if command[0] == "dotnet" and "--script-host" in command:
@@ -452,6 +610,7 @@ class RunTests(unittest.TestCase):
                 program = json.loads(driver.split("var file = ", 1)[1].split(";", 1)[0])
                 text = H.read_all_text((Path(kwargs["cwd"]) / program).read_bytes())
                 calls.append((program, kwargs["env"].get("TZ"), "LANG" in kwargs["env"]))
+                self.environments.append((program, Path(kwargs["cwd"]).name, kwargs["env"]))
                 stdout = driver_stdout(program, text, answers[program]).encode()
                 return subprocess.CompletedProcess(command, 0, stdout, b"")
             return subprocess.CompletedProcess(command, 1, "" if kwargs.get("text") else b"",
@@ -460,10 +619,59 @@ class RunTests(unittest.TestCase):
         shell = root / "bin" / "BroilerJS.dll"
         shell.parent.mkdir(exist_ok=True)
         shell.write_bytes(b"not a shell")
-        with mock.patch.object(H.subprocess, "run", fake_run), mock.patch("sys.stdout"), mock.patch("sys.stderr"):
+        with mock.patch.object(H.subprocess, "run", fake_run), mock.patch("sys.stdout"), mock.patch("sys.stderr"), \
+                mock.patch.dict(H.os.environ, environment or {}):
             code = H.main(["run", "--tree", str(root), "--shell", str(shell), "--out", str(root / "out"),
                            "--label", "test", *options])
         return code, calls
+
+    def test_a_run_of_bundle_sjl_9_001_runs_the_intl_programs_then_timezones_each_from_its_collection(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            code, calls = self.run_bundle(root, "--bundle", "sjl-9-001",
+                                          environment={"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1"})
+            self.assertEqual(0, code)
+            self.assertEqual([(f"{name}.js", "UTC", False) for name in (*INTL_SOURCES, "timezones")], calls)
+            self.assertEqual(["intl"] * len(INTL_SOURCES) + ["time"], [cwd for _, cwd, _ in self.environments])
+            # Part C's run: the variable the harness's own environment held does not reach the shell.
+            self.assertTrue(all("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT" not in env for _, _, env in self.environments))
+            summary = json.loads((root / "out" / "summary.json").read_text(encoding="utf-8"))
+            self.assertEqual((3, "sjl-9-001", False), (summary["format"], summary["bundle"], summary["invariantGlobalization"]))
+            self.assertEqual({**{name: "intl" for name in INTL_SOURCES}, "timezones": "time"}, summary["collections"])
+            self.assertEqual([*INTL_COPIES, *COPIES_SJL_8[:3]], list(summary["copies"]))
+            self.assertEqual({**{name: BROILER_VM_4CF9CA4 for name in INTL_COPIES},
+                              **{name: BROILER_VM_9508BD5 for name in COPIES_SJL_8[:3]}}, summary["datasetsSourceCommits"])
+            for name in (*INTL_SOURCES, "timezones"):
+                entry = summary["programs"][name]
+                self.assertEqual((True, 0, H.VM_LEAST[name]), (entry["completed"], entry["differing"], entry["vmLeast"]), name)
+                self.assertEqual(entry["divergenceEntries"], entry["divergencesUsed"], name)
+            identity = (root / "out" / "identity.txt").read_text(encoding="utf-8")
+            self.assertIn("for docs/evidence/sjl-9-001/decision-rule.md, parts C and D", identity)
+            self.assertIn("datasets (intl): ", identity)
+            self.assertIn("datasets (time): ", identity)
+            self.assertIn("(Broiler.VM 4cf9ca4:src/tests/temporal/zone-names/divergences.txt)", identity)
+            self.assertIn("(Broiler.VM 9508bd5:src/tests/cldr/timezones/divergences.txt)", identity)
+            self.assertNotIn("temporal.js", identity)
+            self.assertIn("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT removed", identity)
+            report = (root / "out" / "report.txt").read_text(encoding="utf-8")
+            self.assertTrue(report.startswith("Reference datasets, bundle sjl-9-001's rule, part C: one run\n"))
+
+    def test_invariant_globalization_sets_the_variable_for_the_shell_and_says_so(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            code, calls = self.run_bundle(root, "--bundle", "sjl-9-001", "--program", "locales", "--program", "timezones",
+                                          "--invariant-globalization")
+            self.assertEqual(0, code)
+            self.assertEqual([("locales.js", "UTC", False), ("timezones.js", "UTC", False)], calls)
+            self.assertTrue(all(env.get("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT") == "1" for _, _, env in self.environments))
+            summary = json.loads((root / "out" / "summary.json").read_text(encoding="utf-8"))
+            self.assertTrue(summary["invariantGlobalization"])
+            self.assertEqual(["locales", "timezones"], list(summary["programs"]))
+            identity = (root / "out" / "identity.txt").read_text(encoding="utf-8")
+            self.assertIn("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 (invariant globalization)", identity)
+            report = (root / "out" / "report.txt").read_text(encoding="utf-8")
+            self.assertTrue(report.startswith("Reference datasets, bundle sjl-9-001's rule, part D: one run under "
+                                              "invariant globalization"))
 
     def test_a_run_of_bundle_sjl_10_001_runs_temporal_and_temporal_calendars(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
@@ -472,7 +680,7 @@ class RunTests(unittest.TestCase):
             self.assertEqual(0, code)
             self.assertEqual([("temporal.js", "UTC", False), ("temporal-calendars.js", "UTC", False)], calls)
             summary = json.loads((root / "out" / "summary.json").read_text(encoding="utf-8"))
-            self.assertEqual((2, "sjl-10-001", "docs/evidence/sjl-10-001/decision-rule.md, part C"),
+            self.assertEqual((3, "sjl-10-001", "docs/evidence/sjl-10-001/decision-rule.md, part C"),
                              (summary["format"], summary["bundle"], summary["rule"]))
             self.assertEqual(["temporal.js", "temporal.polyfill-e8cc03fc.txt", "temporal.divergences.txt", *COPIES_SJL_10],
                              list(summary["copies"]))

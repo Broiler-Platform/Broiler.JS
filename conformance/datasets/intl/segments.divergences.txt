@@ -1,0 +1,10 @@
+# Lines of segments.icu-77.1.txt where the profile answers otherwise, each the profile's line, under
+# the reason it is not Node's. A line replaces the Node line whose text before ` => ` is the same.
+
+# ICU segments ideographic text into words by a dictionary of Chinese and Japanese words, so it keeps
+# U+65E5 U+672C U+8A9E ('Japanese') together. The profile carries no dictionary and applies UAX #29's
+# default word rules, under which an ideograph's Word_Break is Other and every ideograph is a word of
+# its own (WB999). ECMA-402 (the current draft, 19.8.1 FindBoundary) leaves the boundaries to the
+# implementation and names UAX #29's default algorithms. Each such segment is still word-like.
+en word 12 => 0:"\u65e5"+ 1:"\u672c"+ 2:"\u8a9e"+ 3:"\u306e"+ 4:"\u6587"+ 5:"\u7ae0"+ 6:"\u3002"- 7:"\u30ab\u30bf\u30ab\u30ca"+ 11:"\u3068"+ 12:"\u3072"+ 13:"\u3089"+ 14:"\u304c"+ 15:"\u306a"+ 16:"\u3002"-
+de word 12 => 0:"\u65e5"+ 1:"\u672c"+ 2:"\u8a9e"+ 3:"\u306e"+ 4:"\u6587"+ 5:"\u7ae0"+ 6:"\u3002"- 7:"\u30ab\u30bf\u30ab\u30ca"+ 11:"\u3068"+ 12:"\u3072"+ 13:"\u3089"+ 14:"\u304c"+ 15:"\u306a"+ 16:"\u3002"-

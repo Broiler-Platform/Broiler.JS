@@ -1,0 +1,224 @@
+# Lines of durations.icu-77.1.txt where the profile answers otherwise, each the profile's line, under
+# the reason it is not Node's. A line replaces the Node line whose text before ` => ` is the same.
+# Node 22.22.0 has Intl.DurationFormat only behind --harmony-intl-duration-format, as the README says.
+
+# Node 22's DurationFormat predates the current draft (13 DurationFormat Objects) in seven ways, and
+# each line below shows one or more of them. In the draft:
+# - only the first unit written carries the sign; every later unit is formatted with signDisplay
+#   'never' (13.5.15 PartitionDurationFormatPattern, 13.5.12 FormatNumericUnits), and a negative
+#   duration's first unit is -0 where its value is 0;
+# - a clock (numeric or 2-digit units) is one element of the unit list, so a written unit before it
+#   is followed by the list's separator, not by a time separator (13.5.15, 13.5.14 ListFormatParts);
+# - seconds after numeric minutes are 2-digit and displayed always, so 5 minutes is 5:00 (13.5.6
+#   GetDurationUnitOptions);
+# - a clock's numbers are not grouped, useGrouping false (13.5.9 to 13.5.11);
+# - fractions are truncated, roundingMode 'trunc', so 7.008 seconds to two digits is 7.00 (13.5.11,
+#   13.5.15);
+# - a fractional unit displayed 'always', and a word style after a numeric unit, are RangeErrors
+#   (13.5.6.2 ValidateDurationUnitStyle), and years of 2^32 or more are a RangeError (13.5.5
+#   IsValidDuration);
+# - resolvedOptions writes numberingSystem second, after locale (13.3.2, table 21).
+en {} {"years":-1,"months":-2} => -1 yr, 2 mths
+en {} {"hours":-1,"minutes":-2,"seconds":-3} => -1 hr, 2 min, 3 sec
+en {} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"short","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"short","hoursDisplay":"auto","minutes":"short","minutesDisplay":"auto","seconds":"short","secondsDisplay":"auto","milliseconds":"short","millisecondsDisplay":"auto","microseconds":"short","microsecondsDisplay":"auto","nanoseconds":"short","nanosecondsDisplay":"auto"}
+en {"style":"long"} {"years":-1,"months":-2} => -1 year, 2 months
+en {"style":"long"} {"hours":-1,"minutes":-2,"seconds":-3} => -1 hour, 2 minutes, 3 seconds
+en {"style":"long"} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"long","years":"long","yearsDisplay":"auto","months":"long","monthsDisplay":"auto","weeks":"long","weeksDisplay":"auto","days":"long","daysDisplay":"auto","hours":"long","hoursDisplay":"auto","minutes":"long","minutesDisplay":"auto","seconds":"long","secondsDisplay":"auto","milliseconds":"long","millisecondsDisplay":"auto","microseconds":"long","microsecondsDisplay":"auto","nanoseconds":"long","nanosecondsDisplay":"auto"}
+en {"style":"short"} {"years":-1,"months":-2} => -1 yr, 2 mths
+en {"style":"short"} {"hours":-1,"minutes":-2,"seconds":-3} => -1 hr, 2 min, 3 sec
+en {"style":"short"} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"short","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"short","hoursDisplay":"auto","minutes":"short","minutesDisplay":"auto","seconds":"short","secondsDisplay":"auto","milliseconds":"short","millisecondsDisplay":"auto","microseconds":"short","microsecondsDisplay":"auto","nanoseconds":"short","nanosecondsDisplay":"auto"}
+en {"style":"narrow"} {"years":-1,"months":-2} => -1y 2m
+en {"style":"narrow"} {"hours":-1,"minutes":-2,"seconds":-3} => -1h 2m 3s
+en {"style":"narrow"} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"narrow","years":"narrow","yearsDisplay":"auto","months":"narrow","monthsDisplay":"auto","weeks":"narrow","weeksDisplay":"auto","days":"narrow","daysDisplay":"auto","hours":"narrow","hoursDisplay":"auto","minutes":"narrow","minutesDisplay":"auto","seconds":"narrow","secondsDisplay":"auto","milliseconds":"narrow","millisecondsDisplay":"auto","microseconds":"narrow","microsecondsDisplay":"auto","nanoseconds":"narrow","nanosecondsDisplay":"auto"}
+en {"style":"digital"} {"years":-1,"months":-2} => -1 yr, 2 mths, 0:00:00
+en {"style":"digital"} {"hours":-1,"minutes":-2,"seconds":-3} => -1:02:03
+en {"style":"digital"} {"minutes":-5,"seconds":0} => -0:05:00
+en {"style":"digital"} {"days":1000,"hours":12345} => 1,000 days, 12345:00:00
+en {"style":"digital"} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"digital","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"numeric","hoursDisplay":"always","minutes":"2-digit","minutesDisplay":"always","seconds":"2-digit","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto"}
+en {"style":"digital","fractionalDigits":2} {"years":1,"months":2,"weeks":3,"days":4,"hours":5,"minutes":6,"seconds":7,"milliseconds":8,"microseconds":9,"nanoseconds":10} => 1 yr, 2 mths, 3 wks, 4 days, 5:06:07.00
+en {"style":"digital","fractionalDigits":2} {"years":-1,"months":-2} => -1 yr, 2 mths, 0:00:00.00
+en {"style":"digital","fractionalDigits":2} {"hours":-1,"minutes":-2,"seconds":-3} => -1:02:03.00
+en {"style":"digital","fractionalDigits":2} {"minutes":-5,"seconds":0} => -0:05:00.00
+en {"style":"digital","fractionalDigits":2} {"days":1000,"hours":12345} => 1,000 days, 12345:00:00.00
+en {"style":"digital","fractionalDigits":2} parts => integer:1:year|literal: :year|unit:yr:year|literal:, |integer:2:month|literal: :month|unit:mths:month|literal:, |integer:3:week|literal: :week|unit:wks:week|literal:, |integer:4:day|literal: :day|unit:days:day|literal:, |integer:5:hour|literal::|integer:06:minute|literal::|integer:07:second|decimal:.:second|fraction:00:second
+en {"style":"digital","fractionalDigits":2} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"digital","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"numeric","hoursDisplay":"always","minutes":"2-digit","minutesDisplay":"always","seconds":"2-digit","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto","fractionalDigits":2}
+en {"style":"digital","hours":"2-digit"} {"years":-1,"months":-2} => -1 yr, 2 mths, 00:00:00
+en {"style":"digital","hours":"2-digit"} {"hours":-1,"minutes":-2,"seconds":-3} => -01:02:03
+en {"style":"digital","hours":"2-digit"} {"minutes":-5,"seconds":0} => -00:05:00
+en {"style":"digital","hours":"2-digit"} {"days":1000,"hours":12345} => 1,000 days, 12345:00:00
+en {"style":"digital","hours":"2-digit"} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"digital","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"2-digit","hoursDisplay":"always","minutes":"2-digit","minutesDisplay":"always","seconds":"2-digit","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto"}
+en {"style":"digital","hoursDisplay":"auto"} {"days":1} => 1 day, 00:00
+en {"style":"digital","hoursDisplay":"auto"} {"years":2,"days":1} => 2 yrs, 1 day, 00:00
+en {"style":"digital","hoursDisplay":"auto"} {"years":-1,"months":-2} => -1 yr, 2 mths, 00:00
+en {"style":"digital","hoursDisplay":"auto"} {"hours":-1,"minutes":-2,"seconds":-3} => -1:02:03
+en {"style":"digital","hoursDisplay":"auto"} {"days":1000,"hours":12345} => 1,000 days, 12345:00:00
+en {"style":"digital","hoursDisplay":"auto"} {"weeks":1,"milliseconds":1} => 1 wk, 00:00.001
+en {"style":"digital","hoursDisplay":"auto"} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"digital","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"numeric","hoursDisplay":"auto","minutes":"2-digit","minutesDisplay":"always","seconds":"2-digit","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto"}
+en {"style":"long","minutes":"numeric"} {"years":1,"months":2,"weeks":3,"days":4,"hours":5,"minutes":6,"seconds":7,"milliseconds":8,"microseconds":9,"nanoseconds":10} => 1 year, 2 months, 3 weeks, 4 days, 5 hours, 6:07.00800901
+en {"style":"long","minutes":"numeric"} {"hours":1,"minutes":2,"seconds":3} => 1 hour, 2:03
+en {"style":"long","minutes":"numeric"} {"hours":1,"seconds":3} => 1 hour, 0:03
+en {"style":"long","minutes":"numeric"} {"minutes":5} => 5:00
+en {"style":"long","minutes":"numeric"} {"seconds":0} => 0:00
+en {"style":"long","minutes":"numeric"} {"days":1} => 1 day, 0:00
+en {"style":"long","minutes":"numeric"} {"years":2,"days":1} => 2 years, 1 day, 0:00
+en {"style":"long","minutes":"numeric"} {"hours":25,"minutes":61} => 25 hours, 61:00
+en {"style":"long","minutes":"numeric"} {"years":-1,"months":-2} => -1 year, 2 months, 0:00
+en {"style":"long","minutes":"numeric"} {"hours":-1,"minutes":-2,"seconds":-3} => -1 hour, 2:03
+en {"style":"long","minutes":"numeric"} {"minutes":-5,"seconds":0} => -5:00
+en {"style":"long","minutes":"numeric"} {"days":1000,"hours":12345} => 1,000 days, 12,345 hours, 0:00
+en {"style":"long","minutes":"numeric"} {"weeks":1,"milliseconds":1} => 1 week, 0:00.001
+en {"style":"long","minutes":"numeric"} parts => integer:1:year|literal: :year|unit:year:year|literal:, |integer:2:month|literal: :month|unit:months:month|literal:, |integer:3:week|literal: :week|unit:weeks:week|literal:, |integer:4:day|literal: :day|unit:days:day|literal:, |integer:5:hour|literal: :hour|unit:hours:hour|literal:, |integer:6:minute|literal::|integer:07:second|decimal:.:second|fraction:00800901:second
+en {"style":"long","minutes":"numeric"} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"long","years":"long","yearsDisplay":"auto","months":"long","monthsDisplay":"auto","weeks":"long","weeksDisplay":"auto","days":"long","daysDisplay":"auto","hours":"long","hoursDisplay":"auto","minutes":"numeric","minutesDisplay":"always","seconds":"2-digit","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto"}
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"years":1,"months":2,"weeks":3,"days":4,"hours":5,"minutes":6,"seconds":7,"milliseconds":8,"microseconds":9,"nanoseconds":10} => 1 year, 2 months, 3 weeks, 4 days, 5 hours, 6 minutes, 7.008
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"hours":1,"minutes":2,"seconds":3} => 1 hour, 2 minutes, 3.000
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"hours":1,"seconds":3} => 1 hour, 3.000
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"minutes":5} => 5 minutes, 0.000
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"days":1} => 1 day, 0.000
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"years":2,"days":1} => 2 years, 1 day, 0.000
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"seconds":1,"milliseconds":234,"microseconds":567,"nanoseconds":891} => 1.234
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"hours":25,"minutes":61} => 25 hours, 61 minutes, 0.000
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"years":-1,"months":-2} => -1 year, 2 months, 0.000
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"hours":-1,"minutes":-2,"seconds":-3} => -1 hour, 2 minutes, 3.000
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"minutes":-5,"seconds":0} => -5 minutes, 0.000
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"days":1000,"hours":12345} => 1,000 days, 12,345 hours, 0.000
+en {"style":"long","seconds":"numeric","fractionalDigits":3} {"weeks":1,"milliseconds":1} => 1 week, 0.001
+en {"style":"long","seconds":"numeric","fractionalDigits":3} parts => integer:1:year|literal: :year|unit:year:year|literal:, |integer:2:month|literal: :month|unit:months:month|literal:, |integer:3:week|literal: :week|unit:weeks:week|literal:, |integer:4:day|literal: :day|unit:days:day|literal:, |integer:5:hour|literal: :hour|unit:hours:hour|literal:, |integer:6:minute|literal: :minute|unit:minutes:minute|literal:, |integer:7:second|decimal:.:second|fraction:008:second
+en {"style":"long","seconds":"numeric","fractionalDigits":3} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"long","years":"long","yearsDisplay":"auto","months":"long","monthsDisplay":"auto","weeks":"long","weeksDisplay":"auto","days":"long","daysDisplay":"auto","hours":"long","hoursDisplay":"auto","minutes":"long","minutesDisplay":"auto","seconds":"numeric","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto","fractionalDigits":3}
+en {"style":"short","milliseconds":"numeric"} {"years":-1,"months":-2} => -1 yr, 2 mths
+en {"style":"short","milliseconds":"numeric"} {"hours":-1,"minutes":-2,"seconds":-3} => -1 hr, 2 min, 3 sec
+en {"style":"short","milliseconds":"numeric"} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"short","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"short","hoursDisplay":"auto","minutes":"short","minutesDisplay":"auto","seconds":"short","secondsDisplay":"auto","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto"}
+en {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"seconds":1,"milliseconds":234,"microseconds":567,"nanoseconds":891} => 1s 234ms
+en {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"years":-1,"months":-2} => -1y 2m
+en {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"hours":-1,"minutes":-2,"seconds":-3} => -1h 2m 3s
+en {"style":"narrow","microseconds":"numeric","fractionalDigits":0} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"narrow","years":"narrow","yearsDisplay":"auto","months":"narrow","monthsDisplay":"auto","weeks":"narrow","weeksDisplay":"auto","days":"narrow","daysDisplay":"auto","hours":"narrow","hoursDisplay":"auto","minutes":"narrow","minutesDisplay":"auto","seconds":"narrow","secondsDisplay":"auto","milliseconds":"narrow","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto","fractionalDigits":0}
+en {"style":"long","yearsDisplay":"always","daysDisplay":"always"} {"years":-1,"months":-2} => -1 year, 2 months, 0 days
+en {"style":"long","yearsDisplay":"always","daysDisplay":"always"} {"hours":-1,"minutes":-2,"seconds":-3} => -0 years, 0 days, 1 hour, 2 minutes, 3 seconds
+en {"style":"long","yearsDisplay":"always","daysDisplay":"always"} {"minutes":-5,"seconds":0} => -0 years, 0 days, 5 minutes
+en {"style":"long","yearsDisplay":"always","daysDisplay":"always"} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"long","years":"long","yearsDisplay":"always","months":"long","monthsDisplay":"auto","weeks":"long","weeksDisplay":"auto","days":"long","daysDisplay":"always","hours":"long","hoursDisplay":"auto","minutes":"long","minutesDisplay":"auto","seconds":"long","secondsDisplay":"auto","milliseconds":"long","millisecondsDisplay":"auto","microseconds":"long","microsecondsDisplay":"auto","nanoseconds":"long","nanosecondsDisplay":"auto"}
+en {"years":"long","months":"short","weeks":"narrow","days":"long"} {"years":-1,"months":-2} => -1 year, 2 mths, 0w, 0 days
+en {"years":"long","months":"short","weeks":"narrow","days":"long"} {"hours":-1,"minutes":-2,"seconds":-3} => -0 years, 0 mths, 0w, 0 days, 1 hr, 2 min, 3 sec
+en {"years":"long","months":"short","weeks":"narrow","days":"long"} {"minutes":-5,"seconds":0} => -0 years, 0 mths, 0w, 0 days, 5 min
+en {"years":"long","months":"short","weeks":"narrow","days":"long"} resolvedOptions => {"locale":"en","numberingSystem":"latn","style":"short","years":"long","yearsDisplay":"always","months":"short","monthsDisplay":"always","weeks":"narrow","weeksDisplay":"always","days":"long","daysDisplay":"always","hours":"short","hoursDisplay":"auto","minutes":"short","minutesDisplay":"auto","seconds":"short","secondsDisplay":"auto","milliseconds":"short","millisecondsDisplay":"auto","microseconds":"short","microsecondsDisplay":"auto","nanoseconds":"short","nanosecondsDisplay":"auto"}
+de {} {"years":-1,"months":-2} => -1 J, 2 Mon.
+de {} {"hours":-1,"minutes":-2,"seconds":-3} => -1 Std., 2 Min. und 3 Sek.
+de {} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"short","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"short","hoursDisplay":"auto","minutes":"short","minutesDisplay":"auto","seconds":"short","secondsDisplay":"auto","milliseconds":"short","millisecondsDisplay":"auto","microseconds":"short","microsecondsDisplay":"auto","nanoseconds":"short","nanosecondsDisplay":"auto"}
+de {"style":"long"} {"years":-1,"months":-2} => -1 Jahr, 2 Monate
+de {"style":"long"} {"hours":-1,"minutes":-2,"seconds":-3} => -1 Stunde, 2 Minuten und 3 Sekunden
+de {"style":"long"} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"long","years":"long","yearsDisplay":"auto","months":"long","monthsDisplay":"auto","weeks":"long","weeksDisplay":"auto","days":"long","daysDisplay":"auto","hours":"long","hoursDisplay":"auto","minutes":"long","minutesDisplay":"auto","seconds":"long","secondsDisplay":"auto","milliseconds":"long","millisecondsDisplay":"auto","microseconds":"long","microsecondsDisplay":"auto","nanoseconds":"long","nanosecondsDisplay":"auto"}
+de {"style":"short"} {"years":-1,"months":-2} => -1 J, 2 Mon.
+de {"style":"short"} {"hours":-1,"minutes":-2,"seconds":-3} => -1 Std., 2 Min. und 3 Sek.
+de {"style":"short"} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"short","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"short","hoursDisplay":"auto","minutes":"short","minutesDisplay":"auto","seconds":"short","secondsDisplay":"auto","milliseconds":"short","millisecondsDisplay":"auto","microseconds":"short","microsecondsDisplay":"auto","nanoseconds":"short","nanosecondsDisplay":"auto"}
+de {"style":"narrow"} {"years":-1,"months":-2} => -1 J, 2 M
+de {"style":"narrow"} parts => integer:1:year|literal: :year|unit:J:year|literal:, |integer:2:month|literal: :month|unit:M:month|literal:, |integer:3:week|literal: :week|unit:W:week|literal:, |integer:4:day|literal: :day|unit:T:day|literal:, |integer:5:hour|unit:h:hour|literal:, |integer:6:minute|literal: :minute|unit:Min.:minute|literal:, |integer:7:second|literal: :second|unit:Sek.:second|literal:, |integer:8:millisecond|literal: :millisecond|unit:ms:millisecond|literal:, |integer:9:microsecond|literal: :microsecond|unit:\u03bcs:microsecond|literal: und |integer:10:nanosecond|literal: :nanosecond|unit:ns:nanosecond
+de {"style":"narrow"} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"narrow","years":"narrow","yearsDisplay":"auto","months":"narrow","monthsDisplay":"auto","weeks":"narrow","weeksDisplay":"auto","days":"narrow","daysDisplay":"auto","hours":"narrow","hoursDisplay":"auto","minutes":"narrow","minutesDisplay":"auto","seconds":"narrow","secondsDisplay":"auto","milliseconds":"narrow","millisecondsDisplay":"auto","microseconds":"narrow","microsecondsDisplay":"auto","nanoseconds":"narrow","nanosecondsDisplay":"auto"}
+de {"style":"digital"} {"years":-1,"months":-2} => -1 J, 2 Mon. und 0:00:00
+de {"style":"digital"} {"hours":-1,"minutes":-2,"seconds":-3} => -1:02:03
+de {"style":"digital"} {"minutes":-5,"seconds":0} => -0:05:00
+de {"style":"digital"} {"days":1000,"hours":12345} => 1.000 Tg., 12345:00:00
+de {"style":"digital"} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"digital","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"numeric","hoursDisplay":"always","minutes":"2-digit","minutesDisplay":"always","seconds":"2-digit","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto"}
+de {"style":"digital","fractionalDigits":2} {"years":1,"months":2,"weeks":3,"days":4,"hours":5,"minutes":6,"seconds":7,"milliseconds":8,"microseconds":9,"nanoseconds":10} => 1 J, 2 Mon., 3 Wo., 4 Tg. und 5:06:07,00
+de {"style":"digital","fractionalDigits":2} {"years":-1,"months":-2} => -1 J, 2 Mon. und 0:00:00,00
+de {"style":"digital","fractionalDigits":2} {"hours":-1,"minutes":-2,"seconds":-3} => -1:02:03,00
+de {"style":"digital","fractionalDigits":2} {"minutes":-5,"seconds":0} => -0:05:00,00
+de {"style":"digital","fractionalDigits":2} {"days":1000,"hours":12345} => 1.000 Tg., 12345:00:00,00
+de {"style":"digital","fractionalDigits":2} parts => integer:1:year|literal: :year|unit:J:year|literal:, |integer:2:month|literal: :month|unit:Mon.:month|literal:, |integer:3:week|literal: :week|unit:Wo.:week|literal:, |integer:4:day|literal: :day|unit:Tg.:day|literal: und |integer:5:hour|literal::|integer:06:minute|literal::|integer:07:second|decimal:,:second|fraction:00:second
+de {"style":"digital","fractionalDigits":2} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"digital","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"numeric","hoursDisplay":"always","minutes":"2-digit","minutesDisplay":"always","seconds":"2-digit","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto","fractionalDigits":2}
+de {"style":"digital","hours":"2-digit"} {"years":-1,"months":-2} => -1 J, 2 Mon. und 00:00:00
+de {"style":"digital","hours":"2-digit"} {"hours":-1,"minutes":-2,"seconds":-3} => -01:02:03
+de {"style":"digital","hours":"2-digit"} {"minutes":-5,"seconds":0} => -00:05:00
+de {"style":"digital","hours":"2-digit"} {"days":1000,"hours":12345} => 1.000 Tg., 12345:00:00
+de {"style":"digital","hours":"2-digit"} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"digital","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"2-digit","hoursDisplay":"always","minutes":"2-digit","minutesDisplay":"always","seconds":"2-digit","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto"}
+de {"style":"digital","hoursDisplay":"auto"} {"days":1} => 1 Tg., 00:00
+de {"style":"digital","hoursDisplay":"auto"} {"years":2,"days":1} => 2 J, 1 Tg. und 00:00
+de {"style":"digital","hoursDisplay":"auto"} {"years":-1,"months":-2} => -1 J, 2 Mon. und 00:00
+de {"style":"digital","hoursDisplay":"auto"} {"hours":-1,"minutes":-2,"seconds":-3} => -1:02:03
+de {"style":"digital","hoursDisplay":"auto"} {"days":1000,"hours":12345} => 1.000 Tg., 12345:00:00
+de {"style":"digital","hoursDisplay":"auto"} {"weeks":1,"milliseconds":1} => 1 Wo., 00:00,001
+de {"style":"digital","hoursDisplay":"auto"} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"digital","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"numeric","hoursDisplay":"auto","minutes":"2-digit","minutesDisplay":"always","seconds":"2-digit","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto"}
+de {"style":"long","minutes":"numeric"} {"years":1,"months":2,"weeks":3,"days":4,"hours":5,"minutes":6,"seconds":7,"milliseconds":8,"microseconds":9,"nanoseconds":10} => 1 Jahr, 2 Monate, 3 Wochen, 4 Tage, 5 Stunden und 6:07,00800901
+de {"style":"long","minutes":"numeric"} {"hours":1,"minutes":2,"seconds":3} => 1 Stunde, 2:03
+de {"style":"long","minutes":"numeric"} {"hours":1,"seconds":3} => 1 Stunde, 0:03
+de {"style":"long","minutes":"numeric"} {"minutes":5} => 5:00
+de {"style":"long","minutes":"numeric"} {"seconds":0} => 0:00
+de {"style":"long","minutes":"numeric"} {"days":1} => 1 Tag, 0:00
+de {"style":"long","minutes":"numeric"} {"years":2,"days":1} => 2 Jahre, 1 Tag und 0:00
+de {"style":"long","minutes":"numeric"} {"hours":25,"minutes":61} => 25 Stunden, 61:00
+de {"style":"long","minutes":"numeric"} {"years":-1,"months":-2} => -1 Jahr, 2 Monate und 0:00
+de {"style":"long","minutes":"numeric"} {"hours":-1,"minutes":-2,"seconds":-3} => -1 Stunde, 2:03
+de {"style":"long","minutes":"numeric"} {"minutes":-5,"seconds":0} => -5:00
+de {"style":"long","minutes":"numeric"} {"days":1000,"hours":12345} => 1.000 Tage, 12.345 Stunden und 0:00
+de {"style":"long","minutes":"numeric"} {"weeks":1,"milliseconds":1} => 1 Woche, 0:00,001
+de {"style":"long","minutes":"numeric"} parts => integer:1:year|literal: :year|unit:Jahr:year|literal:, |integer:2:month|literal: :month|unit:Monate:month|literal:, |integer:3:week|literal: :week|unit:Wochen:week|literal:, |integer:4:day|literal: :day|unit:Tage:day|literal:, |integer:5:hour|literal: :hour|unit:Stunden:hour|literal: und |integer:6:minute|literal::|integer:07:second|decimal:,:second|fraction:00800901:second
+de {"style":"long","minutes":"numeric"} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"long","years":"long","yearsDisplay":"auto","months":"long","monthsDisplay":"auto","weeks":"long","weeksDisplay":"auto","days":"long","daysDisplay":"auto","hours":"long","hoursDisplay":"auto","minutes":"numeric","minutesDisplay":"always","seconds":"2-digit","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto"}
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"years":1,"months":2,"weeks":3,"days":4,"hours":5,"minutes":6,"seconds":7,"milliseconds":8,"microseconds":9,"nanoseconds":10} => 1 Jahr, 2 Monate, 3 Wochen, 4 Tage, 5 Stunden, 6 Minuten und 7,008
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"hours":1,"minutes":2,"seconds":3} => 1 Stunde, 2 Minuten und 3,000
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"hours":1,"seconds":3} => 1 Stunde, 3,000
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"minutes":5} => 5 Minuten, 0,000
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"days":1} => 1 Tag, 0,000
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"years":2,"days":1} => 2 Jahre, 1 Tag und 0,000
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"seconds":1,"milliseconds":234,"microseconds":567,"nanoseconds":891} => 1,234
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"hours":25,"minutes":61} => 25 Stunden, 61 Minuten und 0,000
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"years":-1,"months":-2} => -1 Jahr, 2 Monate und 0,000
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"hours":-1,"minutes":-2,"seconds":-3} => -1 Stunde, 2 Minuten und 3,000
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"minutes":-5,"seconds":0} => -5 Minuten, 0,000
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"days":1000,"hours":12345} => 1.000 Tage, 12.345 Stunden und 0,000
+de {"style":"long","seconds":"numeric","fractionalDigits":3} {"weeks":1,"milliseconds":1} => 1 Woche, 0,001
+de {"style":"long","seconds":"numeric","fractionalDigits":3} parts => integer:1:year|literal: :year|unit:Jahr:year|literal:, |integer:2:month|literal: :month|unit:Monate:month|literal:, |integer:3:week|literal: :week|unit:Wochen:week|literal:, |integer:4:day|literal: :day|unit:Tage:day|literal:, |integer:5:hour|literal: :hour|unit:Stunden:hour|literal:, |integer:6:minute|literal: :minute|unit:Minuten:minute|literal: und |integer:7:second|decimal:,:second|fraction:008:second
+de {"style":"long","seconds":"numeric","fractionalDigits":3} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"long","years":"long","yearsDisplay":"auto","months":"long","monthsDisplay":"auto","weeks":"long","weeksDisplay":"auto","days":"long","daysDisplay":"auto","hours":"long","hoursDisplay":"auto","minutes":"long","minutesDisplay":"auto","seconds":"numeric","secondsDisplay":"always","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto","fractionalDigits":3}
+de {"style":"short","milliseconds":"numeric"} {"years":-1,"months":-2} => -1 J, 2 Mon.
+de {"style":"short","milliseconds":"numeric"} {"hours":-1,"minutes":-2,"seconds":-3} => -1 Std., 2 Min. und 3 Sek.
+de {"style":"short","milliseconds":"numeric"} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"short","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"short","hoursDisplay":"auto","minutes":"short","minutesDisplay":"auto","seconds":"short","secondsDisplay":"auto","milliseconds":"numeric","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto"}
+de {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"seconds":1,"milliseconds":234,"microseconds":567,"nanoseconds":891} => 1 Sek., 234 ms
+de {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"years":-1,"months":-2} => -1 J, 2 M
+de {"style":"narrow","microseconds":"numeric","fractionalDigits":0} parts => integer:1:year|literal: :year|unit:J:year|literal:, |integer:2:month|literal: :month|unit:M:month|literal:, |integer:3:week|literal: :week|unit:W:week|literal:, |integer:4:day|literal: :day|unit:T:day|literal:, |integer:5:hour|unit:h:hour|literal:, |integer:6:minute|literal: :minute|unit:Min.:minute|literal:, |integer:7:second|literal: :second|unit:Sek.:second|literal: und |integer:8:millisecond|literal: :millisecond|unit:ms:millisecond
+de {"style":"narrow","microseconds":"numeric","fractionalDigits":0} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"narrow","years":"narrow","yearsDisplay":"auto","months":"narrow","monthsDisplay":"auto","weeks":"narrow","weeksDisplay":"auto","days":"narrow","daysDisplay":"auto","hours":"narrow","hoursDisplay":"auto","minutes":"narrow","minutesDisplay":"auto","seconds":"narrow","secondsDisplay":"auto","milliseconds":"narrow","millisecondsDisplay":"auto","microseconds":"numeric","microsecondsDisplay":"auto","nanoseconds":"numeric","nanosecondsDisplay":"auto","fractionalDigits":0}
+de {"style":"long","yearsDisplay":"always","daysDisplay":"always"} {"years":-1,"months":-2} => -1 Jahr, 2 Monate und 0 Tage
+de {"style":"long","yearsDisplay":"always","daysDisplay":"always"} {"hours":-1,"minutes":-2,"seconds":-3} => -0 Jahre, 0 Tage, 1 Stunde, 2 Minuten und 3 Sekunden
+de {"style":"long","yearsDisplay":"always","daysDisplay":"always"} {"minutes":-5,"seconds":0} => -0 Jahre, 0 Tage und 5 Minuten
+de {"style":"long","yearsDisplay":"always","daysDisplay":"always"} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"long","years":"long","yearsDisplay":"always","months":"long","monthsDisplay":"auto","weeks":"long","weeksDisplay":"auto","days":"long","daysDisplay":"always","hours":"long","hoursDisplay":"auto","minutes":"long","minutesDisplay":"auto","seconds":"long","secondsDisplay":"auto","milliseconds":"long","millisecondsDisplay":"auto","microseconds":"long","microsecondsDisplay":"auto","nanoseconds":"long","nanosecondsDisplay":"auto"}
+de {"years":"long","months":"short","weeks":"narrow","days":"long"} {"years":-1,"months":-2} => -1 Jahr, 2 Mon., 0 W und 0 Tage
+de {"years":"long","months":"short","weeks":"narrow","days":"long"} {"hours":-1,"minutes":-2,"seconds":-3} => -0 Jahre, 0 Mon., 0 W, 0 Tage, 1 Std., 2 Min. und 3 Sek.
+de {"years":"long","months":"short","weeks":"narrow","days":"long"} {"minutes":-5,"seconds":0} => -0 Jahre, 0 Mon., 0 W, 0 Tage und 5 Min.
+de {"years":"long","months":"short","weeks":"narrow","days":"long"} resolvedOptions => {"locale":"de","numberingSystem":"latn","style":"short","years":"long","yearsDisplay":"always","months":"short","monthsDisplay":"always","weeks":"narrow","weeksDisplay":"always","days":"long","daysDisplay":"always","hours":"short","hoursDisplay":"auto","minutes":"short","minutesDisplay":"auto","seconds":"short","secondsDisplay":"auto","milliseconds":"short","millisecondsDisplay":"auto","microseconds":"short","microsecondsDisplay":"auto","nanoseconds":"short","nanosecondsDisplay":"auto"}
+too large => RangeError
+fractional always => RangeError
+long after numeric => RangeError
+
+# CLDR 48 changed two of German's narrow duration patterns: the hour from '{0} Std.' to '{0}h', and the
+# millisecond's singular to '{0}ms'. CLDR 47, ICU 77.1's, has the old ones. This was found by reading
+# both releases' units.json for de. Some lines here also show the sign of the first group.
+de {"style":"narrow"} {"years":1,"months":2,"weeks":3,"days":4,"hours":5,"minutes":6,"seconds":7,"milliseconds":8,"microseconds":9,"nanoseconds":10} => 1 J, 2 M, 3 W, 4 T, 5h, 6 Min., 7 Sek., 8 ms, 9 \u03bcs und 10 ns
+de {"style":"narrow"} {"hours":1,"minutes":2,"seconds":3} => 1h, 2 Min. und 3 Sek.
+de {"style":"narrow"} {"hours":1,"seconds":3} => 1h, 3 Sek.
+de {"style":"narrow"} {"hours":25,"minutes":61} => 25h, 61 Min.
+de {"style":"narrow"} {"hours":-1,"minutes":-2,"seconds":-3} => -1h, 2 Min. und 3 Sek.
+de {"style":"narrow"} {"days":1000,"hours":12345} => 1.000 T, 12.345h
+de {"style":"narrow"} {"weeks":1,"milliseconds":1} => 1 W, 1ms
+de {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"years":1,"months":2,"weeks":3,"days":4,"hours":5,"minutes":6,"seconds":7,"milliseconds":8,"microseconds":9,"nanoseconds":10} => 1 J, 2 M, 3 W, 4 T, 5h, 6 Min., 7 Sek. und 8 ms
+de {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"hours":1,"minutes":2,"seconds":3} => 1h, 2 Min. und 3 Sek.
+de {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"hours":1,"seconds":3} => 1h, 3 Sek.
+de {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"hours":25,"minutes":61} => 25h, 61 Min.
+de {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"hours":-1,"minutes":-2,"seconds":-3} => -1h, 2 Min. und 3 Sek.
+de {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"days":1000,"hours":12345} => 1.000 T, 12.345h
+de {"style":"narrow","microseconds":"numeric","fractionalDigits":0} {"weeks":1,"milliseconds":1} => 1 W, 1ms
+
+# The profile writes a numbering system other than latn with the language's latn symbols (JSD-0044
+# section 5), where ICU writes arab's own grouping separator and its letter mark before the minus.
+# These lines also show the sign of the first group.
+en {"style":"short","numberingSystem":"arab"} {"milliseconds":1500} => \u0661,\u0665\u0660\u0660 ms
+en {"style":"short","numberingSystem":"arab"} {"years":-1,"months":-2} => -\u0661 yr, \u0662 mths
+en {"style":"short","numberingSystem":"arab"} {"hours":-1,"minutes":-2,"seconds":-3} => -\u0661 hr, \u0662 min, \u0663 sec
+en {"style":"short","numberingSystem":"arab"} {"minutes":-5,"seconds":0} => -\u0665 min
+en {"style":"short","numberingSystem":"arab"} {"days":1000,"hours":12345} => \u0661,\u0660\u0660\u0660 days, \u0661\u0662,\u0663\u0664\u0665 hr
+en {"style":"short","numberingSystem":"arab"} resolvedOptions => {"locale":"en","numberingSystem":"arab","style":"short","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"short","hoursDisplay":"auto","minutes":"short","minutesDisplay":"auto","seconds":"short","secondsDisplay":"auto","milliseconds":"short","millisecondsDisplay":"auto","microseconds":"short","microsecondsDisplay":"auto","nanoseconds":"short","nanosecondsDisplay":"auto"}
+de {"style":"short","numberingSystem":"arab"} {"milliseconds":1500} => \u0661.\u0665\u0660\u0660 ms
+de {"style":"short","numberingSystem":"arab"} {"years":-1,"months":-2} => -\u0661 J, \u0662 Mon.
+de {"style":"short","numberingSystem":"arab"} {"hours":-1,"minutes":-2,"seconds":-3} => -\u0661 Std., \u0662 Min. und \u0663 Sek.
+de {"style":"short","numberingSystem":"arab"} {"minutes":-5,"seconds":0} => -\u0665 Min.
+de {"style":"short","numberingSystem":"arab"} {"days":1000,"hours":12345} => \u0661.\u0660\u0660\u0660 Tg., \u0661\u0662.\u0663\u0664\u0665 Std.
+de {"style":"short","numberingSystem":"arab"} resolvedOptions => {"locale":"de","numberingSystem":"arab","style":"short","years":"short","yearsDisplay":"auto","months":"short","monthsDisplay":"auto","weeks":"short","weeksDisplay":"auto","days":"short","daysDisplay":"auto","hours":"short","hoursDisplay":"auto","minutes":"short","minutesDisplay":"auto","seconds":"short","secondsDisplay":"auto","milliseconds":"short","millisecondsDisplay":"auto","microseconds":"short","microsecondsDisplay":"auto","nanoseconds":"short","nanosecondsDisplay":"auto"}
+
+# The profile admits Temporal (JSD-0054), and the proposal amends format and formatToParts to read
+# their argument with ToTemporalDuration, which takes an ISO 8601 duration string; Node 22 does
+# not, and throws for a string as ECMA-402 alone says.
+string => 1 hr

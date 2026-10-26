@@ -239,6 +239,31 @@ builds, packs or embeds them.**
 *Added 2026-10-17, at milestone SJL-8.4, when the copies were added; the third program and its answer were added
 on 2026-10-18, at milestone SJL-10.2.*
 
+## The reference datasets of the Intl area (`conformance/datasets/intl/`)
+
+[`conformance/datasets/intl/`](conformance/datasets/intl/README.md) holds byte-for-byte copies of twelve programs of
+Broiler.VM, each with the answer a reference implementation gave for it and Broiler.VM's divergences from that answer,
+as Broiler.VM's commit `4cf9ca4` holds them, all held by their SHA-256 in that directory's `datasets.pin`. Bundle
+`sjl-9-001`'s rule, parts C and D, runs them in this engine's shell, with `conformance/datasets/time/timezones.js`.
+**They are test material only: no project builds, packs or embeds them.**
+
+- **The programs** (`dates.js`, `displaynames.js`, `durations.js`, `lists.js`, `locales.js`, `numbers.js`,
+  `plurals.js`, `relativetimes.js`, `segments.js`, `temporal-intl.js`, `calendar-formats.js` and `zone-names.js`) and
+  **the divergences files** are Broiler.VM's, by the same contributors as this repository, under the Apache License
+  2.0, whose text is in [`LICENSE`](LICENSE).
+- **The nine `*.icu-77.1.txt` files** are the output of the first nine programs run on Node 22.22.0, whose ICU is 77.1,
+  with CLDR 47.0. ICU and CLDR are © Unicode, Inc., under the Unicode License v3 below. Each holds what ICU printed for
+  its program, one line per operation: formatted numbers, dates, lists, relative times, durations, display names,
+  plural categories, segments and locale information. It reproduces none of ICU's code and no CLDR file.
+- **The three `*.polyfill-e8cc03fc.txt` files** are the output of the last three programs run under the Temporal
+  proposal's reference polyfill, `polyfill/lib` of
+  [tc39/proposal-temporal](https://github.com/tc39/proposal-temporal) at `e8cc03fc970a65a3359e8870e3b35e687ac94e55`,
+  which is licensed under the ISC licence, on Node 22.22.0. The polyfill formats through Node's
+  `Intl.DateTimeFormat`, whose ICU is 77.1, so the names and patterns they hold are what ICU printed. They hold the
+  answers, one per line, and reproduce none of the polyfill's or ICU's code or text.
+
+*Added 2026-10-26, at milestone SJL-9.2, when the copies were added.*
+
 ## Sources the engine's own code cites
 
 - `JSMath.Clz32` (`Broiler.JavaScript.BuiltIns`) links Jurassic's `MathObject.cs`

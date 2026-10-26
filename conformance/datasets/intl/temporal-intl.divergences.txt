@@ -1,0 +1,95 @@
+# Lines of temporal-intl.polyfill-e8cc03fc.txt on which the profile answers otherwise, each the profile's line,
+# under the reason it is not the polyfill's. A line replaces the polyfill's line whose text before ' => ' is
+# the same. The polyfill formats through Node 22.22.0's Intl.DateTimeFormat, ICU 77.1 with CLDR 47.
+
+# Node writes U+0020 where ICU writes U+202F: V8 replaces ICU's narrow no-break space before a day period by
+# a space, as the dates dataset under src/tests/cldr/dates names; the profile writes CLDR's U+202F (74 lines).
+en {"timeZone":"Pacific/Apia"} dateTime => 3/5/2024, 1:04:05 PM
+en {"timeZone":"Pacific/Apia"} time => 12:30:45 AM
+en {"timeZone":"Pacific/Apia"} instant => 3/6/2024, 2:04:05 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"medium"} dateTime => 1:04:05 PM
+en {"timeZone":"Pacific/Apia","timeStyle":"medium"} time => 12:30:45 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"medium"} instant => 2:04:05 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"medium"} Date => 2:04:05 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"short"} dateTime => 1:04 PM
+en {"timeZone":"Pacific/Apia","timeStyle":"short"} time => 12:30 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"short"} instant => 2:04 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"short"} Date => 2:04 AM
+en {"timeZone":"Pacific/Apia","dateStyle":"long","timeStyle":"short"} dateTime => March 5, 2024 at 1:04 PM
+en {"timeZone":"Pacific/Apia","dateStyle":"long","timeStyle":"short"} time => 12:30 AM
+en {"timeZone":"Pacific/Apia","dateStyle":"long","timeStyle":"short"} instant => March 6, 2024 at 2:04 AM
+en {"timeZone":"Pacific/Apia","dateStyle":"long","timeStyle":"short"} Date => March 6, 2024 at 2:04 AM
+en {"timeZone":"Pacific/Apia","era":"short"} dateTime => 3/5/2024 AD, 1:04:05 PM
+en {"timeZone":"Pacific/Apia","era":"short"} time => 12:30:45 AM
+en {"timeZone":"Pacific/Apia","era":"short"} instant => 3/6/2024 AD, 2:04:05 AM
+en {"timeZone":"Pacific/Apia","hour":"numeric","minute":"2-digit"} dateTime => 1:04 PM
+en {"timeZone":"Pacific/Apia","hour":"numeric","minute":"2-digit"} time => 12:30 AM
+en {"timeZone":"Pacific/Apia","hour":"numeric","minute":"2-digit"} instant => 2:04 AM
+en {"timeZone":"Pacific/Apia","hour":"numeric","minute":"2-digit"} Date => 2:04 AM
+en {"timeZone":"Pacific/Apia","timeZoneName":"shortOffset"} dateTime => 3/5/2024, 1:04:05 PM
+en {"timeZone":"Pacific/Apia","timeZoneName":"shortOffset"} time => 12:30:45 AM
+en {"timeZone":"Pacific/Apia","timeZoneName":"shortOffset"} instant => 3/6/2024, 2:04:05 AM GMT+13
+en {"timeZone":"Pacific/Apia","month":"long","hour":"numeric"} dateTime => March at 1 PM
+en {"timeZone":"Pacific/Apia","month":"long","hour":"numeric"} time => 12 AM
+en {"timeZone":"Pacific/Apia","month":"long","hour":"numeric"} instant => March at 2 AM
+en {"timeZone":"Pacific/Apia","month":"long","hour":"numeric"} Date => March at 2 AM
+en {"timeZone":"Pacific/Apia","calendar":"iso8601"} dateTime => 2024-03-05, 1:04:05 PM
+en {"timeZone":"Pacific/Apia","calendar":"iso8601"} time => 12:30:45 AM
+en {"timeZone":"Pacific/Apia","calendar":"iso8601"} instant => 2024-03-06, 2:04:05 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"medium","calendar":"iso8601"} dateTime => 01:04:05 PM
+en {"timeZone":"Pacific/Apia","timeStyle":"medium","calendar":"iso8601"} time => 12:30:45 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"medium","calendar":"iso8601"} instant => 02:04:05 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"medium","calendar":"iso8601"} Date => 02:04:05 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"short","calendar":"iso8601"} dateTime => 01:04 PM
+en {"timeZone":"Pacific/Apia","timeStyle":"short","calendar":"iso8601"} time => 12:30 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"short","calendar":"iso8601"} instant => 02:04 AM
+en {"timeZone":"Pacific/Apia","timeStyle":"short","calendar":"iso8601"} Date => 02:04 AM
+en {"timeZone":"Pacific/Apia","dateStyle":"long","timeStyle":"short","calendar":"iso8601"} dateTime => 2024 March 5 at 01:04 PM
+en {"timeZone":"Pacific/Apia","dateStyle":"long","timeStyle":"short","calendar":"iso8601"} time => 12:30 AM
+en {"timeZone":"Pacific/Apia","dateStyle":"long","timeStyle":"short","calendar":"iso8601"} instant => 2024 March 6 at 02:04 AM
+en {"timeZone":"Pacific/Apia","dateStyle":"long","timeStyle":"short","calendar":"iso8601"} Date => 2024 March 6 at 02:04 AM
+en {"timeZone":"Pacific/Apia","era":"short","calendar":"iso8601"} dateTime => AD 2024-03-05, 1:04:05 PM
+en {"timeZone":"Pacific/Apia","era":"short","calendar":"iso8601"} time => 12:30:45 AM
+en {"timeZone":"Pacific/Apia","era":"short","calendar":"iso8601"} instant => AD 2024-03-06, 2:04:05 AM
+en {"timeZone":"Pacific/Apia","hour":"numeric","minute":"2-digit","calendar":"iso8601"} dateTime => 1:04 PM
+en {"timeZone":"Pacific/Apia","hour":"numeric","minute":"2-digit","calendar":"iso8601"} time => 12:30 AM
+en {"timeZone":"Pacific/Apia","hour":"numeric","minute":"2-digit","calendar":"iso8601"} instant => 2:04 AM
+en {"timeZone":"Pacific/Apia","hour":"numeric","minute":"2-digit","calendar":"iso8601"} Date => 2:04 AM
+en {"timeZone":"Pacific/Apia","timeZoneName":"shortOffset","calendar":"iso8601"} dateTime => 2024-03-05, 1:04:05 PM
+en {"timeZone":"Pacific/Apia","timeZoneName":"shortOffset","calendar":"iso8601"} time => 12:30:45 AM
+en {"timeZone":"Pacific/Apia","timeZoneName":"shortOffset","calendar":"iso8601"} instant => 2024-03-06, 2:04:05 AM GMT+13
+en {"timeZone":"Pacific/Apia","month":"long","hour":"numeric","calendar":"iso8601"} dateTime => March at 1 PM
+en {"timeZone":"Pacific/Apia","month":"long","hour":"numeric","calendar":"iso8601"} time => 12 AM
+en {"timeZone":"Pacific/Apia","month":"long","hour":"numeric","calendar":"iso8601"} instant => March at 2 AM
+en {"timeZone":"Pacific/Apia","month":"long","hour":"numeric","calendar":"iso8601"} Date => March at 2 AM
+toLocaleString en undefined dateTime => 3/5/2024, 1:04:05 PM
+toLocaleString en undefined time => 12:30:45 AM
+toLocaleString en undefined instant => 3/5/2024, 1:04:05 PM
+toLocaleString en undefined zoned => 3/5/2024, 1:04:05 PM GMT+1
+toLocaleString en {"calendar":"iso8601"} dateTime => 2024-03-05, 1:04:05 PM
+toLocaleString en {"calendar":"iso8601"} time => 12:30:45 AM
+toLocaleString en {"calendar":"iso8601"} instant => 2024-03-05, 1:04:05 PM
+toLocaleString en {"calendar":"iso8601"} zoned => 2024-03-05, 1:04:05 PM GMT+1
+toLocaleString en {"timeZone":"Asia/Kolkata"} dateTime => 3/5/2024, 1:04:05 PM
+toLocaleString en {"timeZone":"Asia/Kolkata"} time => 12:30:45 AM
+toLocaleString en {"timeZone":"Asia/Kolkata"} instant => 3/5/2024, 6:34:05 PM
+toLocaleString en {"timeZoneName":"shortOffset"} dateTime => 3/5/2024, 1:04:05 PM
+toLocaleString en {"timeZoneName":"shortOffset"} time => 12:30:45 AM
+toLocaleString en {"timeZoneName":"shortOffset"} instant => 3/5/2024, 1:04:05 PM GMT
+toLocaleString en {"timeZoneName":"shortOffset"} zoned => 3/5/2024, 1:04:05 PM GMT+1
+zoned toLocaleString UTC => 3/5/2024, 1:04:00 PM UTC
+
+# The polyfill fakes dateStyle for a year-month or a month-day with fixed options (its dateStyleHacks: short is
+# year 2-digit and month numeric, medium month short). The draft's AdjustDateTimeStyleFormat (amended ECMA-402
+# s15.6.2) keeps the style pattern's own fields and widths, which the profile follows (6 lines).
+en {"timeZone":"Pacific/Apia","dateStyle":"short","calendar":"iso8601"} yearMonthIso => 2024-03
+de {"timeZone":"Pacific/Apia","dateStyle":"medium"} yearMonth => 03/2024
+de {"timeZone":"Pacific/Apia","dateStyle":"medium"} monthDay => 05.03.
+de {"timeZone":"Pacific/Apia","dateStyle":"short"} yearMonth => 03/24
+de {"timeZone":"Pacific/Apia","dateStyle":"short"} monthDay => 05.03.
+de {"timeZone":"Pacific/Apia","dateStyle":"short","calendar":"iso8601"} yearMonthIso => 2024-03
+
+# CLDR 48 adds the available format GyM, 'M/y G' in English and 'MM/y G' in German, which CLDR 47 lacks; ICU
+# 77.1 matches the skeleton to GyMMM instead (2 lines).
+en {"timeZone":"Pacific/Apia","era":"short"} yearMonth => 3/2024 AD
+de {"timeZone":"Pacific/Apia","era":"short"} yearMonth => 03/2024 n. Chr.

@@ -1,0 +1,780 @@
+1 en => en base=en language=en script=undefined region=undefined
+1 en variants => undefined
+1 en keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+1 en firstDayOfWeek => undefined
+1 en likely => max=en-Latn-US min=en
+1 en calendars => [gregory]
+1 en collations => [emoji,eor]
+1 en hourCycles => [h12]
+1 en numberingSystems => [latn]
+1 en timeZones => undefined
+1 en direction => ltr
+1 en week => firstDay=7 weekend=[6,7]
+2 en-US => en-US base=en-US language=en script=undefined region=US
+2 en-US variants => undefined
+2 en-US keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+2 en-US firstDayOfWeek => undefined
+2 en-US likely => max=en-Latn-US min=en
+2 en-US calendars => [gregory]
+2 en-US collations => [emoji,eor]
+2 en-US hourCycles => [h12]
+2 en-US numberingSystems => [latn]
+2 en-US timeZones => [America/Adak,America/Anchorage,America/Boise,America/Chicago,America/Denver,America/Detroit,America/Indiana/Knox,America/Indiana/Marengo,America/Indiana/Petersburg,America/Indiana/Tell_City,America/Indiana/Vevay,America/Indiana/Vincennes,America/Indiana/Winamac,America/Indianapolis,America/Juneau,America/Kentucky/Monticello,America/Los_Angeles,America/Louisville,America/Menominee,America/Metlakatla,America/New_York,America/Nome,America/North_Dakota/Beulah,America/North_Dakota/Center,America/North_Dakota/New_Salem,America/Phoenix,America/Sitka,America/Yakutat,Pacific/Honolulu]
+2 en-US direction => ltr
+2 en-US week => firstDay=7 weekend=[6,7]
+3 en-GB => en-GB base=en-GB language=en script=undefined region=GB
+3 en-GB variants => undefined
+3 en-GB keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+3 en-GB firstDayOfWeek => undefined
+3 en-GB likely => max=en-Latn-GB min=en-GB
+3 en-GB calendars => [gregory]
+3 en-GB collations => [emoji,eor]
+3 en-GB hourCycles => [h23]
+3 en-GB numberingSystems => [latn]
+3 en-GB timeZones => [Europe/London]
+3 en-GB direction => ltr
+3 en-GB week => firstDay=1 weekend=[6,7]
+4 en-Latn => en-Latn base=en-Latn language=en script=Latn region=undefined
+4 en-Latn variants => undefined
+4 en-Latn keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+4 en-Latn firstDayOfWeek => undefined
+4 en-Latn likely => max=en-Latn-US min=en
+4 en-Latn calendars => [gregory]
+4 en-Latn collations => [emoji,eor]
+4 en-Latn hourCycles => [h12]
+4 en-Latn numberingSystems => [latn]
+4 en-Latn timeZones => undefined
+4 en-Latn direction => ltr
+4 en-Latn week => firstDay=7 weekend=[6,7]
+5 en-Arab => en-Arab base=en-Arab language=en script=Arab region=undefined
+5 en-Arab variants => undefined
+5 en-Arab keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+5 en-Arab firstDayOfWeek => undefined
+5 en-Arab likely => max=en-Arab-US min=en-Arab
+5 en-Arab calendars => [gregory]
+5 en-Arab collations => [emoji,eor]
+5 en-Arab hourCycles => [h12]
+5 en-Arab numberingSystems => [latn]
+5 en-Arab timeZones => undefined
+5 en-Arab direction => rtl
+5 en-Arab week => firstDay=7 weekend=[6,7]
+6 en-Shaw => en-Shaw base=en-Shaw language=en script=Shaw region=undefined
+6 en-Shaw variants => undefined
+6 en-Shaw keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+6 en-Shaw firstDayOfWeek => undefined
+6 en-Shaw likely => max=en-Shaw-GB min=en-Shaw
+6 en-Shaw calendars => [gregory]
+6 en-Shaw collations => [emoji,eor]
+6 en-Shaw hourCycles => [h23]
+6 en-Shaw numberingSystems => [latn]
+6 en-Shaw timeZones => undefined
+6 en-Shaw direction => ltr
+6 en-Shaw week => firstDay=1 weekend=[6,7]
+7 de => de base=de language=de script=undefined region=undefined
+7 de variants => undefined
+7 de keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+7 de firstDayOfWeek => undefined
+7 de likely => max=de-Latn-DE min=de
+7 de calendars => [gregory]
+7 de collations => [emoji,eor,phonebk]
+7 de hourCycles => [h23]
+7 de numberingSystems => [latn]
+7 de timeZones => undefined
+7 de direction => ltr
+7 de week => firstDay=1 weekend=[6,7]
+8 de-AT => de-AT base=de-AT language=de script=undefined region=AT
+8 de-AT variants => undefined
+8 de-AT keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+8 de-AT firstDayOfWeek => undefined
+8 de-AT likely => max=de-Latn-AT min=de-AT
+8 de-AT calendars => [gregory]
+8 de-AT collations => [emoji,eor,phonebk]
+8 de-AT hourCycles => [h23]
+8 de-AT numberingSystems => [latn]
+8 de-AT timeZones => [Europe/Vienna]
+8 de-AT direction => ltr
+8 de-AT week => firstDay=1 weekend=[6,7]
+9 de-CH => de-CH base=de-CH language=de script=undefined region=CH
+9 de-CH variants => undefined
+9 de-CH keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+9 de-CH firstDayOfWeek => undefined
+9 de-CH likely => max=de-Latn-CH min=de-CH
+9 de-CH calendars => [gregory]
+9 de-CH collations => [emoji,eor,phonebk]
+9 de-CH hourCycles => [h23]
+9 de-CH numberingSystems => [latn]
+9 de-CH timeZones => [Europe/Zurich]
+9 de-CH direction => ltr
+9 de-CH week => firstDay=1 weekend=[6,7]
+10 fr => fr base=fr language=fr script=undefined region=undefined
+10 fr variants => undefined
+10 fr keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+10 fr firstDayOfWeek => undefined
+10 fr likely => max=fr-Latn-FR min=fr
+10 fr calendars => [gregory]
+10 fr collations => [emoji,eor]
+10 fr hourCycles => [h23]
+10 fr numberingSystems => [latn]
+10 fr timeZones => undefined
+10 fr direction => ltr
+10 fr week => firstDay=1 weekend=[6,7]
+11 fr-CA => fr-CA base=fr-CA language=fr script=undefined region=CA
+11 fr-CA variants => undefined
+11 fr-CA keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+11 fr-CA firstDayOfWeek => undefined
+11 fr-CA likely => max=fr-Latn-CA min=fr-CA
+11 fr-CA calendars => [gregory]
+11 fr-CA collations => [emoji,eor]
+11 fr-CA hourCycles => [h23]
+11 fr-CA numberingSystems => [latn]
+11 fr-CA timeZones => [America/Blanc-Sablon,America/Cambridge_Bay,America/Coral_Harbour,America/Creston,America/Dawson,America/Dawson_Creek,America/Edmonton,America/Fort_Nelson,America/Glace_Bay,America/Goose_Bay,America/Halifax,America/Inuvik,America/Iqaluit,America/Moncton,America/Rankin_Inlet,America/Regina,America/Resolute,America/St_Johns,America/Swift_Current,America/Toronto,America/Vancouver,America/Whitehorse,America/Winnipeg]
+11 fr-CA direction => ltr
+11 fr-CA week => firstDay=7 weekend=[6,7]
+12 es-419 => es-419 base=es-419 language=es script=undefined region=419
+12 es-419 variants => undefined
+12 es-419 keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+12 es-419 firstDayOfWeek => undefined
+12 es-419 likely => max=es-Latn-419 min=es-419
+12 es-419 calendars => [gregory]
+12 es-419 collations => [emoji,eor,trad]
+12 es-419 hourCycles => [h12]
+12 es-419 numberingSystems => [latn]
+12 es-419 timeZones => []
+12 es-419 direction => ltr
+12 es-419 week => firstDay=1 weekend=[6,7]
+13 pt-BR => pt-BR base=pt-BR language=pt script=undefined region=BR
+13 pt-BR variants => undefined
+13 pt-BR keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+13 pt-BR firstDayOfWeek => undefined
+13 pt-BR likely => max=pt-Latn-BR min=pt
+13 pt-BR calendars => [gregory]
+13 pt-BR collations => [emoji,eor]
+13 pt-BR hourCycles => [h23]
+13 pt-BR numberingSystems => [latn]
+13 pt-BR timeZones => [America/Araguaina,America/Bahia,America/Belem,America/Boa_Vista,America/Campo_Grande,America/Cuiaba,America/Eirunepe,America/Fortaleza,America/Maceio,America/Manaus,America/Noronha,America/Porto_Velho,America/Recife,America/Rio_Branco,America/Santarem,America/Sao_Paulo]
+13 pt-BR direction => ltr
+13 pt-BR week => firstDay=7 weekend=[6,7]
+14 ar => ar base=ar language=ar script=undefined region=undefined
+14 ar variants => undefined
+14 ar keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+14 ar firstDayOfWeek => undefined
+14 ar likely => max=ar-Arab-EG min=ar
+14 ar calendars => [gregory,coptic,islamic,islamic-civil,islamic-tbla]
+14 ar collations => [compat,emoji,eor]
+14 ar hourCycles => [h12]
+14 ar numberingSystems => [latn]
+14 ar timeZones => undefined
+14 ar direction => rtl
+14 ar week => firstDay=6 weekend=[5,6]
+15 ar-EG => ar-EG base=ar-EG language=ar script=undefined region=EG
+15 ar-EG variants => undefined
+15 ar-EG keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+15 ar-EG firstDayOfWeek => undefined
+15 ar-EG likely => max=ar-Arab-EG min=ar
+15 ar-EG calendars => [gregory,coptic,islamic,islamic-civil,islamic-tbla]
+15 ar-EG collations => [compat,emoji,eor]
+15 ar-EG hourCycles => [h12]
+15 ar-EG numberingSystems => [arab]
+15 ar-EG timeZones => [Africa/Cairo]
+15 ar-EG direction => rtl
+15 ar-EG week => firstDay=6 weekend=[5,6]
+16 he => he base=he language=he script=undefined region=undefined
+16 he variants => undefined
+16 he keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+16 he firstDayOfWeek => undefined
+16 he likely => max=he-Hebr-IL min=he
+16 he calendars => [gregory,hebrew,islamic,islamic-civil,islamic-tbla]
+16 he collations => [emoji,eor]
+16 he hourCycles => [h23]
+16 he numberingSystems => [latn]
+16 he timeZones => undefined
+16 he direction => rtl
+16 he week => firstDay=7 weekend=[5,6]
+17 fa-IR => fa-IR base=fa-IR language=fa script=undefined region=IR
+17 fa-IR variants => undefined
+17 fa-IR keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+17 fa-IR firstDayOfWeek => undefined
+17 fa-IR likely => max=fa-Arab-IR min=fa
+17 fa-IR calendars => [persian,gregory,islamic,islamic-civil,islamic-tbla]
+17 fa-IR collations => [emoji,eor]
+17 fa-IR hourCycles => [h23]
+17 fa-IR numberingSystems => [arabext]
+17 fa-IR timeZones => [Asia/Tehran]
+17 fa-IR direction => rtl
+17 fa-IR week => firstDay=6 weekend=[5]
+18 ur => ur base=ur language=ur script=undefined region=undefined
+18 ur variants => undefined
+18 ur keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+18 ur firstDayOfWeek => undefined
+18 ur likely => max=ur-Arab-PK min=ur
+18 ur calendars => [gregory,islamic,islamic-civil,islamic-tbla]
+18 ur collations => [emoji,eor]
+18 ur hourCycles => [h12]
+18 ur numberingSystems => [latn]
+18 ur timeZones => undefined
+18 ur direction => rtl
+18 ur week => firstDay=7 weekend=[6,7]
+19 hi => hi base=hi language=hi script=undefined region=undefined
+19 hi variants => undefined
+19 hi keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+19 hi firstDayOfWeek => undefined
+19 hi likely => max=hi-Deva-IN min=hi
+19 hi calendars => [gregory,indian]
+19 hi collations => [emoji,eor]
+19 hi hourCycles => [h12]
+19 hi numberingSystems => [latn]
+19 hi timeZones => undefined
+19 hi direction => ltr
+19 hi week => firstDay=7 weekend=[7]
+20 zh => zh base=zh language=zh script=undefined region=undefined
+20 zh variants => undefined
+20 zh keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+20 zh firstDayOfWeek => undefined
+20 zh likely => max=zh-Hans-CN min=zh
+20 zh calendars => [gregory,chinese]
+20 zh collations => [emoji,eor,pinyin,stroke,unihan,zhuyin]
+20 zh hourCycles => [h23]
+20 zh numberingSystems => [latn]
+20 zh timeZones => undefined
+20 zh direction => ltr
+20 zh week => firstDay=1 weekend=[6,7]
+21 zh-Hant => zh-Hant base=zh-Hant language=zh script=Hant region=undefined
+21 zh-Hant variants => undefined
+21 zh-Hant keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+21 zh-Hant firstDayOfWeek => undefined
+21 zh-Hant likely => max=zh-Hant-TW min=zh-TW
+21 zh-Hant calendars => [gregory,roc,chinese]
+21 zh-Hant collations => [emoji,eor,pinyin,stroke,unihan,zhuyin]
+21 zh-Hant hourCycles => [h12]
+21 zh-Hant numberingSystems => [latn]
+21 zh-Hant timeZones => undefined
+21 zh-Hant direction => ltr
+21 zh-Hant week => firstDay=7 weekend=[6,7]
+22 zh-TW => zh-TW base=zh-TW language=zh script=undefined region=TW
+22 zh-TW variants => undefined
+22 zh-TW keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+22 zh-TW firstDayOfWeek => undefined
+22 zh-TW likely => max=zh-Hant-TW min=zh-TW
+22 zh-TW calendars => [gregory,roc,chinese]
+22 zh-TW collations => [emoji,eor,pinyin,stroke,unihan,zhuyin]
+22 zh-TW hourCycles => [h12]
+22 zh-TW numberingSystems => [latn]
+22 zh-TW timeZones => [Asia/Taipei]
+22 zh-TW direction => ltr
+22 zh-TW week => firstDay=7 weekend=[6,7]
+23 zh-Hans-SG => zh-Hans-SG base=zh-Hans-SG language=zh script=Hans region=SG
+23 zh-Hans-SG variants => undefined
+23 zh-Hans-SG keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+23 zh-Hans-SG firstDayOfWeek => undefined
+23 zh-Hans-SG likely => max=zh-Hans-SG min=zh-SG
+23 zh-Hans-SG calendars => [gregory,chinese]
+23 zh-Hans-SG collations => [emoji,eor,pinyin,stroke,unihan,zhuyin]
+23 zh-Hans-SG hourCycles => [h12]
+23 zh-Hans-SG numberingSystems => [latn]
+23 zh-Hans-SG timeZones => [Asia/Singapore]
+23 zh-Hans-SG direction => ltr
+23 zh-Hans-SG week => firstDay=7 weekend=[6,7]
+24 ja => ja base=ja language=ja script=undefined region=undefined
+24 ja variants => undefined
+24 ja keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+24 ja firstDayOfWeek => undefined
+24 ja likely => max=ja-Jpan-JP min=ja
+24 ja calendars => [gregory,japanese]
+24 ja collations => [emoji,eor,unihan]
+24 ja hourCycles => [h23]
+24 ja numberingSystems => [latn]
+24 ja timeZones => undefined
+24 ja direction => ltr
+24 ja week => firstDay=7 weekend=[6,7]
+25 ko => ko base=ko language=ko script=undefined region=undefined
+25 ko variants => undefined
+25 ko keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+25 ko firstDayOfWeek => undefined
+25 ko likely => max=ko-Kore-KR min=ko
+25 ko calendars => [gregory,dangi]
+25 ko collations => [emoji,eor,searchjl,unihan]
+25 ko hourCycles => [h12]
+25 ko numberingSystems => [latn]
+25 ko timeZones => undefined
+25 ko direction => ltr
+25 ko week => firstDay=7 weekend=[6,7]
+26 th => th base=th language=th script=undefined region=undefined
+26 th variants => undefined
+26 th keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+26 th firstDayOfWeek => undefined
+26 th likely => max=th-Thai-TH min=th
+26 th calendars => [buddhist,gregory]
+26 th collations => [emoji,eor]
+26 th hourCycles => [h23]
+26 th numberingSystems => [latn]
+26 th timeZones => undefined
+26 th direction => ltr
+26 th week => firstDay=7 weekend=[6,7]
+27 ru => ru base=ru language=ru script=undefined region=undefined
+27 ru variants => undefined
+27 ru keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+27 ru firstDayOfWeek => undefined
+27 ru likely => max=ru-Cyrl-RU min=ru
+27 ru calendars => [gregory]
+27 ru collations => [emoji,eor]
+27 ru hourCycles => [h23]
+27 ru numberingSystems => [latn]
+27 ru timeZones => undefined
+27 ru direction => ltr
+27 ru week => firstDay=1 weekend=[6,7]
+28 sr-Latn => sr-Latn base=sr-Latn language=sr script=Latn region=undefined
+28 sr-Latn variants => undefined
+28 sr-Latn keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+28 sr-Latn firstDayOfWeek => undefined
+28 sr-Latn likely => max=sr-Latn-RS min=sr-Latn
+28 sr-Latn calendars => [gregory]
+28 sr-Latn collations => [emoji,eor]
+28 sr-Latn hourCycles => [h23]
+28 sr-Latn numberingSystems => [latn]
+28 sr-Latn timeZones => undefined
+28 sr-Latn direction => ltr
+28 sr-Latn week => firstDay=1 weekend=[6,7]
+29 uz-Cyrl => uz-Cyrl base=uz-Cyrl language=uz script=Cyrl region=undefined
+29 uz-Cyrl variants => undefined
+29 uz-Cyrl keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+29 uz-Cyrl firstDayOfWeek => undefined
+29 uz-Cyrl likely => max=uz-Cyrl-UZ min=uz-Cyrl
+29 uz-Cyrl calendars => [gregory,islamic-civil,islamic-tbla]
+29 uz-Cyrl collations => [emoji,eor]
+29 uz-Cyrl hourCycles => [h23]
+29 uz-Cyrl numberingSystems => [latn]
+29 uz-Cyrl timeZones => undefined
+29 uz-Cyrl direction => ltr
+29 uz-Cyrl week => firstDay=1 weekend=[6,7]
+30 und => und base=und language=undefined script=undefined region=undefined
+30 und variants => undefined
+30 und keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+30 und firstDayOfWeek => undefined
+30 und likely => max=en-Latn-US min=en
+30 und calendars => [gregory]
+30 und collations => [emoji,eor]
+30 und hourCycles => [h12]
+30 und numberingSystems => [latn]
+30 und timeZones => undefined
+30 und direction => ltr
+30 und week => firstDay=7 weekend=[6,7]
+31 und-AQ => und-AQ base=und-AQ language=undefined script=undefined region=AQ
+31 und-AQ variants => undefined
+31 und-AQ keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+31 und-AQ firstDayOfWeek => undefined
+31 und-AQ likely => max=en-Latn-AQ min=en-AQ
+31 und-AQ calendars => [gregory]
+31 und-AQ collations => [emoji,eor]
+31 und-AQ hourCycles => [h23]
+31 und-AQ numberingSystems => [latn]
+31 und-AQ timeZones => [Antarctica/Casey,Antarctica/Davis,Antarctica/DumontDUrville,Antarctica/Mawson,Antarctica/McMurdo,Antarctica/Palmer,Antarctica/Rothera,Antarctica/Syowa,Antarctica/Troll,Antarctica/Vostok]
+31 und-AQ direction => ltr
+31 und-AQ week => firstDay=1 weekend=[6,7]
+32 und-Latn-AQ => und-Latn-AQ base=und-Latn-AQ language=undefined script=Latn region=AQ
+32 und-Latn-AQ variants => undefined
+32 und-Latn-AQ keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+32 und-Latn-AQ firstDayOfWeek => undefined
+32 und-Latn-AQ likely => max=en-Latn-AQ min=en-AQ
+32 und-Latn-AQ calendars => [gregory]
+32 und-Latn-AQ collations => [emoji,eor]
+32 und-Latn-AQ hourCycles => [h23]
+32 und-Latn-AQ numberingSystems => [latn]
+32 und-Latn-AQ timeZones => [Antarctica/Casey,Antarctica/Davis,Antarctica/DumontDUrville,Antarctica/Mawson,Antarctica/McMurdo,Antarctica/Palmer,Antarctica/Rothera,Antarctica/Syowa,Antarctica/Troll,Antarctica/Vostok]
+32 und-Latn-AQ direction => ltr
+32 und-Latn-AQ week => firstDay=1 weekend=[6,7]
+33 und-Cyrl-RO => und-Cyrl-RO base=und-Cyrl-RO language=undefined script=Cyrl region=RO
+33 und-Cyrl-RO variants => undefined
+33 und-Cyrl-RO keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+33 und-Cyrl-RO firstDayOfWeek => undefined
+33 und-Cyrl-RO likely => max=bg-Cyrl-RO min=bg-RO
+33 und-Cyrl-RO calendars => [gregory]
+33 und-Cyrl-RO collations => [emoji,eor]
+33 und-Cyrl-RO hourCycles => [h23]
+33 und-Cyrl-RO numberingSystems => [latn]
+33 und-Cyrl-RO timeZones => [Europe/Bucharest]
+33 und-Cyrl-RO direction => ltr
+33 und-Cyrl-RO week => firstDay=1 weekend=[6,7]
+34 und-Thai => und-Thai base=und-Thai language=undefined script=Thai region=undefined
+34 und-Thai variants => undefined
+34 und-Thai keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+34 und-Thai firstDayOfWeek => undefined
+34 und-Thai likely => max=th-Thai-TH min=th
+34 und-Thai calendars => [buddhist,gregory]
+34 und-Thai collations => [emoji,eor]
+34 und-Thai hourCycles => [h23]
+34 und-Thai numberingSystems => [latn]
+34 und-Thai timeZones => undefined
+34 und-Thai direction => ltr
+34 und-Thai week => firstDay=7 weekend=[6,7]
+35 und-150 => und-150 base=und-150 language=undefined script=undefined region=150
+35 und-150 variants => undefined
+35 und-150 keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+35 und-150 firstDayOfWeek => undefined
+35 und-150 likely => max=en-Latn-150 min=en-150
+35 und-150 calendars => [gregory]
+35 und-150 collations => [emoji,eor]
+35 und-150 hourCycles => [h23]
+35 und-150 numberingSystems => [latn]
+35 und-150 timeZones => []
+35 und-150 direction => ltr
+35 und-150 week => firstDay=1 weekend=[6,7]
+36 und-AT => und-AT base=und-AT language=undefined script=undefined region=AT
+36 und-AT variants => undefined
+36 und-AT keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+36 und-AT firstDayOfWeek => undefined
+36 und-AT likely => max=de-Latn-AT min=de-AT
+36 und-AT calendars => [gregory]
+36 und-AT collations => [emoji,eor]
+36 und-AT hourCycles => [h23]
+36 und-AT numberingSystems => [latn]
+36 und-AT timeZones => [Europe/Vienna]
+36 und-AT direction => ltr
+36 und-AT week => firstDay=1 weekend=[6,7]
+37 mo => ro base=ro language=ro script=undefined region=undefined
+37 mo variants => undefined
+37 mo keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+37 mo firstDayOfWeek => undefined
+37 mo likely => max=ro-Latn-RO min=ro
+37 mo calendars => [gregory]
+37 mo collations => [emoji,eor]
+37 mo hourCycles => [h23]
+37 mo numberingSystems => [latn]
+37 mo timeZones => undefined
+37 mo direction => ltr
+37 mo week => firstDay=1 weekend=[6,7]
+38 iw => he base=he language=he script=undefined region=undefined
+38 iw variants => undefined
+38 iw keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+38 iw firstDayOfWeek => undefined
+38 iw likely => max=he-Hebr-IL min=he
+38 iw calendars => [gregory,hebrew,islamic,islamic-civil,islamic-tbla]
+38 iw collations => [emoji,eor]
+38 iw hourCycles => [h23]
+38 iw numberingSystems => [latn]
+38 iw timeZones => undefined
+38 iw direction => rtl
+38 iw week => firstDay=7 weekend=[5,6]
+39 in-ID => id-ID base=id-ID language=id script=undefined region=ID
+39 in-ID variants => undefined
+39 in-ID keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+39 in-ID firstDayOfWeek => undefined
+39 in-ID likely => max=id-Latn-ID min=id
+39 in-ID calendars => [gregory,islamic,islamic-civil,islamic-tbla]
+39 in-ID collations => [emoji,eor]
+39 in-ID hourCycles => [h23]
+39 in-ID numberingSystems => [latn]
+39 in-ID timeZones => [Asia/Jakarta,Asia/Jayapura,Asia/Makassar,Asia/Pontianak]
+39 in-ID direction => ltr
+39 in-ID week => firstDay=7 weekend=[6,7]
+40 sh => sr-Latn base=sr-Latn language=sr script=Latn region=undefined
+40 sh variants => undefined
+40 sh keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+40 sh firstDayOfWeek => undefined
+40 sh likely => max=sr-Latn-RS min=sr-Latn
+40 sh calendars => [gregory]
+40 sh collations => [emoji,eor]
+40 sh hourCycles => [h23]
+40 sh numberingSystems => [latn]
+40 sh timeZones => undefined
+40 sh direction => ltr
+40 sh week => firstDay=1 weekend=[6,7]
+41 no => no base=no language=no script=undefined region=undefined
+41 no variants => undefined
+41 no keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+41 no firstDayOfWeek => undefined
+41 no likely => max=no-Latn-NO min=no
+41 no calendars => [gregory]
+41 no collations => [emoji,eor]
+41 no hourCycles => [h23]
+41 no numberingSystems => [latn]
+41 no timeZones => undefined
+41 no direction => ltr
+41 no week => firstDay=1 weekend=[6,7]
+42 tl => fil base=fil language=fil script=undefined region=undefined
+42 tl variants => undefined
+42 tl keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+42 tl firstDayOfWeek => undefined
+42 tl likely => max=fil-Latn-PH min=fil
+42 tl calendars => [gregory]
+42 tl collations => [emoji,eor]
+42 tl hourCycles => [h12]
+42 tl numberingSystems => [latn]
+42 tl timeZones => undefined
+42 tl direction => ltr
+42 tl week => firstDay=7 weekend=[6,7]
+43 art-lojban => jbo base=jbo language=jbo script=undefined region=undefined
+43 art-lojban variants => undefined
+43 art-lojban keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+43 art-lojban firstDayOfWeek => undefined
+43 art-lojban likely => max=jbo-Latn-001 min=jbo
+43 art-lojban calendars => [gregory]
+43 art-lojban collations => [emoji,eor]
+43 art-lojban hourCycles => [h23]
+43 art-lojban numberingSystems => [latn]
+43 art-lojban timeZones => undefined
+43 art-lojban direction => ltr
+43 art-lojban week => firstDay=1 weekend=[6,7]
+44 zh-hakka => hak base=hak language=hak script=undefined region=undefined
+44 zh-hakka variants => undefined
+44 zh-hakka keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+44 zh-hakka firstDayOfWeek => undefined
+44 zh-hakka likely => max=hak-Hans-CN min=hak
+44 zh-hakka calendars => [gregory,chinese]
+44 zh-hakka collations => [emoji,eor]
+44 zh-hakka hourCycles => [h23]
+44 zh-hakka numberingSystems => [latn]
+44 zh-hakka timeZones => undefined
+44 zh-hakka direction => ltr
+44 zh-hakka week => firstDay=1 weekend=[6,7]
+45 aar-x-private => aa-x-private base=aa language=aa script=undefined region=undefined
+45 aar-x-private variants => undefined
+45 aar-x-private keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+45 aar-x-private firstDayOfWeek => undefined
+45 aar-x-private likely => max=aa-Latn-ET-x-private min=aa-x-private
+45 aar-x-private calendars => [gregory,ethiopic]
+45 aar-x-private collations => [emoji,eor]
+45 aar-x-private hourCycles => [h12]
+45 aar-x-private numberingSystems => [latn]
+45 aar-x-private timeZones => undefined
+45 aar-x-private direction => ltr
+45 aar-x-private week => firstDay=7 weekend=[6,7]
+46 es-ES-preeuro => es-ES-preeuro base=es-ES-preeuro language=es script=undefined region=ES
+46 es-ES-preeuro variants => undefined
+46 es-ES-preeuro keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+46 es-ES-preeuro firstDayOfWeek => undefined
+46 es-ES-preeuro likely => max=es-Latn-ES-preeuro min=es-preeuro
+46 es-ES-preeuro calendars => [gregory]
+46 es-ES-preeuro collations => [emoji,eor,trad]
+46 es-ES-preeuro hourCycles => [h23]
+46 es-ES-preeuro numberingSystems => [latn]
+46 es-ES-preeuro timeZones => [Africa/Ceuta,Atlantic/Canary,Europe/Madrid]
+46 es-ES-preeuro direction => ltr
+46 es-ES-preeuro week => firstDay=1 weekend=[6,7]
+47 sl-rozaj-biske-1994 => sl-1994-biske-rozaj base=sl-1994-biske-rozaj language=sl script=undefined region=undefined
+47 sl-rozaj-biske-1994 variants => undefined
+47 sl-rozaj-biske-1994 keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+47 sl-rozaj-biske-1994 firstDayOfWeek => undefined
+47 sl-rozaj-biske-1994 likely => max=sl-Latn-SI-1994-biske-rozaj min=sl-1994-biske-rozaj
+47 sl-rozaj-biske-1994 calendars => [gregory]
+47 sl-rozaj-biske-1994 collations => [emoji,eor]
+47 sl-rozaj-biske-1994 hourCycles => [h23]
+47 sl-rozaj-biske-1994 numberingSystems => [latn]
+47 sl-rozaj-biske-1994 timeZones => undefined
+47 sl-rozaj-biske-1994 direction => ltr
+47 sl-rozaj-biske-1994 week => firstDay=1 weekend=[6,7]
+48 hy-SU => hy-AM base=hy-AM language=hy script=undefined region=AM
+48 hy-SU variants => undefined
+48 hy-SU keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+48 hy-SU firstDayOfWeek => undefined
+48 hy-SU likely => max=hy-Armn-AM min=hy
+48 hy-SU calendars => [gregory]
+48 hy-SU collations => [emoji,eor]
+48 hy-SU hourCycles => [h23]
+48 hy-SU numberingSystems => [latn]
+48 hy-SU timeZones => [Asia/Yerevan]
+48 hy-SU direction => ltr
+48 hy-SU week => firstDay=1 weekend=[6,7]
+49 ru-SU => ru-RU base=ru-RU language=ru script=undefined region=RU
+49 ru-SU variants => undefined
+49 ru-SU keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+49 ru-SU firstDayOfWeek => undefined
+49 ru-SU likely => max=ru-Cyrl-RU min=ru
+49 ru-SU calendars => [gregory]
+49 ru-SU collations => [emoji,eor]
+49 ru-SU hourCycles => [h23]
+49 ru-SU numberingSystems => [latn]
+49 ru-SU timeZones => [Asia/Anadyr,Asia/Barnaul,Asia/Chita,Asia/Irkutsk,Asia/Kamchatka,Asia/Khandyga,Asia/Krasnoyarsk,Asia/Magadan,Asia/Novokuznetsk,Asia/Novosibirsk,Asia/Omsk,Asia/Sakhalin,Asia/Srednekolymsk,Asia/Tomsk,Asia/Ust-Nera,Asia/Vladivostok,Asia/Yakutsk,Asia/Yekaterinburg,Europe/Astrakhan,Europe/Kaliningrad,Europe/Kirov,Europe/Moscow,Europe/Samara,Europe/Saratov,Europe/Ulyanovsk,Europe/Volgograd]
+49 ru-SU direction => ltr
+49 ru-SU week => firstDay=1 weekend=[6,7]
+50 en-u-ca-gregory-co-phonebk-kn => en-u-ca-gregory-co-phonebk-kn base=en language=en script=undefined region=undefined
+50 en-u-ca-gregory-co-phonebk-kn variants => undefined
+50 en-u-ca-gregory-co-phonebk-kn keywords => calendar=gregory collation=phonebk hourCycle=undefined caseFirst=undefined numeric=true numberingSystem=undefined
+50 en-u-ca-gregory-co-phonebk-kn firstDayOfWeek => undefined
+50 en-u-ca-gregory-co-phonebk-kn likely => max=en-Latn-US-u-ca-gregory-co-phonebk-kn min=en-u-ca-gregory-co-phonebk-kn
+50 en-u-ca-gregory-co-phonebk-kn calendars => [gregory]
+50 en-u-ca-gregory-co-phonebk-kn collations => [phonebk]
+50 en-u-ca-gregory-co-phonebk-kn hourCycles => [h12]
+50 en-u-ca-gregory-co-phonebk-kn numberingSystems => [latn]
+50 en-u-ca-gregory-co-phonebk-kn timeZones => undefined
+50 en-u-ca-gregory-co-phonebk-kn direction => ltr
+50 en-u-ca-gregory-co-phonebk-kn week => firstDay=7 weekend=[6,7]
+51 en-u-nu-thai-hc-h23 => en-u-hc-h23-nu-thai base=en language=en script=undefined region=undefined
+51 en-u-nu-thai-hc-h23 variants => undefined
+51 en-u-nu-thai-hc-h23 keywords => calendar=undefined collation=undefined hourCycle=h23 caseFirst=undefined numeric=false numberingSystem=thai
+51 en-u-nu-thai-hc-h23 firstDayOfWeek => undefined
+51 en-u-nu-thai-hc-h23 likely => max=en-Latn-US-u-hc-h23-nu-thai min=en-u-hc-h23-nu-thai
+51 en-u-nu-thai-hc-h23 calendars => [gregory]
+51 en-u-nu-thai-hc-h23 collations => [emoji,eor]
+51 en-u-nu-thai-hc-h23 hourCycles => [h23]
+51 en-u-nu-thai-hc-h23 numberingSystems => [thai]
+51 en-u-nu-thai-hc-h23 timeZones => undefined
+51 en-u-nu-thai-hc-h23 direction => ltr
+51 en-u-nu-thai-hc-h23 week => firstDay=7 weekend=[6,7]
+52 de-u-co-phonebk-ca-buddhist => de-u-ca-buddhist-co-phonebk base=de language=de script=undefined region=undefined
+52 de-u-co-phonebk-ca-buddhist variants => undefined
+52 de-u-co-phonebk-ca-buddhist keywords => calendar=buddhist collation=phonebk hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+52 de-u-co-phonebk-ca-buddhist firstDayOfWeek => undefined
+52 de-u-co-phonebk-ca-buddhist likely => max=de-Latn-DE-u-ca-buddhist-co-phonebk min=de-u-ca-buddhist-co-phonebk
+52 de-u-co-phonebk-ca-buddhist calendars => [buddhist]
+52 de-u-co-phonebk-ca-buddhist collations => [phonebk]
+52 de-u-co-phonebk-ca-buddhist hourCycles => [h23]
+52 de-u-co-phonebk-ca-buddhist numberingSystems => [latn]
+52 de-u-co-phonebk-ca-buddhist timeZones => undefined
+52 de-u-co-phonebk-ca-buddhist direction => ltr
+52 de-u-co-phonebk-ca-buddhist week => firstDay=1 weekend=[6,7]
+53 en-u-fw-mon => en-u-fw-mon base=en language=en script=undefined region=undefined
+53 en-u-fw-mon variants => undefined
+53 en-u-fw-mon keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+53 en-u-fw-mon firstDayOfWeek => undefined
+53 en-u-fw-mon likely => max=en-Latn-US-u-fw-mon min=en-u-fw-mon
+53 en-u-fw-mon calendars => [gregory]
+53 en-u-fw-mon collations => [emoji,eor]
+53 en-u-fw-mon hourCycles => [h12]
+53 en-u-fw-mon numberingSystems => [latn]
+53 en-u-fw-mon timeZones => undefined
+53 en-u-fw-mon direction => ltr
+53 en-u-fw-mon week => firstDay=1 weekend=[6,7]
+54 en-u-rg-gbzzzz => en-u-rg-gbzzzz base=en language=en script=undefined region=undefined
+54 en-u-rg-gbzzzz variants => undefined
+54 en-u-rg-gbzzzz keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+54 en-u-rg-gbzzzz firstDayOfWeek => undefined
+54 en-u-rg-gbzzzz likely => max=en-Latn-US-u-rg-gbzzzz min=en-u-rg-gbzzzz
+54 en-u-rg-gbzzzz calendars => [gregory]
+54 en-u-rg-gbzzzz collations => [emoji,eor]
+54 en-u-rg-gbzzzz hourCycles => [h23]
+54 en-u-rg-gbzzzz numberingSystems => [latn]
+54 en-u-rg-gbzzzz timeZones => undefined
+54 en-u-rg-gbzzzz direction => ltr
+54 en-u-rg-gbzzzz week => firstDay=1 weekend=[6,7]
+55 en-u-sd-usca => en-u-sd-usca base=en language=en script=undefined region=undefined
+55 en-u-sd-usca variants => undefined
+55 en-u-sd-usca keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+55 en-u-sd-usca firstDayOfWeek => undefined
+55 en-u-sd-usca likely => max=en-Latn-US-u-sd-usca min=en-u-sd-usca
+55 en-u-sd-usca calendars => [gregory]
+55 en-u-sd-usca collations => [emoji,eor]
+55 en-u-sd-usca hourCycles => [h12]
+55 en-u-sd-usca numberingSystems => [latn]
+55 en-u-sd-usca timeZones => undefined
+55 en-u-sd-usca direction => ltr
+55 en-u-sd-usca week => firstDay=7 weekend=[6,7]
+56 ar-u-nu-arab => ar-u-nu-arab base=ar language=ar script=undefined region=undefined
+56 ar-u-nu-arab variants => undefined
+56 ar-u-nu-arab keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=arab
+56 ar-u-nu-arab firstDayOfWeek => undefined
+56 ar-u-nu-arab likely => max=ar-Arab-EG-u-nu-arab min=ar-u-nu-arab
+56 ar-u-nu-arab calendars => [gregory,coptic,islamic,islamic-civil,islamic-tbla]
+56 ar-u-nu-arab collations => [compat,emoji,eor]
+56 ar-u-nu-arab hourCycles => [h12]
+56 ar-u-nu-arab numberingSystems => [arab]
+56 ar-u-nu-arab timeZones => undefined
+56 ar-u-nu-arab direction => rtl
+56 ar-u-nu-arab week => firstDay=6 weekend=[5,6]
+57 pt-u-attr2-attr1-ca-gregory => pt-u-attr1-attr2-ca-gregory base=pt language=pt script=undefined region=undefined
+57 pt-u-attr2-attr1-ca-gregory variants => undefined
+57 pt-u-attr2-attr1-ca-gregory keywords => calendar=gregory collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+57 pt-u-attr2-attr1-ca-gregory firstDayOfWeek => undefined
+57 pt-u-attr2-attr1-ca-gregory likely => max=pt-Latn-BR-u-attr1-attr2-ca-gregory min=pt-u-attr1-attr2-ca-gregory
+57 pt-u-attr2-attr1-ca-gregory calendars => [gregory]
+57 pt-u-attr2-attr1-ca-gregory collations => [emoji,eor]
+57 pt-u-attr2-attr1-ca-gregory hourCycles => [h23]
+57 pt-u-attr2-attr1-ca-gregory numberingSystems => [latn]
+57 pt-u-attr2-attr1-ca-gregory timeZones => undefined
+57 pt-u-attr2-attr1-ca-gregory direction => ltr
+57 pt-u-attr2-attr1-ca-gregory week => firstDay=7 weekend=[6,7]
+58 en-t-iw => en-t-he base=en language=en script=undefined region=undefined
+58 en-t-iw variants => undefined
+58 en-t-iw keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+58 en-t-iw firstDayOfWeek => undefined
+58 en-t-iw likely => max=en-Latn-US-t-he min=en-t-he
+58 en-t-iw calendars => [gregory]
+58 en-t-iw collations => [emoji,eor]
+58 en-t-iw hourCycles => [h12]
+58 en-t-iw numberingSystems => [latn]
+58 en-t-iw timeZones => undefined
+58 en-t-iw direction => ltr
+58 en-t-iw week => firstDay=7 weekend=[6,7]
+59 und-x-private => und-x-private base=und language=undefined script=undefined region=undefined
+59 und-x-private variants => undefined
+59 und-x-private keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+59 und-x-private firstDayOfWeek => undefined
+59 und-x-private likely => max=en-Latn-US-x-private min=en-x-private
+59 und-x-private calendars => [gregory]
+59 und-x-private collations => [emoji,eor]
+59 und-x-private hourCycles => [h12]
+59 und-x-private numberingSystems => [latn]
+59 und-x-private timeZones => undefined
+59 und-x-private direction => ltr
+59 und-x-private week => firstDay=7 weekend=[6,7]
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} => en-u-ca-islamic-civil-co-emoji-hc-h11-kf-upper-kn-nu-arab base=en language=en script=undefined region=undefined
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} variants => undefined
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} keywords => calendar=islamic-civil collation=emoji hourCycle=h11 caseFirst=upper numeric=true numberingSystem=arab
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} firstDayOfWeek => undefined
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} likely => max=en-Latn-US-u-ca-islamic-civil-co-emoji-hc-h11-kf-upper-kn-nu-arab min=en-u-ca-islamic-civil-co-emoji-hc-h11-kf-upper-kn-nu-arab
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} calendars => [islamic-civil]
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} collations => [emoji]
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} hourCycles => [h11]
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} numberingSystems => [arab]
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} timeZones => undefined
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} direction => ltr
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} week => firstDay=7 weekend=[6,7]
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} => fr-Cyrl-BE base=fr-Cyrl-BE language=fr script=Cyrl region=BE
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} variants => undefined
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} firstDayOfWeek => undefined
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} likely => max=fr-Cyrl-BE min=fr-Cyrl-BE
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} calendars => [gregory]
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} collations => [emoji,eor]
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} hourCycles => [h23]
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} numberingSystems => [latn]
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} timeZones => [Europe/Brussels]
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} direction => ltr
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} week => firstDay=1 weekend=[6,7]
+62 de-u-kn-false {"numeric":true} => de-u-kn base=de language=de script=undefined region=undefined
+62 de-u-kn-false {"numeric":true} variants => undefined
+62 de-u-kn-false {"numeric":true} keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=true numberingSystem=undefined
+62 de-u-kn-false {"numeric":true} firstDayOfWeek => undefined
+62 de-u-kn-false {"numeric":true} likely => max=de-Latn-DE-u-kn min=de-u-kn
+62 de-u-kn-false {"numeric":true} calendars => [gregory]
+62 de-u-kn-false {"numeric":true} collations => [emoji,eor,phonebk]
+62 de-u-kn-false {"numeric":true} hourCycles => [h23]
+62 de-u-kn-false {"numeric":true} numberingSystems => [latn]
+62 de-u-kn-false {"numeric":true} timeZones => undefined
+62 de-u-kn-false {"numeric":true} direction => ltr
+62 de-u-kn-false {"numeric":true} week => firstDay=1 weekend=[6,7]
+63 en {"firstDayOfWeek":"tue"} => en base=en language=en script=undefined region=undefined
+63 en {"firstDayOfWeek":"tue"} variants => undefined
+63 en {"firstDayOfWeek":"tue"} keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+63 en {"firstDayOfWeek":"tue"} firstDayOfWeek => undefined
+63 en {"firstDayOfWeek":"tue"} likely => max=en-Latn-US min=en
+63 en {"firstDayOfWeek":"tue"} calendars => [gregory]
+63 en {"firstDayOfWeek":"tue"} collations => [emoji,eor]
+63 en {"firstDayOfWeek":"tue"} hourCycles => [h12]
+63 en {"firstDayOfWeek":"tue"} numberingSystems => [latn]
+63 en {"firstDayOfWeek":"tue"} timeZones => undefined
+63 en {"firstDayOfWeek":"tue"} direction => ltr
+63 en {"firstDayOfWeek":"tue"} week => firstDay=7 weekend=[6,7]
+64 ja-JP {"region":"US"} => ja-US base=ja-US language=ja script=undefined region=US
+64 ja-JP {"region":"US"} variants => undefined
+64 ja-JP {"region":"US"} keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+64 ja-JP {"region":"US"} firstDayOfWeek => undefined
+64 ja-JP {"region":"US"} likely => max=ja-Jpan-US min=ja-US
+64 ja-JP {"region":"US"} calendars => [gregory]
+64 ja-JP {"region":"US"} collations => [emoji,eor,unihan]
+64 ja-JP {"region":"US"} hourCycles => [h12]
+64 ja-JP {"region":"US"} numberingSystems => [latn]
+64 ja-JP {"region":"US"} timeZones => [America/Adak,America/Anchorage,America/Boise,America/Chicago,America/Denver,America/Detroit,America/Indiana/Knox,America/Indiana/Marengo,America/Indiana/Petersburg,America/Indiana/Tell_City,America/Indiana/Vevay,America/Indiana/Vincennes,America/Indiana/Winamac,America/Indianapolis,America/Juneau,America/Kentucky/Monticello,America/Los_Angeles,America/Louisville,America/Menominee,America/Metlakatla,America/New_York,America/Nome,America/North_Dakota/Beulah,America/North_Dakota/Center,America/North_Dakota/New_Salem,America/Phoenix,America/Sitka,America/Yakutat,Pacific/Honolulu]
+64 ja-JP {"region":"US"} direction => ltr
+64 ja-JP {"region":"US"} week => firstDay=7 weekend=[6,7]
+65 he-IL {"script":"Latn"} => he-Latn-IL base=he-Latn-IL language=he script=Latn region=IL
+65 he-IL {"script":"Latn"} variants => undefined
+65 he-IL {"script":"Latn"} keywords => calendar=undefined collation=undefined hourCycle=undefined caseFirst=undefined numeric=false numberingSystem=undefined
+65 he-IL {"script":"Latn"} firstDayOfWeek => undefined
+65 he-IL {"script":"Latn"} likely => max=he-Latn-IL min=he-Latn
+65 he-IL {"script":"Latn"} calendars => [gregory,hebrew,islamic,islamic-civil,islamic-tbla]
+65 he-IL {"script":"Latn"} collations => [emoji,eor]
+65 he-IL {"script":"Latn"} hourCycles => [h23]
+65 he-IL {"script":"Latn"} numberingSystems => [latn]
+65 he-IL {"script":"Latn"} timeZones => [Asia/Jerusalem]
+65 he-IL {"script":"Latn"} direction => ltr
+65 he-IL {"script":"Latn"} week => firstDay=7 weekend=[5,6]

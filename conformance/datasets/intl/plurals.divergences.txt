@@ -1,0 +1,145 @@
+# Lines of plurals.icu-77.1.txt where the profile answers otherwise, each the profile's line, under
+# the reason it is not Node's. A line replaces the Node line whose text before ` => ` is the same.
+
+# Node 22's select converts its argument with ToNumber, so a BigInt is a TypeError. ECMA-402 (the
+# current draft, 17.3.3 Intl.PluralRules.prototype.select) converts it with ToIntlMathematicalValue,
+# which takes a BigInt as its exact value.
+1 en select 1n => one
+2 en-US select 1n => one
+3 de select 1n => one
+4 de-DE select 1n => one
+5 en {"type":"ordinal"} select 1n => one
+6 en-US {"type":"ordinal"} select 1n => one
+7 de {"type":"ordinal"} select 1n => other
+8 en {"minimumFractionDigits":1} select 1n => other
+9 de {"minimumFractionDigits":2} select 1n => other
+10 en {"maximumFractionDigits":0} select 1n => one
+11 en {"type":"ordinal","maximumFractionDigits":0} select 1n => one
+12 en {"minimumSignificantDigits":2} select 1n => other
+13 en {"maximumSignificantDigits":1} select 1n => one
+14 de {"maximumSignificantDigits":2,"roundingMode":"floor"} select 1n => one
+15 en {"maximumFractionDigits":0,"roundingMode":"trunc"} select 1n => one
+16 en {"maximumFractionDigits":0,"roundingMode":"halfEven"} select 1n => one
+17 en {"minimumFractionDigits":1,"maximumFractionDigits":1,"roundingIncrement":5} select 1n => other
+18 en {"minimumFractionDigits":2,"trailingZeroDisplay":"stripIfInteger"} select 1n => one
+19 en {"maximumFractionDigits":1,"maximumSignificantDigits":1,"roundingPriority":"morePrecision"} select 1n => one
+20 en {"maximumFractionDigits":1,"maximumSignificantDigits":1,"roundingPriority":"lessPrecision"} select 1n => one
+21 en {"minimumIntegerDigits":3} select 1n => one
+22 en {"notation":"compact"} select 1n => one
+23 de {"notation":"compact","compactDisplay":"long"} select 1n => one
+24 en {"notation":"scientific"} select 1n => one
+25 de {"notation":"engineering","type":"ordinal"} select 1n => other
+26 en-u-nu-arab select 1n => one
+27 de-u-co-phonebk {"localeMatcher":"lookup"} select 1n => one
+
+# ICU 77.1 resolves every range by CLDR's plural ranges, which name no range from one to one, so it
+# answers other. ECMA-402 (17.5.4 ResolvePluralRange) answers the start's category when both ends
+# write the same string under FormatNumericToString, whose string has no sign: 1 and 1.0001 under
+# three fraction digits, -1 and 1, and 0.5 and 1 rounded to no fraction digits are each one string.
+1 en selectRange 1 1 => one
+1 en selectRange 1 1.0001 => one
+1 en selectRange -1 1 => one
+2 en-US selectRange 1 1 => one
+2 en-US selectRange 1 1.0001 => one
+2 en-US selectRange -1 1 => one
+3 de selectRange 1 1 => one
+3 de selectRange 1 1.0001 => one
+3 de selectRange -1 1 => one
+4 de-DE selectRange 1 1 => one
+4 de-DE selectRange 1 1.0001 => one
+4 de-DE selectRange -1 1 => one
+5 en {"type":"ordinal"} selectRange 1 1 => one
+5 en {"type":"ordinal"} selectRange 1 1.0001 => one
+5 en {"type":"ordinal"} selectRange -1 1 => one
+6 en-US {"type":"ordinal"} selectRange 1 1 => one
+6 en-US {"type":"ordinal"} selectRange 1 1.0001 => one
+6 en-US {"type":"ordinal"} selectRange -1 1 => one
+10 en {"maximumFractionDigits":0} selectRange 1 1 => one
+10 en {"maximumFractionDigits":0} selectRange 1 1.0001 => one
+10 en {"maximumFractionDigits":0} selectRange 0.5 1 => one
+10 en {"maximumFractionDigits":0} selectRange -1 1 => one
+11 en {"type":"ordinal","maximumFractionDigits":0} selectRange 1 1 => one
+11 en {"type":"ordinal","maximumFractionDigits":0} selectRange 1 1.0001 => one
+11 en {"type":"ordinal","maximumFractionDigits":0} selectRange 0.5 1 => one
+11 en {"type":"ordinal","maximumFractionDigits":0} selectRange -1 1 => one
+13 en {"maximumSignificantDigits":1} selectRange 1 1 => one
+13 en {"maximumSignificantDigits":1} selectRange 1 1.0001 => one
+13 en {"maximumSignificantDigits":1} selectRange -1 1 => one
+14 de {"maximumSignificantDigits":2,"roundingMode":"floor"} selectRange 1 1 => one
+14 de {"maximumSignificantDigits":2,"roundingMode":"floor"} selectRange 1 1.0001 => one
+14 de {"maximumSignificantDigits":2,"roundingMode":"floor"} selectRange -1 1 => one
+15 en {"maximumFractionDigits":0,"roundingMode":"trunc"} selectRange 1 1 => one
+15 en {"maximumFractionDigits":0,"roundingMode":"trunc"} selectRange 1 1.0001 => one
+15 en {"maximumFractionDigits":0,"roundingMode":"trunc"} selectRange -1 1 => one
+16 en {"maximumFractionDigits":0,"roundingMode":"halfEven"} selectRange 1 1 => one
+16 en {"maximumFractionDigits":0,"roundingMode":"halfEven"} selectRange 1 1.0001 => one
+16 en {"maximumFractionDigits":0,"roundingMode":"halfEven"} selectRange -1 1 => one
+18 en {"minimumFractionDigits":2,"trailingZeroDisplay":"stripIfInteger"} selectRange 1 1 => one
+18 en {"minimumFractionDigits":2,"trailingZeroDisplay":"stripIfInteger"} selectRange 1 1.0001 => one
+18 en {"minimumFractionDigits":2,"trailingZeroDisplay":"stripIfInteger"} selectRange -1 1 => one
+19 en {"maximumFractionDigits":1,"maximumSignificantDigits":1,"roundingPriority":"morePrecision"} selectRange 1 1 => one
+19 en {"maximumFractionDigits":1,"maximumSignificantDigits":1,"roundingPriority":"morePrecision"} selectRange 1 1.0001 => one
+19 en {"maximumFractionDigits":1,"maximumSignificantDigits":1,"roundingPriority":"morePrecision"} selectRange -1 1 => one
+20 en {"maximumFractionDigits":1,"maximumSignificantDigits":1,"roundingPriority":"lessPrecision"} selectRange 1 1 => one
+20 en {"maximumFractionDigits":1,"maximumSignificantDigits":1,"roundingPriority":"lessPrecision"} selectRange 1 1.0001 => one
+20 en {"maximumFractionDigits":1,"maximumSignificantDigits":1,"roundingPriority":"lessPrecision"} selectRange -1 1 => one
+21 en {"minimumIntegerDigits":3} selectRange 1 1 => one
+21 en {"minimumIntegerDigits":3} selectRange 1 1.0001 => one
+21 en {"minimumIntegerDigits":3} selectRange -1 1 => one
+22 en {"notation":"compact"} selectRange 1 1 => one
+22 en {"notation":"compact"} selectRange 1 1.0001 => one
+22 en {"notation":"compact"} selectRange -1 1 => one
+23 de {"notation":"compact","compactDisplay":"long"} selectRange 1 1 => one
+23 de {"notation":"compact","compactDisplay":"long"} selectRange 1 1.0001 => one
+23 de {"notation":"compact","compactDisplay":"long"} selectRange -1 1 => one
+24 en {"notation":"scientific"} selectRange 1 1 => one
+24 en {"notation":"scientific"} selectRange 1 1.0001 => one
+24 en {"notation":"scientific"} selectRange -1 1 => one
+26 en-u-nu-arab selectRange 1 1 => one
+26 en-u-nu-arab selectRange 1 1.0001 => one
+26 en-u-nu-arab selectRange -1 1 => one
+27 de-u-co-phonebk {"localeMatcher":"lookup"} selectRange 1 1 => one
+27 de-u-co-phonebk {"localeMatcher":"lookup"} selectRange 1 1.0001 => one
+27 de-u-co-phonebk {"localeMatcher":"lookup"} selectRange -1 1 => one
+
+# Node 22 predates the draft's notation option: its V8 neither reads it nor applies the compact
+# rounding SetNumberFormatDigitOptions gives it. ECMA-402 (17.1.1 Intl.PluralRules, 16.1.2
+# SetNumberFormatDigitOptions) rounds a compact notation to two significant digits and no fraction
+# digits, so 0.999 and 1.004 are 1.
+22 en {"notation":"compact"} select 0.999 => one
+22 en {"notation":"compact"} select 1.004 => one
+23 de {"notation":"compact","compactDisplay":"long"} select 0.999 => one
+23 de {"notation":"compact","compactDisplay":"long"} select 1.004 => one
+
+# Each resolvedOptions differs from Node 22's in up to three ways. Node predates the draft's notation
+# and compactDisplay properties (17.3.2, table 32), which the profile writes. ICU lists the plural
+# categories in its rules' order, where the draft sorts them zero, one, two, few, many, other. And
+# V8's PluralRules is available only for languages, so en-US and de-DE resolve to en and de, where
+# the profile's available locales are the same four for every constructor (JSD-0043).
+1 en resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+2 en-US resolvedOptions => {"locale":"en-US","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+3 de resolvedOptions => {"locale":"de","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+4 de-DE resolvedOptions => {"locale":"de-DE","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+5 en {"type":"ordinal"} resolvedOptions => {"locale":"en","type":"ordinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["one","two","few","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+6 en-US {"type":"ordinal"} resolvedOptions => {"locale":"en-US","type":"ordinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["one","two","few","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+7 de {"type":"ordinal"} resolvedOptions => {"locale":"de","type":"ordinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+8 en {"minimumFractionDigits":1} resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":1,"maximumFractionDigits":3,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+9 de {"minimumFractionDigits":2} resolvedOptions => {"locale":"de","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":2,"maximumFractionDigits":3,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+10 en {"maximumFractionDigits":0} resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":0,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+11 en {"type":"ordinal","maximumFractionDigits":0} resolvedOptions => {"locale":"en","type":"ordinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":0,"pluralCategories":["one","two","few","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+12 en {"minimumSignificantDigits":2} resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumSignificantDigits":2,"maximumSignificantDigits":21,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+13 en {"maximumSignificantDigits":1} resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumSignificantDigits":1,"maximumSignificantDigits":1,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+14 de {"maximumSignificantDigits":2,"roundingMode":"floor"} resolvedOptions => {"locale":"de","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumSignificantDigits":1,"maximumSignificantDigits":2,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"floor","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+15 en {"maximumFractionDigits":0,"roundingMode":"trunc"} resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":0,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"trunc","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+16 en {"maximumFractionDigits":0,"roundingMode":"halfEven"} resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":0,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfEven","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+17 en {"minimumFractionDigits":1,"maximumFractionDigits":1,"roundingIncrement":5} resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":1,"maximumFractionDigits":1,"pluralCategories":["one","other"],"roundingIncrement":5,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+18 en {"minimumFractionDigits":2,"trailingZeroDisplay":"stripIfInteger"} resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":2,"maximumFractionDigits":3,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"stripIfInteger"}
+19 en {"maximumFractionDigits":1,"maximumSignificantDigits":1,"roundingPriority":"morePrecision"} resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":1,"minimumSignificantDigits":1,"maximumSignificantDigits":1,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"morePrecision","trailingZeroDisplay":"auto"}
+20 en {"maximumFractionDigits":1,"maximumSignificantDigits":1,"roundingPriority":"lessPrecision"} resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":1,"minimumSignificantDigits":1,"maximumSignificantDigits":1,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"lessPrecision","trailingZeroDisplay":"auto"}
+21 en {"minimumIntegerDigits":3} resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":3,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+22 en {"notation":"compact"} resolvedOptions => {"locale":"en","type":"cardinal","notation":"compact","compactDisplay":"short","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":0,"minimumSignificantDigits":1,"maximumSignificantDigits":2,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"morePrecision","trailingZeroDisplay":"auto"}
+23 de {"notation":"compact","compactDisplay":"long"} resolvedOptions => {"locale":"de","type":"cardinal","notation":"compact","compactDisplay":"long","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":0,"minimumSignificantDigits":1,"maximumSignificantDigits":2,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"morePrecision","trailingZeroDisplay":"auto"}
+24 en {"notation":"scientific"} resolvedOptions => {"locale":"en","type":"cardinal","notation":"scientific","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+25 de {"notation":"engineering","type":"ordinal"} resolvedOptions => {"locale":"de","type":"ordinal","notation":"engineering","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+26 en-u-nu-arab resolvedOptions => {"locale":"en","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}
+27 de-u-co-phonebk {"localeMatcher":"lookup"} resolvedOptions => {"locale":"de","type":"cardinal","notation":"standard","minimumIntegerDigits":1,"minimumFractionDigits":0,"maximumFractionDigits":3,"pluralCategories":["one","other"],"roundingIncrement":1,"roundingMode":"halfExpand","roundingPriority":"auto","trailingZeroDisplay":"auto"}

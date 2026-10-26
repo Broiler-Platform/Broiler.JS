@@ -1,0 +1,89 @@
+# broiler-js reference datasets pin 1 (the Intl area)
+#
+# Broiler.VM's reference datasets of the Intl area, the population of part C of bundle sjl-9-001's rule
+# (docs/evidence/sjl-9-001/decision-rule.md, committed at milestone SJL-9.1), which takes "Broiler.VM's
+# reference datasets of the area, byte for byte as Broiler.VM's commit that carries its own bundle sjl-9-001
+# rule holds them, each with Broiler.VM's retained answer and divergences file: src/tests/cldr/{dates,
+# displaynames, durations, lists, locales, numbers, plurals, relativetimes, segments}/ and
+# src/tests/temporal/{intl, calendars-intl, zone-names}/, which SJL-9.2 copies into conformance/datasets/intl/
+# with their digests and the pin conformance/datasets/intl/datasets.pin; and src/tests/cldr/timezones/, which
+# conformance/datasets/time/ holds since SJL-8.4 under block 1 of its datasets.pin; a copy whose digest differs
+# is not the population". This file pins the first twelve programs, copied on 2026-10-26 (milestone SJL-9.2,
+# work package SJL-9.2a). The thirteenth, timezones.js, stays where block 1 of
+# conformance/datasets/time/datasets.pin pins it, and the harness reads it from there.
+#
+# WHERE THEY CAME FROM. The commit that carries Broiler.VM's bundle sjl-9-001 rule is
+# 4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f, the merge of Broiler-Platform/Broiler.VM#171, which holds
+# docs/evidence/sjl-9-001/decision-rule-area.md and JSD-0082. Each file below was written by
+# `git cat-file blob <source-commit>:<path>` in a Broiler.VM checkout, from the commit's object and not from a
+# working tree. Its Git blob id is the one Broiler.VM's tree at that commit names for the path, so
+# `git -C <Broiler.VM> rev-parse <source-commit>:<path>` prints it. The same blobs are those of Broiler.VM's
+# 01444a5, whose objects docs/evidence/sjl-9-001/divergence-groups.tsv names each divergences file by, and of its
+# cd1928d, the revision the correspondence ran: `git diff --stat 01444a5 4cf9ca4 -- src/tests/cldr
+# src/tests/temporal` and `git diff --stat cd1928d 4cf9ca4 -- src/tests/cldr src/tests/temporal` print nothing.
+# Each divergences file is `divergences.txt` in Broiler.VM, so it is renamed here after its program, as SJL-8.4
+# named the time area's; nothing else is renamed, and no byte is changed. `orderings` (SJL-17's) is not copied.
+#
+# WHAT A LINE MEANS. As in conformance/datasets/time/datasets.pin: `source-commit <commit>` names the Broiler.VM
+# commit of the `file` lines after it, up to the next `source-commit` line; `copied` says when that block was
+# copied. `file <name in this directory> <bytes> <sha256> <git blob id> <Broiler.VM path at the block's
+# source-commit>`. `program <name> <program> <retained answer> <divergences>` says which three files make one
+# program's dataset. The harness, scripts/conformance/run_reference_datasets.py, refuses to run when a file's
+# length or SHA-256 differs from its line, and its tests hold every file to its line, and its blob id to its
+# bytes, on every run of the conformance scripts' tests. To check by hand, in this directory:
+#
+#   awk '$1 == "file" { print $4 "  " $2 }' datasets.pin | sha256sum -c
+
+source-repository Broiler.VM
+source-commit 4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f
+copied 2026-10-26
+licence-programs Apache-2.0
+licence-answers none (outputs; see README.md and THIRD_PARTY_NOTICES.md)
+program dates dates.js dates.icu-77.1.txt dates.divergences.txt
+program displaynames displaynames.js displaynames.icu-77.1.txt displaynames.divergences.txt
+program durations durations.js durations.icu-77.1.txt durations.divergences.txt
+program lists lists.js lists.icu-77.1.txt lists.divergences.txt
+program locales locales.js locales.icu-77.1.txt locales.divergences.txt
+program numbers numbers.js numbers.icu-77.1.txt numbers.divergences.txt
+program plurals plurals.js plurals.icu-77.1.txt plurals.divergences.txt
+program relativetimes relativetimes.js relativetimes.icu-77.1.txt relativetimes.divergences.txt
+program segments segments.js segments.icu-77.1.txt segments.divergences.txt
+program temporal-intl temporal-intl.js temporal-intl.polyfill-e8cc03fc.txt temporal-intl.divergences.txt
+program calendar-formats calendar-formats.js calendar-formats.polyfill-e8cc03fc.txt calendar-formats.divergences.txt
+program zone-names zone-names.js zone-names.polyfill-e8cc03fc.txt zone-names.divergences.txt
+file dates.js 8742 ef63d907b04e0f6b42421e92b14703a1bf7f948390ebcd1e4348ba31c1120638 83725ee7097ccbac193a6269fe5807d5af50f72c src/tests/cldr/dates/dates.js
+file dates.icu-77.1.txt 360793 83aba5f97f848ce2b635aac303c2a1606dba0a362ba9b584e71b8903f415f56c c7b7b1b0162ce2e2bbe394e5e64e8f6b73576989 src/tests/cldr/dates/dates.icu-77.1.txt
+file dates.divergences.txt 79526 de43ef1ec930738f2a92f0a53ade3c8caddc145c718907633a15c6c0881f1c54 51788d0b8fc3c71502af76c3aad862d87a52fd6a src/tests/cldr/dates/divergences.txt
+file displaynames.js 4421 58c4d73d7ab422a31d8b7e4c0c798b0f3d6116e63bb01fae519532f1389eab89 21230ed6b69e98258dc56762605686ef3f9cc58a src/tests/cldr/displaynames/displaynames.js
+file displaynames.icu-77.1.txt 79934 d6531691b1558350f9becd7761c5becf900d0024b64813ca469f662fe397e6e3 2d0c0798be8952802a59f6c8b730b4b92dfd3c6a src/tests/cldr/displaynames/displaynames.icu-77.1.txt
+file displaynames.divergences.txt 8297 486a85cea510d59bda27dc20045ec0feb334d61b59713ebede8a772794de1ca2 b661aa31a35d5e1a199a2c2b59131b359b54cd52 src/tests/cldr/displaynames/divergences.txt
+file durations.js 4494 8dc33e7de2bfd86a4b433bc40c9349595fe9684ce972f8413e939933f177e4a6 af8f36bd4b89c2119f05e4e3bf44d085bf4b57ef src/tests/cldr/durations/durations.js
+file durations.icu-77.1.txt 80779 5ed0c5754a18ffa648dceed67b9f806b0b866c53d3ad5465c6114e13affef0ae 1d8d66a111db587f12a8a0f50cf373143a9a30d9 src/tests/cldr/durations/durations.icu-77.1.txt
+file durations.divergences.txt 38596 1155cd7d1c3e1c6f77c88b8276f41c6f14aae0e08112f152ece8984be808db7f 6f2c672f55b15cccc5efc4d1ff2857ab59e3791f src/tests/cldr/durations/divergences.txt
+file lists.js 3401 512384f875e5a588227d51c1b3009c321fdfec770b59ddbe0d467cdf5c427dc7 cea7be39675816fee434f756c72859666a580500 src/tests/cldr/lists/lists.js
+file lists.icu-77.1.txt 45700 33260664d866aa94fd20da8ee8ad8fea02def22a491e3aa277c8ae557277d012 1d3cf01e20dd4439ec797636994cdde3cfec4346 src/tests/cldr/lists/lists.icu-77.1.txt
+file lists.divergences.txt 7722 f919dba7f40c843ac291d43499a1a34a1a48a956feeea25f0eb47aaf3191df29 e22ceba03344624f5653ef1381e5397a6115bcfa src/tests/cldr/lists/divergences.txt
+file locales.js 4310 86c48f27b95ef062ad986bf6189a348b78837720982a19108680c8e38529b52f 4aa8572347cda335ae6395ff01df005c9f357310 src/tests/cldr/locales/locales.js
+file locales.icu-77.1.txt 45208 1ca3ee394520f721f220ec39d672dcd74d550d2df26608983efcbcd259106ed0 eb4c3125c3b814e939e299b0025975d598f1a76a src/tests/cldr/locales/locales.icu-77.1.txt
+file locales.divergences.txt 10143 15793d18d72039b6198b7b0b8558ac3a38480987ca668b0230760cd4a6cece61 d3d115d90467f17345f396e86ed5a3dc0e753c15 src/tests/cldr/locales/divergences.txt
+file numbers.js 5754 45297237ec3213fb16e64cf9139b5d1d4320c6187b431d2493bec852cc225db1 b7dc6e4b93d6a6d54c39bf9415b8d8671d71e62f src/tests/cldr/numbers/numbers.js
+file numbers.icu-77.1.txt 359207 4fb65171fe20a37d8f035eaec9317384e3a2751eb7fdc21923b3f5928b689925 e6dd113671329f98d994f3be11215ca6eebf1757 src/tests/cldr/numbers/numbers.icu-77.1.txt
+file numbers.divergences.txt 5199 6d60f3b1b51bc4b5ce6d4020aaeea842c5ba0463a4a059578781d276437facd1 887817c30c944ac44744864afac0dc43657a0c65 src/tests/cldr/numbers/divergences.txt
+file plurals.js 3754 50cb38e2c6bd182e7051c542e1b1c9a46a01e377314a41c95aa6fb7ee712f08d b7c3b6e1afd55e4cb43b5a161c40ec92f3e00d03 src/tests/cldr/plurals/plurals.js
+file plurals.icu-77.1.txt 88979 277b7a15bbe40299b438235f40849debb7c9db0341d1e221cb946358138b3c2c 77f775be706e86ec7992dc82b477dd1e5c1f0d4e src/tests/cldr/plurals/plurals.icu-77.1.txt
+file plurals.divergences.txt 17110 d266fa48747322ee7db647ce9a88ba8d1b0b51175d6878cc681053ccf9ba8c4f 3160681cb2bc0bc87636c9aa0df59ed3b64e025d src/tests/cldr/plurals/divergences.txt
+file relativetimes.js 3845 a080a0850be70c037c9a47d30f912ca07ab09418f3897f506e4fc96358debc0c 263ffb343f8af5a6d4d5faac8fc371667f8b252b src/tests/cldr/relativetimes/relativetimes.js
+file relativetimes.icu-77.1.txt 169277 bfa0d944bd0e32c6c6bb06562734a7ecd50d6e49ae8f030a5b9b0fdcde009cae 21d020ef07abec3ab4f8fd6920b06a7ba1df0700 src/tests/cldr/relativetimes/relativetimes.icu-77.1.txt
+file relativetimes.divergences.txt 6876 38bd3aaafcbcf1e1a57b63b8b4a4b389d44a6d9687bb47b7cd7b938d2a53c7d9 b11bf74b9678ef331634f82f90818b1318c5192f src/tests/cldr/relativetimes/divergences.txt
+file segments.js 4020 7ff168dd0075d2daef8f03fb7af6410d1a8b578363cbdf2418cb448e390bd368 118c20570c387677f3fcaada1b3d07f2570b7e4e src/tests/cldr/segments/segments.js
+file segments.icu-77.1.txt 16732 9996a94ce3ffa8822a38078a4575fe76f06dbd66dd9c265776f931a7ba127f2e cd2bf14b813d65acb9b25a39dcf85419cc036b2a src/tests/cldr/segments/segments.icu-77.1.txt
+file segments.divergences.txt 1112 bc17e9ddd83bd075cdc9fd905365367b2e57da2d3cb4f225200f0788e2084c81 d0d0d2a972ad6d11424b763a3c1255f7b8bec8bd src/tests/cldr/segments/divergences.txt
+file temporal-intl.js 4497 54b25e6b06083e83fd5d14c3974c6a8d2ff3d1214e98ac9177111ba48265758b c8a4e48e3d0c7e887cfc2eb7716c49de8a64ea5c src/tests/temporal/intl/temporal-intl.js
+file temporal-intl.polyfill-e8cc03fc.txt 121507 0be0ed22c4d0847033fca3c815cdc1d9c1a1a03d5725007111fe9ea44fcfdb22 fc4a345af32dcbd95ce7c050e33bf460e058f49f src/tests/temporal/intl/temporal-intl.polyfill-e8cc03fc.txt
+file temporal-intl.divergences.txt 8195 b22d0a3bfe38a7a3d736808451dfdc98fea2671112c8bf0782cbc53a42aca31c 346138b54db3b9dd0860ae85247fb8741efe9358 src/tests/temporal/intl/divergences.txt
+file calendar-formats.js 6439 c4a04d422eca75aa2c39014f0a6341e3cd49cb933a7674d50c2de7107a793f12 9ec0f18ab24c6bfb9559b7caf29a3ec18d20386e src/tests/temporal/calendars-intl/calendar-formats.js
+file calendar-formats.polyfill-e8cc03fc.txt 607186 c2170098996f49f52890be7b1308e7fade1782fc134fc486986e4971c6622606 53732fdced39b342acbef5ab137bd37f0d306a5b src/tests/temporal/calendars-intl/calendar-formats.polyfill-e8cc03fc.txt
+file calendar-formats.divergences.txt 148512 858cbb9de2fa948e294bafca5c54caf983a2f73065194cdc7f88dc50ae3838e2 ea0a9f06654784226bf2e85aaa6ad2430a2bb4a4 src/tests/temporal/calendars-intl/divergences.txt
+file zone-names.js 12189 3f47c84802e66ee988182e5e6412d3df730cb69de9b4fbd37181a7cec6fe47a9 ecf3b0c763b4380b91323e0d1b81a2edc76c608a src/tests/temporal/zone-names/zone-names.js
+file zone-names.polyfill-e8cc03fc.txt 296279 1ce2ea5767272e2914bd992bb38379711e3930db315a72654b5c575b294f9c13 352a4b5549c3d44eae489a8922be788745dd5407 src/tests/temporal/zone-names/zone-names.polyfill-e8cc03fc.txt
+file zone-names.divergences.txt 31634 2522c9ede8175161243203bbc67f4b0f09afad149fca45ec269c5547d3fcaf3f 1608a201b6479266ae0ec00a51f6bd7e9fe5d2c9 src/tests/temporal/zone-names/divergences.txt
