@@ -10,6 +10,45 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### A loop with a `let` head completes with its body's last value (2026-10-26)
+
+A `for`, `for-in` or `for-of` loop whose head declares `let` bindings now completes, in a script's or an eval's
+code, with the value ForBodyEvaluation gives it, as one whose head declares `const` or `using` bindings already did:
+the last value other than empty that an iteration of its body completed with, or the value a `break` or `continue`
+carries, by UpdateEmpty. The statements the compiler's for-loop pass, `ForLoopPreparation`, adds to such a loop's
+body took part in that value. No public member is added, removed or changed.
+
+- **A C-style `let` loop that its test ended was undefined.** The pass moves the test into the body as
+  `if (!test) break;`, which completed as an `if` without an `else` does, with undefined, so
+  `for (let i = 0; i < 3; i++) { i; }` and `for (let i = 0; i < 3; i++) { (() => i)(); }` were undefined for 2. A
+  `const` head's test stays in the head, and a C-style `using` head is kept as written.
+- **A `let` `for-in` or `for-of` loop whose body completed empty took the value of the per-iteration
+  declaration** the pass puts first in the body: `1; for (let x of [1, 2]) { }` was 2 for undefined. A `const`
+  one's declaration gave none.
+- **The parser's rewrite did the same.** It emitted these shapes until milestone SJL-12.5 moved the rewrite into the
+  pass; the test has been moved into the body since `367a8ae1`. 18 of the new test's 44 rows fail before this
+  change, alike at the commit it is based on and at `792ff56e`, the last commit before the move.
+- **The pass marks the statements it adds** with the internal `AstStatement.IsLoopBookkeeping`: the per-iteration
+  declaration, the moved test, the guarded update, the copy back into the carriers, and the `try` that runs the copy
+  on a `continue`. Where a completion value is tracked, `FastCompiler` compiles a marked statement so that it neither
+  sets that value nor yields one, and builds the marked `try` without a completion variable of its own, so that the
+  body inside it sets the value as it would without it. In a function's body, where no completion value is tracked,
+  the compiled code is unchanged. `ForLoopPreparationTests` (Compiler.Tests) holds the cases:
+  `A_lexical_loop_completes_with_its_last_body_value`, whose values are those Node 22 gives but for its `using`
+  rows (Node 22 has no `using`), and `The_pass_marks_the_statements_it_adds_and_no_other`.
+- **No test262 path changes.** The pinned suite has no test of a lexical head's completion value (the `cptn-*` tests
+  of `language/statements/for` have `var` and expression heads), so `scripts/compliance/test262-failures.txt` keeps
+  its entries, none of which is about loops. Over the suite's `language/statements`, `language/eval-code`,
+  `annexB/language`, `staging/sm/lexical-environment` and `staging/sm/statements` (10,584 files, the original
+  variant, negative tests included), every path that fails with this change fails without it.
+- **What does not change.** A body whose last statement is a declaration of the source still gives that
+  declaration's value, in every kind of loop and in an `if` or a `switch`:
+  `for (var i = 0; i < 2; i++) { 1; var x = 2; }` is 2 and `1; if (true) { 2; var y = 3; }` is 3, where both are 2
+  by the specification. Each of those statements also takes its body's compiled value as a completion value, which a
+  declaration has but should not give.
+- **A persisted entry of `AssemblyCodeCache` written before this change is not read.** It holds the old code, and
+  the cache keys every entry on the module version ids of the engine's assemblies, which this change alters.
+
 ### `continue` names any label of a loop's label set (2026-10-26)
 
 - **`continue L` now continues the loop when `L` is an outer label of a label set**, several labels stacked

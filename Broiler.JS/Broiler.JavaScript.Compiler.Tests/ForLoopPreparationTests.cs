@@ -14,7 +14,8 @@ namespace Broiler.JavaScript.Compiler.Tests;
 /// <summary>
 /// The compiler's for-loop pass, <c>ForLoopPreparation</c> (milestone SJL-12.5, item 5; Broiler.VM's
 /// JSD-0080, decision D22): the entry point the bundle's decision rule names, the parser's
-/// <c>ContainsContinue</c> it reads, the shape it emits, and the temporaries' names.
+/// <c>ContainsContinue</c> it reads, the shape it emits, the temporaries' names, and the completion values
+/// of the loops it rewrites.
 /// </summary>
 /// <remarks>
 /// The pass and the loops' <c>ContainsContinue</c> are internal, so these tests reach them as the bundle's
@@ -186,6 +187,158 @@ public sealed class ForLoopPreparationTests
     {
         using var context = new JSContext();
         Assert.Equal(expected, context.Eval(source).ToString());
+    }
+
+    /// <summary>
+    /// A rewritten loop completes with the value ForBodyEvaluation gives it: V starts undefined, takes each
+    /// iteration's body value that is not empty, and a <c>break</c> or <c>continue</c> completes by
+    /// UpdateEmpty, so its own value wins when it has one and V when it has none. The statements the pass
+    /// adds - the per-iteration declaration, the test it moves into the body, the guarded update, the copy
+    /// back into the carriers and the <c>try</c> that runs the copy on a <c>continue</c> - take no part.
+    /// Before they were marked, the test that ends the loop left it undefined, as an <c>if</c> without an
+    /// <c>else</c> does, and an empty body of a <c>let</c> <c>for-of</c> or <c>for-in</c> loop gave the
+    /// declaration's value. A <see langword="null"/> expected value is undefined. The values are those Node
+    /// 22 gives, but for the last three rows: Node 22 has no <c>using</c>, and they are ForBodyEvaluation's,
+    /// as a C-style <c>using</c> head is kept as written and adds nothing to the body. The first four rows are
+    /// test262's <c>language/statements/for/cptn-decl-expr-iter.js</c> and <c>cptn-decl-expr-no-iter.js</c>
+    /// with a <c>let</c> head for their <c>var</c> one, and the next four the C-style form of
+    /// <c>for-of/cptn-decl-abrupt-empty.js</c>.
+    /// </summary>
+    [Theory]
+    [InlineData("1; for (let run = true; run; run = false) { }", null)]
+    [InlineData("2; for (let run = true; run; run = false) { 3; }", "3")]
+    [InlineData("1; for (let run = false; run; ) { }", null)]
+    [InlineData("2; for (let run = false; run; ) { 3; }", null)]
+    [InlineData("1; for (let a; ; ) { break; }", null)]
+    [InlineData("2; for (let b; ; ) { 3; break; }", "3")]
+    [InlineData("4; outer: do { for (let a; ; ) { continue outer; } } while (false)", null)]
+    [InlineData("5; outer: do { for (let b; ; ) { 6; continue outer; } } while (false)", "6")]
+    [InlineData("for (let i = 0; i < 3; i++) { i; }", "2")]
+    [InlineData("for (let i = 0; i < 3; i++) { (() => i)(); }", "2")]
+    [InlineData("for (let i = 0; i < 3; i++) i;", "2")]
+    [InlineData("for (let i = 0; i < 3;) { i++; }", "2")]
+    [InlineData("for (let [a, b] = [0, 3]; a < b; a++) { a * 10; }", "20")]
+    [InlineData("for (let i = 0; i < 3; i++) { let i = 'x' + 1; i; }", "x1")]
+    [InlineData("for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) i * 10 + j;", "11")]
+    [InlineData("for (let i = 0; i < 3; i++, (() => i)) { i; }", "2")]
+    [InlineData("for (let i = 0; i < 3; i++) { try { i; } finally { 'f'; } }", "2")]
+    [InlineData("for (const c = 5, n = [0]; n[0] < 3; n[0]++) { c + n[0]; }", "7")]
+    [InlineData("for (const k = 1; ; ) { k; break; }", "1")]
+    [InlineData("1; for (let i = 0; i < 3; i++) { }", null)]
+    [InlineData("1; for (let i = 0; i < 3; i++) { let x = i; }", null)]
+    [InlineData("1; for (let i = 0; i < 3; i++, (() => i)) { }", null)]
+    [InlineData("1; for (let i = 0; i < 3;) { i++; var z; }", "2")]
+    [InlineData("1; for (const c = 0, n = [0]; n[0] < 3; n[0]++) { }", null)]
+    [InlineData("for (let i = 0; i < 5; i++) { if (i < 2) continue; i; break; }", "2")]
+    [InlineData("for (let i = 0; i < 3; i++) { if (i === 1) continue; i; }", "2")]
+    [InlineData("for (let i = 0; i < 3; i++) { i; if (i === 2) continue; }", null)]
+    [InlineData("for (let i = 0; i < 3; i++) { i; continue; }", "2")]
+    [InlineData("1; for (let i = 0; i < 3; i++) { if (i === 2) continue; }", null)]
+    [InlineData("for (let i = 0; i < 3; i++) { switch (i) { case 1: continue; } i; }", "2")]
+    [InlineData("for (let i = 0; i < 3; i++) { i; if (i === 1) break; }", null)]
+    [InlineData("for (let i = 0; ; i++) { if (i === 3) break; i; }", null)]
+    [InlineData("for (let i = 0; i < 3; i++) { i; { break; } }", "0")]
+    [InlineData("outer: for (let i = 0; i < 3; i++) { for (let j = 0; j < 3; j++) { i * 10 + j; if (j === 1) continue outer; } }", null)]
+    [InlineData("outer: for (let i = 0; i < 3; i++) { for (;;) { i; continue outer; } }", "2")]
+    [InlineData("(function () { return eval('for (let i = 0; i < 3; i++) { i; }'); })()", "2")]
+    [InlineData("1; for (let [] = []; false; ) { }", null)]
+    [InlineData("1; for (let x of [1, 2]) { }", null)]
+    [InlineData("1; for (let x in { a: 1 }) { }", null)]
+    [InlineData("1; for (const x of [1, 2]) { }", null)]
+    [InlineData("for (let x of [1, 2]) { x; }", "2")]
+    [InlineData("var n = 0; for (using u = null; n < 3; n++) { n; }", "2")]
+    [InlineData("1; for (using u = null; ; ) { break; }", null)]
+    [InlineData("2; for (using u = null; ; ) { 3; break; }", "3")]
+    public void A_lexical_loop_completes_with_its_last_body_value(string source, string? expected)
+    {
+        using var context = new JSContext();
+        var result = context.Eval(source, "x.js");
+        if (expected == null)
+            Assert.True(result.IsUndefined, source + " completed with " + result + ", not undefined");
+        else
+            Assert.Equal(expected, result.ToString());
+    }
+
+    /// <summary>
+    /// What keeps the pass's statements out of the completion value: it marks each statement it adds to a
+    /// loop's body as the loop's bookkeeping, and none of the source's. The blocks it builds are not marked,
+    /// and neither are the statements inside a marked one other than the <c>try</c> (the test's
+    /// <c>break</c>, the guarded update), which the compiler keeps out with it. Every statement of the
+    /// parsed bodies but a block, which the pass may splice away, is found again in the prepared ones,
+    /// unmarked; the head's declaration, which the pass replaces, is not a body's statement.
+    /// </summary>
+    [Theory]
+    [InlineData("for (let i = 0; i < 3; i++) { i; }", 3)]
+    [InlineData("for (let i = 0; i < 3; i++) { if (i) continue; i; }", 4)]
+    [InlineData("for (let i = 0; i < 3; i++, (() => i)) { i; }", 5)]
+    [InlineData("for (let i = 0; ; ) { let i = 1; break; }", 2)]
+    [InlineData("for (const c = 0; c < 1; ) { c; break; }", 1)]
+    [InlineData("for (let x of [1]) x; for (const k in {}) {}", 2)]
+    public void The_pass_marks_the_statements_it_adds_and_no_other(string source, int added)
+    {
+        var program = Parse(source);
+        var parsed = new HashSet<AstStatement>(BodyStatements(program).Where(static s => s is not AstBlock), System.Collections.Generic.ReferenceEqualityComparer.Instance);
+        Assert.DoesNotContain(parsed, IsLoopBookkeeping);
+
+        var prepared = BodyStatements((AstProgram)Prepare.Invoke(null, [program, 0])!);
+        var marked = prepared.Where(IsLoopBookkeeping).ToList();
+        Assert.Equal(added, marked.Count);
+        Assert.All(marked, static statement => Assert.Contains(statement.Type,
+            new[] { FastNodeType.VariableDeclaration, FastNodeType.IfStatement, FastNodeType.ExpressionStatement, FastNodeType.TryStatement }));
+
+        var unmarked = prepared.Where(static s => s is not AstBlock && !IsLoopBookkeeping(s)).ToList();
+        Assert.Equal(parsed.Count, unmarked.Count);
+        Assert.All(unmarked, statement => Assert.Contains(statement, parsed));
+    }
+
+    private static bool IsLoopBookkeeping(AstStatement statement)
+        => (bool)typeof(AstStatement).GetField("IsLoopBookkeeping", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(statement)!;
+
+    // The statements of the bodies of a program's top-level loops, at any depth, blocks among them; the
+    // statements inside a marked statement other than a try are not walked. The sources above hold no
+    // statement that holds a statement but a block, an if and the pass's try.
+    private static List<AstStatement> BodyStatements(AstProgram program)
+    {
+        var statements = new List<AstStatement>();
+
+        void Walk(AstStatement? statement)
+        {
+            if (statement == null)
+                return;
+
+            statements.Add(statement);
+            if (IsLoopBookkeeping(statement) && statement is not AstTryStatement)
+                return;
+
+            switch (statement)
+            {
+                case AstBlock block:
+                    foreach (var inner in block.Statements)
+                        Walk(inner);
+                    break;
+                case AstIfStatement branch:
+                    Walk(branch.True);
+                    Walk(branch.False);
+                    break;
+                case AstTryStatement attempt:
+                    Walk(attempt.Block);
+                    Walk(attempt.Finally);
+                    break;
+            }
+        }
+
+        foreach (var statement in program.Statements)
+        {
+            Walk(statement switch
+            {
+                AstForStatement loop => loop.Body,
+                AstForInStatement loop => loop.Body,
+                AstForOfStatement loop => loop.Body,
+                _ => throw new InvalidOperationException("Not a loop: " + statement.Type),
+            });
+        }
+
+        return statements;
     }
 
     // The names the pass added to the parse of source: those of the prepared tree the parsed one does not hold.
