@@ -462,7 +462,9 @@ of it:
   `DateTime.Parse` reads a guest string into a host type and is not `Date.parse`. Outside the area, and left
   to their milestones as the correspondence names them: `Temporal`'s grammar and limits (SJL-10), the
   bundled tzdata and the non-ISO calendars (SJL-8), and Intl's `ArgumentOutOfRangeException` for
-  `formatToParts(8.64e15)` (SJL-9).
+  `formatToParts(8.64e15)` (SJL-9). *(Noted 2026-10-26, at SJL-9.1: "Intl's `ArgumentOutOfRangeException` for
+  `formatToParts(8.64e15)` (SJL-9)" was fixed on 2026-10-16, before SJL-9 began (row T28), and decision D25
+  drops it from SJL-9.5's list; "Locale data and the Intl algorithms (SJL-9.1)" below.)*
 - **The rules** are committed with this record, before any code of the area: test262 per path in UTC and
   in `America/New_York`, the latter the non-UTC host run of clause 4, each taken by `test262 evidence`
   with its new `time_zone` input (`docs/evidence/sjl-6-001/decision-rule.md`), and the library-level
@@ -580,7 +582,11 @@ by the owner's choice, which the programme's ledger records. This repository's p
   not follow UAX #29 (G1, G2). **Pinned data replaces the host's**, a correction of class C5 under
   SJL-D-6, for the identifier classes (I2), the default case mappings (C3), normalization at Unicode 16
   and 17 and under invariant globalization (N2, N3) and grapheme clusters (G3); and `isWordLike` becomes
-  the owner's word status (G4).
+  the owner's word status (G4). *(Noted 2026-10-26, at SJL-9.1: of "`null` and no argument read as the host's
+  culture (C8)", only the refusal of `null` stands as a correction from SJL-9.5. By Broiler.VM's JSD-0082,
+  decision D7 as revised for finding F3 (row L35), casing with no argument then reads this engine's
+  default-locale provider, which is the host's culture under one, as Intl's services do; "Locale data and the
+  Intl algorithms (SJL-9.1)" below records it, and SJL-9.5's changelog entry quotes C8's line.)*
 - **The deletion list grows**, as JSD-0074 records: beside the milestone's, `IsValidNativeFunctionToStringName`'s
   `char.IsLetter`, the collator's `IsNormalized`, and the translator's loose property lookup with its
   `NormalizeKey`, which becomes a call to the owner's exact lookup while the translator itself stays
@@ -650,7 +656,13 @@ and compares its output byte for byte".)*
 - **Policies decided here**: a result longer than this engine's strings hold is a `RangeError`, the owner
   taking `JSString.MaximumLength` as its maximum result length; the default language of `toLocaleUpperCase`
   and `toLocaleLowerCase` is this engine's, never the host's culture, while Intl's other services keep the
-  host's culture until SJL-9.
+  host's culture until SJL-9. *(Noted 2026-10-26, at SJL-9.1: of "the default language of `toLocaleUpperCase`
+  and `toLocaleLowerCase` is this engine's, never the host's culture, while Intl's other services keep the
+  host's culture until SJL-9", Broiler.VM's JSD-0082, decision D7 as revised for finding F3 (row L35), reads
+  "this engine's" as this engine's default-locale provider. From SJL-9.5, under a host culture, casing with
+  no locale follows that culture's language through the provider, never through `CultureInfo` directly, and
+  the refusal of a `null` locale stands. Intl's services keep the host's culture after SJL-9 as well
+  (SJL-D-19). See "Locale data and the Intl algorithms (SJL-9.1)" below.)*
 - **Decision SJL-D-25**: `StringSpan.Trim`, `TrimStart` and `TrimEnd` stay, obsolete, as forwarders to the
   shared white-space set, and `Broiler.JavaScript.Ast` now references `Broiler.ECMAScript.Algorithms`
   ([`docs/public-api.md`](../public-api.md)).
@@ -1499,6 +1511,10 @@ This repository's part of it:
     Broiler.VM's options it writes Broiler.VM's `JsCldrTables.g.cs` byte for byte; with this engine's it writes one file
     per table under `data/intl/generated/`, which `BuiltIns` embeds as resources, as the time tables are, held by rule
     SL7. A change to the table format is a major version of the library.
+- **The data contract** (decision D8): two layers, the tables as an `IIntlDataSet` and the questions as an
+  `ILocaleData`, which this engine's host-culture provider also implements, ordered by `CompositeLocaleData`: the
+  shared data first, then the optional secondary provider, then the parent and root. Broiler.VM keeps its
+  `IJsIntlData` and `JsIntlTable` public and adapts them. The home's design document gives the contract.
 - **The locale lists** (decision D5) are below this list.
 - **The host-culture provider** (decision D6). It answers only what .NET exposes exactly: number symbols and native
   digits, month, day and era names, AM and PM, and the first day of the week, and only for locales the shared data
@@ -1510,7 +1526,10 @@ This repository's part of it:
   the host's cultures. Two readings follow from the pinned text:
   - **the default is available**: the available locales always include the default locale and the less narrow tags the
     same clause requires for it, so under invariant globalization they are `en-US` and `en`, where today they are none
-    (row L44, a correction). Part D of the rule runs test262's `intl402/default-locale-is-supported.js` there;
+    (row L44, a correction). Every service's available locales come from the available-locale provider as revised
+    at SJL-9.5, `Intl.Collator`'s included: its collation data and comparison keep their host path until SJL-17, but
+    its negotiation is this engine's shared one. Part D of the rule runs test262's
+    `intl402/default-locale-is-supported.js` there, which tests `Intl.Collator` first;
   - **one default**: every reader of DefaultLocale reads the same provider, so under an `az`, `lt` or `tr` host culture
     `toLocaleLowerCase()` and `toLocaleUpperCase()` with no locale case by that culture's language, as the Intl
     services already resolve it (row L35). SJL-7.5's C8 is read as "casing reads the host's culture only through the
@@ -1522,10 +1541,16 @@ This repository's part of it:
   date; Intl over Temporal by `tc39/proposal-temporal@e8cc03fc`. SJL-9.2 records them in
   `conformance/vectors/sources/ecma402.pin`. test262 stays at `ccaac100`. **Where a test262 file both engines pass asks
   for an answer that text does not give, the file is the arbiter** (decision D33): rows S7 (the past pattern writes the
-  number's magnitude) and T8 (`hourCycle` reported only for a format with an hour) keep both engines' answer. Row L17's
-  file, `Locale/prototype/getCollations/output-array-values.js`, asks `en` for a collation the text does not require;
-  it keeps passing here because this engine's adapter hands the shared CollationsOfLocale its own Collator's list,
-  which names one for `en`, and SJL-17 inherits that condition.
+  number's magnitude: `RelativeTimeFormat/prototype/format/en-us-numeric-always.js` and
+  `RelativeTimeFormat/prototype/formatToParts/en-us-numeric-always.js`) and T8 (`hourCycle` reported only for a
+  format with an hour: `DateTimeFormat/prototype/resolvedOptions/hourCycle-dateStyle.js` and `hourCycle.js`) keep
+  both engines' answer. Row L17's file, `Locale/prototype/getCollations/output-array-values.js`, asks `en` for a
+  collation the text does not require; it keeps passing only if this engine's adapter hands the shared
+  CollationsOfLocale its own Collator's list, which names one for `en`. Task 8.3's local pre-check holds it, and SJL-17
+  inherits the condition: this engine's Collator data for `en` keeps a collation, or SJL-17's rule names the file.
+  The same list is what the rule's part C admits, under class V, for a `collations` line of the locales program's
+  group of a Collator's tailorings: with it, this engine's `zh`, `zh-Hant`, `zh-TW`, `zh-Hans-SG` and `ko` lines
+  equal neither the retained answers nor Broiler.VM's `[emoji,eor]`.
 - **The resolved time zone** (decision D15, as revised for finding F9). This engine already reports the identifier as
   given, case-normalised, which the pinned Temporal text requires, and keeps it. The shared resolution answers the
   identifier and its primary, and the library names the zone by the primary, so this engine's names for an identifier
@@ -1586,10 +1611,11 @@ This repository's part of it:
   of a non-primary identifier (T26, decision D15); interval patterns (T30); and the fallback of `islamic` and
   `islamic-rgsa`, from `gregory` to `islamic-tbla` (T33).
 - **The data changes** (C5), each listed by its row and its decision (D5, D13, D21, D34) where this engine's answer
-  moves: the rows of the column "Data policy", L5 to L8, L19, L22, L24, L26, L32, P3, N1b, N2b, N3b, N3c, N5d, N6d, N7b,
-  N8b, N9c, N9e, N14, S1b, S4b, S8, T10, T12, T15, T16, T17, T22, T24, T31, T36, T37 and U13 to U16, with N8a. The
-  generated CLDR 48.2.0 tables replace the hand tables, the CLDR package, the host's ICU and the CLDR 47.0.0 table; the
-  `atTime` joins and U+202F are among them (T12).
+  moves: the rows of the column "Data policy", L5 to L8, L19, L22, L24, L26, P3, N1b, N2b, N3b, N3c, N5d, N6d, N7b,
+  N8b, N9c, N9e, N14, S1b, S4b, S8, T10, T12, T15, T16, T17, T22, T24, T31, T36, T37 and U13 to U16, with N8a. Row L32
+  is in that column too, but its data is each engine's collation data, SJL-17's (SJL-D-24 (c)), and no answer moves at
+  SJL-9. The generated CLDR 48.2.0 tables replace the hand tables, the CLDR package, the host's ICU and the CLDR 47.0.0
+  table; the `atTime` joins and U+202F are among them (T12).
 - **What stays as it is.** The rows that are the same in both engines; and the engine policies, which the library's
   parameters keep this engine's: the default locale and zone, the available locales, the Collator's list, the meter
   and this engine's extensions (rows L28, L33, L40, L43, M9, N16, T3, T11, T40 and U19). Row L35 is the one engine
@@ -1605,7 +1631,9 @@ This repository's part of it:
   - this engine's uses of `Broiler.Unicode.Cldr.LocaleData` for Intl data;
   - `JSIntlDefaultNumberingSystems.g.cs` and `scripts/intl/generate_default_numbering_systems.py` (decision D13);
   - the members of `JSIntlDateTimeFormat` no caller reaches (row T42): the constructor from a `CultureInfo`,
-    `Format(DateTimeOffset, JSObject)`, `FormatEnglishHour`, `FormatDayPeriod` and the `locale` field.
+    `Format(DateTimeOffset, JSObject)`, `FormatEnglishHour(DateTimeOffset)`, `FormatDayPeriod(DateTimeOffset, string)`
+    and the `locale` field, as row T42 names them. The overload `FormatEnglishHour(int)` is not among them: the
+    `dayPeriod` paths of `format` and `formatToParts` call it.
 - **Decision SJL-D-25** (decision D24). The public Intl types, `JSIntlNumberFormat` and the others, stay as the
   engine's Intl objects with every public member, disposition (a), and nothing public is removed.
   `JSIntlDateTimeFormat`'s public static `Get(CultureInfo)` and `ApplyAllDefaults` stay, over the library, a culture's
@@ -1617,9 +1645,9 @@ This repository's part of it:
 - **Acceptance data** (decisions D16, D17 as revised, D22 and D23). Broiler.VM's Intl reference datasets, all but
   `orderings` (SJL-17's), are copied into `conformance/datasets/intl/` at SJL-9.2, and their divergence groups are
   classed in the bundle's [`divergence-groups.tsv`](../evidence/sjl-9-001/divergence-groups.tsv), read with the dated
-  corrections its README records. The Intl vectors take their expected values from ICU through the Node.js release the
-  bundle's [`reference.txt`](../evidence/sjl-9-001/reference.txt) names, which answers CLDR 48.0, each divergence argued
-  against a clause of the text; three readings are fixed before any vector exists, for DurationFormat (rows U1 and U3),
+  corrections its README records, both as the rule commit holds them. The Intl vectors take their expected values from
+  ICU through the Node.js release the bundle's [`reference.txt`](../evidence/sjl-9-001/reference.txt) names, which
+  answers CLDR 48.0, each divergence argued against a clause of the text; three readings are fixed before any vector exists, for DurationFormat (rows U1 and U3),
   for U+202F (row T12, a date-time string being the concatenation of the reference's parts) and for rows U7 and U9,
   which no dataset reaches. No new reference datasets: this engine's extra locales rest on test262, the vectors and
   part C's class R. Each library stage is gated by a differential check against Broiler.VM's code at its rule commit,
@@ -1630,10 +1658,10 @@ This repository's part of it:
   - A, test262 per path in UTC with negative-metadata tests, its classes C1, C3 and C5 naming the rows above;
   - B, the same in `America/New_York`;
   - C, Broiler.VM's Intl reference datasets run in this engine against Broiler.VM's answers, with the classes V
-    (Broiler.VM's coverage, a numbering system's symbols included), R (the release), Z8, O (`segments.js`, read first)
-    and H (the default-locale provider);
+    (Broiler.VM's coverage, a numbering system's symbols and this engine's Collator's own lists included), R (the
+    release), Z8, O (`segments.js`, read first) and H (the default-locale provider);
   - D, part C's programs and `default-locale-is-supported.js` under invariant globalization, with no host exception
-    escaping.
+    escaping, for each Intl service constructor that file tests, `Intl.Collator` among them.
 
   **The bases** are taken at the base commit, the first parent of the merge that lands SJL-9.5, and the after runs at
   that merge (decision D4): parts A and B by `test262 evidence`, dispatched together promptly after the merge, and parts
@@ -1644,10 +1672,15 @@ This repository's part of it:
 **Decision D5's two lists.** They are the text of task 1.2, read from bundle
 [`sjl-9-001`](../evidence/sjl-9-001/README.md)'s `locales/`, which `scripts/intl/enumerate_locales.py` wrote from
 bundle `sjl-10-001`'s after report (run 39252310861 at `00b65dd0`), test262 `ccaac100`, and Broiler.VM `01444a59`'s
-datasets and CLDR 48.2.0 pin. The population the correspondence maps is bundle `sjl-12-001`'s `base/part-a/` report
-(run 40196127730 at `4d813f2a`), the newest valid UTC whole-suite report with negative tests; both reports give the same
-verdict on every `test/intl402` path and variant. The lists are run again on the report of SJL-9's base before SJL-9.2
-generates any table. Tags are in BCP 47 case, and a deprecated language is shown with CLDR's replacement.
+datasets and CLDR 48.2.0 pin. Two departures from that text are of substance, and both are marked here: its sentence on
+the report read, which finding F17 restates in this paragraph, and its "re-run on the report of SJL-9's base before
+SJL-9.2 generates", which cannot be met, since SJL-9's base report is taken only at SJL-9.5, after its merge (decision
+D4). Otherwise only the punctuation and this record's name for this engine differ. The population the correspondence
+maps is bundle `sjl-12-001`'s `base/part-a/` report (run 40196127730 at `4d813f2a`), the newest valid UTC whole-suite
+report with negative tests; both reports give the same verdict on every `test/intl402` path and variant. The lists are
+run again before SJL-9.2 generates any table, on the newest valid UTC whole-suite report with negative tests of this
+repository's default branch at that time. Tags are in BCP 47 case, and a deprecated language is shown with CLDR's
+replacement.
 - **List 1, Broiler.VM's embedding:** `de`, `de-DE`, `en`, `en-US` and `und`, unchanged, so that rule N28 holds
   `JsCldrTables.g.cs` byte for byte. It does not grow; SJL-D-22's size budget binds it.
 - **List 2, this engine's embedding.** Its main data is the union of four sources:
@@ -1672,10 +1705,10 @@ generates any table. Tags are in BCP 47 case, and a deprecated language is shown
      - *the other named base names* (`zh-TW`, `zh-CN`, `en-RU`, `de-DD`, `und-AQ` and the rest of `union.tsv`) have no
        CLDR locale of that name. The library resolves them as any tag, by likely subtags, then truncation and parent
        locales, so they add no main data beyond their resolution; `zh-TW` resolves to `zh-Hant-TW`;
-     - *the strongest signal* is test262's own `locale:` metadata, the locales a test declares it needs: `ar`, `ar-EG`,
-       `de`, `de-AT`, `de-DE`, `en`, `en-IN`, `en-US`, `es`, `fa`, `fr`, `gv`, `hi`, `it`, `ja`, `ja-JP`, `ko`, `ko-KR`,
-       `ln`, `pl-PL`, `pt-PT`, `si`, `sl`, `sr`, `sr-Thai-RS`, `sv`, `th`, `zh`, `zh-CN`, `zh-TW`, and `en` and `zh`
-       with calendar, numbering-system and time-zone keywords;
+     - *the strongest signal* is test262's own `locale:` metadata (counted as `metadata`), the locales a test declares
+       it needs: `ar`, `ar-EG`, `de`, `de-AT`, `de-DE`, `en`, `en-IN`, `en-US`, `es`, `fa`, `fr`, `gv`, `hi`, `it`,
+       `ja`, `ja-JP`, `ko`, `ko-KR`, `ln`, `pl-PL`, `pt-PT`, `si`, `sl`, `sr`, `sr-Thai-RS`, `sv`, `th`, `zh`, `zh-CN`,
+       `zh-TW`, and `en` and `zh` with calendar, numbering-system and time-zone keywords;
   3. **`en-US`**, the default-locale provider's fallback (decision D7);
   4. **`und`**.
 
@@ -1696,7 +1729,8 @@ generates any table. Tags are in BCP 47 case, and a deprecated language is shown
 - **What the enumeration lists for a reader.** Literals in other positions that look like tags (era codes, calendar
   names, units, region codes, values compared with a result) are in `locales/uncounted.tsv` as `position`; every
   language among them that is a locale (`de`, `en`, `ar`, `zh`, `ja`, `fr`, `sr`) is named elsewhere in the lists. A
-  locale passed to a test's own helper or subclass is counted as `wrapper`. Literals that sit where a locale goes but
+  locale passed to a test's own helper or subclass (`compareFTPtoFormat` in the `formatToParts/main.js` files, `new
+  CustomLocale` in `Locale/subclassing.js`) is counted as `wrapper`. Literals that sit where a locale goes but
   whose language CLDR 48.2.0 does not know (`tlh`, `zxx`, `jp`, `zz`, `xyz`, `xyz-DE`, `mul`) are listed as
   `language:<ways>`; none has CLDR data to embed.
 

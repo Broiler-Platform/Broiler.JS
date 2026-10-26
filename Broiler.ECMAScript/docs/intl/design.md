@@ -91,7 +91,10 @@ the default locale and the available locales they give.
   narrow tags the same clause requires for it: the pinned text says "[[AvailableLocales]] ... must include the value
   returned by DefaultLocale", and test262's `intl402/default-locale-is-supported.js` asserts it. Under invariant
   globalization Broiler.JS's available locales are therefore `en-US` and `en`, where today they are none (row L44, a
-  correction of Broiler.JS).
+  correction of Broiler.JS). In Broiler.JS every service's available locales come from the available-locale provider
+  as revised at SJL-9.5, `Intl.Collator`'s included: the Collator's data and comparison stay the host's until SJL-17
+  (section 5), but its negotiation is the engine's shared one, and `default-locale-is-supported.js` tests the Collator
+  first.
 - **One default.** Every reader of DefaultLocale in an engine reads the same default-locale provider: the Intl
   services, the `toLocale*` methods, and TransformCase with no locale (row L35). In Broiler.JS, under a host culture,
   `toLocaleLowerCase()` and `toLocaleUpperCase()` with no locale case by that culture's language, as its Intl services
@@ -136,8 +139,11 @@ and its names for an identifier whose CLDR names differ from its primary's, such
 The library's CollationsOfLocale follows the pinned text over each engine's `Intl.Collator` data, which stays each
 engine's until SJL-17. For a language the engine's Collator does not support it answers DefaultLocale's collations,
 and `emoji` and `eor` only for `und`; Broiler.VM's answer moves there at SJL-9.4 (row L18, decision D32). Broiler.JS's
-adapter hands the operation its Collator's own list, which names a collation for `en`, so test262's
-`Locale/prototype/getCollations/output-array-values.js` keeps passing (row L17, decision D33).
+adapter is to hand the operation its Collator's own list, which names a collation for `en`. test262's
+`Locale/prototype/getCollations/output-array-values.js`, which asks `en` for one, keeps passing only if it does (row
+L17, decision D33 (c)): task 8.3's local pre-check holds it, and SJL-17 inherits the condition. With that list,
+Broiler.JS's `zh` and `ko` answers are its Collator's, which neither ICU's lists nor Broiler.VM's datasets hold, and
+part C of bundle `sjl-9-001`'s rule admits them by that list (class V).
 
 ### Options and arguments
 
@@ -247,7 +253,8 @@ the composite's secondary provider. **It is never a second implementation of the
 - **It is not the default-locale or available-locale provider**, which section 2 describes and decision D7 keeps.
 - **Broiler.VM registers none.**
 
-Collation keeps its host path in Broiler.JS until SJL-17.
+Collation keeps its host path in Broiler.JS until SJL-17: the Collator's data and comparison, not its default and
+available locales, which are section 2's.
 
 ## 6. What each engine keeps
 
