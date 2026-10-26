@@ -64,7 +64,9 @@ class Phase3ArchitectureTests(unittest.TestCase):
 
     def test_persistent_cache_has_atomic_manifest_integrity_pdb_and_collectible_load(self) -> None:
         cache = text(SOURCE_ROOT / "Broiler.JavaScript" / "AssemblyCodeCache.cs")
-        self.assertIn("ManifestSchema = 3", cache)
+        self.assertIn("ManifestSchema = 4", cache)
+        self.assertIn("ManifestModule.ModuleVersionId", cache)
+        self.assertNotIn("GetName().Version", cache)
         self.assertIn("IncrementalHash.CreateHash", cache)
         self.assertIn("WriteAtomically", cache)
         self.assertIn("PortablePdbBuilder", cache)

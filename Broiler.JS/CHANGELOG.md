@@ -48,7 +48,9 @@ member of a package is added, removed or changed.
   `Broiler.` assembly the code of an entry references, the compiler, the runtime and `LinqExpressions` among them,
   is in the identity with the MVID it was loaded with; it fails when the walk does not start at the compiler. For
   them the cache gains an internal constructor that takes the identity and the internal `EngineModules`, and
-  `BroilerJS` grants its internals to `Broiler.JavaScript.Compiler.Tests`.
+  `BroilerJS` grants its internals to `Broiler.JavaScript.Compiler.Tests`. The source check of the cache
+  (`scripts/performance/tests/test_phase3_architecture.py`) now expects schema 4, the module version ids, and no
+  assembly version.
 
 ### The for-loop desugaring moves from the parser to a preparation pass of the compiler (2026-10-21, milestone SJL-12.5)
 
