@@ -124,74 +124,95 @@ Corpus revision 27, `6311031f99c62bb26bc22215e29323c278394605`, adds the Intl ar
 [`conformance/vectors/intl/`](../../../conformance/vectors/intl/), one file per sub-area of JSD-0082. Revision 28
 classifies every difference of both engines' first runs on it. These runs are task 2.3 of the plan's SJL-9.2, the basis
 of revision 28's `divergence` fields. They are no part of the rule's parts A to D, and nothing here is a verdict.
+[`engine/commands.txt`](engine/commands.txt) records how each run was taken.
+
+**The host.** Every run here was taken on one host: Ubuntu 24.04.5 LTS (Linux 6.18.44, x86_64, 4 logical CPUs) with
+ICU 74.2, the package `libicu74` 74.2-1ubuntu3.1, the only ICU installed, which .NET's globalization loads. This
+engine's Intl reads the host's ICU where it uses the host's data (rows N1b, N2b, N3c and T16 among others), so these
+runs, and revision 28's classification of them, are of this host. No run here was taken on a host with another ICU,
+such as CI's `engine vectors (windows-latest)` job has, and a difference only such a host shows is not classified
+here.
 
 **This engine's runs** of `Broiler.JS/Broiler.JavaScript.Vectors.Tests` are in [`engine/`](engine/). Each was built
-once in Release with `--disable-build-servers`, in a scratch tree written by `git archive` of revision 27's commit,
-and run with `--no-build` in one evaluating process, with no `LANG`, under `TZ=UTC` and under `TZ=America/New_York`.
-The engine's code is the branch base's, `915dfc14`: no commit of SJL-9.2a changes a path under `Broiler.JS/`. The two
-zones' reports are byte for byte the same.
+once in Release with `--disable-build-servers`, in a scratch tree written by `git archive`, and run with `--no-build`
+in one evaluating process, with no `LANG`, under `TZ=UTC` and under `TZ=America/New_York`. The engine's code is the
+branch base's, `915dfc14`: no commit of SJL-9.2a changes a path under `Broiler.JS/`. The two zones' reports are byte
+for byte the same.
 
-| Revision | Vectors | Match | Classified divergences | Unclassified | Not implemented |
-|---|---|---|---|---|---|
-| 27 | 106,808 | 105,059 | 4 (the number area's, SJL-14's) | 1,745, all in the Intl area | 0 |
-| 28 | 106,808 | 105,059 | 1,749 (the Intl area's 1,745 and the number area's 4) | 0 | 0 |
+| Revision | Corpus commit | Vectors | Match | Classified divergences | Unclassified | Not implemented |
+|---|---|---|---|---|---|---|
+| 27 | `6311031f` | 106,808 | 105,059 | 4 (the number area's, SJL-14's) | 1,745, all in the Intl area | 0 |
+| 28 | `2f240fec` | 106,808 | 105,060 | 1,748 (the Intl area's 1,744 and the number area's 4) | 0 | 0 |
 
 Each run's negative control changes `numbers/to-fixed/0001` in a copy of the corpus, and it is reported as the one
 unclassified difference. The files are `run-revision-<N>-utc.log` and `.tsv.gz`, `run-revision-<N>-new-york.log` and
-`.tsv.gz`, and `negative-control-revision-<N>-utc.tsv` and `-new-york.tsv`, for N 27 and 28. Each log's first line
-records how the run was taken. Revision 28's runs read the corpus at its commit,
-`2cc853427fabd6e0e3f5f0cc4991a24a732e8d28`, in the same scratch tree, whose `conformance/vectors` was replaced by that
-commit's; the engine's code is unchanged. Every vector renders the value it rendered at revision 27, and no divergence
-field reports that it no longer holds.
+`.tsv.gz`, and `negative-control-revision-<N>-utc.tsv` and `-new-york.tsv`, for N 27 and 28. Revision 27's logs are
+as the runs wrote them; revision 28's were written whole by the run's script, with a header that names the commits,
+the build, the host and the command, and a footer with the exit code. Revision 28's runs read the corpus at its
+commit, `2f240fecc502af7d843077ec664b1b7a65c45bb1`, in a scratch tree of the same kind, whose `conformance/vectors` was
+replaced by that commit's; the engine's code is unchanged. Every vector renders the value it rendered at revision 27,
+and no divergence field reports that it no longer holds.
 
 **Broiler.VM** was run locally at its rule commit, `4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f`. Its conformance root
 was built in Release with `--disable-build-servers` from a scratch archive of that commit, and run on a scratch archive
 of revision 27 with a pin of that archive (`--vectors <archive> --expect <pin>`). It matches 106,765 of the 106,808
 vectors. The other 43 differ, all in the Intl area. On revision 28, read the same way from a scratch archive of
-`2cc85342` and its pin, it matches the same 106,765 and classifies the 43, with no unclassified difference and no
-divergence that no longer holds. Each negative control changes `intl/numbers-and-text/decimal/0001` in memory
-(`--mutate`), and it is reported as one more, unclassified, difference. The runs and the scratch pins are retained as
-`engine/broiler-vm-*`, as the basis of those fields. They are not a reading of Broiler.VM's half: its own bundle judges
-that, and takes its runs when its pin moves to a merged revision (the plan's task 2.4).
+`2f240fec` and its pin, it matches 106,767 and classifies 41, with no unclassified difference and no divergence that no
+longer holds: the two vectors of row N5b it differed on now expect its answer (below). Each negative control changes
+`intl/numbers-and-text/decimal/0001` in memory (`--mutate`), and it is reported as one more, unclassified, difference.
+The runs and the scratch pins are retained as `engine/broiler-vm-*`, as the basis of those fields; revision 28's logs
+begin with a header that names Broiler.VM's commit, its build, the pin's SHA-256, the host and the command, and end
+with the exit code and the time. They are not a reading of Broiler.VM's half: its own bundle judges that, and takes its
+runs when its pin moves to a merged revision (the plan's task 2.4).
 
 **Revision 28** classifies every difference under the correspondence's rows. The reasons are in
-[`scripts/conformance/intl-divergences.txt`](../../../scripts/conformance/intl-divergences.txt). Each names the row it
-confirms, the engine's answer as that row records it, the class JSD-0082 gives the row, and the work package that
-answers it.
+[`scripts/conformance/intl-divergences.txt`](../../../scripts/conformance/intl-divergences.txt). Each names the row
+whose answer the engine gives in the difference, one of the rows the vector's note names, the engine's answer as that
+row records it, the class JSD-0082 gives the row, and the work package that answers it.
 
 | Engine | Sub-area | Rows (vectors) | Vectors |
 |---|---|---|---|
-| Broiler.JS | (a) Locales | L26 (27), L24 (20), L9 with L8 (18), L45 with L2 (15), L21 (14), L7 (11), L29 (9), L19 with L20 (8), L5 (8), L30 (7), L15 (6), L18 with L17 (6), L12 (5), L14 (5), L17 (5), L19 to L21 (4), L2 (3), L25 (3), L6 (3), L8 (3), L10 (2), L37 (2), L40 (1) | 185 |
+| Broiler.JS | (a) Locales | L26 (27), L24 (20), L9 with L8 (18), L45 with L2 (15), L21 (14), L7 (11), L29 (9), L19 with L20 (8), L5 (8), L30 (7), L15 (6), L18 with L17 (6), L12 (5), L14 (5), L17 (5), L19 to L21 (4), L2 (3), L25 (3), L6 (3), L8 (3), L10 (2), L37 (2) | 184 |
 | | (b) Values and plurals | M1a (17), P5b (17), M5 (14), P6 (14), P2 (12), P1 (11), P3 (7), M3 (6), M7 (6), P5a (5), M2b (4), M4 (4), P7 (4), M1b (3), M6 with M1a (2) | 126 |
-| | (c) Numbers and text | S8 (137), N4 (126), N2b (89), N6d (72), N5d (51), N3c (44), S1b (44), S4b (40), N1b (23), N6c (20), N5b (18), N3b (16), N6a with N6f (13), S9 (12), N9a (10), N9b (5), N2c (4), N8b (4), N10 (3), N6b (3), S5 (3), N7b (2), N8a with D21 (2), N9c (2), N9d (2), N11 (1), N13 with M5 (1), N14 with N1b (1), N17c (1), N5c (1), N6e (1), N9e (1) | 752 |
-| | (d) Date-times | T30 with T31 (93), T16 with T14 (78), T17 (76), T22 (76), T16 (44), T14 with T15 (31), T16 with T12 (29), T12 (24), T10 (16), T35 (14), T35 with T36 (14), T36 (12), T39 (10), T34 (8), T13 (6), T19 (6), T23 (6), T24 (6), T2 (5), T29 (5), T18 (4), T33 (4), T14 (3), T20 (3), T27 (3), T26 (2), T37 (2), T4 (1), T7 (1) | 582 |
+| | (c) Numbers and text | S8 (137), N4 (126), M5 (83), N6d (72), N5d (51), N3c (44), S1b (44), S4b (40), N1b (23), N6c (20), N5b (18), N3b (16), N6a with N6f (13), S9 (12), N9a (10), N9b (5), N2b (4), N2c (4), N8b (4), N10 (3), N6b (3), S5 (3), N2b with M5 (2), N7b (2), N8a with D21 (2), N9c (2), N9d (2), N11 (1), N13 with M5 (1), N14 with N1b (1), N17c (1), N5c (1), N6e (1), N9e (1) | 752 |
+| | (d) Date-times | T30 with T31 (93), T16 with T14 (76), T22 (76), T20 (65), T16 (62), T14 with T15 (31), T10 (30), T12 (29), T35 (14), T35 with T36 (14), T36 (12), T39 (10), T34 (8), T13 (6), T19 (6), T23 (6), T24 (6), T14 (5), T2 (5), T29 (5), T18 (4), T33 (4), T16 with T12 (3), T17 (3), T27 (3), T26 (2), T37 (2), T4 (1), T7 (1) | 582 |
 | | (e) Durations | U15 (47), U1 (29), U13 with U14 (6), U3 (6), U16 (5), U7 (4), U2 (2), U9 (1) | 100 |
-| | **All** | | **1,745** |
+| | **All** | | **1,744** |
 | Broiler.VM | (a) Locales | L9 (18), L18 (5) | 23 |
-| | (c) Numbers and text | N5b (2) | 2 |
 | | (d) Date-times | Z8 (18) | 18 |
-| | **All** | | **43** |
+| | **All** | | **41** |
 
-- **Broiler.JS, by class.** Corrections of Broiler.JS (C1): 470. Data policy (C5): 968. Both: 135 (L19 to L21; T14
-  with T15 or T16; T35 with T36). Implementation-defined (C3): 78, whose vectors hold the answer the shared library
-  takes. The interval patterns and the range separator (T30, C3, with T31, C5): 93. Engine policy: 1 (L40). SJL-9.5
-  answers every one but L40's. L40 is the Collator's collations, and each engine keeps its own Collator until SJL-17
-  (SJL-D-24 (c)), so SJL-17 answers it. 929 of the 1,745 are table-family vectors of the 85 extra locales (decision
-  D5).
+- **Broiler.JS, by class.** Corrections of Broiler.JS (C1): 555. Data policy (C5): 821. Both: 135 (L19 to L21; T14
+  with T15 or T16; T35 with T36; N2b with M5). Implementation-defined (C3): 140, whose vectors hold the answer the
+  shared library takes. The interval patterns and the range separator (T30, C3, with T31, C5): 93. SJL-9.5 answers
+  every one. 929 of the 1,744 are table-family vectors of the 85 extra locales (decision D5).
+- **A table-family vector is classified by what differs in it**, not by every row its family reaches, and its note
+  names the family's rows with their classes. Of the percent vectors, 83 differ only in percent's default fraction
+  digits, `"25.6%"` for `"26%"` (M5), and 2 in the pattern as well (N2b with M5). Of the day-period vectors, the 62 of
+  a locale whose default cycle is a 24-hour one, whose expectation drops the period (`"15"`, `"15 Uhr"`), are T20; the
+  11 others are T16, 5 of them with T14 (English names). Of the time patterns, 14 are the hour cycle (T10), 5 U+202F
+  alone (T12), 2 day-period names (T14), 5 the separator (T16) and 3 T16 with T12. Of the date patterns, the 7 of
+  English locales are T16 alone, the others T16 with T14.
 - **Five readings tie a difference to the row that explains it.** L18 with L17: `getCollations` answers `["default"]`
   for every locale. L9 with L8: the subdivision aliases this engine's hand table lacks. N13 with M5: the significant
   digits compact notation sets. M6 with M1a: 1.35 rounded by its binary value. N8a with decision D21: a numbering
-  system's own symbols. N13, M6 and N8a are rows the correspondence calls the same at the base, and their differences
-  are those rows'.
+  system's own symbols. N13, M6 and N8a are rows the correspondence calls the same at the base; their vectors' notes
+  name the second row as well.
 - **The one abort.** `intl/locales/aliases/0072`, `Intl.getCanonicalLocales("en-t-sh")`, ends the evaluation with an
   `IndexOutOfRangeException`, rendered `abort:`. Row L10 records exactly that.
-- **Eleven vectors gain a `per-engine.broiler-js` field.** They are `impl-defined` vectors of rows L17, L18 and L40,
-  whose notes compare this engine with the reference. A divergence field on an `impl-defined` vector needs the
-  engine's `per-engine` field beside it (SCHEMA.md section 5), so each gains one holding `out`. The generator writes it
-  only where the vector's note says so.
-- **Broiler.VM.** Z8, L9 and L18 are its three corrections (decisions D15 and D32), and SJL-9.4 answers them. N5b is
-  implementation-defined: `de` `2 kb/Stone` where CLDR's composition, the shared library's, writes `2 kb/st`.
-  SJL-9.4's adoption of the library answers it. 25 vectors differ in both engines (L9, L18 and N5b).
+- **This engine's collations.** The `per-engine.broiler-js` expectation of the `impl-defined` vectors of rows L17, L18
+  and L40 is the list this engine's own `Intl.Collator` resolves, which its adapter hands CollationsOfLocale (decision
+  D33 (c)) and `Intl.supportedValuesOf("collation")` lists (row L40, engine policy): `emoji` and `eor` for every
+  locale, with `phonebk` for `de`, `unihan` for `ja` and `ko`, `trad` for `hu`, and `phonetic`, `pinyin`, `stroke`,
+  `trad`, `unihan` and `zhuyin` for `zh`. A probe of the built shell, each value of `supportedValuesOf("collation")`
+  that `new Intl.Collator(tag, {collation})` resolves, gives the same lists. This engine answers L40's list, so L40 has
+  no divergence; its `getCollations` answers `["default"]`, which L17 and L18 classify.
+- **Broiler.VM.** Z8, L9 and L18 are its three corrections (decisions D15 and D32), and SJL-9.4 answers them. 23
+  vectors differ in both engines (L9 and L18). Row N5b is implementation-defined, and every implementation-defined row
+  keeps Broiler.VM's answer under its rule, which admits no C3 (decision D35). Its run differed from ICU on `de`
+  `kilobit-per-stone`, short and narrow: `2 kb/Stone`, the denominator's long singular where the short width has no
+  one-form, for ICU's `2 kb/st`. So both engines' expectations of row N5b are Broiler.VM's composition, which the
+  generator reads from CLDR 48.2.0, and this engine's N5b divergence stays.
 
 **What the vectors say of the area record.**
 - **Every difference falls under a row the area verdict names, and none needs a new row.** So the vectors falsify no
@@ -202,6 +223,16 @@ answers it.
   The 52nd, L44, is a correction only under invariant globalization, which no vector run sets; part D holds it.
 - **Broiler.VM's three corrections, Z8, L9 and L18, are each confirmed.**
 - **Every vector of the other rows the verdict calls the same matches in both engines.**
+
+*2026-10-26, at SJL-9.2a, before the merge:* review found that revision 28 as first committed (`2cc85342`, its runs
+retained at `11f1cf26`) expected ICU's `2 kb/st` of Broiler.VM on row N5b, where decision D35 keeps Broiler.VM's answer;
+compared this engine's collations with ICU's list, where decision D33 (c) reads this engine's own Collator; and
+classified each table-family difference by the family's row, not by what differs. Revision 28 was corrected in
+`3f9d5953` (and its row 28 names the host in `2f240fec`), and both engines' runs on it replace the first ones in
+`engine/`. Revision 27's two logs of this engine were first committed with a first line ("== start 2026-10-26T12:47Z
+TZ=UTC at 6311031f… (a scratch tree written by git archive …)") and a last line ("== end exit=1") that the run did not
+write, added afterwards from the run's records; they are now as the run wrote them, and `engine/commands.txt` records
+how the run was taken.
 
 ## State
 
