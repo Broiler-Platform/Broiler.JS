@@ -207,6 +207,34 @@ public sealed class IntlPinTests
     }
 
     /// <summary>
+    /// The generator reads the files its pin names and no other: a BCP 47 file handed in beside Broiler.VM's pinned
+    /// files, under the directory the extensions table enumerates, changes no table. The control: the same file,
+    /// once a pin line names it, adds its key.
+    /// </summary>
+    [Fact]
+    public void A_file_the_pin_does_not_name_is_never_read()
+    {
+        const string Name = "cldr-48.2.0/json/cldr-bcp47/bcp47/zz-unpinned.json";
+        var bytes = "{\"keyword\":{\"u\":{\"zz\":{\"_description\":\"unpinned\",\"yes\":{\"_description\":\"unpinned\"}}}}}"u8.ToArray();
+        var vmLines = IntlDataHome.BroilerVmPinLines(Home);
+        var pin = IntlCldrPin.Parse(vmLines);
+        var files = IntlDataHome.CldrFiles(Home, pin);
+        var withExtra = new Dictionary<string, byte[]>(files, StringComparer.Ordinal) { [Name] = bytes };
+        var ucd = IntlDataHome.Ucd(Home);
+        var options = IntlDataHome.BroilerVmOptions(Home);
+
+        var pinned = CldrTableGenerator.Generate(pin, files, ucd, options);
+        var handedIn = CldrTableGenerator.Generate(pin, withExtra, ucd, options);
+        Assert.Equal(pinned.Tables.Select(static table => Hash(table.Data.ToArray())), handedIn.Tables.Select(static table => Hash(table.Data.ToArray())));
+        Assert.DoesNotContain("u|zz|", Encoding.ASCII.GetString(handedIn["Extensions"].Data.Span), StringComparison.Ordinal);
+
+        // The control: a pin that names the file reads it.
+        var naming = IntlCldrPin.Parse(vmLines + "file " + Name + " " + bytes.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + " " + Hash(bytes) + "\n");
+        var read = CldrTableGenerator.Generate(naming, withExtra, ucd, options);
+        Assert.Contains("u|zz||", Encoding.ASCII.GetString(read["Extensions"].Data.Span), StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// The version clause: a package, a supplemental file or a UCA file of another release is refused even under a
     /// pin that records exactly its bytes, and a pin of another CLDR or UCA version is refused.
     /// </summary>

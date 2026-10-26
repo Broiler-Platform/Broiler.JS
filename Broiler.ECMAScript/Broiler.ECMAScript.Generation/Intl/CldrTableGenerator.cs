@@ -126,7 +126,7 @@ public static partial class CldrTableGenerator
     /// <param name="ucd">The UCD subset, read from files the caller verified against a pin.</param>
     /// <param name="options">The locale list and the other parameters.</param>
     /// <exception cref="InvalidDataException">The archive is not the one the pin describes, a file a table reads is not pinned, or a value is not one the table can carry.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=8; Fingerprint=3E072E
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=8; Fingerprint=E3BEF1
     // Broiler-Falsified-If: tables are written from an archive the pin does not describe, or with Broiler.VM's options they differ from Broiler.VM's generator's
     // Broiler-Human:        PENDING
     public static IntlTables Generate(IntlCldrPin pin, IReadOnlyDictionary<string, byte[]> cldr, CldrUcd ucd, IntlGeneratorOptions options)
@@ -138,7 +138,15 @@ public static partial class CldrTableGenerator
 
         pin.Verified(cldr);
 
-        var archive = new Archive(cldr);
+        // THE ARCHIVE IS THE PIN'S FILES AND NO OTHER: a file the caller hands in beside them is never read,
+        // whether a table enumerates a directory or asks whether an optional file is there.
+        var pinned = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        foreach (var entry in pin.Entries)
+        {
+            pinned[entry.Name] = cldr[entry.Name];
+        }
+
+        var archive = new Archive(pinned);
         var list = options.Locales;
         var main = list.MainDataLocales;
 
@@ -180,8 +188,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>
-    /// The archive a generation reads, by the paths the pin writes, recording each optional names file the
-    /// options asked for and the pin does not name.
+    /// The archive a generation reads: the files the pin names, by the paths it writes them under, and no other,
+    /// recording each optional names file the options asked for and the pin does not name.
     /// </summary>
     // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=Medium; Resources=2; Fingerprint=7B4C3A
     // Broiler-Human:        PENDING
