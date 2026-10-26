@@ -1455,7 +1455,8 @@ area: intl
 op: Intl.DurationFormat.prototype.format
 in: str:"aa"
 out: value: str:"1 hour, 2 minutes, 3 seconds"
-class: normative
+class: divergence
+divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364314, `engine vectors (windows-latest)`, Windows Server 2025 (image `windows-2025-vs2026` 20261021.278.1), whose ICU is the OS's `icu.dll`, of a version neither the job's log nor the image's software list states, Broiler.JS's answer follows that ICU, not the pinned CLDR: `aa` long `{hours: 1, minutes: 2, seconds: 3}` `"1 hours, 2 minutes, 3 seconds"`; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("aa", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
 note: row U15 (data, C5): the duration's unit and list patterns; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data

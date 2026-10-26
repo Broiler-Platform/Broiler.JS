@@ -2541,7 +2541,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"aa"
 out: value: str:"[\"one\",\"other\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P3: Which languages' rules each engine holds: fr, ru, pl, cs, uk, hi, he, ar, cy, ja, pt, pt-PT (cardinal) ...; Broiler.JS answers every CLDR language, from the CLDR package (`CldrLocaleData.SelectPlural`, `GetPluralCategories`): fr `one one one other many`, ru `one few many one other` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364314, `engine vectors (windows-latest)`, Windows Server 2025 (image `windows-2025-vs2026` 20261021.278.1), whose ICU is the OS's `icu.dll`, of a version neither the job's log nor the image's software list states, Broiler.JS's answer follows that ICU, not the pinned CLDR: `aa`'s cardinal and ordinal `pluralCategories` `["other"]`, and `"other"` for every number selected; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions ref:intlref@1
 script: JSON.stringify(new Intl.PluralRules("aa").resolvedOptions().pluralCategories)
 note: row P3 (data, C5): cardinal plural rules; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -2552,7 +2553,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"aa"
 out: value: str:"[\"one\",\"two\",\"few\",\"other\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P3: Which languages' rules each engine holds: fr, ru, pl, cs, uk, hi, he, ar, cy, ja, pt, pt-PT (cardinal) ...; Broiler.JS answers every CLDR language, from the CLDR package (`CldrLocaleData.SelectPlural`, `GetPluralCategories`): fr `one one one other many`, ru `one few many one other` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364314, `engine vectors (windows-latest)`, Windows Server 2025 (image `windows-2025-vs2026` 20261021.278.1), whose ICU is the OS's `icu.dll`, of a version neither the job's log nor the image's software list states, Broiler.JS's answer follows that ICU, not the pinned CLDR: `aa`'s cardinal and ordinal `pluralCategories` `["other"]`, and `"other"` for every number selected; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions ref:intlref@1
 script: JSON.stringify(new Intl.PluralRules("aa", {type: "ordinal"}).resolvedOptions().pluralCategories)
 note: row P3 (data, C5): ordinal rules; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -2563,7 +2565,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"aa"
 out: value: str:"[\"other\",\"one\",\"other\",\"other\",\"other\",\"other\",\"other\",\"other\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P3: Which languages' rules each engine holds: fr, ru, pl, cs, uk, hi, he, ar, cy, ja, pt, pt-PT (cardinal) ...; Broiler.JS answers every CLDR language, from the CLDR package (`CldrLocaleData.SelectPlural`, `GetPluralCategories`): fr `one one one other many`, ru `one few many one other` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364314, `engine vectors (windows-latest)`, Windows Server 2025 (image `windows-2025-vs2026` 20261021.278.1), whose ICU is the OS's `icu.dll`, of a version neither the job's log nor the image's software list states, Broiler.JS's answer follows that ICU, not the pinned CLDR: `aa`'s cardinal and ordinal `pluralCategories` `["other"]`, and `"other"` for every number selected; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: JSON.stringify([0, 1, 2, 3, 5, 11, 21, 101].map(function (n) { return new Intl.PluralRules("aa").select(n); }))
 note: row P3 (data, C5): cardinal selection; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data

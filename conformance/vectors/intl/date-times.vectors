@@ -4599,7 +4599,8 @@ area: intl
 op: Intl.DateTimeFormat.prototype.resolvedOptions
 in: str:"aa"
 out: value: str:"h12"
-class: normative
+class: divergence
+divergence.broiler-js: row T10: Each locale's default and 12- and 24-hour cycles: `en-GB`, `ja`, `ja-JP`, `ko`, `en-IN`, `zh-TW` ...; Broiler.JS answers hand tables of twelve-hour regions and of `h11` languages: `en-GB` `h23`, `ja` `h23` and with `hour12: true` `h11`, `ko` `h23`, `zh-TW` `h23`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364314, `engine vectors (windows-latest)`, Windows Server 2025 (image `windows-2025-vs2026` 20261021.278.1), whose ICU is the OS's `icu.dll`, of a version neither the job's log nor the image's software list states, Broiler.JS's answer follows that ICU, not the pinned CLDR: `aa` and `pap` resolve the hour cycle `h23`; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.datetimeformat-internal-slots ref:intlref@1
 script: new Intl.DateTimeFormat("aa", {hour: "numeric"}).resolvedOptions().hourCycle
 note: row T10 (data, C5): time data; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -4635,7 +4636,8 @@ area: intl
 op: Intl.DateTimeFormat (timeZoneName)
 in: str:"aa"
 out: value: str:"Eastern Standard Time"
-class: normative
+class: divergence
+divergence.broiler-js: row T22: Specific zone names (`short`, `long`): `de` for every zone ...; Broiler.JS answers English or a GMT offset: `de` `"GMT-05:00"`, `"GMT+01:00"` for every zone; `"GMT+01:00"` for London and Dublin in summer; Casablanca `"Western European Summer Time"`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364314, `engine vectors (windows-latest)`, Windows Server 2025 (image `windows-2025-vs2026` 20261021.278.1), whose ICU is the OS's `icu.dll`, of a version neither the job's log nor the image's software list states, Broiler.JS's answer follows that ICU, not the pinned CLDR: `aa` and `pap` name America/New_York's standard time `"GMT-05:00"` in `timeZoneName: "long"`; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-formatdatetimepattern ref:intlref@1
 script: (function (p) { for (var i = 0; i < p.length; i++) if (p[i].type === "timeZoneName") return p[i].value; })(new Intl.DateTimeFormat("aa", {timeZone: "America/New_York", timeZoneName: "long"}).formatToParts(1704467229123))
 note: row T22 (data, C5): time zone names; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -8673,7 +8675,8 @@ area: intl
 op: Intl.DateTimeFormat.prototype.resolvedOptions
 in: str:"pap"
 out: value: str:"h12"
-class: normative
+class: divergence
+divergence.broiler-js: row T10: Each locale's default and 12- and 24-hour cycles: `en-GB`, `ja`, `ja-JP`, `ko`, `en-IN`, `zh-TW` ...; Broiler.JS answers hand tables of twelve-hour regions and of `h11` languages: `en-GB` `h23`, `ja` `h23` and with `hour12: true` `h11`, `ko` `h23`, `zh-TW` `h23`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364314, `engine vectors (windows-latest)`, Windows Server 2025 (image `windows-2025-vs2026` 20261021.278.1), whose ICU is the OS's `icu.dll`, of a version neither the job's log nor the image's software list states, Broiler.JS's answer follows that ICU, not the pinned CLDR: `aa` and `pap` resolve the hour cycle `h23`; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.datetimeformat-internal-slots ref:intlref@1
 script: new Intl.DateTimeFormat("pap", {hour: "numeric"}).resolvedOptions().hourCycle
 note: row T10 (data, C5): time data; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -8709,7 +8712,8 @@ area: intl
 op: Intl.DateTimeFormat (timeZoneName)
 in: str:"pap"
 out: value: str:"Eastern Standard Time"
-class: normative
+class: divergence
+divergence.broiler-js: row T22: Specific zone names (`short`, `long`): `de` for every zone ...; Broiler.JS answers English or a GMT offset: `de` `"GMT-05:00"`, `"GMT+01:00"` for every zone; `"GMT+01:00"` for London and Dublin in summer; Casablanca `"Western European Summer Time"`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364314, `engine vectors (windows-latest)`, Windows Server 2025 (image `windows-2025-vs2026` 20261021.278.1), whose ICU is the OS's `icu.dll`, of a version neither the job's log nor the image's software list states, Broiler.JS's answer follows that ICU, not the pinned CLDR: `aa` and `pap` name America/New_York's standard time `"GMT-05:00"` in `timeZoneName: "long"`; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-formatdatetimepattern ref:intlref@1
 script: (function (p) { for (var i = 0; i < p.length; i++) if (p[i].type === "timeZoneName") return p[i].value; })(new Intl.DateTimeFormat("pap", {timeZone: "America/New_York", timeZoneName: "long"}).formatToParts(1704467229123))
 note: row T22 (data, C5): time zone names; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data

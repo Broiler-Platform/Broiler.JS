@@ -6392,7 +6392,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"aa" f64:0x4132D68700000000
 out: value: str:"1.2M"
-class: normative
+class: divergence
+divergence.broiler-js: row N6d: Compact patterns and plurals per locale: `de` long 1e6, 2e6, 1e9 ...; Broiler.JS answers hand tables for `en`, `en-IN`, `de`, `ja`, `ko`, `zh`: `de` `"1 Millionen"`, `"1 Milliarden"` (no singular), `ja` `"12U+4E07"`, `en-IN` `"1thousand"` (no space) ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364314, `engine vectors (windows-latest)`, Windows Server 2025 (image `windows-2025-vs2026` 20261021.278.1), whose ICU is the OS's `icu.dll`, of a version neither the job's log nor the image's software list states, Broiler.JS's answer follows that ICU, not the pinned CLDR: `aa` and `pap` compact 1234567 `"1,234,567"`, not compacted; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-getnotationsubpattern ref:intlref@1
 script: new Intl.NumberFormat("aa", {notation: "compact"}).format(1234567)
 note: row N6d (data, C5): compact patterns; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -8260,7 +8261,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en-FR" f64:0xC0934A0000000000
 out: value: str:"-\u20AC1,234.50"
-class: normative
+class: divergence
+divergence.broiler-js: row N3c: Other locales' currency patterns and symbols: `fr`, `es`, `pt-PT`, `ko-KR`, `zh-TW`, `sv`, `ar`; Broiler.JS answers the package's and the host's: `fr` `"-1 234,50 U+20AC"`, `"1,00 $US"`; `ko-KR` `"US$1.00"`; `ar` `"-1U+066C234U+066B50U+20AC"`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364071, `engine vectors (ubuntu-latest)`, Ubuntu 26.04.1 (image `ubuntu-26.04` 20261012.163.1), whose ICU is 78.2 by the image's software list (`libicu-dev` 78.2-2ubuntu1; the job's log names none), Broiler.JS's answer follows that ICU, not the pinned CLDR: `en-FR` `EUR` -1234.5 `"-U+20AC1U+202F234,50"`; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitionnumberpattern ref:intlref@1
 script: new Intl.NumberFormat("en-FR", {style: "currency", currency: "EUR"}).format($f64(0xc0934a00, 0x00000000))
 note: row N3c (data, C5): the currency pattern; en-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -12906,7 +12908,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"pap" f64:0x4132D68700000000
 out: value: str:"1.2M"
-class: normative
+class: divergence
+divergence.broiler-js: row N6d: Compact patterns and plurals per locale: `de` long 1e6, 2e6, 1e9 ...; Broiler.JS answers hand tables for `en`, `en-IN`, `de`, `ja`, `ko`, `zh`: `de` `"1 Millionen"`, `"1 Milliarden"` (no singular), `ja` `"12U+4E07"`, `en-IN` `"1thousand"` (no space) ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364314, `engine vectors (windows-latest)`, Windows Server 2025 (image `windows-2025-vs2026` 20261021.278.1), whose ICU is the OS's `icu.dll`, of a version neither the job's log nor the image's software list states, Broiler.JS's answer follows that ICU, not the pinned CLDR: `aa` and `pap` compact 1234567 `"1,234,567"`, not compacted; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-getnotationsubpattern ref:intlref@1
 script: new Intl.NumberFormat("pap", {notation: "compact"}).format(1234567)
 note: row N6d (data, C5): compact patterns; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data

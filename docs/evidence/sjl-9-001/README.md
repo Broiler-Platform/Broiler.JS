@@ -129,9 +129,9 @@ of revision 28's `divergence` fields. They are no part of the rule's parts A to 
 **The host.** Every run here was taken on one host: Ubuntu 24.04.5 LTS (Linux 6.18.44, x86_64, 4 logical CPUs) with
 ICU 74.2, the package `libicu74` 74.2-1ubuntu3.1, the only ICU installed, which .NET's globalization loads. This
 engine's Intl reads the host's ICU where it uses the host's data (rows N1b, N2b, N3c and T16 among others), so these
-runs, and revision 28's classification of them, are of this host. No run here was taken on a host with another ICU,
-such as CI's `engine vectors (windows-latest)` job has, and a difference only such a host shows is not classified
-here.
+runs, and revision 28's classification of them, are of this host. No run here was taken on a host with another ICU.
+The 11 differences that CI's hosts showed before the merge, where this engine's answer follows such a host's ICU, are
+classified from CI's runs (the third dated note below).
 
 **This engine's runs** of `Broiler.JS/Broiler.JavaScript.Vectors.Tests` are in [`engine/`](engine/). Each was built
 once in Release with `--disable-build-servers`, in a scratch tree written by `git archive`, and run with `--no-build`
@@ -165,7 +165,8 @@ begin with a header that names Broiler.VM's commit, its build, the pin's SHA-256
 with the exit code and the time. They are not a reading of Broiler.VM's half: its own bundle judges that, and takes its
 runs when its pin moves to a merged revision (the plan's task 2.4).
 
-**Revision 28** classifies every difference under the correspondence's rows. The reasons are in
+**Revision 28** classifies every difference under the correspondence's rows: those of the runs here, and the 11 that
+CI's hosts showed before the merge (the third dated note below). The reasons are in
 [`scripts/conformance/intl-divergences.txt`](../../../scripts/conformance/intl-divergences.txt). Each names the row
 whose answer the engine gives in the difference, one of the rows the vector's note names, the engine's answer as that
 row records it, the class JSD-0082 gives the row, and the work package that answers it.
@@ -173,19 +174,19 @@ row records it, the class JSD-0082 gives the row, and the work package that answ
 | Engine | Sub-area | Rows (vectors) | Vectors |
 |---|---|---|---|
 | Broiler.JS | (a) Locales | L26 (27), L24 (20), L9 with L8 (18), L45 with L2 (15), L21 (14), L7 (11), L29 (9), L19 with L20 (8), L5 (8), L30 (7), L15 (6), L18 with L17 (6), L12 (5), L14 (5), L17 (5), L19 to L21 (4), L2 (3), L25 (3), L6 (3), L8 (3), L10 (2), L37 (2) | 184 |
-| | (b) Values and plurals | M1a (17), P5b (17), M5 (14), P6 (14), P2 (12), P1 (11), P3 (7), M3 (6), M7 (6), P5a (5), M2b (4), M4 (4), P7 (4), M1b (3), M6 with M1a (2) | 126 |
-| | (c) Numbers and text | S8 (137), N4 (126), M5 (83), N6d (72), N5d (51), N3c (44), S1b (44), S4b (40), N1b (23), N6c (20), N5b (18), N3b (16), N6a with N6f (13), S9 (12), N9a (10), N9b (5), N2b (4), N2c (4), N8b (4), N10 (3), N6b (3), S5 (3), N2b with M5 (2), N7b (2), N8a with D21 (2), N9c (2), N9d (2), N11 (1), N13 with M5 (1), N14 with N1b (1), N17c (1), N5c (1), N6e (1), N9e (1) | 752 |
-| | (d) Date-times | T30 with T31 (93), T16 with T14 (76), T22 (76), T20 (65), T16 (62), T14 with T15 (31), T10 (30), T12 (29), T35 (14), T35 with T36 (14), T36 (12), T39 (10), T34 (8), T13 (6), T19 (6), T23 (6), T24 (6), T14 (5), T2 (5), T29 (5), T18 (4), T33 (4), T16 with T12 (3), T17 (3), T27 (3), T26 (2), T37 (2), T4 (1), T7 (1) | 582 |
-| | (e) Durations | U15 (47), U1 (29), U13 with U14 (6), U3 (6), U16 (5), U7 (4), U2 (2), U9 (1) | 100 |
-| | **All** | | **1,744** |
+| | (b) Values and plurals | M1a (17), P5b (17), M5 (14), P6 (14), P2 (12), P1 (11), P3 (10), M3 (6), M7 (6), P5a (5), M2b (4), M4 (4), P7 (4), M1b (3), M6 with M1a (2) | 129 |
+| | (c) Numbers and text | S8 (137), N4 (126), M5 (83), N6d (74), N5d (51), N3c (45), S1b (44), S4b (40), N1b (23), N6c (20), N5b (18), N3b (16), N6a with N6f (13), S9 (12), N9a (10), N9b (5), N2b (4), N2c (4), N8b (4), N10 (3), N6b (3), S5 (3), N2b with M5 (2), N7b (2), N8a with D21 (2), N9c (2), N9d (2), N11 (1), N13 with M5 (1), N14 with N1b (1), N17c (1), N5c (1), N6e (1), N9e (1) | 755 |
+| | (d) Date-times | T30 with T31 (93), T22 (78), T16 with T14 (76), T20 (65), T16 (62), T10 (32), T14 with T15 (31), T12 (29), T35 (14), T35 with T36 (14), T36 (12), T39 (10), T34 (8), T13 (6), T19 (6), T23 (6), T24 (6), T14 (5), T2 (5), T29 (5), T18 (4), T33 (4), T16 with T12 (3), T17 (3), T27 (3), T26 (2), T37 (2), T4 (1), T7 (1) | 586 |
+| | (e) Durations | U15 (48), U1 (29), U13 with U14 (6), U3 (6), U16 (5), U7 (4), U2 (2), U9 (1) | 101 |
+| | **All** | | **1,755** |
 | Broiler.VM | (a) Locales | L9 (18), L18 (5) | 23 |
 | | (d) Date-times | Z8 (18) | 18 |
 | | **All** | | **41** |
 
-- **Broiler.JS, by class.** Corrections of Broiler.JS (C1): 555. Data policy (C5): 821. Both: 135 (L19 to L21; T14
+- **Broiler.JS, by class.** Corrections of Broiler.JS (C1): 555. Data policy (C5): 832. Both: 135 (L19 to L21; T14
   with T15 or T16; T35 with T36; N2b with M5). Implementation-defined (C3): 140, whose vectors hold the answer the
   shared library takes. The interval patterns and the range separator (T30, C3, with T31, C5): 93. SJL-9.5 answers
-  every one. 929 of the 1,744 are table-family vectors of the 85 extra locales (decision D5).
+  every one. 940 of the 1,755 are table-family vectors of the 85 extra locales (decision D5).
 - **A table-family vector is classified by what differs in it**, not by every row its family reaches, and its note
   names the family's rows with their classes. Of the percent vectors, 83 differ only in percent's default fraction
   digits, `"25.6%"` for `"26%"` (M5), and 2 in the pattern as well (N2b with M5). Of the day-period vectors, the 62 of
@@ -241,6 +242,34 @@ in that rendering where the probe requires "not implemented". Revision 28 was co
 `Intl.Locale.prototype.getTimeZones, JSON` and `Intl.Locale.prototype.getTimeZones, typeof`, and nothing else in the
 corpus changed. An engine-level run evaluates a vector's `script`, not its `op`, so the runs on `2f240fec` in `engine/`
 are runs of the corrected revision as well.
+
+*2026-10-26, at SJL-9.2a, before the merge:* CI's run 40400894567 of the integration of SJL-9.2a and SJL-9.2b
+(Broiler-Platform/Broiler.JS#1080, at `7b75e237`) failed in both `engine vectors` jobs, each on differences no run here
+showed, every one where this engine's answer follows the host's ICU and not the pinned CLDR:
+- **`engine vectors (windows-latest)`, job 121846364314**: Windows Server 2025 (10.0.26100), image
+  `windows-2025-vs2026` 20261021.278.1, whose ICU is the OS's `icu.dll`. Neither the job's log nor the image's
+  software list states that ICU's version. Ten vectors, all table-family vectors of `aa` and `pap`: rows T10 (2, `h23`
+  for `h12`), T22 (2, `"GMT-05:00"` for `"Eastern Standard Time"`), U15 (1, `"1 hours, 2 minutes, 3 seconds"`), N6d
+  (2, `"1,234,567"` for `"1.2M"`) and P3 (3, `["other"]` alone). They are exactly the ten that a scratch run of this
+  engine on this host with Microsoft's ICU 72.1.0.3 loaded app-locally, a stand-in for Windows' `icu.dll`, had
+  predicted before the push.
+- **`engine vectors (ubuntu-latest)`, job 121846364071**: Ubuntu 26.04.1, image `ubuntu-26.04` 20261012.163.1, whose
+  software list names `libicu-dev` 78.2-2ubuntu1, so ICU 78.2; the job's log names no ICU. One vector, `en-FR`'s
+  currency pattern, row N3c: `"-€1 234,50"` (U+202F) for `"-€1,234.50"`.
+
+On the owner's decision, taken as recommended under the direction of 2026-10-18, revision 28 classifies these 11 in
+place, before the merge, as revision 15 classified the differences only the New York run showed: each as data policy
+(C5) under the row the vector's note names, answered by SJL-9.5. Their reasons in `intl-divergences.txt` name the
+host, the run and the job, and that the vector matches on this host. Each of the 11 matches here, where a run reports
+its divergence as no longer holding, which the runner does not fail on. "The host" above read "No run here was taken
+on a host with another ICU, such as CI's `engine vectors (windows-latest)` job has, and a difference only such a host
+shows is not classified here."; it now says that these 11 are classified from CI's runs. The counts of the table
+above include them; before this note they read P3 (7), N6d (72), N3c (44), T22 (76), T10 (30) and U15 (47), sub-area
+totals of 126, 752, 582 and 100 and 1,744 in all, data policy (C5) 821, and 929 table-family vectors. The CI hosts'
+reports differ from this host's in no other vector but classified ones, which the runner does not fail on: Windows
+renders 3 of them otherwise and reports 1 as no longer holding; Ubuntu 26.04 renders 18 of them otherwise and reports
+10 as no longer holding. Broiler.VM's runs here are unaffected: its conformance root is built with invariant
+globalization, its Intl reads only its own CLDR 48.2.0 tables, and the 11 gain only `divergence.broiler-js` fields.
 
 ## The data home
 
