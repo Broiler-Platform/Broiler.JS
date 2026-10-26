@@ -24,6 +24,26 @@ public class CompilerTests
     }
 
     [Theory]
+    // An unlabeled `break`/`continue` targets the innermost loop (or, for `break`, switch),
+    // never an enclosing labelled non-loop statement. Regression: `break` exited only the
+    // labelled block (so the loop spun on) and `continue` crashed the compiler.
+    [InlineData("var n=0;while(true)L:{n++;if(n>3)throw new Error('looped '+n);break;}'ok '+n;", "ok 1")]
+    [InlineData("var x=0;switch(1){case 1:L:{break;}x=1;}x;", "0")]
+    [InlineData("var n=0,a=0;while(n<3)L:{n++;if(n<3)continue;a++;}n+'/'+a;", "3/1")]
+    [InlineData("var n=0,a=0;while(n<3)L:{n++;switch(n){case 1:case 2:continue;}a++;}n+'/'+a;", "3/1")]
+    [InlineData("var i=0;while(true)L:{i++;if(i>3)throw new Error('looped '+i);'v'+i;break;}", "v1")]
+    [InlineData("var x=0;L:{while(true){break L;}x=1;}x;", "0")]
+    [InlineData("function* g(){var n=0;while(true)L:{n++;yield n;if(n>3)throw new Error('looped '+n);break;}return 'done '+n;}var it=g();it.next().value+'|'+it.next().value;", "1|done 1")]
+    [InlineData("function* g(){var x=0;switch(1){case 1:L:{yield 1;break;}x=1;}return x;}var it=g();it.next();''+it.next().value;", "0")]
+    [InlineData("function* g(){var n=0,a=0;while(n<3)L:{n++;yield n;if(n<3)continue;a++;}return a;}var it=g(),r;while(!(r=it.next()).done);''+r.value;", "1")]
+    public void Unlabeled_Break_And_Continue_Skip_Labeled_Non_Loop_Statements(string code, string expected)
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval(code);
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
     // Every label of a label set (`L: M: while`) is a continue target of the loop the
     // labels prefix, not only the innermost one. Regression: `continue L` was rejected
     // with "No label found for L". `break L` still leaves the whole statement.

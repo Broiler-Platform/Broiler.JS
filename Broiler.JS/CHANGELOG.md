@@ -24,13 +24,29 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
     statement they all label. `L: { while (1) { continue L; } }`, where `L` labels a block that holds the loop, is
     still an early SyntaxError, and so is `L: { M: while (1) { continue L; } }`.
   - **The compiler.** An outer label keeps its own label-only `LoopScope`, so `break L` still leaves the whole
-    statement with the loop's completion value. That scope is now marked `PrefixesLoop`. The new
-    `LoopScope.GetContinue` resolves `continue L` through it to the continue target of the loop its label chain
-    wraps. The generator path of `FastCompiler.VisitLabeledStatement` marks its scope the same way.
+    statement with the loop's completion value. That scope, marked `IsLabelOnly` (the entry below), is now also
+    marked `PrefixesLoop`. The new `LoopScope.GetContinue` resolves `continue L` through it to the continue target
+    of the loop its label chain wraps. The generator path of `FastCompiler.VisitLabeledStatement` marks its scope
+    the same way.
 - `CompilerTests.Labeled_Continue_Targets_Every_Label_Of_A_Label_Set` and
   `Labeled_Continue_To_A_Label_That_Does_Not_Prefix_A_Loop_Is_SyntaxError` (Compiler.Tests) hold the cases: `while`,
   `do`-`while`, `for`, `for`-`in`, `for`-`of` with a `let` head, three stacked labels, `break L`, a generator and the
   completion value.
+
+### An unlabeled `break` or `continue` skips an enclosing labelled block (2026-10-26)
+
+- **An unlabeled `break` leaves the innermost loop or `switch`.** ECMA-262 makes the innermost
+  IterationStatement or SwitchStatement the target of an unlabeled `break`; only `break L` targets a
+  LabelledStatement. The compiler kept a labelled block's break target on the stack it takes a loop's or a
+  `switch`'s from, so an unlabeled `break` inside `L: { … }` left only that block.
+  - `var n = 0; while (true) L: { n++; break; }` ran forever. It now ends after one pass, with `n` at 1.
+  - `switch (1) { case 1: L: { break; } x = 1; }` ran `x = 1`. It now leaves the `switch`.
+- **An unlabeled `continue` inside a labelled block continues the loop.** `while (c) L: { continue; }`, and a
+  `continue` in a `switch` inside such a block, failed to compile with a `NullReferenceException`.
+- A labelled block in a generator body, which the compiler lowers on a path of its own, is corrected the same
+  way, and `break L` is unchanged. `CompilerTests.Unlabeled_Break_And_Continue_Skip_Labeled_Non_Loop_Statements`
+  (Compiler.Tests) holds the cases. No test262 path at `ccaac100` covers them: every verdict in
+  `language/statements`, negative tests included, is the same before and after. No public member changes.
 
 ### The persistent code cache runs code that reaches the engine's internals (2026-10-26)
 

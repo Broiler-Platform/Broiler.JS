@@ -11,13 +11,14 @@ public class LoopScope(BLabelTarget breakTarget, BLabelTarget continueTarget, bo
     public readonly bool IsSwitch = isSwitch;
     public BParameterExpression CompletionVariable;
 
-    /// <summary>
-    /// True for the label-only scope of an outer label of a label set: a label whose body
-    /// is another label of the same loop (<c>L</c> in <c>L: M: while (…)</c>). Only the
-    /// innermost label names the loop's own scope, so such a scope has no
-    /// <see cref="Continue"/> target of its own.
-    /// </summary>
-    public bool PrefixesLoop;
+    // A LabelledStatement whose item is not an iteration statement (`L: { … }`): only
+    // `break L` targets it, so the unlabeled break/continue lookups below skip it.
+    internal bool IsLabelOnly { get; init; }
+
+    // A label-only scope whose item is another label of the same loop (`L` in
+    // `L: M: while (…)`): an outer label of the loop's label set. Only the innermost
+    // label names the loop's own scope, so this one has no Continue target of its own.
+    internal bool PrefixesLoop { get; init; }
 
     public LoopScope Get(string name)
     {
@@ -27,12 +28,10 @@ public class LoopScope(BLabelTarget breakTarget, BLabelTarget continueTarget, bo
         return start;
     }
 
-    /// <summary>
-    /// The target of <c>continue name</c>, or null when no enclosing scope is labelled
-    /// <paramref name="name"/>. An outer label of a label set continues the loop that its
-    /// label chain directly wraps, which is the scope just inside the chain.
-    /// </summary>
-    public BLabelTarget GetContinue(string name)
+    // The target of `continue name`, or null when no enclosing scope is labelled `name`.
+    // An outer label of a label set continues the loop its label chain directly wraps,
+    // which is the scope just inside the chain (ECMA-262 sec-continue-statement).
+    internal BLabelTarget GetContinue(string name)
     {
         LoopScope inside = null;
         for (var start = this; start != null; start = start.Parent)
@@ -43,5 +42,25 @@ public class LoopScope(BLabelTarget breakTarget, BLabelTarget continueTarget, bo
                 inside = start;
         }
         return null;
+    }
+
+    // The target of an unlabeled `break`: the innermost IterationStatement or
+    // SwitchStatement (ECMA-262 sec-break-statement).
+    internal LoopScope GetUnlabeledBreak()
+    {
+        var start = this;
+        while (start != null && start.IsLabelOnly)
+            start = start.Parent;
+        return start;
+    }
+
+    // The target of an unlabeled `continue`: the innermost IterationStatement
+    // (ECMA-262 sec-continue-statement).
+    internal LoopScope GetUnlabeledContinue()
+    {
+        var start = this;
+        while (start != null && (start.IsLabelOnly || start.IsSwitch))
+            start = start.Parent;
+        return start;
     }
 }
