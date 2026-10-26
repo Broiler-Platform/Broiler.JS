@@ -1,0 +1,27 @@
+diff --git a/Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs b/Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs
+index f0e3fc81..cc79af5f 100644
+--- a/Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs
++++ b/Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs
+@@ -798,7 +798,21 @@ internal static class ForLoopPreparation
+                 }
+             }
+ 
+-            var changes = list;
++            // Control K2 of bundle sjl-12-001 part D (a scratch copy, never committed): the per-iteration
++            // re-bindings and copy-backs are listed in the order of each name's string.GetHashCode(),
++            // which the runtime randomizes per process.
++            var byHash = new (string id, AstIdentifier temp)[list.Count];
++            var hashes = new int[list.Count];
++            for (var hi = 0; hi < list.Count; hi++)
++            {
++                byHash[hi] = list[hi];
++                hashes[hi] = list[hi].id.GetHashCode();
++            }
++
++            Array.Sort(hashes, byHash);
++            var changes = new Sequence<(string id, AstIdentifier temp)>(list.Count);
++            foreach (var change in byHash)
++                changes.Add(change);
+ 
+             // The per-iteration body block re-binds each name from its carrier (`let x = <carrier>`).
+             // `changes` is empty for a no-replacement non-loop-env head (its scopedDeclarations were

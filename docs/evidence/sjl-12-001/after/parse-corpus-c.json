@@ -1,0 +1,66 @@
+{
+  "admitted": 0,
+  "after": "docs/evidence/sjl-12-001/after/parse-corpus-c.tsv.gz",
+  "afterAssemblies": [
+    [
+      "Broiler.JavaScript.Ast",
+      "0.1.0-preview.1+c29d653f5f93b66b5e0efdbe506205a5347fc18a",
+      "d3e6e01f-f503-4d33-ba52-d1dc392365ff"
+    ],
+    [
+      "Broiler.JavaScript.Parser",
+      "0.1.0-preview.1+c29d653f5f93b66b5e0efdbe506205a5347fc18a",
+      "4930bf1d-f72d-4eac-b591-935a017e2ad4"
+    ],
+    [
+      "Broiler.JavaScript.Compiler",
+      "0.1.0-preview.1+c29d653f5f93b66b5e0efdbe506205a5347fc18a",
+      "da3ce59a-6fb0-44ca-ab25-a45a5e7f305f"
+    ],
+    [
+      "Broiler.JavaScript.Engine",
+      "0.1.0-preview.1+c29d653f5f93b66b5e0efdbe506205a5347fc18a",
+      "ce81235d-efa9-41a5-b30b-c625f61e79cb"
+    ],
+    [
+      "Broiler.JavaScript.Runtime",
+      "0.1.0-preview.1+c29d653f5f93b66b5e0efdbe506205a5347fc18a",
+      "79d07c60-63e3-4ce4-bfa1-b4232d594f94"
+    ]
+  ],
+  "allDifferencesAdmitted": true,
+  "base": "docs/evidence/sjl-12-001/base/parse-corpus-c.tsv.gz",
+  "baseAssemblies": [
+    [
+      "Broiler.JavaScript.Ast",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "77e2b5ac-2c40-4a70-b14c-4f4615e14c74"
+    ],
+    [
+      "Broiler.JavaScript.Parser",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "a9a83218-54bf-4f5f-bf3d-07f7450905c0"
+    ],
+    [
+      "Broiler.JavaScript.Compiler",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "ad5f272c-b5fb-4fda-94ae-4a998505cd75"
+    ],
+    [
+      "Broiler.JavaScript.Engine",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "e6d843c0-d985-42ba-b3fc-6302cb037c3d"
+    ],
+    [
+      "Broiler.JavaScript.Runtime",
+      "0.1.0-preview.1+1fe542ff459935586cdf495e4a0e3d798248948a",
+      "c877e12b-0b1d-49c4-9b1c-d0c3199eb656"
+    ]
+  ],
+  "differences": [],
+  "manifestSha256": "1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc",
+  "notAdmitted": 0,
+  "part": "C",
+  "rows": 213926,
+  "unusedClassifications": []
+}

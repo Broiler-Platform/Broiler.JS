@@ -1,0 +1,17 @@
+mode dump | manifest-sha256 matches: True | selection all | end #% end	106963 | body 106963 | header rows 106963
+keys equal to manifest's, in manifest order: True | duplicates: 0
+  ('parse', 'accepted') 101562
+  ('parse', 'refused') 5401
+  ('pass', '-') 5401
+  ('pass', 'prepared') 101562
+  #% for-loop-pass found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram
+  #% compile-stack-bytes 0	CompilationStack.SizeBytes: 0 compiles on the calling thread
+  #% thread-stack-bytes 268435456
+  #% threads 1
+  #% order manifest
+  #% environment TZ=UTC	LANG unset	LC_* unset	BROILER_* unset
+  #% culture (invariant)
+  #% time-zone UTC
+  #% runtime .NET 10.0.12
+  #% processors 4
+  #% json-goal the text unchanged at the entry points of every goal but module: ParseProgram, and CoreScript.Compile with isModule false

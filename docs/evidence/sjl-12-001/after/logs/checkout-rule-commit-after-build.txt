@@ -1,0 +1,4 @@
+# the rule commit's checkout, after its build
+4d813f2ac863895b9be5c4619b7886c9ddd71077
+git status --porcelain:
+git status --porcelain --ignored:

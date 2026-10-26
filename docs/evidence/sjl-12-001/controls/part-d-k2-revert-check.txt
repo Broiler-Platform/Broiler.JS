@@ -1,0 +1,5 @@
+# part-d-k2 reverted: git -C <scratch copy> checkout -- Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs
+c29d653f5f93b66b5e0efdbe506205a5347fc18a
+git diff --exit-code (worktree against HEAD): exit 0
+git diff --exit-code c29d653f5f93b66b5e0efdbe506205a5347fc18a (worktree against the after commit): exit 0
+git status --porcelain:

@@ -1,0 +1,72 @@
+# bundle sjl-12-001 (Broiler.JS), the after commit's identity and the paths and blobs the after runs rest on,
+# from git reads alone, written 2026-10-26T00:53:24Z, before any build or run of WP7.5.
+$ git -C /home/user/broiler.js fetch -q origin main
+(exit 0)
+$ git -C /home/user/broiler.js rev-parse origin/main
+a6c68dd4bd771ac358f4083e4789cd5c86e29330
+(exit 0)
+$ git -C /home/user/broiler.js log -1 --format=commit %H%nparents %P%ncommitted %cI%nsubject %s 4d813f2ac863895b9be5c4619b7886c9ddd71077
+commit 4d813f2ac863895b9be5c4619b7886c9ddd71077
+parents a640552a531b16529b6d8860b946139a0c5a9d93 57d5a2f5e4ea17daaf8afd083d0278e7e0160d09
+committed 2026-10-20T00:32:00+02:00
+subject Merge pull request #1059 from Broiler-Platform/claude/busy-lamport-m3yprr
+(exit 0)
+$ git -C /home/user/broiler.js log -1 --format=commit %H%nparents %P%ncommitted %cI%nsubject %s 1fe542ff459935586cdf495e4a0e3d798248948a
+commit 1fe542ff459935586cdf495e4a0e3d798248948a
+parents 68f9a87a600d91ff27f150cc935d474cc0575324 cbbcfe16c75669aafd8958a08485741a7c1cbe78
+committed 2026-10-20T12:23:03+02:00
+subject Merge pull request #1062 from Broiler-Platform/claude/busy-lamport-m3yprr
+(exit 0)
+$ git -C /home/user/broiler.js log -1 --format=commit %H%nparents %P%ncommitted %cI%nsubject %s c29d653f5f93b66b5e0efdbe506205a5347fc18a
+commit c29d653f5f93b66b5e0efdbe506205a5347fc18a
+parents 2faf464b11794117825dceebc58724cd77e79a0a c020609461dcb393d27ff0e26f74ae28da555c07
+committed 2026-10-25T17:32:50+01:00
+subject Merge pull request #1068 from Broiler-Platform/claude/busy-lamport-m3yprr
+(exit 0)
+$ git -C /home/user/broiler.js merge-base --is-ancestor c29d653f5f93b66b5e0efdbe506205a5347fc18a origin/main
+(exit 0)
+$ git -C /home/user/broiler.js merge-base --is-ancestor 1fe542ff459935586cdf495e4a0e3d798248948a c29d653f5f93b66b5e0efdbe506205a5347fc18a
+(exit 0)
+$ git -C /home/user/broiler.js merge-base --is-ancestor 4d813f2ac863895b9be5c4619b7886c9ddd71077 c29d653f5f93b66b5e0efdbe506205a5347fc18a
+(exit 0)
+## the blobs (rev-parse <commit>:<path>) at the rule, corpus and after commits and origin/main
+docs/evidence/sjl-12-001/decision-rule.md @ 4d813f2ac863895b9be5c4619b7886c9ddd71077: 0214773394a83ac2af0ed5cec01b31b2a6971cce
+docs/evidence/sjl-12-001/decision-rule.md @ 1fe542ff459935586cdf495e4a0e3d798248948a: 0214773394a83ac2af0ed5cec01b31b2a6971cce
+docs/evidence/sjl-12-001/decision-rule.md @ c29d653f5f93b66b5e0efdbe506205a5347fc18a: 0214773394a83ac2af0ed5cec01b31b2a6971cce
+docs/evidence/sjl-12-001/decision-rule.md @ origin/main: 0214773394a83ac2af0ed5cec01b31b2a6971cce
+docs/evidence/sjl-12-001/tools/parse-corpus @ 4d813f2ac863895b9be5c4619b7886c9ddd71077: absent
+docs/evidence/sjl-12-001/tools/parse-corpus @ 1fe542ff459935586cdf495e4a0e3d798248948a: 5ede61145de01136368c49354acc1de1c469fcb6
+docs/evidence/sjl-12-001/tools/parse-corpus @ c29d653f5f93b66b5e0efdbe506205a5347fc18a: 5ede61145de01136368c49354acc1de1c469fcb6
+docs/evidence/sjl-12-001/tools/parse-corpus @ origin/main: 5ede61145de01136368c49354acc1de1c469fcb6
+scripts/compliance/compare_parse_corpus.py @ 4d813f2ac863895b9be5c4619b7886c9ddd71077: absent
+scripts/compliance/compare_parse_corpus.py @ 1fe542ff459935586cdf495e4a0e3d798248948a: c0685c65899e74e5e2b0a11a270ef3ee65f3c669
+scripts/compliance/compare_parse_corpus.py @ c29d653f5f93b66b5e0efdbe506205a5347fc18a: c0685c65899e74e5e2b0a11a270ef3ee65f3c669
+scripts/compliance/compare_parse_corpus.py @ origin/main: c0685c65899e74e5e2b0a11a270ef3ee65f3c669
+conformance/parse/corpus.manifest @ 4d813f2ac863895b9be5c4619b7886c9ddd71077: absent
+conformance/parse/corpus.manifest @ 1fe542ff459935586cdf495e4a0e3d798248948a: 2419aa2aabda30a9d3ca9aa703d38c6455859441
+conformance/parse/corpus.manifest @ c29d653f5f93b66b5e0efdbe506205a5347fc18a: 2419aa2aabda30a9d3ca9aa703d38c6455859441
+conformance/parse/corpus.manifest @ origin/main: 2419aa2aabda30a9d3ca9aa703d38c6455859441
+conformance/parse/inputs @ 4d813f2ac863895b9be5c4619b7886c9ddd71077: absent
+conformance/parse/inputs @ 1fe542ff459935586cdf495e4a0e3d798248948a: 6331833210cc58b5e7ea0e28c44ab226fccf2072
+conformance/parse/inputs @ c29d653f5f93b66b5e0efdbe506205a5347fc18a: 6331833210cc58b5e7ea0e28c44ab226fccf2072
+conformance/parse/inputs @ origin/main: 6331833210cc58b5e7ea0e28c44ab226fccf2072
+docs/evidence/sjl-12-001/base/parse-corpus-c.tsv.gz @ 4d813f2ac863895b9be5c4619b7886c9ddd71077: absent
+docs/evidence/sjl-12-001/base/parse-corpus-c.tsv.gz @ 1fe542ff459935586cdf495e4a0e3d798248948a: absent
+docs/evidence/sjl-12-001/base/parse-corpus-c.tsv.gz @ c29d653f5f93b66b5e0efdbe506205a5347fc18a: 6a6203c1a196fa4a2b5d4aa5f7784878557b6c53
+docs/evidence/sjl-12-001/base/parse-corpus-c.tsv.gz @ origin/main: 6a6203c1a196fa4a2b5d4aa5f7784878557b6c53
+docs/evidence/sjl-12-001/controls @ 4d813f2ac863895b9be5c4619b7886c9ddd71077: absent
+docs/evidence/sjl-12-001/controls @ 1fe542ff459935586cdf495e4a0e3d798248948a: absent
+docs/evidence/sjl-12-001/controls @ c29d653f5f93b66b5e0efdbe506205a5347fc18a: 92458369c0f4c518bab2cf14c892886a09e1007a
+docs/evidence/sjl-12-001/controls @ origin/main: 92458369c0f4c518bab2cf14c892886a09e1007a
+Broiler.JS/Broiler.JavaScript.Architecture.Tests @ 4d813f2ac863895b9be5c4619b7886c9ddd71077: absent
+Broiler.JS/Broiler.JavaScript.Architecture.Tests @ 1fe542ff459935586cdf495e4a0e3d798248948a: absent
+Broiler.JS/Broiler.JavaScript.Architecture.Tests @ c29d653f5f93b66b5e0efdbe506205a5347fc18a: 6005d7c8ecfc2619fc1ea036c4fe735216206fec
+Broiler.JS/Broiler.JavaScript.Architecture.Tests @ origin/main: 6005d7c8ecfc2619fc1ea036c4fe735216206fec
+$ git -C /home/user/broiler.js diff --quiet 1fe542ff459935586cdf495e4a0e3d798248948a c29d653f5f93b66b5e0efdbe506205a5347fc18a -- docs/evidence/sjl-12-001/tools/parse-corpus scripts/compliance/compare_parse_corpus.py conformance/parse
+(exit 0)
+## test262
+$ git -C /home/user/tc39/test262 rev-parse HEAD
+ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+(exit 0)
+$ git -C /home/user/tc39/test262 status --porcelain
+(exit 0)

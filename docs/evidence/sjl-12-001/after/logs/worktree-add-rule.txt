@@ -1,0 +1,4 @@
+Preparing worktree (detached HEAD 4d813f2a)
+Updating files: 100% (3440/3440), done.
+HEAD is now at 4d813f2a Merge pull request #1059 from Broiler-Platform/claude/busy-lamport-m3yprr
+exit 0

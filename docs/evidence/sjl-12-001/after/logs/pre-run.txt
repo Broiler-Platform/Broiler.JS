@@ -1,0 +1,450 @@
+=== build-arch-after
+time: 2026-10-26T00:56:21Z
+loadavg: 0.05 0.17 0.25 2/107 24026
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== build-parser-rule
+time: 2026-10-26T00:58:38Z
+loadavg: 0.75 0.73 0.47 1/114 24489
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== arch-after
+time: 2026-10-26T01:00:43Z
+loadavg: 0.87 0.97 0.61 1/110 24959
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== arch-rule
+time: 2026-10-26T01:01:48Z
+loadavg: 0.29 0.78 0.56 1/110 25101
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== build-arch-k
+time: 2026-10-26T01:02:52Z
+loadavg: 0.13 0.64 0.53 1/109 25294
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== arch-k
+time: 2026-10-26T01:04:55Z
+loadavg: 0.89 1.05 0.72 1/112 25731
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== build-arch-k-reverted
+time: 2026-10-26T01:05:59Z
+loadavg: 0.36 0.87 0.68 1/115 25917
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== arch-k-reverted
+time: 2026-10-26T01:08:01Z
+loadavg: 0.60 0.96 0.75 1/115 26337
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== build-tool-after
+time: 2026-10-26T01:09:22Z
+loadavg: 0.18 0.74 0.69 1/105 26552
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== js-c
+time: 2026-10-26T01:14:39Z
+loadavg: 0.16 0.96 0.88 1/105 27316
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== js-d1
+time: 2026-10-26T01:18:30Z
+loadavg: 0.41 0.85 0.87 1/112 27475
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== js-d2
+time: 2026-10-26T01:20:16Z
+loadavg: 0.35 0.76 0.84 1/108 27586
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== js-d3
+time: 2026-10-26T01:22:01Z
+loadavg: 0.27 0.66 0.80 1/111 27696
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== build-tool-k1
+time: 2026-10-26T01:24:03Z
+loadavg: 0.38 0.67 0.79 1/110 27900
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== k1-d1
+time: 2026-10-26T01:29:12Z
+loadavg: 0.26 0.99 0.98 1/110 28643
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== k1-d2
+time: 2026-10-26T01:31:08Z
+loadavg: 0.26 0.81 0.92 1/109 28750
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== k1-d3
+time: 2026-10-26T01:32:55Z
+loadavg: 0.25 0.69 0.86 1/110 28851
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== build-tool-k2
+time: 2026-10-26T01:35:01Z
+loadavg: 0.39 0.68 0.85 1/113 29070
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== k2-d1
+time: 2026-10-26T01:40:15Z
+loadavg: 0.32 1.03 1.04 1/113 29829
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== k2-d2
+time: 2026-10-26T01:42:12Z
+loadavg: 0.27 0.84 0.97 1/114 29942
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== k2-d3
+time: 2026-10-26T01:43:58Z
+loadavg: 0.24 0.70 0.91 1/116 30049
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== build-tool-kr
+time: 2026-10-26T01:46:03Z
+loadavg: 0.49 0.77 0.92 1/114 30261
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== kr-d1
+time: 2026-10-26T01:51:37Z
+loadavg: 0.15 1.08 1.13 2/115 31110
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== kr-d2
+time: 2026-10-26T01:53:35Z
+loadavg: 0.26 0.88 1.05 1/114 31232
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
+=== kr-d3
+time: 2026-10-26T01:55:23Z
+loadavg: 0.24 0.73 0.97 1/117 31352
+nproc: 4
+os: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64
+sdk (dotnet --info, head):
+  .NET SDK:
+   Version:           10.0.401
+   Commit:            e34a38d2ae
+   Workload version:  10.0.400-manifests.63b36e85
+   MSBuild version:   18.9.11+e34a38d2a
+  
+  Runtime Environment:
+   OS Name:     ubuntu
+   OS Version:  24.04
+   OS Platform: Linux
+   RID:         linux-x64
+   Base Path:   /root/.dotnet/sdk/10.0.401/
