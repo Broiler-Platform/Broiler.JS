@@ -462,6 +462,33 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         return [.. items];
     }
 
+    // A statement the for-loop pass added to a loop it rewrites (AstStatement.IsLoopBookkeeping) takes no
+    // part in the completion value. Where one is tracked it is compiled above a null boundary, so that
+    // TrackCompletion and PropagateCompletion reach no completion variable from inside it, and typed void,
+    // so that it yields no value either (no statement tracks its body's compiled value; see TrackCompletion).
+    // The try that runs the copy back on a `continue` holds the body itself: it is built without a completion
+    // variable of its own, which would turn a body that completed empty into undefined, and the body's
+    // statements set the value as they would without it. In a function's body nothing is tracked, and the
+    // statement compiles as any other.
+    private BExpression VisitLoopBookkeeping(AstStatement statement)
+    {
+        if (completionScopes.Top?.Item == null)
+            return Visit(statement);
+
+        BExpression visited;
+        if (statement is AstTryStatement tryStatement)
+        {
+            visited = BuildTryCore(tryStatement, null);
+        }
+        else
+        {
+            using (completionScopes.Push(null))
+                visited = Visit(statement);
+        }
+
+        return visited == null || visited.Type == typeof(void) ? visited : BExpression.Block(visited, BExpression.Empty);
+    }
+
     private static BExpression PropagateCompletion(BParameterExpression completionVar, BParameterExpression[] outerCompletionVars)
     {
         if (outerCompletionVars == null || outerCompletionVars.Length == 0)

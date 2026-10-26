@@ -21,7 +21,19 @@ namespace Broiler.JavaScript.Compiler;
 /// <para>
 /// The parser did this as it parsed until milestone SJL-12.5, item 5 (Broiler.VM's JSD-0080, decision
 /// D22), which leaves the parser a tree without desugaring. The pass emits the shapes the parser
-/// emitted, node for node; only the temporaries' names differ.
+/// emitted, node for node; only the temporaries' names differ, and the statements it adds are marked
+/// (below).
+/// </para>
+/// <para>
+/// <b>Completion values.</b> A loop completes with ForBodyEvaluation's V: the last value other than empty
+/// that an iteration of its body completed with, or the value a <c>break</c> carries, by UpdateEmpty. The
+/// statements the pass adds to the body - the per-iteration declaration, the test and the guarded update it
+/// moves in, the copy back into the carriers and the <c>try</c> that runs it - are not the body's, so each
+/// is marked <see cref="AstStatement.IsLoopBookkeeping"/>, and the compiler keeps them out of V. The
+/// parser's shapes, which the pass emitted unmarked until then, were not kept out: the test moved into the
+/// body completed as an <c>if</c> without an <c>else</c> does, with undefined, so a loop its test ended was
+/// undefined (<c>for (let i = 0; i &lt; 3; i++) { i; }</c> for 2), and a body that completed empty took the
+/// value of the per-iteration declaration (<c>1; for (let x of [1, 2]) { }</c> was 2 for undefined).
 /// </para>
 /// <para>
 /// <b>Temporaries' names</b> (decision D22) are <c>&lt;d&gt;:&lt;n&gt;</c>: <c>d</c> is the direct-eval
@@ -843,7 +855,10 @@ internal static class ForLoopPreparation
                 var copyBackStatements = new Sequence<AstStatement>();
                 foreach (var (id, temp) in changes)
                     copyBackStatements.Add(new AstExpressionStatement(new AstBinaryExpression(
-                        new AstIdentifier(temp.Start, temp.Name.Value), TokenTypes.Assign, new AstIdentifier(temp.Start, id))));
+                        new AstIdentifier(temp.Start, temp.Name.Value), TokenTypes.Assign, new AstIdentifier(temp.Start, id)))
+                    {
+                        IsLoopBookkeeping = true
+                    });
 
                 if (incrementAtTop || bodyContainsContinue)
                 {
@@ -855,7 +870,10 @@ internal static class ForLoopPreparation
 
                     var tryBody = new AstBlock(declaration.Start, declaration.End, bodyStatements);
                     var finallyBody = new AstBlock(declaration.Start, declaration.End, copyBackStatements);
-                    statementList = [null!, new AstTryStatement(declaration.Start, declaration.End, tryBody, null, null, finallyBody)];
+                    statementList = [null!, new AstTryStatement(declaration.Start, declaration.End, tryBody, null, null, finallyBody)
+                    {
+                        IsLoopBookkeeping = true
+                    }];
                 }
                 else
                 {
@@ -880,7 +898,10 @@ internal static class ForLoopPreparation
                         // loop-terminating evaluation still run exactly as before.
                         var notTest = new AstUnaryExpression(test.Start, test, UnaryOperator.Negate);
                         var breakStatement = new AstBreakStatement(test.Start, test.End);
-                        statementList.Insert(1, new AstIfStatement(test.Start, test.End, notTest, breakStatement));
+                        statementList.Insert(1, new AstIfStatement(test.Start, test.End, notTest, breakStatement)
+                        {
+                            IsLoopBookkeeping = true
+                        });
                         test = null;
                     }
                     else
@@ -903,7 +924,10 @@ internal static class ForLoopPreparation
                             new AstExpressionStatement(new AstBinaryExpression(
                                 new AstIdentifier(startedFlag.Start, startedFlag.Name.Value),
                                 TokenTypes.Assign,
-                                new AstLiteral(TokenTypes.True, declaration.Start))));
+                                new AstLiteral(TokenTypes.True, declaration.Start))))
+                        {
+                            IsLoopBookkeeping = true
+                        };
                         statementList.Insert(1, guard);
                         update = null;
                     }
@@ -924,7 +948,10 @@ internal static class ForLoopPreparation
             // The per-iteration scoped declaration carries the original head's
             // `using` / `await using` disposal markers, so a `for (using x of …)`
             // binding is disposed at the end of each iteration's block scope.
-            statementList[0] = new AstVariableDeclaration(declaration.Start, declaration.End, scopedDeclarations, declaration.Kind, declaration.Using, declaration.AwaitUsing);
+            statementList[0] = new AstVariableDeclaration(declaration.Start, declaration.End, scopedDeclarations, declaration.Kind, declaration.Using, declaration.AwaitUsing)
+            {
+                IsLoopBookkeeping = true
+            };
 
             // The loop-env lowering keeps the carriers as `let` in the head's own lexical scope
             // (visible to test/update, shadowed in the body); `const` heads keep a `const` carrier;
