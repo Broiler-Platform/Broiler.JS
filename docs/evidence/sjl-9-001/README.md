@@ -242,6 +242,89 @@ in that rendering where the probe requires "not implemented". Revision 28 was co
 corpus changed. An engine-level run evaluates a vector's `script`, not its `op`, so the runs on `2f240fec` in `engine/`
 are runs of the corrected revision as well.
 
+## The data home
+
+SJL-9.2b built the data home, [`Broiler.ECMAScript/data/intl/`](../../../Broiler.ECMAScript/data/intl/README.md), on
+2026-10-26, on branch `sjl-9-2b-home` (JSD-0082's decisions D5, D10 to D12 and D21). The data home's clauses 1 to 3 are
+judged by the tests it commits, each with its control; this section records how its inputs were read and how its byte
+identity with Broiler.VM was shown. The tables' sizes and the archives' totals are in [`home/sizes.txt`](home/sizes.txt),
+as JSD-0082's decision D5 says: "Sizes are measured by the generator at SJL-9.2 and stated in Broiler.JS's bundle,
+which has no budget rule." No other record states them.
+
+- **The locale enumeration, run again** (decision D5; "The data committed with the rule" above). Before any table was
+  generated, `scripts/intl/enumerate_locales.py` ran over bundle [`sjl-12-001`](../sjl-12-001/README.md)'s
+  `after/part-a/` report (run 40231802611 at `c29d653f`), the newest valid UTC whole-suite report with negative tests
+  of the default branch, with Broiler.VM's datasets at `4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f`. Every row of
+  `intl402.tsv`, `datasets.tsv`, `union.tsv` and `uncounted.tsv` equals the committed file's; only the header lines
+  naming the report differ. Two runs wrote the same bytes. The committed files stand, and the home's
+  `locales/broiler-js.txt` reads them as decision D5 says.
+- **The CLDR pin** (decision D10). `cldr.pin`'s first block is Broiler.VM's `src/tests/cldr/pins/cldr.pin` at
+  `4cf9ca44`, from its `data` line to its last `file` line, byte for byte, and each file it names is a copy of
+  Broiler.VM's archived file; the generator's tests hold the block to its SHA-256 at that commit. The second block
+  names the main-data files Broiler.JS's list needs from the same sixteen `cldr-json` 48.2.0 packages. Each package's
+  tarball was retrieved from the npm registry twice on 2026-10-26; the two retrievals are byte-identical, each
+  tarball's SHA-512 is the pin's `json-integrity` line for its package, and each of Broiler.VM's files from those
+  packages equals its tarball member. Broiler.VM's 33 other npm files come from `cldr-core` (17) and `cldr-bcp47` (16),
+  which the extension does not read: those two tarballs were retrieved twice on 2026-10-26 for this comparison alone,
+  each pair byte-identical and each SHA-512 the package's `json-integrity` line, and each of the 33 files equals its
+  member. So every npm file of Broiler.VM's block equals its member of a tarball its integrity line holds. The third
+  block names the `common/main` XML files decision D21 reads (below). The `timezone.json` entry and file equal the time
+  home's.
+- **The UCD copies** (decision D12). `UnicodeData.txt`, `PropList.txt` and the licence are Broiler.VM's copies at
+  `4cf9ca44`, and each `file` line of `ucd.pin` equals the line Broiler.Unicode's pin gives the same file, which the
+  generator's tests read through `UnicodePin.Owner()`.
+- **Byte identity with Broiler.VM** (decision D11). Broiler.VM's committed `JsCldrTables.g.cs` at `4cf9ca44` has the
+  SHA-256 `f8f8b1228edb3de1a3174434362b8f3b657938e8cd29189bec110fb1584fae20`; its assurance generator adds a header
+  before `using System;` and fills each `Fingerprint=` value. Three readings give the same SHA-256,
+  `839bdc22afca187b58252f2487cd31c4b613396cd6596ffdcb6622fe1b534561`:
+  1. Broiler.VM's own `CldrTableGenerator`, `UnicodeDatabase` and `CldrPin`, built from its tests at `4cf9ca44` in a
+     scratch project outside both repositories and run twice over Broiler.VM's pinned files;
+  2. the committed file from `using System;` on, each fingerprint put back to `TBF`;
+  3. this home's `IntlTableSource.Write` with Broiler.VM's options and locale list, over the home's copies of
+     Broiler.VM's files and the UCD copies, which `IntlTableSourceTests` holds against that digest, with its control
+     (one changed byte, one changed summary), and over two runs and two threads.
+- **Broiler.JS's tables**, `generated/`: one file per table and `tables.manifest`, written with Broiler.JS's list and
+  every numbering system's symbols (decision D21). Rule SL7 regenerates them and compares them byte for byte, its
+  witness refused; `IntlCompletenessTests` holds exit clause 3 for both lists, with decision D34's keys for every locale
+  of Broiler.JS's list and the values D34 and D21 name (two-digit hours for `af` and `lt`; `.` for `da`, `en-DK`, `id`
+  and `si`; root's `arab` symbols under `und`; `ko`'s, `sv`'s, `ur`'s and `nb`'s own `arab` symbols).
+- **Decision D21's symbols, read from CLDR's XML.** A `cldr-json` `numbers.json` carries the symbols of a locale's
+  default, native, traditional and finance numbering systems only, and decision D21 asks for each system's own symbols
+  through the locale's parent chain to root. CLDR 48.2.0's `common/main` XML states `arab` or `arabext` symbols, and for
+  `sv` a `fullwide` clock separator, for 14 locales of the list whose `numbers.json` leaves those systems out: `ar`,
+  `ar-EG`, `az`, `fa`, `fr`, `fr-CA`, `ko`, `nb`, `no`, `sv`, `ur`, `uz`, `uz-Cyrl` and `zh-Hant`. Read with root's
+  symbols alone, the table gave 59 of their values as root's or as the `latn` ones. The pin's third block archives the
+  XML files of the list's 67 main-data locales other than `und` and of `en-001`, the one locale on their parent chains
+  outside the list: 68 files, retrieved twice on 2026-10-26 from the CLDR repository at the tag `release-48-2` into two
+  directories found byte-identical, with the `root.xml` retrieved beside them equal to Broiler.VM's. The generator
+  writes each locale's own values as `symbols@<system>.<name>` lines, the first value up its chain below root, and
+  `IntlCompletenessTests` holds every symbol of every main-data locale, read as a formatter reads the table (the
+  locale's line, then `und`'s, then its `latn` symbol), to CLDR's XML resolution, with a removed line as its control;
+  the same test finds every system `numbers.json` carries equal to the XML's resolution. The reading takes values at
+  the `contributed` level `cldr-json` carries: `fr.xml`'s `arab` and `arabext` minus signs, `arab` percent sign,
+  `arabext` plus sign and both approximately signs are draft `unconfirmed`, so `fr` and `fr-CA` keep root's for those
+  (12 values), as `ab.xml`'s unconfirmed `latn` decimal separator `,` is absent from `ab/numbers.json` and as the
+  reference Node 22 (ICU 77.1) writes `fr-u-nu-arab`'s minus sign as root's, U+061C U+002D. The reference writes
+  `ko-u-nu-arab`'s minus sign as U+200F U+002D and `sv-u-nu-arab`'s as U+061C U+2212 with U+00A0 between groups, as the
+  table now does. **Two readings depart from JSD-0082's text**, for the owner to confirm: decision D21 names only
+  `root.xml` beside `cldr-json` ("the generator reads root's from that file"), and the other locales' XML files are
+  this home's reading of its "through the locale's parent chain to root"; and decision D10 describes the superset's
+  extra files as "from the same packages", while these come from the CLDR repository at the tag Broiler.VM's own
+  `root.xml` came from, which Broiler.VM's `repository-source` line names. Each of Broiler.VM's entries is unchanged.
+- **What CLDR 48.2.0 does not carry**, read, not decided: 34 per-locale `languages.json`, `scripts.json`,
+  `territories.json` or `variants.json` files of `cldr-localenames-full` for locales of Broiler.JS's list, which the
+  home's [`cldr/README.md`](../../../Broiler.ECMAScript/data/intl/cldr/README.md) lists and the display-name table
+  lacks; calendar type names for `aa`, `ab`, `en-Shaw`, `ff`, `gv`, `jbo`, `ln`, `pap` and `und`, and metazone names,
+  the GMT zone's names among them, for those and `yi` (their GMT formats are there). Broiler.VM's code assumed every
+  locale has them; the generator writes none for
+  these, and its output for Broiler.VM's list is unchanged. For `sr`, `sr-Cyrl` and `sr-Latn` the `hms` duration
+  pattern is `h.mm.ss` while `timeSeparator` is `:`, and `en-DK`'s separator is `.` while the pattern it inherits is
+  `h:mm:ss`: decision D34 reads the separator, so neither moves, and the tables carry both fields.
+- **Decision D13's table**, `Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDefaultNumberingSystems.g.cs`, which
+  the shared data absorbs at SJL-9.5, names a default numbering system for 54 locales. Only `ar-EG`, `fa` and `sa` are
+  on decision D5's list, so the shared tables carry no default for the other 51 (`bn`, `mr`, `ne`, `my` and the
+  regional `ar-*` among them): a reading SJL-9.3 and SJL-9.5 take up, which the plan's dated note names.
+
 ## State
 
 **2026-10-26, at SJL-9.1: the rule and its data only. Nothing here is a verdict, and nothing has been taken.**
@@ -252,14 +335,23 @@ are runs of the corrected revision as well.
   `reference.txt` names.
 - SJL-9.2 copies the datasets and adds the vectors; SJL-9.3 builds the library; SJL-9.5 is this engine's cut-over,
   one merge, after Broiler.VM's SJL-9.4 (decision D28).
-- When SJL-9.2 and SJL-9.3 write `Broiler.ECMAScript/README.md`'s rows for the data home and the package, it gains
-  its pointer to the home's design document, `docs/intl/design.md`, as it has one to `docs/frontend/design.md`. SJL-9.1
-  leaves that file alone: it is outside the paths SJL-9.1 changes.
+- `Broiler.ECMAScript/README.md` has its pointer to the home's design document, `docs/intl/design.md`, beside its
+  pointer to `docs/frontend/design.md`: SJL-9.2b added it with the data home's row. SJL-9.3 writes the package's row.
+  *(Revised 2026-10-26, at SJL-9.2b; the item read "When SJL-9.2 and SJL-9.3 write `Broiler.ECMAScript/README.md`'s
+  rows for the data home and the package, it gains its pointer to the home's design document, `docs/intl/design.md`,
+  as it has one to `docs/frontend/design.md`. SJL-9.1 leaves that file alone: it is outside the paths SJL-9.1
+  changes.")*
+
+**2026-10-26, at SJL-9.2b: the data home is built**, on branch `sjl-9-2b-home` ("The data home" above), with
+`home/sizes.txt` beside it. Its clauses are judged by the tests it commits; nothing here is a verdict, and no run of
+parts A to D has been taken.
 
 **The commits named so far:**
 - **The rule commit** carries [`decision-rule.md`](decision-rule.md) and this README. It is named here, by all forty
   digits, when the change that carries it has merged.
 - The data's own commits, above.
+- SJL-9.2b's commits, on branch `sjl-9-2b-home`, are named here by all forty digits when the change that carries them
+  has merged. *(Added 2026-10-26, at SJL-9.2b.)*
 
 No other commit is named yet.
 
@@ -274,10 +366,15 @@ Those runs are in `engine/`, which the list below did not foresee. They are no p
 - `datasets/`: part C's runs at both commits, the reference's run, and the table of every V, R, Z8, O and H line;
 - `invariant/`: part D's runs at both commits, `default-locale-is-supported.js` among them;
 - `algorithms/`: the summary of SJL-9.3's differential check against Broiler.VM's code (decision D22);
-- `controls/`: each control a part or a home clause runs, with its patch, its output and its revert.
+- `controls/`: each control a part or a home clause runs, with its patch, its output and its revert;
+- `home/`: the data home's sizes, `sizes.txt`, as decision D5 states them (added 2026-10-26, at SJL-9.2b).
 
-**It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them. A
-test262 suite total is never quoted: parts A and B are decided per path, and totals decide nothing.
+**It holds no figure of a run until that run is taken**, and then only in the run's own files and this README's
+reading of them. The data home's figures are those of its inputs and tables, which decision D5 asks this bundle to
+state: `home/sizes.txt`, and the counts "The data home" above quotes from the home's files. A test262 suite total is
+never quoted: parts A and B are decided per path, and totals decide nothing. *(Revised 2026-10-26, at SJL-9.2b, when
+the data home's figures came in; the paragraph began "**It holds no figure until a run is taken**, and then only in
+the run's own files and this README's reading of them.")*
 
 The owner's direction of 2026-10-18, "Please do all recommended decisions and skip waiting for review.", under which
 JSD-0082 records its decisions, changes no rule: nothing is accepted without review, and SJL-9 may not meet its gate

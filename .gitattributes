@@ -27,6 +27,15 @@ Broiler.ECMAScript/data/time/calendars/*.crate binary
 Broiler.ECMAScript/data/time/cldr/cldr-48.2.0/** binary
 Broiler.ECMAScript/data/time/cldr/cldr-LICENSE.txt binary
 Broiler.ECMAScript/data/time/generated/*.bin binary
+# THE INTL DATA HOME'S PINNED INPUTS AND BINARY TABLES ARE BINARY TOO (milestone SJL-9.2b), for the same
+# reason: the CLDR files and the UCD copies are held by their SHA-256 in cldr.pin and ucd.pin, and the
+# collation tables by rule SL7 and their manifest. The pins, the locale lists, the READMEs, the text tables
+# and the manifest stay `text eol=lf`.
+Broiler.ECMAScript/data/intl/cldr/cldr-48.2.0/** binary
+Broiler.ECMAScript/data/intl/cldr/cldr-LICENSE.txt binary
+Broiler.ECMAScript/data/intl/ucd/ucd-17.0.0/** binary
+Broiler.ECMAScript/data/intl/ucd/unicode-LICENSE.txt binary
+Broiler.ECMAScript/data/intl/generated/*.bin binary
 
 # THE REFERENCE DATASETS ARE HELD BY THEIR DIGESTS (milestone SJL-8.4). Bundle sjl-8-001's rule, part C, takes
 # Broiler.VM's two programs, their retained answers and their divergences "byte for byte", and "a copy whose

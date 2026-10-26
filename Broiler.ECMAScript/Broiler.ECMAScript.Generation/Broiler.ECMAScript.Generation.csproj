@@ -13,13 +13,21 @@
     no file itself: the caller hands it each pin's text and each archive's bytes. It carries no
     table and no pinned input (SJL-D-6 (c)): those are files of this repository, under
     Broiler.ECMAScript/data/time/, never package content.
+
+    Milestone SJL-9.2b (Broiler.VM's decision JSD-0082, decisions D10-D12) adds the Intl data home's
+    generator in Intl/: the CLDR and UCD pin readers, the reader of the UCD subset the collation tables
+    need, and the generator of the Intl and collation tables, ported from Broiler.VM's architecture
+    tests, with the locales, numbering-system symbols, calendars and tailorings as parameters. With
+    Broiler.VM's parameters it writes Broiler.VM's JsCldrTables.g.cs byte for byte as rule N28 reads it,
+    before Broiler.VM's assurance pass; its pinned inputs and Broiler.JS's tables are files under
+    Broiler.ECMAScript/data/intl/, never package content.
   -->
   <PropertyGroup>
     <RootNamespace>Broiler.ECMAScript.Generation</RootNamespace>
     <AssemblyName>Broiler.ECMAScript.Generation</AssemblyName>
     <PackageId>Broiler.ECMAScript.Generation</PackageId>
-    <Description>Test-only: the generator of the Broiler JavaScript engines' time zone and calendar tables from the pinned IANA tz release, CLDR's time zone keys and ICU4X's calendar crates - the pin readers, a tz compiler equivalent to zic, the compact zone, identifier and region tables, the calendar year table, and source writers that wrap them into C# - for engines that embed the tables and hold them byte for byte. It carries no table and no pinned input.</Description>
-    <PackageTags>broiler;ecmascript;javascript;shared;generator;tzdb;calendars;test</PackageTags>
+    <Description>Test-only: the generator of the Broiler JavaScript engines' time zone, calendar and Intl tables from the pinned IANA tz release, CLDR's time zone keys, ICU4X's calendar crates, CLDR's JSON and XML data and the Unicode Character Database - the pin readers, a tz compiler equivalent to zic, the compact zone, identifier and region tables, the calendar year table, the Intl and collation tables, and writers that wrap them into C# or raw files - for engines that embed the tables and hold them byte for byte. It carries no table and no pinned input.</Description>
+    <PackageTags>broiler;ecmascript;javascript;shared;generator;tzdb;calendars;cldr;intl;test</PackageTags>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
   <ItemGroup>

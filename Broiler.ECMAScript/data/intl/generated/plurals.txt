@@ -1,0 +1,499 @@
+af|one|n = 1
+af|other|
+ak|one|n = 0..1
+ak|other|
+am|one|i = 0 or n = 1
+am|other|
+an|one|n = 1
+an|other|
+ar|zero|n = 0
+ar|one|n = 1
+ar|two|n = 2
+ar|few|n % 100 = 3..10
+ar|many|n % 100 = 11..99
+ar|other|
+ars|zero|n = 0
+ars|one|n = 1
+ars|two|n = 2
+ars|few|n % 100 = 3..10
+ars|many|n % 100 = 11..99
+ars|other|
+as|one|i = 0 or n = 1
+as|other|
+asa|one|n = 1
+asa|other|
+ast|one|i = 1 and v = 0
+ast|other|
+az|one|n = 1
+az|other|
+bal|one|n = 1
+bal|other|
+be|one|n % 10 = 1 and n % 100 != 11
+be|few|n % 10 = 2..4 and n % 100 != 12..14
+be|many|n % 10 = 0 or n % 10 = 5..9 or n % 100 = 11..14
+be|other|
+bem|one|n = 1
+bem|other|
+bez|one|n = 1
+bez|other|
+bg|one|n = 1
+bg|other|
+bho|one|n = 0..1
+bho|other|
+blo|zero|n = 0
+blo|one|n = 1
+blo|other|
+bm|other|
+bn|one|i = 0 or n = 1
+bn|other|
+bo|other|
+br|one|n % 10 = 1 and n % 100 != 11,71,91
+br|two|n % 10 = 2 and n % 100 != 12,72,92
+br|few|n % 10 = 3..4,9 and n % 100 != 10..19,70..79,90..99
+br|many|n != 0 and n % 1000000 = 0
+br|other|
+brx|one|n = 1
+brx|other|
+bs|one|v = 0 and i % 10 = 1 and i % 100 != 11 or f % 10 = 1 and f % 100 != 11
+bs|few|v = 0 and i % 10 = 2..4 and i % 100 != 12..14 or f % 10 = 2..4 and f % 100 != 12..14
+bs|other|
+ca|one|i = 1 and v = 0
+ca|many|e = 0 and i != 0 and i % 1000000 = 0 and v = 0 or e != 0..5
+ca|other|
+ce|one|n = 1
+ce|other|
+ceb|one|v = 0 and i = 1,2,3 or v = 0 and i % 10 != 4,6,9 or v != 0 and f % 10 != 4,6,9
+ceb|other|
+cgg|one|n = 1
+cgg|other|
+chr|one|n = 1
+chr|other|
+ckb|one|n = 1
+ckb|other|
+cs|one|i = 1 and v = 0
+cs|few|i = 2..4 and v = 0
+cs|many|v != 0
+cs|other|
+csw|one|n = 0..1
+csw|other|
+cv|zero|n = 0
+cv|one|n = 1
+cv|other|
+cy|zero|n = 0
+cy|one|n = 1
+cy|two|n = 2
+cy|few|n = 3
+cy|many|n = 6
+cy|other|
+da|one|n = 1 or t != 0 and i = 0,1
+da|other|
+de|one|i = 1 and v = 0
+de|other|
+doi|one|i = 0 or n = 1
+doi|other|
+dsb|one|v = 0 and i % 100 = 1 or f % 100 = 1
+dsb|two|v = 0 and i % 100 = 2 or f % 100 = 2
+dsb|few|v = 0 and i % 100 = 3..4 or f % 100 = 3..4
+dsb|other|
+dv|one|n = 1
+dv|other|
+dz|other|
+ee|one|n = 1
+ee|other|
+el|one|n = 1
+el|other|
+en|one|i = 1 and v = 0
+en|other|
+eo|one|n = 1
+eo|other|
+es|one|n = 1
+es|many|e = 0 and i != 0 and i % 1000000 = 0 and v = 0 or e != 0..5
+es|other|
+et|one|i = 1 and v = 0
+et|other|
+eu|one|n = 1
+eu|other|
+fa|one|i = 0 or n = 1
+fa|other|
+ff|one|i = 0,1
+ff|other|
+fi|one|i = 1 and v = 0
+fi|other|
+fil|one|v = 0 and i = 1,2,3 or v = 0 and i % 10 != 4,6,9 or v != 0 and f % 10 != 4,6,9
+fil|other|
+fo|one|n = 1
+fo|other|
+fr|one|i = 0,1
+fr|many|e = 0 and i != 0 and i % 1000000 = 0 and v = 0 or e != 0..5
+fr|other|
+fur|one|n = 1
+fur|other|
+fy|one|i = 1 and v = 0
+fy|other|
+ga|one|n = 1
+ga|two|n = 2
+ga|few|n = 3..6
+ga|many|n = 7..10
+ga|other|
+gd|one|n = 1,11
+gd|two|n = 2,12
+gd|few|n = 3..10,13..19
+gd|other|
+gl|one|i = 1 and v = 0
+gl|other|
+gsw|one|n = 1
+gsw|other|
+gu|one|i = 0 or n = 1
+gu|other|
+guw|one|n = 0..1
+guw|other|
+gv|one|v = 0 and i % 10 = 1
+gv|two|v = 0 and i % 10 = 2
+gv|few|v = 0 and i % 100 = 0,20,40,60,80
+gv|many|v != 0
+gv|other|
+ha|one|n = 1
+ha|other|
+haw|one|n = 1
+haw|other|
+he|one|i = 1 and v = 0 or i = 0 and v != 0
+he|two|i = 2 and v = 0
+he|other|
+hi|one|i = 0 or n = 1
+hi|other|
+hnj|other|
+hr|one|v = 0 and i % 10 = 1 and i % 100 != 11 or f % 10 = 1 and f % 100 != 11
+hr|few|v = 0 and i % 10 = 2..4 and i % 100 != 12..14 or f % 10 = 2..4 and f % 100 != 12..14
+hr|other|
+hsb|one|v = 0 and i % 100 = 1 or f % 100 = 1
+hsb|two|v = 0 and i % 100 = 2 or f % 100 = 2
+hsb|few|v = 0 and i % 100 = 3..4 or f % 100 = 3..4
+hsb|other|
+hu|one|n = 1
+hu|other|
+hy|one|i = 0,1
+hy|other|
+ia|one|i = 1 and v = 0
+ia|other|
+id|other|
+ie|one|i = 1 and v = 0
+ie|other|
+ig|other|
+ii|other|
+io|one|i = 1 and v = 0
+io|other|
+is|one|t = 0 and i % 10 = 1 and i % 100 != 11 or t % 10 = 1 and t % 100 != 11
+is|other|
+it|one|i = 1 and v = 0
+it|many|e = 0 and i != 0 and i % 1000000 = 0 and v = 0 or e != 0..5
+it|other|
+iu|one|n = 1
+iu|two|n = 2
+iu|other|
+ja|other|
+jbo|other|
+jgo|one|n = 1
+jgo|other|
+jmc|one|n = 1
+jmc|other|
+jv|other|
+jw|other|
+ka|one|n = 1
+ka|other|
+kab|one|i = 0,1
+kab|other|
+kaj|one|n = 1
+kaj|other|
+kcg|one|n = 1
+kcg|other|
+kde|other|
+kea|other|
+kk|one|n = 1
+kk|other|
+kkj|one|n = 1
+kkj|other|
+kl|one|n = 1
+kl|other|
+km|other|
+kn|one|i = 0 or n = 1
+kn|other|
+ko|other|
+kok|one|i = 0 or n = 1
+kok|other|
+kok-Latn|one|i = 0 or n = 1
+kok-Latn|other|
+ks|one|n = 1
+ks|other|
+ksb|one|n = 1
+ksb|other|
+ksh|zero|n = 0
+ksh|one|n = 1
+ksh|other|
+ku|one|n = 1
+ku|other|
+kw|zero|n = 0
+kw|one|n = 1
+kw|two|n % 100 = 2,22,42,62,82 or n % 1000 = 0 and n % 100000 = 1000..20000,40000,60000,80000 or n != 0 and n % 1000000 = 100000
+kw|few|n % 100 = 3,23,43,63,83
+kw|many|n != 1 and n % 100 = 1,21,41,61,81
+kw|other|
+ky|one|n = 1
+ky|other|
+lag|zero|n = 0
+lag|one|i = 0,1 and n != 0
+lag|other|
+lb|one|n = 1
+lb|other|
+lg|one|n = 1
+lg|other|
+lij|one|i = 1 and v = 0
+lij|other|
+lkt|other|
+lld|one|i = 1 and v = 0
+lld|many|e = 0 and i != 0 and i % 1000000 = 0 and v = 0 or e != 0..5
+lld|other|
+ln|one|n = 0..1
+ln|other|
+lo|other|
+lt|one|n % 10 = 1 and n % 100 != 11..19
+lt|few|n % 10 = 2..9 and n % 100 != 11..19
+lt|many|f != 0
+lt|other|
+lv|zero|n % 10 = 0 or n % 100 = 11..19 or v = 2 and f % 100 = 11..19
+lv|one|n % 10 = 1 and n % 100 != 11 or v = 2 and f % 10 = 1 and f % 100 != 11 or v != 2 and f % 10 = 1
+lv|other|
+mas|one|n = 1
+mas|other|
+mg|one|n = 0..1
+mg|other|
+mgo|one|n = 1
+mgo|other|
+mk|one|v = 0 and i % 10 = 1 and i % 100 != 11 or f % 10 = 1 and f % 100 != 11
+mk|other|
+ml|one|n = 1
+ml|other|
+mn|one|n = 1
+mn|other|
+mo|one|i = 1 and v = 0
+mo|few|v != 0 or n = 0 or n != 1 and n % 100 = 1..19
+mo|other|
+mr|one|n = 1
+mr|other|
+ms|other|
+mt|one|n = 1
+mt|two|n = 2
+mt|few|n = 0 or n % 100 = 3..10
+mt|many|n % 100 = 11..19
+mt|other|
+my|other|
+nah|one|n = 1
+nah|other|
+naq|one|n = 1
+naq|two|n = 2
+naq|other|
+nb|one|n = 1
+nb|other|
+nd|one|n = 1
+nd|other|
+ne|one|n = 1
+ne|other|
+nl|one|i = 1 and v = 0
+nl|other|
+nn|one|n = 1
+nn|other|
+nnh|one|n = 1
+nnh|other|
+no|one|n = 1
+no|other|
+nqo|other|
+nr|one|n = 1
+nr|other|
+nso|one|n = 0..1
+nso|other|
+ny|one|n = 1
+ny|other|
+nyn|one|n = 1
+nyn|other|
+om|one|n = 1
+om|other|
+or|one|n = 1
+or|other|
+os|one|n = 1
+os|other|
+osa|other|
+pa|one|n = 0..1
+pa|other|
+pap|one|n = 1
+pap|other|
+pcm|one|i = 0 or n = 1
+pcm|other|
+pl|one|i = 1 and v = 0
+pl|few|v = 0 and i % 10 = 2..4 and i % 100 != 12..14
+pl|many|v = 0 and i != 1 and i % 10 = 0..1 or v = 0 and i % 10 = 5..9 or v = 0 and i % 100 = 12..14
+pl|other|
+prg|zero|n % 10 = 0 or n % 100 = 11..19 or v = 2 and f % 100 = 11..19
+prg|one|n % 10 = 1 and n % 100 != 11 or v = 2 and f % 10 = 1 and f % 100 != 11 or v != 2 and f % 10 = 1
+prg|other|
+ps|one|n = 1
+ps|other|
+pt|one|i = 0..1
+pt|many|e = 0 and i != 0 and i % 1000000 = 0 and v = 0 or e != 0..5
+pt|other|
+pt-PT|one|i = 1 and v = 0
+pt-PT|many|e = 0 and i != 0 and i % 1000000 = 0 and v = 0 or e != 0..5
+pt-PT|other|
+rm|one|n = 1
+rm|other|
+ro|one|i = 1 and v = 0
+ro|few|v != 0 or n = 0 or n != 1 and n % 100 = 1..19
+ro|other|
+rof|one|n = 1
+rof|other|
+ru|one|v = 0 and i % 10 = 1 and i % 100 != 11
+ru|few|v = 0 and i % 10 = 2..4 and i % 100 != 12..14
+ru|many|v = 0 and i % 10 = 0 or v = 0 and i % 10 = 5..9 or v = 0 and i % 100 = 11..14
+ru|other|
+rwk|one|n = 1
+rwk|other|
+sah|other|
+saq|one|n = 1
+saq|other|
+sat|one|n = 1
+sat|two|n = 2
+sat|other|
+sc|one|i = 1 and v = 0
+sc|other|
+scn|one|i = 1 and v = 0
+scn|many|e = 0 and i != 0 and i % 1000000 = 0 and v = 0 or e != 0..5
+scn|other|
+sd|one|n = 1
+sd|other|
+sdh|one|n = 1
+sdh|other|
+se|one|n = 1
+se|two|n = 2
+se|other|
+seh|one|n = 1
+seh|other|
+ses|other|
+sg|other|
+sgs|one|n % 10 = 1 and n % 100 != 11
+sgs|two|n = 2
+sgs|few|n != 2 and n % 10 = 2..9 and n % 100 != 11..19
+sgs|many|f != 0
+sgs|other|
+sh|one|v = 0 and i % 10 = 1 and i % 100 != 11 or f % 10 = 1 and f % 100 != 11
+sh|few|v = 0 and i % 10 = 2..4 and i % 100 != 12..14 or f % 10 = 2..4 and f % 100 != 12..14
+sh|other|
+shi|one|i = 0 or n = 1
+shi|few|n = 2..10
+shi|other|
+si|one|n = 0,1 or i = 0 and f = 1
+si|other|
+sk|one|i = 1 and v = 0
+sk|few|i = 2..4 and v = 0
+sk|many|v != 0
+sk|other|
+sl|one|v = 0 and i % 100 = 1
+sl|two|v = 0 and i % 100 = 2
+sl|few|v = 0 and i % 100 = 3..4 or v != 0
+sl|other|
+sma|one|n = 1
+sma|two|n = 2
+sma|other|
+smi|one|n = 1
+smi|two|n = 2
+smi|other|
+smj|one|n = 1
+smj|two|n = 2
+smj|other|
+smn|one|n = 1
+smn|two|n = 2
+smn|other|
+sms|one|n = 1
+sms|two|n = 2
+sms|other|
+sn|one|n = 1
+sn|other|
+so|one|n = 1
+so|other|
+sq|one|n = 1
+sq|other|
+sr|one|v = 0 and i % 10 = 1 and i % 100 != 11 or f % 10 = 1 and f % 100 != 11
+sr|few|v = 0 and i % 10 = 2..4 and i % 100 != 12..14 or f % 10 = 2..4 and f % 100 != 12..14
+sr|other|
+ss|one|n = 1
+ss|other|
+ssy|one|n = 1
+ssy|other|
+st|one|n = 1
+st|other|
+su|other|
+sv|one|i = 1 and v = 0
+sv|other|
+sw|one|i = 1 and v = 0
+sw|other|
+syr|one|n = 1
+syr|other|
+ta|one|n = 1
+ta|other|
+te|one|n = 1
+te|other|
+teo|one|n = 1
+teo|other|
+th|other|
+ti|one|n = 0..1
+ti|other|
+tig|one|n = 1
+tig|other|
+tk|one|n = 1
+tk|other|
+tl|one|v = 0 and i = 1,2,3 or v = 0 and i % 10 != 4,6,9 or v != 0 and f % 10 != 4,6,9
+tl|other|
+tn|one|n = 1
+tn|other|
+to|other|
+tpi|other|
+tr|one|n = 1
+tr|other|
+ts|one|n = 1
+ts|other|
+tzm|one|n = 0..1 or n = 11..99
+tzm|other|
+ug|one|n = 1
+ug|other|
+uk|one|v = 0 and i % 10 = 1 and i % 100 != 11
+uk|few|v = 0 and i % 10 = 2..4 and i % 100 != 12..14
+uk|many|v = 0 and i % 10 = 0 or v = 0 and i % 10 = 5..9 or v = 0 and i % 100 = 11..14
+uk|other|
+und|other|
+ur|one|i = 1 and v = 0
+ur|other|
+uz|one|n = 1
+uz|other|
+ve|one|n = 1
+ve|other|
+vec|one|i = 1 and v = 0
+vec|many|e = 0 and i != 0 and i % 1000000 = 0 and v = 0 or e != 0..5
+vec|other|
+vi|other|
+vo|one|n = 1
+vo|other|
+vun|one|n = 1
+vun|other|
+wa|one|n = 0..1
+wa|other|
+wae|one|n = 1
+wae|other|
+wo|other|
+xh|one|n = 1
+xh|other|
+xog|one|n = 1
+xog|other|
+yi|one|i = 1 and v = 0
+yi|other|
+yo|other|
+yue|other|
+zh|other|
+zu|one|i = 0 or n = 1
+zu|other|

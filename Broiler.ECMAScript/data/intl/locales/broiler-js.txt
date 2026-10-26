@@ -1,0 +1,126 @@
+# broiler-js intl locale list 1: Broiler.JS's embedding
+#
+# Decision D5 of Broiler.VM's JSD-0082 (milestone SJL-9.1 of the shared JavaScript libraries
+# programme), as this repository's plan records it in docs/roadmap/SharedLibraries.md, "Area
+# verdicts", "Locale data and the Intl algorithms (SJL-9.1)", "Decision D5's two lists", list 2.
+# Broiler.JS's main data is the union of four sources:
+#   1. the languages Broiler.Unicode.Cldr.LocaleData serves today: ar, de, en, es, fr, it, ja, ko,
+#      nl, pl, pt, ru, sv, tr, zh, each also named by source 2;
+#   2. every locale the intl402 files passing at its base and the reference datasets name, bundle
+#      sjl-9-001's locales/union.tsv: the languages CLDR 48.2.0 carries main data for, each under
+#      its CLDR name (aar as aa, ces as cs, tl as fil, iw and heb as he, in as id, mo as ro, sh and
+#      cnr as sr, ji as yi, cmn as zh), and the named locales that are CLDR 48.2.0 locales in their
+#      own right, in availableLocales.json or defaultContent.json;
+#   3. en-US, the default-locale provider's fallback (decision D7);
+#   4. und.
+# The languages union.tsv names that CLDR carries no main data for (aae, art, ary, cel, hak, hsn,
+# hyw, sgn) and the base names that are no CLDR locale (zh-TW and the rest) add nothing here: their
+# tests read the global alias and likely-subtags tables, and the library resolves them as any tag.
+#
+# RE-RUN BEFORE GENERATION (JSD-0082, Context; finding F17). On 2026-10-26, before any table was
+# generated, scripts/intl/enumerate_locales.py ran again on the newest valid UTC whole-suite report
+# with negative tests of this repository's default branch, bundle sjl-12-001's after/part-a report
+# (run 40231802611 at c29d653f), with test262 ccaac100 and Broiler.VM 4cf9ca44's datasets and pin:
+# every row of union.tsv, intl402.tsv, datasets.tsv and uncounted.tsv equalled the committed one,
+# so the list stands.
+#
+# `locale <tag> main` marks a locale whose own CLDR main data is written: a tag cldr-core's
+# availableLocales.json names among its `full` locales, und, root, among them. A `locale <tag>`
+# without it is one of CLDR's default-content locales, which reads its data through its parent.
+# `supplemental *`: the plural, ordinal, plural-range and day-period tables cover every language
+# CLDR states rules for, and the global tables are as Broiler.VM's. Ordinal order, each tag once.
+# Broiler.ECMAScript.Generation's IntlLocaleList reads this text. Each later addition is a dated
+# data decision with its measured size.
+
+locale aa main
+locale ab main
+locale af main
+locale ar main
+locale ar-001
+locale ar-EG main
+locale az main
+locale bg main
+locale cs main
+locale da main
+locale de main
+locale de-AT main
+locale de-CH main
+locale de-DE
+locale en main
+locale en-150 main
+locale en-AU main
+locale en-DK main
+locale en-FR main
+locale en-GB main
+locale en-IN main
+locale en-NZ main
+locale en-Shaw main
+locale en-Shaw-GB
+locale en-US
+locale es main
+locale es-419 main
+locale es-ES
+locale fa main
+locale fa-IR
+locale ff main
+locale fil main
+locale fr main
+locale fr-CA main
+locale fr-FR
+locale gv main
+locale he main
+locale he-IL
+locale hi main
+locale hi-IN
+locale hy main
+locale hy-AM
+locale id main
+locale id-ID
+locale it main
+locale ja main
+locale ja-JP
+locale jbo main
+locale ko main
+locale ko-KR
+locale ln main
+locale lt main
+locale nb main
+locale nl main
+locale nl-BE main
+locale no main
+locale pap main
+locale pl main
+locale pl-PL
+locale pt main
+locale pt-BR
+locale pt-PT main
+locale ro main
+locale ru main
+locale ru-RU
+locale sa main
+locale si main
+locale sl main
+locale sr main
+locale sr-Cyrl main
+locale sr-Cyrl-RS
+locale sr-Latn main
+locale sr-Latn-RS
+locale sv main
+locale sv-SE
+locale th main
+locale th-TH
+locale tr main
+locale und main
+locale ur main
+locale uz main
+locale uz-Cyrl main
+locale yi main
+locale zh main
+locale zh-Hans main
+locale zh-Hans-CN
+locale zh-Hans-SG main
+locale zh-Hant main
+locale zh-Hant-TW
+locale zu main
+
+supplemental *

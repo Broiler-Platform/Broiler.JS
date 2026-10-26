@@ -1,0 +1,276 @@
+001|H h|H
+419|h H hB hb|h
+AC|H h hb hB|H
+AD|H hB|H
+AE|h hB hb H|h
+AF|H hb hB h|H
+AG|h hb H hB|h
+AI|H h hb hB|H
+AL|h H hB|h
+AM|H hB|H
+AO|H hB|H
+AR|h H hB hb|h
+AS|h H|h
+AT|H hB|H
+AU|h hb H hB|h
+AW|H hB|H
+AX|H|H
+AZ|H hB h|H
+BA|H hB h|H
+BB|h hb H hB|h
+BD|h hB H|h
+BE|H hB|H
+BF|H hB|H
+BG|H hB h|H
+BH|h hB hb H|h
+BI|H h|H
+BJ|H hB|H
+BL|H hB|H
+BM|h hb H hB|h
+BN|hb hB h H|h
+BO|h H hB hb|h
+BQ|H|H
+BR|H hB|H
+BS|h hb H hB|h
+BT|h H|h
+BW|H h hb hB|H
+BY|H h|H
+BZ|H h hb hB|H
+CA|h hb H hB|h
+CC|H h hb hB|H
+CD|hB H|H
+CF|H h hB|H
+CG|H hB|H
+CH|H hB h|H
+CI|H hB|H
+CK|H h hb hB|H
+CL|h H hB hb|h
+CM|H h hB|H
+CN|H hB hb h|H
+CO|h H hB hb|h
+CP|H|H
+CR|h H hB hb|h
+CU|h H hB hb|h
+CV|H hB|H
+CW|H hB|H
+CX|H h hb hB|H
+CY|h H hb hB|h
+CZ|H|H
+DE|H hB|H
+DG|H h hb hB|H
+DJ|h H|h
+DK|H|H
+DM|h hb H hB|h
+DO|h H hB hb|h
+DZ|h hB hb H|h
+EA|H h hB hb|H
+EC|h H hB hb|h
+EE|H hB|H
+EG|h hB hb H|h
+EH|h hB hb H|h
+ER|h H|h
+ES|H hB h hb|H
+ET|hB hb h H|h
+FI|H|H
+FJ|h hb H hB|h
+FK|H h hb hB|H
+FM|h hb H hB|h
+FO|H h|H
+FR|H hB|H
+GA|H hB|H
+GB|H h hb hB|H
+GD|h hb H hB|h
+GE|H hB h|H
+GF|H hB|H
+GG|H h hb hB|H
+GH|h H|h
+GI|H h hb hB|H
+GL|H h|H
+GM|h hb H hB|h
+GN|H hB|H
+GP|H hB|H
+GQ|H hB h hb|H
+GR|h H hb hB|h
+GS|H h hb hB|H
+GT|h H hB hb|h
+GU|h hb H hB|h
+GW|H hB|H
+GY|h hb H hB|h
+HK|h hB hb H|h
+HN|h H hB hb|h
+HR|H hB|H
+HU|H h|H
+IC|H h hB hb|H
+ID|H|H
+IE|H h hb hB|H
+IL|H hB|H
+IM|H h hb hB|H
+IN|h H|h
+IO|H h hb hB|H
+IQ|h hB hb H|h
+IR|hB H|H
+IS|H|H
+IT|H hB|H
+JE|H h hb hB|H
+JM|h hb H hB|h
+JO|h hB hb H|h
+JP|H K h|H
+KE|hB hb H h|H
+KG|H h hB hb|H
+KH|hB h H hb|h
+KI|h hb H hB|h
+KM|H h hB hb|H
+KN|h hb H hB|h
+KP|h H hB hb|h
+KR|h H hB hb|h
+KW|h hB hb H|h
+KY|h hb H hB|h
+KZ|H hB|H
+LA|H hb hB h|H
+LB|h hB hb H|h
+LC|h hb H hB|h
+LI|H hB h|H
+LK|H h hB hb|H
+LR|h hb H hB|h
+LS|h H|h
+LT|H h hb hB|H
+LU|H h hB|H
+LV|H hB hb h|H
+LY|h hB hb H|h
+MA|H h hB hb|H
+MC|H hB|H
+MD|H hB|H
+ME|H hB h|H
+MF|H hB|H
+MG|H h|H
+MH|h hb H hB|h
+MK|H h hb hB|H
+ML|H|H
+MM|hB hb H h|H
+MN|H h hb hB|H
+MO|h hB hb H|h
+MP|h hb H hB|h
+MQ|H hB|H
+MR|h hB hb H|h
+MS|H h hb hB|H
+MT|H h|H
+MU|H h|H
+MV|H h|H
+MW|h hb H hB|h
+MX|h H hB hb|h
+MY|hb hB h H|h
+MZ|H hB|H
+NA|h H hB hb|h
+NC|H hB|H
+NE|H|H
+NF|H h hb hB|H
+NG|H h hb hB|H
+NI|h H hB hb|h
+NL|H hB|H
+NO|H h|H
+NP|H h hB|H
+NR|H h hb hB|H
+NU|H h hb hB|H
+NZ|h hb H hB|h
+OM|h hB hb H|h
+PA|h H hB hb|h
+PE|h H hB hb|h
+PF|H h hB|H
+PG|h H|h
+PH|h hB hb H|h
+PK|h hB H|h
+PL|H h|H
+PM|H hB|H
+PN|H h hb hB|H
+PR|h H hB hb|h
+PS|h hB hb H|h
+PT|H hB|H
+PW|h H|h
+PY|h H hB hb|h
+QA|h hB hb H|h
+RE|H hB|H
+RO|H hB|H
+RS|H hB h|H
+RU|H|H
+RW|H h|H
+SA|h hB hb H|h
+SB|h hb H hB|h
+SC|H h hB|H
+SD|h hB hb H|h
+SE|H|H
+SG|h hb H hB|h
+SH|H h hb hB|H
+SI|H hB|H
+SJ|H|H
+SK|H|H
+SL|h hb H hB|h
+SM|H h hB|H
+SN|H h hB|H
+SO|h H|h
+SR|H hB|H
+SS|h hb H hB|h
+ST|H hB|H
+SV|h H hB hb|h
+SX|H h hb hB|H
+SY|h hB hb H|h
+SZ|h hb H hB|h
+TA|H h hb hB|H
+TC|h hb H hB|h
+TD|h H hB|h
+TF|H h hB|H
+TG|H hB|H
+TH|H h|H
+TJ|H h|H
+TL|H hB hb h|H
+TM|H h|H
+TN|h hB hb H|h
+TO|h H|h
+TR|H hB|H
+TT|h hb H hB|h
+TW|hB hb h H|h
+TZ|hB hb H h|H
+UA|H hB h|H
+UG|hB hb H h|H
+UM|h hb H hB|h
+US|h hb H hB|h
+UY|h H hB hb|h
+UZ|H hB h|H
+VA|H h hB|H
+VC|h hb H hB|h
+VE|h H hB hb|h
+VG|h hb H hB|h
+VI|h hb H hB|h
+VN|H h|H
+VU|h H|h
+WF|H hB|H
+WS|h H|h
+XK|H hB h|H
+YE|h hB hb H|h
+YT|H hB|H
+ZA|H h hb hB|H
+ZM|h hb H hB|h
+ZW|H h|H
+af-ZA|H h hB hb|H
+ar-001|h hB hb H|h
+ca-ES|H h hB|H
+en-001|h hb H hB|h
+en-HK|h hb H hB|h
+en-IL|H h hb hB|H
+en-MY|h hb H hB|h
+es-BR|H h hB hb|H
+es-ES|H h hB hb|H
+es-GQ|H h hB hb|H
+fr-CA|H h hB|H
+gl-ES|H h hB|H
+gu-IN|hB hb h H|h
+hi-IN|hB h H|h
+it-CH|H h hB|H
+it-IT|H h hB|H
+kn-IN|hB h H|h
+ku-SY|H hB|H
+ml-IN|hB h H|h
+mr-IN|hB hb h H|h
+pa-IN|hB hb h H|h
+ta-IN|hB h hb H|h
+te-IN|hB h H|h
+zu-ZA|H hB hb h|H

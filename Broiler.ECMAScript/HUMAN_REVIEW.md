@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 1227 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 1386 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 94 |
-| Code units | 1645 |
-| Relevant | 1227 |
-| Exempt | 418 |
-| Assessed | 1227 of 1227 (100%) |
-| Human reviewed | 0 of 1227 (0%) |
-| Unverified | 1227 |
+| Files scanned | 106 |
+| Code units | 1836 |
+| Relevant | 1386 |
+| Exempt | 450 |
+| Assessed | 1386 of 1386 (100%) |
+| Human reviewed | 0 of 1386 (0%) |
+| Unverified | 1386 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1227 |
+| HUMAN_PENDING | 1386 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 418 |
+| EXEMPT | 450 |
 
 ## 5. Aliases In The Tree
 
@@ -167,6 +167,18 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Conformance/VectorFile.cs` | 23 | 18 | 5 | 18 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorRun.cs` | 17 | 12 | 5 | 12 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorValidator.cs` | 25 | 21 | 4 | 21 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` | 39 | 35 | 4 | 35 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Dates.cs` | 13 | 13 | 0 | 13 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` | 43 | 43 | 0 | 43 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Generation/Intl/CldrUcd.cs` | 29 | 24 | 5 | 24 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Generation/Intl/IntlCldrPin.cs` | 17 | 13 | 4 | 13 | Low | High | 7/7 |
+| `Broiler.ECMAScript.Generation/Intl/IntlDataVersions.cs` | 5 | 5 | 0 | 5 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Generation/Intl/IntlGeneratorOptions.cs` | 11 | 5 | 6 | 5 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Generation/Intl/IntlLocaleList.cs` | 9 | 5 | 4 | 5 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Generation/Intl/IntlTableFiles.cs` | 4 | 4 | 0 | 4 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Generation/Intl/IntlTableSource.cs` | 2 | 2 | 0 | 2 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Generation/Intl/IntlTables.cs` | 9 | 3 | 6 | 3 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Generation/Intl/IntlUcdPin.cs` | 10 | 7 | 3 | 7 | Low | High | 4/4 |
 | `Broiler.ECMAScript.Generation/Time/ArchiveReading.cs` | 9 | 9 | 0 | 9 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` | 16 | 12 | 4 | 12 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Generation/Time/CalendarTableGenerator.cs` | 32 | 29 | 3 | 29 | Low | High | 2/2 |
@@ -401,6 +413,46 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a candidate is kept whose instant does not have the offset it was made from, an offset in force a day before or after the wall time is not sampled, or a candidate outside the range completes
 - `Broiler.ECMAScript.Time.ZonedTime.Disambiguate(ITimeZoneRules, ReadOnlySpan<BigInteger>, IsoDateTime, Disambiguation, out BigInteger)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, Spec=JSD-0076, Temporal DisambiguatePossibleEpochNanoseconds via Broiler.VM JsTemporal.Disambiguate, `0AFBEC`, PENDING
   - Falsified if: the gap's two offsets are not read a day before and a day after the wall time, or the moved time's first instant is not answered under earlier and its last otherwise
+- `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.RootCollation.Read(string)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator, `33AB30`, PENDING
+  - Falsified if: a line that maps nothing, repeats a key or has a weight wider than its encoding is read without an exception
+- `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.RootCollation.Elements(string)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator, `D4DC2B`, PENDING
+  - Falsified if: an element with a lower-case or missing hexadecimal digit, or another marker than . or *, is read, or one the expression matches is not
+- `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Tailoring.Apply(RootCollation, CldrUcd, string, IReadOnlyDictionary<string, string>)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator, `1FC4E4`, PENDING
+  - Falsified if: rule syntax outside the supported subset is accepted, or a tailored weight that runs into the next root weight is written
+- `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Generate(IntlCldrPin, IReadOnlyDictionary<string, byte[]>, CldrUcd, IntlGeneratorOptions)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` - Security=High, Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator, `E3BEF1`, PENDING
+  - Falsified if: tables are written from an archive the pin does not describe, or with Broiler.VM's options they differ from Broiler.VM's generator's
+- `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Archive.Bytes(string)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` - Security=High, Spec=JSD-0082 D11 CLDR tables, `ADFB0A`, PENDING
+  - Falsified if: a file the pin does not name is read, or its absence is answered with empty data
+- `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Text(string, string, IEnumerable<string>)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` - Security=High, Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator, `1713B4`, PENDING
+  - Falsified if: a line holding a quote, a control character or a character above U+007E, or a table with no line, is written
+- `Broiler.ECMAScript.Generation.Intl.CldrUcd.Read(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Intl/CldrUcd.cs` - Security=High, Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase, `E61D3D`, PENDING
+  - Falsified if: a UnicodeData.txt record with a field missing, an unknown category, or a decomposition on a range, or a Unified_Ideograph code point that is not an assigned letter, is read without an exception
+- `Broiler.ECMAScript.Generation.Intl.CldrUcd.UnicodeDataEntries(string)` in `Broiler.ECMAScript.Generation/Intl/CldrUcd.cs` - Security=High, Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase, `AA1255`, PENDING
+  - Falsified if: a line of a field count other than fifteen, or a Last record no First record opened, is read without an exception
+- `Broiler.ECMAScript.Generation.Intl.IntlCldrPin` in `Broiler.ECMAScript.Generation/Intl/IntlCldrPin.cs` - Security=High, Spec=JSD-0082 D10 D12 CLDR pin via Broiler.VM CldrPin, `574FE4`, PENDING
+  - Falsified if: a file whose length, SHA-256 or stated version differs from the pin, or a pin of another CLDR or UCA version, is returned as the pinned one without an exception
+- `Broiler.ECMAScript.Generation.Intl.IntlCldrPin.Parse(string)` in `Broiler.ECMAScript.Generation/Intl/IntlCldrPin.cs` - Security=High, Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin, `871D66`, PENDING
+  - Falsified if: a malformed file line or a repeated key is accepted
+- `Broiler.ECMAScript.Generation.Intl.IntlCldrPin.Violations(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Intl/IntlCldrPin.cs` - Security=High, Spec=JSD-0082 D10 D12 CLDR pin via Broiler.VM CldrPin, `874F2C`, PENDING
+  - Falsified if: a file whose length, hash or stated version differs from the pin, or a pin of another version or UCA version, yields no violation
+- `Broiler.ECMAScript.Generation.Intl.IntlCldrPin.Verified(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Intl/IntlCldrPin.cs` - Security=High, Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin, `22A1C6`, PENDING
+  - Falsified if: files with a violation are returned instead of refused
+- `Broiler.ECMAScript.Generation.Intl.IntlCldrPin.VersionViolation(string, byte[])` in `Broiler.ECMAScript.Generation/Intl/IntlCldrPin.cs` - Security=High, Spec=JSD-0082 D10 D12 CLDR pin via Broiler.VM CldrPin, `13894D`, PENDING
+  - Falsified if: a package, supplemental or UCA file of another release is answered null
+- `Broiler.ECMAScript.Generation.Intl.IntlPinText` in `Broiler.ECMAScript.Generation/Intl/IntlCldrPin.cs` - Security=High, Spec=JSD-0082 D10 D12 pin grammar via Broiler.VM CldrPin, `6A20EE`, PENDING
+  - Falsified if: a file line that is not a path, a decimal length and a digest, or a single-valued key that repeats or has no value, is parsed without an exception
+- `Broiler.ECMAScript.Generation.Intl.IntlPinText.Parse(string, string)` in `Broiler.ECMAScript.Generation/Intl/IntlCldrPin.cs` - Security=High, Spec=JSD-0082 D10 D12 pin grammar via Broiler.VM CldrPin, `333008`, PENDING
+  - Falsified if: a malformed file line or a repeated key is accepted
+- `Broiler.ECMAScript.Generation.Intl.IntlLocaleList.Parse(string)` in `Broiler.ECMAScript.Generation/Intl/IntlLocaleList.cs` - Security=High, Spec=JSD-0082 D5 D11 locale list, `6C3047`, PENDING
+  - Falsified if: a list out of ordinal order, with a repeated tag, a malformed tag or line, or no locale, is accepted
+- `Broiler.ECMAScript.Generation.Intl.IntlUcdPin` in `Broiler.ECMAScript.Generation/Intl/IntlUcdPin.cs` - Security=High, Spec=JSD-0082 D12 UCD pin, `AEF610`, PENDING
+  - Falsified if: a file whose length or SHA-256 differs from the pin, a PropList.txt of another version, or a pin of another Unicode version, is returned as the pinned one without an exception
+- `Broiler.ECMAScript.Generation.Intl.IntlUcdPin.Parse(string)` in `Broiler.ECMAScript.Generation/Intl/IntlUcdPin.cs` - Security=High, Spec=JSD-0082 D12 UCD pin, `07D170`, PENDING
+  - Falsified if: a malformed file line or a repeated key is accepted
+- `Broiler.ECMAScript.Generation.Intl.IntlUcdPin.Violations(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Intl/IntlUcdPin.cs` - Security=High, Spec=JSD-0082 D12 UCD pin, `DA6542`, PENDING
+  - Falsified if: a file whose length or hash differs from the pin, a pin of another version, or a pin that does not name a file the generator reads, yields no violation
+- `Broiler.ECMAScript.Generation.Intl.IntlUcdPin.Verified(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Intl/IntlUcdPin.cs` - Security=High, Spec=JSD-0082 D12 UCD pin, `67FB7E`, PENDING
+  - Falsified if: files with a violation are returned instead of refused
 - `Broiler.ECMAScript.Generation.Time.ArchiveReading` in `Broiler.ECMAScript.Generation/Time/ArchiveReading.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `CD64C8`, PENDING
   - Falsified if: a member of a tarball is answered with bytes other than the ones its tar entry holds, or a link, a directory or an unnamed member is answered as a file
 - `Broiler.ECMAScript.Generation.Time.ArchiveReading.RegularFiles(byte[], IReadOnlySet<string>)` in `Broiler.ECMAScript.Generation/Time/ArchiveReading.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `78B9DB`, PENDING
@@ -461,5 +513,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-523 of the 1227 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+566 of the 1386 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

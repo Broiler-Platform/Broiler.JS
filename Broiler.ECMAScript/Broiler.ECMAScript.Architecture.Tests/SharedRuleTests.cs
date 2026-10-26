@@ -324,6 +324,7 @@ public class SharedRuleTests
 
         WhiteSpaceTable();
         TimeDataTables();
+        IntlDataTables();
 
         static Dictionary<string, byte[]> Read(string directory) =>
             Directory.EnumerateFiles(directory, "*.vectors").ToDictionary(static p => Path.GetFileName(p), File.ReadAllBytes, StringComparer.Ordinal);
@@ -433,6 +434,44 @@ public class SharedRuleTests
         var missing = new Dictionary<string, byte[]>(committed, StringComparer.Ordinal);
         missing.Remove(TimeDataHome.CalendarsFile);
         Assert.Contains(TimeDataHome.CalendarsFile + " is written by the generator and not committed", SharedRules.SL7(missing, generated));
+    }
+
+    /// <summary>
+    /// SL7's fourth generated area, from milestone SJL-9.2b: the Intl data home's tables for Broiler.JS's
+    /// embedding, Broiler.ECMAScript/data/intl/generated/, which Broiler.ECMAScript.Generation writes from the pins
+    /// and the locale list beside them. <see cref="IntlDataHome.WriteVariable"/> set to 1 writes the area instead
+    /// of comparing it.
+    /// </summary>
+    private static void IntlDataTables()
+    {
+        var home = IntlDataHome.Current;
+        var generated = IntlDataHome.Files(IntlDataHome.GenerateBroilerJs(home));
+        Assert.Contains("tables.manifest", generated.Keys);
+        Assert.Contains("collation-root.bin", generated.Keys);
+        Assert.All(generated.Values, static bytes => Assert.NotEmpty(bytes));
+
+        if (Environment.GetEnvironmentVariable(IntlDataHome.WriteVariable) == "1")
+            IntlDataHome.Write(home, generated);
+
+        var committed = IntlDataHome.Committed(home);
+        Assert.Empty(SharedRules.SL7(committed, generated));
+
+        // The witness: a file written by hand into the generated area, and one byte changed in a generated table.
+        var edited = new Dictionary<string, byte[]>(committed, StringComparer.Ordinal)
+        {
+            ["hand-written.vectors"] = File.ReadAllBytes(Witness.PathOf("SL7-hand-written-file-in-a-generated-area.vectors.witness")),
+        };
+        var changed = (byte[])committed["number-locales.txt"].Clone();
+        changed[changed.Length / 2] ^= 1;
+        edited["number-locales.txt"] = changed;
+        var violations = SharedRules.SL7(edited, generated).ToList();
+        Assert.Contains("hand-written.vectors is committed in a generated area, and the generator does not write it", violations);
+        Assert.Contains("number-locales.txt differs from what the generator writes", violations);
+
+        // And a table the generator writes that is not committed.
+        var missing = new Dictionary<string, byte[]>(committed, StringComparer.Ordinal);
+        missing.Remove("date-locales.txt");
+        Assert.Contains("date-locales.txt is written by the generator and not committed", SharedRules.SL7(missing, generated));
     }
 
     /// <summary>One run of the corpus through a library: the corpus read and validated afresh, then the library-level runner's report.</summary>
