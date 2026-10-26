@@ -94,7 +94,7 @@ population: part A's
 configuration: part A's, with time_zone America/New_York in both dispatches, so that the workflow sets TZ to it for every shard and for the re-run; both runs' host-zone records read alike, line for line: TZ America/New_York, EST -0500 at 2021-01-15T12:00:00Z, EDT -0400 at 2021-07-15T12:00:00Z, and one tzdata release; the base run is taken at the base commit, and the after run at the after commit
 comparison: part A's
 timeouts: part A's
-admitted difference classes: part A's; no row of the correspondence depends on the host's zone, so part B admits nothing that part A does not
+admitted difference classes: part A's, over the same rows; the rows whose answer depends on the host's zone are read in this part's zone: row T27, a correction of this engine (the default zone's names), is in C1 and is listed per variant, and row T11, the host-zone provider, is an engine policy this engine keeps (decision SJL-D-19) and is in no class, so a verdict that moves on it is a regression
 every other difference is a regression, as in part A
 MET if and only if both runs are complete as part A says, every shard of each in the zone, the two runs' host-zone records read alike, the script finds them comparable, no row passing at the base fails, times out or is skipped after, and every changed verdict is in C1, C3 or C5 and is listed.
 NOT MET otherwise; and if the two runs' host-zone records differ, the part is not judged until the base is taken again at the same commit in the after run's zone record.
@@ -108,12 +108,12 @@ population: Broiler.VM's reference datasets of the area, byte for byte as Broile
 configuration: each program's text evaluated by indirect eval in the shell BroilerJS built in Release, through scripts/conformance/run_reference_datasets.py --bundle sjl-9-001 and its driver, which print the program's completion value; no LANG and TZ=UTC; at the base commit (the base, retained and read) and at the after commit (judged); the expected answer of each line is Broiler.VM's: the retained answer with Broiler.VM's divergences applied, which Broiler.VM's slice checks hold its own answer equal to; and once, at the after commit's time, each program run in the reference this bundle's reference.txt names (the newest Node.js release on CLDR 48, by its tarball's SHA-256), whose output is retained
 comparison: per program and line, the line after against its expected answer; and per line that still differs, the line after against the same line at the base and against the reference's line
 admitted difference classes:
-  V Broiler.VM's coverage - a line whose expected answer comes from a divergence in a group this bundle's divergence-groups.tsv marks coverage, read with the dated corrections of that table this bundle's README records (a locale, a calendar or a tailoring Broiler.VM's data lacks, JSD-0082 decision D5, or a numbering system's own symbols, which Broiler.VM's data lacks, decision D21), where this engine's answer after equals the retained answer, or, in a group of a numbering system's symbols, equals the expected answer with each of the locale's latn number symbols (the decimal and grouping separators, the signs and the percent sign) replaced by the same symbol of that numbering system in CLDR 48.2.0; a line the group's note names as also carrying a difference the pinned text decides is admitted only when its answer after is the line that note names; each listed with its group
+  V Broiler.VM's coverage - a line whose expected answer comes from a divergence in a group this bundle's divergence-groups.tsv marks coverage, read with the dated corrections of that table in this bundle's README, the table and the corrections both as the rule commit holds them, so that a correction added after the rule commit does not bind this part (a locale, a calendar or a tailoring Broiler.VM's data lacks, JSD-0082 decision D5, or a numbering system's own symbols, which Broiler.VM's data lacks, decision D21), where this engine's answer after equals the retained answer, or, in a group of a numbering system's symbols, equals the expected answer with each of the locale's latn number symbols (the decimal and grouping separators, the signs and the percent sign) replaced by the same symbol of that numbering system in CLDR 48.2.0, or, in the group of a Collator's tailorings (src/tests/cldr/locales/divergences.txt lines 62-92, the table's line 50), is a collations line of a Locale with no co keyword whose answer after equals, sorted in code-unit order, the list of the collations this engine's Intl.Collator resolves for that Locale: each value c of Intl.supportedValuesOf("collation") for which new Intl.Collator(tag, {collation: c}).resolvedOptions().collation is c, tag being the Locale's toString(), in the same shell at the after commit (rows L17 and L40; the Collator's data is SJL-17's, and the shared CollationsOfLocale reads this engine's Collator's list, JSD-0082 decision D33 (c)); a line the group's note names as also carrying a difference the pinned text decides is admitted only when its answer after is the line that note names; each listed with its group, and a collations line admitted by the Collator's list listed with that list
   R the release - a line of V's kind whose answer after equals neither, and equals the reference's line: the retained answers are ICU 77.1's on CLDR 47.0, and this engine's data is CLDR 48.2.0; each listed with the three lines; the reference answers CLDR 48.0 (reference.txt), so a line whose value CLDR changed between 48.0 and 48.2.0 equals no line of the reference and is in no class
   Z8 the resolved identifier - a line whose difference is only the timeZone a formatter reports for an identifier that is not its own primary, where this engine answers the identifier as given (JSD-0082 decision D15), against Broiler.VM's base answer, its primary; each listed
   O outside the area - a line of segments.js whose answer after equals its answer at the base (SJL-7's Intl.Segmenter), whatever group of divergence-groups.tsv holds it; class O is read first for every line of segments.js; each listed
   H the default-locale provider - a line whose difference is only a value the default-locale provider supplies, which decision SJL-D-19 and JSD-0082 decision D7 keep this engine's; each listed with the provider's answer
-every other difference is a failure, including a line in a spec group of divergence-groups.tsv that differs from Broiler.VM's divergence (other than a line of segments.js that class O admits), a line of V's or R's kind that equals neither the retained answer nor the reference's line, and a line that differs from its expected answer for any other reason
+every other difference is a failure, including a line in a spec group of divergence-groups.tsv that differs from Broiler.VM's divergence (other than a line of segments.js that class O admits), a line of V's or R's kind that no reading of class V admits and that does not equal the reference's line, and a line that differs from its expected answer for any other reason
 MET if and only if every program completes after with every line, and every line that differs from its expected answer is in V, R, Z8, O or H and is listed.
 NOT MET otherwise.
 ```
@@ -122,7 +122,7 @@ NOT MET otherwise.
 
 ```rule
 evidence class: robustness (not a comparison of runs)
-population: part C's programs; and test262 ccaac100's test/intl402/default-locale-is-supported.js, which asserts that every service's default locale is among its available locales (row L44, JSD-0082 decision D7)
+population: part C's programs; and test262 ccaac100's test/intl402/default-locale-is-supported.js, which asserts, for each Intl service constructor the file tests (Intl.Collator, Intl.NumberFormat and Intl.DateTimeFormat, and Intl.PluralRules, Intl.RelativeTimeFormat and Intl.ListFormat where they exist), that its default locale is among its available locales (row L44, JSD-0082 decision D7; Intl.Collator's available locales come from the same available-locale provider as every other service's)
 configuration: part C's harness with --invariant-globalization, which sets DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 for the shell; and scripts/compliance/run_test262.py over that one test262 path, through the same shell, with DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 in the environment the runner hands the shell; for both, no LANG and TZ=UTC; at the base commit (retained and read) and at the after commit (judged)
 MET if and only if every program completes after with every line, no line after is an abort: line (a host exception escaping the evaluation), so that no answer fails for want of host data (the area design's section 3.3), and the test262 file passes after in every variant the runner runs.
 NOT MET otherwise.
@@ -134,6 +134,8 @@ NOT MET otherwise.
 - the classification file;
 - a table naming each C1, C3 and C5 row with its row of the correspondence;
 - part C's table of V, R, Z8, O and H lines;
+- part C's probe of the collations this engine's `Intl.Collator` resolves for each Locale of a `collations` line class
+  V admits by that list, with its run at the after commit;
 - part D's runs of `default-locale-is-supported.js`, at both commits.
 
 The script decides no class. A classification of a row that passed at the base is reported as refused. Totals do not
@@ -144,11 +146,16 @@ correspondence names.
 **The test262 files of rows S7, T8 and L17**, which ask for an answer the pinned text does not give, or for more
 than it requires (JSD-0082 decision D33). They keep their base verdicts in parts A and B, and no class admits a
 move:
-- **Row S7**: `RelativeTimeFormat/prototype/format/en-us-numeric-always.js`;
+- **Row S7**: `RelativeTimeFormat/prototype/format/en-us-numeric-always.js` and
+  `RelativeTimeFormat/prototype/formatToParts/en-us-numeric-always.js`, which asserts the same magnitude with no
+  `minusSign` part;
 - **Row T8**: `DateTimeFormat/prototype/resolvedOptions/hourCycle-dateStyle.js` and `hourCycle.js`;
 - **Row L17**: `Locale/prototype/getCollations/output-array-values.js`, which asks `en` for at least one collation.
   The pinned text allows none. The file keeps passing only if this engine's `Intl.Collator`, which keeps its host
-  path here, lists a collation for `en`.
+  path here, lists a collation for `en`. The same list is what part C's class V admits for a `collations` line of the
+  locales program's group of a Collator's tailorings: with the adapter decision D33 (c) names, this engine's `zh`,
+  `zh-Hant`, `zh-TW`, `zh-Hans-SG` and `ko` lines answer its own Collator's lists, which equal neither the retained
+  answers (ICU's) nor Broiler.VM's `[emoji,eor]`.
 
 ## Revisions
 
@@ -164,7 +171,9 @@ and says it was written afterwards, and its decision is then weaker evidence.
 - **This engine's deletion list, its changelog and `docs/public-api.md`.** They are read from the tree at SJL-9.6.
 - **Broiler.VM's test262, reference datasets, closures and rules.** Broiler.VM's rule judges them.
 - **The vectors.** SJL-9.2 adds them, and they may falsify the area record.
-- **Collation**, which is SJL-17's. `Intl.Collator` and `localeCompare` keep their host path here.
+- **Collation**, which is SJL-17's. `Intl.Collator`'s collation data and comparison, and `localeCompare`, keep their
+  host path here. `Intl.Collator`'s default and available locales are decision D7's providers', as every service's,
+  and part D's test262 file reads them.
 - **Answers under a host culture.** No part runs under one. JSD-0082's decision D7 has every reader of DefaultLocale
   read one default-locale provider, casing included (row L35). SJL-9.5's tests hold that, not this file.
 - **A speed claim of any kind.** SJL-9 measures nothing.

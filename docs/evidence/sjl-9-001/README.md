@@ -42,7 +42,8 @@ Tasks 1.2 and 1.3 of SJL-9.1 wrote them on 2026-10-20, on branch `sjl-9-1-data`,
 - [`divergence-groups.tsv`](divergence-groups.tsv): every group of Broiler.VM's divergences files for the Intl
   reference datasets, each file read from Broiler.VM `01444a590147b4bcdc033ea82c60d477924c752d`'s objects and named by
   its blob, with the group's lines, its header quoted whole, and its class for part C: `spec`, `coverage` or `zone`.
-  Every divergence line falls in exactly one group. Part C's class V reads it with the corrections below.
+  Every divergence line falls in exactly one group. Part C's class V reads it with the corrections below, both as the
+  rule commit holds them.
 - [`reference.txt`](reference.txt): the reference part C and the Intl vectors name (decision D17), the newest Node.js
   release whose `process.versions.cldr` begins `48`, which is v26.12.0: its tarball's URL and SHA-256, retrieved twice
   with the same digest, and its `process.versions`. It answers CLDR 48.0, not 48.2.0, which part C's class R states.
@@ -54,7 +55,9 @@ Tasks 1.2 and 1.3 of SJL-9.1 wrote them on 2026-10-20, on branch `sjl-9-1-data`,
   `00b65dd0`), as each file's header says. Bundle [`sjl-12-001`](../sjl-12-001/README.md)'s `base/part-a/` report
   (run 40196127730 at `4d813f2a`), a later valid run, is the population the correspondence maps, and the two give the
   same verdict on every `test/intl402` path and variant (the correspondence's finding F17). Decision D5's lists read
-  these files; the enumeration is run again on the report of SJL-9's base before SJL-9.2 generates any table.
+  these files. The enumeration is run again before SJL-9.2 generates any table, on the newest valid UTC whole-suite
+  report with negative tests of this repository's default branch at that time: SJL-9's base report is taken only at
+  SJL-9.5, after its merge (decision D4), so it cannot be the one read.
 
 The files are text, committed whole. `reference.txt` carries its own digests, and `divergence-groups.tsv` names each
 source file by its blob, so the bundle keeps no `hashes.txt`.
@@ -63,8 +66,10 @@ source file by its blob, so the bundle keeps no `hashes.txt`.
 
 **`divergence-groups.tsv` keeps the bytes it was committed with.** The correspondence's findings F16 and F10 found
 three of its rows stale, and JSD-0082 records their readings as the owner's of 2026-10-26 (finding F16, record only;
-decisions D21 and D32). Part C's class V reads the table "with the dated corrections of that table this bundle's README
-records": these. A row is named by its line in the file.
+decisions D21 and D32). Part C's class V reads the table "with the dated corrections of that table in this bundle's
+README, the table and the corrections both as the rule commit holds them": these, as the rule commit holds this
+README. A correction added here after the rule commit is a record and does not bind part C; a change to how part C reads
+the table is a revision of the rule, a new dated file (its section "Revisions"). A row is named by its line in the file.
 
 - **Line 49**, the group of `src/tests/cldr/locales/divergences.txt` lines 37-60. The table classes it `coverage`, with
   the note "calendar: Broiler.VM formats the Gregorian calendar alone (JSD-0045)" and the header "The profile formats
@@ -84,8 +89,13 @@ records": these. A row is named by its line in the file.
   language the Collator does not support, CollationsOfLocale answers DefaultLocale's collations, and `emoji` and `eor`
   only for `und`. Broiler.VM rewrites those lines at SJL-9.4 (JSD-0082 decision D32), after this table's commit. Part
   C's population is Broiler.VM's datasets at the commit that carries Broiler.VM's rule, so the expected answers part C
-  reads stay. This engine answers its own Collator's list, which keeps its host path until SJL-17, and class V admits
-  its line when it equals the retained answer.
+  reads stay. This engine answers its own Collator's list, which keeps its host path until SJL-17 (decision D33 (c)),
+  and class V admits its line when it equals the retained answer, or, for a `collations` line with no `co` keyword,
+  the sorted list of the collations this engine's `Intl.Collator` resolves for the line's Locale (rows L17 and L40).
+  The second reading is the one the `zh`, `zh-Hant`, `zh-TW`, `zh-Hans-SG` and `ko` lines need, the program's cases 20
+  to 23 and 25: this engine's Collator resolves `phonetic` and `trad` for Chinese, which ICU's list lacks, and not
+  `searchjl` for Korean, so after the cut-over those lines equal neither the retained answer nor Broiler.VM's
+  `[emoji,eor]`.
 - **Line 43**, the group of `src/tests/cldr/durations/divergences.txt` lines 205-219. **The class stays `coverage`.**
   Its note begins "a numbering system's own symbols, which Broiler.VM's data lacks and Broiler.JS's carries (decision
   D21)". "Broiler.JS's carries" is true only after SJL-9.5, under decision D21 as JSD-0082 revises it: at the base this
@@ -98,9 +108,10 @@ records": these. A row is named by its line in the file.
   - it admits a line its group's note names as carrying a difference the pinned text decides only when the answer is
     the line the note names, so the two `resolvedOptions` lines must equal Broiler.VM's.
 
-Two more notes ask task 1.5 for a reading, and the rule gives it. Line 63's, the `segments` group: class O is read
-first for every line of `segments.js`. Line 73's, the deprecated Hijri calendars: this engine's move from `gregory` to
-`islamic-tbla` is an implementation-defined change, row T33, listed in its changelog at SJL-9.5 (decision D25).
+Line 63's note, the `segments` group, asks task 1.5 for a reading, and the rule gives it: class O is read first for
+every line of `segments.js`. Line 73's note, the deprecated Hijri calendars, asks for no reading; it names a change to
+list, and decision D25 answers it: this engine's move from `gregory` to `islamic-tbla` is an implementation-defined
+change (C3), row T33, listed in its changelog at SJL-9.5.
 
 **The operation's name.** The headers of the files under `locales/`, and `scripts/intl/enumerate_locales.py`, name
 ECMA-402's IsStructurallyValidLanguageTag, which the pinned text calls IsWellFormedLanguageTag. Records cite the pinned
@@ -117,6 +128,9 @@ same.
   `reference.txt` names.
 - SJL-9.2 copies the datasets and adds the vectors; SJL-9.3 builds the library; SJL-9.5 is this engine's cut-over,
   one merge, after Broiler.VM's SJL-9.4 (decision D28).
+- When SJL-9.2 and SJL-9.3 write `Broiler.ECMAScript/README.md`'s rows for the data home and the package, it gains
+  its pointer to the home's design document, `docs/intl/design.md`, as it has one to `docs/frontend/design.md`. SJL-9.1
+  leaves that file alone: it is outside the paths SJL-9.1 changes.
 
 **The commits named so far:**
 - **The rule commit** carries [`decision-rule.md`](decision-rule.md) and this README. It is named here, by all forty
@@ -139,6 +153,6 @@ test262 suite total is never quoted: parts A and B are decided per path, and tot
 
 The owner's direction of 2026-10-18, "Please do all recommended decisions and skip waiting for review.", under which
 JSD-0082 records its decisions, changes no rule: nothing is accepted without review, and SJL-9 may not meet its gate
-before SJL-7 and SJL-8 meet theirs and SJL-4's unsigned rounding is done, and so not before SJL-3 meets SJL-3's.
+before SJL-7 and SJL-8 meet theirs, and so not before SJL-3 meets SJL-3's.
 
 Broiler.VM judges its own half in its own bundle of the same name. This bundle reads none of its runs.
