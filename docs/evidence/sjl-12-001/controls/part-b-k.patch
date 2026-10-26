@@ -1,0 +1,17 @@
+diff --git a/Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs b/Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs
+index a7b2aea9..7df51af8 100644
+--- a/Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs
++++ b/Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs
+@@ -15,6 +15,12 @@ public partial class FastParser(FastTokenStream stream) : IParser
+ {
+     private readonly FastTokenStream stream = stream;
+ 
++    // Control K of bundle sjl-12-001 part B (a scratch copy, never committed): a static counter of the
++    // parsers made, which the architecture test must refuse as a mutable static field.
++    internal static int ControlKParsers;
++
++    internal readonly int ControlKParser = ++ControlKParsers;
++
+     /// <summary>
+     /// A parser over <paramref name="stream"/> that parses with <paramref name="options"/>, which must be
+     /// the options the stream was made with: the scanner has read its first tokens under them, so a

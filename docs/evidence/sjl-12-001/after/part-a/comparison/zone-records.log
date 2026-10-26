@@ -1,0 +1,14 @@
+## base: docs/evidence/sjl-12-001/base/part-a/host-zone.log
+expected: TZ: unset
+expected: 2021-01-15T12:00:00Z: UTC +0000
+expected: 2021-07-15T12:00:00Z: UTC +0000
+expected: tzdata: 2026c
+shards: 8; in the expected zone: 8
+## after: docs/evidence/sjl-12-001/after/part-a/host-zone.log
+expected: TZ: unset
+expected: 2021-01-15T12:00:00Z: UTC +0000
+expected: 2021-07-15T12:00:00Z: UTC +0000
+expected: tzdata: 2026c
+shards: 8; in the expected zone: 8
+# the two runs' expected zone lines read alike, line for line: True
+# the two host-zone.log files are one file byte for byte: True

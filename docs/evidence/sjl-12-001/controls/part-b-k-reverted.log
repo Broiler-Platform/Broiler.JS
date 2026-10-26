@@ -1,0 +1,41 @@
+Test run for <scratch>/sjl12/wp7/jsw/art-arch-k-reverted/bin/Broiler.JavaScript.Architecture.Tests/release/Broiler.JavaScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+<scratch>/sjl12/wp7/jsw/art-arch-k-reverted/bin/Broiler.JavaScript.Architecture.Tests/release/Broiler.JavaScript.Architecture.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.07]   Discovering: Broiler.JavaScript.Architecture.Tests
+[xUnit.net 00:00:00.13]   Discovered:  Broiler.JavaScript.Architecture.Tests
+[xUnit.net 00:00:00.14]   Starting:    Broiler.JavaScript.Architecture.Tests
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_list_of_mutable_types_is_rule_SL2s [16 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a use of a desugaring walker", refusal: "parser_ambient_state names the desugaring walker B"···) [1 s]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a mutable static counter", refusal: "Witness.AmbientState.Parses is a mutable static fi"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a [ThreadStatic] field", refusal: "Witness.AmbientState.depth is [ThreadStatic]") [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a static readonly field of a mutable collection ty"···, refusal: "Witness.AmbientState.Seen is a static System.Colle"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a static readonly field of a mutable class", refusal: "Witness.AmbientState.EndOfInput is a static readon"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a settable static property", refusal: "Witness.AmbientState.Mode is a settable static pro"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a use of a Runtime type", refusal: "parser_ambient_state references the assembly Broil"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a static readonly array", refusal: "Witness.AmbientState.Delimiters is a static array") [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "an AsyncLocal", refusal: "parser_ambient_state names System.Threading.AsyncL"···) [< 1 ms]
+[xUnit.net 00:00:03.28]   Finished:    Broiler.JavaScript.Architecture.Tests
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a use of a desugaring walker", refusal: "parser_ambient_state names the desugaring walker B"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a use of a desugaring walker", refusal: "parser_ambient_state names the desugaring walker B"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a ThreadLocal", refusal: "parser_ambient_state names System.Threading.Thread"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_parser_has_no_violations [1 s]
+  Standard Output Messages:
+ subject: <scratch>/sjl12/wp7/jsw/art-arch-k-reverted/bin/Broiler.JavaScript.Architecture.Tests/release/Broiler.JavaScript.Parser.dll
+ two parses: 497 dump lines.
+ concurrent parses: 80000 parses of `a` on 4 threads; 0 held another parse's token (0 in the tree, 0 as the end of the input's link back).
+
+
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_clauses_read_the_parser_and_accept_at_least_one_read_only_static_field [8 ms]
+  Standard Output Messages:
+ accepted: Broiler.JavaScript.Parser.FastKeywordMap.<Instance>k__BackingField (Broiler.JavaScript.Parser.FastKeywordMap)
+ accepted: Broiler.JavaScript.Parser.FastParserOptions.<Script>k__BackingField (Broiler.JavaScript.Parser.FastParserOptions)
+ accepted: Broiler.JavaScript.Parser.FastParserOptions.<Module>k__BackingField (Broiler.JavaScript.Parser.FastParserOptions)
+ accepted: Broiler.JavaScript.Parser.FastScanner.NoBigIntWidth (Broiler.ECMAScript.LengthLimit)
+
+
+
+Test Run Successful.
+Total tests: 15
+     Passed: 15
+ Total time: 3.8397 Seconds

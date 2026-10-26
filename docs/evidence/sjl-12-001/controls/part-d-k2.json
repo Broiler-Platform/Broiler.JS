@@ -1,0 +1,2475 @@
+{
+  "agree": false,
+  "differences": [
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "J000276",
+      "path": "inputs/broiler-js/1f47c9fc29991b291f362fab86d3eb2f056c1f62bef2912f72643758a01ba8ee.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "e601af794e53609190eb6b5077f50e106d65ee6d3af229b31fb4980f0034c66b",
+          "pass": "prepared",
+          "pass-sha256": "7023f3825b4d9d46e2cdf1ec43b138d77c91fabddf9ffccddb2f578e1b589dd9"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "e601af794e53609190eb6b5077f50e106d65ee6d3af229b31fb4980f0034c66b",
+          "pass": "prepared",
+          "pass-sha256": "2e048f48a57552009e3f02a25714f823e928045dd6785b5572860e336cb9f9df"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "e601af794e53609190eb6b5077f50e106d65ee6d3af229b31fb4980f0034c66b",
+          "pass": "prepared",
+          "pass-sha256": "2c7857937ed4d1d06263e5c9102bf8e5258251e84b1aea62280674dfac8e3e24"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "e601af794e53609190eb6b5077f50e106d65ee6d3af229b31fb4980f0034c66b",
+          "pass": "prepared",
+          "pass-sha256": "2c7857937ed4d1d06263e5c9102bf8e5258251e84b1aea62280674dfac8e3e24"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "J000276",
+      "path": "inputs/broiler-js/1f47c9fc29991b291f362fab86d3eb2f056c1f62bef2912f72643758a01ba8ee.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "e6fd4d68e75f7bf729eb87a7c5ed026710b0c5879c13be2486499c6d9a3aaf2e",
+          "pass": "prepared",
+          "pass-sha256": "cbfec43d7f7834bd3f4535a0c3eb75e17961db4e7d780f905b5aa0e4330636b7"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "e6fd4d68e75f7bf729eb87a7c5ed026710b0c5879c13be2486499c6d9a3aaf2e",
+          "pass": "prepared",
+          "pass-sha256": "7cdb174a5c35e75a255b7de0509c090fecef0e8c96acacae4efcaee2ba05f5fb"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "e6fd4d68e75f7bf729eb87a7c5ed026710b0c5879c13be2486499c6d9a3aaf2e",
+          "pass": "prepared",
+          "pass-sha256": "1521aaaba53f45fd96a55af4d468b46e7624cb3231491b7fb6b4ac2998c57a1e"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "e6fd4d68e75f7bf729eb87a7c5ed026710b0c5879c13be2486499c6d9a3aaf2e",
+          "pass": "prepared",
+          "pass-sha256": "1521aaaba53f45fd96a55af4d468b46e7624cb3231491b7fb6b4ac2998c57a1e"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049740",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-fn-name-cover.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "067bdb5f8db3c3a77ff7a98538c8859ef5818edfc4466b4e3c5a84a1b79ab4b5",
+          "pass": "prepared",
+          "pass-sha256": "737f595de5f0fd474fc4037d18bf919d37428be3e7f553f715ed663fe7426f54"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "067bdb5f8db3c3a77ff7a98538c8859ef5818edfc4466b4e3c5a84a1b79ab4b5",
+          "pass": "prepared",
+          "pass-sha256": "96b700f168e585112c9401dd0d31154a28b136fc70f834ce3309a52931cd43d9"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "067bdb5f8db3c3a77ff7a98538c8859ef5818edfc4466b4e3c5a84a1b79ab4b5",
+          "pass": "prepared",
+          "pass-sha256": "96b700f168e585112c9401dd0d31154a28b136fc70f834ce3309a52931cd43d9"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "067bdb5f8db3c3a77ff7a98538c8859ef5818edfc4466b4e3c5a84a1b79ab4b5",
+          "pass": "prepared",
+          "pass-sha256": "96b700f168e585112c9401dd0d31154a28b136fc70f834ce3309a52931cd43d9"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049740",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-fn-name-cover.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "3968eb54a26521541ba294186335b385ca94881e70a0f946e8d7e840f339354e",
+          "pass": "prepared",
+          "pass-sha256": "70dd0e9a4f93772a2062db64f88dd0e19e1b1aea564abd938be5b2802ed904e3"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "3968eb54a26521541ba294186335b385ca94881e70a0f946e8d7e840f339354e",
+          "pass": "prepared",
+          "pass-sha256": "62841f5015c9ec36a690a26c90d5b020f76ad26e050fb2d3908878b2a6e68209"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "3968eb54a26521541ba294186335b385ca94881e70a0f946e8d7e840f339354e",
+          "pass": "prepared",
+          "pass-sha256": "62841f5015c9ec36a690a26c90d5b020f76ad26e050fb2d3908878b2a6e68209"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "3968eb54a26521541ba294186335b385ca94881e70a0f946e8d7e840f339354e",
+          "pass": "prepared",
+          "pass-sha256": "62841f5015c9ec36a690a26c90d5b020f76ad26e050fb2d3908878b2a6e68209"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049741",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-fn-name-fn.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "20c2669efbfa54297d49b3d4e1ad56ced974f93dd601dff4553d6203b6b4260c",
+          "pass": "prepared",
+          "pass-sha256": "877d63c22d15b7c0d71c3c0f99f65d971381eae5da89fbbbb8a2ac9df7982cf8"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "20c2669efbfa54297d49b3d4e1ad56ced974f93dd601dff4553d6203b6b4260c",
+          "pass": "prepared",
+          "pass-sha256": "7799b36b2bf4eab097955642f6d6c7a9f9684c644d1c7ca56e0430a5c165700d"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "20c2669efbfa54297d49b3d4e1ad56ced974f93dd601dff4553d6203b6b4260c",
+          "pass": "prepared",
+          "pass-sha256": "877d63c22d15b7c0d71c3c0f99f65d971381eae5da89fbbbb8a2ac9df7982cf8"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "20c2669efbfa54297d49b3d4e1ad56ced974f93dd601dff4553d6203b6b4260c",
+          "pass": "prepared",
+          "pass-sha256": "877d63c22d15b7c0d71c3c0f99f65d971381eae5da89fbbbb8a2ac9df7982cf8"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049741",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-fn-name-fn.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "8c644dc810bffc49eae1f46b01737b4e778ef378079a5bebcffd074cea2201f0",
+          "pass": "prepared",
+          "pass-sha256": "77ef2c612ef8cb703e78e89e4ac845e5293dcf7e1d0e6368296e1c9dfac898a5"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "8c644dc810bffc49eae1f46b01737b4e778ef378079a5bebcffd074cea2201f0",
+          "pass": "prepared",
+          "pass-sha256": "c022e1c134a0436a493f015e13190c790247e92a87d66b3881e5ea8918b51b23"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "8c644dc810bffc49eae1f46b01737b4e778ef378079a5bebcffd074cea2201f0",
+          "pass": "prepared",
+          "pass-sha256": "77ef2c612ef8cb703e78e89e4ac845e5293dcf7e1d0e6368296e1c9dfac898a5"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "8c644dc810bffc49eae1f46b01737b4e778ef378079a5bebcffd074cea2201f0",
+          "pass": "prepared",
+          "pass-sha256": "77ef2c612ef8cb703e78e89e4ac845e5293dcf7e1d0e6368296e1c9dfac898a5"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049742",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-fn-name-gen.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "0c034b6afe85a68620466d37c968f987e89974e176ffc81d06157432ff316d9a",
+          "pass": "prepared",
+          "pass-sha256": "1baa70af049f71d676065720d36ab9b5816f8822dba25654aea3a5e4877e9541"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "0c034b6afe85a68620466d37c968f987e89974e176ffc81d06157432ff316d9a",
+          "pass": "prepared",
+          "pass-sha256": "1baa70af049f71d676065720d36ab9b5816f8822dba25654aea3a5e4877e9541"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "0c034b6afe85a68620466d37c968f987e89974e176ffc81d06157432ff316d9a",
+          "pass": "prepared",
+          "pass-sha256": "5ed13fd4da9acde3a18e859b4b79b64ccf4230bad682030cbc494ded3bd4f7f1"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "0c034b6afe85a68620466d37c968f987e89974e176ffc81d06157432ff316d9a",
+          "pass": "prepared",
+          "pass-sha256": "5ed13fd4da9acde3a18e859b4b79b64ccf4230bad682030cbc494ded3bd4f7f1"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049742",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-fn-name-gen.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "8c5cbf7296298561fef6d2f5fd3b2293f119f0a6a1a856c5bfcfbc70a19ab78f",
+          "pass": "prepared",
+          "pass-sha256": "5381bdd873a232e14c512f86ed6721e0cd72bcaccb45df4aad75063e9ffd97de"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "8c5cbf7296298561fef6d2f5fd3b2293f119f0a6a1a856c5bfcfbc70a19ab78f",
+          "pass": "prepared",
+          "pass-sha256": "5381bdd873a232e14c512f86ed6721e0cd72bcaccb45df4aad75063e9ffd97de"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "8c5cbf7296298561fef6d2f5fd3b2293f119f0a6a1a856c5bfcfbc70a19ab78f",
+          "pass": "prepared",
+          "pass-sha256": "e272997a5484cc0a3ddc22ff884556eb1d1023a41e55578f7791cf6e7c1db744"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "8c5cbf7296298561fef6d2f5fd3b2293f119f0a6a1a856c5bfcfbc70a19ab78f",
+          "pass": "prepared",
+          "pass-sha256": "e272997a5484cc0a3ddc22ff884556eb1d1023a41e55578f7791cf6e7c1db744"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049744",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "430e5ed3e7f11aa1cd6b9799acedb800cd6aba837e0e90ea392e9b285759333e",
+          "pass": "prepared",
+          "pass-sha256": "a4f3c1efbaede7621a409bd935029663988796187007b56bceeb359f7d0e8aa8"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "430e5ed3e7f11aa1cd6b9799acedb800cd6aba837e0e90ea392e9b285759333e",
+          "pass": "prepared",
+          "pass-sha256": "cf442c0abce08d2b2cb77f4baa55a93bb04e482e9e9f008c44e797c4f482e77a"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "430e5ed3e7f11aa1cd6b9799acedb800cd6aba837e0e90ea392e9b285759333e",
+          "pass": "prepared",
+          "pass-sha256": "a4f3c1efbaede7621a409bd935029663988796187007b56bceeb359f7d0e8aa8"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "430e5ed3e7f11aa1cd6b9799acedb800cd6aba837e0e90ea392e9b285759333e",
+          "pass": "prepared",
+          "pass-sha256": "a4f3c1efbaede7621a409bd935029663988796187007b56bceeb359f7d0e8aa8"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049744",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "2f55052972612f690ec4aefcb47d549aca2ce832fe7c76bce9cd9a5970afd0bd",
+          "pass": "prepared",
+          "pass-sha256": "1d4e73db6c7bd54a9af8945c3ccc04be3e456fc6347bd05f372fd5a712ed41cc"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "2f55052972612f690ec4aefcb47d549aca2ce832fe7c76bce9cd9a5970afd0bd",
+          "pass": "prepared",
+          "pass-sha256": "49ab4de9a5d791e53193e9af189498397105701437b4f38f8cbadb645be6d8d4"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "2f55052972612f690ec4aefcb47d549aca2ce832fe7c76bce9cd9a5970afd0bd",
+          "pass": "prepared",
+          "pass-sha256": "1d4e73db6c7bd54a9af8945c3ccc04be3e456fc6347bd05f372fd5a712ed41cc"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "2f55052972612f690ec4aefcb47d549aca2ce832fe7c76bce9cd9a5970afd0bd",
+          "pass": "prepared",
+          "pass-sha256": "1d4e73db6c7bd54a9af8945c3ccc04be3e456fc6347bd05f372fd5a712ed41cc"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049749",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-id-iter-done.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "328a90c78b91671dcec471e6453655ba69cf5a7fe8d0316cdaffe609eb5c00d1",
+          "pass": "prepared",
+          "pass-sha256": "2d5589367c505d4d71e45fa53b9c918adee68f19c1ceb4d156f329cd605fc222"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "328a90c78b91671dcec471e6453655ba69cf5a7fe8d0316cdaffe609eb5c00d1",
+          "pass": "prepared",
+          "pass-sha256": "5fd92128b2fdc28f78265e2869e2169e08163959e3bde6b09414e843761b25c6"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "328a90c78b91671dcec471e6453655ba69cf5a7fe8d0316cdaffe609eb5c00d1",
+          "pass": "prepared",
+          "pass-sha256": "2d5589367c505d4d71e45fa53b9c918adee68f19c1ceb4d156f329cd605fc222"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "328a90c78b91671dcec471e6453655ba69cf5a7fe8d0316cdaffe609eb5c00d1",
+          "pass": "prepared",
+          "pass-sha256": "2d5589367c505d4d71e45fa53b9c918adee68f19c1ceb4d156f329cd605fc222"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049749",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-id-iter-done.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "b59053becee0a086aeaad2f3ac26a06f9b8840230aaffd981e0885de7b040657",
+          "pass": "prepared",
+          "pass-sha256": "2c45b7f923c38b1a5d5ff0d172ff1ef8527051393722e35016e9993556ce43cf"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "b59053becee0a086aeaad2f3ac26a06f9b8840230aaffd981e0885de7b040657",
+          "pass": "prepared",
+          "pass-sha256": "20f154aca4673ce8b27a619084f94280ac1f335652083b59ea82b7294d543b74"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "b59053becee0a086aeaad2f3ac26a06f9b8840230aaffd981e0885de7b040657",
+          "pass": "prepared",
+          "pass-sha256": "2c45b7f923c38b1a5d5ff0d172ff1ef8527051393722e35016e9993556ce43cf"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "b59053becee0a086aeaad2f3ac26a06f9b8840230aaffd981e0885de7b040657",
+          "pass": "prepared",
+          "pass-sha256": "2c45b7f923c38b1a5d5ff0d172ff1ef8527051393722e35016e9993556ce43cf"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049756",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-obj-prop-id-init.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "43673bdbdb7478eb3b916db2fc1061582263e34a591adc5ae7c27cfdbbfd3591",
+          "pass": "prepared",
+          "pass-sha256": "9ac537a20d2ea3291b419ee72dcc42bb445957689048fa3970ce2915683c0984"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "43673bdbdb7478eb3b916db2fc1061582263e34a591adc5ae7c27cfdbbfd3591",
+          "pass": "prepared",
+          "pass-sha256": "3428f6c87092b41d67690e0e14572696f73998cd95dc74ec629c1c7230286cb7"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "43673bdbdb7478eb3b916db2fc1061582263e34a591adc5ae7c27cfdbbfd3591",
+          "pass": "prepared",
+          "pass-sha256": "3428f6c87092b41d67690e0e14572696f73998cd95dc74ec629c1c7230286cb7"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "43673bdbdb7478eb3b916db2fc1061582263e34a591adc5ae7c27cfdbbfd3591",
+          "pass": "prepared",
+          "pass-sha256": "3428f6c87092b41d67690e0e14572696f73998cd95dc74ec629c1c7230286cb7"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049756",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-obj-prop-id-init.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "5bd999c88342c05780ea0a252986ea0d5aef4a8d4cc0579fb9b5328c290e2b33",
+          "pass": "prepared",
+          "pass-sha256": "c6779123fd151e7ccaa52c5f80d1ec2a92825080fbf76798523615e5c631b999"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "5bd999c88342c05780ea0a252986ea0d5aef4a8d4cc0579fb9b5328c290e2b33",
+          "pass": "prepared",
+          "pass-sha256": "909d7d2e6e428270435b68239bf62842f828736b9488bc6b65adeb18a8cb84b1"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "5bd999c88342c05780ea0a252986ea0d5aef4a8d4cc0579fb9b5328c290e2b33",
+          "pass": "prepared",
+          "pass-sha256": "909d7d2e6e428270435b68239bf62842f828736b9488bc6b65adeb18a8cb84b1"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "5bd999c88342c05780ea0a252986ea0d5aef4a8d4cc0579fb9b5328c290e2b33",
+          "pass": "prepared",
+          "pass-sha256": "909d7d2e6e428270435b68239bf62842f828736b9488bc6b65adeb18a8cb84b1"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049757",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-obj-prop-id.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "a0ee78feca44011f48d4c56c82dc918b7ec33be4a4da245ed75ca7a7546cf70e",
+          "pass": "prepared",
+          "pass-sha256": "dffc54657912834f32c78894e8a1fea3cca82f54150b65628155143acde190c8"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "a0ee78feca44011f48d4c56c82dc918b7ec33be4a4da245ed75ca7a7546cf70e",
+          "pass": "prepared",
+          "pass-sha256": "1afd251618cafd0d0983413cc66f3c687c9924130199154d2a5276558d164639"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "a0ee78feca44011f48d4c56c82dc918b7ec33be4a4da245ed75ca7a7546cf70e",
+          "pass": "prepared",
+          "pass-sha256": "1afd251618cafd0d0983413cc66f3c687c9924130199154d2a5276558d164639"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "a0ee78feca44011f48d4c56c82dc918b7ec33be4a4da245ed75ca7a7546cf70e",
+          "pass": "prepared",
+          "pass-sha256": "1afd251618cafd0d0983413cc66f3c687c9924130199154d2a5276558d164639"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049757",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-elem-obj-prop-id.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "3e92206a2b1193f8af5197aa953edb19bcf1de6bf44a9ab6b4849e0543c89704",
+          "pass": "prepared",
+          "pass-sha256": "51e42291f418fd35a52838995103df3200aae311a14a6b9bc9e1600d5b29032e"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "3e92206a2b1193f8af5197aa953edb19bcf1de6bf44a9ab6b4849e0543c89704",
+          "pass": "prepared",
+          "pass-sha256": "59afd41ce150f8bdf97f39042110ec62968865b4586035aeb842e32dfdccb0ea"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "3e92206a2b1193f8af5197aa953edb19bcf1de6bf44a9ab6b4849e0543c89704",
+          "pass": "prepared",
+          "pass-sha256": "59afd41ce150f8bdf97f39042110ec62968865b4586035aeb842e32dfdccb0ea"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "3e92206a2b1193f8af5197aa953edb19bcf1de6bf44a9ab6b4849e0543c89704",
+          "pass": "prepared",
+          "pass-sha256": "59afd41ce150f8bdf97f39042110ec62968865b4586035aeb842e32dfdccb0ea"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049784",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-rest-obj-prop-id.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "21e05ea8887025d86b29f313b00001301bb19d8b7591132afa2d9b4cbea025db",
+          "pass": "prepared",
+          "pass-sha256": "c47fb23f5071bf2f81f78e5ce11e32aa44f8e8097bb2ad474ddfed013eecdea9"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "21e05ea8887025d86b29f313b00001301bb19d8b7591132afa2d9b4cbea025db",
+          "pass": "prepared",
+          "pass-sha256": "535171597fd5d701d47808c224eaa4ac460335be2f10b2863e76c2425c660bab"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "21e05ea8887025d86b29f313b00001301bb19d8b7591132afa2d9b4cbea025db",
+          "pass": "prepared",
+          "pass-sha256": "583b47a193c18384207cdab556f98bcc53782439171001c8662dc76ac22600af"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "21e05ea8887025d86b29f313b00001301bb19d8b7591132afa2d9b4cbea025db",
+          "pass": "prepared",
+          "pass-sha256": "583b47a193c18384207cdab556f98bcc53782439171001c8662dc76ac22600af"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049784",
+      "path": "test/language/statements/for/dstr/const-ary-ptrn-rest-obj-prop-id.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "19841cc927200c6ff5f0a2f2e4cadd0b4fc5422e0d3614bbd0d9ab55aeb56721",
+          "pass": "prepared",
+          "pass-sha256": "64eab4648627f3b2c5e64f0a7d74719065dd73ade8b904ce74f6e0f92e8bf970"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "19841cc927200c6ff5f0a2f2e4cadd0b4fc5422e0d3614bbd0d9ab55aeb56721",
+          "pass": "prepared",
+          "pass-sha256": "05a3825e8b3dfe47485f679c7f55a7645bea7e0e3230bdd50a06c6ea30a78d27"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "19841cc927200c6ff5f0a2f2e4cadd0b4fc5422e0d3614bbd0d9ab55aeb56721",
+          "pass": "prepared",
+          "pass-sha256": "853b1c88a5ef6f0e6b3e11a0072559be904da9ad2d96cd0b5f0e53c737fc22f7"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "19841cc927200c6ff5f0a2f2e4cadd0b4fc5422e0d3614bbd0d9ab55aeb56721",
+          "pass": "prepared",
+          "pass-sha256": "853b1c88a5ef6f0e6b3e11a0072559be904da9ad2d96cd0b5f0e53c737fc22f7"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049791",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-cover.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "034d59200ef832d93f02cf2adc69af7f626908b5d136fe6a193b0dba9e1fa008",
+          "pass": "prepared",
+          "pass-sha256": "0fc4f2d261557727e7aaa8dabcb9e7242ee33834332f1449f16508b8b1ceffea"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "034d59200ef832d93f02cf2adc69af7f626908b5d136fe6a193b0dba9e1fa008",
+          "pass": "prepared",
+          "pass-sha256": "1ec1625a900723242cf3303b366dcf6a971cea4a74fd371c2f85fd1f532718e1"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "034d59200ef832d93f02cf2adc69af7f626908b5d136fe6a193b0dba9e1fa008",
+          "pass": "prepared",
+          "pass-sha256": "1ec1625a900723242cf3303b366dcf6a971cea4a74fd371c2f85fd1f532718e1"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "034d59200ef832d93f02cf2adc69af7f626908b5d136fe6a193b0dba9e1fa008",
+          "pass": "prepared",
+          "pass-sha256": "1ec1625a900723242cf3303b366dcf6a971cea4a74fd371c2f85fd1f532718e1"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049791",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-cover.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "aa74dc3131485d500b2abd70f87169ab8c32fbf035d8e861427f7bca23785317",
+          "pass": "prepared",
+          "pass-sha256": "b4ec93e975ccef994e8162b8a1f36355005fc2f60cfacd14eb923008761cfd0d"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "aa74dc3131485d500b2abd70f87169ab8c32fbf035d8e861427f7bca23785317",
+          "pass": "prepared",
+          "pass-sha256": "6325b86a0b403526314de20a87fd1e16750618f4128a0f42e74db4099a0c01d8"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "aa74dc3131485d500b2abd70f87169ab8c32fbf035d8e861427f7bca23785317",
+          "pass": "prepared",
+          "pass-sha256": "6325b86a0b403526314de20a87fd1e16750618f4128a0f42e74db4099a0c01d8"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "aa74dc3131485d500b2abd70f87169ab8c32fbf035d8e861427f7bca23785317",
+          "pass": "prepared",
+          "pass-sha256": "6325b86a0b403526314de20a87fd1e16750618f4128a0f42e74db4099a0c01d8"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049792",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-fn.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "77b8097ad6c7c833df8a46753804a5646a23eade21317ae1c48f7c073ff68101",
+          "pass": "prepared",
+          "pass-sha256": "58f8cf8c1de3c7889932b549d8a72976d6e823371450cc0e258b9a72586114c4"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "77b8097ad6c7c833df8a46753804a5646a23eade21317ae1c48f7c073ff68101",
+          "pass": "prepared",
+          "pass-sha256": "2d996d4f97dcd8b0638d1565f3833d41b502023f1d85fbb4aaf6bb00715654c4"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "77b8097ad6c7c833df8a46753804a5646a23eade21317ae1c48f7c073ff68101",
+          "pass": "prepared",
+          "pass-sha256": "58f8cf8c1de3c7889932b549d8a72976d6e823371450cc0e258b9a72586114c4"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "77b8097ad6c7c833df8a46753804a5646a23eade21317ae1c48f7c073ff68101",
+          "pass": "prepared",
+          "pass-sha256": "58f8cf8c1de3c7889932b549d8a72976d6e823371450cc0e258b9a72586114c4"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049792",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-fn.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "1230d73d62e6b630222c5d071914491a931faf931a3c8d0f0e1566707bd6c3c1",
+          "pass": "prepared",
+          "pass-sha256": "ca3f4a66b798812d12ca7f2c8f1f0c8d9b39bab47cf5b5c20ed9f819732448f6"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "1230d73d62e6b630222c5d071914491a931faf931a3c8d0f0e1566707bd6c3c1",
+          "pass": "prepared",
+          "pass-sha256": "9a51279f536479c50a7307eed5d074b7e6867a4421035ab81145e03430f7d0dc"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "1230d73d62e6b630222c5d071914491a931faf931a3c8d0f0e1566707bd6c3c1",
+          "pass": "prepared",
+          "pass-sha256": "ca3f4a66b798812d12ca7f2c8f1f0c8d9b39bab47cf5b5c20ed9f819732448f6"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "1230d73d62e6b630222c5d071914491a931faf931a3c8d0f0e1566707bd6c3c1",
+          "pass": "prepared",
+          "pass-sha256": "ca3f4a66b798812d12ca7f2c8f1f0c8d9b39bab47cf5b5c20ed9f819732448f6"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049793",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-gen.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "fb3251b6a9da9179bbcb962a152b65beaafad6633eddfa5c96aacd73b502c57b",
+          "pass": "prepared",
+          "pass-sha256": "582e3e82ab75c661c0d3fbf8da3fdf4ee4a06ece365594fb02d1fa71febbe7e5"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "fb3251b6a9da9179bbcb962a152b65beaafad6633eddfa5c96aacd73b502c57b",
+          "pass": "prepared",
+          "pass-sha256": "582e3e82ab75c661c0d3fbf8da3fdf4ee4a06ece365594fb02d1fa71febbe7e5"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "fb3251b6a9da9179bbcb962a152b65beaafad6633eddfa5c96aacd73b502c57b",
+          "pass": "prepared",
+          "pass-sha256": "3f9920c307b8a43c3de9339ff8b2c59d42931c0fc15148371d232feace1a7227"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "fb3251b6a9da9179bbcb962a152b65beaafad6633eddfa5c96aacd73b502c57b",
+          "pass": "prepared",
+          "pass-sha256": "3f9920c307b8a43c3de9339ff8b2c59d42931c0fc15148371d232feace1a7227"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049793",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-gen.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "ac5665a3a5507e0cc248734cd2073d6c4941d1866b950556f4f2bcee72b83fe8",
+          "pass": "prepared",
+          "pass-sha256": "b756a4d7988452d69a1f6e592781b0fdc6ea74d67b2da94789079c1270da64d1"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "ac5665a3a5507e0cc248734cd2073d6c4941d1866b950556f4f2bcee72b83fe8",
+          "pass": "prepared",
+          "pass-sha256": "b756a4d7988452d69a1f6e592781b0fdc6ea74d67b2da94789079c1270da64d1"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "ac5665a3a5507e0cc248734cd2073d6c4941d1866b950556f4f2bcee72b83fe8",
+          "pass": "prepared",
+          "pass-sha256": "aa8e50cfe440ddb1f336616ade4de175bd726f862aafd772bfa18970f54ddb77"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "ac5665a3a5507e0cc248734cd2073d6c4941d1866b950556f4f2bcee72b83fe8",
+          "pass": "prepared",
+          "pass-sha256": "aa8e50cfe440ddb1f336616ade4de175bd726f862aafd772bfa18970f54ddb77"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049794",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "59cd43d1e886be10679cb24bfc3507ffd797d67d64602186a5a37ab9ab2ada3c",
+          "pass": "prepared",
+          "pass-sha256": "b77c2967102fce23e62ad4d90b5d91e9bae3419ca1d1d76c19424e0add9efd4e"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "59cd43d1e886be10679cb24bfc3507ffd797d67d64602186a5a37ab9ab2ada3c",
+          "pass": "prepared",
+          "pass-sha256": "5adc9c3b1060f9a6203893ebd0ed08c74ccdea9243fc18be3b156ac36929c4b0"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "59cd43d1e886be10679cb24bfc3507ffd797d67d64602186a5a37ab9ab2ada3c",
+          "pass": "prepared",
+          "pass-sha256": "b77c2967102fce23e62ad4d90b5d91e9bae3419ca1d1d76c19424e0add9efd4e"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "59cd43d1e886be10679cb24bfc3507ffd797d67d64602186a5a37ab9ab2ada3c",
+          "pass": "prepared",
+          "pass-sha256": "b77c2967102fce23e62ad4d90b5d91e9bae3419ca1d1d76c19424e0add9efd4e"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049794",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "77af388b27ef330fc195de368e18cb0f193a5a69039c312f2f08aef678698de3",
+          "pass": "prepared",
+          "pass-sha256": "aaa159ff81674c111fc7bc445df0e7cf6f37529dc9f6badc6298b12f9aea907c"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "77af388b27ef330fc195de368e18cb0f193a5a69039c312f2f08aef678698de3",
+          "pass": "prepared",
+          "pass-sha256": "e052cf02b00af13bb849a63b7905551b51db04516dbc1d731045e96987573f53"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "77af388b27ef330fc195de368e18cb0f193a5a69039c312f2f08aef678698de3",
+          "pass": "prepared",
+          "pass-sha256": "aaa159ff81674c111fc7bc445df0e7cf6f37529dc9f6badc6298b12f9aea907c"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "77af388b27ef330fc195de368e18cb0f193a5a69039c312f2f08aef678698de3",
+          "pass": "prepared",
+          "pass-sha256": "aaa159ff81674c111fc7bc445df0e7cf6f37529dc9f6badc6298b12f9aea907c"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049805",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-prop-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "2f6cc7d5c4298ff48d1defb2bd8163d77170d50743b81d5934fc65e692a5c1ca",
+          "pass": "prepared",
+          "pass-sha256": "a2e87ada2247f2f7651aaf1b2f28bae01543c30687784c5a8c2e37da7bce8108"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "2f6cc7d5c4298ff48d1defb2bd8163d77170d50743b81d5934fc65e692a5c1ca",
+          "pass": "prepared",
+          "pass-sha256": "fd5ea2c76f85e27e4032b3990371df341763a367b9789df55f4dde6e9c8061a3"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "2f6cc7d5c4298ff48d1defb2bd8163d77170d50743b81d5934fc65e692a5c1ca",
+          "pass": "prepared",
+          "pass-sha256": "805d770616733ede54680e22337ca26277123944a618594e511004c43c127fc4"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "2f6cc7d5c4298ff48d1defb2bd8163d77170d50743b81d5934fc65e692a5c1ca",
+          "pass": "prepared",
+          "pass-sha256": "805d770616733ede54680e22337ca26277123944a618594e511004c43c127fc4"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049805",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-prop-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "34bd84e203008e1dba674ab48ef4e5b4b072e7c10c908bb5550e66e75ad164d8",
+          "pass": "prepared",
+          "pass-sha256": "3d6ab722defe35d2398cee6dbdc6dd1412432a3eed080ea8bb5e9eaaea0104dc"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "34bd84e203008e1dba674ab48ef4e5b4b072e7c10c908bb5550e66e75ad164d8",
+          "pass": "prepared",
+          "pass-sha256": "9bc8668699652125eaf01377a187df91531bdc595e2456517c13943769849c8a"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "34bd84e203008e1dba674ab48ef4e5b4b072e7c10c908bb5550e66e75ad164d8",
+          "pass": "prepared",
+          "pass-sha256": "32713d8d4fab0de35c6e769698f889161f1de040fdcc5f5417e8dfa0e920917f"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "34bd84e203008e1dba674ab48ef4e5b4b072e7c10c908bb5550e66e75ad164d8",
+          "pass": "prepared",
+          "pass-sha256": "32713d8d4fab0de35c6e769698f889161f1de040fdcc5f5417e8dfa0e920917f"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049817",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-rest-val-obj.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "e4f365580496d3bb504c6a6475c892ef1261e09c4e0f840abe9d8876be555d3b",
+          "pass": "prepared",
+          "pass-sha256": "154dd353d8b65d27e34053997b129a7324f52a96d39c92b5481212038e464910"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "e4f365580496d3bb504c6a6475c892ef1261e09c4e0f840abe9d8876be555d3b",
+          "pass": "prepared",
+          "pass-sha256": "154dd353d8b65d27e34053997b129a7324f52a96d39c92b5481212038e464910"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "e4f365580496d3bb504c6a6475c892ef1261e09c4e0f840abe9d8876be555d3b",
+          "pass": "prepared",
+          "pass-sha256": "ff331e35265758a70158963b8dd9de5d430db2e83426583985e61135eee98446"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "e4f365580496d3bb504c6a6475c892ef1261e09c4e0f840abe9d8876be555d3b",
+          "pass": "prepared",
+          "pass-sha256": "ff331e35265758a70158963b8dd9de5d430db2e83426583985e61135eee98446"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049817",
+      "path": "test/language/statements/for/dstr/const-obj-ptrn-rest-val-obj.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "bb8cb8850f3e65984b1bce060ecee51584bed77fbb31b1effeb227cb92ba5975",
+          "pass": "prepared",
+          "pass-sha256": "c8c6cea75943f34a4e47893d191d7c50517277fe438ede09c465c7a9eaf619fb"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "bb8cb8850f3e65984b1bce060ecee51584bed77fbb31b1effeb227cb92ba5975",
+          "pass": "prepared",
+          "pass-sha256": "c8c6cea75943f34a4e47893d191d7c50517277fe438ede09c465c7a9eaf619fb"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "bb8cb8850f3e65984b1bce060ecee51584bed77fbb31b1effeb227cb92ba5975",
+          "pass": "prepared",
+          "pass-sha256": "db827286a6b3aaf76f50835c2f7112fc8acf6777bec382587c479bb96a2a9fd9"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "bb8cb8850f3e65984b1bce060ecee51584bed77fbb31b1effeb227cb92ba5975",
+          "pass": "prepared",
+          "pass-sha256": "db827286a6b3aaf76f50835c2f7112fc8acf6777bec382587c479bb96a2a9fd9"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049835",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-fn-name-cover.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "8540989f692171f1abb2eae20c8be4ebc476a9a8c5d0c91a99acea7338ab0474",
+          "pass": "prepared",
+          "pass-sha256": "bd53de9d30b921b6869845a270fa20c97814d5bb52a866e841c1e736e9c7ca5b"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "8540989f692171f1abb2eae20c8be4ebc476a9a8c5d0c91a99acea7338ab0474",
+          "pass": "prepared",
+          "pass-sha256": "c63d91d028718bde013b15ea3dd04ddbb6062a5f5d14d1faf28a1860190b6791"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "8540989f692171f1abb2eae20c8be4ebc476a9a8c5d0c91a99acea7338ab0474",
+          "pass": "prepared",
+          "pass-sha256": "c63d91d028718bde013b15ea3dd04ddbb6062a5f5d14d1faf28a1860190b6791"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "8540989f692171f1abb2eae20c8be4ebc476a9a8c5d0c91a99acea7338ab0474",
+          "pass": "prepared",
+          "pass-sha256": "c63d91d028718bde013b15ea3dd04ddbb6062a5f5d14d1faf28a1860190b6791"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049835",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-fn-name-cover.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "5750021b9b6ae189881ae20bad2ca62479d4b19ccbdf09e867f81d6810c3e7ed",
+          "pass": "prepared",
+          "pass-sha256": "6844b203045e67ccdf4db65456872a0f3ed5c14321457e33c4bfa09c71d0831e"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "5750021b9b6ae189881ae20bad2ca62479d4b19ccbdf09e867f81d6810c3e7ed",
+          "pass": "prepared",
+          "pass-sha256": "806841cd81373aba1d3db9141e3c93366f394f7667fcf01a89a1ff5940e9ed58"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "5750021b9b6ae189881ae20bad2ca62479d4b19ccbdf09e867f81d6810c3e7ed",
+          "pass": "prepared",
+          "pass-sha256": "806841cd81373aba1d3db9141e3c93366f394f7667fcf01a89a1ff5940e9ed58"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "5750021b9b6ae189881ae20bad2ca62479d4b19ccbdf09e867f81d6810c3e7ed",
+          "pass": "prepared",
+          "pass-sha256": "806841cd81373aba1d3db9141e3c93366f394f7667fcf01a89a1ff5940e9ed58"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049836",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-fn-name-fn.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "05b650e50a6828c1e9ea4cf30f7684f5c03b8c0b6785d1222d228c0ef1f6890e",
+          "pass": "prepared",
+          "pass-sha256": "7ac60742258fcdeade4b249330d477ef1c0a42af265085816704bdec4007ee33"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "05b650e50a6828c1e9ea4cf30f7684f5c03b8c0b6785d1222d228c0ef1f6890e",
+          "pass": "prepared",
+          "pass-sha256": "00000514469d4ce292a8d79f4be028d83f1eccd29f380fe699fbac22b3c9fab9"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "05b650e50a6828c1e9ea4cf30f7684f5c03b8c0b6785d1222d228c0ef1f6890e",
+          "pass": "prepared",
+          "pass-sha256": "7ac60742258fcdeade4b249330d477ef1c0a42af265085816704bdec4007ee33"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "05b650e50a6828c1e9ea4cf30f7684f5c03b8c0b6785d1222d228c0ef1f6890e",
+          "pass": "prepared",
+          "pass-sha256": "7ac60742258fcdeade4b249330d477ef1c0a42af265085816704bdec4007ee33"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049836",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-fn-name-fn.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "4ff75432a6b21f4a38473fab01d624e7751609b4dbd37a3172cc7d9fe8cb379d",
+          "pass": "prepared",
+          "pass-sha256": "2d1fe4139f87e61a28d1de9d06eed133526c745c4762c91809993a5685daee3c"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "4ff75432a6b21f4a38473fab01d624e7751609b4dbd37a3172cc7d9fe8cb379d",
+          "pass": "prepared",
+          "pass-sha256": "92ce43fddb850acedf64d0fa6b393bea27fdf46d98e7fd841ac2bf1a4d60c8dd"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "4ff75432a6b21f4a38473fab01d624e7751609b4dbd37a3172cc7d9fe8cb379d",
+          "pass": "prepared",
+          "pass-sha256": "2d1fe4139f87e61a28d1de9d06eed133526c745c4762c91809993a5685daee3c"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "4ff75432a6b21f4a38473fab01d624e7751609b4dbd37a3172cc7d9fe8cb379d",
+          "pass": "prepared",
+          "pass-sha256": "2d1fe4139f87e61a28d1de9d06eed133526c745c4762c91809993a5685daee3c"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049837",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-fn-name-gen.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "3d839833af60d1b4cb763a389c03b1aecec0d0daef2e7cca48a710b6ecb5a48e",
+          "pass": "prepared",
+          "pass-sha256": "cfa38709946f4e0acc654b033398561f02d84af4c608454b3d6dbb47637bfb74"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "3d839833af60d1b4cb763a389c03b1aecec0d0daef2e7cca48a710b6ecb5a48e",
+          "pass": "prepared",
+          "pass-sha256": "cfa38709946f4e0acc654b033398561f02d84af4c608454b3d6dbb47637bfb74"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "3d839833af60d1b4cb763a389c03b1aecec0d0daef2e7cca48a710b6ecb5a48e",
+          "pass": "prepared",
+          "pass-sha256": "709b696ff2edea2ead0c4a05b578414b5b0732fdf99591819bc42c515c458d5d"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "3d839833af60d1b4cb763a389c03b1aecec0d0daef2e7cca48a710b6ecb5a48e",
+          "pass": "prepared",
+          "pass-sha256": "709b696ff2edea2ead0c4a05b578414b5b0732fdf99591819bc42c515c458d5d"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049837",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-fn-name-gen.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "c949b60d5eb9a96bfea3f83d5c033552d1a11e06a0b2e9ae85d3e76f4b90f3bc",
+          "pass": "prepared",
+          "pass-sha256": "ec1de080ed0efa50008eb594c1aa22c552f3880274d9302480e588c429a7fcce"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "c949b60d5eb9a96bfea3f83d5c033552d1a11e06a0b2e9ae85d3e76f4b90f3bc",
+          "pass": "prepared",
+          "pass-sha256": "ec1de080ed0efa50008eb594c1aa22c552f3880274d9302480e588c429a7fcce"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "c949b60d5eb9a96bfea3f83d5c033552d1a11e06a0b2e9ae85d3e76f4b90f3bc",
+          "pass": "prepared",
+          "pass-sha256": "2a1079ddb64c273c62514d9c2159b3cbabfc0e7bb75b92c0a7847049a603b791"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "c949b60d5eb9a96bfea3f83d5c033552d1a11e06a0b2e9ae85d3e76f4b90f3bc",
+          "pass": "prepared",
+          "pass-sha256": "2a1079ddb64c273c62514d9c2159b3cbabfc0e7bb75b92c0a7847049a603b791"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049839",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "21037c40de4b8c56d08fc66c386cc49fb2df0ca3ce5191990d1f774954e9929b",
+          "pass": "prepared",
+          "pass-sha256": "666f16b8d9f4b9bc825542d0ff64fcd68c9090bd0f8b795ca3d3b09102af5404"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "21037c40de4b8c56d08fc66c386cc49fb2df0ca3ce5191990d1f774954e9929b",
+          "pass": "prepared",
+          "pass-sha256": "cbf12e1865623e7d0775125aadd34bae1b37f8f03be577874ef0d456a3fb0af0"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "21037c40de4b8c56d08fc66c386cc49fb2df0ca3ce5191990d1f774954e9929b",
+          "pass": "prepared",
+          "pass-sha256": "666f16b8d9f4b9bc825542d0ff64fcd68c9090bd0f8b795ca3d3b09102af5404"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "21037c40de4b8c56d08fc66c386cc49fb2df0ca3ce5191990d1f774954e9929b",
+          "pass": "prepared",
+          "pass-sha256": "666f16b8d9f4b9bc825542d0ff64fcd68c9090bd0f8b795ca3d3b09102af5404"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049839",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "2a13e7cbc7d039f566e5d914caa9a21d2416ac0c2002af71ce1ab582df3b25d0",
+          "pass": "prepared",
+          "pass-sha256": "935118a7deb43ce28eee842167376fa840d82afc2f888fdcc4b1f0eadca47a2a"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "2a13e7cbc7d039f566e5d914caa9a21d2416ac0c2002af71ce1ab582df3b25d0",
+          "pass": "prepared",
+          "pass-sha256": "9136de6275152812b104c6756236d20bb3ace0b5a66c658df4e417dc517e16e3"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "2a13e7cbc7d039f566e5d914caa9a21d2416ac0c2002af71ce1ab582df3b25d0",
+          "pass": "prepared",
+          "pass-sha256": "935118a7deb43ce28eee842167376fa840d82afc2f888fdcc4b1f0eadca47a2a"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "2a13e7cbc7d039f566e5d914caa9a21d2416ac0c2002af71ce1ab582df3b25d0",
+          "pass": "prepared",
+          "pass-sha256": "935118a7deb43ce28eee842167376fa840d82afc2f888fdcc4b1f0eadca47a2a"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049844",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-id-iter-done.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "ec1d5b6b896edbe7f7081de98d32eef051c411106c14dc3f6afc72b8d7c5d25a",
+          "pass": "prepared",
+          "pass-sha256": "b1dba183ae9a85ebc94b4631a3287df0982a62e67bd68c3f2548caee8e95482c"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "ec1d5b6b896edbe7f7081de98d32eef051c411106c14dc3f6afc72b8d7c5d25a",
+          "pass": "prepared",
+          "pass-sha256": "0cabd25bf5cd2a671b5b4235b6fcd1e4b75de8f8d301005d8f14f902324687aa"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "ec1d5b6b896edbe7f7081de98d32eef051c411106c14dc3f6afc72b8d7c5d25a",
+          "pass": "prepared",
+          "pass-sha256": "b1dba183ae9a85ebc94b4631a3287df0982a62e67bd68c3f2548caee8e95482c"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "ec1d5b6b896edbe7f7081de98d32eef051c411106c14dc3f6afc72b8d7c5d25a",
+          "pass": "prepared",
+          "pass-sha256": "b1dba183ae9a85ebc94b4631a3287df0982a62e67bd68c3f2548caee8e95482c"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049844",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-id-iter-done.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "75cc923ed18ac1dc8ebd116c994b16f8066291ea08fecef3966a789c8e526eb2",
+          "pass": "prepared",
+          "pass-sha256": "1e46fb3c3da26fcdfa8844804cb26e9959abd5cf629934e8dce7d3c352bfc33a"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "75cc923ed18ac1dc8ebd116c994b16f8066291ea08fecef3966a789c8e526eb2",
+          "pass": "prepared",
+          "pass-sha256": "5a43a7c2987eafd53d030f62712e89a5af6aa63a8940ee5f65dbdd1ce9382632"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "75cc923ed18ac1dc8ebd116c994b16f8066291ea08fecef3966a789c8e526eb2",
+          "pass": "prepared",
+          "pass-sha256": "1e46fb3c3da26fcdfa8844804cb26e9959abd5cf629934e8dce7d3c352bfc33a"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "75cc923ed18ac1dc8ebd116c994b16f8066291ea08fecef3966a789c8e526eb2",
+          "pass": "prepared",
+          "pass-sha256": "1e46fb3c3da26fcdfa8844804cb26e9959abd5cf629934e8dce7d3c352bfc33a"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049851",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-obj-prop-id-init.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "0ceb277b88ce0797500408c4ffcd1b944c6611c725dafd617b9a6fd44dcf018a",
+          "pass": "prepared",
+          "pass-sha256": "b9f8aa7d8e9171078a39c298c10dfbfa820db3a8d3715f79402b8600451df602"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "0ceb277b88ce0797500408c4ffcd1b944c6611c725dafd617b9a6fd44dcf018a",
+          "pass": "prepared",
+          "pass-sha256": "2164f4cb70a86548494804d859466ff585f2ad18abfff264409942040ecffefa"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "0ceb277b88ce0797500408c4ffcd1b944c6611c725dafd617b9a6fd44dcf018a",
+          "pass": "prepared",
+          "pass-sha256": "2164f4cb70a86548494804d859466ff585f2ad18abfff264409942040ecffefa"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "0ceb277b88ce0797500408c4ffcd1b944c6611c725dafd617b9a6fd44dcf018a",
+          "pass": "prepared",
+          "pass-sha256": "2164f4cb70a86548494804d859466ff585f2ad18abfff264409942040ecffefa"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049851",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-obj-prop-id-init.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "65ae98737ef57fba61b398b89bb9877b6abdbace88d8c839a3ee26a9f2219088",
+          "pass": "prepared",
+          "pass-sha256": "314c6a0e89c2a887bd9109fc31d1aaf86ab0b915a1b97b126da1703f9b889e03"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "65ae98737ef57fba61b398b89bb9877b6abdbace88d8c839a3ee26a9f2219088",
+          "pass": "prepared",
+          "pass-sha256": "71d5940eaab4323e5583e66f1d899abe4154e2e4d8c4be761c3df4f7879d2519"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "65ae98737ef57fba61b398b89bb9877b6abdbace88d8c839a3ee26a9f2219088",
+          "pass": "prepared",
+          "pass-sha256": "71d5940eaab4323e5583e66f1d899abe4154e2e4d8c4be761c3df4f7879d2519"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "65ae98737ef57fba61b398b89bb9877b6abdbace88d8c839a3ee26a9f2219088",
+          "pass": "prepared",
+          "pass-sha256": "71d5940eaab4323e5583e66f1d899abe4154e2e4d8c4be761c3df4f7879d2519"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049852",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-obj-prop-id.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "d7fe691f1b3fbcbbdbb900edf37f78c4f397466b3aeabd153d7461165162aa32",
+          "pass": "prepared",
+          "pass-sha256": "ec5f659d2a7fc37edce769d6077e5f49debda1e610cd24a4808a2286862cee7d"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "d7fe691f1b3fbcbbdbb900edf37f78c4f397466b3aeabd153d7461165162aa32",
+          "pass": "prepared",
+          "pass-sha256": "500c7cc863a5ab96c1e0ef499f04d665dfa671173a2592522c2817669d0dd3ed"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "d7fe691f1b3fbcbbdbb900edf37f78c4f397466b3aeabd153d7461165162aa32",
+          "pass": "prepared",
+          "pass-sha256": "500c7cc863a5ab96c1e0ef499f04d665dfa671173a2592522c2817669d0dd3ed"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "d7fe691f1b3fbcbbdbb900edf37f78c4f397466b3aeabd153d7461165162aa32",
+          "pass": "prepared",
+          "pass-sha256": "500c7cc863a5ab96c1e0ef499f04d665dfa671173a2592522c2817669d0dd3ed"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049852",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-elem-obj-prop-id.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "7a8e4faaa069a9339a57b739573db306845a4e139defd4f534560d6f1853b1f1",
+          "pass": "prepared",
+          "pass-sha256": "9332d9eb0621dc4d9cec5103c8e20f35dac6d9233d0e3b9bfd6a63413fc297f7"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "7a8e4faaa069a9339a57b739573db306845a4e139defd4f534560d6f1853b1f1",
+          "pass": "prepared",
+          "pass-sha256": "0e8979af224476b0ce7595e9be2835062b348a43f3d7f91b91e2b6f105ed8ce2"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "7a8e4faaa069a9339a57b739573db306845a4e139defd4f534560d6f1853b1f1",
+          "pass": "prepared",
+          "pass-sha256": "0e8979af224476b0ce7595e9be2835062b348a43f3d7f91b91e2b6f105ed8ce2"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "7a8e4faaa069a9339a57b739573db306845a4e139defd4f534560d6f1853b1f1",
+          "pass": "prepared",
+          "pass-sha256": "0e8979af224476b0ce7595e9be2835062b348a43f3d7f91b91e2b6f105ed8ce2"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049879",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-rest-obj-prop-id.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "b60fb8e7abd90cb837bedc5b1a32bdd6c640630a0b880cc667dd864789518c37",
+          "pass": "prepared",
+          "pass-sha256": "4827e479eb6157e770d06e529ad1b6b36bedc8cf791fe8d1f5726e1667fff977"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "b60fb8e7abd90cb837bedc5b1a32bdd6c640630a0b880cc667dd864789518c37",
+          "pass": "prepared",
+          "pass-sha256": "b2f00bb3bb41d0f6e0e4e8bb8905b4506d9f33b107db9c70b63dc49f8bb4072d"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "b60fb8e7abd90cb837bedc5b1a32bdd6c640630a0b880cc667dd864789518c37",
+          "pass": "prepared",
+          "pass-sha256": "b0b579faea73f2f2c6a489fac3739ae7a8aca109f24d16cae2088d9a14ccfce5"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "b60fb8e7abd90cb837bedc5b1a32bdd6c640630a0b880cc667dd864789518c37",
+          "pass": "prepared",
+          "pass-sha256": "b0b579faea73f2f2c6a489fac3739ae7a8aca109f24d16cae2088d9a14ccfce5"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049879",
+      "path": "test/language/statements/for/dstr/let-ary-ptrn-rest-obj-prop-id.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "79485e2c8777fea27387a8a005875420edd7e906913c473a0b6b37c73f1b5b00",
+          "pass": "prepared",
+          "pass-sha256": "9103922375fdc18b71e74e85b0079d1adf8c0a24a42f3fd20850b55f4fa26a19"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "79485e2c8777fea27387a8a005875420edd7e906913c473a0b6b37c73f1b5b00",
+          "pass": "prepared",
+          "pass-sha256": "5caea97f9f1acf42e74677366ce21ef5acf42fa8672153782be167fda80617a7"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "79485e2c8777fea27387a8a005875420edd7e906913c473a0b6b37c73f1b5b00",
+          "pass": "prepared",
+          "pass-sha256": "d8fbf6912cbe6ea371e9eac5771105d202398ea0a1a1a67c0cfa83a574abdb03"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "79485e2c8777fea27387a8a005875420edd7e906913c473a0b6b37c73f1b5b00",
+          "pass": "prepared",
+          "pass-sha256": "d8fbf6912cbe6ea371e9eac5771105d202398ea0a1a1a67c0cfa83a574abdb03"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049886",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-cover.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "9b2f3dbcec0cc4d0096ec89d9312c96c2e8d50d8489f4a1f0de8df1294676812",
+          "pass": "prepared",
+          "pass-sha256": "74df2e7163634d74db13adcc29ad287c3888c34f8add8b88077e5363524294cd"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "9b2f3dbcec0cc4d0096ec89d9312c96c2e8d50d8489f4a1f0de8df1294676812",
+          "pass": "prepared",
+          "pass-sha256": "1bb5b52a9ed9523da724e9a8486beefaad61694c0e2d5a9f240926728923eb4e"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "9b2f3dbcec0cc4d0096ec89d9312c96c2e8d50d8489f4a1f0de8df1294676812",
+          "pass": "prepared",
+          "pass-sha256": "1bb5b52a9ed9523da724e9a8486beefaad61694c0e2d5a9f240926728923eb4e"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "9b2f3dbcec0cc4d0096ec89d9312c96c2e8d50d8489f4a1f0de8df1294676812",
+          "pass": "prepared",
+          "pass-sha256": "1bb5b52a9ed9523da724e9a8486beefaad61694c0e2d5a9f240926728923eb4e"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049886",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-cover.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "575095747f9399dffd33cbc13f81114739337a5402eb7020cbc75597079d4645",
+          "pass": "prepared",
+          "pass-sha256": "10d186e049d886cc21544d4f9be69a4236ba3b720ebdcd80af15d73dff9b451c"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "575095747f9399dffd33cbc13f81114739337a5402eb7020cbc75597079d4645",
+          "pass": "prepared",
+          "pass-sha256": "bf1ad208a26d0efc3e45d25da32a46a7011e40f2f24df3b1181c138b1d491c98"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "575095747f9399dffd33cbc13f81114739337a5402eb7020cbc75597079d4645",
+          "pass": "prepared",
+          "pass-sha256": "bf1ad208a26d0efc3e45d25da32a46a7011e40f2f24df3b1181c138b1d491c98"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "575095747f9399dffd33cbc13f81114739337a5402eb7020cbc75597079d4645",
+          "pass": "prepared",
+          "pass-sha256": "bf1ad208a26d0efc3e45d25da32a46a7011e40f2f24df3b1181c138b1d491c98"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049887",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-fn.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "60425716347357b05969b3d1df509a5d7d45f039696b498d8796877312d1494c",
+          "pass": "prepared",
+          "pass-sha256": "2b66ea0d7506329738347b7aa8ab412edad619369e9548e4bbec97876a18aca8"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "60425716347357b05969b3d1df509a5d7d45f039696b498d8796877312d1494c",
+          "pass": "prepared",
+          "pass-sha256": "9163147ee7ae2194e9dfdadd7e78acb1652f553a954ffbd2d64b1d4cf7735b56"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "60425716347357b05969b3d1df509a5d7d45f039696b498d8796877312d1494c",
+          "pass": "prepared",
+          "pass-sha256": "2b66ea0d7506329738347b7aa8ab412edad619369e9548e4bbec97876a18aca8"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "60425716347357b05969b3d1df509a5d7d45f039696b498d8796877312d1494c",
+          "pass": "prepared",
+          "pass-sha256": "2b66ea0d7506329738347b7aa8ab412edad619369e9548e4bbec97876a18aca8"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049887",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-fn.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "4e18ad4e2ce3de23a91b915888112b6f4fffd6586fc761c9ccc6e59391e5341e",
+          "pass": "prepared",
+          "pass-sha256": "3afc78432a0af6499dd5d2840932ed87e57578e68a67b3e1c5dd5c53e81dddf3"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "4e18ad4e2ce3de23a91b915888112b6f4fffd6586fc761c9ccc6e59391e5341e",
+          "pass": "prepared",
+          "pass-sha256": "38a24eb4b413866231d1c727173c3b7e4f857871a5712699a81e4b2ecaf785c7"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "4e18ad4e2ce3de23a91b915888112b6f4fffd6586fc761c9ccc6e59391e5341e",
+          "pass": "prepared",
+          "pass-sha256": "3afc78432a0af6499dd5d2840932ed87e57578e68a67b3e1c5dd5c53e81dddf3"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "4e18ad4e2ce3de23a91b915888112b6f4fffd6586fc761c9ccc6e59391e5341e",
+          "pass": "prepared",
+          "pass-sha256": "3afc78432a0af6499dd5d2840932ed87e57578e68a67b3e1c5dd5c53e81dddf3"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049888",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-gen.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "712b716af14bafe735e922211a827bae92018cc7d5b3579b0aaf591939745c49",
+          "pass": "prepared",
+          "pass-sha256": "b2389d0501549707efd2d6f0701a900e41a99ebcdd10d22225ff9fe21d7518e1"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "712b716af14bafe735e922211a827bae92018cc7d5b3579b0aaf591939745c49",
+          "pass": "prepared",
+          "pass-sha256": "b2389d0501549707efd2d6f0701a900e41a99ebcdd10d22225ff9fe21d7518e1"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "712b716af14bafe735e922211a827bae92018cc7d5b3579b0aaf591939745c49",
+          "pass": "prepared",
+          "pass-sha256": "32e96494afc2926ee52cdab2a5863cb657ecb1196c27da3ad4d25ac1f53b0d5e"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "712b716af14bafe735e922211a827bae92018cc7d5b3579b0aaf591939745c49",
+          "pass": "prepared",
+          "pass-sha256": "32e96494afc2926ee52cdab2a5863cb657ecb1196c27da3ad4d25ac1f53b0d5e"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049888",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-gen.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "a9fdb196777af901e6de5ec8aa61377969d7b0c366f597f31937712864aa1160",
+          "pass": "prepared",
+          "pass-sha256": "3e9455d4cefc3d2acef6c25194b1c59e872699c2ba4c55e9d5bcc725d4a66630"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "a9fdb196777af901e6de5ec8aa61377969d7b0c366f597f31937712864aa1160",
+          "pass": "prepared",
+          "pass-sha256": "3e9455d4cefc3d2acef6c25194b1c59e872699c2ba4c55e9d5bcc725d4a66630"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "a9fdb196777af901e6de5ec8aa61377969d7b0c366f597f31937712864aa1160",
+          "pass": "prepared",
+          "pass-sha256": "3a7031dd954b74e2248dce76874ef53d320bf4b5b84f9682102436bc764578d0"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "a9fdb196777af901e6de5ec8aa61377969d7b0c366f597f31937712864aa1160",
+          "pass": "prepared",
+          "pass-sha256": "3a7031dd954b74e2248dce76874ef53d320bf4b5b84f9682102436bc764578d0"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049889",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "7fa9650fae3c0721c606fdab09aefe0d99f6712035ef03be734cbd739c9ca034",
+          "pass": "prepared",
+          "pass-sha256": "7de5f3fdbe6d894d463a74fb6747dbb4d98504224252fe0731606b5b1f979610"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "7fa9650fae3c0721c606fdab09aefe0d99f6712035ef03be734cbd739c9ca034",
+          "pass": "prepared",
+          "pass-sha256": "cb9dc871926d0a0aaea50a32195d7f5017a9a3d9f44c8facfa67ec3dad0517f4"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "7fa9650fae3c0721c606fdab09aefe0d99f6712035ef03be734cbd739c9ca034",
+          "pass": "prepared",
+          "pass-sha256": "7de5f3fdbe6d894d463a74fb6747dbb4d98504224252fe0731606b5b1f979610"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "7fa9650fae3c0721c606fdab09aefe0d99f6712035ef03be734cbd739c9ca034",
+          "pass": "prepared",
+          "pass-sha256": "7de5f3fdbe6d894d463a74fb6747dbb4d98504224252fe0731606b5b1f979610"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049889",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "8df6156d310a62e19ee44845e93372baf5da387f3d95050f40ec37e7fc8d8463",
+          "pass": "prepared",
+          "pass-sha256": "eb925a4a598fd7ea5b9aba497d09b05ec61c2df7c06b18afcc4c4e3ec20cfb56"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "8df6156d310a62e19ee44845e93372baf5da387f3d95050f40ec37e7fc8d8463",
+          "pass": "prepared",
+          "pass-sha256": "9ee67e5db1d38d3fd168e25b595cb2e698ea1116bf681a72d72fa962a9c4209d"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "8df6156d310a62e19ee44845e93372baf5da387f3d95050f40ec37e7fc8d8463",
+          "pass": "prepared",
+          "pass-sha256": "eb925a4a598fd7ea5b9aba497d09b05ec61c2df7c06b18afcc4c4e3ec20cfb56"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "8df6156d310a62e19ee44845e93372baf5da387f3d95050f40ec37e7fc8d8463",
+          "pass": "prepared",
+          "pass-sha256": "eb925a4a598fd7ea5b9aba497d09b05ec61c2df7c06b18afcc4c4e3ec20cfb56"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049893",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-list-err.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "ceb499f5ca4b38a7cc0c9a41145492efd737fd9fad23aea32d30f478a0d92950",
+          "pass": "prepared",
+          "pass-sha256": "d9d601ce8bf797832e9497bf1bec63d2723849cc2ae2d46f7152660ec6675df4"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "ceb499f5ca4b38a7cc0c9a41145492efd737fd9fad23aea32d30f478a0d92950",
+          "pass": "prepared",
+          "pass-sha256": "d9d601ce8bf797832e9497bf1bec63d2723849cc2ae2d46f7152660ec6675df4"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "ceb499f5ca4b38a7cc0c9a41145492efd737fd9fad23aea32d30f478a0d92950",
+          "pass": "prepared",
+          "pass-sha256": "0e625fa3963c4a449b2bdd9fcce991291c1fac3e54fc41b663d96428cf0e9b16"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "ceb499f5ca4b38a7cc0c9a41145492efd737fd9fad23aea32d30f478a0d92950",
+          "pass": "prepared",
+          "pass-sha256": "0e625fa3963c4a449b2bdd9fcce991291c1fac3e54fc41b663d96428cf0e9b16"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049893",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-list-err.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "56c4b39a435ac69238d1d89b54d74a46b455b5d349445611fa67c6c0042ca1c3",
+          "pass": "prepared",
+          "pass-sha256": "3ef855f11c19418fd2afe5a68266f87c933bb766f0851353eaf45b94f842ed98"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "56c4b39a435ac69238d1d89b54d74a46b455b5d349445611fa67c6c0042ca1c3",
+          "pass": "prepared",
+          "pass-sha256": "3ef855f11c19418fd2afe5a68266f87c933bb766f0851353eaf45b94f842ed98"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "56c4b39a435ac69238d1d89b54d74a46b455b5d349445611fa67c6c0042ca1c3",
+          "pass": "prepared",
+          "pass-sha256": "309f08dbe4243dbdb6f85a3c9bc3349f25b4574c6eff4d8ae7d9c7d31da65cdd"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "56c4b39a435ac69238d1d89b54d74a46b455b5d349445611fa67c6c0042ca1c3",
+          "pass": "prepared",
+          "pass-sha256": "309f08dbe4243dbdb6f85a3c9bc3349f25b4574c6eff4d8ae7d9c7d31da65cdd"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049900",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-prop-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "7d421e35082b094ef0a6b2651a3ac768415070e58a9379a1cb3ae91a73420c90",
+          "pass": "prepared",
+          "pass-sha256": "c6a3700016ba6860b41a05a256a69de90cbcb271bcc3a5c6951f634d098faea5"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "7d421e35082b094ef0a6b2651a3ac768415070e58a9379a1cb3ae91a73420c90",
+          "pass": "prepared",
+          "pass-sha256": "94745bc4e5878655d670c085f04d948dfff1bcece0c552b25dbfd5d41624afa4"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "7d421e35082b094ef0a6b2651a3ac768415070e58a9379a1cb3ae91a73420c90",
+          "pass": "prepared",
+          "pass-sha256": "feca407d030b30e52ee3a409a9f2e32f490c29446e2d768022d778b2f9c1aa8d"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "7d421e35082b094ef0a6b2651a3ac768415070e58a9379a1cb3ae91a73420c90",
+          "pass": "prepared",
+          "pass-sha256": "feca407d030b30e52ee3a409a9f2e32f490c29446e2d768022d778b2f9c1aa8d"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049900",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-prop-id-init-skipped.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "573889643e0e1d27e035a8f795001935bde8012c8cb0a59369d260d202f08c72",
+          "pass": "prepared",
+          "pass-sha256": "da477c32f38857da097f96114f705b27ff891a21dac3189ce109942c27d86506"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "573889643e0e1d27e035a8f795001935bde8012c8cb0a59369d260d202f08c72",
+          "pass": "prepared",
+          "pass-sha256": "6bc715ab430a193a4eadda3431e9d32ba2ff421377e74671c529a9248ad0f0a4"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "573889643e0e1d27e035a8f795001935bde8012c8cb0a59369d260d202f08c72",
+          "pass": "prepared",
+          "pass-sha256": "1200408d0fce3f026d23bdca9a3bfe34657c2e55a8650d2638297a0e8e60a12a"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "573889643e0e1d27e035a8f795001935bde8012c8cb0a59369d260d202f08c72",
+          "pass": "prepared",
+          "pass-sha256": "1200408d0fce3f026d23bdca9a3bfe34657c2e55a8650d2638297a0e8e60a12a"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049912",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-rest-val-obj.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "eb2a13dc7e448113b7de01e2db44b783d0941a90cd42ff5d62656159f46eb5f3",
+          "pass": "prepared",
+          "pass-sha256": "9fc77b2c51e2f1e7a88883980dc2a7202a771c8afca325bbcf26e40e5f299500"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "eb2a13dc7e448113b7de01e2db44b783d0941a90cd42ff5d62656159f46eb5f3",
+          "pass": "prepared",
+          "pass-sha256": "9fc77b2c51e2f1e7a88883980dc2a7202a771c8afca325bbcf26e40e5f299500"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "eb2a13dc7e448113b7de01e2db44b783d0941a90cd42ff5d62656159f46eb5f3",
+          "pass": "prepared",
+          "pass-sha256": "9703c728de44862a42c4d08a939b05f90d2d3242ea99f9368ff9f039491a8b76"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "eb2a13dc7e448113b7de01e2db44b783d0941a90cd42ff5d62656159f46eb5f3",
+          "pass": "prepared",
+          "pass-sha256": "9703c728de44862a42c4d08a939b05f90d2d3242ea99f9368ff9f039491a8b76"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T049912",
+      "path": "test/language/statements/for/dstr/let-obj-ptrn-rest-val-obj.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "9ea0305a00d6f10799d2516f0815dc683976b0fa617cf2aa8c67c55fa56bab2c",
+          "pass": "prepared",
+          "pass-sha256": "f9bd0b6e195b25ea5135bc8cff1ed7ccd37794a6800ad2583ed7b002eedc64de"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "9ea0305a00d6f10799d2516f0815dc683976b0fa617cf2aa8c67c55fa56bab2c",
+          "pass": "prepared",
+          "pass-sha256": "f9bd0b6e195b25ea5135bc8cff1ed7ccd37794a6800ad2583ed7b002eedc64de"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "9ea0305a00d6f10799d2516f0815dc683976b0fa617cf2aa8c67c55fa56bab2c",
+          "pass": "prepared",
+          "pass-sha256": "60c176e73549b5f25aed3e5a4d27a355e8f196d8f4198d16e705388c84171bc9"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "9ea0305a00d6f10799d2516f0815dc683976b0fa617cf2aa8c67c55fa56bab2c",
+          "pass": "prepared",
+          "pass-sha256": "60c176e73549b5f25aed3e5a4d27a355e8f196d8f4198d16e705388c84171bc9"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T050028",
+      "path": "test/language/statements/for/scope-body-lex-open.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "021d18f112ef120dc24722d36cfe0a90426db41dbcafb6dfa1686f50fad06770",
+          "pass": "prepared",
+          "pass-sha256": "4e544cc17db2b8146a3abde5bcac4fd66a29284900cb8600d92c601b3745af04"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "021d18f112ef120dc24722d36cfe0a90426db41dbcafb6dfa1686f50fad06770",
+          "pass": "prepared",
+          "pass-sha256": "be285e1465b703958b3629a8a2ab2542ea2df520932fc56de3eafef94e8ee4a2"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "021d18f112ef120dc24722d36cfe0a90426db41dbcafb6dfa1686f50fad06770",
+          "pass": "prepared",
+          "pass-sha256": "4e544cc17db2b8146a3abde5bcac4fd66a29284900cb8600d92c601b3745af04"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "021d18f112ef120dc24722d36cfe0a90426db41dbcafb6dfa1686f50fad06770",
+          "pass": "prepared",
+          "pass-sha256": "4e544cc17db2b8146a3abde5bcac4fd66a29284900cb8600d92c601b3745af04"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T050028",
+      "path": "test/language/statements/for/scope-body-lex-open.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "6f23d55f050b90250d0a1283c2609c5ff5c374e5916ed7fd3ef941bcea8a794f",
+          "pass": "prepared",
+          "pass-sha256": "e66cefaf3a2afeb02f1caf4a1eab2e4194c9eb47e7ae0d79088014944f74bc8e"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "6f23d55f050b90250d0a1283c2609c5ff5c374e5916ed7fd3ef941bcea8a794f",
+          "pass": "prepared",
+          "pass-sha256": "48899e4ffcf91f29e755595606a1918a61afa6f26dbc5316c26ddebe90dc1ba3"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "6f23d55f050b90250d0a1283c2609c5ff5c374e5916ed7fd3ef941bcea8a794f",
+          "pass": "prepared",
+          "pass-sha256": "e66cefaf3a2afeb02f1caf4a1eab2e4194c9eb47e7ae0d79088014944f74bc8e"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "6f23d55f050b90250d0a1283c2609c5ff5c374e5916ed7fd3ef941bcea8a794f",
+          "pass": "prepared",
+          "pass-sha256": "e66cefaf3a2afeb02f1caf4a1eab2e4194c9eb47e7ae0d79088014944f74bc8e"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T050031",
+      "path": "test/language/statements/for/scope-head-lex-open.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "67ec6c7877137c43b74fdd383c7c6a05c85167247fa9091064585e6acf0b8d4a",
+          "pass": "prepared",
+          "pass-sha256": "0e2504ded561adf2ff45208f115201299b4dcc3903c1eebe8f82f646fff17466"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "67ec6c7877137c43b74fdd383c7c6a05c85167247fa9091064585e6acf0b8d4a",
+          "pass": "prepared",
+          "pass-sha256": "7f8ae2765086eb491d2232de4494fb71766fdf8ed2d27bbe4433722adce56d3a"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "67ec6c7877137c43b74fdd383c7c6a05c85167247fa9091064585e6acf0b8d4a",
+          "pass": "prepared",
+          "pass-sha256": "0e2504ded561adf2ff45208f115201299b4dcc3903c1eebe8f82f646fff17466"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "67ec6c7877137c43b74fdd383c7c6a05c85167247fa9091064585e6acf0b8d4a",
+          "pass": "prepared",
+          "pass-sha256": "0e2504ded561adf2ff45208f115201299b4dcc3903c1eebe8f82f646fff17466"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T050031",
+      "path": "test/language/statements/for/scope-head-lex-open.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "a8a5c6fde0e7d36c4a8bb4c304c019cecc93157548a182229b95f4f40a42a694",
+          "pass": "prepared",
+          "pass-sha256": "bc78710daccc9b00115bd5489f310cab010ff7f2ac3a37a4b995e95aff750824"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "a8a5c6fde0e7d36c4a8bb4c304c019cecc93157548a182229b95f4f40a42a694",
+          "pass": "prepared",
+          "pass-sha256": "3d504b51eb60f728096e0544d43ffd013c2e7a383b8187fd353b39197223436e"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "a8a5c6fde0e7d36c4a8bb4c304c019cecc93157548a182229b95f4f40a42a694",
+          "pass": "prepared",
+          "pass-sha256": "bc78710daccc9b00115bd5489f310cab010ff7f2ac3a37a4b995e95aff750824"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "a8a5c6fde0e7d36c4a8bb4c304c019cecc93157548a182229b95f4f40a42a694",
+          "pass": "prepared",
+          "pass-sha256": "bc78710daccc9b00115bd5489f310cab010ff7f2ac3a37a4b995e95aff750824"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T050965",
+      "path": "test/language/statements/let/syntax/let-closure-inside-initialization.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "1bb31266edd0538652d98b88c15f2d69a595c0930ce4bf735e1f98d1575e0bf1",
+          "pass": "prepared",
+          "pass-sha256": "22089bfaf00374853cc635170f9578d382321d7ca959979bde1642f529eed59c"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "1bb31266edd0538652d98b88c15f2d69a595c0930ce4bf735e1f98d1575e0bf1",
+          "pass": "prepared",
+          "pass-sha256": "22089bfaf00374853cc635170f9578d382321d7ca959979bde1642f529eed59c"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "1bb31266edd0538652d98b88c15f2d69a595c0930ce4bf735e1f98d1575e0bf1",
+          "pass": "prepared",
+          "pass-sha256": "2bf5917c40c0af09469198d95ef0c35ef03eefdd53126867fd07d399e31ba0f9"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "1bb31266edd0538652d98b88c15f2d69a595c0930ce4bf735e1f98d1575e0bf1",
+          "pass": "prepared",
+          "pass-sha256": "2bf5917c40c0af09469198d95ef0c35ef03eefdd53126867fd07d399e31ba0f9"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T050965",
+      "path": "test/language/statements/let/syntax/let-closure-inside-initialization.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "54f1161bb5aa70f06630380da55c305662f26d373c7f698f8aa4e2fa10f7536c",
+          "pass": "prepared",
+          "pass-sha256": "910739d7b4a7d144989372c34fe14afd4188b553800d54606ccad7843221f0b9"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "54f1161bb5aa70f06630380da55c305662f26d373c7f698f8aa4e2fa10f7536c",
+          "pass": "prepared",
+          "pass-sha256": "910739d7b4a7d144989372c34fe14afd4188b553800d54606ccad7843221f0b9"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "54f1161bb5aa70f06630380da55c305662f26d373c7f698f8aa4e2fa10f7536c",
+          "pass": "prepared",
+          "pass-sha256": "c3d758ddaeef78f3cb483a53ab1df36887b00251929eb2dca97746b39c7b51e7"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "54f1161bb5aa70f06630380da55c305662f26d373c7f698f8aa4e2fa10f7536c",
+          "pass": "prepared",
+          "pass-sha256": "c3d758ddaeef78f3cb483a53ab1df36887b00251929eb2dca97746b39c7b51e7"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T050974",
+      "path": "test/language/statements/let/syntax/let-outer-inner-let-bindings.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "b5cc736e83e887c11e326850f20709d86867a8fd8e464e04292eeeb234850e6a",
+          "pass": "prepared",
+          "pass-sha256": "340d55ae4591d37758b54ee827da215d4058d53dd829657480c12249c78ce900"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "b5cc736e83e887c11e326850f20709d86867a8fd8e464e04292eeeb234850e6a",
+          "pass": "prepared",
+          "pass-sha256": "ac3b9fb3483a047a7d2a35d09a71a479ed5a45e510c52fe72786223bed8f95fa"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "b5cc736e83e887c11e326850f20709d86867a8fd8e464e04292eeeb234850e6a",
+          "pass": "prepared",
+          "pass-sha256": "340d55ae4591d37758b54ee827da215d4058d53dd829657480c12249c78ce900"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "b5cc736e83e887c11e326850f20709d86867a8fd8e464e04292eeeb234850e6a",
+          "pass": "prepared",
+          "pass-sha256": "340d55ae4591d37758b54ee827da215d4058d53dd829657480c12249c78ce900"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T050974",
+      "path": "test/language/statements/let/syntax/let-outer-inner-let-bindings.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "b701c5a67301487075a0fc9151936c6f07dd9a84f2342e58fe26d82c5aeafa14",
+          "pass": "prepared",
+          "pass-sha256": "635bed658dbdb1e5c3f8d13e43ea0786f8ba57e6a55e55f86ed26c99b273853c"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "b701c5a67301487075a0fc9151936c6f07dd9a84f2342e58fe26d82c5aeafa14",
+          "pass": "prepared",
+          "pass-sha256": "9cdebdf37cb0bbd139679ccf613b81ea2b7615d3fa2bb4a2b0cff37dddc7cd62"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "b701c5a67301487075a0fc9151936c6f07dd9a84f2342e58fe26d82c5aeafa14",
+          "pass": "prepared",
+          "pass-sha256": "635bed658dbdb1e5c3f8d13e43ea0786f8ba57e6a55e55f86ed26c99b273853c"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "b701c5a67301487075a0fc9151936c6f07dd9a84f2342e58fe26d82c5aeafa14",
+          "pass": "prepared",
+          "pass-sha256": "635bed658dbdb1e5c3f8d13e43ea0786f8ba57e6a55e55f86ed26c99b273853c"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T053177",
+      "path": "test/staging/sm/lexical-environment/bug-1216623.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "456b49f2c4505b25f87e234f29e81c6bd5d8ae84e4bb1837c95709acf36df339",
+          "pass": "prepared",
+          "pass-sha256": "d90db4b40e79fc2901bd4d8920491d8989f738f1c1b2fae40420a5cca7a6128d"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "456b49f2c4505b25f87e234f29e81c6bd5d8ae84e4bb1837c95709acf36df339",
+          "pass": "prepared",
+          "pass-sha256": "e2e71709ff7b13fa858f9c34546350fe8f13feca9a58675381bf21b5d436a424"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "456b49f2c4505b25f87e234f29e81c6bd5d8ae84e4bb1837c95709acf36df339",
+          "pass": "prepared",
+          "pass-sha256": "dc15bde873502c46699579ec4ee72801f4829485794796ed1b80957459c934ba"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "456b49f2c4505b25f87e234f29e81c6bd5d8ae84e4bb1837c95709acf36df339",
+          "pass": "prepared",
+          "pass-sha256": "dc15bde873502c46699579ec4ee72801f4829485794796ed1b80957459c934ba"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T053177",
+      "path": "test/staging/sm/lexical-environment/bug-1216623.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "9c59ce98f0054fa187420fd7ab9b6f9922ca182c01c84266c1aa7df43700c3bc",
+          "pass": "prepared",
+          "pass-sha256": "790b687766281b68bde84cede5712a5190c6c5233a7943e68a986ebf044793cb"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "9c59ce98f0054fa187420fd7ab9b6f9922ca182c01c84266c1aa7df43700c3bc",
+          "pass": "prepared",
+          "pass-sha256": "2366548d6b2c5b80f57d0563bffdc20e8aaa5835a73e28b653837a881e8a13cd"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "9c59ce98f0054fa187420fd7ab9b6f9922ca182c01c84266c1aa7df43700c3bc",
+          "pass": "prepared",
+          "pass-sha256": "392b063aa34052b0bcbab7f2625bdde5a4488df812c0cc33fea1ae3bd02b06ec"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "9c59ce98f0054fa187420fd7ab9b6f9922ca182c01c84266c1aa7df43700c3bc",
+          "pass": "prepared",
+          "pass-sha256": "392b063aa34052b0bcbab7f2625bdde5a4488df812c0cc33fea1ae3bd02b06ec"
+        }
+      },
+      "variant": "strict"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T053182",
+      "path": "test/staging/sm/lexical-environment/for-loop.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "6a5ca9fc879d9a6446d76c1f422df6e236dd511206268a44e3af00820ae20c8d",
+          "pass": "prepared",
+          "pass-sha256": "3db13e3f3cb55d1b74be9ff08e4c9e0e307c79fd7dbe5917caf7979dcb6a0a46"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "6a5ca9fc879d9a6446d76c1f422df6e236dd511206268a44e3af00820ae20c8d",
+          "pass": "prepared",
+          "pass-sha256": "ad48f5e66e7c2c483279dc90932d6653019100d3f7c8cd20c9408b5e7dfb3b8a"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "6a5ca9fc879d9a6446d76c1f422df6e236dd511206268a44e3af00820ae20c8d",
+          "pass": "prepared",
+          "pass-sha256": "ad48f5e66e7c2c483279dc90932d6653019100d3f7c8cd20c9408b5e7dfb3b8a"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "6a5ca9fc879d9a6446d76c1f422df6e236dd511206268a44e3af00820ae20c8d",
+          "pass": "prepared",
+          "pass-sha256": "ad48f5e66e7c2c483279dc90932d6653019100d3f7c8cd20c9408b5e7dfb3b8a"
+        }
+      },
+      "variant": "sloppy"
+    },
+    {
+      "differs": [
+        "pass"
+      ],
+      "id": "T053182",
+      "path": "test/staging/sm/lexical-environment/for-loop.js",
+      "runs": {
+        "1": {
+          "parse": "accepted",
+          "parser-sha256": "f8c8bb8788ca5a53a06de9317d8c7a00ea695777523ac4bb8fdaf24998efc97d",
+          "pass": "prepared",
+          "pass-sha256": "4d425955252ebaf8cea9c6100d614deccef75ccac0470d29b9868c9ab884b60a"
+        },
+        "2": {
+          "parse": "accepted",
+          "parser-sha256": "f8c8bb8788ca5a53a06de9317d8c7a00ea695777523ac4bb8fdaf24998efc97d",
+          "pass": "prepared",
+          "pass-sha256": "d1aa917f2bcf94acdd9bdfb95572da66edbbdea1b00390096e808e76eec142b9"
+        },
+        "3A": {
+          "parse": "accepted",
+          "parser-sha256": "f8c8bb8788ca5a53a06de9317d8c7a00ea695777523ac4bb8fdaf24998efc97d",
+          "pass": "prepared",
+          "pass-sha256": "d1aa917f2bcf94acdd9bdfb95572da66edbbdea1b00390096e808e76eec142b9"
+        },
+        "3B": {
+          "parse": "accepted",
+          "parser-sha256": "f8c8bb8788ca5a53a06de9317d8c7a00ea695777523ac4bb8fdaf24998efc97d",
+          "pass": "prepared",
+          "pass-sha256": "d1aa917f2bcf94acdd9bdfb95572da66edbbdea1b00390096e808e76eec142b9"
+        }
+      },
+      "variant": "strict"
+    }
+  ],
+  "expectDiffer": {
+    "inputsThatDiffer": 56,
+    "runs": [
+      "1",
+      "2"
+    ]
+  },
+  "forLoopPass": {
+    "1": "found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram",
+    "2": "found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram",
+    "3": "found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram"
+  },
+  "manifestSha256": "1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc",
+  "part": "D",
+  "passFoundInEveryRun": true,
+  "population": 101562,
+  "populationSource": "docs/evidence/sjl-12-001/after/parse-corpus-c.tsv.gz",
+  "runs": {
+    "1": "docs/evidence/sjl-12-001/controls/part-d-k2-d1.tsv.gz",
+    "2": "docs/evidence/sjl-12-001/controls/part-d-k2-d2.tsv.gz",
+    "3": "docs/evidence/sjl-12-001/controls/part-d-k2-d3.tsv.gz"
+  }
+}

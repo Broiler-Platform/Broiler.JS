@@ -1,0 +1,148 @@
+# Bundle sjl-12-001 (Broiler.JS), the local after runs of parts B, C and D (SJL-12 WP7.5), 2026-10-26, at the after
+# commit c29d653f5f93b66b5e0efdbe506205a5347fc18a, the default-branch merge of Broiler-Platform/Broiler.JS#1068
+# (SJL-12.5 item 5, the compiler's for-loop pass), with part B's second run over the rule commit
+# 4d813f2ac863895b9be5c4619b7886c9ddd71077's parser. Part C's base is the bundle's retained base report, taken at the
+# corpus commit 1fe542ff459935586cdf495e4a0e3d798248948a. Every command as it was run, in order: they are the commands
+# of the driver scripts s0 to s5 (WP7.5's scratch folder, scripts/), each run once, in that order. The variables
+# expand to the exact paths. Each build and each tool or test run was launched through a wrapper (timed.py, WP4.7's,
+# unchanged) that records the exit code, wall-clock and peak RSS and strips LANG and every LC_* variable from the
+# child's environment (Python's locale coercion adds LC_CTYPE); each was preceded by the idle-machine gate that
+# machine.txt describes (WP4.7's lib.sh, with its scratch folder W changed and nothing else). No BROILER_* variable was
+# set, except BROILER_ARCH_PARSER_ASSEMBLY for part B's run over the rule commit's parser, as the rule says. Nothing was
+# committed, pushed or dispatched, and /home/user/broiler.js was changed by nothing but `git fetch` and
+# `git worktree add` / `git worktree remove` of the three checkouts named here.
+
+W=<scratch>/sjl12/wp7/jsw   # scratch folder
+O=<scratch>/sjl12/wp7/js    # this folder (the bundle's after/)
+AC=c29d653f5f93b66b5e0efdbe506205a5347fc18a    # the after commit
+RC=4d813f2ac863895b9be5c4619b7886c9ddd71077    # the rule commit
+CC=1fe542ff459935586cdf495e4a0e3d798248948a    # the corpus commit
+JA=$W/js-after          # the after commit's clean detached checkout (removed afterwards)
+JR=$W/js-rule           # the rule commit's clean detached checkout (removed afterwards)
+JK=$W/js-k              # the scratch copy of the after commit, for controls K, K1 and K2 (removed afterwards)
+S=/home/user/tc39/test262   # a test262 checkout at ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e, no local change
+ARCH=Broiler.JS/Broiler.JavaScript.Architecture.Tests/Broiler.JavaScript.Architecture.Tests.csproj
+TOOL=docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj
+M=conformance/parse/corpus.manifest
+export PATH=/root/.dotnet:$PATH DOTNET_ROOT=/root/.dotnet
+
+# ==== s0: the commits, the blobs the runs rest on, and the checkouts (no build, no run): logs/after-commit.txt
+git -C /home/user/broiler.js fetch -q origin main                       # origin/main a6c68dd4bd771ac358f4083e4789cd5c86e29330
+git -C /home/user/broiler.js merge-base --is-ancestor $AC origin/main   # exit 0
+git -C /home/user/broiler.js merge-base --is-ancestor $CC $AC           # exit 0
+git -C /home/user/broiler.js merge-base --is-ancestor $RC $AC           # exit 0
+git -C /home/user/broiler.js diff --quiet $CC $AC -- docs/evidence/sjl-12-001/tools/parse-corpus \
+  scripts/compliance/compare_parse_corpus.py conformance/parse          # exit 0: the tool, the comparison and the corpus unchanged
+git -C /home/user/tc39/test262 rev-parse HEAD; git -C /home/user/tc39/test262 status --porcelain   # ccaac100..., empty
+git -C /home/user/broiler.js worktree add --detach $JA $AC              # logs/worktree-add-after.txt
+git -C /home/user/broiler.js worktree add --detach $JR $RC              # logs/worktree-add-rule.txt
+git -C /home/user/broiler.js worktree add --detach $JK $AC              # controls/logs/worktree-add-k.txt
+# each checkout record: git rev-parse HEAD, git status --porcelain and git status --porcelain --ignored
+# (logs/checkout-*.txt, controls/logs/checkout-k-*.txt), as made, before and after each build, and after the runs
+
+# ==== s1: step 1, part B - the architecture test, Release, three times as the rule's configuration says
+cd $JA && env -u LANG TZ=UTC dotnet build -c Release -nologo --disable-build-servers --artifacts-path $W/art-arch-after \
+  $JA/$ARCH                                                             # logs/build-architecture-tests.log
+# the rule commit's parser, built in Release in the output of a test project, which holds every Broiler.* assembly the
+# judged parser loads (the parser project's own output holds no package dependency)
+cd $JR && env -u LANG TZ=UTC dotnet build -c Release -nologo --disable-build-servers --artifacts-path $W/art-parser-rule \
+  $JR/Broiler.JS/Broiler.JavaScript.Parser.Tests/Broiler.JavaScript.Parser.Tests.csproj   # logs/build-rule-commit-parser-tests.log
+RP=$W/art-parser-rule/bin/Broiler.JavaScript.Parser.Tests/release/Broiler.JavaScript.Parser.dll
+# run 1, over the after commit's Parser assembly                        -> part-b-architecture-test-after.log (exit 0)
+cd $JA && env -u LANG TZ=UTC dotnet test -c Release --no-build --artifacts-path $W/art-arch-after \
+  --results-directory $W/runs/tr-arch-after --logger "console;verbosity=detailed" $JA/$ARCH
+# run 2, over the rule commit's Parser assembly                         -> part-b-architecture-test-rule.log (exit 1)
+cd $JA && env -u LANG TZ=UTC env BROILER_ARCH_PARSER_ASSEMBLY=$RP dotnet test -c Release --no-build --artifacts-path $W/art-arch-after \
+  --results-directory $W/runs/tr-arch-rule --logger "console;verbosity=detailed" $JA/$ARCH
+# run 3, over the after commit with control K applied: controls/part-b-k.patch (a static counter added to FastParser)
+cp $W/kpatch/k/FastParser.cs $JK/Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs; git -C $JK diff > controls/part-b-k.patch
+cd $JK && env -u LANG TZ=UTC dotnet build -c Release -nologo --disable-build-servers --artifacts-path $W/art-arch-k $JK/$ARCH   # controls/logs/build-part-b-k.log
+cd $JK && env -u LANG TZ=UTC dotnet test -c Release --no-build --artifacts-path $W/art-arch-k \
+  --results-directory $W/runs/tr-arch-k --logger "console;verbosity=detailed" $JK/$ARCH          # controls/part-b-k.log (exit 1)
+# K reverted and the revert checked                                     -> controls/part-b-k-revert-check.txt
+git -C $JK checkout -- Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs
+git -C $JK diff --exit-code; git -C $JK diff --exit-code $AC; git -C $JK status --porcelain
+# the reverted copy built and tested once more (the rule's "and passes after the revert")
+cd $JK && env -u LANG TZ=UTC dotnet build -c Release -nologo --disable-build-servers --artifacts-path $W/art-arch-k-reverted $JK/$ARCH   # controls/logs/build-part-b-k-reverted.log
+cd $JK && env -u LANG TZ=UTC dotnet test -c Release --no-build --artifacts-path $W/art-arch-k-reverted \
+  --results-directory $W/runs/tr-arch-k-reverted --logger "console;verbosity=detailed" $JK/$ARCH   # controls/part-b-k-reverted.log (exit 0)
+
+# ==== s2: step 2, part C - the tool built in Release from clean against the after commit's own projects, and its run
+cd $JA && env -u LANG TZ=UTC dotnet build -c Release -nologo --disable-build-servers --artifacts-path $W/art-tool-after \
+  $JA/$TOOL                                                             # logs/build.log
+T=$W/art-tool-after/bin/parse-corpus/release/parse-corpus.dll
+cd $JA && env -u LANG TZ=UTC dotnet $T --manifest $JA/$M --test262 $S --out $W/runs/js-c.tsv.gz          # parse-corpus-c.tsv.gz
+python3 -I $W/scripts/js_complete.py $JA/$M $W/runs/js-c.tsv.gz                                         # logs/complete-parse-corpus-c.txt
+
+# ==== s3: step 3, part D - runs 1 to 3 at the after commit, with step 2's build
+cd $JA && env -u LANG TZ=UTC dotnet $T --dump --order manifest --manifest $JA/$M --test262 $S --out $W/runs/js-d1.tsv.gz   # parse-corpus-d1.tsv.gz
+cd $JA && env -u LANG TZ=UTC dotnet $T --dump --order reverse --manifest $JA/$M --test262 $S --out $W/runs/js-d2.tsv.gz    # parse-corpus-d2.tsv.gz
+cd $JA && env -u LANG TZ=UTC dotnet $T --dump --threads 2 --manifest $JA/$M --test262 $S --out $W/runs/js-d3.tsv.gz        # parse-corpus-d3.tsv.gz
+python3 -I $W/scripts/js_complete.py $JA/$M $W/runs/js-d<n>.tsv.gz                                      # logs/complete-parse-corpus-d<n>.txt
+# controls K1 then K2, each a patch to the scratch copy (controls/part-d-k1.patch: a process-wide counter in the pass's
+# temporary names; controls/part-d-k2.patch: the pass's per-iteration re-bindings and copy-backs ordered by each name's
+# string.GetHashCode()), for k in k1 k2:
+cp $W/kpatch/$k/ForLoopPreparation.cs $JK/Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs; git -C $JK diff > controls/part-d-$k.patch
+cd $JK && env -u LANG TZ=UTC dotnet build -c Release -nologo --disable-build-servers --artifacts-path $W/art-tool-$k $JK/$TOOL   # controls/logs/build-part-d-$k.log
+TK=$W/art-tool-$k/bin/parse-corpus/release/parse-corpus.dll
+cd $JK && env -u LANG TZ=UTC dotnet $TK --dump --order manifest --manifest $JK/$M --test262 $S --out $W/runs/$k-d1.tsv.gz   # controls/part-d-$k-d1.tsv.gz
+cd $JK && env -u LANG TZ=UTC dotnet $TK --dump --order reverse --manifest $JK/$M --test262 $S --out $W/runs/$k-d2.tsv.gz    # controls/part-d-$k-d2.tsv.gz
+cd $JK && env -u LANG TZ=UTC dotnet $TK --dump --threads 2 --manifest $JK/$M --test262 $S --out $W/runs/$k-d3.tsv.gz        # controls/part-d-$k-d3.tsv.gz
+git -C $JK checkout -- Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs                    # controls/part-d-$k-revert-check.txt:
+git -C $JK diff --exit-code; git -C $JK diff --exit-code $AC; git -C $JK status --porcelain
+# after both reverts: the copy's tool built again and runs 1 to 3 taken again (the rule's "agree again after their revert")
+cd $JK && env -u LANG TZ=UTC dotnet build -c Release -nologo --disable-build-servers --artifacts-path $W/art-tool-kr $JK/$TOOL     # controls/logs/build-part-d-k-reverted.log
+cd $JK && env -u LANG TZ=UTC dotnet $W/art-tool-kr/bin/parse-corpus/release/parse-corpus.dll --dump ... (as above)           # controls/part-d-k-reverted-d<n>.tsv.gz
+# Every build and every tool run exited 0 (logs/runs.tsv). Standard output was empty for every tool run; standard error: logs/parse-corpus-*.stderr.txt, controls/logs/part-d-*.stderr.txt.
+# No --text: no dump text.
+
+# ==== s4: the comparisons (not gated), scripts/compliance/compare_parse_corpus.py as the corpus commit holds it
+#      (blob c0685c65, the same at the after commit), run from the after commit's checkout root with
+#      docs/evidence/sjl-12-001/after a symbolic link to this folder and one link per control report in
+#      docs/evidence/sjl-12-001/controls/ (all removed afterwards), so every path in their output is the one the bundle
+#      would commit. No classification file is given: this step classifies nothing. python3 is Python 3.13.16.
+A=docs/evidence/sjl-12-001/after
+B=docs/evidence/sjl-12-001/base       # the base report the bundle retains, parse-corpus-c.tsv.gz, 0c007acd..., one blob at $AC and origin/main
+C=docs/evidence/sjl-12-001/controls
+P=scripts/compliance/compare_parse_corpus.py
+# part C: the base against the after run
+cd $JA && python3 -I $P acceptance --base $B/parse-corpus-c.tsv.gz --after $A/parse-corpus-c.tsv.gz --manifest $M \
+  --changelog Broiler.JS/CHANGELOG.md --output $A/parse-corpus-c.json > $A/parse-corpus-c.out          # exit 0
+# part D: runs 1 to 3, part C's after run as the population report, --require-pass
+cd $JA && python3 -I $P determinism --run1 $A/parse-corpus-d1.tsv.gz --run2 $A/parse-corpus-d2.tsv.gz --run3 $A/parse-corpus-d3.tsv.gz \
+  --population $A/parse-corpus-c.tsv.gz --manifest $M --require-pass --output $A/parse-corpus-d.json > $A/parse-corpus-d.out   # exit 0
+# controls K1 and K2: run 1 against run 2 must differ (the tool's README's control command)
+cd $JA && python3 -I $P determinism --run1 $C/part-d-$k-d1.tsv.gz --run2 $C/part-d-$k-d2.tsv.gz --run3 $C/part-d-$k-d3.tsv.gz \
+  --population $A/parse-corpus-c.tsv.gz --manifest $M --expect-differ 1:2 --output $C/part-d-$k.json > $C/part-d-$k.out   # exit 0 for k1 and k2
+# (controls/part-d-k1.json and part-d-k1.out are over 100 KB and were then gzipped: part-d-k1.json.gz, part-d-k1.out.gz)
+# the copy after both reverts
+cd $JA && python3 -I $P determinism --run1 $C/part-d-k-reverted-d1.tsv.gz --run2 $C/part-d-k-reverted-d2.tsv.gz \
+  --run3 $C/part-d-k-reverted-d3.tsv.gz --population $A/parse-corpus-c.tsv.gz --manifest $M --require-pass \
+  --output $C/part-d-k-reverted.json > $C/part-d-k-reverted.out   # exit 0
+# the reverted copy's rows against the after commit's, the #% header lines left out (they name each build's module
+# version ids): controls/part-d-k-reverted-rows-against-after.txt
+# Standard error of every comparison: logs/<name>.stderr.txt. Exit codes: logs/compare-status.tsv.
+
+# ==== s5: the records - logs/, binaries.sha256 (every assembly each build wrote, paths from $W), runs.tsv,
+#      gate.log, pre-run.txt; files over 100 KB gzip -n -9; then hashes.txt in this folder (of every other file of it
+#      and of logs/, from here) and in controls/ (of every other file of controls/ and controls/logs/, from there).
+
+# ==== Added 2026-10-26, at the import into the bundle (SJL-12 WP7.6), after every run above. Nothing above is
+#      changed but the scratch folder's path, which this file and the logs now write as <scratch>
+#      (logs/import.txt lists every file changed, with its SHA-256 before and after).
+# - Line 124, "# Standard error of every comparison: logs/<name>.stderr.txt. Exit codes: logs/compare-status.tsv.",
+#   does not hold for four names, and logs/compare-commands.log's `2> <logs>/...` names them alike:
+#   - part C's comparison wrote its standard error to logs/parse-corpus-c.stderr.txt, and s5 then wrote the tool's
+#     part C run's standard error over it, which is what that file holds. The comparison was run again at the
+#     import, the same read-only script on the same retained files, into logs/parse-corpus-c-comparison.stderr.txt
+#     (empty); its standard output and JSON are byte for byte this folder's parse-corpus-c.out and .json
+#     (logs/parse-corpus-c-comparison-again.txt);
+#   - the three control comparisons' standard error, logs/part-d-k1.stderr.txt, logs/part-d-k2.stderr.txt and
+#     logs/part-d-k-reverted.stderr.txt, each empty, are in the bundle's controls/logs/ under the same names.
+# - logs/worktree-add-after.txt, logs/worktree-add-rule.txt and controls/logs/worktree-add-k.txt keep, of the line
+#   git worktree add wrote as progress segments each ended by a carriage return, the last segment alone, as a
+#   terminal shows it; logs/import.txt records each untrimmed file's SHA-256.
+# - The corpus commit's third condition, which logs/after-commit.txt does not read, is read again at the after
+#   commit in logs/corpus-commit-at-after.txt, from git alone, with the other two.
+# - The bundle's README reads runner-report.md, which is not retained. This folder's hashes.txt and the bundle's
+#   controls/hashes.txt were made again at the import, over the files as they now are.

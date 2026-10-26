@@ -23,14 +23,23 @@ frontend contract (SJL-12)", with Broiler.VM's JSD-0080,
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in Broiler.VM).
 **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State, 2026-10-25, at SJL-12.5: the rule, and parts A, C and D's bases. Nothing here is a verdict.**
+**State, 2026-10-26, at SJL-12's after evidence: every part of the rule is read at the after commit `c29d653f`, and
+each is MET under the rule as written (sections 3 to 7). None of it is accepted, and SJL-12 is not an area
+verdict.**
 - Part A's base is taken at the rule commit by `test262 evidence`, with `include_negative` true: the fifth dispatch,
   on 2026-10-25. The four before it are void; they are retained and named, not judged (section 1). Part B's base is
   the rule commit's parser assembly, built when part B runs.
 - Parts C and D's bases are taken at the corpus commit `1fe542ff`, with part C's control (section 1).
-- The after runs follow SJL-12.5's last item, the compiler's for-loop pass.
 - Section 2 names, before any after run, how this README reads part C's class D *(added 2026-10-25, at SJL-12.5's
   records)*.
+- The after runs are taken at the after commit, the merge that lands SJL-12.5's last item, the compiler's for-loop
+  pass: part A's by `test262 evidence` on 2026-10-25, and parts B, C and D's on the programme's local machine on
+  2026-10-26 (section 3). Parts A, B, C and D are each MET (sections 4 to 7). Section 8 reads this repository's
+  clauses from them; SJL-12 may not meet its gate before SJL-3 meets SJL-3's.
+
+*(Revised 2026-10-26, at SJL-12's after evidence, when the after runs were imported and read. The state read
+"**State, 2026-10-25, at SJL-12.5: the rule, and parts A, C and D's bases. Nothing here is a verdict.**", and its
+third item "The after runs follow SJL-12.5's last item, the compiler's for-loop pass."; the last item is new.)*
 
 *(Revised 2026-10-25, at SJL-12.5, when part A's base was taken. The state read "State, 2026-10-20, at SJL-12.4: the
 rule, and parts C and D's bases. Nothing here is a verdict.", and its first item "Part A's base is not yet taken. Two
@@ -60,6 +69,12 @@ as void, so that none of their files can be taken for the base's or overwrite an
 
 *(Added 2026-10-25, at SJL-12.5: part A's base is in its own folder, `base/part-a/`, apart from parts C and D's
 files, and `base/` holds four void attempts, each in its own folder named as void (section 1).)*
+
+*(Added 2026-10-26, at SJL-12's after evidence: part A's after run is in its own folder, `after/part-a/`, with the
+rule's comparison of it with the base in `after/part-a/comparison/`; parts B, C and D's after runs are in `after/`,
+their records in `after/logs/`; controls K, K1 and K2 are in `controls/`, beside part C's, with their records in
+`controls/logs/`. The table of every C1, M, X and D row is in sections 4 and 6, where each is empty: no verdict and
+no acceptance changed (section 3).)*
 
 **It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them.
 
@@ -386,3 +401,294 @@ each listed with its outcomes at both entry points".
   name the entry.
 - **Class M's changelog is the after commit's.** The rule reads class M's listing in `Broiler.JS/CHANGELOG.md` "at
   the after commit", so what SJL-12.5's records add to the changelog after that commit admits no row as class M.
+
+## 3. The after runs (2026-10-26)
+
+**Written 2026-10-26, at SJL-12's after evidence (work package 7.6), after every after run was taken.** This section
+reads what the bundle retains of the after runs and how they were imported. Sections 4 to 7 judge each part against
+the rule, and section 8 reads this repository's clauses from them.
+
+| Part | Commit | Taken | Retained in |
+|---|---|---|---|
+| A | The after commit, `c29d653f5f93b66b5e0efdbe506205a5347fc18a` | 2026-10-25, 20:39Z to 21:43Z, by `test262 evidence`, run [40231802611](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/40231802611) | [`after/part-a/`](after/part-a/imported.txt); the comparison in [`after/part-a/comparison/`](after/part-a/comparison/comparison.log) |
+| B | The after commit, and the rule commit's parser assembly | 2026-10-26, 00:56Z to 01:08Z, on the programme's local machine | [`after/part-b-architecture-test-after.log`](after/part-b-architecture-test-after.log), [`after/part-b-architecture-test-rule.log`](after/part-b-architecture-test-rule.log); control K in [`controls/`](controls/part-b-k.log) |
+| C | The after commit | 2026-10-26, the tool's build from 01:09Z and the run from 01:14Z | [`after/parse-corpus-c.tsv.gz`](after/parse-corpus-c.tsv.gz), compared in [`after/parse-corpus-c.out`](after/parse-corpus-c.out) |
+| D | The after commit | 2026-10-26, runs 1 to 3 from 01:18Z, controls K1 and K2 from 01:24Z to 01:57Z | [`after/parse-corpus-d1.tsv.gz`](after/parse-corpus-d1.tsv.gz) to `d3`, compared in [`after/parse-corpus-d.out`](after/parse-corpus-d.out); controls K1 and K2 in [`controls/`](controls/part-d-k2.out) |
+
+**The after commit** is `c29d653f5f93b66b5e0efdbe506205a5347fc18a`, the default-branch merge of
+Broiler-Platform/Broiler.JS#1068. It lands SJL-12.5's item 5, the compiler's for-loop pass, the last of SJL-12.5's
+items in JSD-0080's order (decision D26), as the rule's "after commit" says. Two merges followed it on the default
+branch before the after runs were read: SJL-11.1's records, Broiler-Platform/Broiler.JS#1069 (`f918b040`), and
+SJL-12.5's records, #1070 (`a6c68dd4`). Against the after commit they change files under `docs/`,
+`Broiler.ECMAScript/docs/` and `Broiler.JS/CHANGELOG.md` alone, and so no path the corpus commit's third condition
+lists ([`after/logs/corpus-commit-at-after.txt`](after/logs/corpus-commit-at-after.txt)).
+
+**The corpus commit's three conditions, read again at the after commit**, as section 1 says they would be
+([`after/logs/corpus-commit-at-after.txt`](after/logs/corpus-commit-at-after.txt), from git alone). All three hold.
+- **It descends from the rule commit**, and the after commit descends from it.
+- **It names only the listed paths.** The same paths, grouped under the same listed paths, as
+  [`corpus/corpus-commit.txt`](corpus/corpus-commit.txt) records.
+- **It comes before every product change.** Every commit between the rule commit and the after commit that changes a
+  listed path descends from the corpus commit. The one exception is `b1ac1b8a`, the merge section 1 reads, which is
+  an ancestor of the corpus commit and changes no listed path against the rule commit. This holds without
+  `--full-history` and with it.
+- **A correction to `corpus/corpus-commit.txt`'s reading, which the bundle keeps as it was committed.** The pathspec
+  that record used for the first listed path, `Broiler.JS/Broiler.JavaScript.*/`, matches no file, because of its
+  trailing slash. Git matches a wildcard pathspec against each file's path, and a file's path never ends in a slash.
+  So that record's reading of condition 3 looked at `Broiler.ECMAScript/` alone. The reading at the after commit
+  shows it: that pathspec names no commit between the rule commit and the after commit, though twelve change the
+  parser. `after/logs/corpus-commit-at-after.txt` reads the condition with `Broiler.JS/Broiler.JavaScript.*`, which
+  matches every file under each `Broiler.JS/Broiler.JavaScript.<name>/`. Between the rule commit and the corpus commit
+  it finds what that record found, `b1ac1b8a` alone, so the record's conclusion holds.
+
+**Part A's after run.** It was taken by `.github/workflows/test262-evidence.yml`, run
+[40231802611](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/40231802611), attempt 1. It was dispatched
+on 2026-10-25 at 20:39Z from `main` at `a6c68dd4`, with the after commit named by all forty digits and the base's
+other inputs, and it completed at 21:43Z. Its conclusion is success, and so is every one of its ten jobs, `prepare`,
+the eight shards and `collect`, the step "Require a complete run" among them (GitHub's record of the run and its jobs,
+read 2026-10-26).
+- **Imported unchanged** into [`after/part-a/`](after/part-a/imported.txt): every file of the artifact
+  `test262-evidence` (id 12614713183), 26 entries, each compared with its entry in the zip, none differing. The zip's
+  SHA-256 is `c9801960…`, the digest GitHub records. [`imported.txt`](after/part-a/imported.txt) records the run, the
+  artifact and the digest. [`runner-images.txt`](after/part-a/runner-images.txt) copies the head of each job's own
+  log. [`hashes.txt`](after/part-a/hashes.txt) holds the SHA-256 of every other file of the folder, with
+  `comparison/`. As at the base, the bundle keeps `test262-evidence` alone of the run's 18 artifacts.
+- **What ran.** The dispatch ref `a6c68dd4` holds `.github/workflows/test262-evidence.yml` as the rule commit's own
+  blob, `7158fb2a`, and changes nothing under `.github/` or `scripts/` since `792ff56e`, the base's dispatch ref. Both
+  of the workflow's checkouts are of the tested commit. At the after commit, `.github/` is the rule commit's, and
+  `scripts/compliance/run_test262.py`, `merge_test262_shards.py` and `compare_test262_paths.py` are the rule commit's
+  blobs. So the workflow, the shard action and the scripts that ran are the rule commit's, as at the base.
+- **Its runners.** Every shard's job and job `collect` ran on the image `ubuntu-26.04`, version 20261012.163.1, as the
+  head of each job's own log reads it. The base's ran on the same image. `run.txt`'s runner line reads `ubuntu26`
+  20261023.163.3, as the base's does. The .NET SDK is 10.0.403, where the base's was 10.0.402. The rule names neither
+  an image nor an SDK. It judges the runners by their shells' lists and their host-zone records, and the comparison
+  script records the SDK as a field it does not compare
+  ([`comparison.json`](after/part-a/comparison/comparison.json), `uncomparedFields`).
+- **The host-zone record is the base's, line for line and byte for byte**
+  ([`after/part-a/host-zone.log`](after/part-a/host-zone.log),
+  [`comparison/zone-records.log`](after/part-a/comparison/zone-records.log)). `TZ` is unset, UTC +0000 at both
+  instants and tzdata 2026c, for every shard and for the merging job. So the runners' tzdata did not move between the
+  base and the after run, and the rule's clause for a moved record does not apply. Part A is judged (section 4).
+
+**The local after runs of parts B, C and D** were taken by WP7.5 on the programme's local machine, in order: part B,
+then part C, then part D with its controls. Each was taken once, and none was taken again. Their records are
+[`after/commands.txt`](after/commands.txt), [`after/machine.txt`](after/machine.txt) and
+[`after/logs/`](after/logs/runs.tsv).
+- **The machine is section 1's**: four processors, .NET SDK 10.0.401 with runtime 10.0.12, Ubuntu 24.04.5 LTS,
+  `linux-x64`. Its kernel string has moved since the base, and `machine.txt` records it.
+- **The idle machine.** Before each build and each run, WP4.7's gate required a 1-minute load average of at most 1.0
+  and no `dotnet` or `python` process, and it recorded what it read ([`logs/gate.log`](after/logs/gate.log),
+  [`logs/pre-run.txt`](after/logs/pre-run.txt)). Four gates waited one poll, each for the load alone, each after one
+  of this work's own builds. Every other gate went ahead at its first look. Broiler.VM's after runs had ended before
+  these began, and no other build, test or run was taken on the machine while they ran.
+- **The checkouts.** Three clean detached worktrees were used: the after commit, the rule commit, and a scratch copy of
+  the after commit for the controls. Each records `git rev-parse HEAD`, `git status --porcelain` and
+  `--porcelain --ignored` as made, before and after each build, and after the runs, as section 1 asked of the after
+  runs ([`logs/checkout-*.txt`](after/logs/checkout-after-commit-made.txt),
+  [`controls/logs/checkout-k-*.txt`](controls/logs/checkout-k-made.txt)). Each is empty, except that the scratch
+  copy's records taken with a control applied show that control's one changed file.
+- **The tool** is the corpus commit's, the same blob at the after commit. It was built in Release from clean at the
+  after commit, against that commit's own projects, with no error and the base's 56 distinct warnings, none of them
+  the tool's ([`logs/build.log`](after/logs/build.log)). Every after report of parts C and D names the after commit's
+  five product assemblies, with their informational version `0.1.0-preview.1+c29d653f…` and their module version
+  ids, and the manifest's SHA-256, `1c534210…`, the corpus commit's. Every header reads the rule's environment:
+  `TZ=UTC`; `LANG`, every `LC_*` and every `BROILER_*` variable unset; the invariant culture; threads of 256 MB.
+- **Where WP7.5 followed the rule past its instructions.** Its instructions and the rule differed in three places,
+  and it followed the rule each time:
+  - **After control K's checked revert,** the scratch copy was built and tested once more. The rule says K "passes
+    after the revert". The instructions listed three test runs.
+  - **After K1's and K2's reverts,** the copy's tool was built again and runs 1 to 3 taken again. The rule's MET
+    clause asks that "both controls differ as stated and agree again after their revert". The instructions asked only
+    for each revert's check.
+  - **Part B's second run** names the rule commit's `Broiler.JavaScript.Parser.dll` in the Release output of that
+    commit's `Broiler.JavaScript.Parser.Tests`. The test refuses a parser folder without the `Broiler.*` assemblies the
+    parser loads, and neither the rule nor the instructions name a build output.
+
+**What the import changed** ([`after/logs/import.txt`](after/logs/import.txt), which lists every change with each
+file's SHA-256 before and after it). A read-only check of WP7.5's outputs found four things to fix in the files and one
+record to add. Each was done here, and nothing was run again but one read-only comparison.
+- **Part C's comparison's standard error was lost.** WP7.5 wrote it to `logs/parse-corpus-c.stderr.txt`, and then
+  wrote the tool's run's standard error over it under the same name. The comparison was run again at the import, the
+  same script on the same retained files. Its standard output and JSON are WP7.5's byte for byte, and its standard
+  error, which is empty, is now
+  [`logs/parse-corpus-c-comparison.stderr.txt`](after/logs/parse-corpus-c-comparison.stderr.txt)
+  ([`logs/parse-corpus-c-comparison-again.txt`](after/logs/parse-corpus-c-comparison-again.txt)).
+- **The control comparisons' standard error** is now in [`controls/logs/`](controls/logs/), where the controls are.
+- **The three `git worktree add` records** keep, of git's progress line, the last segment alone, as a terminal shows
+  it. Bundle `sjl-12-001`'s `after/ordering/` in Broiler.VM trimmed its log the same way. `import.txt` records each
+  untrimmed file's SHA-256.
+- **The scratch folder's path** is written `<scratch>` in the retained logs and commands, as bundles `sjl-8-001` and
+  `sjl-10-001` write it. `import.txt` records each file's SHA-256 before and after the change. No report and no gzip
+  file named the path.
+- **The corpus commit's third condition** is read again at the after commit, which WP7.5's
+  [`logs/after-commit.txt`](after/logs/after-commit.txt) did not do (above).
+- **What is not retained.** WP7.5's runner report is not retained, because its facts are in `commands.txt`,
+  `machine.txt` and `logs/`, and this section reads it. `commands.txt` ends with a dated note on each of these changes.
+
+**Retained and checked.** In each of `after/`, `after/part-a/` and `controls/`, `sha256sum -c hashes.txt`, run in the
+folder, passes. `after/hashes.txt` covers `after/` and `after/logs/`; `after/part-a/hashes.txt` covers
+`after/part-a/`, with `shards/` and `comparison/`; and `controls/hashes.txt` covers `controls/` and `controls/logs/`,
+part C's control included, whose three lines are unchanged. No file the bundle held before is changed but this
+README and `controls/hashes.txt`.
+
+## 4. Part A - test262 per path, in UTC, with negative tests: MET
+
+**MET under part A of the rule as written: no row changed.** The after run is compared with part A's base of
+section 1 through `scripts/compliance/compare_test262_paths.py` as SJL-0.9 committed it (`1410079e`, the only commit
+that touches it; the blob `e951dd47` at the rule commit, at the after commit and on `main`). Each run's timed-out rows
+are replaced by their re-runs, and the classification file the rule asks for is retained beside the report,
+[`classifications.json`](after/part-a/comparison/classifications.json). **Every row, each path in both variants,
+gives its base's verdict: 0 changed, 0 regressions, 0 unclassified, exit 0.** The classification file is empty,
+`{}`, because no verdict changed, and the script reports no classification unused
+([`comparison.log`](after/part-a/comparison/comparison.log),
+[`comparison.json`](after/part-a/comparison/comparison.json)).
+
+| Part A's condition | This comparison |
+|---|---|
+| Both runs complete: every expected shard reported | Eight of eight expected shards reported in each run, none incomplete and none retried. Every shard's status file reads phase `full` and exit code 1, for failing tests, in both runs ([`completeness.log`](after/part-a/comparison/completeness.log), read from each run's own files; [`after/part-a/merge.log`](after/part-a/merge.log)) |
+| No configuration failure | None in either run |
+| One suite revision | `ccaac100` in each run, the revision the rule pins |
+| One shell | In each run, every shard and the re-run hash the shell's binaries alike: one distinct list, `25fd801b…` after and `433ab0c7…` at the base ([`after/part-a/shell-hashes.log`](after/part-a/shell-hashes.log)). The two runs' shells differ, as they must, since the after run's is built from the after commit |
+| Every shard in the zone | In each run, all eight shards in the runner's zone, UTC ([`after/part-a/host-zone.log`](after/part-a/host-zone.log)) |
+| `includeNegative` true in both | In `run.txt`, in the merged results and in the re-run, in each run |
+| The two runs' host-zone records read alike, line for line | Yes, and byte for byte ([`zone-records.log`](after/part-a/comparison/zone-records.log)): `TZ` unset, UTC +0000 at both instants and tzdata 2026c in both |
+| The script finds them comparable | Yes, exit 0. Its checks ([`compare-checks.log`](after/part-a/comparison/compare-checks.log)) show two things. The after run compared with itself changes nothing. A copy with one passing row turned to failed is reported as one regression, with exit 1. The fields the script records and does not compare are the same in both runs, but the .NET SDK (section 3) |
+| No row passing at the base fails, times out or is skipped after | None |
+| Every changed verdict in C1, and listed | **Met**: no verdict changed, so C1 lists no row (the table below) |
+
+**Timeouts and their re-runs.** As at the base, one path timed out in both variants,
+`test/staging/sm/regress/regress-1507322-deep-weakmap.js`
+([`after/part-a/timed-out-paths.txt`](after/part-a/timed-out-paths.txt), the base's byte for byte). The workflow ran
+it again alone, with one worker, at the same commit and with the same shell, and it timed out again in both variants
+([`after/part-a/rerun-timeouts.log`](after/part-a/rerun-timeouts.log),
+[`rerun-timeouts.json`](after/part-a/rerun-timeouts.json)). The script took each run's re-run, through `--base-rerun`
+and `--after-rerun`, and replaced the two rows on each side. So they compare timed out against timed out (the report's
+`replacedByRerun`). Both the runs and the re-runs are retained.
+
+**The C1 table.** Each row that changed under class C1, with its path, its variant, its kind and its correction:
+
+| Path | Variant | Base | After | Kind | Correction |
+|---|---|---|---|---|---|
+
+It has no row, because no verdict changed. So no row is a finding against JSD-0080.
+
+**What it says.** Corrections J1 and J2, and the compile crashes the rule admits as C1's kind (b), move no verdict of
+the suite at this revision. Either no test262 case reaches them, or the cases that do already gave the same verdict
+at the base. No test262 suite total is read here: totals decide nothing.
+
+The retained logs and report name this repository's checkout as `<repo>` and the scratch folder as `<scratch>`. The
+comparison and its checks were run twice at the import, at 05:31Z and at 05:34Z on 2026-10-26, the second time only
+so that the retained logs name the scratch folder as the other records do. Both printed the same lines, and the
+second run's files are the ones retained.
+
+## 5. Part B - the parser's architecture test and its witness: MET
+
+**MET under part B of the rule as written.** Each condition of the rule's MET clause, with the files it reads:
+
+| Part B's condition | This run |
+|---|---|
+| The test passes over the after commit's assembly | Run 1, `dotnet test` of `Broiler.JavaScript.Architecture.Tests` in Release at the after commit, over that commit's `Broiler.JavaScript.Parser` assembly: "Total tests: 15, Passed: 15", exit 0 ([`after/part-b-architecture-test-after.log`](after/part-b-architecture-test-after.log)). The fixtures print two parses of one source with equal dumps, and 80,000 concurrent parses on four threads, none ending on another parse's token. Non-vacuity accepts four `InitOnly` static fields it reads, among them `FastScanner.NoBigIntWidth` |
+| It fails over the rule commit's, naming each violation the rule lists | Run 2, the same test with `BROILER_ARCH_PARSER_ASSEMBLY` naming the rule commit's Release `Broiler.JavaScript.Parser.dll`: "Passed: 14, Failed: 1", exit 1 ([`after/part-b-architecture-test-rule.log`](after/part-b-architecture-test-rule.log)). The failure names the static field `FastParser.TempVarID`; the `InitOnly` static fields `FastScanner.EOF` and `FastScanner.EmptyToken`, of the mutable type `FastToken`, whose fields `Next` and `Previous` are mutable; the reference to the assembly `Broiler.JavaScript.Runtime`; and each of the three walkers by its TypeRef, `AstIdentifierReplacer`, `IdentifierNameCollector` and `ClosureDetector`. These are every violation the rule lists. It also names the three fixtures, each failing at the rule commit |
+| It refuses every witness shape | In both runs, the witness compiled in memory is refused for each of the rule's ten shapes. That is twelve cases, since the walker shape has one per walker |
+| Control K fails, and then passes as stated | Run 3, with control K applied to a scratch copy of the after commit ([`controls/part-b-k.patch`](controls/part-b-k.patch): a static counter, `FastParser.ControlKParsers`, incremented by each parser made): "Passed: 14, Failed: 1", exit 1, naming that field alone as a mutable static field ([`controls/part-b-k.log`](controls/part-b-k.log)). The revert is checked: `git diff --exit-code` exits 0 against the copy's HEAD and against the after commit, and `git status` is empty ([`controls/part-b-k-revert-check.txt`](controls/part-b-k-revert-check.txt)). The reverted copy, built and tested again, passes 15 of 15 ([`controls/part-b-k-reverted.log`](controls/part-b-k-reverted.log)) |
+
+The builds are in [`after/logs/`](after/logs/build-architecture-tests.log) and
+[`controls/logs/`](controls/logs/build-part-b-k.log), and the assemblies they wrote are hashed in
+[`after/binaries.sha256`](after/binaries.sha256) and [`controls/binaries.sha256`](controls/binaries.sha256).
+
+**What it says.** Read over the Parser assembly's own declarations and references (JSD-0080, decision D24), at the
+after commit the parser holds no mutable static and no static of a mutable type the clauses forbid, names neither
+`AsyncLocal` nor `ThreadLocal` and has no `[ThreadStatic]`, references no `Runtime` assembly, and names none of the
+three desugaring walkers. Its for-loop parses to the declaration as written. The test that holds this refuses each
+shape of its witness and the control. "References no `Runtime` type" is read by assembly, as part B's clause reads
+it. `Expressions`, which the parser references, still looks up `Runtime`'s `JSValue` by name, unchanged since before
+SJL-12 ([`SharedLibraries.md`](../../roadmap/SharedLibraries.md), SJL-12.5's item 4).
+
+## 6. Part C - the parse corpus's acceptance: MET
+
+**MET under part C of the rule as written: no difference.** `scripts/compliance/compare_parse_corpus.py acceptance`,
+as the corpus commit holds it (blob `c0685c65`, the same at the after commit), compares the base report of section 1,
+[`base/parse-corpus-c.tsv.gz`](base/parse-corpus-c.tsv.gz), with the after report,
+[`after/parse-corpus-c.tsv.gz`](after/parse-corpus-c.tsv.gz). It compares each input, variant and entry point by
+outcome, exception type and message. It was given the manifest and the after commit's changelog, and no
+classification file. It prints "differences 0; admitted 0; not admitted 0" and exits 0
+([`after/parse-corpus-c.out`](after/parse-corpus-c.out), [`after/parse-corpus-c.json`](after/parse-corpus-c.json);
+its standard error, empty, in
+[`after/logs/parse-corpus-c-comparison.stderr.txt`](after/logs/parse-corpus-c-comparison.stderr.txt)).
+
+| Part C's condition | This run |
+|---|---|
+| Both runs complete | The after report holds a row for every input and variant at P and at K, in the manifest's order, with no duplicate, and ends with its `#% end` line ([`after/logs/complete-parse-corpus-c.txt`](after/logs/complete-parse-corpus-c.txt)). The base's is complete (section 1). The script holds both reports to the manifest |
+| The manifest's digest equal to the corpus commit's | `1c534210…` in both reports' headers and in the comparison's output |
+| The control is reported | Part C's control, made from the base report at the base and retained in [`controls/`](controls/parse-corpus-c-control.out), reports exactly its two differences (section 1). It was not made again |
+| Every difference in M, X or D, and listed | **Met**: there is no difference, so the table below has no row |
+
+**The M, X and D table.** Each difference in class M, X or D, with its input, variant and entry point, and its
+outcomes at both commits:
+
+| Input | Variant | Entry point | Base | After | Class | Changelog entry |
+|---|---|---|---|---|---|---|
+
+It has no row.
+- **Class D's population is empty**, as section 2 read it before the after run: the base report holds no "Unknown
+  token" refusal. No row of the after run needed the reading.
+- **No row is a K refusal whose message moved** because a later failure now comes first, as section 2 described. So
+  no row is reported as a regression on that reading.
+- **Class X admits no row.** The inputs that crashed at K at the base crash at K after, with the same exception
+  types: no difference, not a resolved crash. Section 1's count of them is the after report's too
+  ([`after/logs/complete-parse-corpus-c.txt`](after/logs/complete-parse-corpus-c.txt)).
+- **Class M admits no row**, so no changelog entry is read for one.
+
+## 7. Part D - determinism of the parser and its compiler pass: MET
+
+**MET under part D of the rule as written.** `compare_parse_corpus.py determinism --require-pass` takes part C's after
+report as the population report, so its population is the 101,562 input-variants part C's after run accepts at P.
+It compares, for each, the four hashes of each dump: run 1 in the manifest's order, run 2 in the reverse order, and
+run 3's two threads. It prints "population 101562; differences 0" and exits 0
+([`after/parse-corpus-d.out`](after/parse-corpus-d.out), [`after/parse-corpus-d.json`](after/parse-corpus-d.json)).
+
+| Part D's condition | This run |
+|---|---|
+| The tool finds the pass's entry point in each of the three runs | Each report's header and the comparison read "for-loop-pass found: `Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram`", the entry point the rule names. Every accepted row's pass column reads `prepared`, and no pass threw ([`after/logs/complete-parse-corpus-d1.txt`](after/logs/complete-parse-corpus-d1.txt) to `d3`) |
+| Every input gives one hash per dump in all four | **Yes**: 0 of the population differ, in the parser's dump or in the pass's |
+| Control K1 differs as stated | [`controls/part-d-k1.patch`](controls/part-d-k1.patch) numbers the pass's temporaries from a process-wide counter. Run 2 differs from run 1: the script, with `--expect-differ 1:2`, finds 6,349 input-variants that differ between them and exits 0 ([`controls/part-d-k1.out.gz`](controls/part-d-k1.out.gz), [`.json.gz`](controls/part-d-k1.json.gz)). Every difference is in the pass's hash |
+| Control K2 differs as stated | [`controls/part-d-k2.patch`](controls/part-d-k2.patch) orders the pass's per-iteration re-bindings and copy-backs, a list in the dumped tree, by each name's `string.GetHashCode()`. Run 1 differs from run 2: 56 input-variants, exit 0 ([`controls/part-d-k2.out`](controls/part-d-k2.out), [`.json`](controls/part-d-k2.json)). Every difference is in the pass's hash |
+| Both agree again after their revert | Each revert is checked: `git diff --exit-code` exits 0 against the copy's HEAD and against the after commit, and `git status` is empty ([`controls/part-d-k1-revert-check.txt`](controls/part-d-k1-revert-check.txt), [`part-d-k2-revert-check.txt`](controls/part-d-k2-revert-check.txt)). The reverted copy's tool, built again, gives runs 1 to 3 with 0 differences under `--require-pass` ([`controls/part-d-k-reverted.out`](controls/part-d-k-reverted.out)). Each run's rows, without the `#%` header lines, have the SHA-256 of the after commit's run of the same number ([`controls/part-d-k-reverted-rows-against-after.txt`](controls/part-d-k-reverted-rows-against-after.txt)) |
+
+**What it says.** At the after commit the parser's dump no longer depends on how many loops the same process parsed
+before it, which section 1 recorded of the base. The pass's temporaries are numbered per pass (JSD-0080, decision
+D22). A process-wide counter in them, and a hash order in the tree, are each detected, and each revert restores the
+after commit's dumps exactly.
+
+## 8. This repository's clauses, read from the records
+
+**Written 2026-10-26, at SJL-12's after evidence.** The milestone's Broiler.JS clauses, and this repository's half of
+its shared clauses, as the records now hold them. None of it is accepted: one person holds every role (EX-30), and no
+second holder has read it. **SJL-12 may not meet its gate before SJL-3 meets SJL-3's.** Broiler.VM's clauses 4 to 6,
+and its half of shared clauses 7 and 8, are judged in its bundle of the same name and read by the programme's ledger.
+
+| Clause | Where | State on the records |
+|---|---|---|
+| 1. The parser reads no ambient state, holds no mutable static, references no `Runtime` type, and does not desugar. A Broiler.JS architecture test enforces this, with a witness | Part B (section 5), with part D (section 7) for the parse's determinism | **Met on the records**: part B is MET. The clause is read as the milestone's dated notes read it: "does not desugar" is SJL-12.5's for-loop desugaring (JSD-0080, decision D23), and "reads no ambient state" is read over the Parser assembly's own declarations and references (decision D24) |
+| 2. test262 per path meets the predeclared rule | Part A (section 4) | **Met on the records**: part A is MET |
+| 3. The contract record is in Broiler.JS's plan | [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "The frontend contract (SJL-12)" | **Met**, as recorded at SJL-12.1; the rule does not decide it |
+| 7, this repository's half: the early-error catalogue is retained | [`Broiler.ECMAScript/docs/frontend/early-errors.tsv`](../../../Broiler.ECMAScript/docs/frontend/early-errors.tsv), with [`catalogue/`](catalogue/completeness.md) | **Retained**, since SJL-12.3; the rule does not decide it |
+| 8, this repository's half: the parse corpus and its baselines are retained | [`conformance/parse/`](../../../conformance/parse/README.md); the base reports in [`base/`](base/) and the after reports in [`after/`](after/) | **Retained**; parts C and D (sections 6 and 7) read them |
+
+## 9. Where the records disagree
+
+**Written 2026-10-26, at SJL-12's after evidence.** None of these changes a part's reading.
+- **`corpus/corpus-commit.txt`'s pathspec** for `Broiler.JS/Broiler.JavaScript.*/` matches no file, so its reading
+  of condition 3 looked at `Broiler.ECMAScript/` alone. Read with a pathspec that matches, the condition holds at the
+  corpus commit and at the after commit (section 3). That record is kept as committed.
+- **The runner image.** The instructions for this reading asked that a differing runner image be treated under part
+  A's NOT MET clause. The rule names no image: its clause is on the host-zone records. Both runs ran on the same
+  image, so the instruction has no consequence here. The .NET SDK differs, 10.0.402 at the base and 10.0.403 after,
+  and the rule names no SDK.
+- **WP7.5's instructions and the rule** differed on controls K, K1 and K2, and neither named the build output for the
+  rule commit's parser. WP7.5 followed the rule (section 3).
+- **Class X's changelog.** The rule says which commit's changelog class M reads, the after commit's, and does not say
+  it for class X. No row needed either.
+- **JSD-0080's decision D21 lists corrections J1 and J2**, and the rule admits them in part A as class C1, with
+  resolved compile crashes; part A shows no changed verdict. That is not a disagreement: the rule admits such rows,
+  and does not require that there be any.

@@ -1,0 +1,21 @@
+diff --git a/Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs b/Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs
+index f0e3fc81..da246f10 100644
+--- a/Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs
++++ b/Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs
+@@ -119,7 +119,15 @@ internal static class ForLoopPreparation
+         // The number of temporaries this pass has named.
+         private int temporaries;
+ 
+-        private string NewTempName() => TemporaryName(directEvalDepth, ++temporaries);
++        // Control K1 of bundle sjl-12-001 part D (a scratch copy, never committed): the temporaries are
++        // numbered from a process-wide counter, so a loop's names depend on what the process prepared before.
++        private static int processWideTemporaries;
++
++        private string NewTempName()
++        {
++            ++temporaries;
++            return TemporaryName(directEvalDepth, System.Threading.Interlocked.Increment(ref processWideTemporaries));
++        }
+ 
+         // ---- statement lists: updated in place ----------------------------------------------------
+ 

@@ -1,0 +1,19 @@
+mode acceptance | manifest-sha256 matches: True | selection all | end #% end	213926 | body 213926 | header rows 213926
+keys equal to manifest's, in manifest order: True | duplicates: 0
+  ('K', 'accepted') 98446
+  ('K', 'crashed') 149
+  ('K', 'refused') 8368
+  ('P', 'accepted') 101562
+  ('P', 'refused') 5401
+  ('crash-type', 'K', 'Broiler.JavaScript.Runtime.JSException:ReferenceError') 8
+  ('crash-type', 'K', 'System.NotImplementedException') 141
+  #% compile-stack-bytes 0	CompilationStack.SizeBytes: 0 compiles on the calling thread
+  #% thread-stack-bytes 268435456
+  #% threads 1
+  #% order manifest
+  #% environment TZ=UTC	LANG unset	LC_* unset	BROILER_* unset
+  #% culture (invariant)
+  #% time-zone UTC
+  #% runtime .NET 10.0.12
+  #% processors 4
+  #% json-goal the text unchanged at the entry points of every goal but module: ParseProgram, and CoreScript.Compile with isModule false

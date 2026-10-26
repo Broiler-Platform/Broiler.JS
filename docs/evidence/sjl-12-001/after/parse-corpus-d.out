@@ -1,0 +1,5 @@
+run 1: for-loop pass found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram
+run 2: for-loop pass found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram
+run 3: for-loop pass found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram
+manifest 1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc (conformance/parse/corpus.manifest)
+population 101562; differences 0

@@ -1,0 +1,81 @@
+# bundle sjl-12-001 (Broiler.JS): the corpus commit's three conditions, read again at the after commit, as README
+# section 1 says ("The condition is read again at the after commit."), from git reads alone, written
+# 2026-10-26T05:34:57Z at the import (SJL-12 WP7.6), in the committing worktree, whose origin/main, the default branch
+# as fetched, is a6c68dd4bd771ac358f4083e4789cd5c86e29330. Every command as it was run, with its output and exit code.
+rule-commit   4d813f2ac863895b9be5c4619b7886c9ddd71077
+corpus-commit 1fe542ff459935586cdf495e4a0e3d798248948a
+after-commit  c29d653f5f93b66b5e0efdbe506205a5347fc18a
+
+## the after commit is on the default branch, and descends from the corpus commit
+$ git merge-base --is-ancestor c29d653f5f93b66b5e0efdbe506205a5347fc18a origin/main
+(exit 0)
+$ git merge-base --is-ancestor 1fe542ff459935586cdf495e4a0e3d798248948a c29d653f5f93b66b5e0efdbe506205a5347fc18a
+(exit 0)
+
+## condition 1: the corpus commit descends from the rule commit
+$ git merge-base --is-ancestor 4d813f2ac863895b9be5c4619b7886c9ddd71077 1fe542ff459935586cdf495e4a0e3d798248948a
+(exit 0)
+
+## condition 2: git diff --name-only between the two names only the listed paths (commits do not change; the
+## same count and grouping as corpus/corpus-commit.txt)
+$ git -C /home/user/js-s12w76 diff --name-only 4d813f2ac863895b9be5c4619b7886c9ddd71077 1fe542ff459935586cdf495e4a0e3d798248948a | awk '{ if (index($0, "conformance/parse/") == 1) k = "conformance/parse/"; else if (index($0, "scripts/") == 1) k = "scripts/"; else if (index($0, "docs/") == 1) k = "docs/"; else if (index($0, "Broiler.ECMAScript/docs/") == 1) k = "Broiler.ECMAScript/docs/"; else k = "OUTSIDE THE LISTED PATHS"; n[k]++ } END { for (k in n) printf "%6d %s\n", n[k], k }' | sort -k2
+     2 Broiler.ECMAScript/docs/
+  2274 conformance/parse/
+    27 docs/
+     5 scripts/
+(exit 0)
+
+## condition 3: it is an ancestor of every commit after the rule commit that changes a path under
+## Broiler.JS/Broiler.JavaScript.*/, or under Broiler.ECMAScript/ outside Broiler.ECMAScript/docs/, read at the after
+## commit. The pathspec corpus/corpus-commit.txt used for the first of those, 'Broiler.JS/Broiler.JavaScript.*/',
+## with its trailing slash, matches no file: git matches a wildcard pathspec against each file's path, which
+## never ends in a slash. The first command shows it matching nothing between the rule and after commits, where
+## the second shows commits that change the parser; this record reads the condition with
+## 'Broiler.JS/Broiler.JavaScript.*', which matches every file under each Broiler.JS/Broiler.JavaScript.<name>/.
+$ git log '--format=%H' 4d813f2ac863895b9be5c4619b7886c9ddd71077..c29d653f5f93b66b5e0efdbe506205a5347fc18a -- 'Broiler.JS/Broiler.JavaScript.*/'
+(exit 0)
+$ git -C /home/user/js-s12w76 log --format=%H 4d813f2ac863895b9be5c4619b7886c9ddd71077..c29d653f5f93b66b5e0efdbe506205a5347fc18a -- Broiler.JS/Broiler.JavaScript.Parser | wc -l
+12
+(exit 0)
+# without --full-history (git's TREESAME rule), the commits that change a listed path, and those that do not
+# descend from the corpus commit:
+$ git -C /home/user/js-s12w76 log --format=%H 4d813f2ac863895b9be5c4619b7886c9ddd71077..c29d653f5f93b66b5e0efdbe506205a5347fc18a -- 'Broiler.JS/Broiler.JavaScript.*' 'Broiler.ECMAScript/' ':(exclude)Broiler.ECMAScript/docs/' | wc -l
+31
+(exit 0)
+$ for c in $(git -C /home/user/js-s12w76 log --format=%H 4d813f2ac863895b9be5c4619b7886c9ddd71077..c29d653f5f93b66b5e0efdbe506205a5347fc18a -- 'Broiler.JS/Broiler.JavaScript.*' 'Broiler.ECMAScript/' ':(exclude)Broiler.ECMAScript/docs/'); do git -C /home/user/js-s12w76 merge-base --is-ancestor 1fe542ff459935586cdf495e4a0e3d798248948a $c || echo "not a descendant of the corpus commit: $c"; done
+(exit 0)
+# with --full-history, every commit that touches a listed path against any parent, and those that do not
+# descend from the corpus commit:
+$ git -C /home/user/js-s12w76 log --full-history --format=%H 4d813f2ac863895b9be5c4619b7886c9ddd71077..c29d653f5f93b66b5e0efdbe506205a5347fc18a -- 'Broiler.JS/Broiler.JavaScript.*' 'Broiler.ECMAScript/' ':(exclude)Broiler.ECMAScript/docs/' | wc -l
+37
+(exit 0)
+$ for c in $(git -C /home/user/js-s12w76 log --full-history --format=%H 4d813f2ac863895b9be5c4619b7886c9ddd71077..c29d653f5f93b66b5e0efdbe506205a5347fc18a -- 'Broiler.JS/Broiler.JavaScript.*' 'Broiler.ECMAScript/' ':(exclude)Broiler.ECMAScript/docs/'); do git -C /home/user/js-s12w76 merge-base --is-ancestor 1fe542ff459935586cdf495e4a0e3d798248948a $c || echo "not a descendant of the corpus commit: $c parents $(git -C /home/user/js-s12w76 log -1 --format=%P $c)"; done
+not a descendant of the corpus commit: b1ac1b8a756b5db6699b53fbb4bd4f4e06eae2dd parents a6b29eafba255dc0b43046ba8d0c217dad5e9d91 4d813f2ac863895b9be5c4619b7886c9ddd71077
+(exit 0)
+# b1ac1b8a is the merge corpus/corpus-commit.txt reads: it takes the rule commit into the catalogue's branch, an
+# ancestor of the corpus commit, and against its second parent, the rule commit, changes no listed path:
+$ git merge-base --is-ancestor b1ac1b8a756b5db6699b53fbb4bd4f4e06eae2dd 1fe542ff459935586cdf495e4a0e3d798248948a
+(exit 0)
+$ git -C /home/user/js-s12w76 diff --name-only 4d813f2ac863895b9be5c4619b7886c9ddd71077 b1ac1b8a756b5db6699b53fbb4bd4f4e06eae2dd -- 'Broiler.JS/Broiler.JavaScript.*' 'Broiler.ECMAScript/' ':(exclude)Broiler.ECMAScript/docs/' | wc -l
+0
+(exit 0)
+# the same reading between the rule commit and the corpus commit, with the pathspec that matches, names b1ac1b8a
+# alone, as corpus/corpus-commit.txt found with the other:
+$ git log --full-history '--format=%H parents %P' 4d813f2ac863895b9be5c4619b7886c9ddd71077..1fe542ff459935586cdf495e4a0e3d798248948a -- 'Broiler.JS/Broiler.JavaScript.*' Broiler.ECMAScript/ ':(exclude)Broiler.ECMAScript/docs/'
+b1ac1b8a756b5db6699b53fbb4bd4f4e06eae2dd parents a6b29eafba255dc0b43046ba8d0c217dad5e9d91 4d813f2ac863895b9be5c4619b7886c9ddd71077
+(exit 0)
+# and on the default branch after the after commit, a listed path changed against any parent:
+$ git log --full-history '--format=%H parents %P' c29d653f5f93b66b5e0efdbe506205a5347fc18a..a6c68dd4bd771ac358f4083e4789cd5c86e29330 -- 'Broiler.JS/Broiler.JavaScript.*' Broiler.ECMAScript/ ':(exclude)Broiler.ECMAScript/docs/'
+278c394c6a854931a48259c0111a9e40d06b8db9 parents c29d653f5f93b66b5e0efdbe506205a5347fc18a 1cf69b998eff3638ef9840bdac9c0a0ebca92ddf
+(exit 0)
+$ git merge-base --is-ancestor 1fe542ff459935586cdf495e4a0e3d798248948a 278c394c6a854931a48259c0111a9e40d06b8db9
+(exit 0)
+$ git -C /home/user/js-s12w76 diff --name-only c29d653f5f93b66b5e0efdbe506205a5347fc18a 278c394c6a854931a48259c0111a9e40d06b8db9 -- 'Broiler.JS/Broiler.JavaScript.*' 'Broiler.ECMAScript/' ':(exclude)Broiler.ECMAScript/docs/' | wc -l
+0
+(exit 0)
+# (278c394c merges SJL-11.1's records branch into the after commit, its first parent, and changes no listed path
+# against it; it descends from the corpus commit.)
+
+## the files the after runs rest on, the same blobs at the corpus commit and the after commit
+$ git diff --quiet 1fe542ff459935586cdf495e4a0e3d798248948a c29d653f5f93b66b5e0efdbe506205a5347fc18a -- docs/evidence/sjl-12-001/tools/parse-corpus scripts/compliance/compare_parse_corpus.py conformance/parse docs/evidence/sjl-12-001/decision-rule.md
+(exit 0)

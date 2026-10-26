@@ -1,0 +1,23 @@
+# bundle sjl-12-001 (Broiler.JS): part C's comparison, run again at the import (SJL-12 WP7.6) so that its standard
+# error is retained. WP7.5 wrote that standard error to logs/parse-corpus-c.stderr.txt at 2026-10-26T01:56:35Z, and
+# then, in its records step, wrote the tool's part C run's standard error over it under the same name, so the
+# comparison's was lost (the read-only checker's item 1). logs/parse-corpus-c.stderr.txt is the tool's. This run is
+# the same read-only script on the same retained files; nothing else was run. <scratch> names the session's
+# scratch folder, as in import.txt.
+# Run 2026-10-26T05:33:31Z in the committing worktree (branch sjl-12-7-6-js, from origin/main
+# a6c68dd4bd771ac358f4083e4789cd5c86e29330), from its root, where the paths below are the bundle's as committed.
+# scripts/compliance/compare_parse_corpus.py there is blob c0685c65899e74e5e2b0a11a270ef3ee65f3c669, the corpus
+# commit's and the after commit's. The rule reads class M's listing in the after commit's changelog, and the
+# worktree's Broiler.JS/CHANGELOG.md is main's (blob 03efed02), so --changelog names a copy of the after commit's,
+# written by `git show c29d653f5f93b66b5e0efdbe506205a5347fc18a:Broiler.JS/CHANGELOG.md` (blob
+# 6abca2cc2774a85c3cca702941398e8ef4efbd0c, sha256 7aeba4ac50c79f85d701c566497a3f7af26cb9fcbed1b497f53553f7f75c14f8),
+# as WP7.5's run, in a checkout of the after commit, read Broiler.JS/CHANGELOG.md there. Python 3.13.16.
+
+$ python3 -I scripts/compliance/compare_parse_corpus.py acceptance --base docs/evidence/sjl-12-001/base/parse-corpus-c.tsv.gz --after docs/evidence/sjl-12-001/after/parse-corpus-c.tsv.gz --manifest conformance/parse/corpus.manifest --changelog <scratch>/sjl12/wp7-records/js/tmp-c/CHANGELOG.after-commit.md --output <scratch>/sjl12/wp7-records/js/tmp-c/parse-corpus-c.json > <scratch>/sjl12/wp7-records/js/tmp-c/parse-corpus-c.out 2> docs/evidence/sjl-12-001/after/logs/parse-corpus-c-comparison.stderr.txt
+(exit 0)
+$ cmp <scratch>/sjl12/wp7-records/js/tmp-c/parse-corpus-c.out docs/evidence/sjl-12-001/after/parse-corpus-c.out
+(exit 0: the standard output is WP7.5's byte for byte)
+$ cmp <scratch>/sjl12/wp7-records/js/tmp-c/parse-corpus-c.json docs/evidence/sjl-12-001/after/parse-corpus-c.json
+(exit 0: the JSON report is WP7.5's byte for byte)
+# logs/parse-corpus-c-comparison.stderr.txt: the standard error, empty (0 bytes), as WP7.5's other four comparisons'
+# were (logs/parse-corpus-d.stderr.txt, controls/logs/part-d-*.stderr.txt).

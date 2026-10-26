@@ -1,0 +1,62 @@
+2026-10-26T00:53:24Z s0 start
+2026-10-26T00:53:57Z s0 done
+2026-10-26T00:55:21Z s1 start
+2026-10-26T00:56:21Z gate build-arch-after: idle (load 0.05 0.17 0.25 2/107 24024; no dotnet/python process) after 0s of waiting
+2026-10-26T00:57:38Z build-arch-after: done: build-arch-after	rc=0	wall=76.5s	maxrss=749MB	started=2026-10-26T00:56:21Z	ended=2026-10-26T00:57:38Z
+2026-10-26T00:58:38Z gate build-parser-rule: idle (load 0.75 0.73 0.47 1/114 24487; no dotnet/python process) after 0s of waiting
+2026-10-26T00:59:43Z build-parser-rule: done: build-parser-rule	rc=0	wall=64.5s	maxrss=836MB	started=2026-10-26T00:58:38Z	ended=2026-10-26T00:59:43Z
+2026-10-26T01:00:43Z gate arch-after: idle (load 0.87 0.97 0.61 1/110 24957; no dotnet/python process) after 0s of waiting
+2026-10-26T01:00:48Z arch-after: done: arch-after	rc=0	wall=4.6s	maxrss=338MB	started=2026-10-26T01:00:43Z	ended=2026-10-26T01:00:48Z
+2026-10-26T01:01:48Z gate arch-rule: idle (load 0.29 0.78 0.56 1/110 25099; no dotnet/python process) after 0s of waiting
+2026-10-26T01:01:52Z arch-rule: done: arch-rule	rc=1	wall=4.4s	maxrss=338MB	started=2026-10-26T01:01:48Z	ended=2026-10-26T01:01:52Z
+2026-10-26T01:02:52Z gate build-arch-k: idle (load 0.13 0.64 0.53 1/109 25292; no dotnet/python process) after 0s of waiting
+2026-10-26T01:03:55Z build-arch-k: done: build-arch-k	rc=0	wall=61.8s	maxrss=772MB	started=2026-10-26T01:02:53Z	ended=2026-10-26T01:03:55Z
+2026-10-26T01:04:55Z gate arch-k: idle (load 0.89 1.05 0.72 1/112 25729; no dotnet/python process) after 0s of waiting
+2026-10-26T01:04:59Z arch-k: done: arch-k	rc=1	wall=4.5s	maxrss=338MB	started=2026-10-26T01:04:55Z	ended=2026-10-26T01:04:59Z
+2026-10-26T01:05:59Z gate build-arch-k-reverted: idle (load 0.36 0.87 0.68 1/115 25915; no dotnet/python process) after 0s of waiting
+2026-10-26T01:07:01Z build-arch-k-reverted: done: build-arch-k-reverted	rc=0	wall=61.8s	maxrss=721MB	started=2026-10-26T01:06:00Z	ended=2026-10-26T01:07:01Z
+2026-10-26T01:08:01Z gate arch-k-reverted: idle (load 0.60 0.96 0.75 1/115 26335; no dotnet/python process) after 0s of waiting
+2026-10-26T01:08:07Z arch-k-reverted: done: arch-k-reverted	rc=0	wall=4.8s	maxrss=338MB	started=2026-10-26T01:08:02Z	ended=2026-10-26T01:08:06Z
+2026-10-26T01:08:07Z s1 done
+2026-10-26T01:08:22Z s2 start
+2026-10-26T01:09:22Z gate build-tool-after: idle (load 0.18 0.74 0.69 1/105 26550; no dotnet/python process) after 0s of waiting
+2026-10-26T01:11:39Z build-tool-after: done: build-tool-after	rc=0	wall=136.6s	maxrss=361MB	started=2026-10-26T01:09:23Z	ended=2026-10-26T01:11:39Z
+2026-10-26T01:12:39Z gate js-c: NOT idle: load 1.18 1.44 1.01 1/106 27274; processes: none
+2026-10-26T01:14:39Z gate js-c: idle (load 0.16 0.96 0.88 1/105 27314; no dotnet/python process) after 120s of waiting
+2026-10-26T01:17:30Z js-c: done: js-c	rc=0	wall=169.9s	maxrss=1555MB	started=2026-10-26T01:14:40Z	ended=2026-10-26T01:17:30Z
+2026-10-26T01:17:30Z s2 done
+2026-10-26T01:17:30Z s3 start
+2026-10-26T01:18:30Z gate js-d1: idle (load 0.41 0.85 0.87 1/112 27473; no dotnet/python process) after 0s of waiting
+2026-10-26T01:19:16Z js-d1: done: js-d1	rc=0	wall=45.3s	maxrss=587MB	started=2026-10-26T01:18:30Z	ended=2026-10-26T01:19:16Z
+2026-10-26T01:20:16Z gate js-d2: idle (load 0.35 0.76 0.84 1/108 27584; no dotnet/python process) after 0s of waiting
+2026-10-26T01:21:01Z js-d2: done: js-d2	rc=0	wall=45.0s	maxrss=621MB	started=2026-10-26T01:20:16Z	ended=2026-10-26T01:21:01Z
+2026-10-26T01:22:01Z gate js-d3: idle (load 0.27 0.66 0.80 1/111 27694; no dotnet/python process) after 0s of waiting
+2026-10-26T01:23:01Z js-d3: done: js-d3	rc=0	wall=60.3s	maxrss=755MB	started=2026-10-26T01:22:01Z	ended=2026-10-26T01:23:01Z
+2026-10-26T01:24:03Z gate build-tool-k1: idle (load 0.38 0.67 0.79 1/110 27898; no dotnet/python process) after 0s of waiting
+2026-10-26T01:26:12Z build-tool-k1: done: build-tool-k1	rc=0	wall=128.4s	maxrss=352MB	started=2026-10-26T01:24:04Z	ended=2026-10-26T01:26:12Z
+2026-10-26T01:27:12Z gate k1-d1: NOT idle: load 1.32 1.44 1.11 1/111 28599; processes: none
+2026-10-26T01:29:12Z gate k1-d1: idle (load 0.26 0.99 0.98 1/110 28641; no dotnet/python process) after 120s of waiting
+2026-10-26T01:30:08Z k1-d1: done: k1-d1	rc=0	wall=55.0s	maxrss=595MB	started=2026-10-26T01:29:13Z	ended=2026-10-26T01:30:08Z
+2026-10-26T01:31:08Z gate k1-d2: idle (load 0.26 0.81 0.92 1/109 28748; no dotnet/python process) after 0s of waiting
+2026-10-26T01:31:55Z k1-d2: done: k1-d2	rc=0	wall=46.3s	maxrss=619MB	started=2026-10-26T01:31:08Z	ended=2026-10-26T01:31:55Z
+2026-10-26T01:32:55Z gate k1-d3: idle (load 0.25 0.69 0.86 1/110 28849; no dotnet/python process) after 0s of waiting
+2026-10-26T01:33:59Z k1-d3: done: k1-d3	rc=0	wall=63.7s	maxrss=838MB	started=2026-10-26T01:32:55Z	ended=2026-10-26T01:33:59Z
+2026-10-26T01:35:01Z gate build-tool-k2: idle (load 0.39 0.68 0.85 2/113 29068; no dotnet/python process) after 0s of waiting
+2026-10-26T01:37:15Z build-tool-k2: done: build-tool-k2	rc=0	wall=134.4s	maxrss=351MB	started=2026-10-26T01:35:01Z	ended=2026-10-26T01:37:15Z
+2026-10-26T01:38:15Z gate k2-d1: NOT idle: load 1.19 1.48 1.17 1/109 29773; processes: none
+2026-10-26T01:40:15Z gate k2-d1: idle (load 0.32 1.03 1.04 1/113 29827; no dotnet/python process) after 120s of waiting
+2026-10-26T01:41:12Z k2-d1: done: k2-d1	rc=0	wall=55.7s	maxrss=596MB	started=2026-10-26T01:40:16Z	ended=2026-10-26T01:41:12Z
+2026-10-26T01:42:12Z gate k2-d2: idle (load 0.27 0.84 0.97 1/114 29940; no dotnet/python process) after 0s of waiting
+2026-10-26T01:42:58Z k2-d2: done: k2-d2	rc=0	wall=46.0s	maxrss=620MB	started=2026-10-26T01:42:12Z	ended=2026-10-26T01:42:58Z
+2026-10-26T01:43:58Z gate k2-d3: idle (load 0.24 0.70 0.91 1/116 30047; no dotnet/python process) after 0s of waiting
+2026-10-26T01:45:01Z k2-d3: done: k2-d3	rc=0	wall=62.8s	maxrss=860MB	started=2026-10-26T01:43:59Z	ended=2026-10-26T01:45:01Z
+2026-10-26T01:46:03Z gate build-tool-kr: idle (load 0.49 0.77 0.92 2/114 30259; no dotnet/python process) after 0s of waiting
+2026-10-26T01:48:37Z build-tool-kr: done: build-tool-kr	rc=0	wall=153.7s	maxrss=370MB	started=2026-10-26T01:46:04Z	ended=2026-10-26T01:48:37Z
+2026-10-26T01:49:37Z gate kr-d1: NOT idle: load 1.12 1.63 1.29 1/112 31042; processes: none
+2026-10-26T01:51:37Z gate kr-d1: idle (load 0.15 1.08 1.13 1/115 31108; no dotnet/python process) after 120s of waiting
+2026-10-26T01:52:35Z kr-d1: done: kr-d1	rc=0	wall=57.1s	maxrss=600MB	started=2026-10-26T01:51:38Z	ended=2026-10-26T01:52:35Z
+2026-10-26T01:53:35Z gate kr-d2: idle (load 0.26 0.88 1.05 1/114 31230; no dotnet/python process) after 0s of waiting
+2026-10-26T01:54:23Z kr-d2: done: kr-d2	rc=0	wall=47.4s	maxrss=615MB	started=2026-10-26T01:53:36Z	ended=2026-10-26T01:54:23Z
+2026-10-26T01:55:23Z gate kr-d3: idle (load 0.24 0.73 0.97 1/117 31350; no dotnet/python process) after 0s of waiting
+2026-10-26T01:56:26Z kr-d3: done: kr-d3	rc=0	wall=63.0s	maxrss=758MB	started=2026-10-26T01:55:23Z	ended=2026-10-26T01:56:26Z
+2026-10-26T01:56:28Z s3 done

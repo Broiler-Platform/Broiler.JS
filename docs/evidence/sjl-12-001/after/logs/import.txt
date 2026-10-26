@@ -1,0 +1,52 @@
+# bundle sjl-12-001 (Broiler.JS): how WP7.5's local after outputs of parts B, C and D were imported into after/
+# and controls/, written 2026-10-26T05:33:14Z at the import (SJL-12 WP7.6). Files were copied (cp -p semantics), moved and
+# edited as listed here, and nothing else was changed. No run was taken again: the one script run at the import
+# is part C's read-only comparison, again, into a separate standard-error file (parse-corpus-c-comparison-again.txt).
+# <scratch> names the session's scratch folder, under which WP7.5's folders wp7/js (this folder as the runner
+# wrote it) and wp7/jsw (its scripts, checkouts and raw runs) were.
+
+## left out
+  runner-report.md: the runner's report, read by the README and not retained; its facts are in commands.txt,
+    machine.txt and logs/ (and each 'where the rule and the brief differ' item is in the README's section 3)
+  hashes.txt and controls/hashes.txt: the runner's, made again after the import (after/hashes.txt, controls/hashes.txt)
+
+## copied (134 files): every other file of wp7/js to after/, and of wp7/js/controls to controls/
+
+## moved: the standard error of the control comparisons, which the runner wrote to logs/ (checker item 7)
+  after/logs/part-d-k1.stderr.txt -> controls/logs/part-d-k1.stderr.txt (unchanged, sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855)
+  after/logs/part-d-k2.stderr.txt -> controls/logs/part-d-k2.stderr.txt (unchanged, sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855)
+  after/logs/part-d-k-reverted.stderr.txt -> controls/logs/part-d-k-reverted.stderr.txt (unchanged, sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855)
+
+## trimmed: git worktree add's progress line (checker item 4)
+  after/logs/worktree-add-after.txt: 48 carriage returns removed with the 48 progress segments they ended; untrimmed sha256 032a230190f9b7a62e7ef86b244c28daa409ccdfde83334598f7f45d92fc255e, trimmed 8f038a394ee989fe8bef8cc9abafb05b624353f531c11cf36dd6f9e8f527c210
+  after/logs/worktree-add-rule.txt: 43 carriage returns removed with the 43 progress segments they ended; untrimmed sha256 5b0705229943f0f947ec2b15346054f70da996fe2a84be1841b6a56996090cb6, trimmed 4794bb191c1fb23b820ff53db59c7682816d66e568517e45c21c0584ece7fc73
+  controls/logs/worktree-add-k.txt: 31 carriage returns removed with the 31 progress segments they ended; untrimmed sha256 19b8a1faf37f6a73b982e5119b1a5912266632018b4f464ecead966891291151, trimmed 8f038a394ee989fe8bef8cc9abafb05b624353f531c11cf36dd6f9e8f527c210
+
+## <scratch> for the scratch folder's path (checker item 3), in these files
+  after/commands.txt: 2 occurrence(s); before sha256 8d4685ea3909ce9e5ee699fe29d91ac3bb305e294761803e16dd39acef72c1b1, after 80a9927b4e224dc12fe6c5540a28246a7698c95cb4ac286c394f254ff788c43a
+  after/logs/build-architecture-tests.log: 108 occurrence(s); before sha256 1ca5055433ef16976e21f4bfaec9cb44f78229520a43796b604635f2e93bdc8d, after a7f5419a7a4306d24da2510dcae37106ebb1b9c777cf33506dca2304e963c11e
+  after/logs/build-rule-commit-parser-tests.log: 108 occurrence(s); before sha256 225281ff2c7bd45655f6a67781d6a3a4241bbcb83dd229406b3488d161825fd7, after faa636c6e525787f15c6ed9638a5162dafa02974fae8948db6443655e82767d7
+  after/logs/build.log: 264 occurrence(s); before sha256 f0aae44dafaab5d1e89e779987975c3c7a793758a8dc575c6ef09062a52ba8bf, after 846dfeb73972641d6db0fe15124841fd05b63adfab9b67cbface860f9d2832dc
+  after/logs/parse-corpus-c.stderr.txt: 1 occurrence(s); before sha256 35152a1d407bb24c4dd69917a298f2e4f22a49f877317dd59806505cb13fa797, after ee797bebe31257aa677bc33029ef1f90b161225a6c55acfa79abbe9c425e1ce3
+  after/logs/parse-corpus-d1.stderr.txt: 1 occurrence(s); before sha256 aa9680e979eefff1de7145a79d9954c892d402915179d11586677f4b8b38076a, after dd613e92dcfc664a6fc5c4e4ff0b87e19ec73ee861332e05bafc3e22cdc1bb3d
+  after/logs/parse-corpus-d2.stderr.txt: 1 occurrence(s); before sha256 476230f75f9119a455e0ae08bb79cb17f8e7ce03e95fb3298df0ca31f8e8dcc1, after 9bac39ec991da69b52a7f93090ca407ea5d5ecd92549208f4d783bdb8d259603
+  after/logs/parse-corpus-d3.stderr.txt: 1 occurrence(s); before sha256 ca2bb3148d7b6fb9dc5323775e80a9ddd77d9e62aa775a4dc70015169bde46f0, after b9d2cd01ed9b71cd871bb2047b8f72a6e15a9143de1c74069fffc72dcb87d7bb
+  after/logs/runs-commands.log: 93 occurrence(s); before sha256 cefa9f239dd45883803dc5ab050e3e5bc0638561b23b8c7b4c5b19eb6f9dafb0, after 8c37b6e1e0b08593362a1f55bb9b855970949391eb9a8379857a40e795eeec6a
+  after/part-b-architecture-test-after.log: 3 occurrence(s); before sha256 f91d7b02649c008f3daa56ffede5836d0817ae1b7c4c0c43e728a7c6816cbb69, after ca581f691d0b81a89a05564e2b56e8adfdafe1380547e75d1a6619b006c87a0c
+  after/part-b-architecture-test-rule.log: 8 occurrence(s); before sha256 c7729611b3c11d8b308040a147188e5fea5070f9761a07616d74b2e32fdcfb11, after db15e445796ca7087f4265d06dc5f29dbc5a5f2b6cf76e36e7c4251c9664bf7f
+  controls/logs/build-part-b-k-reverted.log: 108 occurrence(s); before sha256 97407ad6c20ebd7ffcedaf0c3b286b8565b9c43fbc781743ed6b452d8ca1eabb, after 166d437c94cf5a0b702019e9371a3ec3e6a800447f3d65a79e774f77b2e8fb1f
+  controls/logs/build-part-b-k.log: 108 occurrence(s); before sha256 8b332bf44d04317ca230fc503367f2e11703917d3090d2b8f4f7c082e9cc23a7, after d72e3e89b99802d533aee094bb678f4b16c2c230a6bcf7b47dcfc599a052eafa
+  controls/logs/build-part-d-k-reverted.log: 264 occurrence(s); before sha256 18ccfb0d6b05041738c0ed1f827eeed0e1f046ccf3918447951b4824f45c4092, after 4604cb468e7d0cab69115a8cef5539485ead9740dc92557050008519cd9388c0
+  controls/logs/build-part-d-k1.log: 264 occurrence(s); before sha256 19059d5852da20bf0410a712b2d677065c3708cbaa9e9d197cdfd3c655966f0f, after 135dc9f1d42c7dd96e150824d638e406f4cd6e1fac504f1d53ffac28a224384f
+  controls/logs/build-part-d-k2.log: 264 occurrence(s); before sha256 c82f46c734ee69287ae0fb38cc8e073f47ddb17683108d81a807d0ea311726c7, after c0b4f306f42f5028a843c1e438ec6431889c202a5c503d854b8cf69665d3563c
+  controls/logs/part-d-k-reverted-d1.stderr.txt: 1 occurrence(s); before sha256 a181b6914b2cf87ed7f3e397e132455889a3c91ef4126932353dd66127e919e1, after 4d83aa2692e14da4a16d69acaf7ae9ff9ff6321dec5dbb93a661299d5d4fbb53
+  controls/logs/part-d-k-reverted-d2.stderr.txt: 1 occurrence(s); before sha256 09b01c8fbe47f6fab6182feed39c4f9ce4403a3f52d4d4e0479bbd233b66a674, after 2a2cc961f462b4eab8aa164e3b4deb05540d2d720a6e1baf5018e776e2c7fd9c
+  controls/logs/part-d-k-reverted-d3.stderr.txt: 1 occurrence(s); before sha256 4404de6de4f22b0faba39281fc675df59965f3b544a7820101efe8480ea3aaca, after 40ba336c6544a47b7d8a2efe66667d88937a25ccd9bcd89ef63761c88dad4174
+  controls/logs/part-d-k1-d1.stderr.txt: 1 occurrence(s); before sha256 3b5c109642552f273d3d547577409c9c9bab78db1c304926d684d8cf0287110a, after c801249b4f89830da2a055ec972455361524710b9924435db2a6f3ca5624fb32
+  controls/logs/part-d-k1-d2.stderr.txt: 1 occurrence(s); before sha256 9928a33b56e15de6c6918645318c915ec3497cc919bf948af11ebbf927928253, after 916190feeddb43a79f08158cfca9172bc8288fa4de51e729493ea4c3eb7ae2c8
+  controls/logs/part-d-k1-d3.stderr.txt: 1 occurrence(s); before sha256 ff9c3a5aca4ea940556016a56861b2e0506b9cefaf56512c4ef3d7df786d0076, after bc4112cd0eb06807145d3daa7921be4ed88893342b19996c0112117db722f4b9
+  controls/logs/part-d-k2-d1.stderr.txt: 1 occurrence(s); before sha256 1f7635dcd6e5aac9c066c3c8ccd39116d7ec5b55e4473fa3031f4fb2f15cc4c5, after abffdb91d631385634d42d0d3d85ba1c450cbce080bce7279d06a6c7866b5c1d
+  controls/logs/part-d-k2-d2.stderr.txt: 1 occurrence(s); before sha256 145bc2f3cf029fedf060087d425041b565c2c92b6fd672734bc5c95ecc8ffb70, after fbcd63d4da83ba53121fefd26ef9c093fa577b981d65ea1001a230b09671b4af
+  controls/logs/part-d-k2-d3.stderr.txt: 1 occurrence(s); before sha256 52988094ba16127e1d29eead3a0d804c985c19dc12c12709ec262b89bab9c53a, after c56a79735d8c48e3370caaef1cc40e8460bfa97d4663b5435f1721a5f8baaca1
+  controls/part-b-k-reverted.log: 3 occurrence(s); before sha256 f5c01853f69895d3fb22192c85879e0ac02e6e01119a1b27769e3102b36933c7, after 8304a3d33fa4852485c29f0dac33ac2a34e4b1737ece4b1c07aae642768bd220
+  controls/part-b-k.log: 8 occurrence(s); before sha256 cf42db0de1e0302d125fac312672dbaaea1f00ebb20c0bede33685586d7cf24d, after 3e31e9809516645465d19c36eaf8c53dc5307f1f9db32970cd473011b6612382

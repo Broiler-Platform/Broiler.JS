@@ -1,0 +1,210 @@
+# runner-images.txt: the runner image of each of the nine jobs that ran a shard or the merge (job collect), as the head of
+# the job's own log reads it (GitHub's job logs, read 2026-10-26T05:24Z), copied verbatim from its first line to the end of its "Runner Image" group.
+# Added at import; not a file of the artifact.
+
+## job: shard (0)
+2026-10-25T20:39:50.3861114Z Current runner version: '2.338.0'
+2026-10-25T20:39:50.3886995Z ##[group]Runner Image Provisioner
+2026-10-25T20:39:50.3888070Z Hosted Compute Agent
+2026-10-25T20:39:50.3889198Z Version: 20261021.618
+2026-10-25T20:39:50.3889828Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T20:39:50.3890591Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T20:39:50.3891286Z Worker ID: {5ef5b6e0-d4f6-4265-9025-be5c94887bba}
+2026-10-25T20:39:50.3892016Z Region: eastus
+2026-10-25T20:39:50.3892596Z Cloud: Azure
+2026-10-25T20:39:50.3893118Z ##[endgroup]
+2026-10-25T20:39:50.3894965Z ##[group]Operating System
+2026-10-25T20:39:50.3895726Z Ubuntu
+2026-10-25T20:39:50.3896313Z 26.04.1
+2026-10-25T20:39:50.3896902Z LTS
+2026-10-25T20:39:50.3897400Z ##[endgroup]
+2026-10-25T20:39:50.3897933Z ##[group]Runner Image
+2026-10-25T20:39:50.3898594Z Image: ubuntu-26.04
+2026-10-25T20:39:50.3899187Z Version: 20261012.163.1
+2026-10-25T20:39:50.3900469Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-25T20:39:50.3901965Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-25T20:39:50.3902992Z ##[endgroup]
+
+## job: shard (1)
+2026-10-25T20:39:50.2309682Z Current runner version: '2.338.0'
+2026-10-25T20:39:50.2327028Z ##[group]Runner Image Provisioner
+2026-10-25T20:39:50.2327680Z Hosted Compute Agent
+2026-10-25T20:39:50.2328025Z Version: 20261021.618
+2026-10-25T20:39:50.2328633Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T20:39:50.2329050Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T20:39:50.2329442Z Worker ID: {bd72a13e-7526-4ce8-bebe-221f0c4928b1}
+2026-10-25T20:39:50.2329923Z Region: southcentralus
+2026-10-25T20:39:50.2330258Z Cloud: Azure
+2026-10-25T20:39:50.2330595Z ##[endgroup]
+2026-10-25T20:39:50.2331479Z ##[group]Operating System
+2026-10-25T20:39:50.2331846Z Ubuntu
+2026-10-25T20:39:50.2332240Z 26.04.1
+2026-10-25T20:39:50.2332542Z LTS
+2026-10-25T20:39:50.2332865Z ##[endgroup]
+2026-10-25T20:39:50.2333193Z ##[group]Runner Image
+2026-10-25T20:39:50.2333541Z Image: ubuntu-26.04
+2026-10-25T20:39:50.2333937Z Version: 20261012.163.1
+2026-10-25T20:39:50.2334665Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-25T20:39:50.2335543Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-25T20:39:50.2336089Z ##[endgroup]
+
+## job: shard (2)
+2026-10-25T20:39:50.1834286Z Current runner version: '2.338.0'
+2026-10-25T20:39:50.1869956Z ##[group]Runner Image Provisioner
+2026-10-25T20:39:50.1871424Z Hosted Compute Agent
+2026-10-25T20:39:50.1872482Z Version: 20261021.618
+2026-10-25T20:39:50.1873610Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T20:39:50.1875304Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T20:39:50.1876636Z Worker ID: {a8507184-4c89-4d95-bc5e-5500515e4611}
+2026-10-25T20:39:50.1878106Z Region: eastus
+2026-10-25T20:39:50.1879098Z Cloud: Azure
+2026-10-25T20:39:50.1880489Z ##[endgroup]
+2026-10-25T20:39:50.1883054Z ##[group]Operating System
+2026-10-25T20:39:50.1884353Z Ubuntu
+2026-10-25T20:39:50.1885434Z 26.04.1
+2026-10-25T20:39:50.1886351Z LTS
+2026-10-25T20:39:50.1887420Z ##[endgroup]
+2026-10-25T20:39:50.1888409Z ##[group]Runner Image
+2026-10-25T20:39:50.1889913Z Image: ubuntu-26.04
+2026-10-25T20:39:50.1891054Z Version: 20261012.163.1
+2026-10-25T20:39:50.1893341Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-25T20:39:50.1896192Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-25T20:39:50.1897908Z ##[endgroup]
+
+## job: shard (3)
+2026-10-25T20:39:51.0928420Z Current runner version: '2.338.0'
+2026-10-25T20:39:51.0955321Z ##[group]Runner Image Provisioner
+2026-10-25T20:39:51.0956192Z Hosted Compute Agent
+2026-10-25T20:39:51.0956782Z Version: 20261021.618
+2026-10-25T20:39:51.0957859Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T20:39:51.0958595Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T20:39:51.0959255Z Worker ID: {9c445669-087f-467a-a5a0-04613e536bea}
+2026-10-25T20:39:51.0960019Z Region: westus2
+2026-10-25T20:39:51.0960566Z Cloud: Azure
+2026-10-25T20:39:51.0961213Z ##[endgroup]
+2026-10-25T20:39:51.0963543Z ##[group]Operating System
+2026-10-25T20:39:51.0964402Z Ubuntu
+2026-10-25T20:39:51.0965146Z 26.04.1
+2026-10-25T20:39:51.0965656Z LTS
+2026-10-25T20:39:51.0966246Z ##[endgroup]
+2026-10-25T20:39:51.0967000Z ##[group]Runner Image
+2026-10-25T20:39:51.0967898Z Image: ubuntu-26.04
+2026-10-25T20:39:51.0968543Z Version: 20261012.163.1
+2026-10-25T20:39:51.0969832Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-25T20:39:51.0971410Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-25T20:39:51.0972722Z ##[endgroup]
+
+## job: shard (4)
+2026-10-25T20:39:50.9828616Z Current runner version: '2.338.0'
+2026-10-25T20:39:50.9850693Z ##[group]Runner Image Provisioner
+2026-10-25T20:39:50.9851505Z Hosted Compute Agent
+2026-10-25T20:39:50.9852050Z Version: 20261021.618
+2026-10-25T20:39:50.9852552Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T20:39:50.9853582Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T20:39:50.9854169Z Worker ID: {a0f069c0-c350-4dd9-a07d-592fdb0d9f13}
+2026-10-25T20:39:50.9854759Z Region: westus3
+2026-10-25T20:39:50.9855229Z Cloud: Azure
+2026-10-25T20:39:50.9855976Z ##[endgroup]
+2026-10-25T20:39:50.9857227Z ##[group]Operating System
+2026-10-25T20:39:50.9857734Z Ubuntu
+2026-10-25T20:39:50.9858158Z 26.04.1
+2026-10-25T20:39:50.9858643Z LTS
+2026-10-25T20:39:50.9859074Z ##[endgroup]
+2026-10-25T20:39:50.9859562Z ##[group]Runner Image
+2026-10-25T20:39:50.9860068Z Image: ubuntu-26.04
+2026-10-25T20:39:50.9860524Z Version: 20261012.163.1
+2026-10-25T20:39:50.9861644Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-25T20:39:50.9862963Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-25T20:39:50.9863772Z ##[endgroup]
+
+## job: shard (5)
+2026-10-25T20:39:51.4880924Z Current runner version: '2.338.0'
+2026-10-25T20:39:51.4903001Z ##[group]Runner Image Provisioner
+2026-10-25T20:39:51.4903882Z Hosted Compute Agent
+2026-10-25T20:39:51.4904380Z Version: 20261021.618
+2026-10-25T20:39:51.4905207Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T20:39:51.4905833Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T20:39:51.4906551Z Worker ID: {3d7a49b5-0e42-46ae-bae0-0f28bfc8580f}
+2026-10-25T20:39:51.4907234Z Region: westus3
+2026-10-25T20:39:51.4907700Z Cloud: Azure
+2026-10-25T20:39:51.4908179Z ##[endgroup]
+2026-10-25T20:39:51.4909334Z ##[group]Operating System
+2026-10-25T20:39:51.4909863Z Ubuntu
+2026-10-25T20:39:51.4910444Z 26.04.1
+2026-10-25T20:39:51.4910883Z LTS
+2026-10-25T20:39:51.4911343Z ##[endgroup]
+2026-10-25T20:39:51.4911814Z ##[group]Runner Image
+2026-10-25T20:39:51.4912345Z Image: ubuntu-26.04
+2026-10-25T20:39:51.4912889Z Version: 20261012.163.1
+2026-10-25T20:39:51.4913934Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-25T20:39:51.4915256Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-25T20:39:51.4916233Z ##[endgroup]
+
+## job: shard (6)
+2026-10-25T20:39:50.8158389Z Current runner version: '2.338.0'
+2026-10-25T20:39:50.8184254Z ##[group]Runner Image Provisioner
+2026-10-25T20:39:50.8185161Z Hosted Compute Agent
+2026-10-25T20:39:50.8185730Z Version: 20261021.618
+2026-10-25T20:39:50.8186873Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T20:39:50.8187676Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T20:39:50.8188412Z Worker ID: {118cce86-878c-413f-bfe4-8d626de13a69}
+2026-10-25T20:39:50.8189153Z Region: northcentralus
+2026-10-25T20:39:50.8189730Z Cloud: Azure
+2026-10-25T20:39:50.8190346Z ##[endgroup]
+2026-10-25T20:39:50.8191853Z ##[group]Operating System
+2026-10-25T20:39:50.8193007Z Ubuntu
+2026-10-25T20:39:50.8193589Z 26.04.1
+2026-10-25T20:39:50.8194103Z LTS
+2026-10-25T20:39:50.8194674Z ##[endgroup]
+2026-10-25T20:39:50.8195321Z ##[group]Runner Image
+2026-10-25T20:39:50.8195938Z Image: ubuntu-26.04
+2026-10-25T20:39:50.8196584Z Version: 20261012.163.1
+2026-10-25T20:39:50.8197832Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-25T20:39:50.8199510Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-25T20:39:50.8200473Z ##[endgroup]
+
+## job: shard (7)
+2026-10-25T20:39:50.4458774Z Current runner version: '2.338.0'
+2026-10-25T20:39:50.4478463Z ##[group]Runner Image Provisioner
+2026-10-25T20:39:50.4479158Z Hosted Compute Agent
+2026-10-25T20:39:50.4479522Z Version: 20261021.618
+2026-10-25T20:39:50.4480223Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T20:39:50.4480658Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T20:39:50.4481059Z Worker ID: {ea764268-ec89-4e03-b7c0-e8a9e66ca4f5}
+2026-10-25T20:39:50.4481565Z Region: southcentralus
+2026-10-25T20:39:50.4481921Z Cloud: Azure
+2026-10-25T20:39:50.4482274Z ##[endgroup]
+2026-10-25T20:39:50.4483082Z ##[group]Operating System
+2026-10-25T20:39:50.4483450Z Ubuntu
+2026-10-25T20:39:50.4483850Z 26.04.1
+2026-10-25T20:39:50.4484166Z LTS
+2026-10-25T20:39:50.4484537Z ##[endgroup]
+2026-10-25T20:39:50.4484880Z ##[group]Runner Image
+2026-10-25T20:39:50.4485260Z Image: ubuntu-26.04
+2026-10-25T20:39:50.4485677Z Version: 20261012.163.1
+2026-10-25T20:39:50.4486470Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-25T20:39:50.4487551Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-25T20:39:50.4488124Z ##[endgroup]
+
+## job: collect
+2026-10-25T21:40:55.3760840Z Current runner version: '2.338.0'
+2026-10-25T21:40:55.3790920Z ##[group]Runner Image Provisioner
+2026-10-25T21:40:55.3791840Z Hosted Compute Agent
+2026-10-25T21:40:55.3792525Z Version: 20261021.618
+2026-10-25T21:40:55.3793239Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T21:40:55.3794083Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T21:40:55.3794929Z Worker ID: {71af084b-580c-41bc-a21f-348d12d60cd9}
+2026-10-25T21:40:55.3795874Z Region: centralus
+2026-10-25T21:40:55.3796521Z Cloud: Azure
+2026-10-25T21:40:55.3797203Z ##[endgroup]
+2026-10-25T21:40:55.3798745Z ##[group]Operating System
+2026-10-25T21:40:55.3799492Z Ubuntu
+2026-10-25T21:40:55.3800073Z 26.04.1
+2026-10-25T21:40:55.3800626Z LTS
+2026-10-25T21:40:55.3801264Z ##[endgroup]
+2026-10-25T21:40:55.3801916Z ##[group]Runner Image
+2026-10-25T21:40:55.3802652Z Image: ubuntu-26.04
+2026-10-25T21:40:55.3803277Z Version: 20261012.163.1
+2026-10-25T21:40:55.3804861Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-25T21:40:55.3807066Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-25T21:40:55.3808418Z ##[endgroup]
