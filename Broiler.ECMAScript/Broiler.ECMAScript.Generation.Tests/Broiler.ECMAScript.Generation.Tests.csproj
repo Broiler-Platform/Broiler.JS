@@ -7,10 +7,10 @@
     tests, regenerates the home's generated area and compares it byte for byte. JIT only: the generator is
     run by tests, never inside an engine.
 
-    Milestone SJL-9.2b adds the Intl data home's tests: its pins against Broiler.VM's 114 CLDR entries, the
-    time home's timezone.json and Broiler.Unicode's UCD entries; the locale lists against decision D5; the
-    source writer against Broiler.VM's JsCldrTables.g.cs, byte for byte; and the completeness of Broiler.JS's
-    tables (exit clause 3).
+    Milestone SJL-9.2b adds the Intl data home's tests: its pins against every entry of Broiler.VM's CLDR
+    pin, the time home's timezone.json and Broiler.Unicode's UCD entries; the locale lists against decision
+    D5; the source writer against Broiler.VM's JsCldrTables.g.cs before its assurance pass, byte for byte;
+    the completeness of Broiler.JS's tables (exit clause 3); and decision D21's symbols against CLDR's XML.
   -->
   <PropertyGroup>
     <IsPackable>false</IsPackable>

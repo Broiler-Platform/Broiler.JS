@@ -1,0 +1,41 @@
+# sjl-9-001 home sizes 1
+#
+# The sizes of the Intl data home's tables and pinned inputs at SJL-9.2b, in bytes. JSD-0082's decision D5:
+# "Sizes are measured by the generator at SJL-9.2 and stated in Broiler.JS's bundle, which has no budget rule."
+# Read on 2026-10-26 from Broiler.ECMAScript/data/intl/ as committed with this file: each `table` line's length is
+# the one generated/tables.manifest records, which the generator writes with each table; each archive's total is
+# the sum of the lengths its pin's `file` lines record. `vm-table` is Broiler.VM's JsCldrTables.g.cs as the
+# generator's IntlTableSource writes it with Broiler.VM's options, before Broiler.VM's assurance pass, SHA-256
+# 839bdc22afca187b58252f2487cd31c4b613396cd6596ffdcb6622fe1b534561, which IntlTableSourceTests holds. A later change
+# to a table or a pin states its sizes again; this file is not regenerated.
+
+table aliases.txt 21252
+table collation-root.bin 160603
+table collation-tailorings.bin 3204
+table currencies.txt 1752680
+table currency-digits.txt 323
+table date-locales.txt 5909897
+table day-periods.txt 12378
+table display-names.txt 2749045
+table extensions.txt 13701
+table likely-subtags.txt 126494
+table list-patterns.txt 35940
+table locales.txt 447
+table meta-zones.txt 41580
+table number-locales.txt 507799
+table numbering-systems.txt 7555
+table ordinals.txt 2903
+table plural-ranges.txt 8029
+table plurals.txt 9742
+table relative-times.txt 494797
+table scripts.txt 1452
+table time-data.txt 3576
+table units.txt 1682184
+table week-data.txt 1699
+tables-total 13547280 tables 23
+cldr-archive broiler-vm-block 10054869 files 114
+cldr-archive broiler-js-json 49530008 files 1813
+cldr-archive broiler-js-xml 26887168 files 68
+cldr-archive total 86472045 files 1995
+ucd-archive total 2345669 files 3
+vm-table JsCldrTables.g.cs 1364847

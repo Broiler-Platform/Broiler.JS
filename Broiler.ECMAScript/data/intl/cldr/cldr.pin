@@ -15,9 +15,12 @@
 # cldr-json packages from the npm registry, each tarball checked against the registry's sha512
 # integrity stated below before it was unpacked; the collation files, common/main/root.xml and the
 # licence from the CLDR repository at the tag release-48-2; each retrieved twice, on 2026-10-04 and
-# 2026-10-05, into two directories found byte-identical. None of them was retrieved again for this
-# copy, and each of its npm files was found byte-identical to its member of the tarballs retrieved for
-# the extension below.
+# 2026-10-05, into two directories found byte-identical. None of them was taken from a new retrieval
+# for this copy. Each of its npm files was found byte-identical to its member of its package's tarball:
+# a file from the packages the extension below reads, of the tarballs retrieved for it; a file from
+# cldr-core or cldr-bcp47, which the extension does not read, of those two packages' tarballs,
+# retrieved twice by Claude on 2026-10-26 from the same registry for this comparison alone, each pair
+# byte-identical and each tarball's sha512 the integrity its json-integrity line states.
 #
 # EXTENDED 2026-10-26 FOR SJL-9.2b. Broiler.JS's embedding (decision D5; its list is
 # ../locales/broiler-js.txt) reads the main data of every locale of its list that cldr-core's

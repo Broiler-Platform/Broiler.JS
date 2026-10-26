@@ -25,8 +25,11 @@ files Broiler.VM's generator reads for `de` and `en`: `numbers.json` and `curren
 `dateFields.json` and `timeZoneNames.json`, and the `ca-*.json` files of the calendars Broiler.VM's generator
 reads. The tarballs of the packages they come from were retrieved twice from the npm registry, into two
 directories that `cmp` found byte-identical, and each was checked against the sha512 integrity its
-`json-integrity` line states (Broiler.VM's lines, unchanged) before any file was read from it. Every npm file
-Broiler.VM's lines name was found byte-identical to its member of the same tarballs.
+`json-integrity` line states (Broiler.VM's lines, unchanged) before any file was read from it. Each of Broiler.VM's
+npm files from those packages was found byte-identical to its member of the same tarballs, and each of its files from
+`cldr-core` and `cldr-bcp47`, which the extra files do not come from, to its member of those packages' tarballs,
+retrieved twice on 2026-10-26 for that comparison alone, each pair byte-identical and each checked against its
+`json-integrity` line. None of Broiler.VM's files was taken from these retrievals.
 
 **Broiler.JS's `common/main` XML files** were added on 2026-10-26 for decision D21: Broiler.JS's number table carries
 each numbering system's own symbols for every locale of its list, through the locale's parent chain to root, and a
