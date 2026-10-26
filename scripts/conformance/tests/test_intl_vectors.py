@@ -202,6 +202,20 @@ class CommittedFileTests(unittest.TestCase):
             self.assertTrue(all(0x20 <= ord(c) < 0x7F for c in vector["script"]), vector_id)
             self.assertNotRegex(vector["script"], r"^(var|let|const|function|class) ", vector_id)
 
+    def test_an_op_another_area_names_is_rendered_as_that_area_renders_it(self) -> None:
+        # A library-level runner answers a vector by its op and inputs alone (IVectorLibrary.Call is given no area),
+        # so an op another area's vectors name is answered here in that area's rendering. The one op this area shares
+        # is String.prototype.toLocaleLowerCase, whose vectors in both areas render the String the call returns; the
+        # unicode area's pass the locale, and this area's vector passes none. Until revision 28 was corrected before its
+        # merge, two vectors of row L23 named Intl.Locale.prototype.getTimeZones, which the time-zones area's vectors
+        # render joined, and the Native AOT probe's runner answered them so.
+        others = set()
+        for path in CORPUS.rglob("*.vectors"):
+            if path.parent.name not in ("intl", "controls"):
+                others.update(record["op"] for record in read_records(path))
+        shared = sorted({vector["op"] for vector in self.vectors.values()} & others)
+        self.assertEqual(["String.prototype.toLocaleLowerCase"], shared)
+
     def test_every_expected_value_has_a_source_independent_of_both_engines(self) -> None:
         for vector_id, vector in self.vectors.items():
             entries = vector["prov"].split(" ")

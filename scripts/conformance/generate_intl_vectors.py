@@ -666,11 +666,14 @@ def cases_a() -> None:
         "L43", E("sec-canonicalizelocalelist"),
         "row L43 (engine policy, decision D18): the path Broiler.VM charges one unit per element; the vector reaches "
         "the path, and the charge is held by Broiler.VM's rule, not here")
-    # L23 and L41 (same): time zones of a region, and the canonical calendars.
-    add("a", "values", "Intl.Locale.prototype.getTimeZones", j('new Intl.Locale("en-NZ").getTimeZones()'), ["en-NZ"],
-        "L23", E("sec-timezonesoflocale"), "row L23 (same): tzdb's zone.tab zones of the region, in code-unit order")
-    add("a", "values", "Intl.Locale.prototype.getTimeZones", 'typeof new Intl.Locale("en").getTimeZones()', ["en"],
-        "L23", E("sec-timezonesoflocale"), "row L23 (same): undefined without a region")
+    # L23 and L41 (same): time zones of a region, and the canonical calendars. The time-zones area's vectors name the
+    # op Intl.Locale.prototype.getTimeZones for the zones joined, and a library-level runner answers a vector by its op
+    # and inputs alone, so these two, which render the JSON text and the type, name ops of their own.
+    add("a", "values", "Intl.Locale.prototype.getTimeZones, JSON", j('new Intl.Locale("en-NZ").getTimeZones()'),
+        ["en-NZ"], "L23", E("sec-timezonesoflocale"),
+        "row L23 (same): tzdb's zone.tab zones of the region, in code-unit order")
+    add("a", "values", "Intl.Locale.prototype.getTimeZones, typeof", 'typeof new Intl.Locale("en").getTimeZones()',
+        ["en"], "L23", E("sec-timezonesoflocale"), "row L23 (same): undefined without a region")
 
 
 # ---- (b) The Intl mathematical value, digit options and FormatNumericToString; plural rules and ranges ------------

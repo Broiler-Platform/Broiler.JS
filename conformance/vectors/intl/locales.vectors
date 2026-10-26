@@ -3108,7 +3108,7 @@ since: 27
 
 id: intl/locales/values/0003
 area: intl
-op: Intl.Locale.prototype.getTimeZones
+op: Intl.Locale.prototype.getTimeZones, JSON
 in: str:"en-NZ"
 out: value: str:"[\"Pacific/Auckland\",\"Pacific/Chatham\"]"
 class: normative
@@ -3119,7 +3119,7 @@ since: 27
 
 id: intl/locales/values/0004
 area: intl
-op: Intl.Locale.prototype.getTimeZones
+op: Intl.Locale.prototype.getTimeZones, typeof
 in: str:"en"
 out: value: str:"undefined"
 class: normative

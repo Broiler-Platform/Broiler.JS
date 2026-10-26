@@ -234,6 +234,14 @@ TZ=UTC at 6311031f… (a scratch tree written by git archive …)") and a last l
 write, added afterwards from the run's records; they are now as the run wrote them, and `engine/commands.txt` records
 how the run was taken.
 
+*2026-10-26, at SJL-9.2a, before the merge:* the shared libraries' Native AOT probe found that two vectors of row L23,
+`intl/locales/values/0003` and `0004`, named the op `Intl.Locale.prototype.getTimeZones`, which the time-zones area's
+vectors name for the zones joined. The library-level runner answers a vector by its op and inputs, so it answered them
+in that rendering where the probe requires "not implemented". Revision 28 was corrected in place: they now name
+`Intl.Locale.prototype.getTimeZones, JSON` and `Intl.Locale.prototype.getTimeZones, typeof`, and nothing else in the
+corpus changed. An engine-level run evaluates a vector's `script`, not its `op`, so the runs on `2f240fec` in `engine/`
+are runs of the corrected revision as well.
+
 ## State
 
 **2026-10-26, at SJL-9.1: the rule and its data only. Nothing here is a verdict, and nothing has been taken.**
