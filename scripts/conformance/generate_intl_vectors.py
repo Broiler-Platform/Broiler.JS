@@ -21,12 +21,14 @@ THE EXPECTED VALUES (decision D17 as revised on 2026-10-26). Every expected valu
 Node.js release bundle sjl-9-001's reference.txt names, v26.12.0 (ICU 78.3, CLDR 48.0), driven by intlref.mjs
 (``ref:intlref@1``), with three exceptions, each recorded in the vector:
 - where the pinned ECMA-402 text gives another answer, the vector takes the text's, argued in its note against the
-  clause its provenance names, and records the reference's as ``overruled:intlref@1=<outcome>`` (``Case.text``);
+  clause its provenance names, which quotes the reference's answer, and records it as ``overruled:intlref@1=<outcome>``
+  where that outcome holds no space, which an overruled: entry cannot hold (SCHEMA.md section 6) (``Case.text``);
 - (D17 (b)) a date-time string carries U+202F where ICU's pattern has it. V8 writes U+0020 there, in the reference's
   `format`, `formatToParts` and range methods alike, so the positions are read from the witness, Node.js 22.22.0's
   parts, which keep U+202F (intlref.mjs --witness): a vector takes them only where the witness's answer equals the
-  reference's character for character once U+202F is read as U+0020, and records the reference's raw answer as
-  ``overruled:intlref-v8@1=<outcome>``; a date-time case whose answers do not align so is refused;
+  reference's character for character once U+202F is read as U+0020, and its note records that the reference wrote
+  U+0020 there. No overruled: entry records the reference's answer, which always holds the U+0020 it overrules; a
+  date-time case whose answers do not align so is refused;
 - (D34) a DurationFormat `digital` line takes CLDR 48.2.0's own reading of the locale's time separator and of
   `durationUnit-type-hms` (two-digit hours where it begins `hh`), read by this generator from the cldr-json tarballs,
   each checked against its npm integrity (``ref:intlcldr@1``), and records ICU's one-digit hours as overruled.
@@ -34,10 +36,12 @@ The `class` is `normative` where the pinned text and the locale data both engine
 D10) fix the answer, and `impl-defined` only where the text leaves the answer to the implementation, with each engine's
 expectation from its plan: the available locales (decision D5: Broiler.VM's list stays de, de-DE, en and en-US, so its
 expectation is the reference's answer for the locale it resolves to, ``vm_script``), the default locale and the
-other engine policies (decision D7), the implementation-defined rows whose answer the shared library takes (JSD-0082's
-section "Every row, classified"), decision D15's names and decision D21's numbering-system symbols (``d21_script``). A
-row's own script states each plan's rule where the expectation is computed; no expected value is taken from either
-engine. Each engine's first run is classified in scripts/conformance/intl-divergences.txt, which this generator reads
+other engine policies (decision D7), each engine's Collator's collations (decision D33 (c) and row L40), the
+implementation-defined rows, whose answer the shared library takes from Broiler.VM, since every one keeps this answer
+under Broiler.VM's rule, which admits no C3 (decision D35; row N5b's is Broiler.VM's composition, read by this
+generator from CLDR 48.2.0, ``vm_unit_answer``), decision D15's names and decision D21's numbering-system symbols
+(``d21_script``). A row's own script, or a table of the plan's rule, states each plan's expectation where it is
+computed; no expected value is read from either engine's run. Each engine's first run is classified in scripts/conformance/intl-divergences.txt, which this generator reads
 (corpus revision 28).
 
 THE LOCALES. Broiler.JS's main-data list is decision D5's union, read here from bundle sjl-9-001's committed
@@ -84,7 +88,6 @@ ERA = "proposal:intl-era-monthcode@5833eae#"
 REF = "ref:intlref@1"
 REF_CLDR = "ref:intlcldr@1"
 OVERRULED = "overruled:intlref@1="
-OVERRULED_V8 = "overruled:intlref-v8@1="
 
 # The cldr-json 48.2.0 tarballs this generator reads, each by the sha512 integrity the npm registry publishes, which
 # Broiler.VM's src/tests/cldr/pins/cldr.pin records as its json-integrity lines.
@@ -121,6 +124,31 @@ WELL_FORMED_TAG = re.compile(r"^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$")
 VM_LIST_REASON = ("decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves {moves} "
                   "(LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer "
                   "for that locale; Broiler.JS's embedding carries the locale, so its expectation is out")
+
+# Decision D33 (c) and row L40: each engine's Intl.Collator keeps its own data until SJL-17, and the shared
+# CollationsOfLocale reads the list of the collations that engine's Collator resolves. Broiler.JS's Collator keeps its
+# host path: it resolves emoji and eor for every locale and, for a language, the tailorings its NetCollationSuffix
+# table maps (Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs at the rule commit, kept in step with its
+# SupportedCollationsSorted, which Intl.supportedValuesOf("collation") lists). Broiler.VM's offers phonebk for German
+# alone (JSD-0043).
+BROILER_JS_ROOT_COLLATIONS = ("emoji", "eor")
+BROILER_JS_TAILORINGS = {"de": ("phonebk",), "hu": ("trad",), "ja": ("unihan",), "ko": ("unihan",),
+                         "zh": ("phonetic", "pinyin", "stroke", "trad", "unihan", "zhuyin")}
+
+
+def broiler_js_collations(tag: str | None = None) -> list[str]:
+    """The collations Broiler.JS's Intl.Collator resolves for a locale, sorted in code-unit order, without the
+    default; with no locale, every collation it lists (Intl.supportedValuesOf("collation"))."""
+    if tag is None:
+        names = set(BROILER_JS_ROOT_COLLATIONS).union(*BROILER_JS_TAILORINGS.values())
+    else:
+        names = set(BROILER_JS_ROOT_COLLATIONS).union(BROILER_JS_TAILORINGS.get(tag.split("-")[0].lower(), ()))
+    return sorted(names)
+
+
+def json_list(values: Sequence[str]) -> str:
+    """The rendered outcome of a script that answers JSON.stringify of a list of Strings."""
+    return "value: str:" + quote(json.dumps(list(values), separators=(",", ":")))
 
 
 # Decision D21: Broiler.VM's limitation stays, the latn symbols for every numbering system, while Broiler.JS's
@@ -398,8 +426,8 @@ def cases_a() -> None:
                              ("Intl.Locale", f"new Intl.Locale({js(tag)}).toString()"),
                              ("Intl.NumberFormat", f"new Intl.NumberFormat({js(tag)}).resolvedOptions().locale")):
             add("a", "ascii", path, script, [tag], "L45 L2", E("sec-iswellformedlanguagetag",
-                "sec-canonicalizelocalelist"), "row L45: unicode_region_subtag is three ASCII digits or two letters, "
-                "and nothing follows the tag; the tag is refused on every path")
+                "sec-canonicalizelocalelist"), "rows L45 and L2: unicode_region_subtag is three ASCII digits or two "
+                "letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path")
     # L5: language aliases (CLDR languageAlias, the generated table).
     for tag in ("tl", "aju", "aam", "swc", "aa-saaho", "und-Latn-saaho", "und-aaland", "sv-aaland", "iw", "in", "ji",
                 "jw", "mo", "aar", "ces", "heb", "tw", "cmn", "drw", "sh", "cnr", "art-lojban", "zh-hakka",
@@ -426,13 +454,14 @@ def cases_a() -> None:
             **(dict(text='value: str:"en-u-ka-yes"', text_reason=KA_YES_REASON) if tag == "en-u-ka-yes" else {}))
     # L9: a subdivision alias whose replacement is a region.
     for tag in ("en-u-sd-fi01", "en-u-rg-fi01", "en-u-rg-cn71", "zh-u-sd-cn91", "fr-u-sd-frgp", "fr-u-rg-frgua"):
-        add("a", "subdivision", gcl, f"{gcl}({js(tag)})[0]", [tag], "L9", E("sec-canonicalizeunicodelocaleid"),
-            "row L9 (a correction of Broiler.VM, decision D32): UTS #35 Annex C writes a subdivision alias whose "
-            "replacement is a region as the region in lower case followed by zzzz")
-        add("a", "subdivision", gcl, f"{gcl}({gcl}({js(tag)})[0])[0]", [tag], "L9", E("sec-canonicalizeunicodelocaleid"),
-            "row L9: the canonical tag canonicalizes to itself")
-        add("a", "subdivision", "Intl.Locale.prototype.toString", f"new Intl.Locale({js(tag)}).toString()", [tag], "L9",
-            E("sec-intl-locale-constructor", "sec-canonicalizeunicodelocaleid"), "row L9, through Intl.Locale")
+        add("a", "subdivision", gcl, f"{gcl}({js(tag)})[0]", [tag], "L9 L8", E("sec-canonicalizeunicodelocaleid"),
+            "rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a "
+            "subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz")
+        add("a", "subdivision", gcl, f"{gcl}({gcl}({js(tag)})[0])[0]", [tag], "L9 L8",
+            E("sec-canonicalizeunicodelocaleid"), "rows L9 and L8: the canonical tag canonicalizes to itself")
+        add("a", "subdivision", "Intl.Locale.prototype.toString", f"new Intl.Locale({js(tag)}).toString()", [tag],
+            "L9 L8", E("sec-intl-locale-constructor", "sec-canonicalizeunicodelocaleid"),
+            "rows L9 and L8, through Intl.Locale")
     # L10: a -t- tlang whose language alias adds a subtag.
     for tag in ("en-t-sh", "de-t-mo", "en-t-sgn-gr"):
         add("a", "aliases", gcl, f"{gcl}({js(tag)})[0]", [tag], "L10", E("sec-canonicalizeunicodelocaleid"),
@@ -483,25 +512,27 @@ def cases_a() -> None:
     add("a", "info", "Intl.Locale.prototype.getCalendars", j('new Intl.Locale("en-US").getCalendars()'), ["en-US"],
         "L16", E("sec-calendarsoflocale"), "row L16 (same): the United States' calendar preference")
     # L17 and L18: collations with no keyword (decisions D32 and D33 (c)).
-    for tag, vm in (("en", "[]"), ("en-US", "[]"), ("en-GB", "[]"), ("de", '["phonebk"]'), ("de-DE", '["phonebk"]')):
+    for tag, vm in (("en", []), ("en-US", []), ("en-GB", []), ("de", ["phonebk"]), ("de-DE", ["phonebk"])):
         add("a", "collations", "Intl.Locale.prototype.getCollations", j(f"new Intl.Locale({js(tag)}).getCollations()"),
             [tag], "L17", E("sec-collationsoflocale"),
             "row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 "
             "(c): each engine's Collator data, which stays its own until SJL-17)",
-            per_engine={"broiler-vm": f"value: str:{quote(vm)}"},
+            per_engine={"broiler-vm": json_list(vm), "broiler-js": json_list(broiler_js_collations(tag))},
             impl_reason="Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers "
-                        "that list; Broiler.JS, whose Collator keeps its host path until SJL-17, is compared with the "
-                        "reference")
+                        "that list; Broiler.JS's adapter hands the operation the collations its own Collator, which "
+                        "keeps its host path until SJL-17, resolves for the locale (decision D33 (c))")
     for tag in ("fr-FR", "es-419", "ja", "zh-TW", "ar-EG"):
         add("a", "collations", "Intl.Locale.prototype.getCollations", j(f"new Intl.Locale({js(tag)}).getCollations()"),
             [tag], "L18 L17", E("sec-collationsoflocale"),
-            "row L18 (a correction of Broiler.VM, decision D32): for a language the Collator does not support, "
-            "CollationsOfLocale reads DefaultLocale's collations",
-            per_engine={"broiler-vm": 'value: str:"[]"'},
+            "rows L18 (a correction of Broiler.VM, decision D32) and L17: for a language the Collator does not "
+            "support, CollationsOfLocale reads DefaultLocale's collations, and otherwise the locale's",
+            per_engine={"broiler-vm": json_list([]), "broiler-js": json_list(broiler_js_collations(tag))},
             impl_reason="Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); "
-                        "Broiler.JS's Collator is compared with the reference (decision D33 (c))")
+                        "Broiler.JS's adapter hands the operation the collations its own Collator resolves for the "
+                        "locale (decision D33 (c)), emoji and eor and the language's tailorings")
     add("a", "collations", "Intl.Locale.prototype.getCollations", j('new Intl.Locale("und").getCollations()'), ["und"],
-        "L18", E("sec-collationsoflocale"), "row L18: und answers emoji and eor, CollationsOfLocale's own list")
+        "L18 L17", E("sec-collationsoflocale"),
+        "rows L18 and L17: und answers emoji and eor, CollationsOfLocale's own list")
     # L19, L20, L21: hour cycles and week data by region (text: CLDR's time data; see hour_cycle_cases).
     # L22: numbering systems of a locale with no keyword.
     for tag in ("ar-EG", "ar-SA", "fa-IR", "ckb-IQ", "en-US", "de"):
@@ -627,9 +658,9 @@ def cases_a() -> None:
     add("a", "values", "Intl.supportedValuesOf", j('Intl.supportedValuesOf("collation")'), ["collation"], "L40",
         E("sec-intl.supportedvaluesof", "sec-availablecanonicalcollations"),
         "row L40 (engine policy): each engine's Collator's collations, SJL-17's",
-        per_engine={"broiler-vm": 'value: str:"[\\"phonebk\\"]"'},
-        impl_reason="Broiler.VM's Collator offers phonebk alone (JSD-0043); Broiler.JS's Collator keeps its host "
-                    "path until SJL-17, compared with the reference")
+        per_engine={"broiler-vm": json_list(["phonebk"]), "broiler-js": json_list(broiler_js_collations())},
+        impl_reason="Broiler.VM's Collator offers phonebk alone (JSD-0043); Broiler.JS's Collator, which keeps its "
+                    "host path until SJL-17, lists the nine collations it resolves for some locale")
     # L43: CanonicalizeLocaleList over many elements (the charge is not observable here).
     add("a", "values", "Intl.getCanonicalLocales", 'Intl.getCanonicalLocales(Array(2000).fill("en-us")).join()', ["en-us"],
         "L43", E("sec-canonicalizelocalelist"),
@@ -938,7 +969,7 @@ def cases_b() -> None:
 # ---- (c) Number formatting; list, relative-time and display-name formatting ----------------------------------------
 
 
-def cases_c() -> None:
+def cases_c(cldr: Cldr) -> None:
     num_clauses = E("sec-partitionnumberpattern", "sec-getnumberformatpattern")
     # N1a (same) and N1b (data): decimal symbols and grouping.
     for locale in ("en", "en-US", "de", "de-DE"):
@@ -1006,10 +1037,13 @@ def cases_c() -> None:
     for locale in ("en", "de"):
         for unit in ("liter-per-kilometer", "byte-per-second", "kilobit-per-stone"):
             for display in ("short", "long", "narrow"):
+                answer = "value: str:" + quote(vm_unit_answer(cldr, locale, unit, display, 2))
                 add("c", "unit", NF, nf(locale, f'style: "unit", unit: "{unit}", unitDisplay: "{display}"', "2"),
                     [locale, unit, display, 2], "N5b", num_clauses,
                     "row N5b (implementation-defined): a compound unit with no pattern of its own, composed from its "
-                    "two units and CLDR's per pattern", per_engine_same=True, impl_reason=LIBRARY_TAKES)
+                    "two units and CLDR's per pattern",
+                    per_engine={"broiler-vm": answer, "broiler-js": answer}, extra_prov=(REF_CLDR,),
+                    impl_reason=N5B_REASON)
     add("c", "unit", NF, nf("en", 'style: "unit", unit: "liter", unitDisplay: "long", minimumFractionDigits: 1', "1"),
         ["en", "liter", 1], "N5c", num_clauses,
         "row N5c (implementation-defined): the unit's plural reads the formatted digits", per_engine_same=True,
@@ -1138,10 +1172,11 @@ def cases_c() -> None:
     # N13 (same): resolvedOptions' property order.
     add("c", "options", "Intl.NumberFormat.prototype.resolvedOptions",
         'Object.keys(new Intl.NumberFormat("en", {style: "currency", currency: "EUR", notation: "compact"}).resolvedOptions()).join()',
-        ["en"], "N13", E("sec-intl.numberformat.prototype.resolvedoptions"), "row N13 (same): the table's order")
+        ["en"], "N13 M5", E("sec-intl.numberformat.prototype.resolvedoptions"),
+        "rows N13 (same) and M5: the table's order, with the digit properties compact notation sets")
     # N14 (data): a locale the host lacks resolves to an available one (the host culture itself is not run here).
     add("c", "options", NF, nf("de-CH", "", num(1234.5)), ["de-CH", 1234.5], "N14 N1b", num_clauses,
-        "row N14 (data, C5): the shared data's de-CH, not the host's culture")
+        "rows N14 (data, C5) and N1b (data, C5): the shared data's de-CH, not the host's culture")
     # N16: the formatters over many parts (the charge is not observable here).
     add("c", "options", "Intl.ListFormat.prototype.formatToParts",
         'new Intl.ListFormat("en").formatToParts(Array(2000).fill("a")).length', ["en"], "N16",
@@ -1242,8 +1277,9 @@ def cases_c() -> None:
 FRIDAY = 1704467229123   # 2024-01-05T15:07:09.123Z, a Friday
 SUNDAY = 1704639600000   # 2024-01-07T15:00:00Z
 DTF = "Intl.DateTimeFormat.prototype.format"
-LIBRARY_TAKES = ("JSD-0082: the text leaves this to the implementation, and the shared library takes one answer, "
-                 "which both engines' plans adopt; it is the reference's")
+LIBRARY_TAKES = ("JSD-0082 decision D35: the text leaves this to the implementation, and every implementation-defined "
+                 "row keeps Broiler.VM's answer under Broiler.VM's rule, which admits no C3; the shared library takes "
+                 "that answer and both engines' plans adopt it; here it is the reference's")
 
 
 def dtf(locale: str, options: str, value: str = str(FRIDAY), method: str = "format") -> str:
@@ -1721,6 +1757,66 @@ class Cldr:
             return False
 
 
+# Row N5b (decision D35): the shared library keeps Broiler.VM's composition of a compound unit CLDR names no pattern
+# for, as every implementation-defined row keeps Broiler.VM's answer. vm_unit_answer states that composition, Broiler.VM's
+# JsNumberFormatter.UnitPattern at its rule commit, over CLDR 48.2.0's units.json, which Broiler.VM's table holds.
+N5B_REASON = ("decision D35: every implementation-defined row keeps Broiler.VM's answer, which the shared library "
+              "takes and both engines' plans adopt; Broiler.VM composes the numerator's pattern for the width into the "
+              "denominator's perUnitPattern or the width's compoundUnitPattern with the denominator's singular name, "
+              "each read in the width and then in each wider one, the one-form before the other-form, from CLDR "
+              "48.2.0 (ref:intlcldr@1)")
+
+
+def vm_unit_answer(cldr: Cldr, locale: str, unit: str, width: str, value: int) -> str:
+    """Broiler.VM's answer for a unit CLDR 48.2.0 gives no pattern of its own: UnitPattern over its units table (a
+    CLDR unit's name without its category; the per entry's compoundUnitPattern), then the pattern with {0} replaced
+    by the number. Only a small integer whose plural category is other in en and de is taken, written as its ASCII
+    digits, which both locales' decimal format writes for it."""
+    if locale not in ("en", "de") or value not in range(2, 1000):
+        raise GeneratorError(f"vm_unit_answer states Broiler.VM's composition for en and de and a plural-other integer")
+    data = cldr.json("cldr-units-full", f"main/{locale}/units.json")["main"][locale]["units"]
+    widths = {"narrow": ("narrow", "short", "long"), "short": ("short", "long"), "long": ("long",)}[width]
+    table: dict[tuple[str, str], dict] = {}
+    for w in ("long", "short", "narrow"):
+        for name, entry in data[w].items():
+            if name == "per":
+                table[(w, "per")] = entry
+            elif "-" in name and isinstance(entry, dict):
+                table.setdefault((w, name.split("-", 1)[1]), entry)
+
+    def field_of(identifier: str, key: str) -> str | None:
+        for w in widths:
+            found = table.get((w, identifier), {}).get(key)
+            if found is not None:
+                return found
+        return None
+
+    def pattern(identifier: str) -> str | None:
+        for w in widths:
+            entry = table.get((w, identifier), {})
+            found = entry.get("unitPattern-count-other")
+            if found is not None:
+                return found
+        return None
+
+    composed = pattern(unit)
+    if composed is None:
+        per = unit.find("-per-")
+        numerator = pattern(unit[:per]) if per > 0 else None
+        if numerator is None:
+            raise GeneratorError(f"{unit}: Broiler.VM's composition has no numerator pattern in {locale}")
+        denominator = unit[per + len("-per-"):]
+        per_unit = field_of(denominator, "perUnitPattern")
+        if per_unit is not None:
+            composed = per_unit.replace("{0}", numerator)
+        else:
+            compound = field_of("per", "compoundUnitPattern") or "{0}/{1}"
+            single = (field_of(denominator, "unitPattern-count-one") or field_of(denominator, "unitPattern-count-other")
+                      or denominator).replace("{0}", "").strip()
+            composed = compound.replace("{0}", numerator).replace("{1}", single)
+    return composed.replace("{0}", str(value))
+
+
 def broiler_js_locales(cldr: Cldr) -> list[str]:
     """Decision D5's main-data list for Broiler.JS: the languages its CLDR package serves; every language (or its
     CLDR replacement) with CLDR main data, and every CLDR locale (availableLocales' full list or defaultContent), that
@@ -1813,67 +1909,92 @@ def cldr_cases(cldr: Cldr, extra: Sequence[str]) -> None:
 # ---- One vector per table family for each extra locale (decision D17) --------------------------------------------
 
 
+ROW_CLASS_NOTE = {"same": "same", "correction-js": "a correction of Broiler.JS",
+                  "correction-vm": "a correction of Broiler.VM", "impl-defined": "implementation-defined",
+                  "data": "data, C5", "engine-policy": "engine policy"}
+
+
+def rows_note(rows: str) -> str:
+    """The rows of a note, each with its class: "row L26 (data, C5)", "rows N2b (data, C5) and M5 (...)"."""
+    named = [f"{row} ({ROW_CLASS_NOTE[ROWS[row]]})" for row in rows.split()]
+    if len(named) == 1:
+        return "row " + named[0]
+    return "rows " + ", ".join(named[:-1]) + " and " + named[-1]
+
+
 def family_cases(extra: Sequence[str]) -> None:
+    """One vector per table family for each extra locale (decision D17). Each note names the family's rows, the row of
+    its table and every row a difference of the family's vector confirms: a percent's fraction digits (M5); a day
+    period's flexible rules, its dropping under a 24-hour cycle and its names (T17, T20, T14); and a time pattern's
+    U+202F, hour cycle and day-period names (T12, T10, T14)."""
     for tag in extra:
         t = js(tag)
         note = f"{tag}, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data"
-        add("a", "families", "Intl.Locale.prototype.maximize", f"new Intl.Locale({t}).maximize().toString()", [tag], "L5",
-            E("sec-Intl.Locale.prototype.maximize"), f"likely subtags; {note}")
-        add("a", "families", "Intl.Locale.prototype.getWeekInfo",
+
+        def family(sub: str, op: str, script: str, inputs: Iterable, rows: str, clauses: Iterable[str], what: str,
+                   **kwargs) -> Case:
+            return add(sub, "families", op, script, inputs, rows, clauses, f"{rows_note(rows)}: {what}; {note}",
+                       **kwargs)
+        family("a", "Intl.Locale.prototype.maximize", f"new Intl.Locale({t}).maximize().toString()", [tag], "L5",
+            E("sec-Intl.Locale.prototype.maximize"), "likely subtags")
+        family("a", "Intl.Locale.prototype.getWeekInfo",
             f"(function (w) {{ return JSON.stringify([w.firstDay, w.weekend]); }})(new Intl.Locale({t}).getWeekInfo())", [tag],
-            "L26", E("sec-weekinfooflocale"), f"week data; {note}")
-        add("a", "families", "Intl.Locale.prototype.getTextInfo", f"new Intl.Locale({t}).getTextInfo().direction", [tag],
-            "L24", E("sec-textdirectionoflocale"), f"script metadata; {note}")
-        add("b", "families", "Intl.PluralRules.prototype.resolvedOptions",
+            "L26", E("sec-weekinfooflocale"), "week data")
+        family("a", "Intl.Locale.prototype.getTextInfo", f"new Intl.Locale({t}).getTextInfo().direction", [tag],
+            "L24", E("sec-textdirectionoflocale"), "script metadata")
+        family("b", "Intl.PluralRules.prototype.resolvedOptions",
             j(f"new Intl.PluralRules({t}).resolvedOptions().pluralCategories"), [tag], "P3",
-            E("sec-intl.pluralrules.prototype.resolvedoptions"), f"cardinal plural rules; {note}")
-        add("b", "families", "Intl.PluralRules.prototype.resolvedOptions",
+            E("sec-intl.pluralrules.prototype.resolvedoptions"), "cardinal plural rules")
+        family("b", "Intl.PluralRules.prototype.resolvedOptions",
             j(f'new Intl.PluralRules({t}, {{type: "ordinal"}}).resolvedOptions().pluralCategories'), [tag], "P3",
-            E("sec-intl.pluralrules.prototype.resolvedoptions"), f"ordinal rules; {note}")
-        add("b", "families", "Intl.PluralRules.prototype.select", j(f"[0, 1, 2, 3, 5, 11, 21, 101].map(function (n) {{ return new Intl.PluralRules({t}).select(n); }})"),
-            [tag], "P3", E("sec-resolveplural", "sec-pluralruleselect"), f"cardinal selection; {note}")
-        add("b", "families", "Intl.PluralRules.prototype.selectRange", f"new Intl.PluralRules({t}).selectRange(1, 2)", [tag],
-            "P5b", E("sec-resolvepluralrange", "sec-pluralruleselectrange"), f"plural ranges (an X1 adoption); {note}")
-        add("c", "families", NF, nf(tag, "", num(-1234567.891)), [tag, -1234567.891], "N1b", E("sec-partitionnumberpattern"),
-            f"decimal symbols and grouping; {note}")
-        add("c", "families", NF, nf(tag, 'style: "percent"', num(0.256)), [tag, 0.256], "N2b", E("sec-partitionnumberpattern"),
-            f"the percent pattern; {note}")
-        add("c", "families", NF, nf(tag, 'style: "currency", currency: "EUR"', num(-1234.5)), [tag, -1234.5], "N3c",
-            E("sec-partitionnumberpattern"), f"the currency pattern; {note}")
-        add("c", "families", NF, nf(tag, 'style: "currency", currency: "USD", currencyDisplay: "name"', "2"), [tag, 2], "N4",
-            E("sec-partitionnumberpattern"), f"currency names; {note}")
-        add("c", "families", NF, nf(tag, 'notation: "compact"', "1234567"), [tag, 1234567], "N6d", E("sec-getnotationsubpattern"),
-            f"compact patterns; {note}")
-        add("c", "families", NF, nf(tag, 'style: "unit", unit: "kilometer-per-hour", unitDisplay: "long"', "2"), [tag, 2], "N5d",
-            E("sec-partitionnumberpattern"), f"unit patterns; {note}")
-        add("c", "families", "Intl.NumberFormat.prototype.resolvedOptions",
+            E("sec-intl.pluralrules.prototype.resolvedoptions"), "ordinal rules")
+        family("b", "Intl.PluralRules.prototype.select", j(f"[0, 1, 2, 3, 5, 11, 21, 101].map(function (n) {{ return new Intl.PluralRules({t}).select(n); }})"),
+            [tag], "P3", E("sec-resolveplural", "sec-pluralruleselect"), "cardinal selection")
+        family("b", "Intl.PluralRules.prototype.selectRange", f"new Intl.PluralRules({t}).selectRange(1, 2)", [tag],
+            "P5b", E("sec-resolvepluralrange", "sec-pluralruleselectrange"), "plural ranges (an X1 adoption)")
+        family("c", NF, nf(tag, "", num(-1234567.891)), [tag, -1234567.891], "N1b", E("sec-partitionnumberpattern"),
+            "decimal symbols and grouping")
+        family("c", NF, nf(tag, 'style: "percent"', num(0.256)), [tag, 0.256], "N2b M5",
+            E("sec-partitionnumberpattern", "sec-intl.numberformat"),
+            "the percent pattern, with percent's default fraction digits, 0 and 0")
+        family("c", NF, nf(tag, 'style: "currency", currency: "EUR"', num(-1234.5)), [tag, -1234.5], "N3c",
+            E("sec-partitionnumberpattern"), "the currency pattern")
+        family("c", NF, nf(tag, 'style: "currency", currency: "USD", currencyDisplay: "name"', "2"), [tag, 2], "N4",
+            E("sec-partitionnumberpattern"), "currency names")
+        family("c", NF, nf(tag, 'notation: "compact"', "1234567"), [tag, 1234567], "N6d", E("sec-getnotationsubpattern"),
+            "compact patterns")
+        family("c", NF, nf(tag, 'style: "unit", unit: "kilometer-per-hour", unitDisplay: "long"', "2"), [tag, 2], "N5d",
+            E("sec-partitionnumberpattern"), "unit patterns")
+        family("c", "Intl.NumberFormat.prototype.resolvedOptions",
             f"new Intl.NumberFormat({t}).resolvedOptions().numberingSystem", [tag], "N8b",
-            E("sec-intl.numberformat.prototype.resolvedoptions"), f"the default numbering system; {note}")
-        add("c", "families", "Intl.ListFormat.prototype.format", f'new Intl.ListFormat({t}).format(["A", "B", "C"])', [tag], "S1b",
-            E("sec-formatlist"), f"list patterns; {note}")
-        add("c", "families", "Intl.RelativeTimeFormat.prototype.format", f'new Intl.RelativeTimeFormat({t}).format(-3, "day")',
-            [tag], "S4b", E("sec-PartitionRelativeTimePattern"), f"relative-time patterns; {note}")
-        add("c", "families", "Intl.DisplayNames.prototype.of",
+            E("sec-intl.numberformat.prototype.resolvedoptions"), "the default numbering system")
+        family("c", "Intl.ListFormat.prototype.format", f'new Intl.ListFormat({t}).format(["A", "B", "C"])', [tag], "S1b",
+            E("sec-formatlist"), "list patterns")
+        family("c", "Intl.RelativeTimeFormat.prototype.format", f'new Intl.RelativeTimeFormat({t}).format(-3, "day")',
+            [tag], "S4b", E("sec-PartitionRelativeTimePattern"), "relative-time patterns")
+        family("c", "Intl.DisplayNames.prototype.of",
             f'[new Intl.DisplayNames({t}, {{type: "language"}}).of("de"), new Intl.DisplayNames({t}, {{type: "region"}}).of("US")].join("|")',
-            [tag], "S8", E("sec-Intl.DisplayNames.prototype.of"), f"display names (an X1 adoption); {note}")
-        add("d", "families", DTF, dtf(tag, 'dateStyle: "full"'), [tag], "T16 T14", E("sec-formatdatetimepattern"),
-            f"date patterns and names; {note}", witness=True)
-        add("d", "families", DTF, dtf(tag, 'timeStyle: "short"'), [tag], "T16 T12", E("sec-formatdatetimepattern"),
-            f"time patterns; {note}", witness=True)
-        add("d", "families", "Intl.DateTimeFormat.prototype.resolvedOptions",
+            [tag], "S8", E("sec-Intl.DisplayNames.prototype.of"), "display names (an X1 adoption)")
+        family("d", DTF, dtf(tag, 'dateStyle: "full"'), [tag], "T16 T14", E("sec-formatdatetimepattern"),
+            "date patterns and names", witness=True)
+        family("d", DTF, dtf(tag, 'timeStyle: "short"'), [tag], "T16 T12 T10 T14",
+            E("sec-formatdatetimepattern"), "time patterns, with the locale's hour cycle and day-period names",
+            witness=True)
+        family("d", "Intl.DateTimeFormat.prototype.resolvedOptions",
             f'new Intl.DateTimeFormat({t}, {{hour: "numeric"}}).resolvedOptions().hourCycle', [tag], "T10",
-            E("sec-intl.datetimeformat-internal-slots"), f"time data; {note}")
-        add("d", "families", DTF, dtf(tag, 'hour: "numeric", dayPeriod: "long"', "Date.UTC(2024, 0, 5, 15)"), [tag], "T17",
-            E("sec-formatdatetimepattern"), f"day periods; {note}", witness=True)
-        add("d", "families", "Intl.DateTimeFormat.prototype.formatRange",
+            E("sec-intl.datetimeformat-internal-slots"), "time data")
+        family("d", DTF, dtf(tag, 'hour: "numeric", dayPeriod: "long"', "Date.UTC(2024, 0, 5, 15)"), [tag],
+            "T17 T20 T16 T14", E("sec-formatdatetimepattern"),
+            "day periods, which the locale's 24-hour cycle drops, and their names", witness=True)
+        family("d", "Intl.DateTimeFormat.prototype.formatRange",
             f'new Intl.DateTimeFormat({t}, {{dateStyle: "medium", timeZone: "UTC"}}).formatRange(Date.UTC(2024, 0, 5), Date.UTC(2024, 0, 7))',
-            [tag], "T30 T31", E("sec-partitiondatetimerangepattern"), f"interval formats; {note}", witness=True,
+            [tag], "T30 T31", E("sec-partitiondatetimerangepattern"), "interval formats", witness=True,
             per_engine_same=True, impl_reason=LIBRARY_TAKES)
-        add("d", "families", "Intl.DateTimeFormat (timeZoneName)",
+        family("d", "Intl.DateTimeFormat (timeZoneName)",
             f'(function (p) {{ for (var i = 0; i < p.length; i++) if (p[i].type === "timeZoneName") return p[i].value; }})(new Intl.DateTimeFormat({t}, {{timeZone: "America/New_York", timeZoneName: "long"}}).formatToParts({FRIDAY}))',
-            [tag], "T22", E("sec-formatdatetimepattern"), f"time zone names; {note}")
-        add("e", "families", DFMT, df(tag, 'style: "long"', "{hours: 1, minutes: 2, seconds: 3}"), [tag], "U15",
-            E("sec-partitiondurationformatpattern"), f"the duration's unit and list patterns; {note}")
+            [tag], "T22", E("sec-formatdatetimepattern"), "time zone names")
+        family("e", DFMT, df(tag, 'style: "long"', "{hours: 1, minutes: 2, seconds: 3}"), [tag], "U15",
+            E("sec-partitiondurationformatpattern"), "the duration's unit and list patterns")
 
 
 # ---- Running the references -----------------------------------------------------------------------------------
@@ -1959,10 +2080,10 @@ def resolve(case: Case, ref: str, witness: str | None, extra: dict[str, str], pr
     source = [REF]
     out, restored = restore_nnbsp(case, ref, witness, problems)
     if restored:
+        # No overruled: entry can record the reference's answer, which holds the U+0020 it overrules (an entry holds
+        # no space, SCHEMA.md section 6), so the note records it.
         notes.append("U+202F where ICU's pattern has it (decision D17 (b)), its positions from the witness's "
                      "parts; the reference wrote U+0020 there")
-        if " " not in compact(ref):
-            source.append(OVERRULED_V8 + compact(ref))
     expected = case.text or case.cldr or text_answer or (case.text_fn(ref) if case.text_fn else None)
     if expected is not None:
         if expected != out:
@@ -2045,14 +2166,11 @@ def render_record(vector: Vector, identifier: str, divergence: dict[str, str] | 
     per_engine = dict(vector.per_engine)
     for engine in divergence:
         if cls == "impl-defined" and engine not in per_engine:
-            # An engine with no per-engine field is compared with `out` (SCHEMA.md section 5), and a divergence field
-            # on an impl-defined vector needs that engine's per-engine field beside it. Where the vector's note says
-            # the engine is compared with the reference, its plan's expectation is `out`, and the record states it.
-            if not any("compared with the reference" in note for note in vector.notes if note):
-                raise GeneratorError(f"{identifier}: an impl-defined vector classified for {engine}, which has no "
-                                     "per-engine expectation there and whose note does not compare it with the "
-                                     "reference (SCHEMA.md section 5)")
-            per_engine[engine] = vector.out
+            # A divergence field on an impl-defined vector needs the engine's per-engine field beside it (SCHEMA.md
+            # section 5), the expectation its plan commits it to, which the vector's case states. The generator does
+            # not take the vector's out for it: an engine compared with out is not thereby committed to it.
+            raise GeneratorError(f"{identifier}: an impl-defined vector classified for {engine}, whose case states "
+                                 "no per-engine expectation for it (SCHEMA.md section 5)")
     if divergence and cls == "normative":
         cls = "divergence"
     lines = [f"id: {identifier}", "area: intl", f"op: {case.op}",
@@ -2120,7 +2238,7 @@ def generate(node: str, witness_node: str, cldr_dir: Path, out: Path, spec: Path
     extra = [tag for tag in locales if tag not in VM_LOCALES]
     cases_a()
     cases_b()
-    cases_c()
+    cases_c(cldr)
     cases_d()
     cases_e()
     cldr_cases(cldr, extra)

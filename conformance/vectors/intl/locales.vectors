@@ -316,7 +316,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: Intl.getCanonicalLocales("en\u000a")
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0010
@@ -328,7 +328,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.Locale("en\u000a").toString()
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0011
@@ -340,7 +340,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.NumberFormat("en\u000a").resolvedOptions().locale
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0012
@@ -352,7 +352,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: Intl.getCanonicalLocales("en-US\u000a")
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0013
@@ -364,7 +364,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.Locale("en-US\u000a").toString()
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0014
@@ -376,7 +376,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.NumberFormat("en-US\u000a").resolvedOptions().locale
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0015
@@ -388,7 +388,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: Intl.getCanonicalLocales("de-\u0661\u0662\u0663")
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0016
@@ -400,7 +400,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.Locale("de-\u0661\u0662\u0663").toString()
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0017
@@ -412,7 +412,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.NumberFormat("de-\u0661\u0662\u0663").resolvedOptions().locale
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0018
@@ -424,7 +424,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: Intl.getCanonicalLocales("en-\u0661\u0662\u0663")
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0019
@@ -436,7 +436,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.Locale("en-\u0661\u0662\u0663").toString()
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0020
@@ -448,7 +448,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.NumberFormat("en-\u0661\u0662\u0663").resolvedOptions().locale
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0021
@@ -460,7 +460,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: Intl.getCanonicalLocales("de-DE\u000a")
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0022
@@ -472,7 +472,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.Locale("de-DE\u000a").toString()
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/ascii/0023
@@ -484,7 +484,7 @@ class: divergence
 divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.NumberFormat("de-DE\u000a").resolvedOptions().locale
-note: row L45: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag; the tag is refused on every path
+note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
 since: 27
 
 id: intl/locales/aliases/0001
@@ -1303,7 +1303,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-u-sd-fi01")[0]
-note: row L9 (a correction of Broiler.VM, decision D32): UTS #35 Annex C writes a subdivision alias whose replacement is a region as the region in lower case followed by zzzz
+note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
 since: 27
 
 id: intl/locales/subdivision/0002
@@ -1316,7 +1316,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("en-u-sd-fi01")[0])[0]
-note: row L9: the canonical tag canonicalizes to itself
+note: rows L9 and L8: the canonical tag canonicalizes to itself
 since: 27
 
 id: intl/locales/subdivision/0003
@@ -1329,7 +1329,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("en-u-sd-fi01").toString()
-note: row L9, through Intl.Locale
+note: rows L9 and L8, through Intl.Locale
 since: 27
 
 id: intl/locales/subdivision/0004
@@ -1342,7 +1342,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-u-rg-fi01")[0]
-note: row L9 (a correction of Broiler.VM, decision D32): UTS #35 Annex C writes a subdivision alias whose replacement is a region as the region in lower case followed by zzzz
+note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
 since: 27
 
 id: intl/locales/subdivision/0005
@@ -1355,7 +1355,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("en-u-rg-fi01")[0])[0]
-note: row L9: the canonical tag canonicalizes to itself
+note: rows L9 and L8: the canonical tag canonicalizes to itself
 since: 27
 
 id: intl/locales/subdivision/0006
@@ -1368,7 +1368,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("en-u-rg-fi01").toString()
-note: row L9, through Intl.Locale
+note: rows L9 and L8, through Intl.Locale
 since: 27
 
 id: intl/locales/subdivision/0007
@@ -1381,7 +1381,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-u-rg-cn71")[0]
-note: row L9 (a correction of Broiler.VM, decision D32): UTS #35 Annex C writes a subdivision alias whose replacement is a region as the region in lower case followed by zzzz
+note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
 since: 27
 
 id: intl/locales/subdivision/0008
@@ -1394,7 +1394,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("en-u-rg-cn71")[0])[0]
-note: row L9: the canonical tag canonicalizes to itself
+note: rows L9 and L8: the canonical tag canonicalizes to itself
 since: 27
 
 id: intl/locales/subdivision/0009
@@ -1407,7 +1407,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("en-u-rg-cn71").toString()
-note: row L9, through Intl.Locale
+note: rows L9 and L8, through Intl.Locale
 since: 27
 
 id: intl/locales/subdivision/0010
@@ -1420,7 +1420,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("zh-u-sd-cn91")[0]
-note: row L9 (a correction of Broiler.VM, decision D32): UTS #35 Annex C writes a subdivision alias whose replacement is a region as the region in lower case followed by zzzz
+note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
 since: 27
 
 id: intl/locales/subdivision/0011
@@ -1433,7 +1433,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("zh-u-sd-cn91")[0])[0]
-note: row L9: the canonical tag canonicalizes to itself
+note: rows L9 and L8: the canonical tag canonicalizes to itself
 since: 27
 
 id: intl/locales/subdivision/0012
@@ -1446,7 +1446,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("zh-u-sd-cn91").toString()
-note: row L9, through Intl.Locale
+note: rows L9 and L8, through Intl.Locale
 since: 27
 
 id: intl/locales/subdivision/0013
@@ -1459,7 +1459,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("fr-u-sd-frgp")[0]
-note: row L9 (a correction of Broiler.VM, decision D32): UTS #35 Annex C writes a subdivision alias whose replacement is a region as the region in lower case followed by zzzz
+note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
 since: 27
 
 id: intl/locales/subdivision/0014
@@ -1472,7 +1472,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("fr-u-sd-frgp")[0])[0]
-note: row L9: the canonical tag canonicalizes to itself
+note: rows L9 and L8: the canonical tag canonicalizes to itself
 since: 27
 
 id: intl/locales/subdivision/0015
@@ -1485,7 +1485,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("fr-u-sd-frgp").toString()
-note: row L9, through Intl.Locale
+note: rows L9 and L8, through Intl.Locale
 since: 27
 
 id: intl/locales/subdivision/0016
@@ -1498,7 +1498,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("fr-u-rg-frgua")[0]
-note: row L9 (a correction of Broiler.VM, decision D32): UTS #35 Annex C writes a subdivision alias whose replacement is a region as the region in lower case followed by zzzz
+note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
 since: 27
 
 id: intl/locales/subdivision/0017
@@ -1511,7 +1511,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("fr-u-rg-frgua")[0])[0]
-note: row L9: the canonical tag canonicalizes to itself
+note: rows L9 and L8: the canonical tag canonicalizes to itself
 since: 27
 
 id: intl/locales/subdivision/0018
@@ -1524,7 +1524,7 @@ divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose 
 divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("fr-u-rg-frgua").toString()
-note: row L9, through Intl.Locale
+note: rows L9 and L8, through Intl.Locale
 since: 27
 
 id: intl/locales/aliases/0072
@@ -1875,7 +1875,7 @@ per-engine.broiler-vm: value: str:"[]"
 divergence.broiler-js: row L17: `getCollations` with no keyword, a locale whose language the Collator supports: `en`, `en-US`, `en-GB`, `de` ...; Broiler.JS answers `["default"]` for every locale; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("en").getCollations())
-note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS, whose Collator keeps its host path until SJL-17, is compared with the reference
+note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS's adapter hands the operation the collations its own Collator, which keeps its host path until SJL-17, resolves for the locale (decision D33 (c))
 since: 27
 
 id: intl/locales/collations/0002
@@ -1889,7 +1889,7 @@ per-engine.broiler-vm: value: str:"[]"
 divergence.broiler-js: row L17: `getCollations` with no keyword, a locale whose language the Collator supports: `en`, `en-US`, `en-GB`, `de` ...; Broiler.JS answers `["default"]` for every locale; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("en-US").getCollations())
-note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS, whose Collator keeps its host path until SJL-17, is compared with the reference
+note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS's adapter hands the operation the collations its own Collator, which keeps its host path until SJL-17, resolves for the locale (decision D33 (c))
 since: 27
 
 id: intl/locales/collations/0003
@@ -1903,7 +1903,7 @@ per-engine.broiler-vm: value: str:"[]"
 divergence.broiler-js: row L17: `getCollations` with no keyword, a locale whose language the Collator supports: `en`, `en-US`, `en-GB`, `de` ...; Broiler.JS answers `["default"]` for every locale; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("en-GB").getCollations())
-note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS, whose Collator keeps its host path until SJL-17, is compared with the reference
+note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS's adapter hands the operation the collations its own Collator, which keeps its host path until SJL-17, resolves for the locale (decision D33 (c))
 since: 27
 
 id: intl/locales/collations/0004
@@ -1917,7 +1917,7 @@ per-engine.broiler-vm: value: str:"[\"phonebk\"]"
 divergence.broiler-js: row L17: `getCollations` with no keyword, a locale whose language the Collator supports: `en`, `en-US`, `en-GB`, `de` ...; Broiler.JS answers `["default"]` for every locale; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("de").getCollations())
-note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS, whose Collator keeps its host path until SJL-17, is compared with the reference
+note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS's adapter hands the operation the collations its own Collator, which keeps its host path until SJL-17, resolves for the locale (decision D33 (c))
 since: 27
 
 id: intl/locales/collations/0005
@@ -1931,7 +1931,7 @@ per-engine.broiler-vm: value: str:"[\"phonebk\"]"
 divergence.broiler-js: row L17: `getCollations` with no keyword, a locale whose language the Collator supports: `en`, `en-US`, `en-GB`, `de` ...; Broiler.JS answers `["default"]` for every locale; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("de-DE").getCollations())
-note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS, whose Collator keeps its host path until SJL-17, is compared with the reference
+note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS's adapter hands the operation the collations its own Collator, which keeps its host path until SJL-17, resolves for the locale (decision D33 (c))
 since: 27
 
 id: intl/locales/collations/0006
@@ -1942,11 +1942,11 @@ out: value: str:"[\"emoji\",\"eor\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default (row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 divergence.broiler-vm: row L18 (a correction of Broiler.VM): getCollations of a locale whose language the Collator lacks answers ["emoji", "eor"], where CollationsOfLocale answers DefaultLocale's collations, en-US's, which are none; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("fr-FR").getCollations())
-note: row L18 (a correction of Broiler.VM, decision D32): for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's Collator is compared with the reference (decision D33 (c))
+note: rows L18 (a correction of Broiler.VM, decision D32) and L17: for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations, and otherwise the locale's; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's adapter hands the operation the collations its own Collator resolves for the locale (decision D33 (c)), emoji and eor and the language's tailorings
 since: 27
 
 id: intl/locales/collations/0007
@@ -1955,13 +1955,13 @@ op: Intl.Locale.prototype.getCollations
 in: str:"es-419"
 out: value: str:"[\"emoji\",\"eor\",\"trad\"]"
 class: impl-defined
-per-engine.broiler-js: value: str:"[\"emoji\",\"eor\",\"trad\"]"
+per-engine.broiler-js: value: str:"[\"emoji\",\"eor\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default (row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 divergence.broiler-vm: row L18 (a correction of Broiler.VM): getCollations of a locale whose language the Collator lacks answers ["emoji", "eor"], where CollationsOfLocale answers DefaultLocale's collations, en-US's, which are none; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("es-419").getCollations())
-note: row L18 (a correction of Broiler.VM, decision D32): for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's Collator is compared with the reference (decision D33 (c))
+note: rows L18 (a correction of Broiler.VM, decision D32) and L17: for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations, and otherwise the locale's; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's adapter hands the operation the collations its own Collator resolves for the locale (decision D33 (c)), emoji and eor and the language's tailorings
 since: 27
 
 id: intl/locales/collations/0008
@@ -1972,11 +1972,11 @@ out: value: str:"[\"emoji\",\"eor\",\"unihan\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\",\"unihan\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default (row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 divergence.broiler-vm: row L18 (a correction of Broiler.VM): getCollations of a locale whose language the Collator lacks answers ["emoji", "eor"], where CollationsOfLocale answers DefaultLocale's collations, en-US's, which are none; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("ja").getCollations())
-note: row L18 (a correction of Broiler.VM, decision D32): for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's Collator is compared with the reference (decision D33 (c))
+note: rows L18 (a correction of Broiler.VM, decision D32) and L17: for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations, and otherwise the locale's; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's adapter hands the operation the collations its own Collator resolves for the locale (decision D33 (c)), emoji and eor and the language's tailorings
 since: 27
 
 id: intl/locales/collations/0009
@@ -1985,13 +1985,13 @@ op: Intl.Locale.prototype.getCollations
 in: str:"zh-TW"
 out: value: str:"[\"emoji\",\"eor\",\"pinyin\",\"stroke\",\"unihan\",\"zhuyin\"]"
 class: impl-defined
-per-engine.broiler-js: value: str:"[\"emoji\",\"eor\",\"pinyin\",\"stroke\",\"unihan\",\"zhuyin\"]"
+per-engine.broiler-js: value: str:"[\"emoji\",\"eor\",\"phonetic\",\"pinyin\",\"stroke\",\"trad\",\"unihan\",\"zhuyin\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default (row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 divergence.broiler-vm: row L18 (a correction of Broiler.VM): getCollations of a locale whose language the Collator lacks answers ["emoji", "eor"], where CollationsOfLocale answers DefaultLocale's collations, en-US's, which are none; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("zh-TW").getCollations())
-note: row L18 (a correction of Broiler.VM, decision D32): for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's Collator is compared with the reference (decision D33 (c))
+note: rows L18 (a correction of Broiler.VM, decision D32) and L17: for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations, and otherwise the locale's; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's adapter hands the operation the collations its own Collator resolves for the locale (decision D33 (c)), emoji and eor and the language's tailorings
 since: 27
 
 id: intl/locales/collations/0010
@@ -2000,13 +2000,13 @@ op: Intl.Locale.prototype.getCollations
 in: str:"ar-EG"
 out: value: str:"[\"compat\",\"emoji\",\"eor\"]"
 class: impl-defined
-per-engine.broiler-js: value: str:"[\"compat\",\"emoji\",\"eor\"]"
+per-engine.broiler-js: value: str:"[\"emoji\",\"eor\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default (row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 divergence.broiler-vm: row L18 (a correction of Broiler.VM): getCollations of a locale whose language the Collator lacks answers ["emoji", "eor"], where CollationsOfLocale answers DefaultLocale's collations, en-US's, which are none; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("ar-EG").getCollations())
-note: row L18 (a correction of Broiler.VM, decision D32): for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's Collator is compared with the reference (decision D33 (c))
+note: rows L18 (a correction of Broiler.VM, decision D32) and L17: for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations, and otherwise the locale's; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's adapter hands the operation the collations its own Collator resolves for the locale (decision D33 (c)), emoji and eor and the language's tailorings
 since: 27
 
 id: intl/locales/collations/0011
@@ -2015,10 +2015,10 @@ op: Intl.Locale.prototype.getCollations
 in: str:"und"
 out: value: str:"[\"emoji\",\"eor\"]"
 class: divergence
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default (row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("und").getCollations())
-note: row L18: und answers emoji and eor, CollationsOfLocale's own list
+note: rows L18 and L17: und answers emoji and eor, CollationsOfLocale's own list
 since: 27
 
 id: intl/locales/info/0008
@@ -3088,12 +3088,11 @@ op: Intl.supportedValuesOf
 in: str:"collation"
 out: value: str:"[\"compat\",\"dict\",\"emoji\",\"eor\",\"phonebk\",\"phonetic\",\"pinyin\",\"searchjl\",\"stroke\",\"trad\",\"unihan\",\"zhuyin\"]"
 class: impl-defined
-per-engine.broiler-js: value: str:"[\"compat\",\"dict\",\"emoji\",\"eor\",\"phonebk\",\"phonetic\",\"pinyin\",\"searchjl\",\"stroke\",\"trad\",\"unihan\",\"zhuyin\"]"
+per-engine.broiler-js: value: str:"[\"emoji\",\"eor\",\"phonebk\",\"phonetic\",\"pinyin\",\"stroke\",\"trad\",\"unihan\",\"zhuyin\"]"
 per-engine.broiler-vm: value: str:"[\"phonebk\"]"
-divergence.broiler-js: row L40 (engine policy, a parameter, SJL-17's; SJL-D-24 (c)): Broiler.JS's Collator lists emoji, eor, phonebk, phonetic, pinyin, stroke, trad, unihan and zhuyin, where the reference's ICU 78.3 also lists compat, dict and searchjl; each engine keeps its own Collator until SJL-17's cut-overs, so no answer moves at SJL-9; answered by SJL-17, the collation milestone, not by SJL-9.5
 prov: spec:ecma402@3d4c558#sec-intl.supportedvaluesof spec:ecma402@3d4c558#sec-availablecanonicalcollations ref:intlref@1
 script: JSON.stringify(Intl.supportedValuesOf("collation"))
-note: row L40 (engine policy): each engine's Collator's collations, SJL-17's; Broiler.VM's Collator offers phonebk alone (JSD-0043); Broiler.JS's Collator keeps its host path until SJL-17, compared with the reference
+note: row L40 (engine policy): each engine's Collator's collations, SJL-17's; Broiler.VM's Collator offers phonebk alone (JSD-0043); Broiler.JS's Collator, which keeps its host path until SJL-17, lists the nine collations it resolves for some locale
 since: 27
 
 id: intl/locales/values/0002
@@ -3341,7 +3340,7 @@ out: value: str:"aa-Latn-ET"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("aa").maximize().toString()
-note: likely subtags; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0002
@@ -3353,7 +3352,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("aa").getWeekInfo())
-note: week data; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0003
@@ -3364,7 +3363,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("aa").getTextInfo().direction
-note: script metadata; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0004
@@ -3375,7 +3374,7 @@ out: value: str:"ab-Cyrl-GE"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ab").maximize().toString()
-note: likely subtags; ab, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ab, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0005
@@ -3386,7 +3385,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ab").getWeekInfo())
-note: week data; ab, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; ab, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0006
@@ -3397,7 +3396,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ab").getTextInfo().direction
-note: script metadata; ab, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ab, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0007
@@ -3408,7 +3407,7 @@ out: value: str:"af-Latn-ZA"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("af").maximize().toString()
-note: likely subtags; af, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; af, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0008
@@ -3420,7 +3419,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("af").getWeekInfo())
-note: week data; af, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; af, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0009
@@ -3431,7 +3430,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("af").getTextInfo().direction
-note: script metadata; af, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; af, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0010
@@ -3442,7 +3441,7 @@ out: value: str:"ar-Arab-EG"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ar").maximize().toString()
-note: likely subtags; ar, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ar, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0011
@@ -3453,7 +3452,7 @@ out: value: str:"rtl"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ar").getTextInfo().direction
-note: script metadata; ar, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ar, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0012
@@ -3464,7 +3463,7 @@ out: value: str:"ar-Arab-001"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ar-001").maximize().toString()
-note: likely subtags; ar-001, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ar-001, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0013
@@ -3475,7 +3474,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ar-001").getWeekInfo())
-note: week data; ar-001, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; ar-001, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0014
@@ -3486,7 +3485,7 @@ out: value: str:"rtl"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ar-001").getTextInfo().direction
-note: script metadata; ar-001, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ar-001, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0015
@@ -3497,7 +3496,7 @@ out: value: str:"ar-Arab-EG"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ar-EG").maximize().toString()
-note: likely subtags; ar-EG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ar-EG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0016
@@ -3508,7 +3507,7 @@ out: value: str:"rtl"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ar-EG").getTextInfo().direction
-note: script metadata; ar-EG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ar-EG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0017
@@ -3519,7 +3518,7 @@ out: value: str:"az-Latn-AZ"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("az").maximize().toString()
-note: likely subtags; az, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; az, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0018
@@ -3530,7 +3529,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("az").getWeekInfo())
-note: week data; az, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; az, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0019
@@ -3541,7 +3540,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("az").getTextInfo().direction
-note: script metadata; az, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; az, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0020
@@ -3552,7 +3551,7 @@ out: value: str:"bg-Cyrl-BG"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("bg").maximize().toString()
-note: likely subtags; bg, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; bg, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0021
@@ -3563,7 +3562,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("bg").getWeekInfo())
-note: week data; bg, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; bg, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0022
@@ -3574,7 +3573,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("bg").getTextInfo().direction
-note: script metadata; bg, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; bg, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0023
@@ -3585,7 +3584,7 @@ out: value: str:"cs-Latn-CZ"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("cs").maximize().toString()
-note: likely subtags; cs, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; cs, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0024
@@ -3596,7 +3595,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("cs").getWeekInfo())
-note: week data; cs, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; cs, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0025
@@ -3607,7 +3606,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("cs").getTextInfo().direction
-note: script metadata; cs, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; cs, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0026
@@ -3618,7 +3617,7 @@ out: value: str:"da-Latn-DK"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("da").maximize().toString()
-note: likely subtags; da, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; da, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0027
@@ -3629,7 +3628,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("da").getWeekInfo())
-note: week data; da, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; da, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0028
@@ -3640,7 +3639,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("da").getTextInfo().direction
-note: script metadata; da, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; da, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0029
@@ -3651,7 +3650,7 @@ out: value: str:"de-Latn-AT"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("de-AT").maximize().toString()
-note: likely subtags; de-AT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; de-AT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0030
@@ -3662,7 +3661,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("de-AT").getWeekInfo())
-note: week data; de-AT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; de-AT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0031
@@ -3673,7 +3672,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("de-AT").getTextInfo().direction
-note: script metadata; de-AT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; de-AT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0032
@@ -3684,7 +3683,7 @@ out: value: str:"de-Latn-CH"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("de-CH").maximize().toString()
-note: likely subtags; de-CH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; de-CH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0033
@@ -3695,7 +3694,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("de-CH").getWeekInfo())
-note: week data; de-CH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; de-CH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0034
@@ -3706,7 +3705,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("de-CH").getTextInfo().direction
-note: script metadata; de-CH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; de-CH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0035
@@ -3717,7 +3716,7 @@ out: value: str:"en-Latn-150"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("en-150").maximize().toString()
-note: likely subtags; en-150, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; en-150, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0036
@@ -3728,7 +3727,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-150").getWeekInfo())
-note: week data; en-150, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; en-150, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0037
@@ -3739,7 +3738,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("en-150").getTextInfo().direction
-note: script metadata; en-150, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; en-150, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0038
@@ -3750,7 +3749,7 @@ out: value: str:"en-Latn-AU"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("en-AU").maximize().toString()
-note: likely subtags; en-AU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; en-AU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0039
@@ -3762,7 +3761,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-AU").getWeekInfo())
-note: week data; en-AU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; en-AU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0040
@@ -3773,7 +3772,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("en-AU").getTextInfo().direction
-note: script metadata; en-AU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; en-AU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0041
@@ -3784,7 +3783,7 @@ out: value: str:"en-Latn-DK"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("en-DK").maximize().toString()
-note: likely subtags; en-DK, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; en-DK, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0042
@@ -3795,7 +3794,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-DK").getWeekInfo())
-note: week data; en-DK, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; en-DK, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0043
@@ -3806,7 +3805,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("en-DK").getTextInfo().direction
-note: script metadata; en-DK, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; en-DK, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0044
@@ -3817,7 +3816,7 @@ out: value: str:"en-Latn-FR"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("en-FR").maximize().toString()
-note: likely subtags; en-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; en-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0045
@@ -3828,7 +3827,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-FR").getWeekInfo())
-note: week data; en-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; en-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0046
@@ -3839,7 +3838,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("en-FR").getTextInfo().direction
-note: script metadata; en-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; en-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0047
@@ -3850,7 +3849,7 @@ out: value: str:"en-Latn-GB"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("en-GB").maximize().toString()
-note: likely subtags; en-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; en-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0048
@@ -3861,7 +3860,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("en-GB").getTextInfo().direction
-note: script metadata; en-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; en-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0049
@@ -3872,7 +3871,7 @@ out: value: str:"en-Latn-IN"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("en-IN").maximize().toString()
-note: likely subtags; en-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; en-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0050
@@ -3883,7 +3882,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("en-IN").getTextInfo().direction
-note: script metadata; en-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; en-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0051
@@ -3894,7 +3893,7 @@ out: value: str:"en-Latn-NZ"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("en-NZ").maximize().toString()
-note: likely subtags; en-NZ, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; en-NZ, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0052
@@ -3905,7 +3904,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-NZ").getWeekInfo())
-note: week data; en-NZ, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; en-NZ, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0053
@@ -3916,7 +3915,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("en-NZ").getTextInfo().direction
-note: script metadata; en-NZ, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; en-NZ, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0054
@@ -3927,7 +3926,7 @@ out: value: str:"en-Shaw-GB"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("en-Shaw").maximize().toString()
-note: likely subtags; en-Shaw, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; en-Shaw, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0055
@@ -3938,7 +3937,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-Shaw").getWeekInfo())
-note: week data; en-Shaw, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; en-Shaw, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0056
@@ -3949,7 +3948,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("en-Shaw").getTextInfo().direction
-note: script metadata; en-Shaw, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; en-Shaw, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0057
@@ -3960,7 +3959,7 @@ out: value: str:"en-Shaw-GB"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("en-Shaw-GB").maximize().toString()
-note: likely subtags; en-Shaw-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; en-Shaw-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0058
@@ -3971,7 +3970,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-Shaw-GB").getWeekInfo())
-note: week data; en-Shaw-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; en-Shaw-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0059
@@ -3982,7 +3981,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("en-Shaw-GB").getTextInfo().direction
-note: script metadata; en-Shaw-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; en-Shaw-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0060
@@ -3993,7 +3992,7 @@ out: value: str:"es-Latn-ES"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("es").maximize().toString()
-note: likely subtags; es, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; es, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0061
@@ -4004,7 +4003,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("es").getWeekInfo())
-note: week data; es, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; es, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0062
@@ -4015,7 +4014,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("es").getTextInfo().direction
-note: script metadata; es, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; es, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0063
@@ -4026,7 +4025,7 @@ out: value: str:"es-Latn-419"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("es-419").maximize().toString()
-note: likely subtags; es-419, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; es-419, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0064
@@ -4037,7 +4036,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("es-419").getWeekInfo())
-note: week data; es-419, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; es-419, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0065
@@ -4048,7 +4047,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("es-419").getTextInfo().direction
-note: script metadata; es-419, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; es-419, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0066
@@ -4059,7 +4058,7 @@ out: value: str:"es-Latn-ES"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("es-ES").maximize().toString()
-note: likely subtags; es-ES, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; es-ES, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0067
@@ -4070,7 +4069,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("es-ES").getWeekInfo())
-note: week data; es-ES, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; es-ES, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0068
@@ -4081,7 +4080,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("es-ES").getTextInfo().direction
-note: script metadata; es-ES, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; es-ES, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0069
@@ -4092,7 +4091,7 @@ out: value: str:"fa-Arab-IR"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("fa").maximize().toString()
-note: likely subtags; fa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; fa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0070
@@ -4104,7 +4103,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("fa").getWeekInfo())
-note: week data; fa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; fa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0071
@@ -4115,7 +4114,7 @@ out: value: str:"rtl"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("fa").getTextInfo().direction
-note: script metadata; fa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; fa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0072
@@ -4126,7 +4125,7 @@ out: value: str:"fa-Arab-IR"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("fa-IR").maximize().toString()
-note: likely subtags; fa-IR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; fa-IR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0073
@@ -4137,7 +4136,7 @@ out: value: str:"rtl"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("fa-IR").getTextInfo().direction
-note: script metadata; fa-IR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; fa-IR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0074
@@ -4148,7 +4147,7 @@ out: value: str:"ff-Latn-SN"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ff").maximize().toString()
-note: likely subtags; ff, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ff, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0075
@@ -4159,7 +4158,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ff").getWeekInfo())
-note: week data; ff, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; ff, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0076
@@ -4170,7 +4169,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ff").getTextInfo().direction
-note: script metadata; ff, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ff, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0077
@@ -4181,7 +4180,7 @@ out: value: str:"fil-Latn-PH"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("fil").maximize().toString()
-note: likely subtags; fil, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; fil, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0078
@@ -4193,7 +4192,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("fil").getWeekInfo())
-note: week data; fil, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; fil, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0079
@@ -4204,7 +4203,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("fil").getTextInfo().direction
-note: script metadata; fil, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; fil, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0080
@@ -4215,7 +4214,7 @@ out: value: str:"fr-Latn-FR"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("fr").maximize().toString()
-note: likely subtags; fr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; fr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0081
@@ -4226,7 +4225,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("fr").getWeekInfo())
-note: week data; fr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; fr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0082
@@ -4237,7 +4236,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("fr").getTextInfo().direction
-note: script metadata; fr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; fr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0083
@@ -4248,7 +4247,7 @@ out: value: str:"fr-Latn-CA"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("fr-CA").maximize().toString()
-note: likely subtags; fr-CA, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; fr-CA, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0084
@@ -4259,7 +4258,7 @@ out: value: str:"[7,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("fr-CA").getWeekInfo())
-note: week data; fr-CA, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; fr-CA, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0085
@@ -4270,7 +4269,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("fr-CA").getTextInfo().direction
-note: script metadata; fr-CA, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; fr-CA, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0086
@@ -4281,7 +4280,7 @@ out: value: str:"fr-Latn-FR"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("fr-FR").maximize().toString()
-note: likely subtags; fr-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; fr-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0087
@@ -4292,7 +4291,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("fr-FR").getWeekInfo())
-note: week data; fr-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; fr-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0088
@@ -4303,7 +4302,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("fr-FR").getTextInfo().direction
-note: script metadata; fr-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; fr-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0089
@@ -4314,7 +4313,7 @@ out: value: str:"gv-Latn-IM"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("gv").maximize().toString()
-note: likely subtags; gv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; gv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0090
@@ -4325,7 +4324,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("gv").getWeekInfo())
-note: week data; gv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; gv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0091
@@ -4336,7 +4335,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("gv").getTextInfo().direction
-note: script metadata; gv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; gv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0092
@@ -4347,7 +4346,7 @@ out: value: str:"he-Hebr-IL"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("he").maximize().toString()
-note: likely subtags; he, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; he, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0093
@@ -4359,7 +4358,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("he").getWeekInfo())
-note: week data; he, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; he, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0094
@@ -4370,7 +4369,7 @@ out: value: str:"he-Hebr-IL"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("he-IL").maximize().toString()
-note: likely subtags; he-IL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; he-IL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0095
@@ -4381,7 +4380,7 @@ out: value: str:"rtl"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("he-IL").getTextInfo().direction
-note: script metadata; he-IL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; he-IL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0096
@@ -4392,7 +4391,7 @@ out: value: str:"hi-Deva-IN"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("hi").maximize().toString()
-note: likely subtags; hi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; hi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0097
@@ -4404,7 +4403,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("hi").getWeekInfo())
-note: week data; hi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; hi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0098
@@ -4415,7 +4414,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("hi").getTextInfo().direction
-note: script metadata; hi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; hi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0099
@@ -4426,7 +4425,7 @@ out: value: str:"hi-Deva-IN"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("hi-IN").maximize().toString()
-note: likely subtags; hi-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; hi-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0100
@@ -4438,7 +4437,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("hi-IN").getWeekInfo())
-note: week data; hi-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; hi-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0101
@@ -4449,7 +4448,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("hi-IN").getTextInfo().direction
-note: script metadata; hi-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; hi-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0102
@@ -4460,7 +4459,7 @@ out: value: str:"hy-Armn-AM"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("hy").maximize().toString()
-note: likely subtags; hy, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; hy, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0103
@@ -4471,7 +4470,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("hy").getWeekInfo())
-note: week data; hy, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; hy, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0104
@@ -4482,7 +4481,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("hy").getTextInfo().direction
-note: script metadata; hy, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; hy, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0105
@@ -4493,7 +4492,7 @@ out: value: str:"hy-Armn-AM"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("hy-AM").maximize().toString()
-note: likely subtags; hy-AM, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; hy-AM, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0106
@@ -4504,7 +4503,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("hy-AM").getWeekInfo())
-note: week data; hy-AM, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; hy-AM, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0107
@@ -4515,7 +4514,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("hy-AM").getTextInfo().direction
-note: script metadata; hy-AM, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; hy-AM, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0108
@@ -4526,7 +4525,7 @@ out: value: str:"id-Latn-ID"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("id").maximize().toString()
-note: likely subtags; id, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; id, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0109
@@ -4538,7 +4537,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("id").getWeekInfo())
-note: week data; id, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; id, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0110
@@ -4549,7 +4548,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("id").getTextInfo().direction
-note: script metadata; id, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; id, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0111
@@ -4560,7 +4559,7 @@ out: value: str:"id-Latn-ID"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("id-ID").maximize().toString()
-note: likely subtags; id-ID, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; id-ID, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0112
@@ -4572,7 +4571,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("id-ID").getWeekInfo())
-note: week data; id-ID, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; id-ID, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0113
@@ -4583,7 +4582,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("id-ID").getTextInfo().direction
-note: script metadata; id-ID, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; id-ID, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0114
@@ -4594,7 +4593,7 @@ out: value: str:"it-Latn-IT"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("it").maximize().toString()
-note: likely subtags; it, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; it, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0115
@@ -4605,7 +4604,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("it").getWeekInfo())
-note: week data; it, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; it, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0116
@@ -4616,7 +4615,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("it").getTextInfo().direction
-note: script metadata; it, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; it, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0117
@@ -4627,7 +4626,7 @@ out: value: str:"ja-Jpan-JP"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ja").maximize().toString()
-note: likely subtags; ja, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ja, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0118
@@ -4638,7 +4637,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ja").getTextInfo().direction
-note: script metadata; ja, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ja, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0119
@@ -4649,7 +4648,7 @@ out: value: str:"ja-Jpan-JP"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ja-JP").maximize().toString()
-note: likely subtags; ja-JP, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ja-JP, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0120
@@ -4660,7 +4659,7 @@ out: value: str:"[7,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ja-JP").getWeekInfo())
-note: week data; ja-JP, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; ja-JP, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0121
@@ -4671,7 +4670,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ja-JP").getTextInfo().direction
-note: script metadata; ja-JP, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ja-JP, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0122
@@ -4682,7 +4681,7 @@ out: value: str:"jbo-Latn-001"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("jbo").maximize().toString()
-note: likely subtags; jbo, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; jbo, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0123
@@ -4693,7 +4692,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("jbo").getWeekInfo())
-note: week data; jbo, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; jbo, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0124
@@ -4704,7 +4703,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("jbo").getTextInfo().direction
-note: script metadata; jbo, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; jbo, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0125
@@ -4715,7 +4714,7 @@ out: value: str:"ko-Kore-KR"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ko").maximize().toString()
-note: likely subtags; ko, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ko, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0126
@@ -4727,7 +4726,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ko").getWeekInfo())
-note: week data; ko, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; ko, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0127
@@ -4738,7 +4737,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ko").getTextInfo().direction
-note: script metadata; ko, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ko, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0128
@@ -4749,7 +4748,7 @@ out: value: str:"ko-Kore-KR"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ko-KR").maximize().toString()
-note: likely subtags; ko-KR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ko-KR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0129
@@ -4760,7 +4759,7 @@ out: value: str:"[7,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ko-KR").getWeekInfo())
-note: week data; ko-KR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; ko-KR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0130
@@ -4771,7 +4770,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ko-KR").getTextInfo().direction
-note: script metadata; ko-KR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ko-KR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0131
@@ -4782,7 +4781,7 @@ out: value: str:"ln-Latn-CD"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ln").maximize().toString()
-note: likely subtags; ln, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ln, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0132
@@ -4793,7 +4792,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ln").getWeekInfo())
-note: week data; ln, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; ln, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0133
@@ -4804,7 +4803,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ln").getTextInfo().direction
-note: script metadata; ln, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ln, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0134
@@ -4815,7 +4814,7 @@ out: value: str:"lt-Latn-LT"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("lt").maximize().toString()
-note: likely subtags; lt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; lt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0135
@@ -4826,7 +4825,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("lt").getWeekInfo())
-note: week data; lt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; lt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0136
@@ -4837,7 +4836,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("lt").getTextInfo().direction
-note: script metadata; lt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; lt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0137
@@ -4848,7 +4847,7 @@ out: value: str:"nb-Latn-NO"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("nb").maximize().toString()
-note: likely subtags; nb, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; nb, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0138
@@ -4859,7 +4858,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("nb").getWeekInfo())
-note: week data; nb, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; nb, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0139
@@ -4870,7 +4869,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("nb").getTextInfo().direction
-note: script metadata; nb, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; nb, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0140
@@ -4881,7 +4880,7 @@ out: value: str:"nl-Latn-NL"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("nl").maximize().toString()
-note: likely subtags; nl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; nl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0141
@@ -4892,7 +4891,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("nl").getWeekInfo())
-note: week data; nl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; nl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0142
@@ -4903,7 +4902,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("nl").getTextInfo().direction
-note: script metadata; nl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; nl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0143
@@ -4914,7 +4913,7 @@ out: value: str:"nl-Latn-BE"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("nl-BE").maximize().toString()
-note: likely subtags; nl-BE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; nl-BE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0144
@@ -4925,7 +4924,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("nl-BE").getWeekInfo())
-note: week data; nl-BE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; nl-BE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0145
@@ -4936,7 +4935,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("nl-BE").getTextInfo().direction
-note: script metadata; nl-BE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; nl-BE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0146
@@ -4947,7 +4946,7 @@ out: value: str:"no-Latn-NO"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("no").maximize().toString()
-note: likely subtags; no, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; no, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0147
@@ -4958,7 +4957,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("no").getWeekInfo())
-note: week data; no, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; no, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0148
@@ -4969,7 +4968,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("no").getTextInfo().direction
-note: script metadata; no, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; no, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0149
@@ -4980,7 +4979,7 @@ out: value: str:"pap-Latn-CW"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("pap").maximize().toString()
-note: likely subtags; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0150
@@ -4991,7 +4990,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("pap").getWeekInfo())
-note: week data; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0151
@@ -5002,7 +5001,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("pap").getTextInfo().direction
-note: script metadata; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0152
@@ -5013,7 +5012,7 @@ out: value: str:"pl-Latn-PL"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("pl").maximize().toString()
-note: likely subtags; pl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; pl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0153
@@ -5024,7 +5023,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("pl").getWeekInfo())
-note: week data; pl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; pl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0154
@@ -5035,7 +5034,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("pl").getTextInfo().direction
-note: script metadata; pl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; pl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0155
@@ -5046,7 +5045,7 @@ out: value: str:"pl-Latn-PL"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("pl-PL").maximize().toString()
-note: likely subtags; pl-PL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; pl-PL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0156
@@ -5057,7 +5056,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("pl-PL").getWeekInfo())
-note: week data; pl-PL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; pl-PL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0157
@@ -5068,7 +5067,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("pl-PL").getTextInfo().direction
-note: script metadata; pl-PL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; pl-PL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0158
@@ -5079,7 +5078,7 @@ out: value: str:"pt-Latn-BR"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("pt").maximize().toString()
-note: likely subtags; pt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; pt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0159
@@ -5091,7 +5090,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("pt").getWeekInfo())
-note: week data; pt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; pt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0160
@@ -5102,7 +5101,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("pt").getTextInfo().direction
-note: script metadata; pt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; pt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0161
@@ -5113,7 +5112,7 @@ out: value: str:"pt-Latn-BR"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("pt-BR").maximize().toString()
-note: likely subtags; pt-BR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; pt-BR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0162
@@ -5124,7 +5123,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("pt-BR").getTextInfo().direction
-note: script metadata; pt-BR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; pt-BR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0163
@@ -5135,7 +5134,7 @@ out: value: str:"pt-Latn-PT"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("pt-PT").maximize().toString()
-note: likely subtags; pt-PT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; pt-PT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0164
@@ -5147,7 +5146,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("pt-PT").getWeekInfo())
-note: week data; pt-PT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; pt-PT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0165
@@ -5158,7 +5157,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("pt-PT").getTextInfo().direction
-note: script metadata; pt-PT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; pt-PT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0166
@@ -5169,7 +5168,7 @@ out: value: str:"ro-Latn-RO"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ro").maximize().toString()
-note: likely subtags; ro, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ro, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0167
@@ -5180,7 +5179,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ro").getWeekInfo())
-note: week data; ro, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; ro, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0168
@@ -5191,7 +5190,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ro").getTextInfo().direction
-note: script metadata; ro, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ro, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0169
@@ -5202,7 +5201,7 @@ out: value: str:"ru-Cyrl-RU"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ru").maximize().toString()
-note: likely subtags; ru, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ru, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0170
@@ -5213,7 +5212,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ru").getWeekInfo())
-note: week data; ru, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; ru, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0171
@@ -5224,7 +5223,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ru").getTextInfo().direction
-note: script metadata; ru, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ru, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0172
@@ -5235,7 +5234,7 @@ out: value: str:"ru-Cyrl-RU"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ru-RU").maximize().toString()
-note: likely subtags; ru-RU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ru-RU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0173
@@ -5246,7 +5245,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ru-RU").getWeekInfo())
-note: week data; ru-RU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; ru-RU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0174
@@ -5257,7 +5256,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ru-RU").getTextInfo().direction
-note: script metadata; ru-RU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ru-RU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0175
@@ -5268,7 +5267,7 @@ out: value: str:"sa-Deva-IN"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("sa").maximize().toString()
-note: likely subtags; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0176
@@ -5280,7 +5279,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("sa").getWeekInfo())
-note: week data; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0177
@@ -5291,7 +5290,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("sa").getTextInfo().direction
-note: script metadata; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0178
@@ -5302,7 +5301,7 @@ out: value: str:"si-Sinh-LK"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("si").maximize().toString()
-note: likely subtags; si, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; si, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0179
@@ -5313,7 +5312,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("si").getWeekInfo())
-note: week data; si, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; si, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0180
@@ -5324,7 +5323,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("si").getTextInfo().direction
-note: script metadata; si, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; si, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0181
@@ -5335,7 +5334,7 @@ out: value: str:"sl-Latn-SI"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("sl").maximize().toString()
-note: likely subtags; sl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; sl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0182
@@ -5346,7 +5345,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("sl").getWeekInfo())
-note: week data; sl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; sl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0183
@@ -5357,7 +5356,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("sl").getTextInfo().direction
-note: script metadata; sl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; sl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0184
@@ -5368,7 +5367,7 @@ out: value: str:"sr-Cyrl-RS"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("sr").maximize().toString()
-note: likely subtags; sr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; sr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0185
@@ -5379,7 +5378,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("sr").getWeekInfo())
-note: week data; sr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; sr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0186
@@ -5390,7 +5389,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("sr").getTextInfo().direction
-note: script metadata; sr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; sr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0187
@@ -5401,7 +5400,7 @@ out: value: str:"sr-Cyrl-RS"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("sr-Cyrl").maximize().toString()
-note: likely subtags; sr-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; sr-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0188
@@ -5412,7 +5411,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("sr-Cyrl").getWeekInfo())
-note: week data; sr-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; sr-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0189
@@ -5423,7 +5422,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("sr-Cyrl").getTextInfo().direction
-note: script metadata; sr-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; sr-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0190
@@ -5434,7 +5433,7 @@ out: value: str:"sr-Cyrl-RS"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("sr-Cyrl-RS").maximize().toString()
-note: likely subtags; sr-Cyrl-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; sr-Cyrl-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0191
@@ -5445,7 +5444,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("sr-Cyrl-RS").getWeekInfo())
-note: week data; sr-Cyrl-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; sr-Cyrl-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0192
@@ -5456,7 +5455,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("sr-Cyrl-RS").getTextInfo().direction
-note: script metadata; sr-Cyrl-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; sr-Cyrl-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0193
@@ -5467,7 +5466,7 @@ out: value: str:"sr-Latn-RS"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("sr-Latn").maximize().toString()
-note: likely subtags; sr-Latn, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; sr-Latn, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0194
@@ -5478,7 +5477,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("sr-Latn").getWeekInfo())
-note: week data; sr-Latn, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; sr-Latn, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0195
@@ -5489,7 +5488,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("sr-Latn").getTextInfo().direction
-note: script metadata; sr-Latn, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; sr-Latn, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0196
@@ -5500,7 +5499,7 @@ out: value: str:"sr-Latn-RS"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("sr-Latn-RS").maximize().toString()
-note: likely subtags; sr-Latn-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; sr-Latn-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0197
@@ -5511,7 +5510,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("sr-Latn-RS").getWeekInfo())
-note: week data; sr-Latn-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; sr-Latn-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0198
@@ -5522,7 +5521,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("sr-Latn-RS").getTextInfo().direction
-note: script metadata; sr-Latn-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; sr-Latn-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0199
@@ -5533,7 +5532,7 @@ out: value: str:"sv-Latn-SE"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("sv").maximize().toString()
-note: likely subtags; sv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; sv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0200
@@ -5544,7 +5543,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("sv").getWeekInfo())
-note: week data; sv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; sv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0201
@@ -5555,7 +5554,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("sv").getTextInfo().direction
-note: script metadata; sv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; sv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0202
@@ -5566,7 +5565,7 @@ out: value: str:"sv-Latn-SE"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("sv-SE").maximize().toString()
-note: likely subtags; sv-SE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; sv-SE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0203
@@ -5577,7 +5576,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("sv-SE").getWeekInfo())
-note: week data; sv-SE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; sv-SE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0204
@@ -5588,7 +5587,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("sv-SE").getTextInfo().direction
-note: script metadata; sv-SE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; sv-SE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0205
@@ -5599,7 +5598,7 @@ out: value: str:"th-Thai-TH"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("th").maximize().toString()
-note: likely subtags; th, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; th, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0206
@@ -5611,7 +5610,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("th").getWeekInfo())
-note: week data; th, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; th, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0207
@@ -5622,7 +5621,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("th").getTextInfo().direction
-note: script metadata; th, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; th, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0208
@@ -5633,7 +5632,7 @@ out: value: str:"th-Thai-TH"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("th-TH").maximize().toString()
-note: likely subtags; th-TH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; th-TH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0209
@@ -5645,7 +5644,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("th-TH").getWeekInfo())
-note: week data; th-TH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; th-TH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0210
@@ -5656,7 +5655,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("th-TH").getTextInfo().direction
-note: script metadata; th-TH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; th-TH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0211
@@ -5667,7 +5666,7 @@ out: value: str:"tr-Latn-TR"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("tr").maximize().toString()
-note: likely subtags; tr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; tr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0212
@@ -5678,7 +5677,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("tr").getWeekInfo())
-note: week data; tr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; tr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0213
@@ -5689,7 +5688,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("tr").getTextInfo().direction
-note: script metadata; tr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; tr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0214
@@ -5700,7 +5699,7 @@ out: value: str:"ur-Arab-PK"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("ur").maximize().toString()
-note: likely subtags; ur, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; ur, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0215
@@ -5712,7 +5711,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ur").getWeekInfo())
-note: week data; ur, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; ur, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0216
@@ -5723,7 +5722,7 @@ out: value: str:"rtl"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ur").getTextInfo().direction
-note: script metadata; ur, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; ur, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0217
@@ -5734,7 +5733,7 @@ out: value: str:"uz-Latn-UZ"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("uz").maximize().toString()
-note: likely subtags; uz, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; uz, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0218
@@ -5745,7 +5744,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("uz").getWeekInfo())
-note: week data; uz, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; uz, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0219
@@ -5756,7 +5755,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("uz").getTextInfo().direction
-note: script metadata; uz, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; uz, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0220
@@ -5767,7 +5766,7 @@ out: value: str:"uz-Cyrl-UZ"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("uz-Cyrl").maximize().toString()
-note: likely subtags; uz-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; uz-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0221
@@ -5778,7 +5777,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("uz-Cyrl").getWeekInfo())
-note: week data; uz-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; uz-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0222
@@ -5789,7 +5788,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("uz-Cyrl").getTextInfo().direction
-note: script metadata; uz-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; uz-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0223
@@ -5800,7 +5799,7 @@ out: value: str:"yi-Hebr-UA"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("yi").maximize().toString()
-note: likely subtags; yi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; yi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0224
@@ -5811,7 +5810,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("yi").getWeekInfo())
-note: week data; yi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; yi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0225
@@ -5822,7 +5821,7 @@ out: value: str:"rtl"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("yi").getTextInfo().direction
-note: script metadata; yi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; yi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0226
@@ -5833,7 +5832,7 @@ out: value: str:"zh-Hans-CN"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("zh").maximize().toString()
-note: likely subtags; zh, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; zh, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0227
@@ -5844,7 +5843,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zh").getWeekInfo())
-note: week data; zh, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; zh, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0228
@@ -5855,7 +5854,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("zh").getTextInfo().direction
-note: script metadata; zh, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; zh, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0229
@@ -5866,7 +5865,7 @@ out: value: str:"zh-Hans-CN"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("zh-Hans").maximize().toString()
-note: likely subtags; zh-Hans, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; zh-Hans, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0230
@@ -5877,7 +5876,7 @@ out: value: str:"[1,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zh-Hans").getWeekInfo())
-note: week data; zh-Hans, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; zh-Hans, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0231
@@ -5888,7 +5887,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("zh-Hans").getTextInfo().direction
-note: script metadata; zh-Hans, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; zh-Hans, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0232
@@ -5899,7 +5898,7 @@ out: value: str:"zh-Hans-CN"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("zh-Hans-CN").maximize().toString()
-note: likely subtags; zh-Hans-CN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; zh-Hans-CN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0233
@@ -5911,7 +5910,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zh-Hans-CN").getWeekInfo())
-note: week data; zh-Hans-CN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; zh-Hans-CN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0234
@@ -5922,7 +5921,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("zh-Hans-CN").getTextInfo().direction
-note: script metadata; zh-Hans-CN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; zh-Hans-CN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0235
@@ -5933,7 +5932,7 @@ out: value: str:"zh-Hans-SG"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("zh-Hans-SG").maximize().toString()
-note: likely subtags; zh-Hans-SG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; zh-Hans-SG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0236
@@ -5945,7 +5944,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zh-Hans-SG").getWeekInfo())
-note: week data; zh-Hans-SG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; zh-Hans-SG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0237
@@ -5956,7 +5955,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("zh-Hans-SG").getTextInfo().direction
-note: script metadata; zh-Hans-SG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; zh-Hans-SG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0238
@@ -5967,7 +5966,7 @@ out: value: str:"zh-Hant-TW"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("zh-Hant").maximize().toString()
-note: likely subtags; zh-Hant, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; zh-Hant, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0239
@@ -5979,7 +5978,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zh-Hant").getWeekInfo())
-note: week data; zh-Hant, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; zh-Hant, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0240
@@ -5990,7 +5989,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("zh-Hant").getTextInfo().direction
-note: script metadata; zh-Hant, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; zh-Hant, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0241
@@ -6001,7 +6000,7 @@ out: value: str:"zh-Hant-TW"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("zh-Hant-TW").maximize().toString()
-note: likely subtags; zh-Hant-TW, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; zh-Hant-TW, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0242
@@ -6012,7 +6011,7 @@ out: value: str:"[7,[6,7]]"
 class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zh-Hant-TW").getWeekInfo())
-note: week data; zh-Hant-TW, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; zh-Hant-TW, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0243
@@ -6023,7 +6022,7 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("zh-Hant-TW").getTextInfo().direction
-note: script metadata; zh-Hant-TW, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; zh-Hant-TW, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0244
@@ -6034,7 +6033,7 @@ out: value: str:"zu-Latn-ZA"
 class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("zu").maximize().toString()
-note: likely subtags; zu, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L5 (data, C5): likely subtags; zu, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0245
@@ -6046,7 +6045,7 @@ class: divergence
 divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zu").getWeekInfo())
-note: week data; zu, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L26 (data, C5): week data; zu, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/locales/families/0246
@@ -6057,5 +6056,5 @@ out: value: str:"ltr"
 class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("zu").getTextInfo().direction
-note: script metadata; zu, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row L24 (data, C5): script metadata; zu, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27

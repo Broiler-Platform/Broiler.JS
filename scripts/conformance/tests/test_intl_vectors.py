@@ -128,19 +128,48 @@ class DivergenceFileTests(unittest.TestCase):
                               script='Intl.getCanonicalLocales("en")[0]', inputs=("en",), rows=("L40",), clauses=(),
                               note="row L40")
         out = 'value: str:"en"'
-        vm = {"broiler-vm": 'value: str:"de"'}
-        compared = generator.Vector(case, out, "impl-defined", dict(vm), ["ref:intlref@1"],
-                                    ["row L40: Broiler.JS is compared with the reference"])
-        record = generator.render_record(compared, "intl/a/g/0001", {"broiler-js": "row L40: x"})
-        self.assertIn(f"per-engine.broiler-js: {out}\nper-engine.broiler-vm: {vm['broiler-vm']}\n"
+        both = {"broiler-vm": 'value: str:"de"', "broiler-js": 'value: str:"fr"'}
+        stated = generator.Vector(case, out, "impl-defined", dict(both), ["ref:intlref@1"], ["row L40"])
+        record = generator.render_record(stated, "intl/a/g/0001", {"broiler-js": "row L40: x"})
+        self.assertIn(f"per-engine.broiler-js: {both['broiler-js']}\nper-engine.broiler-vm: {both['broiler-vm']}\n"
                       "divergence.broiler-js: row L40: x\n", record)
         self.assertIn("class: impl-defined\n", record)
-        silent = generator.Vector(case, out, "impl-defined", dict(vm), ["ref:intlref@1"], ["row L40"])
-        with self.assertRaises(generator.GeneratorError):
-            generator.render_record(silent, "intl/a/g/0001", {"broiler-js": "row L40: x"})
+        # An engine the case states no expectation for is refused, whatever the note says: the generator does not
+        # take out for its plan's expectation.
+        vm = {"broiler-vm": both["broiler-vm"]}
+        for notes in (["row L40"], ["row L40: Broiler.JS is compared with the reference"]):
+            silent = generator.Vector(case, out, "impl-defined", dict(vm), ["ref:intlref@1"], notes)
+            with self.assertRaises(generator.GeneratorError):
+                generator.render_record(silent, "intl/a/g/0001", {"broiler-js": "row L40: x"})
         normative = generator.Vector(case, out, "normative", {}, ["ref:intlref@1"], ["row L40"])
         self.assertIn("class: divergence\ndivergence.broiler-js: row L40: x\n",
                       generator.render_record(normative, "intl/a/g/0001", {"broiler-js": "row L40: x"}))
+
+
+class PlanTableTests(unittest.TestCase):
+    """The plans' rules the generator states as tables, checked without a reference."""
+
+    def test_broiler_js_s_collations_are_its_collator_s(self) -> None:
+        # Decision D33 (c) and row L40: emoji and eor everywhere, the language's tailorings, and the nine of
+        # Intl.supportedValuesOf("collation") (JSIntl.cs's SupportedCollationsSorted).
+        self.assertEqual(["emoji", "eor"], generator.broiler_js_collations("es-419"))
+        self.assertEqual(["emoji", "eor"], generator.broiler_js_collations("ar-EG"))
+        self.assertEqual(["emoji", "eor", "phonebk"], generator.broiler_js_collations("de-DE"))
+        self.assertEqual(["emoji", "eor", "phonetic", "pinyin", "stroke", "trad", "unihan", "zhuyin"],
+                         generator.broiler_js_collations("zh-TW"))
+        self.assertEqual(["emoji", "eor", "phonebk", "phonetic", "pinyin", "stroke", "trad", "unihan", "zhuyin"],
+                         generator.broiler_js_collations())
+
+    @unittest.skipUnless(CLDR and Path(CLDR).is_dir(), "set BROILER_CLDR_TARBALLS to the cldr-json 48.2.0 tarballs")
+    def test_broiler_vm_s_unit_composition_is_stated_from_cldr(self) -> None:
+        # Row N5b, decision D35: German's short stone has no one-form, so Broiler.VM reads the long one, Stone.
+        cldr = generator.Cldr(Path(CLDR))
+        self.assertEqual("2 kb/Stone", generator.vm_unit_answer(cldr, "de", "kilobit-per-stone", "short", 2))
+        self.assertEqual("2 kb/Stone", generator.vm_unit_answer(cldr, "de", "kilobit-per-stone", "narrow", 2))
+        self.assertEqual("2 kb/st", generator.vm_unit_answer(cldr, "en", "kilobit-per-stone", "short", 2))
+        self.assertEqual("2 Byte pro Sekunde", generator.vm_unit_answer(cldr, "de", "byte-per-second", "long", 2))
+        with self.assertRaises(generator.GeneratorError):
+            generator.vm_unit_answer(cldr, "fr", "kilobit-per-stone", "short", 2)
 
 
 class CommittedFileTests(unittest.TestCase):
@@ -178,7 +207,7 @@ class CommittedFileTests(unittest.TestCase):
             entries = vector["prov"].split(" ")
             self.assertFalse(any(e.startswith("observed:") for e in entries), vector_id)
             self.assertTrue(all(e.startswith((generator.ECMA402, generator.TEMPORAL, generator.ERA, generator.REF,
-                                              generator.REF_CLDR, generator.OVERRULED, generator.OVERRULED_V8))
+                                              generator.REF_CLDR, generator.OVERRULED))
                                 for e in entries), vector_id)
             self.assertTrue(any(e.startswith(("spec:", "proposal:", "ref:")) for e in entries), vector_id)
             # The reference's answer is overruled only where the text (or CLDR, decision D34) gives another one,
@@ -200,14 +229,19 @@ class CommittedFileTests(unittest.TestCase):
                     self.assertTrue(pins[name].startswith(rest.split("#")[0]), vector_id)
 
     def test_date_time_strings_carry_no_character_beyond_the_witness_s_U_202F(self) -> None:
-        # Decision D17 (b): a vector takes U+202F from the witness where ICU's pattern has it; the reference's raw
-        # answer is recorded beside it, and the two differ in nothing else.
+        # Decision D17 (b): a vector takes U+202F from the witness where ICU's pattern has it, and its note records
+        # that the reference wrote U+0020 there. No overruled: entry can record the reference's answer, which holds
+        # the U+0020 it overrules (SCHEMA.md section 6: an entry holds no space).
+        restored = 0
         for vector_id, vector in self.vectors.items():
+            if "U+202F where ICU's pattern has it" in vector["note"]:
+                restored += 1
+                self.assertIn("\\u202F", vector["out"], vector_id)
+                self.assertIn("the reference wrote U+0020 there", vector["note"], vector_id)
+            self.assertNotIn("intlref-v8", vector["prov"], vector_id)
             for entry in vector["prov"].split(" "):
-                if entry.startswith(generator.OVERRULED_V8):
-                    raw = entry[len(generator.OVERRULED_V8):].replace(":", ": ", 1)
-                    self.assertIn("\\u202F", vector["out"], vector_id)
-                    self.assertEqual(raw, vector["out"].replace("\\u202F", " "), vector_id)
+                self.assertNotIn(" ", entry, vector_id)
+        self.assertGreater(restored, 0)
 
     def test_every_class_is_one_the_schema_defines_with_its_fields(self) -> None:
         for vector_id, vector in self.vectors.items():
@@ -227,10 +261,14 @@ class CommittedFileTests(unittest.TestCase):
                 if key.startswith("divergence."):
                     fields.setdefault(vector_id, {})[key[len("divergence."):]] = value
         self.assertEqual(listed, fields)
-        # Each reason names the correspondence row it confirms.
-        for engines in listed.values():
+        # Each reason names the correspondence row it confirms, and that row is one the vector's note names, so the
+        # classification can be read against the vector.
+        for vector_id, engines in listed.items():
             for text in engines.values():
                 self.assertRegex(text, rf"^rows? {ROW}")
+                head = re.match(r"rows? ([^:]*?)(?: \(|:)", text).group(1)
+                named = rows_named(self.vectors[vector_id]["note"])
+                self.assertLessEqual(set(re.findall(rf"\b{ROW}\b", head)), named, (vector_id, text[:60]))
 
     def test_every_row_with_a_behavioural_difference_has_vectors(self) -> None:
         named = set()

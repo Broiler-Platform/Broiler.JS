@@ -1458,7 +1458,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("aa", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0002
@@ -1469,7 +1469,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ab", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ab, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; ab, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0003
@@ -1483,7 +1483,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("af", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; af, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves af to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; af, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves af to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0004
@@ -1497,7 +1497,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ar", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ar, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ar to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ar, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ar to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0005
@@ -1511,7 +1511,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ar-001", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ar-001, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ar-001 to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ar-001, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ar-001 to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0006
@@ -1525,7 +1525,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ar-EG", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ar-EG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ar-EG to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ar-EG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ar-EG to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0007
@@ -1539,7 +1539,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("az", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; az, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves az to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; az, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves az to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0008
@@ -1553,7 +1553,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("bg", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; bg, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves bg to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; bg, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves bg to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0009
@@ -1567,7 +1567,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("cs", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; cs, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves cs to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; cs, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves cs to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0010
@@ -1581,7 +1581,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("da", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; da, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves da to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; da, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves da to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0011
@@ -1592,7 +1592,7 @@ out: value: str:"1 Stunde, 2 Minuten und 3 Sekunden"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("de-AT", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; de-AT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; de-AT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0012
@@ -1603,7 +1603,7 @@ out: value: str:"1 Stunde, 2 Minuten und 3 Sekunden"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("de-CH", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; de-CH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; de-CH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0013
@@ -1614,7 +1614,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("en-150", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; en-150, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; en-150, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0014
@@ -1625,7 +1625,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("en-AU", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; en-AU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; en-AU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0015
@@ -1636,7 +1636,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("en-DK", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; en-DK, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; en-DK, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0016
@@ -1647,7 +1647,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("en-FR", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; en-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; en-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0017
@@ -1658,7 +1658,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("en-GB", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; en-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; en-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0018
@@ -1669,7 +1669,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("en-IN", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; en-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; en-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0019
@@ -1680,7 +1680,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("en-NZ", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; en-NZ, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; en-NZ, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0020
@@ -1691,7 +1691,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("en-Shaw", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; en-Shaw, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; en-Shaw, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0021
@@ -1702,7 +1702,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("en-Shaw-GB", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; en-Shaw-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; en-Shaw-GB, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0022
@@ -1715,7 +1715,7 @@ per-engine.broiler-js: value: str:"1 hora, 2 minutos y 3 segundos"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("es", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; es, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; es, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0023
@@ -1728,7 +1728,7 @@ per-engine.broiler-js: value: str:"1 hora, 2 minutos y 3 segundos"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("es-419", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; es-419, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves es-419 to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; es-419, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves es-419 to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0024
@@ -1741,7 +1741,7 @@ per-engine.broiler-js: value: str:"1 hora, 2 minutos y 3 segundos"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("es-ES", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; es-ES, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves es-ES to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; es-ES, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves es-ES to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0025
@@ -1755,7 +1755,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("fa", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; fa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fa to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; fa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fa to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0026
@@ -1769,7 +1769,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("fa-IR", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; fa-IR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fa-IR to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; fa-IR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fa-IR to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0027
@@ -1783,7 +1783,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ff", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ff, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ff to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ff, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ff to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0028
@@ -1797,7 +1797,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("fil", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; fil, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fil to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; fil, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fil to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0029
@@ -1810,7 +1810,7 @@ per-engine.broiler-js: value: str:"1\u00A0heure, 2 minutes et 3\u00A0secondes"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("fr", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; fr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fr to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; fr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fr to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0030
@@ -1824,7 +1824,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("fr-CA", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; fr-CA, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fr-CA to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; fr-CA, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fr-CA to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0031
@@ -1837,7 +1837,7 @@ per-engine.broiler-js: value: str:"1\u00A0heure, 2 minutes et 3\u00A0secondes"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("fr-FR", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; fr-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fr-FR to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; fr-FR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fr-FR to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0032
@@ -1851,7 +1851,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("gv", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; gv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves gv to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; gv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves gv to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0033
@@ -1865,7 +1865,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("he", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; he, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves he to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; he, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves he to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0034
@@ -1879,7 +1879,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("he-IL", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; he-IL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves he-IL to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; he-IL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves he-IL to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0035
@@ -1893,7 +1893,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("hi", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; hi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves hi to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; hi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves hi to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0036
@@ -1907,7 +1907,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("hi-IN", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; hi-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves hi-IN to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; hi-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves hi-IN to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0037
@@ -1921,7 +1921,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("hy", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; hy, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves hy to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; hy, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves hy to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0038
@@ -1935,7 +1935,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("hy-AM", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; hy-AM, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves hy-AM to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; hy-AM, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves hy-AM to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0039
@@ -1949,7 +1949,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("id", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; id, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves id to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; id, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves id to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0040
@@ -1963,7 +1963,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("id-ID", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; id-ID, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves id-ID to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; id-ID, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves id-ID to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0041
@@ -1976,7 +1976,7 @@ per-engine.broiler-js: value: str:"1 ora, 2 minuti e 3 secondi"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("it", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; it, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves it to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; it, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves it to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0042
@@ -1989,7 +1989,7 @@ per-engine.broiler-js: value: str:"1 \u6642\u9593 2 \u5206 3 \u79D2"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ja", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ja, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ja to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ja, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ja to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0043
@@ -2002,7 +2002,7 @@ per-engine.broiler-js: value: str:"1 \u6642\u9593 2 \u5206 3 \u79D2"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ja-JP", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ja-JP, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ja-JP to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ja-JP, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ja-JP to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0044
@@ -2013,7 +2013,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("jbo", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; jbo, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; jbo, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0045
@@ -2026,7 +2026,7 @@ per-engine.broiler-js: value: str:"1\uC2DC\uAC04 2\uBD84 3\uCD08"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ko", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ko, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ko to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ko, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ko to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0046
@@ -2039,7 +2039,7 @@ per-engine.broiler-js: value: str:"1\uC2DC\uAC04 2\uBD84 3\uCD08"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ko-KR", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ko-KR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ko-KR to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ko-KR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ko-KR to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0047
@@ -2053,7 +2053,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ln", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ln, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ln to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ln, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ln to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0048
@@ -2067,7 +2067,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("lt", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; lt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves lt to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; lt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves lt to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0049
@@ -2081,7 +2081,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("nb", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; nb, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves nb to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; nb, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves nb to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0050
@@ -2094,7 +2094,7 @@ per-engine.broiler-js: value: str:"1 uur, 2 minuten en 3 seconden"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("nl", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; nl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves nl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; nl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves nl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0051
@@ -2107,7 +2107,7 @@ per-engine.broiler-js: value: str:"1 uur, 2 minuten en 3 seconden"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("nl-BE", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; nl-BE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves nl-BE to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; nl-BE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves nl-BE to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0052
@@ -2121,7 +2121,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("no", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; no, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves no to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; no, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves no to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0053
@@ -2132,7 +2132,7 @@ out: value: str:"1 hour, 2 minutes, 3 seconds"
 class: normative
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("pap", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
+note: row U15 (data, C5): the duration's unit and list patterns; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
 since: 27
 
 id: intl/durations/families/0054
@@ -2145,7 +2145,7 @@ per-engine.broiler-js: value: str:"1 godzina, 2 minuty i 3 sekundy"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("pl", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; pl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; pl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0055
@@ -2158,7 +2158,7 @@ per-engine.broiler-js: value: str:"1 godzina, 2 minuty i 3 sekundy"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("pl-PL", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; pl-PL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pl-PL to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; pl-PL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pl-PL to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0056
@@ -2171,7 +2171,7 @@ per-engine.broiler-js: value: str:"1 hora, 2 minutos e 3 segundos"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("pt", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; pt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pt to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; pt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pt to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0057
@@ -2184,7 +2184,7 @@ per-engine.broiler-js: value: str:"1 hora, 2 minutos e 3 segundos"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("pt-BR", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; pt-BR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pt-BR to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; pt-BR, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pt-BR to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0058
@@ -2197,7 +2197,7 @@ per-engine.broiler-js: value: str:"1 hora, 2 minutos e 3 segundos"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("pt-PT", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; pt-PT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pt-PT to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; pt-PT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pt-PT to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0059
@@ -2211,7 +2211,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ro", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ro, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ro to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ro, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ro to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0060
@@ -2224,7 +2224,7 @@ per-engine.broiler-js: value: str:"1 \u0447\u0430\u0441 2 \u043C\u0438\u043D\u04
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ru", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ru, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ru to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ru, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ru to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0061
@@ -2237,7 +2237,7 @@ per-engine.broiler-js: value: str:"1 \u0447\u0430\u0441 2 \u043C\u0438\u043D\u04
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ru-RU", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ru-RU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ru-RU to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ru-RU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ru-RU to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0062
@@ -2251,7 +2251,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("sa", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sa to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sa to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0063
@@ -2265,7 +2265,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("si", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; si, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves si to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; si, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves si to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0064
@@ -2279,7 +2279,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("sl", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; sl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; sl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0065
@@ -2293,7 +2293,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("sr", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; sr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; sr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0066
@@ -2307,7 +2307,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("sr-Cyrl", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; sr-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Cyrl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; sr-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Cyrl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0067
@@ -2321,7 +2321,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("sr-Cyrl-RS", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; sr-Cyrl-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Cyrl-RS to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; sr-Cyrl-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Cyrl-RS to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0068
@@ -2335,7 +2335,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("sr-Latn", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; sr-Latn, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Latn to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; sr-Latn, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Latn to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0069
@@ -2349,7 +2349,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("sr-Latn-RS", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; sr-Latn-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Latn-RS to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; sr-Latn-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Latn-RS to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0070
@@ -2362,7 +2362,7 @@ per-engine.broiler-js: value: str:"1 timme, 2 minuter, 3 sekunder"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("sv", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; sv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; sv, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0071
@@ -2375,7 +2375,7 @@ per-engine.broiler-js: value: str:"1 timme, 2 minuter, 3 sekunder"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("sv-SE", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; sv-SE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sv-SE to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; sv-SE, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sv-SE to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0072
@@ -2389,7 +2389,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("th", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; th, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; th, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0073
@@ -2403,7 +2403,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("th-TH", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; th-TH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves th-TH to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; th-TH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves th-TH to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0074
@@ -2416,7 +2416,7 @@ per-engine.broiler-js: value: str:"1 saat 2 dakika 3 saniye"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("tr", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; tr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves tr to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; tr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves tr to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0075
@@ -2430,7 +2430,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("ur", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; ur, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ur to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; ur, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ur to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0076
@@ -2444,7 +2444,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("uz", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; uz, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves uz to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; uz, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves uz to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0077
@@ -2458,7 +2458,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("uz-Cyrl", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; uz-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves uz-Cyrl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; uz-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves uz-Cyrl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0078
@@ -2472,7 +2472,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("yi", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; yi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves yi to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; yi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves yi to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0079
@@ -2485,7 +2485,7 @@ per-engine.broiler-js: value: str:"1\u5C0F\u65F62\u5206\u949F3\u79D2\u949F"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("zh", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; zh, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; zh, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0080
@@ -2498,7 +2498,7 @@ per-engine.broiler-js: value: str:"1\u5C0F\u65F62\u5206\u949F3\u79D2\u949F"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("zh-Hans", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; zh-Hans, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh-Hans to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; zh-Hans, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh-Hans to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0081
@@ -2511,7 +2511,7 @@ per-engine.broiler-js: value: str:"1\u5C0F\u65F62\u5206\u949F3\u79D2\u949F"
 per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("zh-Hans-CN", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; zh-Hans-CN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh-Hans-CN to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; zh-Hans-CN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh-Hans-CN to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0082
@@ -2525,7 +2525,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("zh-Hans-SG", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; zh-Hans-SG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh-Hans-SG to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; zh-Hans-SG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh-Hans-SG to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0083
@@ -2539,7 +2539,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("zh-Hant", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; zh-Hant, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh-Hant to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; zh-Hant, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh-Hant to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0084
@@ -2553,7 +2553,7 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("zh-Hant-TW", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; zh-Hant-TW, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh-Hant-TW to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; zh-Hant-TW, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zh-Hant-TW to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27
 
 id: intl/durations/families/0085
@@ -2567,5 +2567,5 @@ per-engine.broiler-vm: value: str:"1 hour, 2 minutes, 3 seconds"
 divergence.broiler-js: row U15: Unit and list patterns: `long` `{hours: 1, minutes: 2}` in `fr`, `ja`, `es`, `ar`, `zh-TW` ...; Broiler.JS answers the package's CLDR 48.2.0 patterns: `fr` `"1 heure et 2 minutes"` (U+00A0), `ja` `"1 U+6642U+9593 2 U+5206"`, `es` `"1 hora y 2 minutos"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-partitiondurationformatpattern ref:intlref@1
 script: new Intl.DurationFormat("zu", {style: "long"}).format({hours: 1, minutes: 2, seconds: 3})
-note: the duration's unit and list patterns; zu, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zu to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
+note: row U15 (data, C5): the duration's unit and list patterns; zu, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves zu to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
 since: 27

@@ -3,21 +3,23 @@
 # A line `reason <key>: <text>` defines a reason. A line `<engine> <key> <id>` classifies the vector <id> as a
 # divergence of <engine> for that reason: the generator writes the field divergence.<engine>: <text>. A normative
 # vector becomes a divergence. An impl-defined one stays impl-defined: its per-engine.<engine> field is the
-# expectation that engine's plan commits it to, and the divergence field says the engine does not meet it yet
-# (SCHEMA.md section 5). Where an impl-defined vector has no per-engine field for the engine, its note says the
-# engine is compared with the reference, and the generator writes per-engine.<engine> with the vector's `out`. The
-# vector's expected value never changes.
+# expectation that engine's plan commits it to, which the vector's case states, and the divergence field says the
+# engine does not meet it yet (SCHEMA.md section 5). The generator refuses an impl-defined vector classified for an
+# engine its case states no expectation for. The vector's expected value never changes.
 #
 # A line is added in a new corpus revision, with a dated row in conformance/vectors/REVISIONS.md, and is removed only
 # the same way, when the engine's cut-over corrects the difference and lists the correction. Every reason names the
 # row of bundle sjl-9-001's correspondence from code (Broiler.VM's docs/evidence/sjl-9-001/correspondence.md) it
 # confirms, the engine's answer as that row records it, the class JSD-0082 gives the row, and the work package that
-# answers it: SJL-9.5, Broiler.JS's cut-over to the shared Intl library, or SJL-9.4, Broiler.VM's; for row L40,
-# SJL-17. A reason quotes the row's cells shortened (" ..." marks a cut) and in ASCII (U+XXXX for any other character).
+# answers it: SJL-9.5, Broiler.JS's cut-over to the shared Intl library, or SJL-9.4, Broiler.VM's. A difference is
+# classified under the row whose answer the engine gives in it, which is one of the rows the vector's note names, and
+# not under every row the vector reaches. A reason quotes the row's cells shortened (" ..." marks a cut) and in ASCII
+# (U+XXXX for any other character).
 #
 # Revision 28, 2026-10-26: every difference of Broiler.JS's first engine-level runs on the Intl area, at revision 27
 # (6311031f), under TZ=UTC and under TZ=America/New_York, whose reports are byte for byte the same; and every
-# difference of Broiler.VM's first run, taken at its rule commit 4cf9ca44 from a scratch archive of revision 27. The
+# difference of Broiler.VM's first run, taken at its rule commit 4cf9ca44 from a scratch archive of revision 27, but
+# two of row N5b, where revision 28 corrects the expectation instead (decision D35 keeps Broiler.VM's answer). The
 # runs are retained in docs/evidence/sjl-9-001/engine/.
 
 reason js-l10: row L10: A `-t-` tlang whose language alias adds a subtag: `en-t-sh`; Broiler.JS answers `Error: System.IndexOutOfRangeException` from `CanonicalizeTransformedExtension`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
@@ -25,7 +27,7 @@ reason js-l12: row L12: `Zzzz` and `ZZ` in Add Likely Subtags: `und-Zzzz`, `und-
 reason js-l14: row L14: Non-ASCII letters in option values: Intl.Locale `variants: "U+212Aaaaa"`, `numberingSystem: "U+212Ahmr"` ...; Broiler.JS answers accepts them, lowered by `ToLowerInvariant` before the ASCII grammar is checked: `en-kaaaa`, `en-u-nu-khmr`, `en-u-co-phokebk`, `en-u-fw-mok`; NumberFormat answers `latn`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-l15: row L15: An information method on a Locale that carries the keyword: `getCalendars`, `getCollations`, `getHourCycles` ...; Broiler.JS answers the keyword's value and then the engine's default: `["japanese", "gregory"]`, `["emoji", "default"]`, `["h23", "h12"]`, `["arab", "latn"]`; `["phonebk", "default"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-l17: row L17: `getCollations` with no keyword, a locale whose language the Collator supports: `en`, `en-US`, `en-GB`, `de` ...; Broiler.JS answers `["default"]` for every locale; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
-reason js-l18-l17: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default (row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+reason js-l18-l17: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-l19-l20: rows L19 and L20: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-l19-l20-l21: rows L19 and L20 and L21: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1) | RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-l2: row L2: Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
@@ -36,7 +38,6 @@ reason js-l26: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answer
 reason js-l29: row L29: The resolved locale is an available locale: a request with variants or private use whose prefix is available ...; Broiler.JS answers the request itself: `de-CH-1996`, `en-US-x-foo`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-l30: row L30: The relevant extension keys of each service: `en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-y ...; Broiler.JS answers every keyword and attribute kept, `en-u-attr-ca-japanese-co-phonebk-hc-h23-kf-upper-kn-nu-arab-xx-yyy`, in those six services; `en-u-nu-arab`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-l37: row L37: `Intl.DisplayNames.supportedLocalesOf`; Broiler.JS answers absent; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
-reason js-l40: row L40 (engine policy, a parameter, SJL-17's; SJL-D-24 (c)): Broiler.JS's Collator lists emoji, eor, phonebk, phonetic, pinyin, stroke, trad, unihan and zhuyin, where the reference's ICU 78.3 also lists compat, dict and searchjl; each engine keeps its own Collator until SJL-17's cut-overs, so no answer moves at SJL-9; answered by SJL-17, the collation milestone, not by SJL-9.5
 reason js-l45-l2: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-l5: row L5: Language aliases (CLDR `languageAlias`): `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` ...; Broiler.JS answers hand tables listing "only the entries test262 exercises": `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` unchanged ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-l6: row L6: Script aliases: `und-Qaai`, `en-Qaai`, `und-Qaai-US`; Broiler.JS answers unchanged: no script alias table; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
@@ -58,6 +59,7 @@ reason js-n14-n1b: rows N14 and N1b: The host's culture: named locales and the d
 reason js-n17c: row N17c: Broiler.JS's separator spacing reads the UTF-16 unit beside the separator: astral digits in ranges; Broiler.JS answers `"U+1D7D1 - U+1D7D3"`: a low surrogate is not `char.IsDigit`, while `latn` gives `"3-5"`; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-n1b: row N1b: Other locales' decimal symbols and grouping: `de-AT`, `de-CH`, `fr`, `sv`, `es`, `pl`, `en-IN`, `ar` ...; Broiler.JS answers the host ICU's separators and grouping: `de-CH` `"1'234.5"`, `fr` `"1 234,5"` (U+202F), `sv` `"-1 234,5"` (U+00A0 ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-n2b: row N2b: Other locales' percent pattern: `de-CH`, `fr`, `sv`, `tr`, `es`, `ar`; Broiler.JS answers the host culture's `PercentPositivePattern`/`PercentNegativePattern`: `tr` `"%50"`, `"%-50"` (CLDR: `"%50"`, `"-%50"`), `de-CH` `"50%"`, `fr`/`sv`/`es` `"50 %"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+reason js-n2b-m5: rows N2b and M5: Other locales' percent pattern: `de-CH`, `fr`, `sv`, `tr`, `es`, `ar`; Broiler.JS answers the host culture's `PercentPositivePattern`/`PercentNegativePattern`: `tr` `"%50"`, `"%-50"` (CLDR: `"%50"`, `"-%50"`), `de-CH` `"50%"`, `fr`/`sv`/`es` `"50 %"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-n2c: row N2c: `style: "unit"`, `unit: "percent"`, short and long; Broiler.JS answers CLDR's unit pattern: `de` short `"50 %"` (U+0020), long `"50 Prozent"` (Node: `"50 %"` with U+00A0, `"50 Prozent"`); implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-n3b: row N3b: Currency spacing between a letter symbol or code and the digits: `en` code `EUR`, `USD`, `JPY`, `GBP` ...; Broiler.JS answers `"EUR1.00"`, `"CHF1.00"`, `"KWD1.000"`: no currency spacing; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-n3c: row N3c: Other locales' currency patterns and symbols: `fr`, `es`, `pt-PT`, `ko-KR`, `zh-TW`, `sv`, `ar`; Broiler.JS answers the package's and the host's: `fr` `"-1 234,50 U+20AC"`, `"1,00 $US"`; `ko-KR` `"US$1.00"`; `ar` `"-1U+066C234U+066B50U+20AC"`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
@@ -129,7 +131,6 @@ reason js-u7: row U7: A property bag as the argument: the reads of `format` and 
 reason js-u9: row U9: A String as the argument: `"PT1H30M"`, `"P1Y2M3W4DT5H6M7.008009010S"`, `"-PT5M"`, `"1 hour"`, `""` ...; Broiler.JS answers parsed into a `Temporal.Duration` object, which `FormatToParts` then reads by property access. So all ten `Temporal.Duration.prototype` getters run (`years,months,...,nan ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason vm-l18: row L18 (a correction of Broiler.VM): getCollations of a locale whose language the Collator lacks answers ["emoji", "eor"], where CollationsOfLocale answers DefaultLocale's collations, en-US's, which are none; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 reason vm-l9: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
-reason vm-n5b: row N5b (implementation-defined, C3): Broiler.VM composes a compound unit's short and narrow per pattern from the denominator's long singular where the short width has only an other pattern (de 2 kb/Stone for 2 kb/st), where CLDR's composition, the shared library's, takes the width's own pattern; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 reason vm-z8: row Z8 (a correction of Broiler.VM, decision D15): the formatter resolves a non-primary identifier to its primary, where e8cc03fc's CreateDateTimeFormat keeps [[Identifier]], the identifier as given in its case; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 
 broiler-js js-l10 intl/locales/aliases/0072
@@ -274,8 +275,6 @@ broiler-js js-l30 intl/locales/negotiation/0019
 broiler-js js-l37 intl/locales/negotiation/0021
 broiler-js js-l37 intl/locales/negotiation/0022
 
-broiler-js js-l40 intl/locales/values/0001
-
 broiler-js js-l45-l2 intl/locales/ascii/0009
 broiler-js js-l45-l2 intl/locales/ascii/0010
 broiler-js js-l45-l2 intl/locales/ascii/0011
@@ -379,6 +378,89 @@ broiler-js js-m4 intl/values-and-plurals/digit-options/0003
 broiler-js js-m4 intl/values-and-plurals/digit-options/0004
 broiler-js js-m4 intl/values-and-plurals/digit-options/0005
 
+broiler-js js-m5 intl/numbers-and-text/families/0002
+broiler-js js-m5 intl/numbers-and-text/families/0012
+broiler-js js-m5 intl/numbers-and-text/families/0022
+broiler-js js-m5 intl/numbers-and-text/families/0050
+broiler-js js-m5 intl/numbers-and-text/families/0060
+broiler-js js-m5 intl/numbers-and-text/families/0070
+broiler-js js-m5 intl/numbers-and-text/families/0080
+broiler-js js-m5 intl/numbers-and-text/families/0090
+broiler-js js-m5 intl/numbers-and-text/families/0100
+broiler-js js-m5 intl/numbers-and-text/families/0110
+broiler-js js-m5 intl/numbers-and-text/families/0120
+broiler-js js-m5 intl/numbers-and-text/families/0130
+broiler-js js-m5 intl/numbers-and-text/families/0140
+broiler-js js-m5 intl/numbers-and-text/families/0150
+broiler-js js-m5 intl/numbers-and-text/families/0160
+broiler-js js-m5 intl/numbers-and-text/families/0170
+broiler-js js-m5 intl/numbers-and-text/families/0179
+broiler-js js-m5 intl/numbers-and-text/families/0189
+broiler-js js-m5 intl/numbers-and-text/families/0199
+broiler-js js-m5 intl/numbers-and-text/families/0209
+broiler-js js-m5 intl/numbers-and-text/families/0216
+broiler-js js-m5 intl/numbers-and-text/families/0226
+broiler-js js-m5 intl/numbers-and-text/families/0236
+broiler-js js-m5 intl/numbers-and-text/families/0246
+broiler-js js-m5 intl/numbers-and-text/families/0256
+broiler-js js-m5 intl/numbers-and-text/families/0266
+broiler-js js-m5 intl/numbers-and-text/families/0276
+broiler-js js-m5 intl/numbers-and-text/families/0283
+broiler-js js-m5 intl/numbers-and-text/families/0293
+broiler-js js-m5 intl/numbers-and-text/families/0303
+broiler-js js-m5 intl/numbers-and-text/families/0313
+broiler-js js-m5 intl/numbers-and-text/families/0323
+broiler-js js-m5 intl/numbers-and-text/families/0333
+broiler-js js-m5 intl/numbers-and-text/families/0343
+broiler-js js-m5 intl/numbers-and-text/families/0353
+broiler-js js-m5 intl/numbers-and-text/families/0363
+broiler-js js-m5 intl/numbers-and-text/families/0373
+broiler-js js-m5 intl/numbers-and-text/families/0383
+broiler-js js-m5 intl/numbers-and-text/families/0393
+broiler-js js-m5 intl/numbers-and-text/families/0403
+broiler-js js-m5 intl/numbers-and-text/families/0411
+broiler-js js-m5 intl/numbers-and-text/families/0421
+broiler-js js-m5 intl/numbers-and-text/families/0431
+broiler-js js-m5 intl/numbers-and-text/families/0439
+broiler-js js-m5 intl/numbers-and-text/families/0448
+broiler-js js-m5 intl/numbers-and-text/families/0458
+broiler-js js-m5 intl/numbers-and-text/families/0468
+broiler-js js-m5 intl/numbers-and-text/families/0478
+broiler-js js-m5 intl/numbers-and-text/families/0488
+broiler-js js-m5 intl/numbers-and-text/families/0498
+broiler-js js-m5 intl/numbers-and-text/families/0508
+broiler-js js-m5 intl/numbers-and-text/families/0518
+broiler-js js-m5 intl/numbers-and-text/families/0527
+broiler-js js-m5 intl/numbers-and-text/families/0537
+broiler-js js-m5 intl/numbers-and-text/families/0546
+broiler-js js-m5 intl/numbers-and-text/families/0556
+broiler-js js-m5 intl/numbers-and-text/families/0565
+broiler-js js-m5 intl/numbers-and-text/families/0575
+broiler-js js-m5 intl/numbers-and-text/families/0584
+broiler-js js-m5 intl/numbers-and-text/families/0594
+broiler-js js-m5 intl/numbers-and-text/families/0604
+broiler-js js-m5 intl/numbers-and-text/families/0614
+broiler-js js-m5 intl/numbers-and-text/families/0624
+broiler-js js-m5 intl/numbers-and-text/families/0634
+broiler-js js-m5 intl/numbers-and-text/families/0644
+broiler-js js-m5 intl/numbers-and-text/families/0654
+broiler-js js-m5 intl/numbers-and-text/families/0664
+broiler-js js-m5 intl/numbers-and-text/families/0674
+broiler-js js-m5 intl/numbers-and-text/families/0683
+broiler-js js-m5 intl/numbers-and-text/families/0693
+broiler-js js-m5 intl/numbers-and-text/families/0703
+broiler-js js-m5 intl/numbers-and-text/families/0713
+broiler-js js-m5 intl/numbers-and-text/families/0723
+broiler-js js-m5 intl/numbers-and-text/families/0733
+broiler-js js-m5 intl/numbers-and-text/families/0743
+broiler-js js-m5 intl/numbers-and-text/families/0753
+broiler-js js-m5 intl/numbers-and-text/families/0763
+broiler-js js-m5 intl/numbers-and-text/families/0772
+broiler-js js-m5 intl/numbers-and-text/families/0782
+broiler-js js-m5 intl/numbers-and-text/families/0792
+broiler-js js-m5 intl/numbers-and-text/families/0802
+broiler-js js-m5 intl/numbers-and-text/families/0812
+broiler-js js-m5 intl/numbers-and-text/families/0822
 broiler-js js-m5 intl/values-and-plurals/digit-options/0019
 broiler-js js-m5 intl/values-and-plurals/digit-options/0020
 broiler-js js-m5 intl/values-and-plurals/digit-options/0024
@@ -440,95 +522,13 @@ broiler-js js-n1b intl/numbers-and-text/families/0673
 broiler-js js-n1b intl/numbers-and-text/families/0682
 broiler-js js-n1b intl/numbers-and-text/families/0722
 
-broiler-js js-n2b intl/numbers-and-text/families/0002
-broiler-js js-n2b intl/numbers-and-text/families/0012
-broiler-js js-n2b intl/numbers-and-text/families/0022
-broiler-js js-n2b intl/numbers-and-text/families/0032
-broiler-js js-n2b intl/numbers-and-text/families/0040
-broiler-js js-n2b intl/numbers-and-text/families/0050
-broiler-js js-n2b intl/numbers-and-text/families/0060
-broiler-js js-n2b intl/numbers-and-text/families/0070
-broiler-js js-n2b intl/numbers-and-text/families/0080
-broiler-js js-n2b intl/numbers-and-text/families/0090
-broiler-js js-n2b intl/numbers-and-text/families/0100
-broiler-js js-n2b intl/numbers-and-text/families/0110
-broiler-js js-n2b intl/numbers-and-text/families/0120
-broiler-js js-n2b intl/numbers-and-text/families/0130
-broiler-js js-n2b intl/numbers-and-text/families/0140
-broiler-js js-n2b intl/numbers-and-text/families/0150
-broiler-js js-n2b intl/numbers-and-text/families/0160
-broiler-js js-n2b intl/numbers-and-text/families/0170
-broiler-js js-n2b intl/numbers-and-text/families/0179
-broiler-js js-n2b intl/numbers-and-text/families/0189
-broiler-js js-n2b intl/numbers-and-text/families/0199
-broiler-js js-n2b intl/numbers-and-text/families/0209
-broiler-js js-n2b intl/numbers-and-text/families/0216
-broiler-js js-n2b intl/numbers-and-text/families/0226
-broiler-js js-n2b intl/numbers-and-text/families/0236
-broiler-js js-n2b intl/numbers-and-text/families/0246
-broiler-js js-n2b intl/numbers-and-text/families/0256
-broiler-js js-n2b intl/numbers-and-text/families/0266
-broiler-js js-n2b intl/numbers-and-text/families/0276
-broiler-js js-n2b intl/numbers-and-text/families/0283
-broiler-js js-n2b intl/numbers-and-text/families/0293
-broiler-js js-n2b intl/numbers-and-text/families/0303
-broiler-js js-n2b intl/numbers-and-text/families/0313
-broiler-js js-n2b intl/numbers-and-text/families/0323
-broiler-js js-n2b intl/numbers-and-text/families/0333
-broiler-js js-n2b intl/numbers-and-text/families/0343
-broiler-js js-n2b intl/numbers-and-text/families/0353
-broiler-js js-n2b intl/numbers-and-text/families/0363
-broiler-js js-n2b intl/numbers-and-text/families/0373
-broiler-js js-n2b intl/numbers-and-text/families/0383
-broiler-js js-n2b intl/numbers-and-text/families/0393
-broiler-js js-n2b intl/numbers-and-text/families/0403
-broiler-js js-n2b intl/numbers-and-text/families/0411
-broiler-js js-n2b intl/numbers-and-text/families/0421
-broiler-js js-n2b intl/numbers-and-text/families/0431
-broiler-js js-n2b intl/numbers-and-text/families/0439
-broiler-js js-n2b intl/numbers-and-text/families/0448
-broiler-js js-n2b intl/numbers-and-text/families/0458
-broiler-js js-n2b intl/numbers-and-text/families/0468
-broiler-js js-n2b intl/numbers-and-text/families/0478
-broiler-js js-n2b intl/numbers-and-text/families/0488
-broiler-js js-n2b intl/numbers-and-text/families/0498
-broiler-js js-n2b intl/numbers-and-text/families/0508
-broiler-js js-n2b intl/numbers-and-text/families/0518
-broiler-js js-n2b intl/numbers-and-text/families/0527
-broiler-js js-n2b intl/numbers-and-text/families/0537
-broiler-js js-n2b intl/numbers-and-text/families/0546
-broiler-js js-n2b intl/numbers-and-text/families/0556
-broiler-js js-n2b intl/numbers-and-text/families/0565
-broiler-js js-n2b intl/numbers-and-text/families/0575
-broiler-js js-n2b intl/numbers-and-text/families/0584
-broiler-js js-n2b intl/numbers-and-text/families/0594
-broiler-js js-n2b intl/numbers-and-text/families/0604
-broiler-js js-n2b intl/numbers-and-text/families/0614
-broiler-js js-n2b intl/numbers-and-text/families/0624
-broiler-js js-n2b intl/numbers-and-text/families/0634
-broiler-js js-n2b intl/numbers-and-text/families/0644
-broiler-js js-n2b intl/numbers-and-text/families/0654
-broiler-js js-n2b intl/numbers-and-text/families/0664
-broiler-js js-n2b intl/numbers-and-text/families/0674
-broiler-js js-n2b intl/numbers-and-text/families/0683
-broiler-js js-n2b intl/numbers-and-text/families/0693
-broiler-js js-n2b intl/numbers-and-text/families/0703
-broiler-js js-n2b intl/numbers-and-text/families/0713
-broiler-js js-n2b intl/numbers-and-text/families/0723
-broiler-js js-n2b intl/numbers-and-text/families/0733
-broiler-js js-n2b intl/numbers-and-text/families/0743
-broiler-js js-n2b intl/numbers-and-text/families/0753
-broiler-js js-n2b intl/numbers-and-text/families/0763
-broiler-js js-n2b intl/numbers-and-text/families/0772
-broiler-js js-n2b intl/numbers-and-text/families/0782
-broiler-js js-n2b intl/numbers-and-text/families/0792
-broiler-js js-n2b intl/numbers-and-text/families/0802
-broiler-js js-n2b intl/numbers-and-text/families/0812
-broiler-js js-n2b intl/numbers-and-text/families/0822
 broiler-js js-n2b intl/numbers-and-text/percent/0008
 broiler-js js-n2b intl/numbers-and-text/percent/0010
 broiler-js js-n2b intl/numbers-and-text/percent/0013
 broiler-js js-n2b intl/numbers-and-text/percent/0014
+
+broiler-js js-n2b-m5 intl/numbers-and-text/families/0032
+broiler-js js-n2b-m5 intl/numbers-and-text/families/0040
 
 broiler-js js-n2c intl/numbers-and-text/percent/0016
 broiler-js js-n2c intl/numbers-and-text/percent/0018
@@ -1265,23 +1265,42 @@ broiler-js js-s9 intl/numbers-and-text/displaynames/0064
 broiler-js js-s9 intl/numbers-and-text/displaynames/0065
 broiler-js js-s9 intl/numbers-and-text/displaynames/0066
 
+broiler-js js-t10 intl/date-times/families/0020
 broiler-js js-t10 intl/date-times/families/0021
+broiler-js js-t10 intl/date-times/families/0026
 broiler-js js-t10 intl/date-times/families/0027
+broiler-js js-t10 intl/date-times/families/0119
 broiler-js js-t10 intl/date-times/families/0120
+broiler-js js-t10 intl/date-times/families/0131
 broiler-js js-t10 intl/date-times/families/0132
+broiler-js js-t10 intl/date-times/families/0161
 broiler-js js-t10 intl/date-times/families/0162
+broiler-js js-t10 intl/date-times/families/0173
 broiler-js js-t10 intl/date-times/families/0174
+broiler-js js-t10 intl/date-times/families/0203
 broiler-js js-t10 intl/date-times/families/0204
+broiler-js js-t10 intl/date-times/families/0261
+broiler-js js-t10 intl/date-times/families/0266
 broiler-js js-t10 intl/date-times/families/0267
+broiler-js js-t10 intl/date-times/families/0362
 broiler-js js-t10 intl/date-times/families/0363
+broiler-js js-t10 intl/date-times/families/0440
 broiler-js js-t10 intl/date-times/families/0441
+broiler-js js-t10 intl/date-times/families/0482
 broiler-js js-t10 intl/date-times/families/0483
+broiler-js js-t10 intl/date-times/families/0488
 broiler-js js-t10 intl/date-times/families/0489
+broiler-js js-t10 intl/date-times/families/0494
 broiler-js js-t10 intl/date-times/families/0495
 broiler-js js-t10 intl/date-times/resolved/0012
 broiler-js js-t10 intl/date-times/resolved/0017
 broiler-js js-t10 intl/date-times/resolved/0023
 
+broiler-js js-t12 intl/date-times/families/0002
+broiler-js js-t12 intl/date-times/families/0008
+broiler-js js-t12 intl/date-times/families/0113
+broiler-js js-t12 intl/date-times/families/0255
+broiler-js js-t12 intl/date-times/families/0308
 broiler-js js-t12 intl/date-times/patterns/0001
 broiler-js js-t12 intl/date-times/patterns/0002
 broiler-js js-t12 intl/date-times/patterns/0003
@@ -1314,6 +1333,8 @@ broiler-js js-t13 intl/date-times/patterns/0029
 broiler-js js-t13 intl/date-times/patterns/0030
 broiler-js js-t13 intl/date-times/patterns/0031
 
+broiler-js js-t14 intl/date-times/families/0032
+broiler-js js-t14 intl/date-times/families/0209
 broiler-js js-t14 intl/date-times/names/0035
 broiler-js js-t14 intl/date-times/names/0036
 broiler-js js-t14 intl/date-times/names/0037
@@ -1350,6 +1371,24 @@ broiler-js js-t14-t15 intl/date-times/names/0032
 broiler-js js-t14-t15 intl/date-times/names/0033
 broiler-js js-t14-t15 intl/date-times/names/0034
 
+broiler-js js-t16 intl/date-times/families/0034
+broiler-js js-t16 intl/date-times/families/0056
+broiler-js js-t16 intl/date-times/families/0072
+broiler-js js-t16 intl/date-times/families/0078
+broiler-js js-t16 intl/date-times/families/0084
+broiler-js js-t16 intl/date-times/families/0085
+broiler-js js-t16 intl/date-times/families/0090
+broiler-js js-t16 intl/date-times/families/0096
+broiler-js js-t16 intl/date-times/families/0101
+broiler-js js-t16 intl/date-times/families/0106
+broiler-js js-t16 intl/date-times/families/0227
+broiler-js js-t16 intl/date-times/families/0233
+broiler-js js-t16 intl/date-times/families/0262
+broiler-js js-t16 intl/date-times/families/0268
+broiler-js js-t16 intl/date-times/families/0368
+broiler-js js-t16 intl/date-times/families/0484
+broiler-js js-t16 intl/date-times/families/0490
+broiler-js js-t16 intl/date-times/families/0496
 broiler-js js-t16 intl/date-times/locales/0001
 broiler-js js-t16 intl/date-times/locales/0002
 broiler-js js-t16 intl/date-times/locales/0003
@@ -1395,35 +1434,9 @@ broiler-js js-t16 intl/date-times/locales/0052
 broiler-js js-t16 intl/date-times/locales/0053
 broiler-js js-t16 intl/date-times/locales/0054
 
-broiler-js js-t16-t12 intl/date-times/families/0002
-broiler-js js-t16-t12 intl/date-times/families/0008
-broiler-js js-t16-t12 intl/date-times/families/0020
-broiler-js js-t16-t12 intl/date-times/families/0026
-broiler-js js-t16-t12 intl/date-times/families/0032
-broiler-js js-t16-t12 intl/date-times/families/0056
 broiler-js js-t16-t12 intl/date-times/families/0079
-broiler-js js-t16-t12 intl/date-times/families/0085
 broiler-js js-t16-t12 intl/date-times/families/0102
 broiler-js js-t16-t12 intl/date-times/families/0107
-broiler-js js-t16-t12 intl/date-times/families/0113
-broiler-js js-t16-t12 intl/date-times/families/0119
-broiler-js js-t16-t12 intl/date-times/families/0131
-broiler-js js-t16-t12 intl/date-times/families/0161
-broiler-js js-t16-t12 intl/date-times/families/0173
-broiler-js js-t16-t12 intl/date-times/families/0203
-broiler-js js-t16-t12 intl/date-times/families/0209
-broiler-js js-t16-t12 intl/date-times/families/0227
-broiler-js js-t16-t12 intl/date-times/families/0233
-broiler-js js-t16-t12 intl/date-times/families/0255
-broiler-js js-t16-t12 intl/date-times/families/0261
-broiler-js js-t16-t12 intl/date-times/families/0266
-broiler-js js-t16-t12 intl/date-times/families/0308
-broiler-js js-t16-t12 intl/date-times/families/0362
-broiler-js js-t16-t12 intl/date-times/families/0368
-broiler-js js-t16-t12 intl/date-times/families/0440
-broiler-js js-t16-t12 intl/date-times/families/0482
-broiler-js js-t16-t12 intl/date-times/families/0488
-broiler-js js-t16-t12 intl/date-times/families/0494
 
 broiler-js js-t16-t14 intl/date-times/families/0013
 broiler-js js-t16-t14 intl/date-times/families/0019
@@ -1434,13 +1447,6 @@ broiler-js js-t16-t14 intl/date-times/families/0043
 broiler-js js-t16-t14 intl/date-times/families/0049
 broiler-js js-t16-t14 intl/date-times/families/0055
 broiler-js js-t16-t14 intl/date-times/families/0066
-broiler-js js-t16-t14 intl/date-times/families/0072
-broiler-js js-t16-t14 intl/date-times/families/0078
-broiler-js js-t16-t14 intl/date-times/families/0084
-broiler-js js-t16-t14 intl/date-times/families/0090
-broiler-js js-t16-t14 intl/date-times/families/0096
-broiler-js js-t16-t14 intl/date-times/families/0101
-broiler-js js-t16-t14 intl/date-times/families/0106
 broiler-js js-t16-t14 intl/date-times/families/0124
 broiler-js js-t16-t14 intl/date-times/families/0130
 broiler-js js-t16-t14 intl/date-times/families/0136
@@ -1448,6 +1454,7 @@ broiler-js js-t16-t14 intl/date-times/families/0142
 broiler-js js-t16-t14 intl/date-times/families/0148
 broiler-js js-t16-t14 intl/date-times/families/0154
 broiler-js js-t16-t14 intl/date-times/families/0160
+broiler-js js-t16-t14 intl/date-times/families/0163
 broiler-js js-t16-t14 intl/date-times/families/0166
 broiler-js js-t16-t14 intl/date-times/families/0172
 broiler-js js-t16-t14 intl/date-times/families/0178
@@ -1455,7 +1462,9 @@ broiler-js js-t16-t14 intl/date-times/families/0184
 broiler-js js-t16-t14 intl/date-times/families/0190
 broiler-js js-t16-t14 intl/date-times/families/0196
 broiler-js js-t16-t14 intl/date-times/families/0202
+broiler-js js-t16-t14 intl/date-times/families/0205
 broiler-js js-t16-t14 intl/date-times/families/0208
+broiler-js js-t16-t14 intl/date-times/families/0211
 broiler-js js-t16-t14 intl/date-times/families/0214
 broiler-js js-t16-t14 intl/date-times/families/0220
 broiler-js js-t16-t14 intl/date-times/families/0226
@@ -1480,6 +1489,7 @@ broiler-js js-t16-t14 intl/date-times/families/0343
 broiler-js js-t16-t14 intl/date-times/families/0349
 broiler-js js-t16-t14 intl/date-times/families/0355
 broiler-js js-t16-t14 intl/date-times/families/0361
+broiler-js js-t16-t14 intl/date-times/families/0364
 broiler-js js-t16-t14 intl/date-times/families/0367
 broiler-js js-t16-t14 intl/date-times/families/0373
 broiler-js js-t16-t14 intl/date-times/families/0379
@@ -1493,6 +1503,7 @@ broiler-js js-t16-t14 intl/date-times/families/0421
 broiler-js js-t16-t14 intl/date-times/families/0427
 broiler-js js-t16-t14 intl/date-times/families/0433
 broiler-js js-t16-t14 intl/date-times/families/0439
+broiler-js js-t16-t14 intl/date-times/families/0442
 broiler-js js-t16-t14 intl/date-times/families/0445
 broiler-js js-t16-t14 intl/date-times/families/0451
 broiler-js js-t16-t14 intl/date-times/families/0457
@@ -1507,79 +1518,6 @@ broiler-js js-t16-t14 intl/date-times/families/0499
 broiler-js js-t17 intl/date-times/dayperiods/0001
 broiler-js js-t17 intl/date-times/dayperiods/0002
 broiler-js js-t17 intl/date-times/dayperiods/0003
-broiler-js js-t17 intl/date-times/families/0016
-broiler-js js-t17 intl/date-times/families/0034
-broiler-js js-t17 intl/date-times/families/0040
-broiler-js js-t17 intl/date-times/families/0046
-broiler-js js-t17 intl/date-times/families/0052
-broiler-js js-t17 intl/date-times/families/0058
-broiler-js js-t17 intl/date-times/families/0063
-broiler-js js-t17 intl/date-times/families/0069
-broiler-js js-t17 intl/date-times/families/0075
-broiler-js js-t17 intl/date-times/families/0087
-broiler-js js-t17 intl/date-times/families/0093
-broiler-js js-t17 intl/date-times/families/0098
-broiler-js js-t17 intl/date-times/families/0127
-broiler-js js-t17 intl/date-times/families/0139
-broiler-js js-t17 intl/date-times/families/0145
-broiler-js js-t17 intl/date-times/families/0151
-broiler-js js-t17 intl/date-times/families/0157
-broiler-js js-t17 intl/date-times/families/0163
-broiler-js js-t17 intl/date-times/families/0169
-broiler-js js-t17 intl/date-times/families/0175
-broiler-js js-t17 intl/date-times/families/0181
-broiler-js js-t17 intl/date-times/families/0187
-broiler-js js-t17 intl/date-times/families/0193
-broiler-js js-t17 intl/date-times/families/0199
-broiler-js js-t17 intl/date-times/families/0205
-broiler-js js-t17 intl/date-times/families/0211
-broiler-js js-t17 intl/date-times/families/0217
-broiler-js js-t17 intl/date-times/families/0223
-broiler-js js-t17 intl/date-times/families/0229
-broiler-js js-t17 intl/date-times/families/0235
-broiler-js js-t17 intl/date-times/families/0241
-broiler-js js-t17 intl/date-times/families/0246
-broiler-js js-t17 intl/date-times/families/0251
-broiler-js js-t17 intl/date-times/families/0262
-broiler-js js-t17 intl/date-times/families/0268
-broiler-js js-t17 intl/date-times/families/0274
-broiler-js js-t17 intl/date-times/families/0280
-broiler-js js-t17 intl/date-times/families/0286
-broiler-js js-t17 intl/date-times/families/0292
-broiler-js js-t17 intl/date-times/families/0298
-broiler-js js-t17 intl/date-times/families/0304
-broiler-js js-t17 intl/date-times/families/0316
-broiler-js js-t17 intl/date-times/families/0322
-broiler-js js-t17 intl/date-times/families/0328
-broiler-js js-t17 intl/date-times/families/0334
-broiler-js js-t17 intl/date-times/families/0340
-broiler-js js-t17 intl/date-times/families/0346
-broiler-js js-t17 intl/date-times/families/0352
-broiler-js js-t17 intl/date-times/families/0358
-broiler-js js-t17 intl/date-times/families/0364
-broiler-js js-t17 intl/date-times/families/0370
-broiler-js js-t17 intl/date-times/families/0376
-broiler-js js-t17 intl/date-times/families/0382
-broiler-js js-t17 intl/date-times/families/0388
-broiler-js js-t17 intl/date-times/families/0394
-broiler-js js-t17 intl/date-times/families/0400
-broiler-js js-t17 intl/date-times/families/0406
-broiler-js js-t17 intl/date-times/families/0412
-broiler-js js-t17 intl/date-times/families/0418
-broiler-js js-t17 intl/date-times/families/0424
-broiler-js js-t17 intl/date-times/families/0430
-broiler-js js-t17 intl/date-times/families/0436
-broiler-js js-t17 intl/date-times/families/0442
-broiler-js js-t17 intl/date-times/families/0448
-broiler-js js-t17 intl/date-times/families/0454
-broiler-js js-t17 intl/date-times/families/0460
-broiler-js js-t17 intl/date-times/families/0466
-broiler-js js-t17 intl/date-times/families/0472
-broiler-js js-t17 intl/date-times/families/0478
-broiler-js js-t17 intl/date-times/families/0484
-broiler-js js-t17 intl/date-times/families/0490
-broiler-js js-t17 intl/date-times/families/0496
-broiler-js js-t17 intl/date-times/families/0502
 
 broiler-js js-t18 intl/date-times/dayperiods/0009
 broiler-js js-t18 intl/date-times/dayperiods/0010
@@ -1602,6 +1540,68 @@ broiler-js js-t2 intl/date-times/options/0009
 broiler-js js-t20 intl/date-times/dayperiods/0019
 broiler-js js-t20 intl/date-times/dayperiods/0020
 broiler-js js-t20 intl/date-times/dayperiods/0021
+broiler-js js-t20 intl/date-times/families/0016
+broiler-js js-t20 intl/date-times/families/0040
+broiler-js js-t20 intl/date-times/families/0046
+broiler-js js-t20 intl/date-times/families/0052
+broiler-js js-t20 intl/date-times/families/0058
+broiler-js js-t20 intl/date-times/families/0063
+broiler-js js-t20 intl/date-times/families/0069
+broiler-js js-t20 intl/date-times/families/0075
+broiler-js js-t20 intl/date-times/families/0087
+broiler-js js-t20 intl/date-times/families/0093
+broiler-js js-t20 intl/date-times/families/0098
+broiler-js js-t20 intl/date-times/families/0127
+broiler-js js-t20 intl/date-times/families/0139
+broiler-js js-t20 intl/date-times/families/0145
+broiler-js js-t20 intl/date-times/families/0151
+broiler-js js-t20 intl/date-times/families/0157
+broiler-js js-t20 intl/date-times/families/0169
+broiler-js js-t20 intl/date-times/families/0175
+broiler-js js-t20 intl/date-times/families/0181
+broiler-js js-t20 intl/date-times/families/0187
+broiler-js js-t20 intl/date-times/families/0193
+broiler-js js-t20 intl/date-times/families/0199
+broiler-js js-t20 intl/date-times/families/0217
+broiler-js js-t20 intl/date-times/families/0223
+broiler-js js-t20 intl/date-times/families/0229
+broiler-js js-t20 intl/date-times/families/0235
+broiler-js js-t20 intl/date-times/families/0241
+broiler-js js-t20 intl/date-times/families/0246
+broiler-js js-t20 intl/date-times/families/0251
+broiler-js js-t20 intl/date-times/families/0274
+broiler-js js-t20 intl/date-times/families/0280
+broiler-js js-t20 intl/date-times/families/0286
+broiler-js js-t20 intl/date-times/families/0292
+broiler-js js-t20 intl/date-times/families/0298
+broiler-js js-t20 intl/date-times/families/0304
+broiler-js js-t20 intl/date-times/families/0316
+broiler-js js-t20 intl/date-times/families/0322
+broiler-js js-t20 intl/date-times/families/0328
+broiler-js js-t20 intl/date-times/families/0334
+broiler-js js-t20 intl/date-times/families/0340
+broiler-js js-t20 intl/date-times/families/0346
+broiler-js js-t20 intl/date-times/families/0352
+broiler-js js-t20 intl/date-times/families/0358
+broiler-js js-t20 intl/date-times/families/0370
+broiler-js js-t20 intl/date-times/families/0376
+broiler-js js-t20 intl/date-times/families/0382
+broiler-js js-t20 intl/date-times/families/0388
+broiler-js js-t20 intl/date-times/families/0394
+broiler-js js-t20 intl/date-times/families/0400
+broiler-js js-t20 intl/date-times/families/0406
+broiler-js js-t20 intl/date-times/families/0412
+broiler-js js-t20 intl/date-times/families/0418
+broiler-js js-t20 intl/date-times/families/0424
+broiler-js js-t20 intl/date-times/families/0430
+broiler-js js-t20 intl/date-times/families/0436
+broiler-js js-t20 intl/date-times/families/0448
+broiler-js js-t20 intl/date-times/families/0454
+broiler-js js-t20 intl/date-times/families/0460
+broiler-js js-t20 intl/date-times/families/0466
+broiler-js js-t20 intl/date-times/families/0472
+broiler-js js-t20 intl/date-times/families/0478
+broiler-js js-t20 intl/date-times/families/0502
 
 broiler-js js-t22 intl/date-times/families/0018
 broiler-js js-t22 intl/date-times/families/0024
@@ -2008,9 +2008,6 @@ broiler-vm vm-l9 intl/locales/subdivision/0015
 broiler-vm vm-l9 intl/locales/subdivision/0016
 broiler-vm vm-l9 intl/locales/subdivision/0017
 broiler-vm vm-l9 intl/locales/subdivision/0018
-
-broiler-vm vm-n5b intl/numbers-and-text/unit/0034
-broiler-vm vm-n5b intl/numbers-and-text/unit/0036
 
 broiler-vm vm-z8 intl/date-times/zones/0039
 broiler-vm vm-z8 intl/date-times/zones/0040

@@ -167,10 +167,13 @@ Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release".)*
   as the Temporal area does; it archives and quotes none of them. Every expected value is ICU's, through the reference
   Node.js v26.12.0 (ICU 78.3, CLDR 48.0) that bundle `sjl-9-001`'s `reference.txt` names, run by
   `scripts/conformance/intlref.mjs` (`ref:intlref@1`, decision D17), with three exceptions each vector records: where
-  the pinned text answers otherwise the vector takes the text's answer and records ICU's as
-  `overruled:intlref@1=<outcome>`; a date-time string carries U+202F where ICU's pattern has it, its positions read from
-  Node.js 22.22.0's parts, and records the reference's U+0020 as `overruled:intlref-v8@1=<outcome>` (D17 (b)); and the
-  hour cycles of a region and DurationFormat's `digital` data are read from CLDR 48.2.0 itself (`ref:intlcldr@1`,
-  decision D34). The corpus copies no CLDR file; the generator reads the cldr-json tarballs by their npm integrity.
+  the pinned text answers otherwise the vector takes the text's answer, its note quotes ICU's, and it records ICU's as
+  `overruled:intlref@1=<outcome>` where that outcome holds no space, which an `overruled:` entry cannot hold (section
+  6 of [SCHEMA.md](SCHEMA.md)); a date-time string carries U+202F where ICU's pattern has it, its positions read from
+  Node.js 22.22.0's parts, and its note records that the reference wrote U+0020 there (D17 (b)), since the reference's
+  answer always holds the U+0020 it overrules and so no `overruled:` entry can record it; and the hour cycles of a
+  region and DurationFormat's `digital` data are read from CLDR 48.2.0 itself (`ref:intlcldr@1`, decision D34), as is
+  Broiler.VM's composition of a compound unit, which row N5b's `per-engine` expectations hold (decision D35). The
+  corpus copies no CLDR file; the generator reads the cldr-json tarballs by their npm integrity.
 - **test262.** No vector of revision 1 is derived from a test262 test. A vector that is will cite the
   test with `test262:<path>`, and the corpus will then carry test262's licence notice.
