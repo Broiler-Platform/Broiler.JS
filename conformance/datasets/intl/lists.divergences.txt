@@ -1,0 +1,43 @@
+# Lines of lists.icu-77.1.txt where the profile answers otherwise, each the profile's line, under
+# the reason it is not Node's. A line replaces the Node line whose text before ` => ` is the same.
+
+# ICU reports no part for an empty element, so Node joins the literals around it into one. ECMA-402
+# (the current draft, 14.5.2 CreatePartsFromList and 14.5.1 DeconstructPattern) makes a part of type
+# element for every element of the list, its value the empty String where the element is empty, and
+# places it between the literals of its pattern. Both join to the same string.
+en {"type":"conjunction","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, and |element:Emil
+en {"type":"conjunction","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, & |element:Emil
+en {"type":"conjunction","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, |element:Emil
+en {"type":"disjunction","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, or |element:Emil
+en {"type":"disjunction","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, or |element:Emil
+en {"type":"disjunction","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, or |element:Emil
+en {"type":"unit","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, |element:Emil
+en {"type":"unit","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, |element:Emil
+en {"type":"unit","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal: |element:|literal: |element:Carl|literal: |element:Dora|literal: |element:Emil
+en-US {"type":"conjunction","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, and |element:Emil
+en-US {"type":"conjunction","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, & |element:Emil
+en-US {"type":"conjunction","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, |element:Emil
+en-US {"type":"disjunction","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, or |element:Emil
+en-US {"type":"disjunction","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, or |element:Emil
+en-US {"type":"disjunction","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, or |element:Emil
+en-US {"type":"unit","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, |element:Emil
+en-US {"type":"unit","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, |element:Emil
+en-US {"type":"unit","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal: |element:|literal: |element:Carl|literal: |element:Dora|literal: |element:Emil
+de {"type":"conjunction","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil
+de {"type":"conjunction","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil
+de {"type":"conjunction","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil
+de {"type":"disjunction","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: oder |element:Emil
+de {"type":"disjunction","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: oder |element:Emil
+de {"type":"disjunction","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: oder |element:Emil
+de {"type":"unit","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil
+de {"type":"unit","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil
+de {"type":"unit","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil
+de-DE {"type":"conjunction","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil
+de-DE {"type":"conjunction","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil
+de-DE {"type":"conjunction","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil
+de-DE {"type":"disjunction","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: oder |element:Emil
+de-DE {"type":"disjunction","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: oder |element:Emil
+de-DE {"type":"disjunction","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: oder |element:Emil
+de-DE {"type":"unit","style":"long"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil
+de-DE {"type":"unit","style":"short"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil
+de-DE {"type":"unit","style":"narrow"} formatToParts ["Anna","","Carl","Dora","Emil"] => element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: und |element:Emil

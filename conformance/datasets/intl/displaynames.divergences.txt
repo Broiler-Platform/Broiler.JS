@@ -1,0 +1,84 @@
+# Lines of displaynames.icu-77.1.txt where the profile answers otherwise, each the profile's line,
+# under the reason it is not Node's. A line replaces the Node line whose text before ` => ` is the same.
+
+# ECMA-402 regularizes a code's case before it names it (12.5.1 CanonicalCodeForDisplayNames): a
+# region is uppercased, a script title-cased and a calendar lowercased, so `us`, `latn` and `GREGORY`
+# are named as `US`, `Latn` and `gregory` are. V8 hands ICU the code as written, which names none of
+# them.
+en {"type":"region","style":"long"} us => United States | United States
+en {"type":"region","style":"long"} de => Germany | Germany
+en {"type":"region","style":"short"} us => US | US
+en {"type":"region","style":"short"} de => Germany | Germany
+en {"type":"region","style":"narrow"} us => US | US
+en {"type":"region","style":"narrow"} de => Germany | Germany
+en {"type":"script","style":"long"} latn => Latin | Latin
+en {"type":"script","style":"long"} HANS => Simplified | Simplified
+en {"type":"script","style":"short"} latn => Latin | Latin
+en {"type":"script","style":"short"} HANS => Simplified | Simplified
+en {"type":"script","style":"narrow"} latn => Latin | Latin
+en {"type":"script","style":"narrow"} HANS => Simplified | Simplified
+en {"type":"calendar","style":"long"} GREGORY => Gregorian Calendar | Gregorian Calendar
+en {"type":"calendar","style":"short"} GREGORY => Gregorian Calendar | Gregorian Calendar
+en {"type":"calendar","style":"narrow"} GREGORY => Gregorian Calendar | Gregorian Calendar
+de {"type":"region","style":"long"} us => Vereinigte Staaten | Vereinigte Staaten
+de {"type":"region","style":"long"} de => Deutschland | Deutschland
+de {"type":"region","style":"short"} us => USA | USA
+de {"type":"region","style":"short"} de => Deutschland | Deutschland
+de {"type":"region","style":"narrow"} us => USA | USA
+de {"type":"region","style":"narrow"} de => Deutschland | Deutschland
+de {"type":"script","style":"long"} latn => Lateinisch | Lateinisch
+de {"type":"script","style":"long"} HANS => Vereinfacht | Vereinfacht
+de {"type":"script","style":"short"} latn => Lateinisch | Lateinisch
+de {"type":"script","style":"short"} HANS => Vereinfacht | Vereinfacht
+de {"type":"script","style":"narrow"} latn => Lateinisch | Lateinisch
+de {"type":"script","style":"narrow"} HANS => Vereinfacht | Vereinfacht
+de {"type":"calendar","style":"long"} GREGORY => Gregorianischer Kalender | Gregorianischer Kalender
+de {"type":"calendar","style":"short"} GREGORY => Gregorianischer Kalender | Gregorianischer Kalender
+de {"type":"calendar","style":"narrow"} GREGORY => Gregorianischer Kalender | Gregorianischer Kalender
+
+# CLDR 48 renamed three calendars these locales name: English's `iso8601` is "Gregorian Calendar (ISO
+# 8601 Weeks)", where CLDR 47 had "ISO-8601 Calendar", and German's tabular and Umm al-Qura Hijri
+# calendars are "Hidschra-Kalender (...)", where CLDR 47 had "Bürgerlicher Hidschri-Kalender
+# (tabellarisch)" and "Hidschri-Kalender (Umm al-Qura)". Node 22.22.0 carries CLDR 47.
+en {"type":"calendar","style":"long"} iso8601 => Gregorian Calendar (ISO 8601 Weeks) | Gregorian Calendar (ISO 8601 Weeks)
+en {"type":"calendar","style":"short"} iso8601 => Gregorian Calendar (ISO 8601 Weeks) | Gregorian Calendar (ISO 8601 Weeks)
+en {"type":"calendar","style":"narrow"} iso8601 => Gregorian Calendar (ISO 8601 Weeks) | Gregorian Calendar (ISO 8601 Weeks)
+de {"type":"calendar","style":"long"} islamic-civil => Hidschra-Kalender (tabellarisch, nicht-astronomisch) | Hidschra-Kalender (tabellarisch, nicht-astronomisch)
+de {"type":"calendar","style":"long"} islamic-umalqura => Hidschra-Kalender (Umm al-Qura) | Hidschra-Kalender (Umm al-Qura)
+de {"type":"calendar","style":"short"} islamic-civil => Hidschra-Kalender (tabellarisch, nicht-astronomisch) | Hidschra-Kalender (tabellarisch, nicht-astronomisch)
+de {"type":"calendar","style":"short"} islamic-umalqura => Hidschra-Kalender (Umm al-Qura) | Hidschra-Kalender (Umm al-Qura)
+de {"type":"calendar","style":"narrow"} islamic-civil => Hidschra-Kalender (tabellarisch, nicht-astronomisch) | Hidschra-Kalender (tabellarisch, nicht-astronomisch)
+de {"type":"calendar","style":"narrow"} islamic-umalqura => Hidschra-Kalender (Umm al-Qura) | Hidschra-Kalender (Umm al-Qura)
+
+# ICU names two language codes otherwise than CLDR's data does. It joins a code's variants into one
+# key, so `sl-rozaj-biske` finds no name and is written "BISKE_ROZAJ", or nothing under the none
+# fallback; the profile names each variant from CLDR's variants. And it names `und` "root", its own
+# name for the root locale, where CLDR's languages name it "Unknown language".
+en {"type":"language","style":"long","languageDisplay":"dialect"} sl-rozaj-biske => Slovenian (San Giorgio/Bila dialect, Resian) | Slovenian (San Giorgio/Bila dialect, Resian)
+en {"type":"language","style":"long","languageDisplay":"dialect"} und => Unknown language | Unknown language
+en {"type":"language","style":"long","languageDisplay":"standard"} sl-rozaj-biske => Slovenian (San Giorgio/Bila dialect, Resian) | Slovenian (San Giorgio/Bila dialect, Resian)
+en {"type":"language","style":"long","languageDisplay":"standard"} und => Unknown language | Unknown language
+en {"type":"language","style":"short","languageDisplay":"dialect"} sl-rozaj-biske => Slovenian (San Giorgio/Bila dialect, Resian) | Slovenian (San Giorgio/Bila dialect, Resian)
+en {"type":"language","style":"short","languageDisplay":"dialect"} und => Unknown language | Unknown language
+en {"type":"language","style":"short","languageDisplay":"standard"} sl-rozaj-biske => Slovenian (San Giorgio/Bila dialect, Resian) | Slovenian (San Giorgio/Bila dialect, Resian)
+en {"type":"language","style":"short","languageDisplay":"standard"} und => Unknown language | Unknown language
+en {"type":"language","style":"narrow","languageDisplay":"dialect"} sl-rozaj-biske => Slovenian (San Giorgio/Bila dialect, Resian) | Slovenian (San Giorgio/Bila dialect, Resian)
+en {"type":"language","style":"narrow","languageDisplay":"dialect"} und => Unknown language | Unknown language
+en {"type":"language","style":"narrow","languageDisplay":"standard"} sl-rozaj-biske => Slovenian (San Giorgio/Bila dialect, Resian) | Slovenian (San Giorgio/Bila dialect, Resian)
+en {"type":"language","style":"narrow","languageDisplay":"standard"} und => Unknown language | Unknown language
+de {"type":"language","style":"long","languageDisplay":"dialect"} sl-rozaj-biske => Slowenisch (Bela-Dialekt, Resianisch) | Slowenisch (Bela-Dialekt, Resianisch)
+de {"type":"language","style":"long","languageDisplay":"dialect"} und => Unbekannte Sprache | Unbekannte Sprache
+de {"type":"language","style":"long","languageDisplay":"standard"} sl-rozaj-biske => Slowenisch (Bela-Dialekt, Resianisch) | Slowenisch (Bela-Dialekt, Resianisch)
+de {"type":"language","style":"long","languageDisplay":"standard"} und => Unbekannte Sprache | Unbekannte Sprache
+de {"type":"language","style":"short","languageDisplay":"dialect"} sl-rozaj-biske => Slowenisch (Bela-Dialekt, Resianisch) | Slowenisch (Bela-Dialekt, Resianisch)
+de {"type":"language","style":"short","languageDisplay":"dialect"} und => Unbekannte Sprache | Unbekannte Sprache
+de {"type":"language","style":"short","languageDisplay":"standard"} sl-rozaj-biske => Slowenisch (Bela-Dialekt, Resianisch) | Slowenisch (Bela-Dialekt, Resianisch)
+de {"type":"language","style":"short","languageDisplay":"standard"} und => Unbekannte Sprache | Unbekannte Sprache
+de {"type":"language","style":"narrow","languageDisplay":"dialect"} sl-rozaj-biske => Slowenisch (Bela-Dialekt, Resianisch) | Slowenisch (Bela-Dialekt, Resianisch)
+de {"type":"language","style":"narrow","languageDisplay":"dialect"} und => Unbekannte Sprache | Unbekannte Sprache
+de {"type":"language","style":"narrow","languageDisplay":"standard"} sl-rozaj-biske => Slowenisch (Bela-Dialekt, Resianisch) | Slowenisch (Bela-Dialekt, Resianisch)
+de {"type":"language","style":"narrow","languageDisplay":"standard"} und => Unbekannte Sprache | Unbekannte Sprache
+
+# An empty script code cannot be matched by unicode_script_subtag, so it is a RangeError (12.5.1
+# CanonicalCodeForDisplayNames, step 3.a). V8 returns the empty string.
+script invalid => "":RangeError "Lat":RangeError "Latin":RangeError "La1n":RangeError

@@ -206,6 +206,37 @@ from milestone SJL-8.6, when this section's tables also join the engine's data a
 *Added 2026-10-17, at milestone SJL-8.2, when the data home's inputs and generator were added. Broiler.VM's
 `THIRD_PARTY_NOTICES.md` carries the same three inputs' entries for its own copies.*
 
+## The Intl data home (`Broiler.ECMAScript/data/intl/`)
+
+This repository is also the home of both engines' locale data (decision SJL-D-22 (a); Broiler.VM's JSD-0082).
+[`Broiler.ECMAScript/data/intl/`](Broiler.ECMAScript/data/intl/README.md) holds two pinned inputs, the locale
+lists of the two embeddings, and the tables `Broiler.ECMAScript.Generation` writes from them for this engine into
+`data/intl/generated/`. **No package carries the inputs or the tables** (decision SJL-D-6 (c)): each engine embeds
+its tables itself, Broiler.VM as its `JsCldrTables.g.cs` and Broiler.JS from milestone SJL-9.5. Until then nothing
+in this engine reads them.
+
+- **The Unicode Common Locale Data Repository (CLDR)**, release 48.2.0, archived unmodified in
+  [`data/intl/cldr/`](Broiler.ECMAScript/data/intl/cldr/README.md), each file held by its length and SHA-256 in
+  `cldr.pin`: Broiler.VM's pinned files, byte-for-byte copies of Broiler.VM's at its commit `4cf9ca44` (the
+  `cldr-json` packages' files from the npm registry, and the collation files, `common/main/root.xml` and the UCA
+  files from the CLDR repository), and this engine's extra files: main-data files from the same `cldr-json`
+  packages, and `common/main` XML files of its locales from the CLDR repository at the same tag.
+  They are © Unicode, Inc., under the Unicode License v3 below; the archive keeps the licence text it was
+  published with as `cldr-LICENSE.txt`, the same licence, whose copyright line reads "Copyright © 2004-2026
+  Unicode, Inc.". **Every table in `data/intl/generated/` is derived from them and remains subject to that
+  licence.**
+- **The Unicode Character Database**, release 17.0.0: `UnicodeData.txt` and `PropList.txt`, archived unmodified
+  in [`data/intl/ucd/`](Broiler.ECMAScript/data/intl/ucd/README.md) and held by `ucd.pin`, copies of Broiler.VM's
+  at the same commit and equal to Broiler.Unicode's pin entries. They are © Unicode, Inc., under the Unicode
+  License v3 below; the archive keeps the licence text as `unicode-LICENSE.txt`, whose copyright line reads
+  "Copyright © 1991-2026 Unicode, Inc.". The collation tables read General_Category, the decompositions, the
+  combining classes and Unified_Ideograph from them.
+- **The generator's collation code** follows the Unicode Collation Algorithm's implicit weights and ICU's
+  `CollationBuilder::setCaseBits` as Broiler.VM's generator described them; it reproduces no ICU code.
+
+*Added 2026-10-26, at milestone SJL-9.2b, when the data home's inputs and generator were added. Broiler.VM's
+`THIRD_PARTY_NOTICES.md` carries the CLDR and UCD entries for its own copies.*
+
 ## The reference datasets (`conformance/datasets/time/`)
 
 [`conformance/datasets/time/`](conformance/datasets/time/README.md) holds byte-for-byte copies of three programs
@@ -238,6 +269,37 @@ builds, packs or embeds them.**
 
 *Added 2026-10-17, at milestone SJL-8.4, when the copies were added; the third program and its answer were added
 on 2026-10-18, at milestone SJL-10.2.*
+
+## The reference datasets of the Intl area (`conformance/datasets/intl/`)
+
+[`conformance/datasets/intl/`](conformance/datasets/intl/README.md) holds byte-for-byte copies of twelve programs of
+Broiler.VM, each with the answer a reference implementation gave for it and Broiler.VM's divergences from that answer,
+as Broiler.VM's commit `4cf9ca4` holds them, all held by their SHA-256 in that directory's `datasets.pin`. Bundle
+`sjl-9-001`'s rule, parts C and D, runs them in this engine's shell, with `conformance/datasets/time/timezones.js`.
+**They are test material only: no project builds, packs or embeds them.**
+
+- **The programs** (`dates.js`, `displaynames.js`, `durations.js`, `lists.js`, `locales.js`, `numbers.js`,
+  `plurals.js`, `relativetimes.js`, `segments.js`, `temporal-intl.js`, `calendar-formats.js` and `zone-names.js`) and
+  **the divergences files** are Broiler.VM's, by the same contributors as this repository, under the Apache License
+  2.0, whose text is in [`LICENSE`](LICENSE).
+- **The nine `*.icu-77.1.txt` files** are the output of the first nine programs run on Node 22.22.0, whose ICU is 77.1,
+  with CLDR 47.0. ICU and CLDR are © Unicode, Inc., under the Unicode License v3 below. Each holds what ICU printed for
+  its program, one line per operation: formatted numbers, dates, lists, relative times, durations, display names,
+  plural categories, segments and locale information. It reproduces none of ICU's code and no CLDR file.
+- **The three `*.polyfill-e8cc03fc.txt` files** are the output of the last three programs run under the Temporal
+  proposal's reference polyfill, `polyfill/lib` of
+  [tc39/proposal-temporal](https://github.com/tc39/proposal-temporal) at `e8cc03fc970a65a3359e8870e3b35e687ac94e55`,
+  which is licensed under the ISC licence, on Node 22.22.0. The polyfill formats through Node's
+  `Intl.DateTimeFormat`, whose ICU is 77.1, so the names and patterns they hold are what ICU printed. They hold the
+  answers, one per line, and reproduce none of the polyfill's or ICU's code or text.
+
+*Added 2026-10-26, at milestone SJL-9.2, when the copies were added.*
+
+**The corpus's Intl area**, `conformance/vectors/intl/` (corpus revision 27, the same milestone), holds answers of the
+same kind: what ICU 78.3 with CLDR 48.0 printed, through Node.js v26.12.0, for each vector's script, and, for the hour
+cycles of a region and DurationFormat's `digital` data, values its generator read from CLDR 48.2.0's cldr-json
+packages, each held to its npm integrity. ICU and CLDR are © Unicode, Inc., under the Unicode License v3 below. The
+vectors reproduce none of ICU's code and no CLDR file, and no project builds, packs or embeds them.
 
 ## Sources the engine's own code cites
 

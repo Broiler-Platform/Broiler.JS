@@ -1,0 +1,190 @@
+af|other|
+am|other|
+an|other|
+ar|other|
+as|one|n = 1,5,7,8,9,10
+as|two|n = 2,3
+as|few|n = 4
+as|many|n = 6
+as|other|
+ast|other|
+az|one|i % 10 = 1,2,5,7,8 or i % 100 = 20,50,70,80
+az|few|i % 10 = 3,4 or i % 1000 = 100,200,300,400,500,600,700,800,900
+az|many|i = 0 or i % 10 = 6 or i % 100 = 40,60,90
+az|other|
+bal|one|n = 1
+bal|other|
+be|few|n % 10 = 2,3 and n % 100 != 12,13
+be|other|
+bg|other|
+blo|zero|i = 0
+blo|one|i = 1
+blo|few|i = 2,3,4,5,6
+blo|other|
+bn|one|n = 1,5,7,8,9,10
+bn|two|n = 2,3
+bn|few|n = 4
+bn|many|n = 6
+bn|other|
+bs|other|
+ca|one|n = 1,3
+ca|two|n = 2
+ca|few|n = 4
+ca|other|
+ce|other|
+cs|other|
+cv|other|
+cy|zero|n = 0,7,8,9
+cy|one|n = 1
+cy|two|n = 2
+cy|few|n = 3,4
+cy|many|n = 5,6
+cy|other|
+da|other|
+de|other|
+dsb|other|
+el|other|
+en|one|n % 10 = 1 and n % 100 != 11
+en|two|n % 10 = 2 and n % 100 != 12
+en|few|n % 10 = 3 and n % 100 != 13
+en|other|
+es|other|
+et|other|
+eu|other|
+fa|other|
+fi|other|
+fil|one|n = 1
+fil|other|
+fr|one|n = 1
+fr|other|
+fy|other|
+ga|one|n = 1
+ga|other|
+gd|one|n = 1,11
+gd|two|n = 2,12
+gd|few|n = 3,13
+gd|other|
+gl|other|
+gsw|other|
+gu|one|n = 1
+gu|two|n = 2,3
+gu|few|n = 4
+gu|many|n = 6
+gu|other|
+he|other|
+hi|one|n = 1
+hi|two|n = 2,3
+hi|few|n = 4
+hi|many|n = 6
+hi|other|
+hr|other|
+hsb|other|
+hu|one|n = 1,5
+hu|other|
+hy|one|n = 1
+hy|other|
+ia|other|
+id|other|
+ie|other|
+is|other|
+it|many|n = 11,8,80,800
+it|other|
+ja|other|
+ka|one|i = 1
+ka|many|i = 0 or i % 100 = 2..20,40,60,80
+ka|other|
+kk|many|n % 10 = 6 or n % 10 = 9 or n % 10 = 0 and n != 0
+kk|other|
+km|other|
+kn|other|
+ko|other|
+kok|one|n = 1
+kok|two|n = 2,3
+kok|few|n = 4
+kok|other|
+kok-Latn|one|n = 1
+kok-Latn|two|n = 2,3
+kok-Latn|few|n = 4
+kok-Latn|other|
+kw|one|n = 1..4 or n % 100 = 1..4,21..24,41..44,61..64,81..84
+kw|many|n = 5 or n % 100 = 5
+kw|other|
+ky|other|
+lij|many|n = 11,8,80..89,800..899
+lij|other|
+lld|many|n = 11,8,80,800
+lld|other|
+lo|one|n = 1
+lo|other|
+lt|other|
+lv|other|
+mk|one|i % 10 = 1 and i % 100 != 11
+mk|two|i % 10 = 2 and i % 100 != 12
+mk|many|i % 10 = 7,8 and i % 100 != 17,18
+mk|other|
+ml|other|
+mn|other|
+mo|one|n = 1
+mo|other|
+mr|one|n = 1
+mr|two|n = 2,3
+mr|few|n = 4
+mr|other|
+ms|one|n = 1
+ms|other|
+my|other|
+nb|other|
+ne|one|n = 1..4
+ne|other|
+nl|other|
+no|other|
+or|one|n = 1,5,7..9
+or|two|n = 2,3
+or|few|n = 4
+or|many|n = 6
+or|other|
+pa|other|
+pl|other|
+prg|other|
+ps|other|
+pt|other|
+ro|one|n = 1
+ro|other|
+ru|other|
+sc|many|n = 11,8,80,800
+sc|other|
+scn|many|n = 11,8,80..89,800..899
+scn|other|
+sd|other|
+sh|other|
+si|other|
+sk|other|
+sl|other|
+sq|one|n = 1
+sq|many|n % 10 = 4 and n % 100 != 14
+sq|other|
+sr|other|
+sv|one|n % 10 = 1,2 and n % 100 != 11,12
+sv|other|
+sw|other|
+ta|other|
+te|other|
+th|other|
+tk|few|n % 10 = 6,9 or n = 10
+tk|other|
+tl|one|n = 1
+tl|other|
+tpi|other|
+tr|other|
+uk|few|n % 10 = 3 and n % 100 != 13
+uk|other|
+und|other|
+ur|other|
+uz|other|
+vec|many|n = 11,8,80,800
+vec|other|
+vi|one|n = 1
+vi|other|
+yue|other|
+zh|other|
+zu|other|

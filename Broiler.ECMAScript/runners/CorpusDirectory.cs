@@ -33,11 +33,16 @@ internal static class CorpusDirectory
         throw new DirectoryNotFoundException("no conformance/vectors/SCHEMA.md above " + start);
     }
 
-    /// <summary>What the corpus at <paramref name="root"/> pins.</summary>
-    internal static VectorSources Sources(string root) => VectorSources.Parse(
-        File.ReadAllText(Path.Combine(root, "REVISIONS.md")),
-        File.ReadAllText(Path.Combine(root, "sources", "ecma262.pin")),
-        File.ReadAllText(Path.Combine(root, "sources", "unicode.pin")));
+    /// <summary>What the corpus at <paramref name="root"/> pins; sources/ecma402.pin from corpus revision 27.</summary>
+    internal static VectorSources Sources(string root)
+    {
+        var ecma402 = Path.Combine(root, "sources", "ecma402.pin");
+        return VectorSources.Parse(
+            File.ReadAllText(Path.Combine(root, "REVISIONS.md")),
+            File.ReadAllText(Path.Combine(root, "sources", "ecma262.pin")),
+            File.ReadAllText(Path.Combine(root, "sources", "unicode.pin")),
+            File.Exists(ecma402) ? File.ReadAllText(ecma402) : null);
+    }
 
     /// <summary>The corpus at <paramref name="root"/>, read and validated.</summary>
     internal static VectorCorpus Load(string root) => VectorCorpus.Load(Sources(root), Files(root));

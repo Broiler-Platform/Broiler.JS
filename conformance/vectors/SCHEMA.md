@@ -92,7 +92,7 @@ is a dated entry in [REVISIONS.md](REVISIONS.md), in a new corpus revision.
 
 | Entry | Meaning |
 |---|---|
-| `spec:<edition>@<revision>#<clause-id>` | A clause of the pinned specification ([sources/ecma262.pin](sources/ecma262.pin)) |
+| `spec:<edition>@<revision>#<clause-id>` | A clause of a pinned specification: ECMA-262 ([sources/ecma262.pin](sources/ecma262.pin)), or, when the edition is `ecma402`, ECMA-402 ([sources/ecma402.pin](sources/ecma402.pin)). The revision is 7 to 40 lower-case hexadecimal digits of that pin's commit |
 | `test262:<path>` | A test of the pinned test262 revision that asserts the outcome |
 | `ref:<generator>@<version>` | An independent computation in exact arithmetic, by a generator in `scripts/conformance/` |
 | `ucd:<version>/<file>` | A file of the pinned Unicode Character Database ([sources/unicode.pin](sources/unicode.pin)) |
@@ -104,6 +104,14 @@ A clause id is the clause's id in the pinned edition's HTML: lower-case letters,
 `%`, which the ids of the intrinsics' clauses hold, such as `sec-%typedarray%.prototype.slice`.
 *(Added 2026-10-14, at corpus revision 11. Until then the validator held a clause id to lower-case
 letters, digits, `.` and `-`, and refused revision 10's citations of four such clauses.)*
+
+**ECMA-402's clause ids may hold upper-case letters**, as `sec-Intl.DisplayNames.prototype.of` and
+`sec-PartitionRelativeTimePattern` do, and a clause id of any edition is written as the pinned text's HTML writes it:
+letters of either case, digits, `.`, `-` and `%`. *(Added 2026-10-26, at corpus revision 27, for the Intl area, with
+the edition `ecma402` and [sources/ecma402.pin](sources/ecma402.pin). Until then the `spec:` row read "A clause of the
+pinned specification ([sources/ecma262.pin](sources/ecma262.pin))", and the paragraph above, which still holds for
+ECMA-262's ids, was the whole rule: "lower-case letters, digits, `.`, `-` and `%`". The validator refused ECMA-402's
+ids that hold an upper-case letter, and held every `spec:` entry to ECMA-262's revision.)*
 
 **A vector's outcome must have a source independent of both engines**: at least one entry that is not
 `observed:` or `overruled:`. The validator refuses a vector whose provenance is only engine-observed, and one whose

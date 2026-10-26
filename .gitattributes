@@ -27,6 +27,15 @@ Broiler.ECMAScript/data/time/calendars/*.crate binary
 Broiler.ECMAScript/data/time/cldr/cldr-48.2.0/** binary
 Broiler.ECMAScript/data/time/cldr/cldr-LICENSE.txt binary
 Broiler.ECMAScript/data/time/generated/*.bin binary
+# THE INTL DATA HOME'S PINNED INPUTS AND BINARY TABLES ARE BINARY TOO (milestone SJL-9.2b), for the same
+# reason: the CLDR files and the UCD copies are held by their SHA-256 in cldr.pin and ucd.pin, and the
+# collation tables by rule SL7 and their manifest. The pins, the locale lists, the READMEs, the text tables
+# and the manifest stay `text eol=lf`.
+Broiler.ECMAScript/data/intl/cldr/cldr-48.2.0/** binary
+Broiler.ECMAScript/data/intl/cldr/cldr-LICENSE.txt binary
+Broiler.ECMAScript/data/intl/ucd/ucd-17.0.0/** binary
+Broiler.ECMAScript/data/intl/ucd/unicode-LICENSE.txt binary
+Broiler.ECMAScript/data/intl/generated/*.bin binary
 
 # THE REFERENCE DATASETS ARE HELD BY THEIR DIGESTS (milestone SJL-8.4). Bundle sjl-8-001's rule, part C, takes
 # Broiler.VM's two programs, their retained answers and their divergences "byte for byte", and "a copy whose
@@ -44,6 +53,44 @@ conformance/datasets/time/temporal.divergences.txt -text
 conformance/datasets/time/temporal-calendars.js -text
 conformance/datasets/time/temporal-calendars.polyfill-e8cc03fc.txt -text
 conformance/datasets/time/temporal-calendars.divergences.txt -text
+# Milestone SJL-9.2 added the Intl area's copies, which bundle sjl-9-001's rule, parts C and D, takes the same way
+# (conformance/datasets/intl/datasets.pin). Some of them are UTF-8 text beyond ASCII; none holds a CR.
+conformance/datasets/intl/dates.js -text
+conformance/datasets/intl/dates.icu-77.1.txt -text
+conformance/datasets/intl/dates.divergences.txt -text
+conformance/datasets/intl/displaynames.js -text
+conformance/datasets/intl/displaynames.icu-77.1.txt -text
+conformance/datasets/intl/displaynames.divergences.txt -text
+conformance/datasets/intl/durations.js -text
+conformance/datasets/intl/durations.icu-77.1.txt -text
+conformance/datasets/intl/durations.divergences.txt -text
+conformance/datasets/intl/lists.js -text
+conformance/datasets/intl/lists.icu-77.1.txt -text
+conformance/datasets/intl/lists.divergences.txt -text
+conformance/datasets/intl/locales.js -text
+conformance/datasets/intl/locales.icu-77.1.txt -text
+conformance/datasets/intl/locales.divergences.txt -text
+conformance/datasets/intl/numbers.js -text
+conformance/datasets/intl/numbers.icu-77.1.txt -text
+conformance/datasets/intl/numbers.divergences.txt -text
+conformance/datasets/intl/plurals.js -text
+conformance/datasets/intl/plurals.icu-77.1.txt -text
+conformance/datasets/intl/plurals.divergences.txt -text
+conformance/datasets/intl/relativetimes.js -text
+conformance/datasets/intl/relativetimes.icu-77.1.txt -text
+conformance/datasets/intl/relativetimes.divergences.txt -text
+conformance/datasets/intl/segments.js -text
+conformance/datasets/intl/segments.icu-77.1.txt -text
+conformance/datasets/intl/segments.divergences.txt -text
+conformance/datasets/intl/temporal-intl.js -text
+conformance/datasets/intl/temporal-intl.polyfill-e8cc03fc.txt -text
+conformance/datasets/intl/temporal-intl.divergences.txt -text
+conformance/datasets/intl/calendar-formats.js -text
+conformance/datasets/intl/calendar-formats.polyfill-e8cc03fc.txt -text
+conformance/datasets/intl/calendar-formats.divergences.txt -text
+conformance/datasets/intl/zone-names.js -text
+conformance/datasets/intl/zone-names.polyfill-e8cc03fc.txt -text
+conformance/datasets/intl/zone-names.divergences.txt -text
 # The runs of those datasets that bundle sjl-8-001 retains are kept as the harness wrote them: each run's
 # summary.json records its answers' SHA-256, and its line reports are read back by the harness's compare.
 docs/evidence/sjl-8-001/datasets/** -text

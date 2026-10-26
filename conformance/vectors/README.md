@@ -30,6 +30,7 @@ rule for its own engine is [`docs/evidence/sjl-1-001/decision-rule.md`](../../do
 | `unicode/` | The Unicode area: `normalize` over Unicode's NormalizationTest.txt and the correspondence's cells; `toUpperCase`, `toLowerCase` and the language-sensitive `toLocaleUpperCase` and `toLocaleLowerCase`, and case folding through RegExp's `i` flag; `\p{…}` acceptance and membership under `u` and `v`, properties of strings included; identifier acceptance through escaped identifiers, and white space; and `Intl.Segmenter` over Unicode's three break tests *(added 2026-10-16, at corpus revision 18)* |
 | `time-zones/` | The time-zone area: offsets, next and previous transitions, the instants of a wall-clock time and each disambiguation, start of day and the hours in a day, through Temporal, over the data home's pinned tz database under decision SJL-D-20, at instants on both sides of every policy difference and correction of the area's verdict (the release, backzone, extrapolation after 2037, CLDR primaries, `Factory`, lookup by ASCII case only, offsets with ASCII digits); the identifiers and primaries, through Temporal and ECMA-402; and a sample of ordinary transitions, gaps and overlaps *(added 2026-10-17, at corpus revision 21)* |
 | `temporal/` | The Temporal area: the ISO 8601 and RFC 9557 grammar through every goal's `from()`, duration, calendar, time zone, offset and `relativeTo` strings, with every accept and refuse case of the area design's table and of its rows G1 to G24; duration rounding in every mode and every increment of every unit, with and without `relativeTo`, nudging, bubbling and the shifted window, totals and comparison; the records' limits, and balancing, regulation and addition at them; `until` and `since` in every type and calendar; and the calendars: identifiers, month codes, eras, month-day reference dates, the formula calendars at their edges and the table calendars at their tables' edges where Table 1 publishes them *(added 2026-10-18, at corpus revision 24)* |
+| `intl/` | The Intl area, one file per sub-area of Broiler.VM's JSD-0082: (a) locale identifiers, likely subtags, negotiation, Locale info and `supportedValuesOf` (`locales.vectors`); (b) the Intl mathematical value, digit options, plural rules and plural ranges (`values-and-plurals.vectors`); (c) number, list, relative-time and display-name formatting (`numbers-and-text.vectors`); (d) date-time formatting, intervals, day periods, hour cycles, zone names and Intl over Temporal (`date-times.vectors`); (e) duration formatting (`durations.vectors`); with, for each locale of Broiler.JS's embedding beyond Broiler.VM's, one vector per table family of the locale data *(added 2026-10-26, at corpus revision 27)* |
 | [`controls/`](controls/README.md) | Malformed files the validator must refuse. **Not part of the corpus.** |
 
 ## Running it
@@ -60,6 +61,11 @@ python3 -I scripts/conformance/generate_time_zone_vectors.py --out conformance/v
 # says (its lib/ and node_modules/ in scripts/conformance/temporalref/, or a directory given by --polyfill); its tests
 # that regenerate the area read BROILER_TEMPORAL_POLYFILL and BROILER_NODE and are skipped where the reference is absent.
 python3 -I scripts/conformance/generate_temporal_vectors.py --out conformance/vectors/temporal --node <Node 22.22.0>
+# The Intl area runs ICU through the reference Node.js v26.12.0 that bundle sjl-9-001's reference.txt names, with
+# Node.js 22.22.0 as the U+202F witness, and reads the cldr-json 48.2.0 tarballs, each checked against its npm
+# integrity; its tests that regenerate the area read BROILER_INTL_NODE, BROILER_NODE and BROILER_CLDR_TARBALLS and
+# are skipped where any is absent. --spec checks every ECMA-402 clause id against the pinned text's spec/*.html.
+python3 -I scripts/conformance/generate_intl_vectors.py --node <Node v26.12.0> --witness-node <Node 22.22.0> --cldr <tarballs> --spec <ecma402 checkout>
 python3 -m unittest discover -s scripts/conformance/tests
 # The Unicode area's tests that read the pinned data look for it in BROILER_UNICODE_PINS, or in a Broiler.Unicode
 # checkout beside this repository, and are skipped where it is absent.
@@ -156,5 +162,18 @@ Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release".)*
   (decision D7): the vector takes the text's answer and records the polyfill's as `overruled:temporalref@1=<outcome>`.
   Where the polyfill reckons a calendar through ICU4C or JavaScript's Date and so is not the specification's, the input
   is not vectored; the generator's header lists each such kind.
+- **Intl.** The Intl area (revision 27) cites ECMA-402 at the revision [`sources/ecma402.pin`](sources/ecma402.pin)
+  names, decision D14 of Broiler.VM's JSD-0082, by `spec:ecma402@` entries, and the Temporal and era proposals' texts
+  as the Temporal area does; it archives and quotes none of them. Every expected value is ICU's, through the reference
+  Node.js v26.12.0 (ICU 78.3, CLDR 48.0) that bundle `sjl-9-001`'s `reference.txt` names, run by
+  `scripts/conformance/intlref.mjs` (`ref:intlref@1`, decision D17), with three exceptions each vector records: where
+  the pinned text answers otherwise the vector takes the text's answer, its note quotes ICU's, and it records ICU's as
+  `overruled:intlref@1=<outcome>` where that outcome holds no space, which an `overruled:` entry cannot hold (section
+  6 of [SCHEMA.md](SCHEMA.md)); a date-time string carries U+202F where ICU's pattern has it, its positions read from
+  Node.js 22.22.0's parts, and its note records that the reference wrote U+0020 there (D17 (b)), since the reference's
+  answer always holds the U+0020 it overrules and so no `overruled:` entry can record it; and the hour cycles of a
+  region and DurationFormat's `digital` data are read from CLDR 48.2.0 itself (`ref:intlcldr@1`, decision D34), as is
+  Broiler.VM's composition of a compound unit, which row N5b's `per-engine` expectations hold (decision D35). The
+  corpus copies no CLDR file; the generator reads the cldr-json tarballs by their npm integrity.
 - **test262.** No vector of revision 1 is derived from a test262 test. A vector that is will cite the
   test with `test262:<path>`, and the corpus will then carry test262's licence notice.

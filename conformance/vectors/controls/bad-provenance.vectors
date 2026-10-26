@@ -1,0 +1,11 @@
+schema: 1
+
+id: intl/control/0001
+area: intl
+op: Intl.PluralRules.prototype.select
+in: str:"en"
+out: value: str:"one"
+class: normative
+prov: spec:ecma402@0248456c#sec-intl.pluralrules.prototype.select
+script: new Intl.PluralRules("en").select(1)
+since: 27

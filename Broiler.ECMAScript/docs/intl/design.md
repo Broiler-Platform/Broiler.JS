@@ -219,7 +219,10 @@ reads root's from that file. Every formatter writes numbers from that one table,
 U+066C, and U+061C before the minus sign. Whether those symbols are appended keys of the number table or a table of
 their own is SJL-9.2's; the plan's decision D21 allowed either. Each locale's default numbering system comes from the
 same CLDR 48.2.0 data, which replaces this engine's CLDR 47.0.0 table, `JSIntlDefaultNumberingSystems.g.cs`, and its
-script.
+script. *(Added 2026-10-26, at SJL-9.2b: a `cldr-json` `numbers.json` carries the symbols of a locale's default,
+native, traditional and finance systems only, so the generator also reads the other systems' symbols from each
+locale's `common/main` XML and its parent chain's, which the home's CLDR pin archives beside `root.xml`; the symbols
+are appended keys of the number table, `symbols@<system>.<name>`.)*
 
 **DurationFormat's digital format** (decision D34). For each locale the generator writes `symbols.timeSeparator` and
 the `durationUnit-type-hm`, `-hms` and `-ms` patterns into the number table. [[TwoDigitHours]] is true where the `hms`

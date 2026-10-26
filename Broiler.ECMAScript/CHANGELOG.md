@@ -18,7 +18,34 @@ Not yet packed under a version of its own: the stream's next version is set when
 
 ### Added
 
-None.
+- `Broiler.ECMAScript.Generation`: the Intl data home's generator, namespace
+  `Broiler.ECMAScript.Generation.Intl` (milestone SJL-9.2b; Broiler.VM's decision JSD-0082, decisions D10, D11
+  and D12). Ported from Broiler.VM's `CldrTableGenerator`, `UnicodeDatabase` and `CldrPin` at Broiler.VM
+  `4cf9ca44`, with their behaviour unchanged for Broiler.VM's parameters:
+  - `IntlCldrPin` and `IntlUcdPin`, with `IntlPinEntry`: each pin parsed from the text its caller hands in, and
+    every file, its length, its SHA-256 and the stated CLDR, UCA and Unicode versions compared with it before
+    anything is read, the UCA version tied to the Unicode version;
+  - `CldrUcd`: the subset of the Unicode Character Database the collation tables need - categories, combining
+    classes, canonical decompositions and the Unified_Ideograph ranges - read from `UnicodeData.txt` and
+    `PropList.txt`;
+  - `IntlLocaleList` and `IntlGeneratorOptions`, with `IntlNumberingSymbols`: decision D11's parameters, the
+    locales the data supports, those whose CLDR main data is written, the languages whose plural, ordinal,
+    plural-range and day-period rules are written, which numbering systems' symbols the number table carries
+    (decision D21), the calendars and the collation tailorings;
+  - `CldrTableGenerator.Generate` and its `IntlTables` and `IntlGeneratedTable`: Broiler.VM's tables - likely
+    subtags, aliases, extensions, numbers, currencies, units, plurals, ordinals, plural ranges, day periods,
+    dates, calendars, zone and metazone names, hour cycles, weeks, lists, relative times, display names,
+    scripts, the root collation and the tailorings;
+  - `IntlTableSource.Write`, with SJL-8's `TableSourceOptions`: the tables as a C# file for a namespace and class
+    the caller chooses, which with Broiler.VM's options writes its `JsCldrTables.g.cs` byte for byte before its
+    assurance pass;
+  - `IntlTableFiles.Write` and `FileName`: the tables as raw files, one per table, and a `tables.manifest`
+    naming the data versions and each file's length and SHA-256;
+  - `IntlDataVersions`: `CldrVersion` (`48.2.0`), `CldrMajor` (`48`), `UcaVersion` and `UnicodeVersion`
+    (`17.0.0`).
+
+  The package still reads no file and carries no table and no pinned input (decision SJL-D-6 (c)): those are
+  files of this repository, under [`data/intl/`](data/intl/README.md).
 
 ### Changed
 
@@ -26,11 +53,22 @@ None.
 
 ### Observable changes
 
-None.
+None: no engine reads the Intl generator or its tables yet. Broiler.VM regenerates its table with the generator
+at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone SJL-9.5, whose own
+records list what each observes.
 
 ### Data
 
-None.
+- The Intl data home, [`data/intl/`](data/intl/README.md), outside every package (milestone SJL-9.2b;
+  JSD-0082's decisions D5, D10, D12 and D21): CLDR **48.2.0**'s files - the `cldr-json` files, and from the CLDR
+  repository the collation, root and UCA files and the `common/main` XML files decision D21 reads - and `cldr.pin`,
+  its UCA **17.0.0**: every entry of Broiler.VM's pin at `4cf9ca44` byte for byte, the main-data files Broiler.JS's
+  locale list needs from the same packages, each package's tarball checked against its recorded integrity, and the
+  XML files of the list's locales and their parents, retrieved twice from the CLDR repository's tag; the Unicode
+  Character Database **17.0.0**'s `UnicodeData.txt` and `PropList.txt` and `ucd.pin`, each entry equal to
+  Broiler.Unicode's pin entry for the same file; each embedding's locale list, `broiler-vm.txt` and
+  `broiler-js.txt`, per decision D5; and Broiler.JS's tables generated from them with their manifest. Rule SL7
+  regenerates the tables. The `timezone.json` the time home pins is the same file, byte for byte.
 
 ## 0.1.0-preview.7 — published to nuget.org
 

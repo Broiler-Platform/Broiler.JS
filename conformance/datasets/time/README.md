@@ -77,7 +77,9 @@ the harness both rules name, with its driver,
 [`reference_dataset_driver.js`](../../../scripts/conformance/reference_dataset_driver.js). A run names its
 bundle with `--bundle`, which fixes the rule it is taken for and the programs it runs: `sjl-8-001` runs
 `timezones.js` and `temporal.js`, and `sjl-10-001` runs `temporal.js` and `temporal-calendars.js` (milestone
-SJL-10.2 extended the harness to the second). For each program it
+SJL-10.2 extended the harness to the second). `sjl-9-001` runs the Intl area's twelve programs, which
+[`conformance/datasets/intl/`](../intl/README.md) holds with its own pin, and then this directory's `timezones.js`
+under block 1 of its pin *(added 2026-10-26, at milestone SJL-9.2)*. For each program it
 starts `dotnet BroilerJS.dll --script-host` on the driver, in this directory, with `TZ=UTC` and with `LANG`,
 `LANGUAGE` and every `LC_` variable removed. The driver reads the program's text with the shell's `read`,
 evaluates it by indirect eval, `(0, eval)(text)`, as the reference commands above do in Node, and prints the

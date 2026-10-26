@@ -1511,6 +1511,26 @@ This repository's part of it:
     Broiler.VM's options it writes Broiler.VM's `JsCldrTables.g.cs` byte for byte; with this engine's it writes one file
     per table under `data/intl/generated/`, which `BuiltIns` embeds as resources, as the time tables are, held by rule
     SL7. A change to the table format is a major version of the library.
+  *(Noted 2026-10-26, at SJL-9.2b, which built the home on branch `sjl-9-2b-home`: every entry of Broiler.VM's pin is
+  in the pin's first block, byte for byte; the tarballs of the extra files' packages each match their `json-integrity`
+  line in two retrievals; the UCD copies' lines equal Broiler.Unicode's; with Broiler.VM's parameters the source writer
+  writes what Broiler.VM's generator writes at `4cf9ca44`, before its assurance pass, SHA-256
+  `839bdc22afca187b58252f2487cd31c4b613396cd6596ffdcb6622fe1b534561` (bundle
+  [`sjl-9-001`](../evidence/sjl-9-001/README.md), "The data home"); and this engine's tables are under
+  `data/intl/generated/`, held by rule SL7 and by the completeness test of exit clause 3, and nothing in `BuiltIns`
+  reads them before SJL-9.5; the bundle's section states the tables' sizes, as decision D5 says. Three readings the
+  decisions leave to SJL-9.3 and SJL-9.5, which the bundle's section states with their counts: decision D13's table,
+  which the shared data absorbs, names a default numbering system for locales of which only `ar-EG`, `fa` and `sa` are
+  on decision D5's list, so the shared tables carry no default for the others (`bn`, `mr`, `ne`, `my` and the
+  regional `ar-*` among them); for `sr`, `sr-Cyrl` and `sr-Latn`, CLDR's `hms` duration pattern writes `.` while
+  their `timeSeparator` is `:`, which decision D34, reading the separator, leaves at `:`; and CLDR 48.2.0 lacks some
+  per-locale names files for the list's locales, and calendar type or metazone names for a few of them, which the
+  home's README and the bundle list. Decision D21 asks for each numbering system's own symbols through the locale's
+  parent chain to root, and names only `common/main/root.xml` beside `cldr-json`, whose `numbers.json` carries a
+  locale's default, native, traditional and finance systems alone; the home therefore also pins CLDR's `common/main`
+  XML for the list's main-data locales and their parents, from the CLDR repository's tag `release-48-2`, and the
+  generator writes each locale's own symbols from it, a reading of D21 and of D10's "from the same packages" that the
+  bundle's section states for the owner to confirm.)*
 - **The data contract** (decision D8): two layers, the tables as an `IIntlDataSet` and the questions as an
   `ILocaleData`, which this engine's host-culture provider also implements, ordered by `CompositeLocaleData`: the
   shared data first, then the optional secondary provider, then the parent and root. Broiler.VM keeps its
