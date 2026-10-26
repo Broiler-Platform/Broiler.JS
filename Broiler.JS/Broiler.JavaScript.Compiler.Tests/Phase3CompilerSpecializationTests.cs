@@ -365,4 +365,44 @@ public sealed class Phase3CompilerSpecializationTests
                 Directory.Delete(folder, recursive: true);
         }
     }
+
+    // Each script's compiled code touches an internal engine member (`JSVariable.IsReadOnly`,
+    // `JSObjectStatic.RequireObjectCoercible`, `JSValue.BooleanTrue`). The in-memory path reaches
+    // them from dynamic methods that skip visibility checks; a persisted entry reaches them only
+    // because it names the assemblies it references in an `IgnoresAccessChecksToAttribute`, and
+    // without that each of these failed with a FieldAccessException or MethodAccessException.
+    [Theory(Timeout = 600000)]
+    [InlineData("class A { #x = 1; get x() { return this.#x; } static s() { return new A().x; } } A.s();", "1")]
+    [InlineData("var o = { a: 1, ...{ b: 2 } }; var { a, ...r } = o; a + '|' + JSON.stringify(r);", "1|{\"b\":2}")]
+    [InlineData("try { throw new Error('e'); } catch ({ message }) { message }", "e")]
+    [InlineData("var s = ''; for (let i = 0; i < 3; i++) { s += (() => i)(); } s;", "012")]
+    [InlineData("var log = ''; { using d = { [Symbol.dispose]() { log += 'disposed'; } }; } log;", "disposed")]
+    public void PersistentCache_RunsCodeThatReachesEngineInternals_FromAColdEntry(string script, string expected)
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "broiler-phase3-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            using (var cache = new AssemblyCodeCache(folder))
+            using (var context = new JSContext { CodeCache = cache })
+            {
+                Assert.Equal(expected, context.Eval(script, "phase3-cache-internals.js").ToString());
+                Assert.Equal(1, cache.Snapshot().Misses);
+            }
+
+            using (var cache = new AssemblyCodeCache(folder))
+            using (var context = new JSContext { CodeCache = cache })
+            {
+                Assert.Equal(expected, context.Eval(script, "phase3-cache-internals.js").ToString());
+                var snapshot = cache.Snapshot();
+                Assert.Equal(1, snapshot.Hits);
+                Assert.Equal(0, snapshot.Misses);
+            }
+            Assert.Empty(Directory.GetFiles(folder, "*.bad-*"));
+        }
+        finally
+        {
+            if (Directory.Exists(folder))
+                Directory.Delete(folder, recursive: true);
+        }
+    }
 }
