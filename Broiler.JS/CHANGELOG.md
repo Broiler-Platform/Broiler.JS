@@ -10,6 +10,26 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### A label of a C-style `for (await using …)` loop labels the loop (2026-10-26)
+
+- **`continue M` continues a labelled `for (await using …; …; …)` loop.** The for-loop pass
+  (`ForLoopPreparation.cs`) wraps such a loop in a block, whose scope disposes the head's resources when the loop
+  ends, and it left the loop's labels outside that block. A label then labelled the block, not the loop, so in an
+  async function `M: for (await using x = null; n < 3; n++) { if (n === 1) continue M; … }` was refused with the
+  early SyntaxError "No label found for M", where Node runs it. The pass now puts the labels inside the block, in
+  front of the loop, each label of a chain (`N: O: for (await using …)`) in its order. So `continue M`, and
+  `continue N` through the chain ("`continue` names any label of a loop's label set", below), target the loop,
+  and `break` is unchanged. The resource is still disposed once, when the loop ends.
+- A block written around such a loop (`M: { for (await using …) { continue M; } }`) still labels the block, and the
+  `continue` is still an early SyntaxError.
+- `CompilerTests.Labeled_Continue_Targets_An_Await_Using_Loop` and
+  `ForLoopPreparationTests.The_pass_puts_a_using_loops_labels_inside_its_block` (Compiler.Tests) hold the cases, and
+  `Labeled_Continue_To_A_Label_That_Does_Not_Prefix_A_Loop_Is_SyntaxError` the block. Rows added to
+  `Labeled_Continue_Targets_Every_Label_Of_A_Label_Set` check `break` through a chain on `while`, `do`-`while`,
+  `for`-`in`, `for`-`of` and in a generator, which that entry already gets right.
+  No test262 path at `ccaac100` labels such a loop: every verdict in `language/statements`, negative tests
+  included, is the same before and after. No public member changes.
+
 ### A statement whose body ends in a declaration completes with the body's last value (2026-10-26)
 
 In script and eval code, a loop, an `if`, a `switch`, a `with` or a labeled statement whose body ended in a

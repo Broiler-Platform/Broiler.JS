@@ -56,11 +56,43 @@ public class CompilerTests
     [InlineData("var s='';L:M:for(var i=0;;i++){if(i===2)break L;s+=i;}s;", "01")]
     [InlineData("var s='';function* g(){L:M:for(var i=0;i<4;i++){if(i%2)continue L;yield i;}}for(var v of g())s+=v;s;", "02")]
     [InlineData("L:M:for(var z=0;z<3;z++){z;continue L;}", "2")]
+    // `break` through the same chains, with an outer label and a middle one. The results are Node's.
+    [InlineData("var r=[],i=0;A:B:while(i<4){i++;if(i===2)continue A;if(i===4)break A;r.push(i);}r.join()+' '+i;", "1,3 4")]
+    [InlineData("var r=[],i=0;A:B:do{i++;if(i===2)continue A;if(i===4)break A;r.push(i);}while(i<9);r.join()+' '+i;", "1,3 4")]
+    [InlineData("var r=[];A:B:C:for(var k in {a:1,b:2,c:3,d:4}){if(k==='b')continue A;if(k==='d')break B;r.push(k);}r.join();", "a,c")]
+    [InlineData("var r=[];A:B:for(const v of [1,2,3,4]){if(v===2)continue A;if(v===4)break A;r.push(v);}r.join();", "1,3")]
+    [InlineData("function* g(){A:B:for(let i=0;i<4;i++){if(i===1)continue A;if(i===3)break A;yield i;}}[...g()].join();", "0,2")]
     public void Labeled_Continue_Targets_Every_Label_Of_A_Label_Set(string code, string expected)
     {
         using var ctx = new JSContext();
         var result = ctx.Eval(code);
         Assert.Equal(expected, result.ToString());
+    }
+
+    // The for-loop pass wraps a C-style `for (await using …)` loop in a block, and the loop's labels go
+    // inside it. Regression: they stayed outside and labelled the block, so `continue M` was rejected
+    // with "No label found for M". The resource is still disposed once, when the loop ends.
+    [Fact(Timeout = 600000)]
+    public async Task Labeled_Continue_Targets_An_Await_Using_Loop()
+    {
+        using var ctx = new JSContext();
+        var result = await ctx.ExecuteAsync("""
+            (async function () {
+                var n = 0, log = [];
+                M: for (await using x = { async [Symbol.asyncDispose]() { log.push('disposed'); } }; n < 3; n++) {
+                    if (n === 1) continue M;
+                    log.push(n);
+                }
+                N: O: for (await using y = null; n < 7; n++) {
+                    if (n === 4) continue N;
+                    if (n === 6) break O;
+                    log.push(n);
+                }
+                return log.join() + ' ' + n;
+            })()
+            """);
+
+        Assert.Equal("0,2,disposed,3,5 6", result.ToString());
     }
 
     [Theory]
@@ -69,6 +101,9 @@ public class CompilerTests
     [InlineData("Function('L: { while (1) { continue L; } }');")]
     [InlineData("Function('L: M: { while (1) { continue L; } }');")]
     [InlineData("Function('L: { M: while (1) { continue L; } }');")]
+    // A block written around a `using` loop is still a block, even though the for-loop pass wraps
+    // the loop in a block of its own.
+    [InlineData("Function('async function f() { M: { for (await using x = null; ;) { continue M; } } }');")]
     public void Labeled_Continue_To_A_Label_That_Does_Not_Prefix_A_Loop_Is_SyntaxError(string code)
     {
         using var ctx = new JSContext();

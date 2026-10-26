@@ -21,8 +21,9 @@ namespace Broiler.JavaScript.Compiler;
 /// <para>
 /// The parser did this as it parsed until milestone SJL-12.5, item 5 (Broiler.VM's JSD-0080, decision
 /// D22), which leaves the parser a tree without desugaring. The pass emits the shapes the parser
-/// emitted, node for node; only the temporaries' names differ, and the statements it adds are marked
-/// (below).
+/// emitted, node for node; only the temporaries' names differ, the statements it adds are marked
+/// (below), and a labelled C-style <c>using</c> loop's labels are inside the block the loop is wrapped
+/// in, where the parser left them outside it.
 /// </para>
 /// <para>
 /// <b>Completion values.</b> A loop completes with ForBodyEvaluation's V: the last value other than empty
@@ -127,6 +128,9 @@ internal static class ForLoopPreparation
     private sealed class Preparer(int directEvalDepth) : AstMapVisitor<AstNode>
     {
         private readonly HashSet<object> preparedLists = new(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+
+        // The blocks this pass wraps a C-style `using` loop in, its labels included (VisitLabeledStatement).
+        private readonly HashSet<AstBlock> usingLoopBlocks = new(System.Collections.Generic.ReferenceEqualityComparer.Instance);
 
         // The number of temporaries this pass has named.
         private int temporaries;
@@ -262,7 +266,9 @@ internal static class ForLoopPreparation
                         {
                             ContainsContinue = forStatement.ContainsContinue
                         }, forStatement);
-                    return new AstBlock(forStatement.Start, forStatement.End, new Sequence<AstStatement>(1) { loop });
+                    var usingLoopBlock = new AstBlock(forStatement.Start, forStatement.End, new Sequence<AstStatement>(1) { loop });
+                    usingLoopBlocks.Add(usingLoopBlock);
+                    return usingLoopBlock;
                 }
 
                 var (init, statement, update, test) = sourceBlock != null
@@ -387,6 +393,18 @@ internal static class ForLoopPreparation
             var body = Statement(labeledStatement.Body);
             if (ReferenceEquals(body, labeledStatement.Body))
                 return labeledStatement;
+
+            // The label of a C-style `using` loop goes inside the block the loop is wrapped in, so it
+            // still prefixes the loop, directly or through the loop's other labels: `L: { for … }`
+            // would label the block, and `continue L` would have no target. Each label of a chain
+            // (`A: B: for …`) moves in, the nearest first, and the block is rebuilt to start at it.
+            if (body is AstBlock block && usingLoopBlocks.Contains(block))
+            {
+                var labeled = Rebuilt(new AstLabeledStatement(labeledStatement.Label, block.Statements[0]), labeledStatement);
+                var labeledBlock = new AstBlock(labeledStatement.Start, block.End, new Sequence<AstStatement>(1) { labeled });
+                usingLoopBlocks.Add(labeledBlock);
+                return labeledBlock;
+            }
 
             return Rebuilt(new AstLabeledStatement(labeledStatement.Label, body), labeledStatement);
         }
