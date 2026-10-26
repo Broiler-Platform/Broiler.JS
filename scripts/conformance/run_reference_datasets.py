@@ -18,6 +18,16 @@ takes the same configuration and comparison over another population, temporal.js
 the second program". A run names its bundle with ``--bundle``, which fixes the rule it is taken for and the
 programs it runs (``BUNDLES``); its outputs name both, and ``compare`` joins only two runs of one bundle.
 
+**Three rules, since SJL-9.2.** Bundle sjl-9-001's rule, part C (docs/evidence/sjl-9-001/decision-rule.md), takes
+the same configuration and comparison over Broiler.VM's reference datasets of the Intl area, "through
+scripts/conformance/run_reference_datasets.py --bundle sjl-9-001 and its driver": the twelve programs milestone SJL-9.2
+copied into conformance/datasets/intl/, with their own pin, and timezones.js, which conformance/datasets/time/ holds
+since SJL-8.4. So a bundle names the collections its programs come from (``COLLECTIONS``: ``time`` and ``intl``, each a
+directory with its datasets.pin), and a program's name is looked up in each, a name pinned in two refused. Its part D
+takes "part C's harness with --invariant-globalization, which sets DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 for the
+shell": ``run --invariant-globalization`` does that, a run without it removes the variable from the shell's
+environment, a run's outputs say which it was, and ``compare`` joins only two runs taken the same way.
+
 Two commands do that:
 
 - ``run`` builds the shell in Release (``--build``) or takes the one already built, checks every copy
@@ -33,7 +43,9 @@ Two commands do that:
 ``src/compositions/Broiler.VM.Composition.JavaScript.SliceCompiler/IntlChecks.cs`` at 9508bd5, which the
 checks ``tzdb/time-zone-offsets-match-icu`` and ``temporal/t1/temporal-matches-the-reference-polyfill``
 run, and which ``temporal/t3/calendars-match-the-reference-polyfill`` runs the same way at 14072b0 and
-99c9c9f:
+99c9c9f, and every check of the Intl area's datasets (``intl/i2/...``, ``intl/i3/...``, ``intl/i4/...``,
+``temporal/t2/...``, ``temporal/t4/...``, ``temporal/t5/...``) at 4cf9ca4, whose ``RetainedMatches`` is 9508bd5's
+line for line:
 
 - the retained answer is ``File.ReadAllText(retained).TrimEnd('\\n').Split('\\n')``: every LF at its end
   removed, then split at each LF (``split_retained``);
@@ -52,8 +64,8 @@ Broiler.VM's check also asks that every divergence be used and that the retained
 than a floor (600, 1,500 and 3,500); both are reported here as facts about the copies, not as part of a
 comparison.
 
-**What it decides.** Nothing. It reports equal and different lines and their counts; the rule's classes
-D1 to D3 are assigned by a person.
+**What it decides.** Nothing. It reports equal and different lines and their counts; the rules' classes
+(sjl-8-001's D1 to D3, sjl-9-001's V, R, Z8, O and H) are assigned by a person.
 """
 
 from __future__ import annotations
@@ -74,32 +86,54 @@ from typing import Iterable, Sequence
 SCRIPTS = Path(__file__).resolve().parent
 REPOSITORY = SCRIPTS.parents[1]
 DATASETS = REPOSITORY / "conformance" / "datasets" / "time"
+INTL_DATASETS = REPOSITORY / "conformance" / "datasets" / "intl"
 PIN_NAME = "datasets.pin"
 DRIVER_TEMPLATE = SCRIPTS / "reference_dataset_driver.js"
 DRIVER_MARKER = "/*PROGRAM_FILE*/"
 SHELL_PROJECT = Path("Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj")
 SHELL_DLL = Path("Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll")
 # Format 2 (SJL-10.2): a run names its bundle, and its copies are its population's, each with its commit.
-FORMAT = 2
+# Format 3 (SJL-9.2): a run also names each program's collection and whether it ran under invariant globalization.
+FORMAT = 3
 
 # IntlChecks.RetainedMatches's text for a line past the end of either answer.
 NO_LINE = "(no line)"
-# The `least` each of the two checks passes to RetainedMatches: the retained answer must have more lines.
-VM_LEAST = {"timezones": 600, "temporal": 1500, "temporal-calendars": 3500}
+# The `least` each check passes to RetainedMatches: the retained answer must have more lines. The Intl area's are
+# those of IntlChecks.cs at Broiler.VM's 4cf9ca4, the commit its datasets were copied from (milestone SJL-9.2).
+VM_LEAST = {"timezones": 600, "temporal": 1500, "temporal-calendars": 3500,
+            "numbers": 2000, "dates": 1000, "locales": 700, "plurals": 1200, "lists": 450, "relativetimes": 2400,
+            "segments": 110, "durations": 500, "displaynames": 800, "temporal-intl": 1200, "calendar-formats": 5500,
+            "zone-names": 2600}
+
+# The environment variable part D of bundle sjl-9-001's rule sets for the shell, and its value there.
+INVARIANT_VARIABLE = "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT"
 
 
 @dataclass(frozen=True)
 class Bundle:
-    """An evidence bundle whose rule's part C this harness runs: the rule, and the programs it takes."""
+    """An evidence bundle whose rule's part C this harness runs: the rule, the programs it takes, and the
+    collections (``COLLECTIONS``) whose pins hold them."""
     name: str
     rule: str
     programs: tuple[str, ...]
+    collections: tuple[str, ...] = ("time",)
 
+
+# The directories of copies, each with its own datasets.pin: the time area's (SJL-8.4, SJL-10.2) and the Intl
+# area's (SJL-9.2). `run` and `verify` take each from its own option, so a test can hand them another directory.
+COLLECTIONS = {"time": DATASETS, "intl": INTL_DATASETS}
+
+INTL_PROGRAMS = ("dates", "displaynames", "durations", "lists", "locales", "numbers", "plurals", "relativetimes",
+                 "segments", "temporal-intl", "calendar-formats", "zone-names")
 
 BUNDLES = {
     "sjl-8-001": Bundle("sjl-8-001", "docs/evidence/sjl-8-001/decision-rule.md, part C", ("timezones", "temporal")),
     "sjl-10-001": Bundle("sjl-10-001", "docs/evidence/sjl-10-001/decision-rule.md, part C",
                          ("temporal", "temporal-calendars")),
+    # Part C of bundle sjl-9-001's rule, and its part D with --invariant-globalization: the Intl area's twelve
+    # programs, then timezones.js from block 1 of the time area's pin.
+    "sjl-9-001": Bundle("sjl-9-001", "docs/evidence/sjl-9-001/decision-rule.md, parts C and D",
+                        INTL_PROGRAMS + ("timezones",), ("intl", "time")),
 }
 
 DRIVER_LINE = "reference-dataset-driver"
@@ -222,8 +256,9 @@ def load_datasets(directory: Path) -> Pin:
 
 
 def read_all_text(data: bytes) -> str:
-    """File.ReadAllText for the copies: UTF-8, a byte order mark dropped. Strict, because the copies are
-    ASCII and held by their digests; .NET would write U+FFFD for a malformed byte instead."""
+    """File.ReadAllText for the copies: UTF-8, a byte order mark dropped. Strict, because the copies are well-formed
+    UTF-8 (the time area's are ASCII, and some of the Intl area's are not) and held by their digests; .NET would
+    write U+FFFD for a malformed byte instead."""
     return data.decode("utf-8-sig")
 
 
@@ -552,13 +587,22 @@ def yes_no(value: bool) -> str:
 # ---- Running the shell -----------------------------------------------------------------------------
 
 
-def child_environment(parent: dict[str, str]) -> dict[str, str]:
+def child_environment(parent: dict[str, str], invariant: bool = False) -> dict[str, str]:
     """The rule's configuration: no LANG, and TZ=UTC. LANGUAGE and every LC_ variable go too, so nothing
-    else names a locale."""
+    else names a locale. DOTNET_SYSTEM_GLOBALIZATION_INVARIANT is 1 when the run is under invariant
+    globalization (bundle sjl-9-001's part D) and absent otherwise, whatever the harness's own environment holds,
+    so a run is taken the way its outputs say (milestone SJL-9.2; until then the variable was passed through)."""
     environment = {k: v for k, v in parent.items()
-                   if k not in ("LANG", "LANGUAGE", "TZ") and not k.startswith("LC_")}
+                   if k not in ("LANG", "LANGUAGE", "TZ", INVARIANT_VARIABLE) and not k.startswith("LC_")}
     environment["TZ"] = "UTC"
+    if invariant:
+        environment[INVARIANT_VARIABLE] = "1"
     return environment
+
+
+def environment_description(invariant: bool) -> str:
+    return ("TZ=UTC; LANG, LANGUAGE and every LC_ variable removed; "
+            + (f"{INVARIANT_VARIABLE}=1 (invariant globalization)" if invariant else f"{INVARIANT_VARIABLE} removed"))
 
 
 def write_driver(path: Path, program_file: str) -> None:
@@ -643,7 +687,8 @@ class ProgramRun:
     control: dict
 
 
-def run_program(dll: Path, directory: Path, program: Program, out: Path, timeout: float) -> ProgramRun:
+def run_program(dll: Path, directory: Path, program: Program, out: Path, timeout: float,
+                invariant: bool = False) -> ProgramRun:
     program_text = read_all_text((directory / program.program).read_bytes())
     driver = out / f"driver-{program.name}.js"
     write_driver(driver, program.program)
@@ -651,7 +696,7 @@ def run_program(dll: Path, directory: Path, program: Program, out: Path, timeout
     try:
         process = subprocess.run(
             ["dotnet", str(dll), "--script-host", str(driver)],
-            cwd=directory, env=child_environment(dict(os.environ)), capture_output=True, timeout=timeout)
+            cwd=directory, env=child_environment(dict(os.environ), invariant), capture_output=True, timeout=timeout)
         exit_code, stdout, stderr = process.returncode, process.stdout, process.stderr
     except subprocess.TimeoutExpired as expired:
         exit_code = -1
@@ -713,13 +758,14 @@ def population(pin: Pin, programs: Sequence[Program]) -> list[PinnedFile]:
     return [pinned for pinned in pin.files.values() if pinned.name in names]
 
 
-def identity_lines(bundle: Bundle, label: str, tree: Path, dll: Path, built: list[str] | None, directory: Path,
-                   pin: Pin, programs: Sequence[Program], started: str) -> list[str]:
+def identity_lines(bundle: Bundle, label: str, tree: Path, dll: Path, built: list[str] | None,
+                   sources: Sequence["Source"], programs: Sequence[Program], started: str, invariant: bool) -> list[str]:
     commit = git(tree, "rev-parse", "HEAD")
     status = git(tree, "status", "--porcelain", "--untracked-files=all")
     harness_commit = git(REPOSITORY, "rev-parse", "HEAD")
+    directories = sorted({str(source.directory) for source in sources})
     harness_status = git(REPOSITORY, "status", "--porcelain", "--untracked-files=all", "--",
-                         str(Path(__file__).resolve()), str(DRIVER_TEMPLATE), str(directory))
+                         str(Path(__file__).resolve()), str(DRIVER_TEMPLATE), *directories)
     runtimes = [line for line in command_output("dotnet", "--list-runtimes").splitlines()
                 if line.startswith("Microsoft.NETCore.App ")]
     lines = [
@@ -738,27 +784,68 @@ def identity_lines(bundle: Bundle, label: str, tree: Path, dll: Path, built: lis
         f"dotnet SDK: {command_output('dotnet', '--version') or 'unknown'}",
         f"dotnet runtime: {runtimes[-1] if runtimes else 'unknown'}",
         f"machine: {os_release()}; {platform.system()} {platform.release()} {platform.machine()}; {cpu_model()}; {os.cpu_count()} logical CPUs",
-        "child environment: TZ=UTC; LANG, LANGUAGE and every LC_ variable removed",
+        f"child environment: {environment_description(invariant)}",
+        # The harness's own environment; the child's, which the programs run in, is the line above.
         f"harness environment: TZ={os.environ.get('TZ', '(unset)')}, LANG={os.environ.get('LANG', '(unset)')}, "
-        f"LC_ALL={os.environ.get('LC_ALL', '(unset)')}",
-        f"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: {os.environ.get('DOTNET_SYSTEM_GLOBALIZATION_INVARIANT', '(unset)')}",
+        f"LC_ALL={os.environ.get('LC_ALL', '(unset)')}, "
+        f"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT={os.environ.get('DOTNET_SYSTEM_GLOBALIZATION_INVARIANT', '(unset)')}",
         f"host ICU: {host_icu()}",
         f"host tzdata: {host_tzdata()}",
         f"harness commit: {harness_commit or 'unknown'}",
         f"harness, driver and copies unchanged from that commit: {yes_no(bool(harness_commit) and harness_status == '')}",
         f"harness SHA-256: {sha256_file(Path(__file__))}",
         f"driver template SHA-256: {sha256_file(DRIVER_TEMPLATE)}",
-        f"datasets: {directory}, every copy equal to {PIN_NAME}; the run's population, copies of Broiler.VM at the"
-        " commits it names:",
     ]
-    for pinned in population(pin, programs):
-        lines.append(f"  {pinned.name} {pinned.length} {pinned.sha256} (Broiler.VM {pinned.source_commit[:7]}:{pinned.source_path})")
+    for source in sources:
+        chosen = [p for p in programs if p in source.pin.programs]
+        if not chosen:
+            continue
+        lines.append(f"datasets ({source.collection}): {source.directory}, every copy equal to its {PIN_NAME}; the run's"
+                     " population there, copies of Broiler.VM at the commits it names:")
+        for pinned in population(source.pin, chosen):
+            lines.append(f"  {pinned.name} {pinned.length} {pinned.sha256} (Broiler.VM {pinned.source_commit[:7]}:{pinned.source_path})")
     return lines
 
 
+@dataclass(frozen=True)
+class Source:
+    """One collection a bundle reads: its name, its directory, and its pin, every copy checked."""
+    collection: str
+    directory: Path
+    pin: Pin
+
+
+def load_sources(bundle: Bundle, directories: dict[str, Path]) -> list[Source]:
+    """The bundle's collections, each loaded and checked against its pin; a program pinned in two of them, or a
+    bundle's program pinned in none, is refused."""
+    sources = [Source(name, directories[name].resolve(), load_datasets(directories[name].resolve()))
+               for name in bundle.collections]
+    seen: dict[str, str] = {}
+    for source in sources:
+        for program in source.pin.programs:
+            if program.name in seen:
+                raise HarnessError(f"program {program.name} is pinned in both the {seen[program.name]} and the "
+                                   f"{source.collection} collections")
+            seen[program.name] = source.collection
+    missing = [name for name in bundle.programs if name not in seen]
+    if missing:
+        raise HarnessError(f"bundle {bundle.name}'s programs {missing} are not in the {PIN_NAME} of "
+                           f"{', '.join(bundle.collections)}")
+    return sources
+
+
+def source_of(sources: Sequence[Source], name: str) -> Source:
+    return next(source for source in sources if any(p.name == name for p in source.pin.programs))
+
+
+def collection_directories(arguments: argparse.Namespace) -> dict[str, Path]:
+    return {"time": Path(arguments.datasets), "intl": Path(arguments.intl_datasets)}
+
+
 def command_run(arguments: argparse.Namespace) -> int:
-    directory = Path(arguments.datasets).resolve()
-    pin = load_datasets(directory)
+    bundle = BUNDLES[arguments.bundle]
+    sources = load_sources(bundle, collection_directories(arguments))
+    invariant = bool(arguments.invariant_globalization)
     tree = Path(arguments.tree).resolve()
     out = Path(arguments.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -772,34 +859,34 @@ def command_run(arguments: argparse.Namespace) -> int:
         for binary in sorted(dll.parent.glob("*.dll")):
             handle.write(f"{sha256_file(binary)}  {binary.name}\n")
 
-    bundle = BUNDLES[arguments.bundle]
-    named = {p.name for p in pin.programs}
-    missing = [name for name in bundle.programs if name not in named]
-    if missing:
-        raise HarnessError(f"bundle {bundle.name}'s programs {missing} are not in {PIN_NAME}")
     if arguments.program and not set(arguments.program) <= set(bundle.programs):
         raise HarnessError(f"--program names a program bundle {bundle.name}'s rule does not take; it takes "
                            f"{', '.join(bundle.programs)}")
-    selected = [pin.program(name) for name in bundle.programs if not arguments.program or name in arguments.program]
-    copies = population(pin, selected)
+    selected = [source_of(sources, name).pin.program(name) for name in bundle.programs
+                if not arguments.program or name in arguments.program]
+    copies = [pinned for source in sources
+              for pinned in population(source.pin, [p for p in selected if p in source.pin.programs])]
 
-    identity = identity_lines(bundle, arguments.label, tree, dll, built, directory, pin, selected, started)
+    identity = identity_lines(bundle, arguments.label, tree, dll, built, sources, selected, started, invariant)
     summary = {
         "format": FORMAT,
         "bundle": bundle.name,
         "rule": bundle.rule,
         "label": arguments.label,
         "started": started,
+        "invariantGlobalization": invariant,
         "shellCommit": git(tree, "rev-parse", "HEAD") or "unknown",
         "shellSha256": sha256_file(dll),
+        "collections": {p.name: source_of(sources, p.name).collection for p in selected},
         "datasetsSourceCommits": {p.name: p.source_commit for p in copies},
         "copies": {p.name: p.sha256 for p in copies},
         "programs": {},
     }
-    report = [f"Reference datasets, bundle {bundle.name}'s rule, part C: one run", ""] + identity + [""]
+    report = [f"Reference datasets, bundle {bundle.name}'s rule, part {'D' if invariant else 'C'}: one run"
+              + (" under invariant globalization" if invariant else ""), ""] + identity + [""]
     failed = False
     for program in selected:
-        run = run_program(dll, directory, program, out, arguments.timeout)
+        run = run_program(dll, source_of(sources, program.name).directory, program, out, arguments.timeout, invariant)
         entry = write_program_outputs(run, out)
         summary["programs"][program.name] = entry
         control = entry["negativeControl"]
@@ -870,6 +957,12 @@ def compare_rows(base: Sequence[dict[str, str]], after: Sequence[dict[str, str]]
     return rows, counts
 
 
+def invariant_of(summary: dict) -> bool:
+    """Whether a run was under invariant globalization; a run before format 3 was not taken so (its shell had the
+    harness's own environment, which no retained run of bundles sjl-8-001 and sjl-10-001 set)."""
+    return bool(summary.get("invariantGlobalization", False))
+
+
 def bundle_of(summary: dict) -> str:
     """A run's bundle; a run of format 1 was bundle sjl-8-001's, the only one there was."""
     return summary.get("bundle", "sjl-8-001")
@@ -892,15 +985,18 @@ def command_compare(arguments: argparse.Namespace) -> int:
         raise HarnessError(f"the base is a run for bundle {bundle_of(base)} and the after run for {bundle_of(after)}")
     if base["copies"] != after["copies"] or source_commits(base) != source_commits(after):
         raise HarnessError("the two runs did not read the same copies, so they are not runs of one population")
+    if invariant_of(base) != invariant_of(after):
+        raise HarnessError("one run was under invariant globalization and the other was not")
     if set(base["programs"]) != set(after["programs"]):
         raise HarnessError(f"the base ran {sorted(base['programs'])} and the after run {sorted(after['programs'])}")
     out.mkdir(parents=True, exist_ok=True)
     bundle = BUNDLES[bundle_of(after)]
-    result = {"format": FORMAT, "bundle": bundle.name, "rule": bundle.rule,
+    result = {"format": FORMAT, "bundle": bundle.name, "rule": bundle.rule, "invariantGlobalization": invariant_of(after),
               "base": {"label": base["label"], "shellCommit": base["shellCommit"], "shellSha256": base["shellSha256"]},
               "after": {"label": after["label"], "shellCommit": after["shellCommit"], "shellSha256": after["shellSha256"]},
               "copies": after["copies"], "programs": {}}
-    text = [f"Reference datasets, bundle {bundle.name}'s rule, part C: an after run against a base run", "",
+    text = [f"Reference datasets, bundle {bundle.name}'s rule, part {'D' if invariant_of(after) else 'C'}: an after run"
+            " against a base run" + (" under invariant globalization" if invariant_of(after) else ""), "",
             f"base: {base['label']}, shell commit {base['shellCommit']}, BroilerJS.dll {base['shellSha256']}",
             f"after: {after['label']}, shell commit {after['shellCommit']}, BroilerJS.dll {after['shellSha256']}",
             f"copies: Broiler.VM {' '.join(sorted(set(source_commits(after).values())))}, the same SHA-256 in both runs", ""]
@@ -929,11 +1025,13 @@ def command_compare(arguments: argparse.Namespace) -> int:
 
 
 def command_verify(arguments: argparse.Namespace) -> int:
-    directory = Path(arguments.datasets).resolve()
-    pin = load_datasets(directory)
-    for pinned in pin.files.values():
-        print(f"{pinned.sha256}  {pinned.name}  ({pinned.length} bytes, Broiler.VM {pinned.source_commit[:7]}:{pinned.source_path})")
-    print(f"every copy equals {PIN_NAME}")
+    directories = collection_directories(arguments)
+    for name in ([arguments.collection] if arguments.collection else list(COLLECTIONS)):
+        directory = directories[name].resolve()
+        pin = load_datasets(directory)
+        for pinned in pin.files.values():
+            print(f"{pinned.sha256}  {name}/{pinned.name}  ({pinned.length} bytes, Broiler.VM {pinned.source_commit[:7]}:{pinned.source_path})")
+        print(f"every copy of the {name} collection equals its {PIN_NAME}")
     return 0
 
 
@@ -951,7 +1049,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     run.add_argument("--label", default="run", help="a name for the run, such as base or after")
     run.add_argument("--program", action="append", help="run only this one of the bundle's programs (repeatable)")
     run.add_argument("--timeout", type=float, default=1800.0, help="seconds each program may take (default 1800)")
+    run.add_argument("--invariant-globalization", action="store_true",
+                     help=f"run the shell with {INVARIANT_VARIABLE}=1 (bundle sjl-9-001's part D)")
     run.add_argument("--datasets", default=str(DATASETS), help=argparse.SUPPRESS)
+    run.add_argument("--intl-datasets", default=str(INTL_DATASETS), help=argparse.SUPPRESS)
     run.set_defaults(handler=command_run)
 
     compare = commands.add_parser("compare", help="join an after run with a base run, line by line")
@@ -960,8 +1061,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     compare.add_argument("--out", required=True)
     compare.set_defaults(handler=command_compare)
 
-    verify = commands.add_parser("verify", help="check every copy against datasets.pin")
+    verify = commands.add_parser("verify", help="check every copy against its collection's datasets.pin")
+    verify.add_argument("--collection", choices=sorted(COLLECTIONS), help="check this collection only (default: both)")
     verify.add_argument("--datasets", default=str(DATASETS), help=argparse.SUPPRESS)
+    verify.add_argument("--intl-datasets", default=str(INTL_DATASETS), help=argparse.SUPPRESS)
     verify.set_defaults(handler=command_verify)
 
     arguments = parser.parse_args(argv)

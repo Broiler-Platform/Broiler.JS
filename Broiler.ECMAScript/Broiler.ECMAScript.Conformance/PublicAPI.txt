@@ -192,12 +192,15 @@ Broiler.ECMAScript.Conformance.VectorSources.Equals(Broiler.ECMAScript.Conforman
 Broiler.ECMAScript.Conformance.VectorSources.Equals(System.Object) method virtual System.Boolean
 Broiler.ECMAScript.Conformance.VectorSources.GetHashCode() method virtual System.Int32
 Broiler.ECMAScript.Conformance.VectorSources.Parse(System.String, System.String, System.String) method static Broiler.ECMAScript.Conformance.VectorSources
+Broiler.ECMAScript.Conformance.VectorSources.Parse(System.String, System.String, System.String, System.String) method static Broiler.ECMAScript.Conformance.VectorSources
 Broiler.ECMAScript.Conformance.VectorSources.ToString() method virtual System.String
+Broiler.ECMAScript.Conformance.VectorSources.get_InternationalizationRevision() method System.String
 Broiler.ECMAScript.Conformance.VectorSources.get_Revision() method System.Int32
 Broiler.ECMAScript.Conformance.VectorSources.get_SpecificationRevision() method System.String
 Broiler.ECMAScript.Conformance.VectorSources.get_UnicodeVersion() method System.String
 Broiler.ECMAScript.Conformance.VectorSources.op_Equality(Broiler.ECMAScript.Conformance.VectorSources, Broiler.ECMAScript.Conformance.VectorSources) method static System.Boolean
 Broiler.ECMAScript.Conformance.VectorSources.op_Inequality(Broiler.ECMAScript.Conformance.VectorSources, Broiler.ECMAScript.Conformance.VectorSources) method static System.Boolean
+Broiler.ECMAScript.Conformance.VectorSources.set_InternationalizationRevision(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Conformance.VectorSources.set_Revision(System.Int32) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Conformance.VectorSources.set_SpecificationRevision(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Conformance.VectorSources.set_UnicodeVersion(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)

@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 1225 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 1227 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 94 |
-| Code units | 1642 |
-| Relevant | 1225 |
-| Exempt | 417 |
-| Assessed | 1225 of 1225 (100%) |
-| Human reviewed | 0 of 1225 (0%) |
-| Unverified | 1225 |
+| Code units | 1645 |
+| Relevant | 1227 |
+| Exempt | 418 |
+| Assessed | 1227 of 1227 (100%) |
+| Human reviewed | 0 of 1227 (0%) |
+| Unverified | 1227 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1225 |
+| HUMAN_PENDING | 1227 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 417 |
+| EXEMPT | 418 |
 
 ## 5. Aliases In The Tree
 
@@ -163,10 +163,10 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Conformance/LibraryRun.cs` | 11 | 9 | 2 | 9 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/Outcome.cs` | 11 | 7 | 4 | 7 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/TypedValue.cs` | 24 | 11 | 13 | 11 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Conformance/VectorCorpus.cs` | 16 | 11 | 5 | 11 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Conformance/VectorCorpus.cs` | 18 | 12 | 6 | 12 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorFile.cs` | 23 | 18 | 5 | 18 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorRun.cs` | 17 | 12 | 5 | 12 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Conformance/VectorValidator.cs` | 24 | 20 | 4 | 20 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Conformance/VectorValidator.cs` | 25 | 21 | 4 | 21 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Generation/Time/ArchiveReading.cs` | 9 | 9 | 0 | 9 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` | 16 | 12 | 4 | 12 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Generation/Time/CalendarTableGenerator.cs` | 32 | 29 | 3 | 29 | Low | High | 2/2 |
@@ -461,5 +461,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-521 of the 1225 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+523 of the 1227 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

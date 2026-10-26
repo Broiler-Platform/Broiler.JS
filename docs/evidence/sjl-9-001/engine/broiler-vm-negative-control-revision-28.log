@@ -1,0 +1,8 @@
+== run at Broiler.VM 4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f (a scratch tree written by git archive of that commit; its Release build, dotnet build src/compositions/Broiler.VM.Composition.JavaScript.Conformance -c Release --disable-build-servers), pin broiler-vm-revision-28.pin sha256=c28030b8bcf917ebfa3fc3e78f5406b49c8819de3930acac818175c3fda6116b (a scratch pin of git archive --format=tar.gz 2f240fecc502af7d843077ec664b1b7a65c45bb1 -- conformance/vectors ':(exclude)conformance/vectors/controls'), start 2026-10-26T17:01:47Z
+== host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64; 4 logical CPUs; ICU: libicu74 74.2-1ubuntu3.1 (libicuuc.so.74, the only ICU installed), which .NET's globalization loads; dotnet 10.0.401, runtime 10.0.12
+== command: env -u LANG -u LANGUAGE TZ=UTC dotnet src/compositions/Broiler.VM.Composition.JavaScript.Conformance/bin/Release/net10.0/Broiler.VM.Composition.JavaScript.Conformance.dll --vectors vectors-rev28.tar.gz --expect broiler-vm-revision-28.pin --report broiler-vm-negative-control-revision-28.tsv --mutate intl/numbers-and-text/decimal/0001
+broiler-js-conformance: vectors broiler-js-vectors Broiler-Platform/broiler.js@2f240fecc502af7d843077ec664b1b7a65c45bb1 content sha256 cd153a0b654de3a3357849dec757beb8d6529765e9d3d938544382381c8ff850 over 63 files - retrieved and hashed, NOT archived
+broiler-js-conformance: negative control: intl/numbers-and-text/decimal/0001 expects `value: str:"1,234,567.8910"`
+broiler-js-conformance: 106808 vectors: 106766 match, 41 classified divergences, 1 unclassified differences
+exit code 1
+== end 2026-10-26T17:08:06Z

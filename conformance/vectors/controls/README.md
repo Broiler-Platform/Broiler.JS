@@ -20,3 +20,4 @@ its name gives.
 | `no-schema.vectors` | No `schema: 1` line |
 | `engine-observed.vectors` | A vector whose only provenance is `observed:broiler-js` |
 | `no-source.vectors` | A vector whose only provenance is an `overruled:` entry, an answer the vector does not take *(added 2026-10-18, at corpus revision 24)* |
+| `bad-provenance.vectors` | A `spec:ecma402@` entry that names ECMA-262's pinned revision, not sources/ecma402.pin's *(added 2026-10-26, at corpus revision 27)* |

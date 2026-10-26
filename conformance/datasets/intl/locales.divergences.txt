@@ -1,0 +1,167 @@
+# Lines of locales.icu-77.1.txt where the profile answers otherwise, each the profile's line, under
+# the reason it is not Node's. A line replaces the Node line whose text before ` => ` is the same.
+
+# Node 22 predates the draft's firstDayOfWeek: its V8 reads neither the option nor the -u-fw keyword
+# into the property, and does not let it set the week's first day. ECMA-402 (the current draft,
+# 15.1.1 Intl.Locale, 15.3.6 firstDayOfWeek and 15.5.17 WeekInfoOfLocale) reads the option as
+# WeekdayToUValue states, keeps the keyword, and makes it the first day.
+53 en-u-fw-mon firstDayOfWeek => mon
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} => en-u-ca-islamic-civil-co-emoji-fw-sun-hc-h11-kf-upper-kn-nu-arab base=en language=en script=undefined region=undefined
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} firstDayOfWeek => sun
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} likely => max=en-Latn-US-u-ca-islamic-civil-co-emoji-fw-sun-hc-h11-kf-upper-kn-nu-arab min=en-u-ca-islamic-civil-co-emoji-fw-sun-hc-h11-kf-upper-kn-nu-arab
+63 en {"firstDayOfWeek":"tue"} => en-u-fw-tue base=en language=en script=undefined region=undefined
+63 en {"firstDayOfWeek":"tue"} firstDayOfWeek => tue
+63 en {"firstDayOfWeek":"tue"} likely => max=en-Latn-US-u-fw-tue min=en-u-fw-tue
+63 en {"firstDayOfWeek":"tue"} week => firstDay=2 weekend=[6,7]
+
+# Node 22 predates the draft's variants: its V8 has no variants property and ignores the option.
+# ECMA-402 (15.1.2 UpdateLanguageId, 15.3.23 variants) reads the option into the tag, and the
+# property answers the canonical tag's variants, sorted as canonicalization sorts them.
+46 es-ES-preeuro variants => preeuro
+47 sl-rozaj-biske-1994 variants => 1994-biske-rozaj
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} => fr-Cyrl-BE-1996-fonipa base=fr-Cyrl-BE-1996-fonipa language=fr script=Cyrl region=BE
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} variants => 1996-fonipa
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} likely => max=fr-Cyrl-BE-1996-fonipa min=fr-Cyrl-BE-1996-fonipa
+
+# Node 22's language property is undefined for the language und. ECMA-402 (15.3.8 language,
+# 15.5.2 GetLocaleLanguage) answers the first subtag, und.
+30 und => und base=und language=und script=undefined region=undefined
+31 und-AQ => und-AQ base=und-AQ language=und script=undefined region=AQ
+32 und-Latn-AQ => und-Latn-AQ base=und-Latn-AQ language=und script=Latn region=AQ
+33 und-Cyrl-RO => und-Cyrl-RO base=und-Cyrl-RO language=und script=Cyrl region=RO
+34 und-Thai => und-Thai base=und-Thai language=und script=Thai region=undefined
+35 und-150 => und-150 base=und-150 language=und script=undefined region=150
+36 und-AT => und-AT base=und-AT language=und script=undefined region=AT
+59 und-x-private => und-x-private base=und language=und script=undefined region=undefined
+
+# The profile formats the Gregorian calendar alone (JSD-0045). ECMA-402 (15.5.9 CalendarsOfLocale)
+# keeps of a region's calendars in use those AvailableCalendars has, so the profile answers gregory
+# where Node, whose ICU formats them all, lists the region's others too.
+14 ar calendars => [gregory]
+15 ar-EG calendars => [gregory]
+16 he calendars => [gregory]
+17 fa-IR calendars => [gregory]
+18 ur calendars => [gregory]
+19 hi calendars => [gregory]
+20 zh calendars => [gregory]
+21 zh-Hant calendars => [gregory]
+22 zh-TW calendars => [gregory]
+23 zh-Hans-SG calendars => [gregory]
+24 ja calendars => [gregory]
+25 ko calendars => [gregory]
+26 th calendars => [gregory]
+29 uz-Cyrl calendars => [gregory]
+34 und-Thai calendars => [gregory]
+38 iw calendars => [gregory]
+39 in-ID calendars => [gregory]
+44 zh-hakka calendars => [gregory]
+45 aar-x-private calendars => [gregory]
+56 ar-u-nu-arab calendars => [gregory]
+65 he-IL {"script":"Latn"} calendars => [gregory]
+
+# The profile's Collator offers phonebk for German and no other tailoring (JSD-0043). ECMA-402
+# (15.5.10 CollationsOfLocale) answers the collator's own collations for a locale it supports, and
+# emoji and eor for one it does not, so the profile answers those where Node lists ICU's.
+1 en collations => []
+2 en-US collations => []
+3 en-GB collations => []
+4 en-Latn collations => []
+5 en-Arab collations => []
+6 en-Shaw collations => []
+7 de collations => [phonebk]
+8 de-AT collations => [phonebk]
+9 de-CH collations => [phonebk]
+12 es-419 collations => [emoji,eor]
+14 ar collations => [emoji,eor]
+15 ar-EG collations => [emoji,eor]
+20 zh collations => [emoji,eor]
+21 zh-Hant collations => [emoji,eor]
+22 zh-TW collations => [emoji,eor]
+23 zh-Hans-SG collations => [emoji,eor]
+24 ja collations => [emoji,eor]
+25 ko collations => [emoji,eor]
+46 es-ES-preeuro collations => [emoji,eor]
+51 en-u-nu-thai-hc-h23 collations => []
+53 en-u-fw-mon collations => []
+54 en-u-rg-gbzzzz collations => []
+55 en-u-sd-usca collations => []
+56 ar-u-nu-arab collations => [emoji,eor]
+58 en-t-iw collations => []
+62 de-u-kn-false {"numeric":true} collations => [phonebk]
+63 en {"firstDayOfWeek":"tue"} collations => []
+64 ja-JP {"region":"US"} collations => [emoji,eor]
+
+# A region's time zones are tzdb 2026e's zone.tab entries for it (JSD-0053), which are IANA Zone
+# names, as ECMA-402 (15.5.13 TimeZonesOfLocale) asks. Node 22 answers CLDR's older canonical names
+# where they differ: America/Indianapolis for America/Indiana/Indianapolis, America/Coral_Harbour for
+# America/Atikokan.
+2 en-US timeZones => [America/Adak,America/Anchorage,America/Boise,America/Chicago,America/Denver,America/Detroit,America/Indiana/Indianapolis,America/Indiana/Knox,America/Indiana/Marengo,America/Indiana/Petersburg,America/Indiana/Tell_City,America/Indiana/Vevay,America/Indiana/Vincennes,America/Indiana/Winamac,America/Juneau,America/Kentucky/Louisville,America/Kentucky/Monticello,America/Los_Angeles,America/Menominee,America/Metlakatla,America/New_York,America/Nome,America/North_Dakota/Beulah,America/North_Dakota/Center,America/North_Dakota/New_Salem,America/Phoenix,America/Sitka,America/Yakutat,Pacific/Honolulu]
+11 fr-CA timeZones => [America/Atikokan,America/Blanc-Sablon,America/Cambridge_Bay,America/Creston,America/Dawson,America/Dawson_Creek,America/Edmonton,America/Fort_Nelson,America/Glace_Bay,America/Goose_Bay,America/Halifax,America/Inuvik,America/Iqaluit,America/Moncton,America/Rankin_Inlet,America/Regina,America/Resolute,America/St_Johns,America/Swift_Current,America/Toronto,America/Vancouver,America/Whitehorse,America/Winnipeg]
+64 ja-JP {"region":"US"} timeZones => [America/Adak,America/Anchorage,America/Boise,America/Chicago,America/Denver,America/Detroit,America/Indiana/Indianapolis,America/Indiana/Knox,America/Indiana/Marengo,America/Indiana/Petersburg,America/Indiana/Tell_City,America/Indiana/Vevay,America/Indiana/Vincennes,America/Indiana/Winamac,America/Juneau,America/Kentucky/Louisville,America/Kentucky/Monticello,America/Los_Angeles,America/Menominee,America/Metlakatla,America/New_York,America/Nome,America/North_Dakota/Beulah,America/North_Dakota/Center,America/North_Dakota/New_Salem,America/Phoenix,America/Sitka,America/Yakutat,Pacific/Honolulu]
+
+# ECMA-402 (15.5.11 HourCyclesOfLocale) answers the hour cycles in common use in the region, most
+# preferred first; the profile reads them from CLDR's time data, the preferred cycle and then the
+# allowed ones. Node 22 answers only the preferred cycle.
+1 en hourCycles => [h12,h23]
+2 en-US hourCycles => [h12,h23]
+3 en-GB hourCycles => [h23,h12]
+4 en-Latn hourCycles => [h12,h23]
+5 en-Arab hourCycles => [h12,h23]
+6 en-Shaw hourCycles => [h23,h12]
+7 de hourCycles => [h23,h12]
+8 de-AT hourCycles => [h23,h12]
+9 de-CH hourCycles => [h23,h12]
+10 fr hourCycles => [h23,h12]
+11 fr-CA hourCycles => [h12,h23]
+12 es-419 hourCycles => [h12,h23]
+13 pt-BR hourCycles => [h23,h12]
+14 ar hourCycles => [h12,h23]
+15 ar-EG hourCycles => [h12,h23]
+16 he hourCycles => [h23,h12]
+17 fa-IR hourCycles => [h23,h12]
+18 ur hourCycles => [h12,h23]
+19 hi hourCycles => [h12,h23]
+20 zh hourCycles => [h23,h12]
+21 zh-Hant hourCycles => [h12,h23]
+22 zh-TW hourCycles => [h12,h23]
+23 zh-Hans-SG hourCycles => [h12,h23]
+24 ja hourCycles => [h23,h11,h12]
+25 ko hourCycles => [h12,h23]
+26 th hourCycles => [h23,h12]
+28 sr-Latn hourCycles => [h23,h12]
+29 uz-Cyrl hourCycles => [h23,h12]
+30 und hourCycles => [h12,h23]
+33 und-Cyrl-RO hourCycles => [h23,h12]
+34 und-Thai hourCycles => [h23,h12]
+36 und-AT hourCycles => [h23,h12]
+37 mo hourCycles => [h23,h12]
+38 iw hourCycles => [h23,h12]
+40 sh hourCycles => [h23,h12]
+41 no hourCycles => [h23,h12]
+42 tl hourCycles => [h12,h23]
+43 art-lojban hourCycles => [h23,h12]
+44 zh-hakka hourCycles => [h23,h12]
+45 aar-x-private hourCycles => [h12,h23]
+46 es-ES-preeuro hourCycles => [h23,h12]
+47 sl-rozaj-biske-1994 hourCycles => [h23,h12]
+48 hy-SU hourCycles => [h23,h12]
+50 en-u-ca-gregory-co-phonebk-kn hourCycles => [h12,h23]
+52 de-u-co-phonebk-ca-buddhist hourCycles => [h23,h12]
+53 en-u-fw-mon hourCycles => [h12,h23]
+54 en-u-rg-gbzzzz hourCycles => [h23,h12]
+55 en-u-sd-usca hourCycles => [h12,h23]
+56 ar-u-nu-arab hourCycles => [h12,h23]
+57 pt-u-attr2-attr1-ca-gregory hourCycles => [h23,h12]
+58 en-t-iw hourCycles => [h12,h23]
+59 und-x-private hourCycles => [h12,h23]
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} hourCycles => [h23,h12]
+62 de-u-kn-false {"numeric":true} hourCycles => [h23,h12]
+63 en {"firstDayOfWeek":"tue"} hourCycles => [h12,h23]
+64 ja-JP {"region":"US"} hourCycles => [h12,h23]
+65 he-IL {"script":"Latn"} hourCycles => [h23,h12]
+
+# The profile's NumberFormat supports German and English only. ECMA-402 (15.5.12
+# NumberingSystemsOfLocale) answers latn for a locale it does not support, where Node answers the
+# locale's default numbering system.
+15 ar-EG numberingSystems => [latn]
+17 fa-IR numberingSystems => [latn]

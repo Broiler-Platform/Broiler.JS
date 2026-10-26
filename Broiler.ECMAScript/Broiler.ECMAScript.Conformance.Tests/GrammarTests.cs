@@ -50,6 +50,28 @@ public class GrammarTests
         Assert.DoesNotContain(Validate("prov", "ucd:" + Sources.UnicodeVersion + "/PropList.txt"), d => d.Code == "bad-provenance");
     }
 
+    [Fact]
+    public void An_ECMA_402_clause_names_the_pinned_ECMA_402_revision_and_may_hold_upper_case_letters()
+    {
+        // Corpus revision 27: sources/ecma402.pin, and ECMA-402's ids such as sec-Intl.DisplayNames.prototype.of.
+        var pinned = Assert.IsType<string>(Sources.InternationalizationRevision);
+        Assert.DoesNotContain(Validate("prov", "spec:ecma402@" + pinned[..7] + "#sec-Intl.DisplayNames.prototype.of"), d => d.Code == "bad-provenance");
+        Assert.DoesNotContain(Validate("prov", "spec:ecma402@" + pinned + "#sec-resolveplural"), d => d.Code == "bad-provenance");
+        Assert.Contains(Validate("prov", "spec:ecma402@" + Sources.SpecificationRevision[..7] + "#sec-resolveplural"), d => d.Code == "bad-provenance");
+        Assert.Contains(Validate("prov", "spec:es2026@" + pinned[..7] + "#sec-x"), d => d.Code == "bad-provenance");
+    }
+
+    [Fact]
+    public void A_corpus_without_an_ECMA_402_pin_refuses_every_ECMA_402_clause()
+    {
+        var unpinned = Sources with { InternationalizationRevision = null };
+        var validator = new VectorValidator(unpinned);
+        var record = Home.Corpus.Records.First(r => r["area"] == "numbers")
+            .With("prov", "spec:ecma402@" + Sources.InternationalizationRevision![..7] + "#sec-resolveplural");
+        validator.Validate(new VectorFile("changed.vectors", [record], []));
+        Assert.Contains(validator.Diagnostics, d => d.Code == "bad-provenance");
+    }
+
     [Theory]
     [InlineData("spec:es2026@abcdef#sec-x")] // six hexadecimal digits
     [InlineData("spec:es2026@ABCDEF0#sec-x")] // uppercase
@@ -58,6 +80,7 @@ public class GrammarTests
     [InlineData("spec:es2026@abcdef0")]
     [InlineData("spec:@abcdef0#sec-x")]
     [InlineData("spec:es2026@abcdef0#sec-x_y")]
+    [InlineData("spec:ecma402@abcdef0#sec-Intl x")]
     [InlineData("test262:.js")]
     [InlineData("test262:a.mjs")]
     [InlineData("test262:a b.js")]
@@ -137,6 +160,12 @@ public class GrammarTests
         Assert.Throws<FormatException>(() => VectorSources.Parse("| 1 | 2026-10-11 | x |\n| 3 | 2026-10-12 | x |\n", "revision a\n", "version b\n"));
         Assert.Throws<FormatException>(() => VectorSources.Parse("no table\n", "revision a\n", "version b\n"));
         Assert.Throws<FormatException>(() => VectorSources.Parse("| 1 | 2026-10-11 | x |\n", "# revision a\n", "version b\n"));
+
+        // Corpus revision 27: sources/ecma402.pin, when the corpus has one.
+        var withEcma402 = VectorSources.Parse(revisions, "revision abc123\n", "version 17.0.0\n", "# pin\nrevision def456\n");
+        Assert.Equal(new VectorSources(2, "abc123", "17.0.0") { InternationalizationRevision = "def456" }, withEcma402);
+        Assert.Null(VectorSources.Parse(revisions, "revision abc123\n", "version 17.0.0\n", null).InternationalizationRevision);
+        Assert.Throws<FormatException>(() => VectorSources.Parse(revisions, "revision a\n", "version b\n", "# revision c\n"));
     }
 
     [Fact]

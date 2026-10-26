@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   11
-// Annotated:        11/11
-// Exempt:           5
-// Human-reviewed:   0/11
+// Relevant units:   12
+// Annotated:        12/12
+// Exempt:           6
+// Human-reviewed:   0/12
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  2/10 max
-// Unverified:       11
+// Unverified:       12
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -31,15 +31,38 @@ namespace Broiler.ECMAScript.Conformance;
 // Broiler-Human:        PENDING
 public sealed record VectorSources(int Revision, string SpecificationRevision, string UnicodeVersion)
 {
+    /// <summary>
+    /// The ECMA-402 commit sources/ecma402.pin names, which a <c>spec:ecma402@</c> provenance entry must
+    /// name; <see langword="null"/> when the corpus pins no ECMA-402 text, as before corpus revision 27.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=73B7D2
+    // Broiler-Human:        PENDING
+    public string? InternationalizationRevision { get; init; }
+
     /// <summary>Reads the pins from the text of the three documents that hold them.</summary>
     /// <param name="revisions">REVISIONS.md.</param>
     /// <param name="ecma262Pin">sources/ecma262.pin.</param>
     /// <param name="unicodePin">sources/unicode.pin.</param>
     /// <returns>The revision and the two pins.</returns>
     /// <exception cref="FormatException">REVISIONS.md does not list revisions 1, 2, ... in order, or a pin has no value.</exception>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=5E0435
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=181CBB
     // Broiler-Human:        PENDING
-    public static VectorSources Parse(string revisions, string ecma262Pin, string unicodePin)
+    public static VectorSources Parse(string revisions, string ecma262Pin, string unicodePin) =>
+        Parse(revisions, ecma262Pin, unicodePin, null);
+
+    /// <summary>
+    /// Reads the pins from the text of the documents that hold them, sources/ecma402.pin among them when
+    /// the corpus has one (corpus revision 27).
+    /// </summary>
+    /// <param name="revisions">REVISIONS.md.</param>
+    /// <param name="ecma262Pin">sources/ecma262.pin.</param>
+    /// <param name="unicodePin">sources/unicode.pin.</param>
+    /// <param name="ecma402Pin">sources/ecma402.pin, or <see langword="null"/> when the corpus has none.</param>
+    /// <returns>The revision and the pins.</returns>
+    /// <exception cref="FormatException">REVISIONS.md does not list revisions 1, 2, ... in order, or a pin has no value.</exception>
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=FB6703
+    // Broiler-Human:        PENDING
+    public static VectorSources Parse(string revisions, string ecma262Pin, string unicodePin, string? ecma402Pin)
     {
         ArgumentNullException.ThrowIfNull(revisions);
         ArgumentNullException.ThrowIfNull(ecma262Pin);
@@ -58,7 +81,10 @@ public sealed record VectorSources(int Revision, string SpecificationRevision, s
         if (last == 0)
             throw new FormatException("REVISIONS.md lists no revision");
 
-        return new VectorSources(last, PinValue(ecma262Pin, "ecma262.pin", "revision"), PinValue(unicodePin, "unicode.pin", "version"));
+        return new VectorSources(last, PinValue(ecma262Pin, "ecma262.pin", "revision"), PinValue(unicodePin, "unicode.pin", "version"))
+        {
+            InternationalizationRevision = ecma402Pin is null ? null : PinValue(ecma402Pin, "ecma402.pin", "revision"),
+        };
     }
 
     /// <summary>A row of REVISIONS.md's table: <c>| N | YYYY-MM-DD |</c> at the start of the line.</summary>
