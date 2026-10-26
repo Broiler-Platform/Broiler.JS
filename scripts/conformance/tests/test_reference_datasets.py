@@ -669,6 +669,12 @@ class RunTests(unittest.TestCase):
             self.assertEqual(["locales", "timezones"], list(summary["programs"]))
             identity = (root / "out" / "identity.txt").read_text(encoding="utf-8")
             self.assertIn("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 (invariant globalization)", identity)
+            # The harness's own value is labelled as the harness's, so it does not read as the child's.
+            harness = [line for line in identity.splitlines() if line.startswith("harness environment: ")]
+            self.assertEqual(1, len(harness))
+            self.assertIn(", DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=", harness[0])
+            self.assertFalse([line for line in identity.splitlines()
+                              if line.startswith("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT")])
             report = (root / "out" / "report.txt").read_text(encoding="utf-8")
             self.assertTrue(report.startswith("Reference datasets, bundle sjl-9-001's rule, part D: one run under "
                                               "invariant globalization"))

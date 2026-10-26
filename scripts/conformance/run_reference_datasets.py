@@ -785,9 +785,10 @@ def identity_lines(bundle: Bundle, label: str, tree: Path, dll: Path, built: lis
         f"dotnet runtime: {runtimes[-1] if runtimes else 'unknown'}",
         f"machine: {os_release()}; {platform.system()} {platform.release()} {platform.machine()}; {cpu_model()}; {os.cpu_count()} logical CPUs",
         f"child environment: {environment_description(invariant)}",
+        # The harness's own environment; the child's, which the programs run in, is the line above.
         f"harness environment: TZ={os.environ.get('TZ', '(unset)')}, LANG={os.environ.get('LANG', '(unset)')}, "
-        f"LC_ALL={os.environ.get('LC_ALL', '(unset)')}",
-        f"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: {os.environ.get('DOTNET_SYSTEM_GLOBALIZATION_INVARIANT', '(unset)')}",
+        f"LC_ALL={os.environ.get('LC_ALL', '(unset)')}, "
+        f"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT={os.environ.get('DOTNET_SYSTEM_GLOBALIZATION_INVARIANT', '(unset)')}",
         f"host ICU: {host_icu()}",
         f"host tzdata: {host_tzdata()}",
         f"harness commit: {harness_commit or 'unknown'}",
