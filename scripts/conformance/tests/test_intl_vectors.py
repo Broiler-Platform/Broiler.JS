@@ -123,6 +123,25 @@ class DivergenceFileTests(unittest.TestCase):
             path.write_text("# c\nreason a: row L2: x\nbroiler-js a intl/x/y/0001\n", encoding="utf-8")
             self.assertEqual({"intl/x/y/0001": {"broiler-js": "row L2: x"}}, generator.read_divergences(path))
 
+    def test_a_classified_impl_defined_vector_states_the_engine_s_expectation_or_is_refused(self) -> None:
+        case = generator.Case(sub="a", group="g", op="Intl.getCanonicalLocales",
+                              script='Intl.getCanonicalLocales("en")[0]', inputs=("en",), rows=("L40",), clauses=(),
+                              note="row L40")
+        out = 'value: str:"en"'
+        vm = {"broiler-vm": 'value: str:"de"'}
+        compared = generator.Vector(case, out, "impl-defined", dict(vm), ["ref:intlref@1"],
+                                    ["row L40: Broiler.JS is compared with the reference"])
+        record = generator.render_record(compared, "intl/a/g/0001", {"broiler-js": "row L40: x"})
+        self.assertIn(f"per-engine.broiler-js: {out}\nper-engine.broiler-vm: {vm['broiler-vm']}\n"
+                      "divergence.broiler-js: row L40: x\n", record)
+        self.assertIn("class: impl-defined\n", record)
+        silent = generator.Vector(case, out, "impl-defined", dict(vm), ["ref:intlref@1"], ["row L40"])
+        with self.assertRaises(generator.GeneratorError):
+            generator.render_record(silent, "intl/a/g/0001", {"broiler-js": "row L40: x"})
+        normative = generator.Vector(case, out, "normative", {}, ["ref:intlref@1"], ["row L40"])
+        self.assertIn("class: divergence\ndivergence.broiler-js: row L40: x\n",
+                      generator.render_record(normative, "intl/a/g/0001", {"broiler-js": "row L40: x"}))
+
 
 class CommittedFileTests(unittest.TestCase):
     """The committed files' shape, read the schema's way; no reference needed."""

@@ -12,7 +12,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF2666666666666
 out: value: str:"1.2"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 1}).format($f64(0x3ff26666, 0x66666666))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumFractionDigits: 1}
@@ -45,7 +46,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF7333333333333
 out: value: str:"1.5"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 1}).format($f64(0x3ff73333, 0x33333333))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumFractionDigits: 1}
@@ -56,7 +58,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0xBFF2666666666666
 out: value: str:"-1.2"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 1}).format($f64(0xbff26666, 0x66666666))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumFractionDigits: 1}
@@ -67,7 +70,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF0147AE147AE14
 out: value: str:"1.01"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 2}).format($f64(0x3ff0147a, 0xe147ae14))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumFractionDigits: 2}
@@ -78,7 +82,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x4005666666666666
 out: value: str:"2.68"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 2}).format($f64(0x40056666, 0x66666666))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumFractionDigits: 2}
@@ -89,7 +94,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF4147AE147AE14
 out: value: str:"1.26"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 2}).format($f64(0x3ff4147a, 0xe147ae14))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumFractionDigits: 2}
@@ -111,7 +117,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FE3AE147AE147AE
 out: value: str:"0.62"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 2}).format($f64(0x3fe3ae14, 0x7ae147ae))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumFractionDigits: 2}
@@ -122,7 +129,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF03D70A3D70A3D
 out: value: str:"1.02"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 2, roundingMode: "halfEven"}).format($f64(0x3ff03d70, 0xa3d70a3d))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumFractionDigits: 2, roundingMode: "halfEven"}
@@ -155,7 +163,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF0147AE147AE14
 out: value: str:"1.005"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {minimumSignificantDigits: 4}).format($f64(0x3ff0147a, 0xe147ae14))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {minimumSignificantDigits: 4}
@@ -166,7 +175,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FD3333333333334
 out: value: str:"0.30000000000000004"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumSignificantDigits: 21}).format($f64(0x3fd33333, 0x33333334))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumSignificantDigits: 21}
@@ -177,7 +187,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x0000000000000001
 out: value: str:"0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumSignificantDigits: 21}).format($f64(0x00000000, 0x00000001))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumSignificantDigits: 21}
@@ -188,7 +199,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x7FEFFFFFFFFFFFFF
 out: value: str:"179,769,313,486,231,570,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumSignificantDigits: 21}).format($f64(0x7fefffff, 0xffffffff))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumSignificantDigits: 21}
@@ -199,7 +211,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FB999999999999A
 out: value: str:"0.1"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 20}).format($f64(0x3fb99999, 0x9999999a))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumFractionDigits: 20}
@@ -210,7 +223,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x4023FD70A3D70A3D
 out: value: str:"10"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumSignificantDigits: 3}).format($f64(0x4023fd70, 0xa3d70a3d))
 note: row M1a: ToIntlMathematicalValue reads Number::toString's digits; {maximumSignificantDigits: 3}
@@ -232,7 +246,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF0147AE147AE14
 out: value: str:"$1.01"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {style: "currency", currency: "USD"}).format($f64(0x3ff0147a, 0xe147ae14))
 note: row M1a, through another path
@@ -243,7 +258,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF0147AE147AE14
 out: value: str:"1.01"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: ($f64(0x3ff0147a, 0xe147ae14)).toLocaleString("en", {maximumFractionDigits: 2})
 note: row M1a, through another path
@@ -254,7 +270,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x4005666666666666
 out: value: str:"[{\"type\":\"integer\",\"value\":\"2\"},{\"type\":\"decimal\",\"value\":\".\"},{\"type\":\"fraction\",\"value\":\"68\"}]"
-class: normative
+class: divergence
+divergence.broiler-js: row M1a: A Number formatted with digit options: `{maximumFractionDigits: 1}` over 1.15, 1.25, 1.35, 1.45, -1.15 ...; Broiler.JS answers the exact binary value: `"1.1"`, `"1.3"`, `"1.4"`, `"1.4"`, `"-1.1"`; `"1"`, `"2.67"`, `"1.25"`, `"8.35"`, `"0.61"`; `"1.01"`, `"1.02"`, `"0.12"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: JSON.stringify(new Intl.NumberFormat("en", {maximumFractionDigits: 2}).formatToParts($f64(0x40056666, 0x66666666)))
 note: row M1a, through another path
@@ -265,7 +282,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en"
 out: value: str:"1.2"
-class: normative
+class: divergence
+divergence.broiler-js: row M1b: An object whose ToPrimitive is a String: `format({valueOf: () => "1.15"})` with `{maximumFractionDigits: 1}` ...; Broiler.JS answers `"1.1"`, `"1.1"`, `"9,007,199,254,740,992"`: `ExactMagnitude` tests `value.IsString` on the argument, not on its primitive ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 1}).format({valueOf: function () { return "1.15"; }})
 note: row M1b: ToPrimitive first, once, then the String's exact value
@@ -276,7 +294,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en"
 out: value: str:"1.2"
-class: normative
+class: divergence
+divergence.broiler-js: row M1b: An object whose ToPrimitive is a String: `format({valueOf: () => "1.15"})` with `{maximumFractionDigits: 1}` ...; Broiler.JS answers `"1.1"`, `"1.1"`, `"9,007,199,254,740,992"`: `ExactMagnitude` tests `value.IsString` on the argument, not on its primitive ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 1}).format({toString: function () { return "1.15"; }, valueOf: undefined})
 note: row M1b: ToPrimitive first, once, then the String's exact value
@@ -287,7 +306,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en"
 out: value: str:"9,007,199,254,740,993"
-class: normative
+class: divergence
+divergence.broiler-js: row M1b: An object whose ToPrimitive is a String: `format({valueOf: () => "1.15"})` with `{maximumFractionDigits: 1}` ...; Broiler.JS answers `"1.1"`, `"1.1"`, `"9,007,199,254,740,992"`: `ExactMagnitude` tests `value.IsString` on the argument, not on its primitive ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue ref:intlref@1
 script: new Intl.NumberFormat("en").format({valueOf: function () { return "9007199254740993"; }})
 note: row M1b: ToPrimitive first, once, then the String's exact value
@@ -375,7 +395,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" str:"2.4703282292062327e-324"
 out: value: str:"0"
-class: normative
+class: divergence
+divergence.broiler-js: row M2b: RoundMVResult's zero edge for a String: `{maximumSignificantDigits: 2}` over `"2.4703282292062327e-324"` (to + ...; Broiler.JS answers the exact tiny value, formatted: `"0.000...0025"`, a 402-character and a 403-character string, `"0.1"`. Only the double decides the sign and NaN; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=value:str:"0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000025"
 script: new Intl.NumberFormat("en", {maximumSignificantDigits: 2}).format("2.4703282292062327e-324")
 note: row M2b: a String whose value rounds to zero, or past the Number range, as a Number: ToIntlMathematicalValue answers 0, negative-zero or an infinity; ToIntlMathematicalValue returns 0, or negative-zero for a negative value, when RoundMVResult of the String's value is +0 as a Number, so the formatter writes 0 whatever the digit options (the reference answered str:"0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000025")
@@ -386,7 +407,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" str:"1e-400"
 out: value: str:"0"
-class: normative
+class: divergence
+divergence.broiler-js: row M2b: RoundMVResult's zero edge for a String: `{maximumSignificantDigits: 2}` over `"2.4703282292062327e-324"` (to + ...; Broiler.JS answers the exact tiny value, formatted: `"0.000...0025"`, a 402-character and a 403-character string, `"0.1"`. Only the double decides the sign and NaN; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=value:str:"0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"
 script: new Intl.NumberFormat("en", {maximumSignificantDigits: 2}).format("1e-400")
 note: row M2b: a String whose value rounds to zero, or past the Number range, as a Number: ToIntlMathematicalValue answers 0, negative-zero or an infinity; ToIntlMathematicalValue returns 0, or negative-zero for a negative value, when RoundMVResult of the String's value is +0 as a Number, so the formatter writes 0 whatever the digit options (the reference answered str:"0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
@@ -397,7 +419,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" str:"-1e-400"
 out: value: str:"-0"
-class: normative
+class: divergence
+divergence.broiler-js: row M2b: RoundMVResult's zero edge for a String: `{maximumSignificantDigits: 2}` over `"2.4703282292062327e-324"` (to + ...; Broiler.JS answers the exact tiny value, formatted: `"0.000...0025"`, a 402-character and a 403-character string, `"0.1"`. Only the double decides the sign and NaN; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=value:str:"-0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"
 script: new Intl.NumberFormat("en", {maximumSignificantDigits: 2}).format("-1e-400")
 note: row M2b: a String whose value rounds to zero, or past the Number range, as a Number: ToIntlMathematicalValue answers 0, negative-zero or an infinity; ToIntlMathematicalValue returns 0, or negative-zero for a negative value, when RoundMVResult of the String's value is +0 as a Number, so the formatter writes 0 whatever the digit options (the reference answered str:"-0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
@@ -408,7 +431,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" str:"1e-400"
 out: value: str:"0"
-class: normative
+class: divergence
+divergence.broiler-js: row M2b: RoundMVResult's zero edge for a String: `{maximumSignificantDigits: 2}` over `"2.4703282292062327e-324"` (to + ...; Broiler.JS answers the exact tiny value, formatted: `"0.000...0025"`, a 402-character and a 403-character string, `"0.1"`. Only the double decides the sign and NaN; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=value:str:"0.1"
 script: new Intl.NumberFormat("en", {roundingMode: "ceil", maximumFractionDigits: 1}).format("1e-400")
 note: row M2b: a String whose value rounds to zero, or past the Number range, as a Number: ToIntlMathematicalValue answers 0, negative-zero or an infinity; ToIntlMathematicalValue returns 0, or negative-zero for a negative value, when RoundMVResult of the String's value is +0 as a Number, so the formatter writes 0 whatever the digit options (the reference answered str:"0.1")
@@ -452,7 +476,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" bigint:123456789012345678901
 out: value: str:"1.23456789012345678901E20"
-class: normative
+class: divergence
+divergence.broiler-js: row M3: A BigInt: the default format of a 23-digit BigInt; `{notation: "scientific"` and `"engineering" ...; Broiler.JS answers exact in standard notation, but scientific and engineering go through the double: `"1.23456789012345683968E20"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue ref:intlref@1
 script: new Intl.NumberFormat("en", {notation: "scientific", maximumSignificantDigits: 21}).format(123456789012345678901n)
 note: row M3: a BigInt's exact value in every notation, beyond the Number range too
@@ -463,7 +488,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" bigint:123456789012345678901
 out: value: str:"123.456789012345678901E18"
-class: normative
+class: divergence
+divergence.broiler-js: row M3: A BigInt: the default format of a 23-digit BigInt; `{notation: "scientific"` and `"engineering" ...; Broiler.JS answers exact in standard notation, but scientific and engineering go through the double: `"1.23456789012345683968E20"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue ref:intlref@1
 script: new Intl.NumberFormat("en", {notation: "engineering", maximumSignificantDigits: 21}).format(123456789012345678901n)
 note: row M3: a BigInt's exact value in every notation, beyond the Number range too
@@ -474,7 +500,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" bigint:1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 out: value: str:"1,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000"
-class: normative
+class: divergence
+divergence.broiler-js: row M3: A BigInt: the default format of a 23-digit BigInt; `{notation: "scientific"` and `"engineering" ...; Broiler.JS answers exact in standard notation, but scientific and engineering go through the double: `"1.23456789012345683968E20"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue ref:intlref@1
 script: new Intl.NumberFormat("en").format(10n ** 309n)
 note: row M3: a BigInt's exact value in every notation, beyond the Number range too
@@ -485,7 +512,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" bigint:-10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 out: value: str:"-10,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000"
-class: normative
+class: divergence
+divergence.broiler-js: row M3: A BigInt: the default format of a 23-digit BigInt; `{notation: "scientific"` and `"engineering" ...; Broiler.JS answers exact in standard notation, but scientific and engineering go through the double: `"1.23456789012345683968E20"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue ref:intlref@1
 script: new Intl.NumberFormat("en").format(-(10n ** 400n))
 note: row M3: a BigInt's exact value in every notation, beyond the Number range too
@@ -507,7 +535,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" bigint:5
 out: value: str:"5"
-class: normative
+class: divergence
+divergence.broiler-js: row M3: A BigInt: the default format of a 23-digit BigInt; `{notation: "scientific"` and `"engineering" ...; Broiler.JS answers exact in standard notation, but scientific and engineering go through the double: `"1.23456789012345683968E20"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue ref:intlref@1
 script: new Intl.NumberFormat("en").format(Object(5n))
 note: row M3: a BigInt wrapper, through ToPrimitive
@@ -518,7 +547,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" bigint:123456789012345678901
 out: value: str:"1.23456789012345678901E20"
-class: normative
+class: divergence
+divergence.broiler-js: row M3: A BigInt: the default format of a 23-digit BigInt; `{notation: "scientific"` and `"engineering" ...; Broiler.JS answers exact in standard notation, but scientific and engineering go through the double: `"1.23456789012345683968E20"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-tointlmathematicalvalue ref:intlref@1
 script: (123456789012345678901n).toLocaleString("en", {notation: "scientific", maximumSignificantDigits: 21})
 note: row M3, through toLocaleString
@@ -551,7 +581,8 @@ area: intl
 op: Intl.NumberFormat (option coercions)
 in: str:"en"
 out: value: f64:0x3FF0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: row M4: SetNumberFormatDigitOptions' reads, coercions and refusals (`sec-setnumberformatdigitoptions`): the read order ...; Broiler.JS answers the same read order, and the same refusals of out-of-range values and invalid names. But: min > max is accepted for both fraction and significant digits ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-defaultnumberoption ref:intlref@1
 script: (function () { var n = 0; var v = {valueOf: function () { n++; return 2; }}; var f = new Intl.NumberFormat("en", {maximumFractionDigits: v, minimumSignificantDigits: v}); f.format(1); f.resolvedOptions(); return n; })()
 note: row M4: each option converted once, at construction, and mxfd never when significant digits win
@@ -562,7 +593,8 @@ area: intl
 op: Intl.NumberFormat (resolvedOptions)
 in: str:"en"
 out: value: str:"number"
-class: normative
+class: divergence
+divergence.broiler-js: row M4: SetNumberFormatDigitOptions' reads, coercions and refusals (`sec-setnumberformatdigitoptions`): the read order ...; Broiler.JS answers the same read order, and the same refusals of out-of-range values and invalid names. But: min > max is accepted for both fraction and significant digits ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.numberformat.prototype.resolvedoptions ref:intlref@1
 script: typeof new Intl.NumberFormat("en", {minimumSignificantDigits: {valueOf: function () { return 2; }}}).resolvedOptions().minimumSignificantDigits
 note: row M4: the resolved digit option is a Number
@@ -573,7 +605,8 @@ area: intl
 op: Intl.NumberFormat (refusals)
 in: str:"en"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row M4: SetNumberFormatDigitOptions' reads, coercions and refusals (`sec-setnumberformatdigitoptions`): the read order ...; Broiler.JS answers the same read order, and the same refusals of out-of-range values and invalid names. But: min > max is accepted for both fraction and significant digits ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-defaultnumberoption spec:ecma402@3d4c558#sec-getoption ref:intlref@1
 script: new Intl.NumberFormat("en", {minimumFractionDigits: 3, maximumFractionDigits: 2}).format(1)
 note: row M4: {minimumFractionDigits: 3, maximumFractionDigits: 2} is refused
@@ -584,7 +617,8 @@ area: intl
 op: Intl.NumberFormat (refusals)
 in: str:"en"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row M4: SetNumberFormatDigitOptions' reads, coercions and refusals (`sec-setnumberformatdigitoptions`): the read order ...; Broiler.JS answers the same read order, and the same refusals of out-of-range values and invalid names. But: min > max is accepted for both fraction and significant digits ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-defaultnumberoption spec:ecma402@3d4c558#sec-getoption ref:intlref@1
 script: new Intl.NumberFormat("en", {minimumSignificantDigits: 5, maximumSignificantDigits: 4}).format(1)
 note: row M4: {minimumSignificantDigits: 5, maximumSignificantDigits: 4} is refused
@@ -738,7 +772,8 @@ area: intl
 op: Intl.NumberFormat.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[1,0,0,null,null,1,\"halfExpand\",\"auto\",\"auto\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.numberformat spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-intl.numberformat.prototype.resolvedoptions ref:intlref@1
 script: (function (o) { return JSON.stringify([o.minimumIntegerDigits, o.minimumFractionDigits, o.maximumFractionDigits, o.minimumSignificantDigits, o.maximumSignificantDigits, o.roundingIncrement, o.roundingMode, o.roundingPriority, o.trailingZeroDisplay]); })(new Intl.NumberFormat("en", {style: "percent"}).resolvedOptions())
 note: row M5: the digit options {style: "percent"} resolve to
@@ -749,7 +784,8 @@ area: intl
 op: Intl.NumberFormat.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[1,1,1,null,null,1,\"halfExpand\",\"auto\",\"auto\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.numberformat spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-intl.numberformat.prototype.resolvedoptions ref:intlref@1
 script: (function (o) { return JSON.stringify([o.minimumIntegerDigits, o.minimumFractionDigits, o.maximumFractionDigits, o.minimumSignificantDigits, o.maximumSignificantDigits, o.roundingIncrement, o.roundingMode, o.roundingPriority, o.trailingZeroDisplay]); })(new Intl.NumberFormat("en", {style: "percent", minimumFractionDigits: 1}).resolvedOptions())
 note: row M5: the digit options {style: "percent", minimumFractionDigits: 1} resolve to
@@ -793,7 +829,8 @@ area: intl
 op: Intl.NumberFormat.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[1,0,0,1,2,1,\"halfExpand\",\"morePrecision\",\"auto\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.numberformat spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-intl.numberformat.prototype.resolvedoptions ref:intlref@1
 script: (function (o) { return JSON.stringify([o.minimumIntegerDigits, o.minimumFractionDigits, o.maximumFractionDigits, o.minimumSignificantDigits, o.maximumSignificantDigits, o.roundingIncrement, o.roundingMode, o.roundingPriority, o.trailingZeroDisplay]); })(new Intl.NumberFormat("en", {notation: "compact"}).resolvedOptions())
 note: row M5: the digit options {notation: "compact"} resolve to
@@ -804,7 +841,8 @@ area: intl
 op: Intl.NumberFormat.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[1,0,0,1,2,1,\"halfExpand\",\"morePrecision\",\"auto\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.numberformat spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-intl.numberformat.prototype.resolvedoptions ref:intlref@1
 script: (function (o) { return JSON.stringify([o.minimumIntegerDigits, o.minimumFractionDigits, o.maximumFractionDigits, o.minimumSignificantDigits, o.maximumSignificantDigits, o.roundingIncrement, o.roundingMode, o.roundingPriority, o.trailingZeroDisplay]); })(new Intl.NumberFormat("en", {style: "currency", currency: "USD", notation: "compact"}).resolvedOptions())
 note: row M5: the digit options {style: "currency", currency: "USD", notation: "compact"} resolve to
@@ -837,7 +875,8 @@ area: intl
 op: Intl.NumberFormat.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[1,null,null,1,3,1,\"halfExpand\",\"auto\",\"auto\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.numberformat spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-intl.numberformat.prototype.resolvedoptions ref:intlref@1
 script: (function (o) { return JSON.stringify([o.minimumIntegerDigits, o.minimumFractionDigits, o.maximumFractionDigits, o.minimumSignificantDigits, o.maximumSignificantDigits, o.roundingIncrement, o.roundingMode, o.roundingPriority, o.trailingZeroDisplay]); })(new Intl.NumberFormat("en", {maximumSignificantDigits: 3}).resolvedOptions())
 note: row M5: the digit options {maximumSignificantDigits: 3} resolve to
@@ -848,7 +887,8 @@ area: intl
 op: Intl.NumberFormat.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[1,0,3,1,21,1,\"halfExpand\",\"morePrecision\",\"auto\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.numberformat spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-intl.numberformat.prototype.resolvedoptions ref:intlref@1
 script: (function (o) { return JSON.stringify([o.minimumIntegerDigits, o.minimumFractionDigits, o.maximumFractionDigits, o.minimumSignificantDigits, o.maximumSignificantDigits, o.roundingIncrement, o.roundingMode, o.roundingPriority, o.trailingZeroDisplay]); })(new Intl.NumberFormat("en", {roundingPriority: "morePrecision"}).resolvedOptions())
 note: row M5: the digit options {roundingPriority: "morePrecision"} resolve to
@@ -859,7 +899,8 @@ area: intl
 op: Intl.NumberFormat.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[1,0,3,1,21,1,\"halfExpand\",\"lessPrecision\",\"auto\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.numberformat spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-intl.numberformat.prototype.resolvedoptions ref:intlref@1
 script: (function (o) { return JSON.stringify([o.minimumIntegerDigits, o.minimumFractionDigits, o.maximumFractionDigits, o.minimumSignificantDigits, o.maximumSignificantDigits, o.roundingIncrement, o.roundingMode, o.roundingPriority, o.trailingZeroDisplay]); })(new Intl.NumberFormat("en", {roundingPriority: "lessPrecision"}).resolvedOptions())
 note: row M5: the digit options {roundingPriority: "lessPrecision"} resolve to
@@ -870,7 +911,8 @@ area: intl
 op: Intl.NumberFormat.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[1,2,2,null,null,25,\"halfExpand\",\"auto\",\"auto\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.numberformat spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-intl.numberformat.prototype.resolvedoptions overruled:intlref@1=error:RangeError
 script: (function (o) { return JSON.stringify([o.minimumIntegerDigits, o.minimumFractionDigits, o.maximumFractionDigits, o.minimumSignificantDigits, o.maximumSignificantDigits, o.roundingIncrement, o.roundingMode, o.roundingPriority, o.trailingZeroDisplay]); })(new Intl.NumberFormat("en", {roundingIncrement: 25, minimumFractionDigits: 2}).resolvedOptions())
 note: row M5: the digit options {roundingIncrement: 25, minimumFractionDigits: 2} resolve to; SetNumberFormatDigitOptions sets mxfdDefault to mnfdDefault when roundingIncrement is not 1, so the maximum resolves to the minimum and the increment's check passes; the value rounds to the increment (the reference answered error: RangeError)
@@ -881,7 +923,8 @@ area: intl
 op: Intl.NumberFormat.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[1,0,0,null,null,5,\"halfExpand\",\"auto\",\"auto\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.numberformat spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-intl.numberformat.prototype.resolvedoptions overruled:intlref@1=error:RangeError
 script: (function (o) { return JSON.stringify([o.minimumIntegerDigits, o.minimumFractionDigits, o.maximumFractionDigits, o.minimumSignificantDigits, o.maximumSignificantDigits, o.roundingIncrement, o.roundingMode, o.roundingPriority, o.trailingZeroDisplay]); })(new Intl.NumberFormat("en", {roundingIncrement: 5}).resolvedOptions())
 note: row M5: the digit options {roundingIncrement: 5} resolve to; SetNumberFormatDigitOptions sets mxfdDefault to mnfdDefault when roundingIncrement is not 1, so the maximum resolves to the minimum and the increment's check passes; the value rounds to the increment (the reference answered error: RangeError)
@@ -892,7 +935,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FC0000000000000
 out: value: str:"13%"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {style: "percent"}).format($f64(0x3fc00000, 0x00000000))
 note: row M5: {style: "percent"} formats
@@ -903,7 +947,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FE028F5C28F5C29
 out: value: str:"51%"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {style: "percent"}).format($f64(0x3fe028f5, 0xc28f5c29))
 note: row M5: {style: "percent"} formats
@@ -914,7 +959,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3F741205BC01A36E
 out: value: str:"0%"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {style: "percent"}).format($f64(0x3f741205, 0xbc01a36e))
 note: row M5: {style: "percent"} formats
@@ -925,7 +971,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF2147AE147AE14
 out: value: str:"1.25"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-formatnumerictostring overruled:intlref@1=error:RangeError
 script: new Intl.NumberFormat("en", {roundingIncrement: 25, minimumFractionDigits: 2}).format($f64(0x3ff2147a, 0xe147ae14))
 note: row M5: {roundingIncrement: 25, minimumFractionDigits: 2} formats; SetNumberFormatDigitOptions sets mxfdDefault to mnfdDefault when roundingIncrement is not 1, so the maximum resolves to the minimum and the increment's check passes; the value rounds to the increment (the reference answered error: RangeError)
@@ -936,7 +983,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x401C000000000000
 out: value: str:"5"
-class: normative
+class: divergence
+divergence.broiler-js: row M5: The defaults SetNumberFormatDigitOptions is handed, and `resolvedOptions`' digit properties: `{}` ...; Broiler.JS answers percent keeps 0/3: `"12.5%"`, `"50%"`, `"0.49%"`. Compact reports no significant digits and `"auto"`. `{maximumSignificantDigits: 3}` also reports fraction digits 0/3. le ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-formatnumerictostring overruled:intlref@1=error:RangeError
 script: new Intl.NumberFormat("en", {roundingIncrement: 5}).format(7)
 note: row M5: {roundingIncrement: 5} formats; SetNumberFormatDigitOptions sets mxfdDefault to mnfdDefault when roundingIncrement is not 1, so the maximum resolves to the minimum and the increment's check passes; the value rounds to the increment (the reference answered error: RangeError)
@@ -1178,7 +1226,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF599999999999A str:"halfFloor"
 out: value: str:"1.3"
-class: normative
+class: divergence
+divergence.broiler-js: rows M6 and M1a: Broiler.JS rounds a Number by its binary value, so 1.35, whose shortest digits ToIntlMathematicalValue reads as a tie, rounds up under halfFloor and halfTrunc (row M1a, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-applyunsignedroundingmode spec:ecma402@3d4c558#sec-tointlmathematicalvalue ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 1, roundingMode: "halfFloor"}).format($f64(0x3ff59999, 0x9999999a))
 note: row M6 (same): the rounding mode halfFloor; and row M1a: the value is Number::toString's digits, 1.35, a tie
@@ -1244,7 +1293,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF599999999999A str:"halfTrunc"
 out: value: str:"1.3"
-class: normative
+class: divergence
+divergence.broiler-js: rows M6 and M1a: Broiler.JS rounds a Number by its binary value, so 1.35, whose shortest digits ToIntlMathematicalValue reads as a tie, rounds up under halfFloor and halfTrunc (row M1a, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-applyunsignedroundingmode spec:ecma402@3d4c558#sec-tointlmathematicalvalue ref:intlref@1
 script: new Intl.NumberFormat("en", {maximumFractionDigits: 1, roundingMode: "halfTrunc"}).format($f64(0x3ff59999, 0x9999999a))
 note: row M6 (same): the rounding mode halfTrunc; and row M1a: the value is Number::toString's digits, 1.35, a tie
@@ -1288,7 +1338,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x4014000000000000
 out: value: str:"5"
-class: normative
+class: divergence
+divergence.broiler-js: row M7: `trailingZeroDisplay: "stripIfInteger"`: `{minimumFractionDigits: 2}` over 5, 5.1, 4.9999, 5.001 ...; Broiler.JS answers the option is read, validated and reported, but never applied: `"5.00"`, `"5.10"`, `"5.00"`, `"5.001"`; `"1.0"`; `"U+20AC5.00"`; `"5.0%"`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {minimumFractionDigits: 2, trailingZeroDisplay: "stripIfInteger"}).format(5)
 note: row M7: stripIfInteger cuts an integral value at its point
@@ -1310,7 +1361,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x4013FFE5C91D14E4
 out: value: str:"5"
-class: normative
+class: divergence
+divergence.broiler-js: row M7: `trailingZeroDisplay: "stripIfInteger"`: `{minimumFractionDigits: 2}` over 5, 5.1, 4.9999, 5.001 ...; Broiler.JS answers the option is read, validated and reported, but never applied: `"5.00"`, `"5.10"`, `"5.00"`, `"5.001"`; `"1.0"`; `"U+20AC5.00"`; `"5.0%"`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {minimumFractionDigits: 2, trailingZeroDisplay: "stripIfInteger"}).format($f64(0x4013ffe5, 0xc91d14e4))
 note: row M7: stripIfInteger cuts an integral value at its point
@@ -1332,7 +1384,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FF0000000000000
 out: value: str:"1"
-class: normative
+class: divergence
+divergence.broiler-js: row M7: `trailingZeroDisplay: "stripIfInteger"`: `{minimumFractionDigits: 2}` over 5, 5.1, 4.9999, 5.001 ...; Broiler.JS answers the option is read, validated and reported, but never applied: `"5.00"`, `"5.10"`, `"5.00"`, `"5.001"`; `"1.0"`; `"U+20AC5.00"`; `"5.0%"`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {minimumSignificantDigits: 2, maximumSignificantDigits: 2, trailingZeroDisplay: "stripIfInteger"}).format(1)
 note: row M7: stripIfInteger cuts an integral value at its point
@@ -1343,7 +1396,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x4014000000000000
 out: value: str:"\u20AC5"
-class: normative
+class: divergence
+divergence.broiler-js: row M7: `trailingZeroDisplay: "stripIfInteger"`: `{minimumFractionDigits: 2}` over 5, 5.1, 4.9999, 5.001 ...; Broiler.JS answers the option is read, validated and reported, but never applied: `"5.00"`, `"5.10"`, `"5.00"`, `"5.001"`; `"1.0"`; `"U+20AC5.00"`; `"5.0%"`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger"}).format(5)
 note: row M7: stripIfInteger cuts an integral value at its point
@@ -1354,7 +1408,8 @@ area: intl
 op: Intl.NumberFormat.prototype.format
 in: str:"en" f64:0x3FA999999999999A
 out: value: str:"5%"
-class: normative
+class: divergence
+divergence.broiler-js: row M7: `trailingZeroDisplay: "stripIfInteger"`: `{minimumFractionDigits: 2}` over 5, 5.1, 4.9999, 5.001 ...; Broiler.JS answers the option is read, validated and reported, but never applied: `"5.00"`, `"5.10"`, `"5.00"`, `"5.001"`; `"1.0"`; `"U+20AC5.00"`; `"5.0%"`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: new Intl.NumberFormat("en", {style: "percent", minimumFractionDigits: 1, trailingZeroDisplay: "stripIfInteger"}).format($f64(0x3fa99999, 0x9999999a))
 note: row M7: stripIfInteger cuts an integral value at its point
@@ -1365,7 +1420,8 @@ area: intl
 op: Intl.NumberFormat.prototype.formatToParts
 in: str:"en" f64:0x4014000000000000
 out: value: str:"[{\"type\":\"integer\",\"value\":\"5\"}]"
-class: normative
+class: divergence
+divergence.broiler-js: row M7: `trailingZeroDisplay: "stripIfInteger"`: `{minimumFractionDigits: 2}` over 5, 5.1, 4.9999, 5.001 ...; Broiler.JS answers the option is read, validated and reported, but never applied: `"5.00"`, `"5.10"`, `"5.00"`, `"5.001"`; `"1.0"`; `"U+20AC5.00"`; `"5.0%"`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-formatnumerictostring ref:intlref@1
 script: JSON.stringify(new Intl.NumberFormat("en", {minimumFractionDigits: 2, trailingZeroDisplay: "stripIfInteger"}).formatToParts(5))
 note: row M7, as parts
@@ -1387,7 +1443,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en" f64:0x3FF0000000000000
 out: value: str:"other"
-class: normative
+class: divergence
+divergence.broiler-js: row P1: `select` over FormatNumericToString's string: en `{minimumFractionDigits: 1}` 1; de the same ...; Broiler.JS answers selects over the double; the digit options are snapshotted and never applied: `"one"`, `"one"`, `"other"`, `"other"`, `"one"`, `"one"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: new Intl.PluralRules("en", {minimumFractionDigits: 1}).select(1)
 note: row P1: ResolvePlural selects over FormatNumericToString's string, with the digit options
@@ -1398,7 +1455,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"de" f64:0x3FF0000000000000
 out: value: str:"other"
-class: normative
+class: divergence
+divergence.broiler-js: row P1: `select` over FormatNumericToString's string: en `{minimumFractionDigits: 1}` 1; de the same ...; Broiler.JS answers selects over the double; the digit options are snapshotted and never applied: `"one"`, `"one"`, `"other"`, `"other"`, `"one"`, `"one"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: new Intl.PluralRules("de", {minimumFractionDigits: 1}).select(1)
 note: row P1: ResolvePlural selects over FormatNumericToString's string, with the digit options
@@ -1409,7 +1467,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en" f64:0x3FF6666666666666
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P1: `select` over FormatNumericToString's string: en `{minimumFractionDigits: 1}` 1; de the same ...; Broiler.JS answers selects over the double; the digit options are snapshotted and never applied: `"one"`, `"one"`, `"other"`, `"other"`, `"one"`, `"one"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: new Intl.PluralRules("en", {maximumFractionDigits: 0}).select($f64(0x3ff66666, 0x66666666))
 note: row P1: ResolvePlural selects over FormatNumericToString's string, with the digit options
@@ -1420,7 +1479,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en" f64:0x3FE3333333333333
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P1: `select` over FormatNumericToString's string: en `{minimumFractionDigits: 1}` 1; de the same ...; Broiler.JS answers selects over the double; the digit options are snapshotted and never applied: `"one"`, `"one"`, `"other"`, `"other"`, `"one"`, `"one"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: new Intl.PluralRules("en", {maximumFractionDigits: 0}).select($f64(0x3fe33333, 0x33333333))
 note: row P1: ResolvePlural selects over FormatNumericToString's string, with the digit options
@@ -1453,7 +1513,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en" f64:0x3FF0020C49BA5E35
 out: value: str:"other"
-class: normative
+class: divergence
+divergence.broiler-js: row P1: `select` over FormatNumericToString's string: en `{minimumFractionDigits: 1}` 1; de the same ...; Broiler.JS answers selects over the double; the digit options are snapshotted and never applied: `"one"`, `"one"`, `"other"`, `"other"`, `"one"`, `"one"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: new Intl.PluralRules("en", {}).select($f64(0x3ff0020c, 0x49ba5e35))
 note: row P1: ResolvePlural selects over FormatNumericToString's string, with the digit options
@@ -1475,7 +1536,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en" f64:0x3FF0000000000000
 out: value: str:"other"
-class: normative
+class: divergence
+divergence.broiler-js: row P1: `select` over FormatNumericToString's string: en `{minimumFractionDigits: 1}` 1; de the same ...; Broiler.JS answers selects over the double; the digit options are snapshotted and never applied: `"one"`, `"one"`, `"other"`, `"other"`, `"one"`, `"one"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: new Intl.PluralRules("en", {minimumSignificantDigits: 2}).select(1)
 note: row P1: ResolvePlural selects over FormatNumericToString's string, with the digit options
@@ -1486,7 +1548,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en" f64:0x3FFE666666666666
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P1: `select` over FormatNumericToString's string: en `{minimumFractionDigits: 1}` 1; de the same ...; Broiler.JS answers selects over the double; the digit options are snapshotted and never applied: `"one"`, `"one"`, `"other"`, `"other"`, `"one"`, `"one"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: new Intl.PluralRules("en", {maximumFractionDigits: 0, roundingMode: "floor"}).select($f64(0x3ffe6666, 0x66666666))
 note: row P1: ResolvePlural selects over FormatNumericToString's string, with the digit options
@@ -1497,7 +1560,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en" f64:0x3FB999999999999A
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P1: `select` over FormatNumericToString's string: en `{minimumFractionDigits: 1}` 1; de the same ...; Broiler.JS answers selects over the double; the digit options are snapshotted and never applied: `"one"`, `"one"`, `"other"`, `"other"`, `"one"`, `"one"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: new Intl.PluralRules("en", {maximumFractionDigits: 0, roundingMode: "ceil"}).select($f64(0x3fb99999, 0x9999999a))
 note: row P1: ResolvePlural selects over FormatNumericToString's string, with the digit options
@@ -1508,7 +1572,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en" f64:0x3FF6666666666666
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P1: `select` over FormatNumericToString's string: en `{minimumFractionDigits: 1}` 1; de the same ...; Broiler.JS answers selects over the double; the digit options are snapshotted and never applied: `"one"`, `"one"`, `"other"`, `"other"`, `"one"`, `"one"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: new Intl.PluralRules("en", {maximumFractionDigits: 0, type: "ordinal"}).select($f64(0x3ff66666, 0x66666666))
 note: row P1: ResolvePlural selects over FormatNumericToString's string, with the digit options
@@ -1519,7 +1584,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en" f64:0x3FEFF7CED916872B
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P1: `select` over FormatNumericToString's string: en `{minimumFractionDigits: 1}` 1; de the same ...; Broiler.JS answers selects over the double; the digit options are snapshotted and never applied: `"one"`, `"one"`, `"other"`, `"other"`, `"one"`, `"one"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: new Intl.PluralRules("en", {notation: "compact"}).select($f64(0x3feff7ce, 0xd916872b))
 note: row P1: ResolvePlural selects over FormatNumericToString's string, with the digit options
@@ -1530,7 +1596,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en" f64:0x3FF010624DD2F1AA
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P1: `select` over FormatNumericToString's string: en `{minimumFractionDigits: 1}` 1; de the same ...; Broiler.JS answers selects over the double; the digit options are snapshotted and never applied: `"one"`, `"one"`, `"other"`, `"other"`, `"one"`, `"one"` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-formatnumerictostring spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: new Intl.PluralRules("en", {notation: "compact"}).select($f64(0x3ff01062, 0x4dd2f1aa))
 note: row P1: ResolvePlural selects over FormatNumericToString's string, with the digit options
@@ -1541,7 +1608,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en"
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.select spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=error:TypeError
 script: new Intl.PluralRules("en", {}).select(1n)
 note: row P2: select reads ToIntlMathematicalValue, so a BigInt is a value; the pinned text's select and selectRange read ToIntlMathematicalValue, which takes a BigInt as its mathematical value, and ResolvePlural selects over its formatted digits; the category is the one the reference gives for the same value as a Number (the reference answered error: TypeError)
@@ -1552,7 +1620,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en"
 out: value: str:"other"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.select spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=error:TypeError
 script: new Intl.PluralRules("en", {}).select(2n)
 note: row P2: select reads ToIntlMathematicalValue, so a BigInt is a value; the pinned text's select and selectRange read ToIntlMathematicalValue, which takes a BigInt as its mathematical value, and ResolvePlural selects over its formatted digits; the category is the one the reference gives for the same value as a Number (the reference answered error: TypeError)
@@ -1563,7 +1632,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en"
 out: value: str:"other"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.select spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=error:TypeError
 script: new Intl.PluralRules("en", {}).select(0n)
 note: row P2: select reads ToIntlMathematicalValue, so a BigInt is a value; the pinned text's select and selectRange read ToIntlMathematicalValue, which takes a BigInt as its mathematical value, and ResolvePlural selects over its formatted digits; the category is the one the reference gives for the same value as a Number (the reference answered error: TypeError)
@@ -1574,7 +1644,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en"
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.select spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=error:TypeError
 script: new Intl.PluralRules("en", {}).select(-1n)
 note: row P2: select reads ToIntlMathematicalValue, so a BigInt is a value; the pinned text's select and selectRange read ToIntlMathematicalValue, which takes a BigInt as its mathematical value, and ResolvePlural selects over its formatted digits; the category is the one the reference gives for the same value as a Number (the reference answered error: TypeError)
@@ -1585,7 +1656,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en"
 out: value: str:"two"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.select spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=error:TypeError
 script: new Intl.PluralRules("en", {type: "ordinal"}).select(2n)
 note: row P2: select reads ToIntlMathematicalValue, so a BigInt is a value; the pinned text's select and selectRange read ToIntlMathematicalValue, which takes a BigInt as its mathematical value, and ResolvePlural selects over its formatted digits; the category is the one the reference gives for the same value as a Number (the reference answered error: TypeError)
@@ -1596,7 +1668,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en"
 out: value: str:"few"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.select spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=error:TypeError
 script: new Intl.PluralRules("en", {type: "ordinal"}).select(3n)
 note: row P2: select reads ToIntlMathematicalValue, so a BigInt is a value; the pinned text's select and selectRange read ToIntlMathematicalValue, which takes a BigInt as its mathematical value, and ResolvePlural selects over its formatted digits; the category is the one the reference gives for the same value as a Number (the reference answered error: TypeError)
@@ -1607,7 +1680,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en"
 out: value: str:"other"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.select spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=error:TypeError
 script: new Intl.PluralRules("en", {}).select(10n ** 30n)
 note: row P2: select reads ToIntlMathematicalValue, so a BigInt is a value; the pinned text's select and selectRange read ToIntlMathematicalValue, which takes a BigInt as its mathematical value, and ResolvePlural selects over its formatted digits; the category is the one the reference gives for the same value as a Number (the reference answered error: TypeError)
@@ -1618,7 +1692,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en"
 out: value: str:"other"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.select spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=error:TypeError
 script: new Intl.PluralRules("en", {}).select(10n ** 400n)
 note: row P2: select reads ToIntlMathematicalValue, so a BigInt is a value; the pinned text's select and selectRange read ToIntlMathematicalValue, which takes a BigInt as its mathematical value, and ResolvePlural selects over its formatted digits; the category is the one the reference gives for the same value as a Number (the reference answered error: TypeError)
@@ -1629,7 +1704,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en"
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.select spec:ecma402@3d4c558#sec-tointlmathematicalvalue overruled:intlref@1=error:TypeError
 script: new Intl.PluralRules("en", {}).select(Object(1n))
 note: row P2: select reads ToIntlMathematicalValue, so a BigInt is a value; the pinned text's select and selectRange read ToIntlMathematicalValue, which takes a BigInt as its mathematical value, and ResolvePlural selects over its formatted digits; the category is the one the reference gives for the same value as a Number (the reference answered error: TypeError)
@@ -1640,7 +1716,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"en"
 out: value: str:"other"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.select overruled:intlref@1=error:TypeError
 script: new Intl.PluralRules("en", {minimumFractionDigits: 1}).select(1n)
 note: row P2 with digit options: 1n is written 1.0; the pinned text's select and selectRange read ToIntlMathematicalValue, which takes a BigInt as its mathematical value, and ResolvePlural selects over its formatted digits; the category is the one the reference gives for the same value as a Number (the reference answered error: TypeError)
@@ -1651,7 +1728,8 @@ area: intl
 op: Intl.PluralRules.prototype.selectRange
 in: str:"de"
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.selectrange overruled:intlref@1=error:TypeError
 script: new Intl.PluralRules("de").selectRange(0n, 1n)
 note: row P2: selectRange of BigInts; the pinned text's select and selectRange read ToIntlMathematicalValue, which takes a BigInt as its mathematical value, and ResolvePlural selects over its formatted digits; the category is the one the reference gives for the same value as a Number (the reference answered error: TypeError)
@@ -1728,7 +1806,8 @@ area: intl
 op: Intl.PluralRules.prototype.selectRange
 in: str:"de"
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P2: `select` and `selectRange` of a BigInt: en `1n`, `2n`, `0n`, `-1n`; ordinal `2n`, `3n` ...; Broiler.JS answers `TypeError: Cannot mix BigInt and other types` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.selectrange ref:intlref@1
 script: new Intl.PluralRules("de").selectRange(0, 1)
 note: row P2's witness: the Numbers of the BigInt range above
@@ -1919,7 +1998,8 @@ area: intl
 op: Intl.PluralRules.prototype.selectRange
 in: str:"en" f64:0x3FF0000000000000 f64:0x3FF0000000000000
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P5a: `selectRange` when both ends format alike: en (1,1), (1,1.0001), (-1,1), ("1","1.0"); de (1,1) ...; Broiler.JS answers `"other"` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange overruled:intlref@1=value:str:"other"
 script: new Intl.PluralRules("en", {}).selectRange(1, 1)
 note: row P5a: both ends format alike; ResolvePluralRange returns the start's category when both ends' formatted strings are equal; FormatNumericToString's string carries no sign, so 1 and 1, 1 and 1.0001, and -1 and 1 are each "1" and the start's category, one (the reference answered str:"other")
@@ -1930,7 +2010,8 @@ area: intl
 op: Intl.PluralRules.prototype.selectRange
 in: str:"en" f64:0x3FF0000000000000 f64:0x3FF00068DB8BAC71
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P5a: `selectRange` when both ends format alike: en (1,1), (1,1.0001), (-1,1), ("1","1.0"); de (1,1) ...; Broiler.JS answers `"other"` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange overruled:intlref@1=value:str:"other"
 script: new Intl.PluralRules("en", {}).selectRange(1, $f64(0x3ff00068, 0xdb8bac71))
 note: row P5a: both ends format alike; ResolvePluralRange returns the start's category when both ends' formatted strings are equal; FormatNumericToString's string carries no sign, so 1 and 1, 1 and 1.0001, and -1 and 1 are each "1" and the start's category, one (the reference answered str:"other")
@@ -1941,7 +2022,8 @@ area: intl
 op: Intl.PluralRules.prototype.selectRange
 in: str:"en" f64:0xBFF0000000000000 f64:0x3FF0000000000000
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P5a: `selectRange` when both ends format alike: en (1,1), (1,1.0001), (-1,1), ("1","1.0"); de (1,1) ...; Broiler.JS answers `"other"` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange overruled:intlref@1=value:str:"other"
 script: new Intl.PluralRules("en", {}).selectRange(-1, 1)
 note: row P5a: both ends format alike; ResolvePluralRange returns the start's category when both ends' formatted strings are equal; FormatNumericToString's string carries no sign, so 1 and 1, 1 and 1.0001, and -1 and 1 are each "1" and the start's category, one (the reference answered str:"other")
@@ -1952,7 +2034,8 @@ area: intl
 op: Intl.PluralRules.prototype.selectRange
 in: str:"de" f64:0x3FF0000000000000 f64:0x3FF0000000000000
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P5a: `selectRange` when both ends format alike: en (1,1), (1,1.0001), (-1,1), ("1","1.0"); de (1,1) ...; Broiler.JS answers `"other"` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange overruled:intlref@1=value:str:"other"
 script: new Intl.PluralRules("de", {}).selectRange(1, 1)
 note: row P5a: both ends format alike; ResolvePluralRange returns the start's category when both ends' formatted strings are equal; FormatNumericToString's string carries no sign, so 1 and 1, 1 and 1.0001, and -1 and 1 are each "1" and the start's category, one (the reference answered str:"other")
@@ -1963,7 +2046,8 @@ area: intl
 op: Intl.PluralRules.prototype.selectRange
 in: str:"en" f64:0x3FF0000000000000 f64:0x3FF0000000000000
 out: value: str:"one"
-class: normative
+class: divergence
+divergence.broiler-js: row P5a: `selectRange` when both ends format alike: en (1,1), (1,1.0001), (-1,1), ("1","1.0"); de (1,1) ...; Broiler.JS answers `"other"` in every case; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange overruled:intlref@1=value:str:"other"
 script: new Intl.PluralRules("en", {type: "ordinal"}).selectRange(1, 1)
 note: row P5a: both ends format alike; ResolvePluralRange returns the start's category when both ends' formatted strings are equal; FormatNumericToString's string carries no sign, so 1 and 1, 1 and 1.0001, and -1 and 1 are each "1" and the start's category, one (the reference answered str:"other")
@@ -1988,6 +2072,7 @@ out: value: str:"one"
 class: impl-defined
 per-engine.broiler-js: value: str:"one"
 per-engine.broiler-vm: value: str:"one"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("de", {}).selectRange(0, 1)
 note: row P5b: CLDR's plural ranges (P5b: PluralRuleSelectRange is implementation-defined, and the library adopts CLDR's plural ranges, an X1 adoption); JSD-0082: the text leaves this to the implementation, and the shared library takes one answer, which both engines' plans adopt; it is the reference's
@@ -2014,6 +2099,7 @@ out: value: str:"one"
 class: impl-defined
 per-engine.broiler-js: value: str:"one"
 per-engine.broiler-vm: value: str:"one"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("de", {}).selectRange(2, 1)
 note: row P5b: CLDR's plural ranges (P5b: PluralRuleSelectRange is implementation-defined, and the library adopts CLDR's plural ranges, an X1 adoption); JSD-0082: the text leaves this to the implementation, and the shared library takes one answer, which both engines' plans adopt; it is the reference's
@@ -2105,6 +2191,7 @@ out: value: str:"one"
 class: impl-defined
 per-engine.broiler-js: value: str:"one"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("fr", {}).selectRange(0, 1)
 note: row P5b: CLDR's plural ranges (P5b: PluralRuleSelectRange is implementation-defined, and the library adopts CLDR's plural ranges, an X1 adoption); JSD-0082: the text leaves this to the implementation, and the shared library takes one answer, which both engines' plans adopt; it is the reference's; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fr to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -2161,7 +2248,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[\"locale\",\"type\",\"notation\",\"minimumIntegerDigits\",\"minimumFractionDigits\",\"maximumFractionDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions ref:intlref@1
 script: JSON.stringify(Object.keys(new Intl.PluralRules("en", {}).resolvedOptions()))
 note: row P6: every property of the table, in its order
@@ -2172,7 +2260,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"standard\",\"minimumIntegerDigits\":1,\"minimumFractionDigits\":0,\"maximumFractionDigits\":3,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"auto\",\"trailingZeroDisplay\":\"auto\"}"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions spec:ecma402@3d4c558#sec-setnumberformatdigitoptions ref:intlref@1
 script: JSON.stringify(new Intl.PluralRules("en", {}).resolvedOptions())
 note: row P6: the resolved values
@@ -2183,7 +2272,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[\"locale\",\"type\",\"notation\",\"minimumIntegerDigits\",\"minimumFractionDigits\",\"maximumFractionDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions ref:intlref@1
 script: JSON.stringify(Object.keys(new Intl.PluralRules("en", {type: "ordinal"}).resolvedOptions()))
 note: row P6: every property of the table, in its order
@@ -2194,7 +2284,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"{\"locale\":\"en\",\"type\":\"ordinal\",\"notation\":\"standard\",\"minimumIntegerDigits\":1,\"minimumFractionDigits\":0,\"maximumFractionDigits\":3,\"pluralCategories\":[\"one\",\"two\",\"few\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"auto\",\"trailingZeroDisplay\":\"auto\"}"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions spec:ecma402@3d4c558#sec-setnumberformatdigitoptions ref:intlref@1
 script: JSON.stringify(new Intl.PluralRules("en", {type: "ordinal"}).resolvedOptions())
 note: row P6: the resolved values
@@ -2205,7 +2296,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[\"locale\",\"type\",\"notation\",\"compactDisplay\",\"minimumIntegerDigits\",\"minimumFractionDigits\",\"maximumFractionDigits\",\"minimumSignificantDigits\",\"maximumSignificantDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions overruled:intlref@1=value:str:"[\"locale\",\"type\",\"notation\",\"compactDisplay\",\"minimumIntegerDigits\",\"minimumSignificantDigits\",\"maximumSignificantDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]"
 script: JSON.stringify(Object.keys(new Intl.PluralRules("en", {notation: "compact"}).resolvedOptions()))
 note: row P6: every property of the table, in its order; SetNumberFormatDigitOptions sets [[MinimumFractionDigits]] and [[MaximumFractionDigits]] for compact notation (0 and 0) and under a rounding priority (the defaults, 0 and 3), and resolvedOptions writes every slot of its table that is not undefined (the reference answered str:"[\"locale\",\"type\",\"notation\",\"compactDisplay\",\"minimumIntegerDigits\",\"minimumSignificantDigits\",\"maximumSignificantDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]")
@@ -2216,7 +2308,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"compact\",\"compactDisplay\":\"short\",\"minimumIntegerDigits\":1,\"minimumFractionDigits\":0,\"maximumFractionDigits\":0,\"minimumSignificantDigits\":1,\"maximumSignificantDigits\":2,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"morePrecision\",\"trailingZeroDisplay\":\"auto\"}"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions spec:ecma402@3d4c558#sec-setnumberformatdigitoptions overruled:intlref@1=value:str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"compact\",\"compactDisplay\":\"short\",\"minimumIntegerDigits\":1,\"minimumSignificantDigits\":1,\"maximumSignificantDigits\":2,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"morePrecision\",\"trailingZeroDisplay\":\"auto\"}"
 script: JSON.stringify(new Intl.PluralRules("en", {notation: "compact"}).resolvedOptions())
 note: row P6: the resolved values; SetNumberFormatDigitOptions sets [[MinimumFractionDigits]] and [[MaximumFractionDigits]] for compact notation (0 and 0) and under a rounding priority (the defaults, 0 and 3), and resolvedOptions writes every slot of its table that is not undefined (the reference answered str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"compact\",\"compactDisplay\":\"short\",\"minimumIntegerDigits\":1,\"minimumSignificantDigits\":1,\"maximumSignificantDigits\":2,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"morePrecision\",\"trailingZeroDisplay\":\"auto\"}")
@@ -2227,7 +2320,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[\"locale\",\"type\",\"notation\",\"compactDisplay\",\"minimumIntegerDigits\",\"minimumFractionDigits\",\"maximumFractionDigits\",\"minimumSignificantDigits\",\"maximumSignificantDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions overruled:intlref@1=value:str:"[\"locale\",\"type\",\"notation\",\"compactDisplay\",\"minimumIntegerDigits\",\"minimumSignificantDigits\",\"maximumSignificantDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]"
 script: JSON.stringify(Object.keys(new Intl.PluralRules("en", {notation: "compact", compactDisplay: "long"}).resolvedOptions()))
 note: row P6: every property of the table, in its order; SetNumberFormatDigitOptions sets [[MinimumFractionDigits]] and [[MaximumFractionDigits]] for compact notation (0 and 0) and under a rounding priority (the defaults, 0 and 3), and resolvedOptions writes every slot of its table that is not undefined (the reference answered str:"[\"locale\",\"type\",\"notation\",\"compactDisplay\",\"minimumIntegerDigits\",\"minimumSignificantDigits\",\"maximumSignificantDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]")
@@ -2238,7 +2332,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"compact\",\"compactDisplay\":\"long\",\"minimumIntegerDigits\":1,\"minimumFractionDigits\":0,\"maximumFractionDigits\":0,\"minimumSignificantDigits\":1,\"maximumSignificantDigits\":2,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"morePrecision\",\"trailingZeroDisplay\":\"auto\"}"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions spec:ecma402@3d4c558#sec-setnumberformatdigitoptions overruled:intlref@1=value:str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"compact\",\"compactDisplay\":\"long\",\"minimumIntegerDigits\":1,\"minimumSignificantDigits\":1,\"maximumSignificantDigits\":2,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"morePrecision\",\"trailingZeroDisplay\":\"auto\"}"
 script: JSON.stringify(new Intl.PluralRules("en", {notation: "compact", compactDisplay: "long"}).resolvedOptions())
 note: row P6: the resolved values; SetNumberFormatDigitOptions sets [[MinimumFractionDigits]] and [[MaximumFractionDigits]] for compact notation (0 and 0) and under a rounding priority (the defaults, 0 and 3), and resolvedOptions writes every slot of its table that is not undefined (the reference answered str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"compact\",\"compactDisplay\":\"long\",\"minimumIntegerDigits\":1,\"minimumSignificantDigits\":1,\"maximumSignificantDigits\":2,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"morePrecision\",\"trailingZeroDisplay\":\"auto\"}")
@@ -2249,7 +2344,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[\"locale\",\"type\",\"notation\",\"minimumIntegerDigits\",\"minimumSignificantDigits\",\"maximumSignificantDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions ref:intlref@1
 script: JSON.stringify(Object.keys(new Intl.PluralRules("en", {maximumSignificantDigits: 3}).resolvedOptions()))
 note: row P6: every property of the table, in its order
@@ -2260,7 +2356,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"standard\",\"minimumIntegerDigits\":1,\"minimumSignificantDigits\":1,\"maximumSignificantDigits\":3,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"auto\",\"trailingZeroDisplay\":\"auto\"}"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions spec:ecma402@3d4c558#sec-setnumberformatdigitoptions ref:intlref@1
 script: JSON.stringify(new Intl.PluralRules("en", {maximumSignificantDigits: 3}).resolvedOptions())
 note: row P6: the resolved values
@@ -2271,7 +2368,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[\"locale\",\"type\",\"notation\",\"minimumIntegerDigits\",\"minimumFractionDigits\",\"maximumFractionDigits\",\"minimumSignificantDigits\",\"maximumSignificantDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions overruled:intlref@1=value:str:"[\"locale\",\"type\",\"notation\",\"minimumIntegerDigits\",\"minimumSignificantDigits\",\"maximumSignificantDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]"
 script: JSON.stringify(Object.keys(new Intl.PluralRules("en", {roundingPriority: "morePrecision"}).resolvedOptions()))
 note: row P6: every property of the table, in its order; SetNumberFormatDigitOptions sets [[MinimumFractionDigits]] and [[MaximumFractionDigits]] for compact notation (0 and 0) and under a rounding priority (the defaults, 0 and 3), and resolvedOptions writes every slot of its table that is not undefined (the reference answered str:"[\"locale\",\"type\",\"notation\",\"minimumIntegerDigits\",\"minimumSignificantDigits\",\"maximumSignificantDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]")
@@ -2282,7 +2380,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"standard\",\"minimumIntegerDigits\":1,\"minimumFractionDigits\":0,\"maximumFractionDigits\":3,\"minimumSignificantDigits\":1,\"maximumSignificantDigits\":21,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"morePrecision\",\"trailingZeroDisplay\":\"auto\"}"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions spec:ecma402@3d4c558#sec-setnumberformatdigitoptions overruled:intlref@1=value:str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"standard\",\"minimumIntegerDigits\":1,\"minimumSignificantDigits\":1,\"maximumSignificantDigits\":21,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"morePrecision\",\"trailingZeroDisplay\":\"auto\"}"
 script: JSON.stringify(new Intl.PluralRules("en", {roundingPriority: "morePrecision"}).resolvedOptions())
 note: row P6: the resolved values; SetNumberFormatDigitOptions sets [[MinimumFractionDigits]] and [[MaximumFractionDigits]] for compact notation (0 and 0) and under a rounding priority (the defaults, 0 and 3), and resolvedOptions writes every slot of its table that is not undefined (the reference answered str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"standard\",\"minimumIntegerDigits\":1,\"minimumSignificantDigits\":1,\"maximumSignificantDigits\":21,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":1,\"roundingMode\":\"halfExpand\",\"roundingPriority\":\"morePrecision\",\"trailingZeroDisplay\":\"auto\"}")
@@ -2293,7 +2392,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"[\"locale\",\"type\",\"notation\",\"minimumIntegerDigits\",\"minimumFractionDigits\",\"maximumFractionDigits\",\"pluralCategories\",\"roundingIncrement\",\"roundingMode\",\"roundingPriority\",\"trailingZeroDisplay\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions ref:intlref@1
 script: JSON.stringify(Object.keys(new Intl.PluralRules("en", {roundingIncrement: 5, maximumFractionDigits: 2, minimumFractionDigits: 2, roundingMode: "floor", trailingZeroDisplay: "stripIfInteger"}).resolvedOptions()))
 note: row P6: every property of the table, in its order
@@ -2304,7 +2404,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"en"
 out: value: str:"{\"locale\":\"en\",\"type\":\"cardinal\",\"notation\":\"standard\",\"minimumIntegerDigits\":1,\"minimumFractionDigits\":2,\"maximumFractionDigits\":2,\"pluralCategories\":[\"one\",\"other\"],\"roundingIncrement\":5,\"roundingMode\":\"floor\",\"roundingPriority\":\"auto\",\"trailingZeroDisplay\":\"stripIfInteger\"}"
-class: normative
+class: divergence
+divergence.broiler-js: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions spec:ecma402@3d4c558#sec-setnumberformatdigitoptions ref:intlref@1
 script: JSON.stringify(new Intl.PluralRules("en", {roundingIncrement: 5, maximumFractionDigits: 2, minimumFractionDigits: 2, roundingMode: "floor", trailingZeroDisplay: "stripIfInteger"}).resolvedOptions())
 note: row P6: the resolved values
@@ -2315,7 +2416,8 @@ area: intl
 op: Intl.PluralRules (option reads)
 in: str:"en"
 out: value: str:"localeMatcher,type,notation,compactDisplay,minimumIntegerDigits,minimumFractionDigits,maximumFractionDigits,minimumSignificantDigits,maximumSignificantDigits,roundingIncrement,roundingMode,roundingPriority,trailingZeroDisplay"
-class: normative
+class: divergence
+divergence.broiler-js: row P7: The PluralRules constructor's reads and refusals: the spy of every option; `compactDisplay: "bogus"` ...; Broiler.JS answers never reads `compactDisplay`, so `"bogus"` is accepted; accepts min > max; accepts an increment with significant digits. type, notation and increment 3 are refused; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules ref:intlref@1
 script: (function () { var log = []; var o = new Proxy({}, {get: function (t, k) { if (typeof k === "string") log.push(k); return undefined; }}); new Intl.PluralRules("en", o); return log.join(); })()
 note: row P7: localeMatcher, type, notation, compactDisplay, then the digit options
@@ -2326,7 +2428,8 @@ area: intl
 op: Intl.PluralRules (refusals)
 in: str:"en"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row P7: The PluralRules constructor's reads and refusals: the spy of every option; `compactDisplay: "bogus"` ...; Broiler.JS answers never reads `compactDisplay`, so `"bogus"` is accepted; accepts min > max; accepts an increment with significant digits. type, notation and increment 3 are refused; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-getoption ref:intlref@1
 script: new Intl.PluralRules("en", {compactDisplay: "bogus"}).select(1)
 note: row P7: {compactDisplay: "bogus"} is refused
@@ -2337,7 +2440,8 @@ area: intl
 op: Intl.PluralRules (refusals)
 in: str:"en"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row P7: The PluralRules constructor's reads and refusals: the spy of every option; `compactDisplay: "bogus"` ...; Broiler.JS answers never reads `compactDisplay`, so `"bogus"` is accepted; accepts min > max; accepts an increment with significant digits. type, notation and increment 3 are refused; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-getoption ref:intlref@1
 script: new Intl.PluralRules("en", {minimumFractionDigits: 3, maximumFractionDigits: 2}).select(1)
 note: row P7: {minimumFractionDigits: 3, maximumFractionDigits: 2} is refused
@@ -2348,7 +2452,8 @@ area: intl
 op: Intl.PluralRules (refusals)
 in: str:"en"
 out: error: TypeError
-class: normative
+class: divergence
+divergence.broiler-js: row P7: The PluralRules constructor's reads and refusals: the spy of every option; `compactDisplay: "bogus"` ...; Broiler.JS answers never reads `compactDisplay`, so `"bogus"` is accepted; accepts min > max; accepts an increment with significant digits. type, notation and increment 3 are refused; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules spec:ecma402@3d4c558#sec-setnumberformatdigitoptions spec:ecma402@3d4c558#sec-getoption ref:intlref@1
 script: new Intl.PluralRules("en", {roundingIncrement: 5, maximumSignificantDigits: 2}).select(1)
 note: row P7: {roundingIncrement: 5, maximumSignificantDigits: 2} is refused
@@ -2828,6 +2933,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("cs").selectRange(1, 2)
 note: plural ranges (an X1 adoption); cs, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves cs to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -3696,6 +3802,7 @@ out: value: str:"one"
 class: impl-defined
 per-engine.broiler-js: value: str:"one"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("fil").selectRange(1, 2)
 note: plural ranges (an X1 adoption); fil, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves fil to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -4386,6 +4493,7 @@ out: value: str:"[\"other\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"other\"]"
 per-engine.broiler-vm: value: str:"[\"one\",\"other\"]"
+divergence.broiler-js: row P3: Which languages' rules each engine holds: fr, ru, pl, cs, uk, hi, he, ar, cy, ja, pt, pt-PT (cardinal) ...; Broiler.JS answers every CLDR language, from the CLDR package (`CldrLocaleData.SelectPlural`, `GetPluralCategories`): fr `one one one other many`, ru `one few many one other` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions ref:intlref@1
 script: JSON.stringify(new Intl.PluralRules("jbo").resolvedOptions().pluralCategories)
 note: cardinal plural rules; jbo, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves jbo to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -4399,6 +4507,7 @@ out: value: str:"[\"other\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"other\"]"
 per-engine.broiler-vm: value: str:"[\"one\",\"two\",\"few\",\"other\"]"
+divergence.broiler-js: row P3: Which languages' rules each engine holds: fr, ru, pl, cs, uk, hi, he, ar, cy, ja, pt, pt-PT (cardinal) ...; Broiler.JS answers every CLDR language, from the CLDR package (`CldrLocaleData.SelectPlural`, `GetPluralCategories`): fr `one one one other many`, ru `one few many one other` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions ref:intlref@1
 script: JSON.stringify(new Intl.PluralRules("jbo", {type: "ordinal"}).resolvedOptions().pluralCategories)
 note: ordinal rules; jbo, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves jbo to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -4412,6 +4521,7 @@ out: value: str:"[\"other\",\"other\",\"other\",\"other\",\"other\",\"other\",\"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"other\",\"other\",\"other\",\"other\",\"other\",\"other\",\"other\",\"other\"]"
 per-engine.broiler-vm: value: str:"[\"other\",\"one\",\"other\",\"other\",\"other\",\"other\",\"other\",\"other\"]"
+divergence.broiler-js: row P3: Which languages' rules each engine holds: fr, ru, pl, cs, uk, hi, he, ar, cy, ja, pt, pt-PT (cardinal) ...; Broiler.JS answers every CLDR language, from the CLDR package (`CldrLocaleData.SelectPlural`, `GetPluralCategories`): fr `one one one other many`, ru `one few many one other` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: JSON.stringify([0, 1, 2, 3, 5, 11, 21, 101].map(function (n) { return new Intl.PluralRules("jbo").select(n); }))
 note: cardinal selection; jbo, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves jbo to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -4623,6 +4733,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("lt").selectRange(1, 2)
 note: plural ranges (an X1 adoption); lt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves lt to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -4831,6 +4942,7 @@ out: value: str:"[\"other\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"other\"]"
 per-engine.broiler-vm: value: str:"[\"one\",\"two\",\"few\",\"other\"]"
+divergence.broiler-js: row P3: Which languages' rules each engine holds: fr, ru, pl, cs, uk, hi, he, ar, cy, ja, pt, pt-PT (cardinal) ...; Broiler.JS answers every CLDR language, from the CLDR package (`CldrLocaleData.SelectPlural`, `GetPluralCategories`): fr `one one one other many`, ru `one few many one other` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions ref:intlref@1
 script: JSON.stringify(new Intl.PluralRules("pap", {type: "ordinal"}).resolvedOptions().pluralCategories)
 note: ordinal rules; pap, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pap to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -4892,6 +5004,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("pl").selectRange(1, 2)
 note: plural ranges (an X1 adoption); pl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -4944,6 +5057,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("pl-PL").selectRange(1, 2)
 note: plural ranges (an X1 adoption); pl-PL, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves pl-PL to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -5118,6 +5232,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("ro").selectRange(1, 2)
 note: plural ranges (an X1 adoption); ro, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ro to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -5157,6 +5272,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("ru").selectRange(1, 2)
 note: plural ranges (an X1 adoption); ru, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ru to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -5209,6 +5325,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("ru-RU").selectRange(1, 2)
 note: plural ranges (an X1 adoption); ru-RU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves ru-RU to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -5219,7 +5336,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"sa"
 out: value: str:"[\"one\",\"other\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P3: Which languages' rules each engine holds: fr, ru, pl, cs, uk, hi, he, ar, cy, ja, pt, pt-PT (cardinal) ...; Broiler.JS answers every CLDR language, from the CLDR package (`CldrLocaleData.SelectPlural`, `GetPluralCategories`): fr `one one one other many`, ru `one few many one other` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions ref:intlref@1
 script: JSON.stringify(new Intl.PluralRules("sa").resolvedOptions().pluralCategories)
 note: cardinal plural rules; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5230,7 +5348,8 @@ area: intl
 op: Intl.PluralRules.prototype.resolvedOptions
 in: str:"sa"
 out: value: str:"[\"one\",\"two\",\"few\",\"other\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P3: Which languages' rules each engine holds: fr, ru, pl, cs, uk, hi, he, ar, cy, ja, pt, pt-PT (cardinal) ...; Broiler.JS answers every CLDR language, from the CLDR package (`CldrLocaleData.SelectPlural`, `GetPluralCategories`): fr `one one one other many`, ru `one few many one other` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-intl.pluralrules.prototype.resolvedoptions ref:intlref@1
 script: JSON.stringify(new Intl.PluralRules("sa", {type: "ordinal"}).resolvedOptions().pluralCategories)
 note: ordinal rules; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5241,7 +5360,8 @@ area: intl
 op: Intl.PluralRules.prototype.select
 in: str:"sa"
 out: value: str:"[\"other\",\"one\",\"other\",\"other\",\"other\",\"other\",\"other\",\"other\"]"
-class: normative
+class: divergence
+divergence.broiler-js: row P3: Which languages' rules each engine holds: fr, ru, pl, cs, uk, hi, he, ar, cy, ja, pt, pt-PT (cardinal) ...; Broiler.JS answers every CLDR language, from the CLDR package (`CldrLocaleData.SelectPlural`, `GetPluralCategories`): fr `one one one other many`, ru `one few many one other` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolveplural spec:ecma402@3d4c558#sec-pluralruleselect ref:intlref@1
 script: JSON.stringify([0, 1, 2, 3, 5, 11, 21, 101].map(function (n) { return new Intl.PluralRules("sa").select(n); }))
 note: cardinal selection; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5353,6 +5473,7 @@ out: value: str:"two"
 class: impl-defined
 per-engine.broiler-js: value: str:"two"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("sl").selectRange(1, 2)
 note: plural ranges (an X1 adoption); sl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -5405,6 +5526,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("sr").selectRange(1, 2)
 note: plural ranges (an X1 adoption); sr, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -5457,6 +5579,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("sr-Cyrl").selectRange(1, 2)
 note: plural ranges (an X1 adoption); sr-Cyrl, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Cyrl to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -5509,6 +5632,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("sr-Cyrl-RS").selectRange(1, 2)
 note: plural ranges (an X1 adoption); sr-Cyrl-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Cyrl-RS to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -5561,6 +5685,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("sr-Latn").selectRange(1, 2)
 note: plural ranges (an X1 adoption); sr-Latn, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Latn to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out
@@ -5613,6 +5738,7 @@ out: value: str:"few"
 class: impl-defined
 per-engine.broiler-js: value: str:"few"
 per-engine.broiler-vm: value: str:"other"
+divergence.broiler-js: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2) `other`, (2,1) `one`, (1,1.5) `other` ...; Broiler.JS answers `"other"` always; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvepluralrange spec:ecma402@3d4c558#sec-pluralruleselectrange ref:intlref@1
 script: new Intl.PluralRules("sr-Latn-RS").selectRange(1, 2)
 note: plural ranges (an X1 adoption); sr-Latn-RS, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data; decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves sr-Latn-RS to en-US (LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer for that locale; Broiler.JS's embedding carries the locale, so its expectation is out

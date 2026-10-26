@@ -118,6 +118,84 @@ ECMA-402's IsStructurallyValidLanguageTag, which the pinned text calls IsWellFor
 name (decision D14 as revised). The files are kept as generated and the script as committed; the operation is the
 same.
 
+## The engine-level vectors, 2026-10-26 (SJL-9.2a)
+
+Corpus revision 27, `6311031f99c62bb26bc22215e29323c278394605`, adds the Intl area: 3,496 vectors in
+[`conformance/vectors/intl/`](../../../conformance/vectors/intl/), one file per sub-area of JSD-0082. Revision 28
+classifies every difference of both engines' first runs on it. These runs are task 2.3 of the plan's SJL-9.2, the basis
+of revision 28's `divergence` fields. They are no part of the rule's parts A to D, and nothing here is a verdict.
+
+**This engine's runs** of `Broiler.JS/Broiler.JavaScript.Vectors.Tests` are in [`engine/`](engine/). Each was built
+once in Release with `--disable-build-servers`, in a scratch tree written by `git archive` of revision 27's commit,
+and run with `--no-build` in one evaluating process, with no `LANG`, under `TZ=UTC` and under `TZ=America/New_York`.
+The engine's code is the branch base's, `915dfc14`: no commit of SJL-9.2a changes a path under `Broiler.JS/`. The two
+zones' reports are byte for byte the same.
+
+| Revision | Vectors | Match | Classified divergences | Unclassified | Not implemented |
+|---|---|---|---|---|---|
+| 27 | 106,808 | 105,059 | 4 (the number area's, SJL-14's) | 1,745, all in the Intl area | 0 |
+
+Each run's negative control changes `numbers/to-fixed/0001` in a copy of the corpus, and it is reported as the one
+unclassified difference. The files are `run-revision-27-utc.log` and `.tsv.gz`, `run-revision-27-new-york.log` and
+`.tsv.gz`, and `negative-control-revision-27-utc.tsv` and `-new-york.tsv`. Each log's first line records how the run
+was taken.
+
+**Broiler.VM** was run locally at its rule commit, `4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f`. Its conformance root
+was built in Release with `--disable-build-servers` from a scratch archive of that commit, and run on a scratch archive
+of revision 27 with a pin of that archive (`--vectors <archive> --expect <pin>`). It matches 106,765 of the 106,808
+vectors. The other 43 differ, all in the Intl area. Its negative control changes `intl/numbers-and-text/decimal/0001`
+in memory (`--mutate`), and it is reported as one more difference. The runs and the scratch pin are retained as
+`engine/broiler-vm-*`, as the basis of those fields. They are not a reading of Broiler.VM's half: its own bundle judges
+that, and takes its runs when its pin moves to a merged revision (the plan's task 2.4).
+
+**Revision 28** classifies every difference under the correspondence's rows. The reasons are in
+[`scripts/conformance/intl-divergences.txt`](../../../scripts/conformance/intl-divergences.txt). Each names the row it
+confirms, the engine's answer as that row records it, the class JSD-0082 gives the row, and the work package that
+answers it.
+
+| Engine | Sub-area | Rows (vectors) | Vectors |
+|---|---|---|---|
+| Broiler.JS | (a) Locales | L26 (27), L24 (20), L9 with L8 (18), L45 with L2 (15), L21 (14), L7 (11), L29 (9), L19 with L20 (8), L5 (8), L30 (7), L15 (6), L18 with L17 (6), L12 (5), L14 (5), L17 (5), L19 to L21 (4), L2 (3), L25 (3), L6 (3), L8 (3), L10 (2), L37 (2), L40 (1) | 185 |
+| | (b) Values and plurals | M1a (17), P5b (17), M5 (14), P6 (14), P2 (12), P1 (11), P3 (7), M3 (6), M7 (6), P5a (5), M2b (4), M4 (4), P7 (4), M1b (3), M6 with M1a (2) | 126 |
+| | (c) Numbers and text | S8 (137), N4 (126), N2b (89), N6d (72), N5d (51), N3c (44), S1b (44), S4b (40), N1b (23), N6c (20), N5b (18), N3b (16), N6a with N6f (13), S9 (12), N9a (10), N9b (5), N2c (4), N8b (4), N10 (3), N6b (3), S5 (3), N7b (2), N8a with D21 (2), N9c (2), N9d (2), N11 (1), N13 with M5 (1), N14 with N1b (1), N17c (1), N5c (1), N6e (1), N9e (1) | 752 |
+| | (d) Date-times | T30 with T31 (93), T16 with T14 (78), T17 (76), T22 (76), T16 (44), T14 with T15 (31), T16 with T12 (29), T12 (24), T10 (16), T35 (14), T35 with T36 (14), T36 (12), T39 (10), T34 (8), T13 (6), T19 (6), T23 (6), T24 (6), T2 (5), T29 (5), T18 (4), T33 (4), T14 (3), T20 (3), T27 (3), T26 (2), T37 (2), T4 (1), T7 (1) | 582 |
+| | (e) Durations | U15 (47), U1 (29), U13 with U14 (6), U3 (6), U16 (5), U7 (4), U2 (2), U9 (1) | 100 |
+| | **All** | | **1,745** |
+| Broiler.VM | (a) Locales | L9 (18), L18 (5) | 23 |
+| | (c) Numbers and text | N5b (2) | 2 |
+| | (d) Date-times | Z8 (18) | 18 |
+| | **All** | | **43** |
+
+- **Broiler.JS, by class.** Corrections of Broiler.JS (C1): 470. Data policy (C5): 968. Both: 135 (L19 to L21; T14
+  with T15 or T16; T35 with T36). Implementation-defined (C3): 78, whose vectors hold the answer the shared library takes. The interval patterns
+  and the range separator (T30, C3, with T31, C5): 93. Engine policy: 1 (L40). SJL-9.5 answers every one but L40's.
+  L40 is the Collator's collations, and each engine keeps its own Collator until SJL-17 (SJL-D-24 (c)), so SJL-17
+  answers it. 929 of the 1,745 are table-family vectors of the 85 extra locales (decision D5).
+- **Five readings tie a difference to the row that explains it.** L18 with L17: `getCollations` answers `["default"]`
+  for every locale. L9 with L8: the subdivision aliases this engine's hand table lacks. N13 with M5: the significant
+  digits compact notation sets. M6 with M1a: 1.35 rounded by its binary value. N8a with decision D21: a numbering
+  system's own symbols. N13, M6 and N8a are rows the correspondence calls the same at the base, and their differences
+  are those rows'.
+- **The one abort.** `intl/locales/aliases/0072`, `Intl.getCanonicalLocales("en-t-sh")`, ends the evaluation with an
+  `IndexOutOfRangeException`, rendered `abort:`. Row L10 records exactly that.
+- **Eleven vectors gain a `per-engine.broiler-js` field.** They are `impl-defined` vectors of rows L17, L18 and L40,
+  whose notes compare this engine with the reference. A divergence field on an `impl-defined` vector needs the
+  engine's `per-engine` field beside it (SCHEMA.md section 5), so each gains one holding `out`. The generator writes it
+  only where the vector's note says so.
+- **Broiler.VM.** Z8, L9 and L18 are its three corrections (decisions D15 and D32), and SJL-9.4 answers them. N5b is
+  implementation-defined: `de` `2 kb/Stone` where CLDR's composition, the shared library's, writes `2 kb/st`.
+  SJL-9.4's adoption of the library answers it. 25 vectors differ in both engines (L9, L18 and N5b).
+
+**What the vectors say of the area record.**
+- **Every difference falls under a row the area verdict names, and none needs a new row.** So the vectors falsify no
+  class of JSD-0082.
+- **Every row with a behavioural difference is reached** by at least one vector. The generator's `check_rows` and its
+  test check this.
+- **51 of the 52 rows JSD-0082 calls corrections of Broiler.JS are confirmed** by at least one vector of this engine.
+  The 52nd, L44, is a correction only under invariant globalization, which no vector run sets; part D holds it.
+- **Broiler.VM's three corrections, Z8, L9 and L18, are each confirmed.**
+- **Every vector of the other rows the verdict calls the same matches in both engines.**
+
 ## State
 
 **2026-10-26, at SJL-9.1: the rule and its data only. Nothing here is a verdict, and nothing has been taken.**
@@ -139,6 +217,10 @@ same.
 
 No other commit is named yet.
 
+*2026-10-26, at SJL-9.2a:* the sentence above, "No other commit is named yet.", held until SJL-9.2a. The corpus
+revisions' commits and the commits the engine-level runs were taken at are named in section "The engine-level vectors".
+Those runs are in `engine/`, which the list below did not foresee. They are no part's runs.
+
 **What the bundle will hold:**
 - `base/`: parts A and B's base runs, each imported unchanged with the digest of its zip;
 - `after/`: parts A and B's after runs, each comparison's report, the classification file, and the table of every C1,
@@ -156,3 +238,7 @@ JSD-0082 records its decisions, changes no rule: nothing is accepted without rev
 before SJL-7 and SJL-8 meet theirs, and so not before SJL-3 meets SJL-3's.
 
 Broiler.VM judges its own half in its own bundle of the same name. This bundle reads none of its runs.
+
+*2026-10-26, at SJL-9.2a:* "This bundle reads none of its runs" holds for the rule's parts. `engine/broiler-vm-*` are
+Broiler.VM's runs of the shared vectors that SJL-9.2a took as the basis of revision 28's `divergence.broiler-vm`
+fields, as bundle `sjl-10-001` retains its own. They are not a reading of Broiler.VM's half.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Write the Intl area of the conformance corpus (corpus revision 27, milestone SJL-9.2, work package SJL-9.2a).
+"""Write the Intl area of the conformance corpus (revisions 27 and 28, milestone SJL-9.2, work package SJL-9.2a).
 
     python3 -I scripts/conformance/generate_intl_vectors.py --node <Node v26.12.0> --witness-node <Node 22.22.0>
         --cldr <directory holding the cldr-json 48.2.0 tarballs> [--out conformance/vectors/intl] [--spec <ecma402>]
@@ -74,7 +74,7 @@ DEFAULT_OUT = CORPUS / "intl"
 INTLREF = SCRIPTS / "intlref.mjs"
 UNION = REPOSITORY / "docs" / "evidence" / "sjl-9-001" / "locales" / "union.tsv"
 SINCE = 27              # the corpus revision that added the area
-CORPUS_REVISION = 27    # the corpus revision this generator writes: REVISIONS.md's last row
+CORPUS_REVISION = 28    # the corpus revision this generator writes: REVISIONS.md's last row
 GENERATOR = "generate_intl_vectors.py"
 DIVERGENCES = SCRIPTS / "intl-divergences.txt"
 
@@ -2042,17 +2042,24 @@ def render_record(vector: Vector, identifier: str, divergence: dict[str, str] | 
     case = vector.case
     divergence = divergence or {}
     cls = vector.cls
+    per_engine = dict(vector.per_engine)
     for engine in divergence:
-        if cls == "impl-defined" and engine not in vector.per_engine:
-            raise GeneratorError(f"{identifier}: an impl-defined vector classified for {engine}, which has no per-engine "
-                                 "expectation there (SCHEMA.md section 5)")
+        if cls == "impl-defined" and engine not in per_engine:
+            # An engine with no per-engine field is compared with `out` (SCHEMA.md section 5), and a divergence field
+            # on an impl-defined vector needs that engine's per-engine field beside it. Where the vector's note says
+            # the engine is compared with the reference, its plan's expectation is `out`, and the record states it.
+            if not any("compared with the reference" in note for note in vector.notes if note):
+                raise GeneratorError(f"{identifier}: an impl-defined vector classified for {engine}, which has no "
+                                     "per-engine expectation there and whose note does not compare it with the "
+                                     "reference (SCHEMA.md section 5)")
+            per_engine[engine] = vector.out
     if divergence and cls == "normative":
         cls = "divergence"
     lines = [f"id: {identifier}", "area: intl", f"op: {case.op}",
              "in: " + (" ".join(typed(v) for v in case.inputs) if case.inputs else "undefined"),
              f"out: {vector.out}", f"class: {cls}"]
-    for engine in sorted(vector.per_engine):
-        lines.append(f"per-engine.{engine}: {vector.per_engine[engine]}")
+    for engine in sorted(per_engine):
+        lines.append(f"per-engine.{engine}: {per_engine[engine]}")
     for engine in sorted(divergence):
         lines.append(f"divergence.{engine}: {divergence[engine]}")
     lines.append("prov: " + " ".join(dict.fromkeys(vector.prov)))
