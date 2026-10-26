@@ -1,4 +1,5 @@
 using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
@@ -260,6 +261,103 @@ public sealed class Phase3CompilerSpecializationTests
                 Assert.True(cache.Snapshot().QuarantinedEntries > 0);
             }
             Assert.NotEmpty(Directory.GetFiles(folder, "*.bad-*"));
+        }
+        finally
+        {
+            if (Directory.Exists(folder))
+                Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact(Timeout = 600000)]
+    public void PersistentCache_DoesNotLoadAnEntryWrittenUnderAnotherEngine()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "broiler-phase3-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            using (var cache = new AssemblyCodeCache(folder, "engine-a"))
+            using (var context = new JSContext { CodeCache = cache })
+                Assert.Equal(42, context.Eval("21 * 2", "phase3-engine.js").IntValue);
+            var entryA = Path.GetFileNameWithoutExtension(Assert.Single(Directory.GetFiles(folder, "*.dll")));
+
+            // Engine B keys the script apart from engine A, so it compiles the script rather
+            // than open engine A's entry, and commits its own entry beside it.
+            using (var cache = new AssemblyCodeCache(folder, "engine-b"))
+            using (var context = new JSContext { CodeCache = cache })
+            {
+                Assert.Equal(42, context.Eval("21 * 2", "phase3-engine.js").IntValue);
+                var snapshot = cache.Snapshot();
+                Assert.Equal(0, snapshot.Hits);
+                Assert.Equal(1, snapshot.Misses);
+                Assert.Equal(0, snapshot.QuarantinedEntries);
+            }
+            var entryB = Path.GetFileNameWithoutExtension(Assert.Single(
+                Directory.GetFiles(folder, "*.dll"),
+                path => Path.GetFileNameWithoutExtension(path) != entryA));
+
+            // Engine A's entry where engine B looks for the script: its manifest names engine A,
+            // so engine B quarantines it rather than load it.
+            foreach (var extension in new[] { ".manifest.json", ".dll", ".pdb" })
+                File.Copy(Path.Combine(folder, entryA + extension), Path.Combine(folder, entryB + extension), overwrite: true);
+            using (var cache = new AssemblyCodeCache(folder, "engine-b"))
+            using (var context = new JSContext { CodeCache = cache })
+            {
+                Assert.Equal(42, context.Eval("21 * 2", "phase3-engine.js").IntValue);
+                var snapshot = cache.Snapshot();
+                Assert.Equal(0, snapshot.Hits);
+                Assert.Equal(1, snapshot.QuarantinedEntries);
+            }
+            Assert.Equal(3, Directory.GetFiles(folder, entryB + ".*.bad-*").Length);
+
+            using (var cache = new AssemblyCodeCache(folder, "engine-a"))
+            using (var context = new JSContext { CodeCache = cache })
+            {
+                Assert.Equal(42, context.Eval("21 * 2", "phase3-engine.js").IntValue);
+                Assert.Equal(1, cache.Snapshot().Hits);
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(folder))
+                Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact(Timeout = 600000)]
+    public void PersistentCache_EngineCoversEveryEngineAssemblyAnEntryCalls()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "broiler-phase3-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            using (var cache = new AssemblyCodeCache(folder))
+            using (var context = new JSContext { CodeCache = cache })
+            {
+                Assert.Equal(42, context.Eval("var a = 41; eval('a + 1')", "phase3-engine.js").IntValue);
+                Assert.Equal("1,2", context.Eval("function* g() { yield 1; yield 2; } [...g()].join(',')", "phase3-engine-generator.js").ToString());
+            }
+
+            var called = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var pePath in Directory.GetFiles(folder, "*.dll"))
+            {
+                using var stream = File.OpenRead(pePath);
+                using var pe = new PEReader(stream);
+                var metadata = pe.GetMetadataReader();
+                foreach (var handle in metadata.AssemblyReferences)
+                    called.Add(metadata.GetString(metadata.GetAssemblyReference(handle).Name));
+            }
+
+            // The direct eval is a call of the compiler's DirectEvalSupport.Execute, which the
+            // engine loads by name, so no reference from the host leads to the compiler.
+            Assert.Contains("Broiler.JavaScript.Compiler", called);
+            Assert.Contains("Broiler.JavaScript.Runtime", called);
+            Assert.Contains("Broiler.JavaScript.LinqExpressions", called);
+            var modules = AssemblyCodeCache.EngineModules;
+            foreach (var name in called.Where(name => name.StartsWith("Broiler.", StringComparison.Ordinal)))
+            {
+                var loaded = AppDomain.CurrentDomain.GetAssemblies().Single(assembly => assembly.GetName().Name == name);
+                Assert.True(modules.TryGetValue(name, out var moduleVersionId), name);
+                Assert.Equal(loaded.ManifestModule.ModuleVersionId, moduleVersionId);
+            }
         }
         finally
         {

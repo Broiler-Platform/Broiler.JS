@@ -34,13 +34,15 @@ public readonly record struct AssemblyCodeCacheSnapshot(
 /// </summary>
 public sealed class AssemblyCodeCache : ICodeCache, IDisposable
 {
-    private const int ManifestSchema = 3;
+    private const int ManifestSchema = 4;
     private static readonly ConcurrentDictionary<string, object> EntryLocks = new(StringComparer.Ordinal);
     private static readonly Guid Sha256DocumentHashAlgorithm = new("8829d00f-11b8-4213-878b-770e8597ac16");
     private static readonly Guid JavaScriptLanguage = new("3a12d0b8-c26c-11d0-b442-00a0244a1dd2");
+    private static readonly Lazy<ImmutableSortedDictionary<string, Guid>> LoadedEngineModules = new(FindEngineModules);
+    private static readonly Lazy<string> CurrentEngine = new(() => ComputeEngineIdentity(LoadedEngineModules.Value));
 
     private readonly DirectoryInfo cacheFolder;
-    private readonly string engineVersion;
+    private readonly string engine;
     private readonly List<AssemblyLoadContext> loadContexts = [];
     private long hits;
     private long misses;
@@ -50,10 +52,26 @@ public sealed class AssemblyCodeCache : ICodeCache, IDisposable
     private bool disposed;
 
     public AssemblyCodeCache(string path = ".\\cache")
+        : this(path, CurrentEngine.Value)
+    {
+    }
+
+    /// <summary>
+    /// Opens the cache as the engine <paramref name="engine"/> names, in place of the build
+    /// this process runs; tests use it to write and read a folder as two different engines.
+    /// </summary>
+    internal AssemblyCodeCache(string path, string engine)
     {
         cacheFolder = new DirectoryInfo(path);
-        engineVersion = GetType().Assembly.GetName().Version?.ToString() ?? "0.0.0.0";
+        this.engine = engine;
     }
+
+    /// <summary>
+    /// The module version id of every engine assembly the host or the compiler references,
+    /// directly or through another, by assembly name: the build the cache keys and checks its
+    /// entries on.
+    /// </summary>
+    internal static IReadOnlyDictionary<string, Guid> EngineModules => LoadedEngineModules.Value;
 
     public AssemblyCodeCacheSnapshot Snapshot() => new(
         Interlocked.Read(ref hits),
@@ -96,7 +114,7 @@ public sealed class AssemblyCodeCache : ICodeCache, IDisposable
             var manifest = JsonSerializer.Deserialize<CacheManifest>(File.ReadAllBytes(paths.Manifest));
             if (manifest is null
                 || manifest.Schema != ManifestSchema
-                || manifest.EngineVersion != engineVersion
+                || manifest.Engine != engine
                 || manifest.SourceHash != ComputeSourceHash(code.Code.Value)
                 || manifest.Location != (code.Location ?? string.Empty)
                 || manifest.Options != code.Options.ToString()
@@ -162,7 +180,7 @@ public sealed class AssemblyCodeCache : ICodeCache, IDisposable
         var pdb = GeneratePortablePdb(pe, code.Location, sourceHash);
         var manifest = new CacheManifest(
             ManifestSchema,
-            engineVersion,
+            engine,
             sourceHash,
             code.Location ?? string.Empty,
             code.Options.ToString(),
@@ -197,7 +215,7 @@ public sealed class AssemblyCodeCache : ICodeCache, IDisposable
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         AppendText(hash, $"broiler-persistent-cache-v{ManifestSchema}\n");
-        AppendText(hash, engineVersion);
+        AppendText(hash, engine);
         AppendText(hash, "\n");
         AppendText(hash, code.Options.ToString());
         AppendText(hash, "\n");
@@ -213,6 +231,63 @@ public sealed class AssemblyCodeCache : ICodeCache, IDisposable
         }
         AppendText(hash, "\n");
         AppendText(hash, code.Code.Value);
+        return Convert.ToHexString(hash.GetHashAndReset());
+    }
+
+    /// <summary>
+    /// Walks the references of this assembly and of the compiler to every engine (Broiler)
+    /// assembly. The walk starts at the compiler too because the engine loads it by name
+    /// (<c>DefaultJSCompiler</c>), so no reference leads to it, and this assembly references
+    /// only what it names. An entry's code calls engine members by signature, so it is valid
+    /// only under the build it was compiled by. Assembly versions do not name that build (this
+    /// assembly's is 0.0.0.0 at every build), nor do informational versions, which name a
+    /// commit and not uncommitted changes; a module version id does, since a deterministic
+    /// build changes it with the assembly's contents.
+    /// </summary>
+    private static ImmutableSortedDictionary<string, Guid> FindEngineModules()
+    {
+        var modules = ImmutableSortedDictionary.CreateBuilder<string, Guid>(StringComparer.Ordinal);
+        var pending = new Stack<Assembly>();
+        pending.Push(typeof(AssemblyCodeCache).Assembly);
+        pending.Push(typeof(Broiler.JavaScript.Compiler.FastCompiler).Assembly);
+        while (pending.TryPop(out var assembly))
+        {
+            if (!modules.TryAdd(assembly.GetName().Name!, assembly.ManifestModule.ModuleVersionId))
+                continue;
+
+            foreach (var reference in assembly.GetReferencedAssemblies())
+            {
+                if (reference.Name is not { } name
+                    || !name.StartsWith("Broiler.", StringComparison.Ordinal)
+                    || modules.ContainsKey(name))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    pending.Push(Assembly.Load(reference));
+                }
+                catch (FileNotFoundException)
+                {
+                    // Not deployed, so no entry's code can call it either.
+                    modules.TryAdd(name, Guid.Empty);
+                }
+            }
+        }
+        return modules.ToImmutable();
+    }
+
+    private static string ComputeEngineIdentity(ImmutableSortedDictionary<string, Guid> modules)
+    {
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        foreach (var (name, moduleVersionId) in modules)
+        {
+            AppendText(hash, name);
+            AppendText(hash, " ");
+            AppendText(hash, moduleVersionId.ToString("N"));
+            AppendText(hash, "\n");
+        }
         return Convert.ToHexString(hash.GetHashAndReset());
     }
 
@@ -360,7 +435,7 @@ public sealed class AssemblyCodeCache : ICodeCache, IDisposable
 
     private sealed record CacheManifest(
         int Schema,
-        string EngineVersion,
+        string Engine,
         string SourceHash,
         string Location,
         string Options,
