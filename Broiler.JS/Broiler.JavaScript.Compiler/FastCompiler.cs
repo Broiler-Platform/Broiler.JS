@@ -419,6 +419,14 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
             BExpression.TryFinally(body, BExpression.Call(strictScope, DisposeMethod)));
     }
 
+    // Records a value-bearing statement's value in every completion variable up to the nearest
+    // null boundary (a function body, a finally block). Only a statement that produces a value
+    // itself calls it — an expression statement (VisitExpressionStatement). A compound statement
+    // (if, a loop, switch, try, with) owns a `#cv` that its body's statements write through this,
+    // and propagates it outwards; it must never track its body's COMPILED value as well. A block
+    // compiles to its last expression's value, and a trailing declaration compiles to a value too,
+    // so `do { 1; var x = 2; } while (false)` would complete with 2 where the spec gives the last
+    // value-bearing statement's 1. VisitProgram and VisitBlock rely on the same contract.
     private BExpression TrackCompletion(BExpression result)
     {
         if (result == null || !typeof(JSValue).IsAssignableFrom(result.Type))
@@ -457,11 +465,11 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
     // A statement the for-loop pass added to a loop it rewrites (AstStatement.IsLoopBookkeeping) takes no
     // part in the completion value. Where one is tracked it is compiled above a null boundary, so that
     // TrackCompletion and PropagateCompletion reach no completion variable from inside it, and typed void,
-    // so that the loop's TrackCompletion of the body does not take its value either. The try that runs the
-    // copy back on a `continue` holds the body itself: it is built without a completion variable of its own,
-    // which would turn a body that completed empty into undefined, and the body's statements set the value
-    // as they would without it. In a function's body nothing is tracked, and the statement compiles as any
-    // other.
+    // so that it yields no value either (no statement tracks its body's compiled value; see TrackCompletion).
+    // The try that runs the copy back on a `continue` holds the body itself: it is built without a completion
+    // variable of its own, which would turn a body that completed empty into undefined, and the body's
+    // statements set the value as they would without it. In a function's body nothing is tracked, and the
+    // statement compiles as any other.
     private BExpression VisitLoopBookkeeping(AstStatement statement)
     {
         if (completionScopes.Top?.Item == null)

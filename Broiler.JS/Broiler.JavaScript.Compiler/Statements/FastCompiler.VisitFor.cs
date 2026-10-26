@@ -141,7 +141,8 @@ partial class FastCompiler
         var pList = new Sequence<BParameterExpression> { en, completionVar };
         if (iterationValueVariable != null)
             pList.Add(iterationValueVariable);
-        var body = TrackCompletion(VisitStatement(forInStatement.Body));
+        // The body's statements track their own values; its compiled value is not one (see TrackCompletion).
+        var body = VisitStatement(forInStatement.Body);
         var bodyListItems = new Sequence<BExpression>
         {
             BExpression.IfThen(BExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)), BExpression.Goto(s.Break)),
@@ -229,7 +230,8 @@ partial class FastCompiler
         using var completion = completionScopes.Push(completionVar);
         using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, continueTarget, false, label) { CompletionVariable = completionVar });
         var en = BExpression.Variable(typeof(IElementEnumerator));
-        var body = TrackCompletion(VisitStatement(forOfStatement.Body));
+        // The body's statements track their own values; its compiled value is not one (see TrackCompletion).
+        var body = VisitStatement(forOfStatement.Body);
         var right = VisitExpression(forOfStatement.Target);
         var enumerator = forOfStatement.IsAwait ? IElementEnumeratorBuilder.GetAsync(right) : IElementEnumeratorBuilder.Get(right);
 
@@ -501,7 +503,8 @@ partial class FastCompiler
 
         using var completion = completionScopes.Push(completionVar);
         using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, continueTarget, false, label) { CompletionVariable = completionVar });
-        var body = TrackCompletion(VisitStatement(forStatement.Body));
+        // The body's statements track their own values; its compiled value is not one (see TrackCompletion).
+        var body = VisitStatement(forStatement.Body);
 
         innerBody.Add(body);
         innerBody.Add(BExpression.Label(continueTarget));

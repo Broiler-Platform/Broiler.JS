@@ -2,9 +2,7 @@
 using Broiler.JavaScript.Ast.Statements;
 using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
-using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
-using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler;
 
@@ -35,36 +33,27 @@ partial class FastCompiler
                     var label = labeledStatement.Label.Span.Value;
                     var prefixesLoop = PrefixesLoop(labeledStatement);
 
-                    // Inside a generator the body is lowered into a state machine and the
-                    // script/eval completion value is irrelevant — so emit the labeled
-                    // body plainly, without the completion-tracking try/finally wrapper
-                    // (mirroring VisitTryStatement's generator special-case). That wrapper
-                    // is a rewritten try region whose `finally` (PropagateCompletion) would
-                    // be SKIPPED by a `break <label>` that branches out of the body, leaving
-                    // a stale region on the generator's try-region stack and corrupting the
-                    // pending-completion unwinding of an enclosing finally.
-                    if (scope.Top.Function?.Generator == true)
-                    {
-                        var genLoopScope = new LoopScope(breakTarget, null, false, label) { IsLabelOnly = true, PrefixesLoop = prefixesLoop };
-                        using var gs = scope.Top.Loop.Push(genLoopScope);
-                        return BExpression.Block(
-                            VisitStatement(labeledStatement.Body),
-                            BExpression.Label(breakTarget),
-                            JSUndefinedBuilder.Value);
-                    }
-
-                    var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
-                    var outerCompletionVars = GetCompletionVariables();
-                    var loopScope = new LoopScope(breakTarget, null, false, label) { IsLabelOnly = true, PrefixesLoop = prefixesLoop, CompletionVariable = completionVar };
-                    using var completion = completionScopes.Push(completionVar);
-                    using var s = scope.Top.Loop.Push(loopScope);
-                    var body = TrackCompletion(VisitStatement(labeledStatement.Body));
+                    // A LabelledStatement completes with its item's completion, an empty one
+                    // included: unlike if, the loops, switch, try and with it applies no
+                    // UpdateEmpty(…, undefined), and a `break` to its own label only turns the
+                    // break into a normal completion carrying the break's value. Both values are
+                    // in the enclosing completion variables already when the body ends or breaks
+                    // (its statements track themselves, and a nested statement that completes
+                    // with undefined propagates that on its way out), so the body is emitted
+                    // plainly, with no completion variable of its own. One reset to undefined
+                    // and propagated outwards made `1; L: {}` and `1; L: var x = 2;` complete
+                    // with undefined, not 1.
+                    //
+                    // That also keeps a generator free of the try/finally wrapper the variable
+                    // needed: a generator's rewritten try region whose `finally` is SKIPPED by a
+                    // `break <label>` out of the body leaves a stale region on the generator's
+                    // try-region stack and corrupts the pending-completion unwinding of an
+                    // enclosing finally.
+                    using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, null, false, label) { IsLabelOnly = true, PrefixesLoop = prefixesLoop });
                     return BExpression.Block(
-                        new Sequence<BParameterExpression> { completionVar },
-                        BExpression.Assign(completionVar, JSUndefinedBuilder.Value),
-                        BExpression.TailCallTransparentTryFinally(body, PropagateCompletion(completionVar, outerCompletionVars)),
+                        VisitStatement(labeledStatement.Body),
                         BExpression.Label(breakTarget),
-                        completionVar);
+                        JSUndefinedBuilder.Value);
                 }
         }
 
