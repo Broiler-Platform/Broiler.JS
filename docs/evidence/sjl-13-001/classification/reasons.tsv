@@ -1,0 +1,17 @@
+code	meaning
+test262	the test's front matter: a parse-negative test refused by the syntax rows of the catalogue that explain it, or a test that is not parse-negative and that both engines' baselines accept
+semantics-only	every catalogue row that refuses the input is one the stage table assigns `semantics` (SJL-15's model): either outcome is admitted
+engines	an input of Broiler.VM's or Broiler.JS's corpus that both engines' baselines accept, or that both parsers refuse (the rows of Broiler.VM's first code)
+stage	both engines refuse it, one only after its parse: the stage of the catalogue row decides (`syntax`: refused; `semantics`: either)
+correction	a row of the correspondence corrects one engine (or both); the expectation is the specification's
+proposal	a proposal's construct: refused where the configuration's flag for its form is off (decision D17, finding F16)
+provider	a regular-expression literal the configuration's validator decides (decision D7; the correspondence's R18 to R20 and F29(c))
+limit	the contract's nesting or tree-depth limit (decision D14): refused at Broiler.VM's bound in V; in J the bound is the library's supported maximum, and a refusal past it is part A's outcome L
+engine-row	an engine refuses it by an `engine` row of the stage table (a format ceiling, an import attribute the host cannot honour, a JSON module's content), which the syntax half never reports
+module-graph	Broiler.VM's B1 compiles a module with the graph the conformance root reaches, so a neighbour's refusal refuses it; its own text is accepted at the syntax half (the correspondence's P34)
+tool	a difference of the SJL-12 tool's entry K, not of the syntax half: K has no module record (P36) and no top-level await (R04)
+fixture-error	a test262 fixture that holds a deliberate error, so the manifest's positive does not apply (the correspondence's P35)
+json-as-script	a JSON input, read under the Script goal as SJL-12's tool read it (the correspondence's P04): the syntax half has no JSON goal
+eval-vm	an eval request Broiler.VM's B3 accepts
+eval-as	an eval request whose first diagnostic in B3 is that of another reading of the same text; that reading's expectation
+eval-stage	an eval request whose first diagnostic in B3 no other reading has: the stage Broiler.VM's code shows
