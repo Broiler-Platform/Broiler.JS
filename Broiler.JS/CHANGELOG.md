@@ -49,6 +49,29 @@ body took part in that value. No public member is added, removed or changed.
 - **A persisted entry of `AssemblyCodeCache` written before this change is not read.** It holds the old code, and
   the cache keys every entry on the module version ids of the engine's assemblies, which this change alters.
 
+### `continue` names any label of a loop's label set (2026-10-26)
+
+- **`continue L` now continues the loop when `L` is an outer label of a label set**, several labels stacked
+  directly on one loop. By ECMA-262 (ContainsUndefinedContinueTarget, and LabelledEvaluation's labelSet) every label
+  that directly prefixes an IterationStatement is a continue target of it. So in
+  `L: M: while (n < 3) { n++; if (n < 3) continue L; inner++; }` both `L` and `M` continue the loop, and the program
+  ends with `n=3 inner=1`. Broiler.JS took only the innermost label. It refused the program with the early
+  SyntaxError "No label found for L". This is the defect bundle `sjl-12-001` records against EE0082
+  ([`docs/evidence/sjl-12-001/catalogue/completeness.md`](../docs/evidence/sjl-12-001/catalogue/completeness.md),
+  "Refusals the edition does not make").
+  - **The early check.** `ControlFlowValidator` (`SyntaxValidation.cs`) now looks through the nested labels to the
+    statement they all label. `L: { while (1) { continue L; } }`, where `L` labels a block that holds the loop, is
+    still an early SyntaxError, and so is `L: { M: while (1) { continue L; } }`.
+  - **The compiler.** An outer label keeps its own label-only `LoopScope`, so `break L` still leaves the whole
+    statement with the loop's completion value. That scope, marked `IsLabelOnly` (the entry below), is now also
+    marked `PrefixesLoop`. The new `LoopScope.GetContinue` resolves `continue L` through it to the continue target
+    of the loop its label chain wraps. The generator path of `FastCompiler.VisitLabeledStatement` marks its scope
+    the same way.
+- `CompilerTests.Labeled_Continue_Targets_Every_Label_Of_A_Label_Set` and
+  `Labeled_Continue_To_A_Label_That_Does_Not_Prefix_A_Loop_Is_SyntaxError` (Compiler.Tests) hold the cases: `while`,
+  `do`-`while`, `for`, `for`-`in`, `for`-`of` with a `let` head, three stacked labels, `break L`, a generator and the
+  completion value.
+
 ### An unlabeled `break` or `continue` skips an enclosing labelled block (2026-10-26)
 
 - **An unlabeled `break` leaves the innermost loop or `switch`.** ECMA-262 makes the innermost

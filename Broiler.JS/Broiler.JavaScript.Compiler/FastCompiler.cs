@@ -503,10 +503,10 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         string name = continueStatement.Label?.Name.Value;
         if (name != null)
         {
-            var target = LoopScope.Get(name);
+            var target = LoopScope.GetContinue(name);
             // `continue <label>` jumps to the labelled loop's CONTINUE target (next
             // iteration), not its Break target — otherwise it exits the loop entirely.
-            return target == null ? throw JSEngine.NewSyntaxError($"No label found for {name}") : BExpression.Continue(target.Continue);
+            return target == null ? throw JSEngine.NewSyntaxError($"No label found for {name}") : BExpression.Continue(target);
         }
 
         // An unlabeled `continue` targets the innermost loop, skipping any enclosing

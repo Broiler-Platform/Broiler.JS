@@ -43,6 +43,39 @@ public class CompilerTests
         Assert.Equal(expected, result.ToString());
     }
 
+    [Theory]
+    // Every label of a label set (`L: M: while`) is a continue target of the loop the
+    // labels prefix, not only the innermost one. Regression: `continue L` was rejected
+    // with "No label found for L". `break L` still leaves the whole statement.
+    [InlineData("var n=0,inner=0;L:M:while(n<3){n++;if(n<3)continue L;inner++;}'n='+n+' inner='+inner;", "n=3 inner=1")]
+    [InlineData("var s='';L:M:for(var i=0;i<4;i++){if(i%2)continue L;s+=i;}s;", "02")]
+    [InlineData("var s='',i=0;L:M:do{i++;if(i<3)continue L;s+=i;}while(i<4);s;", "34")]
+    [InlineData("var s='';X:Y:Z:for(var i=0;i<3;i++){for(var j=0;j<3;j++){if(j===1)continue X;s+=''+i+j;}}s;", "001020")]
+    [InlineData("var s='';L:M:for(var k in {a:1,b:2,c:3}){if(k==='b')continue L;s+=k;}s;", "ac")]
+    [InlineData("var s='';L:M:for(let k of ['a','b','c']){if(k==='b')continue L;s+=k;}s;", "ac")]
+    [InlineData("var s='';L:M:for(var i=0;;i++){if(i===2)break L;s+=i;}s;", "01")]
+    [InlineData("var s='';function* g(){L:M:for(var i=0;i<4;i++){if(i%2)continue L;yield i;}}for(var v of g())s+=v;s;", "02")]
+    [InlineData("L:M:for(var z=0;z<3;z++){z;continue L;}", "2")]
+    public void Labeled_Continue_Targets_Every_Label_Of_A_Label_Set(string code, string expected)
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval(code);
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
+    // A label on a block that holds a loop is not a continue target of that loop: the
+    // `continue` is an early SyntaxError, raised when the body is compiled, not run.
+    [InlineData("Function('L: { while (1) { continue L; } }');")]
+    [InlineData("Function('L: M: { while (1) { continue L; } }');")]
+    [InlineData("Function('L: { M: while (1) { continue L; } }');")]
+    public void Labeled_Continue_To_A_Label_That_Does_Not_Prefix_A_Loop_Is_SyntaxError(string code)
+    {
+        using var ctx = new JSContext();
+        var ex = Assert.Throws<JSException>(() => ctx.Eval(code));
+        Assert.Equal("SyntaxError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+    }
+
     [Fact(Timeout = 600000)]
     public void Compile_SimpleExpression_ProducesResult()
     {
