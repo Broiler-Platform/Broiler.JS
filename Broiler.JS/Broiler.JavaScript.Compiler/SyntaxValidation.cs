@@ -567,7 +567,15 @@ public static void ValidateProgram(
             if (HasLabel(breakLabels, label))
                 throw new FastParseException(labeledStatement.Start, $"Label '{label}' has already been declared");
 
-            var canContinue = labeledStatement.Body.Type is FastNodeType.WhileStatement
+            // Every label of a label set that directly prefixes an IterationStatement is a
+            // continue target of that loop, so `L` in `L: M: while (…) continue L;` is one
+            // too: look through the nested labels to the statement they all label. A label
+            // on a block that holds a loop (`L: { while (…) continue L; }`) is not.
+            var labelledItem = labeledStatement.Body;
+            while (labelledItem is AstLabeledStatement nested)
+                labelledItem = nested.Body;
+
+            var canContinue = labelledItem.Type is FastNodeType.WhileStatement
                 or FastNodeType.DoWhileStatement
                 or FastNodeType.ForStatement
                 or FastNodeType.ForInStatement

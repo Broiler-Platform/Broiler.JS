@@ -33,6 +33,7 @@ partial class FastCompiler
                 {
                     var breakTarget = BExpression.Label();
                     var label = labeledStatement.Label.Span.Value;
+                    var prefixesLoop = PrefixesLoop(labeledStatement);
 
                     // Inside a generator the body is lowered into a state machine and the
                     // script/eval completion value is irrelevant — so emit the labeled
@@ -44,7 +45,7 @@ partial class FastCompiler
                     // pending-completion unwinding of an enclosing finally.
                     if (scope.Top.Function?.Generator == true)
                     {
-                        var genLoopScope = new LoopScope(breakTarget, null, false, label);
+                        var genLoopScope = new LoopScope(breakTarget, null, false, label) { PrefixesLoop = prefixesLoop };
                         using var gs = scope.Top.Loop.Push(genLoopScope);
                         return BExpression.Block(
                             VisitStatement(labeledStatement.Body),
@@ -54,7 +55,7 @@ partial class FastCompiler
 
                     var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
                     var outerCompletionVars = GetCompletionVariables();
-                    var loopScope = new LoopScope(breakTarget, null, false, label) { CompletionVariable = completionVar };
+                    var loopScope = new LoopScope(breakTarget, null, false, label) { CompletionVariable = completionVar, PrefixesLoop = prefixesLoop };
                     using var completion = completionScopes.Push(completionVar);
                     using var s = scope.Top.Loop.Push(loopScope);
                     var body = TrackCompletion(VisitStatement(labeledStatement.Body));
@@ -68,5 +69,24 @@ partial class FastCompiler
         }
 
         throw new NotImplementedException();
+    }
+
+    // True when the label is an outer label of a loop's label set (`L` in `L: M: while`):
+    // its body is a chain of labels that ends at an IterationStatement. `continue L` then
+    // continues that loop (LoopScope.GetContinue), while `break L` still leaves the whole
+    // labelled statement through this label's own break target.
+    private static bool PrefixesLoop(AstLabeledStatement labeledStatement)
+    {
+        if (labeledStatement.Body is not AstLabeledStatement nested)
+            return false;
+
+        while (nested.Body is AstLabeledStatement inner)
+            nested = inner;
+
+        return nested.Body.Type is FastNodeType.ForStatement
+            or FastNodeType.ForOfStatement
+            or FastNodeType.ForInStatement
+            or FastNodeType.WhileStatement
+            or FastNodeType.DoWhileStatement;
     }
 }
