@@ -48,6 +48,9 @@
     <ProjectReference Include="..\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Broiler.JavaScript.Compiler.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="..\modules\inbuilt\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>modules\%(RecursiveDir)%(FileName)%(Extension)</Link>

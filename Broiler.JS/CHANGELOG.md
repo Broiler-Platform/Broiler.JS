@@ -10,6 +10,46 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The console host's persistent code cache keys its entries on the engine's build (2026-10-26)
+
+`AssemblyCodeCache` (`Broiler.JS/Broiler.JavaScript/AssemblyCodeCache.cs`), the persistent code cache of the
+console host `BroilerJS`, keyed and checked each entry on the `AssemblyName.Version` of its own assembly, which
+Nerdbank.GitVersioning sets to `0.0.0.0` at every build of this repository, since it has no `version.json`. Every
+build therefore read the entries an earlier build wrote, and an entry whose code calls an engine member that has
+since changed, such as `DirectEvalSupport.Execute` before SJL-12.5 gave it `directEvalDepth` (below), failed with a
+`MissingMethodException` when it ran, instead of being treated as stale. This is the follow-up the SJL-12.5 records
+suggest ([`docs/public-api.md`](../docs/public-api.md), "What follows"). The host is not packaged, and no public
+member of a package is added, removed or changed.
+
+- **The cache names the engine by its build.** It walks the references of `BroilerJS` and of
+  `Broiler.JavaScript.Compiler` to every assembly whose name starts with `Broiler.`, and hashes each one's name and
+  module version id (MVID) into the engine's identity, once per process. The walk starts at the compiler too
+  because the engine loads it by name (`DefaultJSCompiler`), so no reference leads to it. The engine is built
+  deterministically, so an assembly's MVID changes when its contents change, and only then: an entry written before
+  a change to any engine assembly is not read after it (checked by adding an internal type to the compiler alone),
+  and a rebuild of the same sources still reads its entries. Informational versions were not used: they carry the
+  commit (`0.1.0-preview.1+<commit>` for the engine's assemblies, `0.0.0+<short commit>` for the host's), but two
+  builds of one commit with different uncommitted changes, or builds from a tree without git, share them.
+- **The identity is in the key and in the manifest.** `ComputeCacheKey` hashes it where it hashed the version, and
+  `TryLoad` loads an entry only if its manifest names the same identity (the manifest's `EngineVersion` is now
+  `Engine`). `ManifestSchema` goes from 3 to 4.
+- **A folder an earlier build wrote is not read.** The schema and the identity are both in the key, so this build
+  looks for every script under a key no earlier build wrote, and compiles the script again. It never opens the
+  earlier entries, so it does not quarantine them either: they stay on disk, unused, until the folder is cleared.
+  An entry found under this build's key whose manifest names another engine is quarantined (`*.bad-*`), as any
+  stale entry is. A host that updates to this change or later need not clear its folder, as the SJL-12.5 entry
+  below asks, for the cache to be correct; clearing it only reclaims the space.
+- **The first cache a process makes loads the engine's assemblies** to read their MVIDs, those of the walk that
+  the engine had not loaded yet included.
+- **Two tests** (`Phase3CompilerSpecializationTests`, `Compiler.Tests`).
+  `PersistentCache_DoesNotLoadAnEntryWrittenUnderAnotherEngine` writes an entry as one engine and reads the folder
+  as another, which compiles the script again, then puts the first engine's entry where the second looks for the
+  script, which quarantines it. `PersistentCache_EngineCoversEveryEngineAssemblyAnEntryCalls` asserts that every
+  `Broiler.` assembly the code of an entry references, the compiler, the runtime and `LinqExpressions` among them,
+  is in the identity with the MVID it was loaded with; it fails when the walk does not start at the compiler. For
+  them the cache gains an internal constructor that takes the identity and the internal `EngineModules`, and
+  `BroilerJS` grants its internals to `Broiler.JavaScript.Compiler.Tests`.
+
 ### The for-loop desugaring moves from the parser to a preparation pass of the compiler (2026-10-21, milestone SJL-12.5)
 
 The parser returns every `for`, `for-in` and `for-of` loop as written: the head's declaration, test and update,
