@@ -203,7 +203,8 @@ partial class FastCompiler
         var se = block.Statements.GetFastEnumerator();
         while (se.MoveNext(out var stmt))
         {
-            var exp = Visit(stmt);
+            // Every statement the for-loop pass adds is in a block it builds; see VisitLoopBookkeeping.
+            var exp = stmt.IsLoopBookkeeping ? VisitLoopBookkeeping(stmt) : Visit(stmt);
             if (exp == null)
                 continue;
 
