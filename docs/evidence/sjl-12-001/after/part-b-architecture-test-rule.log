@@ -1,0 +1,102 @@
+Test run for <scratch>/sjl12/wp7/jsw/art-arch-after/bin/Broiler.JavaScript.Architecture.Tests/release/Broiler.JavaScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+<scratch>/sjl12/wp7/jsw/art-arch-after/bin/Broiler.JavaScript.Architecture.Tests/release/Broiler.JavaScript.Architecture.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.06]   Discovering: Broiler.JavaScript.Architecture.Tests
+[xUnit.net 00:00:00.12]   Discovered:  Broiler.JavaScript.Architecture.Tests
+[xUnit.net 00:00:00.12]   Starting:    Broiler.JavaScript.Architecture.Tests
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_list_of_mutable_types_is_rule_SL2s [16 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a use of a desugaring walker", refusal: "parser_ambient_state names the desugaring walker B"···) [1 s]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a mutable static counter", refusal: "Witness.AmbientState.Parses is a mutable static fi"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a [ThreadStatic] field", refusal: "Witness.AmbientState.depth is [ThreadStatic]") [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a static readonly field of a mutable collection ty"···, refusal: "Witness.AmbientState.Seen is a static System.Colle"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a static readonly field of a mutable class", refusal: "Witness.AmbientState.EndOfInput is a static readon"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a settable static property", refusal: "Witness.AmbientState.Mode is a settable static pro"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a use of a Runtime type", refusal: "parser_ambient_state references the assembly Broil"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a static readonly array", refusal: "Witness.AmbientState.Delimiters is a static array") [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "an AsyncLocal", refusal: "parser_ambient_state names System.Threading.AsyncL"···) [< 1 ms]
+[xUnit.net 00:00:03.05]       The parser at <scratch>/sjl12/wp7/jsw/art-parser-rule/bin/Broiler.JavaScript.Parser.Tests/release/Broiler.JavaScript.Parser.dll has 10 violation(s):
+[xUnit.net 00:00:03.05]         Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.AstIdentifierReplacer
+[xUnit.net 00:00:03.05]         Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.ClosureDetector
+[xUnit.net 00:00:03.05]         Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.IdentifierNameCollector
+[xUnit.net 00:00:03.05]         Broiler.JavaScript.Parser references the assembly Broiler.JavaScript.Runtime
+[xUnit.net 00:00:03.05]         Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastParser.TempVarID is a mutable static field
+[xUnit.net 00:00:03.05]         Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastScanner.EOF is a static readonly Broiler.JavaScript.Ast.Misc.FastToken, whose type declares the mutable instance fields Next, Previous
+[xUnit.net 00:00:03.05]         Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastScanner.EmptyToken is a static readonly Broiler.JavaScript.Ast.Misc.FastToken, whose type declares the mutable instance fields Next, Previous
+[xUnit.net 00:00:03.05]         fixture: `for (let i = 0; i < 3; i++) { }` does not parse to one for-statement whose initialiser is the declaration as written
+[xUnit.net 00:00:03.05]         fixture: concurrent parses of one source on four threads ended on another parse's token
+[xUnit.net 00:00:03.05]         fixture: two parses of one source give different tree dumps
+[xUnit.net 00:00:03.05]       Stack Trace:
+[xUnit.net 00:00:03.05]         <scratch>/sjl12/wp7/jsw/js-after/Broiler.JS/Broiler.JavaScript.Architecture.Tests/ParserArchitectureTests.cs(55,0): at Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_parser_has_no_violations()
+[xUnit.net 00:00:03.05]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:03.05]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:03.06]       Output:
+[xUnit.net 00:00:03.06]         subject: <scratch>/sjl12/wp7/jsw/art-parser-rule/bin/Broiler.JavaScript.Parser.Tests/release/Broiler.JavaScript.Parser.dll (named by BROILER_ARCH_PARSER_ASSEMBLY)
+[xUnit.net 00:00:03.06]         violation: Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.AstIdentifierReplacer
+[xUnit.net 00:00:03.06]         violation: Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.ClosureDetector
+[xUnit.net 00:00:03.06]         violation: Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.IdentifierNameCollector
+[xUnit.net 00:00:03.06]         violation: Broiler.JavaScript.Parser references the assembly Broiler.JavaScript.Runtime
+[xUnit.net 00:00:03.06]         violation: Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastParser.TempVarID is a mutable static field
+[xUnit.net 00:00:03.06]         violation: Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastScanner.EOF is a static readonly Broiler.JavaScript.Ast.Misc.FastToken, whose type declares the mutable instance fields Next, Previous
+[xUnit.net 00:00:03.06]         violation: Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastScanner.EmptyToken is a static readonly Broiler.JavaScript.Ast.Misc.FastToken, whose type declares the mutable instance fields Next, Previous
+[xUnit.net 00:00:03.06]         for (let …): the source declares `let i`; the parser returned a for-statement whose initialiser is a Let declaration of 2 bindings (i, 2).
+[xUnit.net 00:00:03.06]         two parses: 1013 dump lines.
+[xUnit.net 00:00:03.06]         two parses: the dumps differ first at line 35:
+[xUnit.net 00:00:03.06]           first:  7 Name span "3"
+[xUnit.net 00:00:03.06]           second: 7 Name span "13"
+[xUnit.net 00:00:03.06]         concurrent parses: 80000 parses of `a` on 4 threads; 3226 held another parse's token (191 in the tree, 3037 as the end of the input's link back); the first seen: the token the end of the input links back to is Identifier a, from another parse.
+[xUnit.net 00:00:03.06]         violation: fixture: `for (let i = 0; i < 3; i++) { }` does not parse to one for-statement whose initialiser is the declaration as written
+[xUnit.net 00:00:03.06]         violation: fixture: two parses of one source give different tree dumps
+[xUnit.net 00:00:03.06]         violation: fixture: concurrent parses of one source on four threads ended on another parse's token
+[xUnit.net 00:00:03.06]   Finished:    Broiler.JavaScript.Architecture.Tests
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a use of a desugaring walker", refusal: "parser_ambient_state names the desugaring walker B"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a use of a desugaring walker", refusal: "parser_ambient_state names the desugaring walker B"···) [< 1 ms]
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: "a ThreadLocal", refusal: "parser_ambient_state names System.Threading.Thread"···) [< 1 ms]
+  Failed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_parser_has_no_violations [1 s]
+  Error Message:
+   The parser at <scratch>/sjl12/wp7/jsw/art-parser-rule/bin/Broiler.JavaScript.Parser.Tests/release/Broiler.JavaScript.Parser.dll has 10 violation(s):
+  Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.AstIdentifierReplacer
+  Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.ClosureDetector
+  Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.IdentifierNameCollector
+  Broiler.JavaScript.Parser references the assembly Broiler.JavaScript.Runtime
+  Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastParser.TempVarID is a mutable static field
+  Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastScanner.EOF is a static readonly Broiler.JavaScript.Ast.Misc.FastToken, whose type declares the mutable instance fields Next, Previous
+  Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastScanner.EmptyToken is a static readonly Broiler.JavaScript.Ast.Misc.FastToken, whose type declares the mutable instance fields Next, Previous
+  fixture: `for (let i = 0; i < 3; i++) { }` does not parse to one for-statement whose initialiser is the declaration as written
+  fixture: concurrent parses of one source on four threads ended on another parse's token
+  fixture: two parses of one source give different tree dumps
+  Stack Trace:
+     at Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_parser_has_no_violations() in <scratch>/sjl12/wp7/jsw/js-after/Broiler.JS/Broiler.JavaScript.Architecture.Tests/ParserArchitectureTests.cs:line 55
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ subject: <scratch>/sjl12/wp7/jsw/art-parser-rule/bin/Broiler.JavaScript.Parser.Tests/release/Broiler.JavaScript.Parser.dll (named by BROILER_ARCH_PARSER_ASSEMBLY)
+ violation: Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.AstIdentifierReplacer
+ violation: Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.ClosureDetector
+ violation: Broiler.JavaScript.Parser names the desugaring walker Broiler.JavaScript.Ast.IdentifierNameCollector
+ violation: Broiler.JavaScript.Parser references the assembly Broiler.JavaScript.Runtime
+ violation: Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastParser.TempVarID is a mutable static field
+ violation: Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastScanner.EOF is a static readonly Broiler.JavaScript.Ast.Misc.FastToken, whose type declares the mutable instance fields Next, Previous
+ violation: Broiler.JavaScript.Parser: Broiler.JavaScript.Parser.FastScanner.EmptyToken is a static readonly Broiler.JavaScript.Ast.Misc.FastToken, whose type declares the mutable instance fields Next, Previous
+ for (let …): the source declares `let i`; the parser returned a for-statement whose initialiser is a Let declaration of 2 bindings (i, 2).
+ two parses: 1013 dump lines.
+ two parses: the dumps differ first at line 35:
+   first:  7 Name span "3"
+   second: 7 Name span "13"
+ concurrent parses: 80000 parses of `a` on 4 threads; 3226 held another parse's token (191 in the tree, 3037 as the end of the input's link back); the first seen: the token the end of the input links back to is Identifier a, from another parse.
+ violation: fixture: `for (let i = 0; i < 3; i++) { }` does not parse to one for-statement whose initialiser is the declaration as written
+ violation: fixture: two parses of one source give different tree dumps
+ violation: fixture: concurrent parses of one source on four threads ended on another parse's token
+
+
+  Passed Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_clauses_read_the_parser_and_accept_at_least_one_read_only_static_field [6 ms]
+  Standard Output Messages:
+ accepted: Broiler.JavaScript.Parser.FastKeywordMap.<Instance>k__BackingField (Broiler.JavaScript.Parser.FastKeywordMap)
+ accepted: Broiler.JavaScript.Parser.FastScanner.NoBigIntWidth (Broiler.ECMAScript.LengthLimit)
+
+
+
+Total tests: 15
+     Passed: 14
+     Failed: 1
+ Total time: 3.5463 Seconds

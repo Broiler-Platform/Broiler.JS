@@ -1,0 +1,6 @@
+# the scratch copy with control K1 applied, before its build
+c29d653f5f93b66b5e0efdbe506205a5347fc18a
+git status --porcelain:
+ M Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs
+git status --porcelain --ignored:
+ M Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs

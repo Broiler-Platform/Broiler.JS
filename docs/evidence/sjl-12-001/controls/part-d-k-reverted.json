@@ -1,0 +1,19 @@
+{
+  "agree": true,
+  "differences": [],
+  "forLoopPass": {
+    "1": "found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram",
+    "2": "found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram",
+    "3": "found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram"
+  },
+  "manifestSha256": "1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc",
+  "part": "D",
+  "passFoundInEveryRun": true,
+  "population": 101562,
+  "populationSource": "docs/evidence/sjl-12-001/after/parse-corpus-c.tsv.gz",
+  "runs": {
+    "1": "docs/evidence/sjl-12-001/controls/part-d-k-reverted-d1.tsv.gz",
+    "2": "docs/evidence/sjl-12-001/controls/part-d-k-reverted-d2.tsv.gz",
+    "3": "docs/evidence/sjl-12-001/controls/part-d-k-reverted-d3.tsv.gz"
+  }
+}

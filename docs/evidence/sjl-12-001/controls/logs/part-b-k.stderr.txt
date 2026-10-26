@@ -1,0 +1,2 @@
+[xUnit.net 00:00:03.13]     Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_parser_has_no_violations [FAIL]
+Test Run Failed.

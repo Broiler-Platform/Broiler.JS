@@ -1,0 +1,4 @@
+# the after commit's checkout, before the tool's build
+c29d653f5f93b66b5e0efdbe506205a5347fc18a
+git status --porcelain:
+git status --porcelain --ignored:

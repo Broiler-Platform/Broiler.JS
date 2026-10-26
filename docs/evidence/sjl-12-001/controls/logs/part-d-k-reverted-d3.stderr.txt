@@ -1,0 +1,13 @@
+parse-corpus: for-loop pass found: Broiler.JavaScript.Compiler.ForLoopPreparation.Prepare(Broiler.JavaScript.Ast.AstProgram, System.Int32) : Broiler.JavaScript.Ast.AstProgram
+parse-corpus: 0/106963
+parse-corpus: 10000/106963
+parse-corpus: 20000/106963
+parse-corpus: 30000/106963
+parse-corpus: 40000/106963
+parse-corpus: 50000/106963
+parse-corpus: 60000/106963
+parse-corpus: 70000/106963
+parse-corpus: 80000/106963
+parse-corpus: 90000/106963
+parse-corpus: 100000/106963
+parse-corpus: 106963 input variant(s), 213926 row(s), 61.5 s, written to <scratch>/sjl12/wp7/jsw/runs/kr-d3.tsv.gz

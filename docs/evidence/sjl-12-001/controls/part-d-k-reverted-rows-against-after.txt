@@ -1,0 +1,5 @@
+$ sha256sum docs/evidence/sjl-12-001/base/parse-corpus-c.tsv.gz (in the after commit's checkout)
+0c007acd090994ea0818bed1ccb34d7d6141958327b4d6a8aac74b1ced288748  docs/evidence/sjl-12-001/base/parse-corpus-c.tsv.gz
+run 1, the rows without the #% lines: after commit 5875d3fdb45e553b61f2648da1b402e9a52f3a2371c326b540ff592b52336742, the copy after both reverts 5875d3fdb45e553b61f2648da1b402e9a52f3a2371c326b540ff592b52336742: same
+run 2, the rows without the #% lines: after commit 5875d3fdb45e553b61f2648da1b402e9a52f3a2371c326b540ff592b52336742, the copy after both reverts 5875d3fdb45e553b61f2648da1b402e9a52f3a2371c326b540ff592b52336742: same
+run 3, the rows without the #% lines: after commit 9280516a3e296e74d2807242ecb548bc980810636b296df99d49177215ea2e8e, the copy after both reverts 9280516a3e296e74d2807242ecb548bc980810636b296df99d49177215ea2e8e: same
