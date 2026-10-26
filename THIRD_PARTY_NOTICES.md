@@ -206,6 +206,36 @@ from milestone SJL-8.6, when this section's tables also join the engine's data a
 *Added 2026-10-17, at milestone SJL-8.2, when the data home's inputs and generator were added. Broiler.VM's
 `THIRD_PARTY_NOTICES.md` carries the same three inputs' entries for its own copies.*
 
+## The Intl data home (`Broiler.ECMAScript/data/intl/`)
+
+This repository is also the home of both engines' locale data (decision SJL-D-22 (a); Broiler.VM's JSD-0082).
+[`Broiler.ECMAScript/data/intl/`](Broiler.ECMAScript/data/intl/README.md) holds two pinned inputs, the locale
+lists of the two embeddings, and the tables `Broiler.ECMAScript.Generation` writes from them for this engine into
+`data/intl/generated/`. **No package carries the inputs or the tables** (decision SJL-D-6 (c)): each engine embeds
+its tables itself, Broiler.VM as its `JsCldrTables.g.cs` and Broiler.JS from milestone SJL-9.5. Until then nothing
+in this engine reads them.
+
+- **The Unicode Common Locale Data Repository (CLDR)**, release 48.2.0, archived unmodified in
+  [`data/intl/cldr/`](Broiler.ECMAScript/data/intl/cldr/README.md), each file held by its length and SHA-256 in
+  `cldr.pin`: Broiler.VM's pinned files, byte-for-byte copies of Broiler.VM's at its commit `4cf9ca44` (the
+  `cldr-json` packages' files from the npm registry, and the collation files, `common/main/root.xml` and the UCA
+  files from the CLDR repository), and this engine's extra main-data files from the same `cldr-json` packages.
+  They are © Unicode, Inc., under the Unicode License v3 below; the archive keeps the licence text it was
+  published with as `cldr-LICENSE.txt`, the same licence, whose copyright line reads "Copyright © 2004-2026
+  Unicode, Inc.". **Every table in `data/intl/generated/` is derived from them and remains subject to that
+  licence.**
+- **The Unicode Character Database**, release 17.0.0: `UnicodeData.txt` and `PropList.txt`, archived unmodified
+  in [`data/intl/ucd/`](Broiler.ECMAScript/data/intl/ucd/README.md) and held by `ucd.pin`, copies of Broiler.VM's
+  at the same commit and equal to Broiler.Unicode's pin entries. They are © Unicode, Inc., under the Unicode
+  License v3 below; the archive keeps the licence text as `unicode-LICENSE.txt`, whose copyright line reads
+  "Copyright © 1991-2026 Unicode, Inc.". The collation tables read General_Category, the decompositions, the
+  combining classes and Unified_Ideograph from them.
+- **The generator's collation code** follows the Unicode Collation Algorithm's implicit weights and ICU's
+  `CollationBuilder::setCaseBits` as Broiler.VM's generator described them; it reproduces no ICU code.
+
+*Added 2026-10-26, at milestone SJL-9.2b, when the data home's inputs and generator were added. Broiler.VM's
+`THIRD_PARTY_NOTICES.md` carries the CLDR and UCD entries for its own copies.*
+
 ## The reference datasets (`conformance/datasets/time/`)
 
 [`conformance/datasets/time/`](conformance/datasets/time/README.md) holds byte-for-byte copies of three programs

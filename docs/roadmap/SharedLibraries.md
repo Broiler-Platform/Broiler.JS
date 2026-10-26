@@ -1511,6 +1511,20 @@ This repository's part of it:
     Broiler.VM's options it writes Broiler.VM's `JsCldrTables.g.cs` byte for byte; with this engine's it writes one file
     per table under `data/intl/generated/`, which `BuiltIns` embeds as resources, as the time tables are, held by rule
     SL7. A change to the table format is a major version of the library.
+  *(Noted 2026-10-26, at SJL-9.2b, which built the home on branch `sjl-9-2b-home`: Broiler.VM's 114 entries are the
+  pin's first block, byte for byte; the tarballs of the extra files' sixteen packages each match their `json-integrity`
+  line in two retrievals; the UCD copies' lines equal Broiler.Unicode's; with Broiler.VM's parameters the source writer
+  writes what Broiler.VM's generator writes at `4cf9ca44`, before its assurance pass, SHA-256
+  `839bdc22afca187b58252f2487cd31c4b613396cd6596ffdcb6622fe1b534561` (bundle
+  [`sjl-9-001`](../evidence/sjl-9-001/README.md), "The data home"); and this engine's tables are under
+  `data/intl/generated/`, held by rule SL7 and by the completeness test of exit clause 3, and nothing in `BuiltIns`
+  reads them before SJL-9.5. Three readings the decisions leave to SJL-9.3 and SJL-9.5: decision D13's table, which
+  the shared data absorbs, names a default numbering system for 54 locales, of which only `ar-EG`, `fa` and `sa` are
+  on decision D5's list, so the shared tables carry no default for the other 51 (`bn`, `mr`, `ne`, `my` and the
+  regional `ar-*` among them); for `sr`, `sr-Cyrl` and `sr-Latn`, CLDR's `hms` duration pattern writes `.` while
+  their `timeSeparator` is `:`, which decision D34, reading the separator, leaves at `:`; and CLDR 48.2.0 lacks 34
+  per-locale names files for the list's locales, and calendar type or metazone names for a few of them, which the
+  home's README and the bundle list.)*
 - **The data contract** (decision D8): two layers, the tables as an `IIntlDataSet` and the questions as an
   `ILocaleData`, which this engine's host-culture provider also implements, ordered by `CompositeLocaleData`: the
   shared data first, then the optional secondary provider, then the parent and root. Broiler.VM keeps its

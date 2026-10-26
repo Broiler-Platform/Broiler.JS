@@ -15,14 +15,25 @@ The programme that creates them is owned in the Broiler.VM repository, under
 |---|---|---|
 | `Broiler.ECMAScript.Algorithms` | The language algorithms: number conversion, numerics, text, Date, the Temporal core, the time-zone algorithms. References the base class library only, and carries no data but the white-space set's generated `Space_Separator` table. | The contract types (`WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit`, `DepthLimit`), **the number-conversion area** of milestone SJL-3 (`Broiler.ECMAScript.Numbers`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numbers.md)), **the numerics area** of milestone SJL-4 (the same namespace; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numerics.md)) , **the text area** of milestone SJL-5 (`Broiler.ECMAScript.Text`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-text.md)), **the Date area** of milestone SJL-6 (`Broiler.ECMAScript.Time`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-date.md)), **the time-zone and calendar area** of milestone SJL-8, the decoder of the data home's tables over the bytes an engine hands in, the zone algorithms and the table-backed calendars' years (the same namespace; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-time-zones.md)) and **the Temporal core** of milestone SJL-10.3: its records and limits, balancing, grammar and serialization (part A), its calendars, the identifiers, the formula calendars and the table calendars over those years, month codes, eras, reference years, and calendar addition and difference (part B), and its durations, rounding and differences, with and without `relativeTo`, over calendar and time-zone providers (part C) (`Broiler.ECMAScript.Temporal`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md)). |
 | `Broiler.ECMAScript.Conformance` | The shared conformance vectors' reader, validator and runners. Test-only. | Not packed at this version; the corpus itself is [`conformance/vectors/`](../conformance/vectors/README.md). |
-| `Broiler.ECMAScript.Generation` | The time data home's generator: the tz, CLDR and calendar pin readers, a tz compiler equivalent to `zic`, the compact time zone and calendar tables, and source writers that wrap them into C#. Test-only, as Broiler.Unicode.Generation is: engines' tests run it, and it carries no table. | **The time data home** of milestone SJL-8.2 (`Broiler.ECMAScript.Generation.Time`), ported from Broiler.VM's architecture tests; its inputs and tables are [`data/time/`](data/time/README.md). Not yet published. |
+| `Broiler.ECMAScript.Generation` | The data homes' generators: the time data home's - the tz, CLDR and calendar pin readers, a tz compiler equivalent to `zic`, and the compact time zone and calendar tables - and the Intl data home's - the CLDR and UCD pin readers, the locale lists, and the Intl and collation tables - with writers that wrap the tables into C# or raw files. Test-only, as Broiler.Unicode.Generation is: engines' tests run it, and it carries no table. | **The time data home** of milestone SJL-8.2 (`Broiler.ECMAScript.Generation.Time`), ported from Broiler.VM's architecture tests; its inputs and tables are [`data/time/`](data/time/README.md). **The Intl data home** of milestone SJL-9.2b (`Broiler.ECMAScript.Generation.Intl`), ported from Broiler.VM's architecture tests: with Broiler.VM's parameters it writes Broiler.VM's table byte for byte; its inputs, each embedding's locale list and Broiler.JS's tables are [`data/intl/`](data/intl/README.md). Published since `0.1.0-preview.5`; the Intl namespace is not yet published. |
 
 Further libraries (the frontend, Intl, further data generators) are added by the milestones that create
 them. *(Revised 2026-10-17, at milestone SJL-8.2, when the generator's row was added; the sentence read
 "Further libraries (the frontend, Intl, the data generators) are added by the milestones that create
 them.")* The frontend's design document, the contract it is built to, is
 [`docs/frontend/design.md`](docs/frontend/design.md), filed before any of its code; milestone SJL-13 creates the
-library. *(Added 2026-10-19, at milestone SJL-12.1.)*
+library. *(Added 2026-10-19, at milestone SJL-12.1.)* The Intl library's design document is
+[`docs/intl/design.md`](docs/intl/design.md), filed at milestone SJL-9.1 before any of its code; its data home,
+[`data/intl/`](data/intl/README.md), is milestone SJL-9.2b's, and milestone SJL-9.3 creates the library. *(Added
+2026-10-26, at milestone SJL-9.2b, as bundle `docs/evidence/sjl-9-001`'s README foresaw.)*
+
+*(The `Broiler.ECMAScript.Generation` row revised 2026-10-26, at milestone SJL-9.2b, when the Intl data home's
+generator was added; its "Not yet published" had been stale since `0.1.0-preview.5`. The row read: "\|
+`Broiler.ECMAScript.Generation` \| The time data home's generator: the tz, CLDR and calendar pin readers, a tz
+compiler equivalent to `zic`, the compact time zone and calendar tables, and source writers that wrap them into C#.
+Test-only, as Broiler.Unicode.Generation is: engines' tests run it, and it carries no table. \| **The time data
+home** of milestone SJL-8.2 (`Broiler.ECMAScript.Generation.Time`), ported from Broiler.VM's architecture tests;
+its inputs and tables are [`data/time/`](data/time/README.md). Not yet published. \|")*
 
 ## Pins
 
@@ -39,6 +50,12 @@ library. *(Added 2026-10-19, at milestone SJL-12.1.)*
   `calendrical_calculations` 0.2.4 (`TimeDataVersions`), pinned in [`data/time/`](data/time/README.md)
   as copies of Broiler.VM's pins, with the tables `Broiler.ECMAScript.Generation` writes from them. No
   package carries them; rule SL7 regenerates the tables byte for byte. *(Added 2026-10-17, at SJL-8.2.)*
+- **Intl data:** CLDR 48.2.0 with its UCA 17.0.0, and the Unicode Character Database 17.0.0's `UnicodeData.txt` and
+  `PropList.txt` (`IntlDataVersions`), pinned in [`data/intl/`](data/intl/README.md): every entry of Broiler.VM's CLDR
+  pin byte for byte with the main-data files Broiler.JS's locale list adds, and the UCD files equal to Broiler.Unicode's
+  pin entries; with each embedding's locale list (Broiler.VM's JSD-0082, decision D5) and Broiler.JS's tables, which
+  `Broiler.ECMAScript.Generation` writes from them. No package carries them; rule SL7 regenerates the tables byte for
+  byte. *(Added 2026-10-26, at SJL-9.2b.)*
 - **Temporal:** `tc39/proposal-temporal@e8cc03fc`, the revision both engines follow (Broiler.VM's JSD-0078,
   decision D1); where its text and its polyfill disagree, the text rules (decision D7). *(Added 2026-10-18, at
   SJL-10.3.)*

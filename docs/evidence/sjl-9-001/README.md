@@ -118,6 +118,54 @@ ECMA-402's IsStructurallyValidLanguageTag, which the pinned text calls IsWellFor
 name (decision D14 as revised). The files are kept as generated and the script as committed; the operation is the
 same.
 
+## The data home
+
+SJL-9.2b built the data home, [`Broiler.ECMAScript/data/intl/`](../../../Broiler.ECMAScript/data/intl/README.md), on
+2026-10-26, on branch `sjl-9-2b-home` (JSD-0082's decisions D5 and D10 to D12). The data home's clauses 1 to 3 are
+judged by the tests it commits, each with its control; this section records how its inputs were read and how its byte
+identity with Broiler.VM was shown. It holds no size: the tables' sizes are in the change's pull request.
+
+- **The locale enumeration, run again** (decision D5; "The data committed with the rule" above). Before any table was
+  generated, `scripts/intl/enumerate_locales.py` ran over bundle [`sjl-12-001`](../sjl-12-001/README.md)'s
+  `after/part-a/` report (run 40231802611 at `c29d653f`), the newest valid UTC whole-suite report with negative tests
+  of the default branch, with Broiler.VM's datasets at `4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f`. Every row of
+  `intl402.tsv`, `datasets.tsv`, `union.tsv` and `uncounted.tsv` equals the committed file's; only the header lines
+  naming the report differ. Two runs wrote the same bytes. The committed files stand, and the home's
+  `locales/broiler-js.txt` reads them as decision D5 says.
+- **The CLDR pin** (decision D10). `cldr.pin`'s first block is Broiler.VM's `src/tests/cldr/pins/cldr.pin` at
+  `4cf9ca44`, from its `data` line to its last `file` line, byte for byte, and each file it names is a copy of
+  Broiler.VM's archived file; the generator's tests hold the block to its SHA-256 at that commit. The second block
+  names the main-data files Broiler.JS's list needs from the same sixteen `cldr-json` 48.2.0 packages. Each package's
+  tarball was retrieved from the npm registry twice, at 11:18:15 and 11:18:51 UTC; the two retrievals are
+  byte-identical, each tarball's SHA-512 is the pin's `json-integrity` line for its package, and each of Broiler.VM's
+  files from those packages equals its tarball member. The `timezone.json` entry and file equal the time home's.
+- **The UCD copies** (decision D12). `UnicodeData.txt`, `PropList.txt` and the licence are Broiler.VM's copies at
+  `4cf9ca44`, and each `file` line of `ucd.pin` equals the line Broiler.Unicode's pin gives the same file, which the
+  generator's tests read through `UnicodePin.Owner()`.
+- **Byte identity with Broiler.VM** (decision D11). Broiler.VM's committed `JsCldrTables.g.cs` at `4cf9ca44` has the
+  SHA-256 `f8f8b1228edb3de1a3174434362b8f3b657938e8cd29189bec110fb1584fae20`; its assurance generator adds a header
+  before `using System;` and fills each `Fingerprint=` value. Three readings give the same SHA-256,
+  `839bdc22afca187b58252f2487cd31c4b613396cd6596ffdcb6622fe1b534561`:
+  1. Broiler.VM's own `CldrTableGenerator`, `UnicodeDatabase` and `CldrPin`, built from its tests at `4cf9ca44` in a
+     scratch project outside both repositories and run twice over Broiler.VM's pinned files;
+  2. the committed file from `using System;` on, each fingerprint put back to `TBF`;
+  3. this home's `IntlTableSource.Write` with Broiler.VM's options and locale list, over the home's copies of
+     Broiler.VM's files and the UCD copies, which `IntlTableSourceTests` holds against that digest, with its control
+     (one changed byte, one changed summary), and over two runs and two threads.
+- **Broiler.JS's tables**, `generated/`: one file per table and `tables.manifest`, written with Broiler.JS's list and
+  every numbering system's symbols (decision D21). Rule SL7 regenerates them and compares them byte for byte, its
+  witness refused; `IntlCompletenessTests` holds exit clause 3 for both lists, with decision D34's keys for every locale
+  of Broiler.JS's list and the values D34 and D21 name (two-digit hours for `af` and `lt`; `.` for `da`, `en-DK`, `id`
+  and `si`; root's `arab` symbols under `und`).
+- **What CLDR 48.2.0 does not carry**, read, not decided: 34 per-locale `languages.json`, `scripts.json`,
+  `territories.json` or `variants.json` files of `cldr-localenames-full` for locales of Broiler.JS's list, which the
+  home's [`cldr/README.md`](../../../Broiler.ECMAScript/data/intl/cldr/README.md) lists and the display-name table
+  lacks; calendar type names for `aa`, `ab`, `en-Shaw`, `ff`, `gv`, `jbo`, `ln`, `pap` and `und`, and metazone names
+  and GMT formats for those and `yi`. Broiler.VM's code assumed every locale has them; the generator writes none for
+  these, and its output for Broiler.VM's list is unchanged. For `sr`, `sr-Cyrl` and `sr-Latn` the `hms` duration
+  pattern is `h.mm.ss` while `timeSeparator` is `:`, and `en-DK`'s separator is `.` while the pattern it inherits is
+  `h:mm:ss`: decision D34 reads the separator, so neither moves, and the tables carry both fields.
+
 ## State
 
 **2026-10-26, at SJL-9.1: the rule and its data only. Nothing here is a verdict, and nothing has been taken.**
