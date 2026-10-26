@@ -141,7 +141,7 @@ engine's until SJL-17. For a language the engine's Collator does not support it 
 and `emoji` and `eor` only for `und`; Broiler.VM's answer moves there at SJL-9.4 (row L18, decision D32). Broiler.JS's
 adapter is to hand the operation its Collator's own list, which names a collation for `en`. test262's
 `Locale/prototype/getCollations/output-array-values.js`, which asks `en` for one, keeps passing only if it does (row
-L17, decision D33 (c)): task 8.3's local pre-check holds it, and SJL-17 inherits the condition. With that list,
+L17, decision D33 (c)): SJL-9.5's local pre-check holds it, and SJL-17 inherits the condition. With that list,
 Broiler.JS's `zh` and `ko` answers are its Collator's, which neither ICU's lists nor Broiler.VM's datasets hold, and
 part C of bundle `sjl-9-001`'s rule admits them by that list (class V).
 

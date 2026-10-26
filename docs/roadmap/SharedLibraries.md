@@ -1546,7 +1546,7 @@ This repository's part of it:
   format with an hour: `DateTimeFormat/prototype/resolvedOptions/hourCycle-dateStyle.js` and `hourCycle.js`) keep
   both engines' answer. Row L17's file, `Locale/prototype/getCollations/output-array-values.js`, asks `en` for a
   collation the text does not require; it keeps passing only if this engine's adapter hands the shared
-  CollationsOfLocale its own Collator's list, which names one for `en`. Task 8.3's local pre-check holds it, and SJL-17
+  CollationsOfLocale its own Collator's list, which names one for `en`. SJL-9.5's local pre-check holds it, and SJL-17
   inherits the condition: this engine's Collator data for `en` keeps a collation, or SJL-17's rule names the file.
   The same list is what the rule's part C admits, under class V, for a `collations` line of the locales program's
   group of a Collator's tailorings: with it, this engine's `zh`, `zh-Hant`, `zh-TW`, `zh-Hans-SG` and `ko` lines
