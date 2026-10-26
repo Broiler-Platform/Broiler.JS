@@ -37,7 +37,9 @@ file-system order reaches them. Nothing here is a run, and nothing here is a ver
 Each source is a Script, one line, ASCII, ending in a line feed, parsed alone in its own process under configuration
 V's request with the nesting parameter its row names. Its row names its shape, its kind (`nesting` or
 `tree-depth`), its levels, its charge under the measure below, and its expected outcome: `accepted` when the charge
-is at most the bound, and `refused`, with the contract's nesting diagnostic, when it is past it. For every shape
+is at most the bound, and `refused` when it is past it, with the diagnostic of its kind: the contract's nesting
+diagnostic, EX0011's shared code (`limit.nesting.too-deep`), for a `nesting` row, and the tree-depth diagnostic,
+EX0012's (`limit.tree.too-deep`), for a `tree-depth` row. For every shape
 there are sources at the bound, one past it, and far past it.
 
 **The bounds.** Two nesting parameters, Broiler.VM's default and the largest a Broiler.VM request may carry
@@ -73,5 +75,5 @@ assignment expression); no run at the base has them at the bound. The left-opera
 charges them (decision D14), which no front end does today.
 
 **How it is read.** A source at or below its bound that the library refuses, or one past its bound that it accepts or
-refuses with another diagnostic, fails part G. If the failure is the corpus's and not the library's, only a new dated
+refuses with a diagnostic other than its kind's, fails part G. If the failure is the corpus's and not the library's, only a new dated
 rule file may correct it, quoting the rule whole (its section "Revisions").
