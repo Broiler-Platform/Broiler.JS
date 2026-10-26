@@ -1,0 +1,3 @@
+broiler-js-conformance: vectors broiler-js-vectors Broiler-Platform/broiler.js@2cc853427fabd6e0e3f5f0cc4991a24a732e8d28 content sha256 79172f8491ed2dc31377c8186632c973dc532e09eb45506da1758a6f701d6ea9 over 63 files - retrieved and hashed, NOT archived
+broiler-js-conformance: negative control: intl/numbers-and-text/decimal/0001 expects `value: str:"1,234,567.8910"`
+broiler-js-conformance: 106808 vectors: 106764 match, 43 classified divergences, 1 unclassified differences

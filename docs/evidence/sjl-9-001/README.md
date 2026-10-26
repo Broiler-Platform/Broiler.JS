@@ -134,17 +134,23 @@ zones' reports are byte for byte the same.
 | Revision | Vectors | Match | Classified divergences | Unclassified | Not implemented |
 |---|---|---|---|---|---|
 | 27 | 106,808 | 105,059 | 4 (the number area's, SJL-14's) | 1,745, all in the Intl area | 0 |
+| 28 | 106,808 | 105,059 | 1,749 (the Intl area's 1,745 and the number area's 4) | 0 | 0 |
 
 Each run's negative control changes `numbers/to-fixed/0001` in a copy of the corpus, and it is reported as the one
-unclassified difference. The files are `run-revision-27-utc.log` and `.tsv.gz`, `run-revision-27-new-york.log` and
-`.tsv.gz`, and `negative-control-revision-27-utc.tsv` and `-new-york.tsv`. Each log's first line records how the run
-was taken.
+unclassified difference. The files are `run-revision-<N>-utc.log` and `.tsv.gz`, `run-revision-<N>-new-york.log` and
+`.tsv.gz`, and `negative-control-revision-<N>-utc.tsv` and `-new-york.tsv`, for N 27 and 28. Each log's first line
+records how the run was taken. Revision 28's runs read the corpus at its commit,
+`2cc853427fabd6e0e3f5f0cc4991a24a732e8d28`, in the same scratch tree, whose `conformance/vectors` was replaced by that
+commit's; the engine's code is unchanged. Every vector renders the value it rendered at revision 27, and no divergence
+field reports that it no longer holds.
 
 **Broiler.VM** was run locally at its rule commit, `4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f`. Its conformance root
 was built in Release with `--disable-build-servers` from a scratch archive of that commit, and run on a scratch archive
 of revision 27 with a pin of that archive (`--vectors <archive> --expect <pin>`). It matches 106,765 of the 106,808
-vectors. The other 43 differ, all in the Intl area. Its negative control changes `intl/numbers-and-text/decimal/0001`
-in memory (`--mutate`), and it is reported as one more difference. The runs and the scratch pin are retained as
+vectors. The other 43 differ, all in the Intl area. On revision 28, read the same way from a scratch archive of
+`2cc85342` and its pin, it matches the same 106,765 and classifies the 43, with no unclassified difference and no
+divergence that no longer holds. Each negative control changes `intl/numbers-and-text/decimal/0001` in memory
+(`--mutate`), and it is reported as one more, unclassified, difference. The runs and the scratch pins are retained as
 `engine/broiler-vm-*`, as the basis of those fields. They are not a reading of Broiler.VM's half: its own bundle judges
 that, and takes its runs when its pin moves to a merged revision (the plan's task 2.4).
 
@@ -167,10 +173,11 @@ answers it.
 | | **All** | | **43** |
 
 - **Broiler.JS, by class.** Corrections of Broiler.JS (C1): 470. Data policy (C5): 968. Both: 135 (L19 to L21; T14
-  with T15 or T16; T35 with T36). Implementation-defined (C3): 78, whose vectors hold the answer the shared library takes. The interval patterns
-  and the range separator (T30, C3, with T31, C5): 93. Engine policy: 1 (L40). SJL-9.5 answers every one but L40's.
-  L40 is the Collator's collations, and each engine keeps its own Collator until SJL-17 (SJL-D-24 (c)), so SJL-17
-  answers it. 929 of the 1,745 are table-family vectors of the 85 extra locales (decision D5).
+  with T15 or T16; T35 with T36). Implementation-defined (C3): 78, whose vectors hold the answer the shared library
+  takes. The interval patterns and the range separator (T30, C3, with T31, C5): 93. Engine policy: 1 (L40). SJL-9.5
+  answers every one but L40's. L40 is the Collator's collations, and each engine keeps its own Collator until SJL-17
+  (SJL-D-24 (c)), so SJL-17 answers it. 929 of the 1,745 are table-family vectors of the 85 extra locales (decision
+  D5).
 - **Five readings tie a difference to the row that explains it.** L18 with L17: `getCollations` answers `["default"]`
   for every locale. L9 with L8: the subdivision aliases this engine's hand table lacks. N13 with M5: the significant
   digits compact notation sets. M6 with M1a: 1.35 rounded by its binary value. N8a with decision D21: a numbering
@@ -188,7 +195,7 @@ answers it.
 
 **What the vectors say of the area record.**
 - **Every difference falls under a row the area verdict names, and none needs a new row.** So the vectors falsify no
-  class of JSD-0082.
+  class of JSD-0082. Both engines' runs on revision 28 leave no difference unclassified.
 - **Every row with a behavioural difference is reached** by at least one vector. The generator's `check_rows` and its
   test check this.
 - **51 of the 52 rows JSD-0082 calls corrections of Broiler.JS are confirmed** by at least one vector of this engine.

@@ -1,0 +1,21 @@
+== start 2026-10-26T13:53Z TZ=America/New_York, the corpus at 2cc853427fabd6e0e3f5f0cc4991a24a732e8d28 (a scratch tree written by git archive of 6311031f99c62bb26bc22215e29323c278394605, whose Broiler.JS/ and Broiler.ECMAScript/ are 2cc85342's, with conformance/vectors replaced by 2cc85342's; built once beforehand in Release with --disable-build-servers, run with --no-build, in one evaluating process, with no LANG)
+Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl9-wp2/jsbuild/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.09]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.14]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.15]   Starting:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [5 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [3 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [15 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [547 ms]
+106808 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 53 min 38.7 s; the slowest, text/set-from-hex/0021, took 0.908 s of the 5 s limit.
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [53 m 38 s]
+[xUnit.net 00:54:23.30]   Finished:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [19 s]
+
+Test Run Successful.
+Total tests: 6
+     Passed: 6
+ Total time: 54.4013 Minutes
+== end exit=0
