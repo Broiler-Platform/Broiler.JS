@@ -1,0 +1,35 @@
+# broiler-js intl data tables 1
+#
+# GENERATED - DO NOT EDIT. Broiler.ECMAScript.Generation writes this file and the tables beside it from
+# the pins in ../cldr/ and ../ucd/, for Broiler.JS's locale list, ../locales/broiler-js.txt. Rule SL7
+# regenerates every file of this directory and compares it byte for byte; run the architecture tests
+# with BROILER_ECMASCRIPT_INTL_WRITE=1 to write them instead. No package carries these files (decision
+# SJL-D-6 (c)): Broiler.JS embeds them. A `table` line is `table <file> <bytes> <sha256>`.
+
+cldr-version 48.2.0
+uca-version 17.0.0
+unicode-version 17.0.0
+
+table aliases.txt 21252 120a60d57143e9291cd0a0ea9a57acb7ed245b06a82e724a9faf90efe1054417
+table collation-root.bin 160603 7f99583746e017fe5eb0f0ecda1977b77ad7a6b50f1f428acd08949d17b3ee37
+table collation-tailorings.bin 3204 d9975662097016c5fd3037ee46afdcf11fb98f6d85c6a00ad6ba2ec355a62edd
+table currencies.txt 1752680 274f5e99e1a407d953244cc02fec0bae9b97b4375587beddc3443b8d6092791e
+table currency-digits.txt 323 9241e62a8cdb26a92742f5c2be6747d0e48da16994de7557ad7895e660dd2d6b
+table date-locales.txt 5909897 9aa8a59304cb6ed622aef5460d8639e2a3200022726714c57b7af50856527a2f
+table day-periods.txt 12378 dbf5498bb1b0d677c4f785cc41ff942d914865a9706445bd6a561539038f50c6
+table display-names.txt 2749045 e4574e1fa8febabb50b6255fb21480c7eecdd162c0fdcb37249c86f60b948671
+table extensions.txt 13701 cfc5b1ca132e653f59e34838f03cd61a5de7e7a3a5ed837107bfd8f35d87962b
+table likely-subtags.txt 126494 7ae5c75a939aa2d0463fcd4fa5a043926a023040784e1fe465c7d4dac1e35157
+table list-patterns.txt 35940 419a186495b957177ecdbab3b3120d32b4c080dd2347afe829a12e9363332cad
+table locales.txt 447 889ae22299691db21f3ebba375603ca3b6f08494bf8c1d6443a02c485bf60532
+table meta-zones.txt 41580 c46355fb5d281940e09dc28fd942cd43f7062ff2d4423e7b87bf06023ecd09a9
+table number-locales.txt 505495 4fb24638fd73529ed8070669b260325269f06fb7c97a2788e1d5de9ea3f449c2
+table numbering-systems.txt 7555 66fe875051df77f2e6f43ba97ad0d28178722cbff421ad649011860d3b328f12
+table ordinals.txt 2903 671d58d6331b0085943b1f06bab9fb6e35df774c9e83e56aef0e6048255907ed
+table plural-ranges.txt 8029 584ae78255e9aa07d6f47d7d4d59202e95ed47fdf406b428543799b288810e1b
+table plurals.txt 9742 782de05274d729bbf00e2dcbd48598d0eb2e216052ae1e6f42db0381200ee88a
+table relative-times.txt 494797 f670c4ea9d62ef87d9602d1a013079b00c129c73d3dec363b9fb421d1544d0ef
+table scripts.txt 1452 e33cb859c0b9dbe100179258d81cb8fff132892dfccfb115772140b5818d0985
+table time-data.txt 3576 0d32144cef21640a27b4f0e501f5fb34be401f354eac12421550838488a6e342
+table units.txt 1682184 067faa5b703a5177e24fe0f47d67d6ab37a99eaaa73ec4f61947d0448781b8d9
+table week-data.txt 1699 766d310162917dfd7187dbc58b218a83a834d5dac9aa317aeadb9e059d016819

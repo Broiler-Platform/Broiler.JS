@@ -41,6 +41,8 @@
     <Compile Include="..\runners\TemporalAdapter.Methods.cs" Link="TemporalAdapter.Methods.cs" />
     <!-- Rule SL7 regenerates the time data home's tables with the generator, which reads no file itself. -->
     <Compile Include="..\runners\TimeDataHome.cs" Link="TimeDataHome.cs" />
+    <!-- And the Intl data home's tables, from milestone SJL-9.2b. -->
+    <Compile Include="..\runners\IntlDataHome.cs" Link="IntlDataHome.cs" />
     <None Include="rules.register.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

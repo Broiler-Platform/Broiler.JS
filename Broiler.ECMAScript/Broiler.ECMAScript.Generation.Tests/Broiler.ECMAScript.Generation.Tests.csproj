@@ -6,6 +6,11 @@
     Broiler.VM's generated files, and the digests of every generated table. Rule SL7, in the architecture
     tests, regenerates the home's generated area and compares it byte for byte. JIT only: the generator is
     run by tests, never inside an engine.
+
+    Milestone SJL-9.2b adds the Intl data home's tests: its pins against Broiler.VM's 114 CLDR entries, the
+    time home's timezone.json and Broiler.Unicode's UCD entries; the locale lists against decision D5; the
+    source writer against Broiler.VM's JsCldrTables.g.cs, byte for byte; and the completeness of Broiler.JS's
+    tables (exit clause 3).
   -->
   <PropertyGroup>
     <IsPackable>false</IsPackable>
@@ -20,11 +25,15 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="coverlet.collector" />
+    <!-- The Intl data home's UCD copies are held equal to the owner's pin entries (decision JSD-0082 D12):
+         test-only, as Broiler.JavaScript.Ast.Tests references it. -->
+    <PackageReference Include="Broiler.Unicode.Generation" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Broiler.ECMAScript.Generation\Broiler.ECMAScript.Generation.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\runners\TimeDataHome.cs" Link="TimeDataHome.cs" />
+    <Compile Include="..\runners\IntlDataHome.cs" Link="IntlDataHome.cs" />
   </ItemGroup>
 </Project>
