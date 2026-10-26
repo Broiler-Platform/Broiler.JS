@@ -9,7 +9,6 @@ partial class FastCompiler
 {
     protected override BExpression VisitBreakStatement(AstBreakStatement breakStatement)
     {
-        var ls = LoopScope;
         string name = breakStatement.Label?.Name.Value;
         
         if (name != null)
@@ -18,6 +17,9 @@ partial class FastCompiler
             return target == null ? throw JSEngine.NewSyntaxError($"No label found for {name}") : BExpression.Break(target.Break);
         }
 
+        // An unlabeled `break` leaves the innermost loop or switch, never an enclosing
+        // labelled block: `while (…) L: { break; }` exits the while.
+        var ls = LoopScope.GetUnlabeledBreak();
         if (ls.IsSwitch)
             return BExpression.Goto(ls.Break);
 

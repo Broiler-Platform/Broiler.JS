@@ -80,11 +80,10 @@ partial class FastCompiler
             // so its body can be emitted at its original position in the
             // fall-through sequence even when it is not the last clause.
             int defaultInsertIndex = -1;
-            var @continue = scope.Top.Loop?.Top?.Continue;
             var @break = BExpression.Label();
             var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
             var outerCompletionVars = GetCompletionVariables();
-            var ls = new LoopScope(@break, @continue, true) { CompletionVariable = completionVar };
+            var ls = new LoopScope(@break, null, true) { CompletionVariable = completionVar };
             var cases = new Sequence<SwitchInfo>(switchStatement.Cases.Count + 2);
             var functionInitializers = new Sequence<BExpression>();
             using var completion = completionScopes.Push(completionVar);

@@ -482,7 +482,9 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
             return target == null ? throw JSEngine.NewSyntaxError($"No label found for {name}") : BExpression.Continue(target.Continue);
         }
 
-        return BExpression.Continue(scope.Top.Loop.Top.Continue);
+        // An unlabeled `continue` targets the innermost loop, skipping any enclosing
+        // switch or labelled block (`while (…) L: { continue; }`).
+        return BExpression.Continue(LoopScope.GetUnlabeledContinue().Continue);
     }
 
     protected override BExpression VisitDebuggerStatement(AstDebuggerStatement debuggerStatement) => JSDebuggerBuilder.RaiseBreak();
