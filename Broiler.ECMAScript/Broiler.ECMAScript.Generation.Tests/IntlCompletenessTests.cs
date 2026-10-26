@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -79,6 +80,12 @@ public sealed class IntlCompletenessTests
 
         var plurals = Without(tables, "Plurals", static line => line.StartsWith("cy|", StringComparison.Ordinal));
         Assert.Contains("Plurals lacks cy, whose rules CLDR states", Violations(plurals, list, rootResolvesToDefault: false));
+
+        // A default-content locale whose language has no main data in the list reaches only und, which is reported.
+        var text = File.ReadAllText(IntlDataHome.ListPath(IntlDataHome.Current, IntlDataHome.BroilerJsList));
+        var withKaGe = IntlLocaleList.Parse(text.Replace("locale jbo main\n", "locale jbo main\nlocale ka-GE\n", StringComparison.Ordinal));
+        Assert.Contains("ka-GE", withKaGe.Locales);
+        Assert.Contains("ka-GE reads its data through no main-data locale of its list", Violations(tables, withKaGe, rootResolvesToDefault: false));
     }
 
     /// <summary>
@@ -134,7 +141,10 @@ public sealed class IntlCompletenessTests
             }
         }
 
-        // EVERY OTHER LOCALE reads its data through its CLDR parent: parentLocales.json's, or the tag truncated.
+        // EVERY OTHER LOCALE reads its data through its CLDR parent: parentLocales.json's, or the tag truncated. One
+        // that reaches root only by truncation - a default-content locale whose language has no main data in the list
+        // - reads und's data, which is no locale's of its own, so it is reported; parentLocales.json naming root as the
+        // locale's own parent is what makes und its data.
         foreach (var locale in list.Locales.Where(tag => !main.Contains(tag)))
         {
             if (locale == "und" && rootResolvesToDefault)
@@ -144,7 +154,8 @@ public sealed class IntlCompletenessTests
             while (!main.Contains(parent) && parent != "und")
                 parent = parents.TryGetValue(parent, out var stated) ? stated : parent.Contains('-', StringComparison.Ordinal) ? parent[..parent.LastIndexOf('-')] : "und";
 
-            if (!main.Contains(parent))
+            var rootIsItsParent = parents.TryGetValue(locale, out var own) && own == "und";
+            if (!main.Contains(parent) || (parent == "und" && locale != "und" && !rootIsItsParent))
             {
                 violations.Add(locale + " reads its data through no main-data locale of its list");
                 continue;
