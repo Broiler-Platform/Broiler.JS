@@ -31,6 +31,7 @@ partial class FastCompiler
                 {
                     var breakTarget = BExpression.Label();
                     var label = labeledStatement.Label.Span.Value;
+                    var prefixesLoop = PrefixesLoop(labeledStatement);
 
                     // A LabelledStatement completes with its item's completion, an empty one
                     // included: unlike if, the loops, switch, try and with it applies no
@@ -48,7 +49,7 @@ partial class FastCompiler
                     // `break <label>` out of the body leaves a stale region on the generator's
                     // try-region stack and corrupts the pending-completion unwinding of an
                     // enclosing finally.
-                    using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, null, false, label) { IsLabelOnly = true });
+                    using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, null, false, label) { IsLabelOnly = true, PrefixesLoop = prefixesLoop });
                     return BExpression.Block(
                         VisitStatement(labeledStatement.Body),
                         BExpression.Label(breakTarget),
@@ -57,5 +58,24 @@ partial class FastCompiler
         }
 
         throw new NotImplementedException();
+    }
+
+    // True when the label is an outer label of a loop's label set (`L` in `L: M: while`):
+    // its body is a chain of labels that ends at an IterationStatement. `continue L` then
+    // continues that loop (LoopScope.GetContinue), while `break L` still leaves the whole
+    // labelled statement through this label's own break target.
+    private static bool PrefixesLoop(AstLabeledStatement labeledStatement)
+    {
+        if (labeledStatement.Body is not AstLabeledStatement nested)
+            return false;
+
+        while (nested.Body is AstLabeledStatement inner)
+            nested = inner;
+
+        return nested.Body.Type is FastNodeType.ForStatement
+            or FastNodeType.ForOfStatement
+            or FastNodeType.ForInStatement
+            or FastNodeType.WhileStatement
+            or FastNodeType.DoWhileStatement;
     }
 }
