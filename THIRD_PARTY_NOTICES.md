@@ -264,6 +264,12 @@ as Broiler.VM's commit `4cf9ca4` holds them, all held by their SHA-256 in that d
 
 *Added 2026-10-26, at milestone SJL-9.2, when the copies were added.*
 
+**The corpus's Intl area**, `conformance/vectors/intl/` (corpus revision 27, the same milestone), holds answers of the
+same kind: what ICU 78.3 with CLDR 48.0 printed, through Node.js v26.12.0, for each vector's script, and, for the hour
+cycles of a region and DurationFormat's `digital` data, values its generator read from CLDR 48.2.0's cldr-json
+packages, each held to its npm integrity. ICU and CLDR are © Unicode, Inc., under the Unicode License v3 below. The
+vectors reproduce none of ICU's code and no CLDR file, and no project builds, packs or embeds them.
+
 ## Sources the engine's own code cites
 
 - `JSMath.Clz32` (`Broiler.JavaScript.BuiltIns`) links Jurassic's `MathObject.cs`

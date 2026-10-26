@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   20
-// Annotated:        20/20
+// Relevant units:   21
+// Annotated:        21/21
 // Exempt:           4
-// Human-reviewed:   0/20
+// Human-reviewed:   0/21
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  9/10 max
-// Unverified:       20
+// Unverified:       21
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -238,7 +238,7 @@ public sealed class VectorValidator
             report(code, line, message);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=E26139
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=90D11B
     // Broiler-Human:        PENDING
     private void ValidateProvenance(string provenance, int line, Action<string, int, string> report)
     {
@@ -259,7 +259,13 @@ public sealed class VectorValidator
                 continue;
             }
 
-            if (kind == "spec" && !sources.SpecificationRevision.StartsWith(detail, StringComparison.Ordinal))
+            if (kind == "spec" && IsInternationalization(entry))
+            {
+                // ECMA-402's clauses name sources/ecma402.pin's revision (SCHEMA.md section 6, corpus revision 27).
+                if (sources.InternationalizationRevision is not { } pinned || !pinned.StartsWith(detail, StringComparison.Ordinal))
+                    report("bad-provenance", line, "'" + entry + "' does not name the pinned ECMA-402 revision, " + (sources.InternationalizationRevision ?? "which the corpus does not pin"));
+            }
+            else if (kind == "spec" && !sources.SpecificationRevision.StartsWith(detail, StringComparison.Ordinal))
                 report("bad-provenance", line, "'" + entry + "' does not name the pinned specification revision, " + sources.SpecificationRevision);
             else if (kind == "ucd" && detail != sources.UnicodeVersion)
                 report("bad-provenance", line, "'" + entry + "' does not name the pinned Unicode version, " + sources.UnicodeVersion);
@@ -292,7 +298,9 @@ public sealed class VectorValidator
     /// <c>observed:(?&lt;engine&gt;[a-z0-9-]+)</c>. Corpus revision 24 adds
     /// <c>proposal:[a-z0-9-]+@[0-9a-f]{7,40}#[a-z0-9.%-]+</c>, a clause of a pinned TC39 proposal's text, and
     /// <c>overruled:[a-z0-9-]+@[0-9]+=</c> followed by an outcome written without the space after its kind, the
-    /// answer of a reference computation the vector does not take.
+    /// answer of a reference computation the vector does not take. Corpus revision 27 admits upper-case letters in
+    /// a clause id, <c>[A-Za-z0-9.%-]+</c>, which ECMA-402 writes, and holds a <c>spec:ecma402@</c> entry's revision
+    /// to sources/ecma402.pin.
     /// </remarks>
     // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=4; Fingerprint=AB4BFB
     // Broiler-Human:        PENDING
@@ -384,6 +392,14 @@ public sealed class VectorValidator
         return Outcome.TryParseAlternatives(text[..colon] + ": " + text[(colon + 1)..], out var outcomes, out _, out _) && outcomes.Count == 1;
     }
 
+    /// <summary>
+    /// A <c>spec:</c> entry whose edition is <c>ecma402</c>, a clause of the ECMA-402 text sources/ecma402.pin
+    /// names; every other edition names ECMA-262's (corpus revision 27).
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=9A740C
+    // Broiler-Human:        PENDING
+    private static bool IsInternationalization(string entry) => entry.StartsWith("spec:ecma402@", StringComparison.Ordinal);
+
     /// <summary><c>[0-9]+\.[0-9]+\.[0-9]+</c>.</summary>
     // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=43D78D
     // Broiler-Human:        PENDING
@@ -428,11 +444,13 @@ public sealed class VectorValidator
 
     /// <summary>
     /// A character of a clause id: an identifier character, or <c>%</c>, which ECMA-262 writes in the
-    /// ids of the intrinsics' clauses, such as <c>sec-%typedarray%.prototype.slice</c> (corpus revision 11).
+    /// ids of the intrinsics' clauses, such as <c>sec-%typedarray%.prototype.slice</c> (corpus revision 11),
+    /// or an upper-case letter, which ECMA-402 writes in some of its ids, such as
+    /// <c>sec-Intl.DisplayNames.prototype.of</c> (corpus revision 27).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=156678
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=DC08F6
     // Broiler-Human:        PENDING
-    private static bool IsClauseCharacter(char c) => IsIdentifierCharacter(c) || c == '%';
+    private static bool IsClauseCharacter(char c) => IsIdentifierCharacter(c) || c == '%' || Ascii.IsLetter(c);
 
     // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E0D475
     // Broiler-Human:        PENDING

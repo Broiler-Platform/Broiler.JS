@@ -1,0 +1,64 @@
+# The specification text the corpus's `spec:ecma402@...` provenance names (corpus revision 27, milestone SJL-9.2,
+# work package SJL-9.2a).
+#
+# Every `spec:ecma402@3d4c558#<clause-id>` entry is a clause of ECMA-402 as tc39/ecma402 holds it at the revision below:
+# the last commit of its main branch on or before 2026-05-08, the commit date of test262 ccaac100, which both
+# engines' rules pin (Broiler.VM's JSD-0082, decision D14 as revised on 2026-10-26). Its next commit on main,
+# b3c5c251, is of 2026-05-11. The text already holds the Intl Locale Info proposal, merged into it as 70b0ecc
+# ("Normative: Intl Locale info (#942)", 2026-02-19), so the corpus pins no separate copy of that proposal. The
+# vectors cite a clause by its id in the text's `emu-clause` elements, as the corpus cites ECMA-262's.
+#
+# THE RENDERED SPECIFICATION. The repository's own deployment of this commit, the commit dbf7726a of its gh-pages
+# branch ("Deploying to gh-pages from @ tc39/ecma402@3d4c558..."), holds the text ecmarkup rendered from it, as
+# `index.html`; `document`, `bytes` and `sha256` below are that file's. The `file` lines are the sources it was
+# rendered from, `spec/*.html` at the revision, each by its length and SHA-256, the files the correspondence of
+# bundle sjl-9-001 read (Broiler.VM's docs/evidence/sjl-9-001/correspondence.md, section "References").
+#
+# THE TEXTS ADDED TO IT (decision D14). Both engines also follow, for operations the revision does not contain:
+# - the Intl era and month code proposal at its last commit on or before 2026-05-08, which is 5833eae (2026-03-19):
+#   on 2026-10-26 its main branch still ended there. Its clauses are cited as `proposal:intl-era-monthcode@5833eae`
+#   and its text is pinned by sources/intl-era-monthcode.pin;
+# - Intl over Temporal, by tc39/proposal-temporal@e8cc03fc's spec/intl.html (Broiler.VM's JSD-0078, decision D1),
+#   which carries 377fb80e and replaces some steps of this revision's DateTimeFormat clauses. Its clauses are cited
+#   as `proposal:temporal@e8cc03fc` and its text is pinned by sources/temporal.pin.
+#
+# The corpus archives none of these files and quotes no text of them. They were read on 2026-10-26 from a blobless
+# clone of tc39/ecma402; each can be verified:
+#
+#   git -C <ecma402> show 3d4c558180f643d7dea75f011a6355fb285f377e:spec/intl.html | sha256sum
+#   git -C <ecma402> show dbf7726a948333972707eaa2dd34a3520b714208:index.html | sha256sum
+
+standard ECMA-402, the ECMAScript 2027 Internationalization API Specification draft (14th edition)
+source tc39/ecma402
+revision 3d4c558180f643d7dea75f011a6355fb285f377e
+date 2026-04-16
+document index.html, gh-pages dbf7726a948333972707eaa2dd34a3520b714208
+bytes 1130466
+sha256 2caac006a39deefd413219d28664ef5569450e75645259118f6973edc74f1e5a
+added intl-era-monthcode 5833eae6c9079ffbb06a9ab7cc5128ebbf6e9ac7 sources/intl-era-monthcode.pin
+added temporal-intl e8cc03fc970a65a3359e8870e3b35e687ac94e55 sources/temporal.pin spec/intl.html
+file spec/annexes.html 11266 19cb6c55d871048fe7eb3a563fab626577fc95d61b6ef7c94970ef8c7469c240
+file spec/collator.html 21316 ed301866f3010692630834d52f5762bfd23d3232f7209185a269ee75f39716ec
+file spec/colophon.html 1235 75142c65469a72f87366a2257548243460742c0c43c796acf8fc3f0de845c39e
+file spec/conformance.html 2690 864a4fb8d81ce37688e05cc69898d2055372fc1ce56d27a9af9b5e6559a56cbe
+file spec/conventions.html 5769 a38b9a20c8a817f5c63ad16d449edddbf449b85f2a8b2a05f6296ca94663f8c6
+file spec/datetimeformat.html 90198 42156e277e6af5fd166dfc14dc277b1ed5cd64147bcfc947cd5f1fa3d2fa267b
+file spec/displaynames.html 18521 a095e91f9a28b4f8a27b67da63dfea6ff2234b21aed8b8670a4cac7f06cc8872
+file spec/durationformat.html 55061 5523696f6ae407cd03171acec05b006b1d80284fca57e1e873ff8c48741e88ac
+file spec/index.html 2059 5f232d2dc7d7074d288a929d101160d8ce9ebc4bde0a51ef48e77db8e363db9b
+file spec/intl.html 5206 107003cf95c772daf5a0a329714683b44639e1883c29f883595e91b3144ad679
+file spec/introduction.html 3539 0d30009c11cbcee80e8e08eede91b9082d3cc5e1dfbe63847d921277c2572444
+file spec/listformat.html 17472 9d1f478bf30316285b40e03a66855b7977971d7671c3469d464d38bc8774b845
+file spec/locale-sensitive-functions.html 14615 e58659900f286f6afdf88386a191dc139306ba3c847f627a015ac06719f2ccd6
+file spec/locale.html 47474 0795a0eb04496de1a98a44d0de47bbea064bb9939b882cdd6a5bd4fc39340901
+file spec/locales-currencies-tz.html 42385 629fc6f57b5d81bd9455de21172483dddee1ec006ec7548156eb7f49f22e44ea
+file spec/metablock.html 1906 c182a8bd260205bd616db9b7599573bd9994b21438f2a20f4d34e048615508a4
+file spec/negotiation.html 33634 ca7fdda2a1ed730974e68c71e8106f9c64e2c837240f38fb925e0a59840d63ba
+file spec/normative-references.html 3000 943227f28bcbdd224f0e6b66aea728f9a46c7b3d1bf07c4945be81f7d1e8360a
+file spec/numberformat.html 100149 646025b1a9026cdd0f2ed2d6ec08cb6bdf564ff5d3460095c2e31e41a2fe122e
+file spec/overview.html 10084 4cc342e769187c15edca2b783591e7d644da9a83370b021e2bdef48aa8265da0
+file spec/pluralrules.html 19641 3d36238e406062d81891e05d4390bcbb51be9ce09ebed3dd26d67fa9c72781d2
+file spec/relativetimeformat.html 19409 7ffb9d11d86b7d6911c07f8600781c0280e403054feeeb5f21e0a58ea4f688b1
+file spec/requirements.html 422 2de0eda3ed652e170901d4295afa73139adde1270b8dad0ac01984d6d90fdd5d
+file spec/scope.html 280 6b4db324e7164876e1054abc2938aab914e43a9c5d07666b45cef3e3fbf8ec85
+file spec/segmenter.html 21229 ea28d287d6082d9644a9015280dadd457c9d9d875eaffd52d8e7fac30e858dbb
