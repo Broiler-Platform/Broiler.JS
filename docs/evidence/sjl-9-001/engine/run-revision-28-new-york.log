@@ -1,23 +1,23 @@
-== start 2026-10-26T16:55:50Z TZ=America/New_York, the corpus at 2f240fecc502af7d843077ec664b1b7a65c45bb1 (a scratch tree written by git archive of 11f1cf26c1a4e30c3124f8a7184d1794aa4b874c, whose Broiler.JS/ and Broiler.ECMAScript/ are 2f240fecc502af7d843077ec664b1b7a65c45bb1's, with conformance/vectors replaced by 2f240fecc502af7d843077ec664b1b7a65c45bb1's; built once beforehand in Release with --disable-build-servers, run with --no-build, in one evaluating process, with no LANG)
+== start 2026-10-26T21:44:48Z TZ=America/New_York, the corpus at 0c8feb64db3ee7ebaa62bbc263340cb5fea0ec86 (a scratch tree written by git archive of 0c8feb64db3ee7ebaa62bbc263340cb5fea0ec86; built once beforehand in Release with --disable-build-servers, run with --no-build, in one evaluating process, with no LANG)
 == host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v153 x86_64; 4 logical CPUs; ICU: libicu74 74.2-1ubuntu3.1 (libicuuc.so.74, the only ICU installed), which .NET's globalization loads; dotnet 10.0.401, runtime 10.0.12
 == command: env -u LANG -u LANGUAGE -u BROILER_VECTORS_WORKERS TZ=America/New_York BROILER_VECTORS_REPORT=run-revision-28-new-york.tsv dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --logger "console;verbosity=normal"
-Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl9-wp2fix/jsbuild/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl9-hosts/jsbuild/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
 A total of 1 test files matched the specified pattern.
 [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
-[xUnit.net 00:00:00.09]   Discovering: Broiler.JavaScript.Vectors.Tests
-[xUnit.net 00:00:00.16]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.10]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.17]   Discovered:  Broiler.JavaScript.Vectors.Tests
 [xUnit.net 00:00:00.17]   Starting:    Broiler.JavaScript.Vectors.Tests
   Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [5 s]
-  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [3 s]
-  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [15 s]
-  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [551 ms]
-106808 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 51 min 6.8 s; the slowest, unicode/casing-lower/0036, took 1.286 s of the 5 s limit.
-  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [51 m 7 s]
-[xUnit.net 00:51:51.55]   Finished:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [2 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [14 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [461 ms]
+106808 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 45 min 44.6 s; the slowest, unicode/normalize-part1/0717, took 0.789 s of the 5 s limit.
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [45 m 44 s]
+[xUnit.net 00:46:26.34]   Finished:    Broiler.JavaScript.Vectors.Tests
   Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [18 s]
 
 Test Run Successful.
 Total tests: 6
      Passed: 6
- Total time: 51.8710 Minutes
-== end 2026-10-26T17:47:44Z exit=0
+ Total time: 46.4484 Minutes
+== end 2026-10-26T22:31:16Z exit=0

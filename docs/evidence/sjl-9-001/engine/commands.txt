@@ -45,11 +45,34 @@ control, in parallel with Broiler.JS's runs.
 These facts, which revision 27's logs do not carry, are from the run's own records: the process-id files its script
 wrote, its status file, which holds each exit code, and the files' times.
 
-== Revision 28, corpus 2f240fecc502af7d843077ec664b1b7a65c45bb1
+== Revision 28
 
 Each log of these runs was written whole by the run's script: a header that names the commits, the build, the
 corpus and its pin, the host and the command, then the runner's output, then the exit code and the end time.
-Broiler.JS ran in the revision 27 runs' kind of scratch tree, written by git archive of
-11f1cf26c1a4e30c3124f8a7184d1794aa4b874c, whose Broiler.JS/ and Broiler.ECMAScript/ are the corpus commit's, with
-conformance/vectors replaced by the corpus commit's; Broiler.VM ran as for revision 27, from a scratch archive of the
-corpus commit and a pin of it, broiler-vm-revision-28.pin.
+
+Broiler.VM, corpus 2f240fecc502af7d843077ec664b1b7a65c45bb1: it ran as for revision 27, from a scratch archive of the
+corpus commit and a pin of it, broiler-vm-revision-28.pin. Revision 28 as corrected since then, the ops of two
+vectors of row L23 (497158a3) and the 11 divergence.broiler-js fields classified from CI's hosts (0c8feb64), changes
+no script and no expectation Broiler.VM is compared with, and Broiler.VM's Intl reads no host's ICU (its conformance
+root is built with invariant globalization and reads its own CLDR 48.2.0 tables), so this run stands.
+
+Broiler.JS, corpus 0c8feb64db3ee7ebaa62bbc263340cb5fea0ec86 (revision 28 as corrected before the merge), under
+TZ=UTC and under TZ=America/New_York, in parallel.
+  tree     a scratch tree written by `git archive 0c8feb64db3ee7ebaa62bbc263340cb5fea0ec86`, whose Broiler.JS/ is the
+           integration base's, 8a95076c35b1e7e438d3e7edde292b71d5de645f; built once beforehand:
+           dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers
+  command  env -u LANG -u LANGUAGE -u BROILER_VECTORS_WORKERS TZ=<zone> BROILER_VECTORS_REPORT=<report>
+             dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build
+             --logger "console;verbosity=normal"
+  times    both started 2026-10-26T21:44:48Z; ended 22:31:06Z (UTC) and 22:31:16Z (New York), as the logs say
+  exit     0 each
+  files    run-revision-28-utc.log, run-revision-28-new-york.log, the reports run-revision-28-*.tsv.gz and the
+           negative controls negative-control-revision-28-*.tsv
+
+*2026-10-26, at SJL-9.2a, before the merge:* Broiler.JS's runs on revision 28 were taken again on 0c8feb64, which
+classifies the 11 differences CI's hosts showed (the bundle README's third dated note in "The engine-level vectors").
+They replace the runs on 2f240fec, which this directory holds at d113a7ce. This section's heading read "== Revision
+28, corpus 2f240fecc502af7d843077ec664b1b7a65c45bb1", and its account of the runs read "Broiler.JS ran in the revision
+27 runs' kind of scratch tree, written by git archive of 11f1cf26c1a4e30c3124f8a7184d1794aa4b874c, whose Broiler.JS/
+and Broiler.ECMAScript/ are the corpus commit's, with conformance/vectors replaced by the corpus commit's; Broiler.VM
+ran as for revision 27, from a scratch archive of the corpus commit and a pin of it, broiler-vm-revision-28.pin."

@@ -135,23 +135,24 @@ classified from CI's runs (the third dated note below).
 
 **This engine's runs** of `Broiler.JS/Broiler.JavaScript.Vectors.Tests` are in [`engine/`](engine/). Each was built
 once in Release with `--disable-build-servers`, in a scratch tree written by `git archive`, and run with `--no-build`
-in one evaluating process, with no `LANG`, under `TZ=UTC` and under `TZ=America/New_York`. The engine's code is the
-branch base's, `915dfc14`: no commit of SJL-9.2a changes a path under `Broiler.JS/`. The two zones' reports are byte
-for byte the same.
+in one evaluating process, with no `LANG`, under `TZ=UTC` and under `TZ=America/New_York`. No commit of SJL-9.2a
+changes a path under `Broiler.JS/`: the engine's code is the branch base's, `915dfc14`, in revision 27's runs, and the
+integration base's, `8a95076c`, in revision 28's. The two zones' reports are byte for byte the same.
 
 | Revision | Corpus commit | Vectors | Match | Classified divergences | Unclassified | Not implemented |
 |---|---|---|---|---|---|---|
 | 27 | `6311031f` | 106,808 | 105,059 | 4 (the number area's, SJL-14's) | 1,745, all in the Intl area | 0 |
-| 28 | `2f240fec` | 106,808 | 105,060 | 1,748 (the Intl area's 1,744 and the number area's 4) | 0 | 0 |
+| 28 | `0c8feb64` | 106,808 | 105,060, 11 of them divergences that no longer hold here | 1,748 (the Intl area's 1,744 and the number area's 4) | 0 | 0 |
 
 Each run's negative control changes `numbers/to-fixed/0001` in a copy of the corpus, and it is reported as the one
 unclassified difference. The files are `run-revision-<N>-utc.log` and `.tsv.gz`, `run-revision-<N>-new-york.log` and
 `.tsv.gz`, and `negative-control-revision-<N>-utc.tsv` and `-new-york.tsv`, for N 27 and 28. Revision 27's logs are
 as the runs wrote them; revision 28's were written whole by the run's script, with a header that names the commits,
-the build, the host and the command, and a footer with the exit code. Revision 28's runs read the corpus at its
-commit, `2f240fecc502af7d843077ec664b1b7a65c45bb1`, in a scratch tree of the same kind, whose `conformance/vectors` was
-replaced by that commit's; the engine's code is unchanged. Every vector renders the value it rendered at revision 27,
-and no divergence field reports that it no longer holds.
+the build, the host and the command, and a footer with the exit code. Revision 28's runs read the corpus as corrected
+before the merge, at `0c8feb64db3ee7ebaa62bbc263340cb5fea0ec86`, in a scratch tree written by `git archive` of that
+commit, whose engine is the integration base's, `8a95076c` (it differs from `915dfc14`'s only by compiler changes).
+Every vector renders the value it rendered at revision 27. The 11 divergences classified from CI's hosts (the third
+dated note below) report that they no longer hold here, and every other row is the one the runs on `2f240fec` gave.
 
 **Broiler.VM** was run locally at its rule commit, `4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f`. Its conformance root
 was built in Release with `--disable-build-servers` from a scratch archive of that commit, and run on a scratch archive
@@ -270,6 +271,14 @@ reports differ from this host's in no other vector but classified ones, which th
 renders 3 of them otherwise and reports 1 as no longer holding; Ubuntu 26.04 renders 18 of them otherwise and reports
 10 as no longer holding. Broiler.VM's runs here are unaffected: its conformance root is built with invariant
 globalization, its Intl reads only its own CLDR 48.2.0 tables, and the 11 gain only `divergence.broiler-js` fields.
+This engine's runs on revision 28 were taken again on the corrected revision, at `0c8feb64`, under both zones: no
+difference is unclassified, the 11 report that they no longer hold, and every other row and both negative controls are
+those of the runs on `2f240fec` they replace (in `engine/` at `d113a7ce`). The paragraph on revision 28's runs above
+read "Revision 28's runs read the corpus at its commit, `2f240fecc502af7d843077ec664b1b7a65c45bb1`, in a scratch tree
+of the same kind, whose `conformance/vectors` was replaced by that commit's; the engine's code is unchanged. Every
+vector renders the value it rendered at revision 27, and no divergence field reports that it no longer holds.", and
+the table's row 28 named the corpus commit `2f240fec` with 105,060 matches; "This engine's runs" read "The engine's
+code is the branch base's, `915dfc14`: no commit of SJL-9.2a changes a path under `Broiler.JS/`."
 
 ## The data home
 
