@@ -166,20 +166,20 @@ Broiler.ECMAScript.Intl.LocaleAliasKind.Subdivision = 4
 Broiler.ECMAScript.Intl.LocaleAliasKind.Variant = 3
 Broiler.ECMAScript.Intl.LocaleAliasKind.value__ field System.Int32
 Broiler.ECMAScript.Intl.LocaleId sealed class
-Broiler.ECMAScript.Intl.LocaleId.AsciiLowercase(System.String) method static System.String
+Broiler.ECMAScript.Intl.LocaleId.AsciiLowercase(System.String, Broiler.ECMAScript.WorkCharge) method static System.String
 Broiler.ECMAScript.Intl.LocaleId.Canonicalize(Broiler.ECMAScript.Intl.ILocaleData, Broiler.ECMAScript.WorkCharge) method Broiler.ECMAScript.Intl.LocaleId
 Broiler.ECMAScript.Intl.LocaleId.IsUnicodeLanguageSubtag(System.String) method static System.Boolean
 Broiler.ECMAScript.Intl.LocaleId.IsUnicodeRegionSubtag(System.String) method static System.Boolean
 Broiler.ECMAScript.Intl.LocaleId.IsUnicodeScriptSubtag(System.String) method static System.Boolean
-Broiler.ECMAScript.Intl.LocaleId.IsUnicodeType(System.String) method static System.Boolean
+Broiler.ECMAScript.Intl.LocaleId.IsUnicodeType(System.String, Broiler.ECMAScript.WorkCharge) method static System.Boolean
 Broiler.ECMAScript.Intl.LocaleId.IsUnicodeVariantSubtag(System.String) method static System.Boolean
-Broiler.ECMAScript.Intl.LocaleId.Maximize(Broiler.ECMAScript.Intl.ILocaleData, System.Boolean&) method Broiler.ECMAScript.Intl.LocaleId
-Broiler.ECMAScript.Intl.LocaleId.Minimize(Broiler.ECMAScript.Intl.ILocaleData, System.Boolean&) method Broiler.ECMAScript.Intl.LocaleId
+Broiler.ECMAScript.Intl.LocaleId.Maximize(Broiler.ECMAScript.Intl.ILocaleData, System.Boolean&, Broiler.ECMAScript.WorkCharge) method Broiler.ECMAScript.Intl.LocaleId
+Broiler.ECMAScript.Intl.LocaleId.Minimize(Broiler.ECMAScript.Intl.ILocaleData, System.Boolean&, Broiler.ECMAScript.WorkCharge) method Broiler.ECMAScript.Intl.LocaleId
 Broiler.ECMAScript.Intl.LocaleId.ToString() method virtual System.String
 Broiler.ECMAScript.Intl.LocaleId.TryCanonicalize(System.String, Broiler.ECMAScript.Intl.ILocaleData, System.String&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.IntlStatus
 Broiler.ECMAScript.Intl.LocaleId.TryParse(System.String, Broiler.ECMAScript.Intl.LocaleId&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.IntlStatus
 Broiler.ECMAScript.Intl.LocaleId.UnicodeExtensionValue(System.String) method System.String
-Broiler.ECMAScript.Intl.LocaleId.WithoutUnicodeExtension() method Broiler.ECMAScript.Intl.LocaleId
+Broiler.ECMAScript.Intl.LocaleId.WithoutUnicodeExtension(Broiler.ECMAScript.WorkCharge) method Broiler.ECMAScript.Intl.LocaleId
 Broiler.ECMAScript.Intl.LocaleId.get_BaseName() method System.String
 Broiler.ECMAScript.Intl.LocaleId.get_HasUnicodeExtension() method System.Boolean
 Broiler.ECMAScript.Intl.LocaleId.get_Keywords() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.LocaleKeyword>
@@ -189,13 +189,13 @@ Broiler.ECMAScript.Intl.LocaleId.get_Script() method System.String
 Broiler.ECMAScript.Intl.LocaleId.get_Variants() method System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Intl.LocaleInfo static class
 Broiler.ECMAScript.Intl.LocaleInfo.Calendars(Broiler.ECMAScript.Intl.LocaleRecord) method static System.Collections.Generic.IReadOnlyList`1<System.String>
-Broiler.ECMAScript.Intl.LocaleInfo.Collations(Broiler.ECMAScript.Intl.LocaleRecord, Broiler.ECMAScript.Intl.ICollatorLocaleData, System.String) method static System.Collections.Generic.IReadOnlyList`1<System.String>
-Broiler.ECMAScript.Intl.LocaleInfo.HourCycles(Broiler.ECMAScript.Intl.LocaleRecord, Broiler.ECMAScript.Intl.ILocaleData) method static System.Collections.Generic.IReadOnlyList`1<System.String>
-Broiler.ECMAScript.Intl.LocaleInfo.NumberingSystems(Broiler.ECMAScript.Intl.LocaleRecord, System.Collections.Generic.IReadOnlyList`1<System.String>, Broiler.ECMAScript.Intl.ILocaleData) method static System.Collections.Generic.IReadOnlyList`1<System.String>
-Broiler.ECMAScript.Intl.LocaleInfo.RegionPreference(System.String, Broiler.ECMAScript.Intl.ILocaleData) method static Broiler.ECMAScript.Intl.LocaleRegionPreference
-Broiler.ECMAScript.Intl.LocaleInfo.TextDirection(Broiler.ECMAScript.Intl.LocaleRecord, Broiler.ECMAScript.Intl.ILocaleData) method static System.String
-Broiler.ECMAScript.Intl.LocaleInfo.TimeZones(Broiler.ECMAScript.Intl.LocaleRecord, Broiler.ECMAScript.Time.ITimeZoneDatabase) method static System.Collections.Generic.IReadOnlyList`1<System.String>
-Broiler.ECMAScript.Intl.LocaleInfo.WeekInfo(Broiler.ECMAScript.Intl.LocaleRecord, Broiler.ECMAScript.Intl.ILocaleData) method static Broiler.ECMAScript.Intl.LocaleWeekInfo
+Broiler.ECMAScript.Intl.LocaleInfo.Collations(Broiler.ECMAScript.Intl.LocaleRecord, Broiler.ECMAScript.Intl.ICollatorLocaleData, System.String, Broiler.ECMAScript.WorkCharge) method static System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Intl.LocaleInfo.HourCycles(Broiler.ECMAScript.Intl.LocaleRecord, Broiler.ECMAScript.Intl.ILocaleData, Broiler.ECMAScript.WorkCharge) method static System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Intl.LocaleInfo.NumberingSystems(Broiler.ECMAScript.Intl.LocaleRecord, System.Collections.Generic.IReadOnlyList`1<System.String>, Broiler.ECMAScript.Intl.ILocaleData, Broiler.ECMAScript.WorkCharge) method static System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Intl.LocaleInfo.RegionPreference(System.String, Broiler.ECMAScript.Intl.ILocaleData, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.LocaleRegionPreference
+Broiler.ECMAScript.Intl.LocaleInfo.TextDirection(Broiler.ECMAScript.Intl.LocaleRecord, Broiler.ECMAScript.Intl.ILocaleData, Broiler.ECMAScript.WorkCharge) method static System.String
+Broiler.ECMAScript.Intl.LocaleInfo.TimeZones(Broiler.ECMAScript.Intl.LocaleRecord, Broiler.ECMAScript.Time.ITimeZoneDatabase, Broiler.ECMAScript.WorkCharge) method static System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Intl.LocaleInfo.WeekInfo(Broiler.ECMAScript.Intl.LocaleRecord, Broiler.ECMAScript.Intl.ILocaleData, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.LocaleWeekInfo
 Broiler.ECMAScript.Intl.LocaleKeyword struct : System.IEquatable`1<Broiler.ECMAScript.Intl.LocaleKeyword>
 Broiler.ECMAScript.Intl.LocaleKeyword..ctor(System.String, System.String) method System.Void
 Broiler.ECMAScript.Intl.LocaleKeyword.Deconstruct(System.String&, System.String&) method System.Void
@@ -266,20 +266,20 @@ Broiler.ECMAScript.Intl.LocaleOptions.set_Variants(System.String) method System.
 Broiler.ECMAScript.Intl.LocaleRecord sealed class : System.IEquatable`1<Broiler.ECMAScript.Intl.LocaleRecord>
 Broiler.ECMAScript.Intl.LocaleRecord..ctor(System.String, System.String, System.String, System.String, System.String, System.String, System.Boolean, System.String) method System.Void
 Broiler.ECMAScript.Intl.LocaleRecord.<Clone>$() method Broiler.ECMAScript.Intl.LocaleRecord
-Broiler.ECMAScript.Intl.LocaleRecord.CanonicalizeUValue(Broiler.ECMAScript.Intl.ILocaleData, System.String, System.String) method static System.String
-Broiler.ECMAScript.Intl.LocaleRecord.CheckFirstDayOfWeek(System.String) method static Broiler.ECMAScript.Intl.IntlStatus
+Broiler.ECMAScript.Intl.LocaleRecord.CanonicalizeUValue(Broiler.ECMAScript.Intl.ILocaleData, System.String, System.String, Broiler.ECMAScript.WorkCharge) method static System.String
+Broiler.ECMAScript.Intl.LocaleRecord.CheckFirstDayOfWeek(System.String, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.IntlStatus
 Broiler.ECMAScript.Intl.LocaleRecord.CheckLanguage(System.String) method static Broiler.ECMAScript.Intl.IntlStatus
 Broiler.ECMAScript.Intl.LocaleRecord.CheckRegion(System.String) method static Broiler.ECMAScript.Intl.IntlStatus
 Broiler.ECMAScript.Intl.LocaleRecord.CheckScript(System.String) method static Broiler.ECMAScript.Intl.IntlStatus
-Broiler.ECMAScript.Intl.LocaleRecord.CheckType(System.String) method static Broiler.ECMAScript.Intl.IntlStatus
-Broiler.ECMAScript.Intl.LocaleRecord.CheckVariants(System.String) method static Broiler.ECMAScript.Intl.IntlStatus
+Broiler.ECMAScript.Intl.LocaleRecord.CheckType(System.String, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.IntlStatus
+Broiler.ECMAScript.Intl.LocaleRecord.CheckVariants(System.String, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.IntlStatus
 Broiler.ECMAScript.Intl.LocaleRecord.Deconstruct(System.String&, System.String&, System.String&, System.String&, System.String&, System.String&, System.Boolean&, System.String&) method System.Void
 Broiler.ECMAScript.Intl.LocaleRecord.Equals(Broiler.ECMAScript.Intl.LocaleRecord) method System.Boolean
 Broiler.ECMAScript.Intl.LocaleRecord.Equals(System.Object) method virtual System.Boolean
 Broiler.ECMAScript.Intl.LocaleRecord.GetHashCode() method virtual System.Int32
 Broiler.ECMAScript.Intl.LocaleRecord.ToString() method virtual System.String
 Broiler.ECMAScript.Intl.LocaleRecord.TryCreate(System.String, Broiler.ECMAScript.Intl.LocaleOptions, Broiler.ECMAScript.Intl.ILocaleData, Broiler.ECMAScript.Intl.LocaleRecord&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.IntlStatus
-Broiler.ECMAScript.Intl.LocaleRecord.UpdateLanguageId(System.String, System.String, System.String, System.String, System.String, System.String&) method static Broiler.ECMAScript.Intl.IntlStatus
+Broiler.ECMAScript.Intl.LocaleRecord.UpdateLanguageId(System.String, System.String, System.String, System.String, System.String, System.String&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.IntlStatus
 Broiler.ECMAScript.Intl.LocaleRecord.WeekdayToUValue(System.String) method static System.String
 Broiler.ECMAScript.Intl.LocaleRecord.get_Calendar() method System.String
 Broiler.ECMAScript.Intl.LocaleRecord.get_CaseFirst() method System.String

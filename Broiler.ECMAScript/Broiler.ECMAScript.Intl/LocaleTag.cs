@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   30
-// Annotated:        30/30
+// Relevant units:   31
+// Annotated:        31/31
 // Exempt:           13
-// Human-reviewed:   0/30
+// Human-reviewed:   0/31
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         3/3
 // Resource impact:  3/10 max
-// Unverified:       30
+// Unverified:       31
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -31,7 +31,7 @@ namespace Broiler.ECMAScript.Intl;
 /// <para>
 /// <b>Ported from Broiler.VM's <c>JsLocaleTag</c></b> at its SJL-9 rule commit <c>4cf9ca44</c>, member for member and in
 /// the same order of steps, so that a tag parses, canonicalises, maximises and minimises as Broiler.VM's does. The data is
-/// asked through <see cref="ILocaleData"/> where Broiler.VM read its <c>JsIntlTables</c>. Two things change:
+/// asked through <see cref="ILocaleData"/> where Broiler.VM read its <c>JsIntlTables</c>. Three things change:
 /// </para>
 /// <list type="bullet">
 /// <item><b>ASCII casing</b> (Broiler.VM's JSD-0082, decision D19): every <c>ToLowerInvariant</c>, <c>ToUpperInvariant</c> and
@@ -41,6 +41,9 @@ namespace Broiler.ECMAScript.Intl;
 /// replacement is a region is written as UTS #35 Annex C writes it, the region in lower case followed by <c>zzzz</c>
 /// (<c>en-u-sd-fi01</c> is <c>en-u-sd-axzzzz</c>), where Broiler.VM wrote the region as given (<c>en-u-sd-AX</c>), which is no
 /// canonical tag.</item>
+/// <item><b>The work is metered and the duplicate checks are linear</b> (decision D18): a duplicate variant or attribute is
+/// found with a set, where Broiler.VM searched the list, and each round of alias replacement charges the caller's meter
+/// for the alias-table keys it looks up, which grow with the square of the number of variants. No answer moves.</item>
 /// </list>
 /// <para>
 /// <b>Parsed once into fields and written back out in canonical form.</b> Every subtag is lower case but the script, which
@@ -218,7 +221,7 @@ internal sealed class LocaleTag
     }
 
     /// <summary>A <c>unicode_language_id</c> at <paramref name="at"/>, without the backwards-compatible forms.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=2; Fingerprint=7D11B9
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=2; Fingerprint=0016B6
     // Broiler-Human:        PENDING
     private static bool ParseLanguageId(string[] subtags, ref int at, LocaleTag tag)
     {
@@ -239,9 +242,13 @@ internal sealed class LocaleTag
             tag.Region = AsciiUpper(subtags[at++]);
         }
 
+        // A SET FOR THE DUPLICATE CHECK, where Broiler.VM searched the list, so that a tag of many variants is checked in
+        // linear time; the answer is the same.
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
         while (at < subtags.Length && IsVariant(subtags[at]))
         {
-            if (tag.Variants.Contains(subtags[at]))
+            if (!seen.Add(subtags[at]))
             {
                 return false;
             }
@@ -336,11 +343,11 @@ internal sealed class LocaleTag
     internal static bool IsRegion(string subtag) => subtag.Length == 2 && IsAlpha(subtag) || subtag.Length == 3 && IsDigits(subtag);
 
     /// <summary>Whether a subtag is a <c>unicode_variant_subtag</c>: five to eight ASCII letters and digits, or four beginning with a digit.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=2F8EA0
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=3FB7E0
     // Broiler-Human:        PENDING
     internal static bool IsVariant(string subtag) =>
-        IsAlphanumeric(subtag) &&
-        (subtag.Length is >= 5 and <= 8 || subtag.Length == 4 && subtag[0] is >= '0' and <= '9');
+        (subtag.Length is >= 5 and <= 8 || subtag.Length == 4 && subtag[0] is >= '0' and <= '9') &&
+        IsAlphanumeric(subtag);
 
     // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=03DC04
     // Broiler-Human:        PENDING
@@ -469,20 +476,24 @@ internal sealed class LocaleTag
     /// ECMA-402's CanonicalizeUnicodeLocaleId (<c>sec-canonicalizeunicodelocaleid</c>): aliases replaced, extensions
     /// canonicalised and ordered, in canonical case.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=High; Resources=3; Fingerprint=8D1B63
+    /// <param name="data">The locale data whose aliases and BCP 47 types it reads.</param>
+    /// <param name="charge">The caller's meter: the alias-table keys each round of alias replacement looks up (<see cref="ReplaceAliases"/>).</param>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=High; Resources=3; Fingerprint=A64040
     // Broiler-Falsified-If: a canonical tag canonicalizes to anything but itself, or an alias the CLDR data names survives canonicalization
     // Broiler-Human:        PENDING
-    internal LocaleTag Canonicalize(ILocaleData data)
+    internal LocaleTag Canonicalize(ILocaleData data, WorkCharge? charge = null)
     {
-        ReplaceAliases(data);
+        ReplaceAliases(data, charge);
 
         // -u-: ATTRIBUTES SORTED WITHOUT DUPLICATES, KEYWORDS BY FIRST OCCURRENCE, TYPES BY THEIR ALIASES, `true` LEFT
-        // IMPLICIT, AND THE KEYWORDS SORTED.
+        // IMPLICIT, AND THE KEYWORDS SORTED. A set finds a duplicate attribute, where Broiler.VM searched the list, so that
+        // many attributes are deduplicated in linear time; the answer is the same.
         var attributes = new List<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var attribute in Attributes)
         {
-            if (!attributes.Contains(attribute))
+            if (seen.Add(attribute))
             {
                 attributes.Add(attribute);
             }
@@ -509,7 +520,7 @@ internal sealed class LocaleTag
         Keywords.AddRange(keywords);
 
         // -t-: THE LANGUAGE CANONICALISED AND THE FIELDS BY FIRST OCCURRENCE, PREFERRED VALUES, SORTED.
-        TransformLanguage?.ReplaceAliases(data);
+        TransformLanguage?.ReplaceAliases(data, charge);
 
         var fields = new List<(string Key, string Value)>();
 
@@ -560,13 +571,22 @@ internal sealed class LocaleTag
     /// UTS #35 Annex C's alias replacement over the language identifier: language aliases by rule, then script, region and
     /// variant aliases, until nothing changes; then the variants sorted.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=3; Fingerprint=91CEAB
+    /// <param name="data">The locale data whose aliases it reads.</param>
+    /// <param name="charge">
+    /// The caller's meter: before each round, one unit per alias-table key the round's language rule search looks up
+    /// (<see cref="CandidateCount"/>), which grows with the square of the number of variants.
+    /// </param>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=3; Fingerprint=D4FB11
     // Broiler-Human:        PENDING
-    internal void ReplaceAliases(ILocaleData data)
+    internal void ReplaceAliases(ILocaleData data, WorkCharge? charge = null)
     {
         // A BOUND, because the data's rules terminate and a defect in them must not loop.
         for (var round = 0; round < 16; round++)
         {
+            // THE ROUND'S WORK IS CHARGED BEFORE IT: the language rule search looks up a key for every pair of variants
+            // (Candidates), so a tag of many variants costs the square of their number, which its length does not bound.
+            charge?.Invoke(CandidateCount());
+
             var changed = ReplaceLanguage(data);
 
             if (Script is { } script && data.Alias(LocaleAliasKind.Script, script) is { } scriptAlias)
@@ -674,9 +694,9 @@ internal sealed class LocaleTag
     /// The alias-table keys a rule matching this tag could have: its language or <c>und</c>, with or without its script and
     /// its region, and with none, one or two of its variants - the data's longest rule, <c>und-hepburn-heploc</c>, names two.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=A77E8E
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=717AE0
     // Broiler-Human:        PENDING
-    private IEnumerable<string> Candidates()
+    internal IEnumerable<string> Candidates()
     {
         foreach (var language in new[] { Language, "und" })
         {
@@ -706,6 +726,25 @@ internal sealed class LocaleTag
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// How many keys <see cref="Candidates"/> yields for this tag as it stands: for each of its stems - the language or
+    /// <c>und</c>, with or without the script and the region - the stem itself unless it is <c>und</c> alone, then each
+    /// variant, then each ordered pair of distinct variants.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=70D5BF
+    // Broiler-Human:        PENDING
+    internal ulong CandidateCount()
+    {
+        var variants = (ulong)Variants.Count;
+        var stems = 2UL * (Script is null ? 1UL : 2UL) * (Region is null ? 1UL : 2UL);
+
+        // THE STEMS THAT ARE `und` ALONE yield no key of their own: one for the `und` language, and one more when the tag's
+        // language is itself `und`.
+        var bare = Language == "und" ? 2UL : 1UL;
+        var pairs = variants == 0 ? 0UL : variants * (variants - 1);
+        return (stems * (variants + pairs)) + (stems - bare);
     }
 
     /// <summary>The one region of a replacement list: the region likely for this tag's language and script when the list holds it, and the first otherwise.</summary>

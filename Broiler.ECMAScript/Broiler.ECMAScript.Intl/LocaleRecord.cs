@@ -48,6 +48,12 @@ namespace Broiler.ECMAScript.Intl;
 /// <b>Every check is over ASCII alone</b> (rows L2 and L14): a KELVIN SIGN or a dotted capital I in an option is refused,
 /// never folded into a letter first.
 /// </para>
+/// <para>
+/// <b>Metering</b> (decision D18, convention 4). Every method that reads a String whose length the caller does not bound -
+/// the tag, the <c>variants</c> option, a type, the updated tag - takes the caller's <see cref="WorkCharge"/> and charges one
+/// unit per code unit of it before the work, and canonicalisation charges the alias-table keys it looks up (see
+/// <see cref="LocaleId"/>). The checks of a language, script or region read at most eight code units and take none.
+/// </para>
 /// </remarks>
 // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.locale records; IP=Low; Security=Low; Resources=0; Fingerprint=FB2794
 // Broiler-Human:        PENDING
@@ -102,30 +108,31 @@ public sealed record LocaleRecord(
     /// joined by <c>-</c> with no repeat.
     /// </summary>
     /// <param name="value">The option's String.</param>
+    /// <param name="charge">The caller's meter: one unit per code unit of <paramref name="value"/>, charged before the check.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidVariants"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=4490C7
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=55E62B
     // Broiler-Human:        PENDING
-    public static IntlStatus CheckVariants(string value)
+    public static IntlStatus CheckVariants(string value, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(value);
+        charge?.Invoke((ulong)value.Length);
 
         if (value.Length == 0)
         {
             return IntlStatus.InvalidVariants;
         }
 
-        // ASCII-lowercase, not the platform's casing, which would lower U+212A KELVIN SIGN to `k` and let it through.
+        // ASCII-lowercase, not the platform's casing, which would lower U+212A KELVIN SIGN to `k` and let it through. A set
+        // finds a repeat, where Broiler.VM searched a list, so that many variants are checked in linear time.
         var lower = LocaleTag.AsciiLower(value);
-        var seen = new List<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var variant in lower.Split('-'))
         {
-            if (!LocaleTag.IsVariant(variant) || seen.Contains(variant))
+            if (!LocaleTag.IsVariant(variant) || !seen.Add(variant))
             {
                 return IntlStatus.InvalidVariants;
             }
-
-            seen.Add(variant);
         }
 
         return IntlStatus.Completed;
@@ -136,21 +143,24 @@ public sealed record LocaleRecord(
     /// nonterminal (<see cref="LocaleId.IsUnicodeType"/>).
     /// </summary>
     /// <param name="value">The option's String.</param>
+    /// <param name="charge">The caller's meter: one unit per code unit of <paramref name="value"/>, charged before the check.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidType"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=ABE1A4
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=19B5DB
     // Broiler-Human:        PENDING
-    public static IntlStatus CheckType(string value)
+    public static IntlStatus CheckType(string value, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(value);
+        charge?.Invoke((ulong)value.Length);
         return LocaleTag.IsTypeSequence(value) ? IntlStatus.Completed : IntlStatus.InvalidType;
     }
 
     /// <summary>The <c>firstDayOfWeek</c> option's check: <see cref="WeekdayToUValue"/>, then <see cref="CheckType"/>.</summary>
     /// <param name="value">The option's String, as read.</param>
+    /// <param name="charge">The caller's meter: one unit per code unit of the value checked, charged before the check.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidType"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=76AFE4
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=E5234E
     // Broiler-Human:        PENDING
-    public static IntlStatus CheckFirstDayOfWeek(string value) => CheckType(WeekdayToUValue(value));
+    public static IntlStatus CheckFirstDayOfWeek(string value, WorkCharge? charge = null) => CheckType(WeekdayToUValue(value), charge);
 
     /// <summary>ECMA-402's WeekdayToUValue (<c>sec-weekdaytouvalue</c>): <c>"0"</c> to <c>"7"</c> as <c>sun</c> to <c>sun</c>, and any other String unchanged.</summary>
     /// <param name="value">The <c>firstDayOfWeek</c> option's String.</param>
@@ -173,13 +183,15 @@ public sealed record LocaleRecord(
     /// <param name="region">The <c>region</c> option, or <see langword="null"/>.</param>
     /// <param name="variants">The <c>variants</c> option, or <see langword="null"/>.</param>
     /// <param name="updated">The updated tag, not yet canonical, or the empty string on a failure.</param>
+    /// <param name="charge">The caller's meter: one unit per code unit of the tag and of each option given, charged before the work.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or the status of the first check that fails, in the options' order.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Medium; Resources=2; Fingerprint=C94783
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Medium; Resources=2; Fingerprint=D853E1
     // Broiler-Human:        PENDING
-    public static IntlStatus UpdateLanguageId(string tag, string? language, string? script, string? region, string? variants, out string updated)
+    public static IntlStatus UpdateLanguageId(string tag, string? language, string? script, string? region, string? variants, out string updated, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(tag);
         updated = string.Empty;
+        charge?.Invoke((ulong)tag.Length + (ulong)(language?.Length ?? 0) + (ulong)(script?.Length ?? 0) + (ulong)(region?.Length ?? 0) + (ulong)(variants?.Length ?? 0));
 
         if (LocaleTag.Parse(tag) is not { } parsed)
         {
@@ -247,9 +259,15 @@ public sealed record LocaleRecord(
     /// <param name="options">The options as read; <see cref="LocaleOptions.None"/> for none.</param>
     /// <param name="data">The locale data canonicalisation reads.</param>
     /// <param name="record">The record, or <see langword="null"/> on a failure.</param>
-    /// <param name="charge">The caller's meter: the tag's length in code units, before it is parsed.</param>
+    /// <param name="charge">
+    /// The caller's meter, each charge before the work it is for: the tag's length in code units and the alias-table keys its
+    /// canonicalisation looks up (<see cref="LocaleId.TryCanonicalize"/>); the canonical tag's length and each language, script,
+    /// region and variants option's (<see cref="UpdateLanguageId"/>); each calendar, collation, firstDayOfWeek and numberingSystem
+    /// option's (<see cref="CheckType"/>); the updated tag's length, each value it sets (<see cref="CanonicalizeUValue"/>), and
+    /// the keys the record's canonicalisation looks up.
+    /// </param>
     /// <returns><see cref="IntlStatus.Completed"/>, or the status of the first step that fails; every one is a <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=High; Resources=2; Fingerprint=94404F
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=High; Resources=2; Fingerprint=218F87
     // Broiler-Falsified-If: an option outside ASCII or outside its grammar is accepted, an option is checked in another order than ECMA-402's, or the record's locale is not the canonical tag of the tag and options
     // Broiler-Human:        PENDING
     public static IntlStatus TryCreate(string tag, LocaleOptions options, ILocaleData data, out LocaleRecord? record, WorkCharge? charge = null)
@@ -266,7 +284,7 @@ public sealed record LocaleRecord(
             return status;
         }
 
-        status = UpdateLanguageId(canonical, options.Language, options.Script, options.Region, options.Variants, out var text);
+        status = UpdateLanguageId(canonical, options.Language, options.Script, options.Region, options.Variants, out var text, charge);
 
         if (status != IntlStatus.Completed)
         {
@@ -275,7 +293,7 @@ public sealed record LocaleRecord(
 
         foreach (var typed in new[] { options.Calendar, options.Collation })
         {
-            if (typed is not null && CheckType(typed) is var typeStatus && typeStatus != IntlStatus.Completed)
+            if (typed is not null && CheckType(typed, charge) is var typeStatus && typeStatus != IntlStatus.Completed)
             {
                 return typeStatus;
             }
@@ -283,12 +301,12 @@ public sealed record LocaleRecord(
 
         var firstDay = options.FirstDayOfWeek is { } fw ? WeekdayToUValue(fw) : null;
 
-        if (firstDay is not null && CheckType(firstDay) is var firstDayStatus && firstDayStatus != IntlStatus.Completed)
+        if (firstDay is not null && CheckType(firstDay, charge) is var firstDayStatus && firstDayStatus != IntlStatus.Completed)
         {
             return firstDayStatus;
         }
 
-        if (options.NumberingSystem is { } nu && CheckType(nu) is var nuStatus && nuStatus != IntlStatus.Completed)
+        if (options.NumberingSystem is { } nu && CheckType(nu, charge) is var nuStatus && nuStatus != IntlStatus.Completed)
         {
             return nuStatus;
         }
@@ -304,7 +322,9 @@ public sealed record LocaleRecord(
             ["nu"] = options.NumberingSystem,
         };
 
-        // MAKELOCALERECORD: each key from the tag's keywords, overridden by its option.
+        // MAKELOCALERECORD: each key from the tag's keywords, overridden by its option. The updated tag holds the options'
+        // subtags, so it is charged again before it is parsed.
+        charge?.Invoke((ulong)text.Length);
         var parsed = LocaleTag.Parse(text);
 
         if (parsed is null)
@@ -321,7 +341,7 @@ public sealed record LocaleRecord(
 
             if (overrides[key] is { } overrideValue)
             {
-                value = CanonicalizeUValue(data, key, overrideValue);
+                value = CanonicalizeUValue(data, key, overrideValue, charge);
 
                 if (entry >= 0)
                 {
@@ -337,7 +357,7 @@ public sealed record LocaleRecord(
         }
 
         parsed.HasUnicodeExtension = parsed.Attributes.Count != 0 || parsed.Keywords.Count != 0;
-        var locale = parsed.Canonicalize(data).ToString();
+        var locale = parsed.Canonicalize(data, charge).ToString();
 
         record = new LocaleRecord(
             locale,
@@ -355,13 +375,15 @@ public sealed record LocaleRecord(
     /// <param name="data">The locale data whose BCP 47 types it reads.</param>
     /// <param name="key">The key, lower case.</param>
     /// <param name="value">The value.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=CC0F09
+    /// <param name="charge">The caller's meter: one unit per code unit of <paramref name="value"/>, charged before the work.</param>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=B8B716
     // Broiler-Human:        PENDING
-    public static string CanonicalizeUValue(ILocaleData data, string key, string value)
+    public static string CanonicalizeUValue(ILocaleData data, string key, string value, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(data);
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
+        charge?.Invoke((ulong)value.Length);
 
         var lower = LocaleTag.AsciiLower(value);
 

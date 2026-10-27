@@ -373,20 +373,109 @@ public sealed class LocaleIdentifierTests
         ulong charged = 0;
         WorkCharge charge = units => charged += units;
 
+        // The tag's length, then the alias-table keys the one round of alias replacement looks up: en, en-US and und-US.
         _ = LocaleId.TryCanonicalize("en-US-u-ca-gregory", Data, out _, charge);
-        Assert.Equal(18UL, charged);
+        Assert.Equal(18UL + 3UL, charged);
 
+        // en: 2 and the key en; de-DE: 5 and the keys de, de-DE and und-DE.
         charged = 0;
         _ = LocaleNegotiation.CanonicalizeLocaleList(["en", "de-DE"], Data, out _, out _, charge);
-        Assert.Equal(7UL, charged);
+        Assert.Equal(2UL + 1UL + 5UL + 3UL, charged);
 
         charged = 0;
         _ = LocaleNegotiation.FilterLocales(VmLocales, ["fr", "de", "en"], charge);
         Assert.Equal(3UL, charged);
 
+        // The quadratic work is charged: a tag of 50 variants looks up, for each of its stems (en and und), each variant and
+        // each ordered pair of them, which its length of 252 code units does not bound.
+        charged = 0;
+        _ = LocaleId.TryCanonicalize(ManyVariants("en", 50), Data, out var canonical, charge);
+        Assert.Equal(252UL + (2UL * (50UL + (50UL * 49UL))) + 1UL, charged);
+        Assert.Equal(ManyVariants("en", 50), canonical);
+
         // The meter may throw, and nothing is answered past it.
         Assert.Throws<InvalidOperationException>(() => LocaleId.TryParse("en", out _, _ => throw new InvalidOperationException()));
     }
+
+    [Fact]
+    public void Every_operation_whose_work_grows_with_its_input_charges_the_caller_s_meter_decision_D18()
+    {
+        ulong charged = 0;
+        WorkCharge charge = units => charged += units;
+        var variants = ManyVariants("en", 50)[3..];
+
+        // Intl.Locale with a variants option: the tag and its key (3), the canonical tag and the option (2 and 249), the
+        // updated tag (252), and the keys its canonicalisation looks up (as above, 5,001).
+        Assert.Equal(IntlStatus.Completed, LocaleRecord.TryCreate("en", new LocaleOptions { Variants = variants }, Data, out var record, charge));
+        Assert.Equal(ManyVariants("en", 50), record!.Locale);
+        Assert.Equal(3UL + 2UL + 249UL + 252UL + 5001UL, charged);
+
+        // Each type option is charged as it is checked, and each value it sets as it is canonicalised: the tag and its key
+        // (3), the canonical tag (2), the check (7), the updated tag (2), the value (7) and the record's key (1).
+        charged = 0;
+        Assert.Equal(IntlStatus.Completed, LocaleRecord.TryCreate("en", new LocaleOptions { Calendar = "gregory" }, Data, out _, charge));
+        Assert.Equal(3UL + 2UL + 7UL + 2UL + 7UL + 1UL, charged);
+
+        charged = 0;
+        Assert.Equal(IntlStatus.Completed, LocaleRecord.CheckVariants(variants, charge));
+        Assert.Equal((ulong)variants.Length, charged);
+
+        charged = 0;
+        Assert.Equal(IntlStatus.Completed, LocaleRecord.UpdateLanguageId("en-US", "fr", null, null, "fonipa", out var updated, charge));
+        Assert.Equal("fr-US-fonipa", updated);
+        Assert.Equal(5UL + 2UL + 6UL, charged);
+
+        charged = 0;
+        Assert.Equal(IntlStatus.InvalidType, LocaleRecord.CheckType("gregorİ", charge));
+        Assert.Equal(IntlStatus.Completed, LocaleRecord.CheckFirstDayOfWeek("0", charge));
+        Assert.Equal("islamic-civil", LocaleRecord.CanonicalizeUValue(Data, "ca", "islamicc", charge));
+        Assert.True(LocaleId.IsUnicodeType("islamic-civil", charge));
+        Assert.Equal("abck", LocaleId.AsciiLowercase("ABCk", charge));
+        Assert.Equal(7UL + 3UL + 8UL + 13UL + 4UL, charged);
+
+        // Maximize, Minimize and WithoutUnicodeExtension charge the identifier's length.
+        Assert.Equal(IntlStatus.Completed, LocaleId.TryParse("zh-TW-u-ca-roc", out var id));
+        charged = 0;
+        _ = id!.Maximize(Data, out _, charge);
+        _ = id.Minimize(Data, out _, charge);
+        _ = id.WithoutUnicodeExtension(charge);
+        Assert.Equal(3UL * 14UL, charged);
+
+        // Locale info charges the Locale's identifier, and the week and hour cycles the keys the likely tag's
+        // canonicalisation looks up (en-Latn-US: seven stems with a key).
+        var locale = Locale("en-u-rg-gbzzzz");
+        charged = 0;
+        _ = LocaleInfo.WeekInfo(locale, Data, charge);
+        Assert.Equal(14UL + 7UL, charged);
+        charged = 0;
+        _ = LocaleInfo.HourCycles(locale, Data, charge);
+        Assert.Equal(14UL + 7UL, charged);
+        charged = 0;
+        _ = LocaleInfo.RegionPreference("en-NZ", Data, charge);
+        _ = LocaleInfo.TimeZones(locale, HomeTimeZones.Current, charge);
+        _ = LocaleInfo.TextDirection(locale, Data, charge);
+        _ = LocaleInfo.Collations(locale, new VmCollator(), "en-US", charge);
+        _ = LocaleInfo.NumberingSystems(locale, VmLocales, Data, charge);
+        Assert.Equal(5UL + (4UL * 14UL), charged);
+    }
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("und")]
+    [InlineData("en-US")]
+    [InlineData("und-Latn-US")]
+    [InlineData("ja-Latn-hepburn-heploc")]
+    [InlineData("en-Latn-US-fonipa-1996-1901")]
+    [InlineData("und-1901-1996-fonipa")]
+    public void The_charge_for_alias_replacement_is_the_number_of_keys_it_looks_up(string tag)
+    {
+        var parsed = LocaleTag.Parse(tag)!;
+        Assert.Equal((ulong)parsed.Candidates().Count(), parsed.CandidateCount());
+    }
+
+    /// <summary>A tag of <paramref name="count"/> distinct variants, each four characters beginning with a digit, in canonical order.</summary>
+    private static string ManyVariants(string language, int count) =>
+        language + string.Concat(Enumerable.Range(0, count).Select(static i => "-0a" + (char)('a' + (i / 26)) + (char)('a' + (i % 26))));
 
     private sealed class WeekComparer : IEqualityComparer<LocaleWeekInfo>
     {

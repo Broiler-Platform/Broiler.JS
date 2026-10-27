@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   16
-// Annotated:        16/16
+// Relevant units:   18
+// Annotated:        18/18
 // Exempt:           2
-// Human-reviewed:   0/16
+// Human-reviewed:   0/18
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         1/1
 // Resource impact:  1/10 max
-// Unverified:       16
+// Unverified:       18
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -43,8 +43,14 @@ namespace Broiler.ECMAScript.Intl;
 /// <para>
 /// <b>What an engine hands in</b>: the locale data; for collations, its <c>Intl.Collator</c>'s data and DefaultLocale (rows
 /// L17, L18 and L40, each engine's until milestone SJL-17); for numbering systems, its <c>Intl.NumberFormat</c>'s available
-/// locales; for time zones, the shared time zone database. No method charges a meter: each works on a record the
-/// constructor has made, whose text it charged for (decision D18).
+/// locales; for time zones, the shared time zone database.
+/// </para>
+/// <para>
+/// <b>Metering</b> (decision D18, convention 4). Every method but <see cref="Calendars"/> parses the Locale's identifier again,
+/// work that grows with its length, which the caller does not bound: a <see cref="LocaleRecord"/> may hold any tag. So each
+/// takes the caller's <see cref="WorkCharge"/> and charges one unit per code unit of the identifier before the work, and
+/// <see cref="RegionPreference"/>'s canonicalisation of the likely tag also charges the alias-table keys it looks up (see
+/// <see cref="LocaleId"/>). Broiler.VM charges nothing there (row L43) and passes no meter; Broiler.JS passes none.
 /// </para>
 /// </remarks>
 // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=0; Fingerprint=1AEABD
@@ -72,14 +78,16 @@ public static class LocaleInfo
     /// <param name="locale">The Locale.</param>
     /// <param name="collator">The engine's <c>Intl.Collator</c> data.</param>
     /// <param name="defaultLocale">DefaultLocale, from the engine's provider.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=High; Resources=1; Fingerprint=ED121E
+    /// <param name="charge">The caller's meter: one unit per code unit of the Locale's identifier, charged before the work.</param>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=High; Resources=1; Fingerprint=284344
     // Broiler-Falsified-If: a locale whose language is not und and that the Collator's available locales do not match answers anything but DefaultLocale's collations (row L18), or und answers anything but emoji and eor
     // Broiler-Human:        PENDING
-    public static IReadOnlyList<string> Collations(LocaleRecord locale, ICollatorLocaleData collator, string defaultLocale)
+    public static IReadOnlyList<string> Collations(LocaleRecord locale, ICollatorLocaleData collator, string defaultLocale, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
         ArgumentNullException.ThrowIfNull(collator);
         ArgumentNullException.ThrowIfNull(defaultLocale);
+        Charge(locale, charge);
 
         if (locale.Collation is not null)
         {
@@ -118,19 +126,21 @@ public static class LocaleInfo
     /// </summary>
     /// <param name="locale">The Locale.</param>
     /// <param name="data">The locale data.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=E68B79
+    /// <param name="charge">The caller's meter: as <see cref="RegionPreference"/>'s.</param>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=F36BBF
     // Broiler-Human:        PENDING
-    public static IReadOnlyList<string> HourCycles(LocaleRecord locale, ILocaleData data)
+    public static IReadOnlyList<string> HourCycles(LocaleRecord locale, ILocaleData data, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
         ArgumentNullException.ThrowIfNull(data);
+        Charge(locale, charge);
 
         if (locale.HourCycle is not null)
         {
             return [locale.HourCycle];
         }
 
-        var preference = RegionPreference(locale.Locale, data);
+        var preference = Preference(locale.Locale, data, charge);
         var language = Tag(locale.Locale).Language;
         var cycles = new List<string>();
         string[] regions = preference.RegionOverride is { } regionOverride ? [regionOverride, preference.Region] : [preference.Region];
@@ -176,13 +186,15 @@ public static class LocaleInfo
     /// <param name="locale">The Locale.</param>
     /// <param name="numberFormatLocales">The engine's <c>Intl.NumberFormat</c> available locales.</param>
     /// <param name="data">The locale data.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Medium; Resources=1; Fingerprint=CC919D
+    /// <param name="charge">The caller's meter: one unit per code unit of the Locale's identifier, charged before the work.</param>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Medium; Resources=1; Fingerprint=0B2523
     // Broiler-Human:        PENDING
-    public static IReadOnlyList<string> NumberingSystems(LocaleRecord locale, IReadOnlyList<string> numberFormatLocales, ILocaleData data)
+    public static IReadOnlyList<string> NumberingSystems(LocaleRecord locale, IReadOnlyList<string> numberFormatLocales, ILocaleData data, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
         ArgumentNullException.ThrowIfNull(numberFormatLocales);
         ArgumentNullException.ThrowIfNull(data);
+        Charge(locale, charge);
 
         if (locale.NumberingSystem is not null)
         {
@@ -209,12 +221,14 @@ public static class LocaleInfo
     /// </summary>
     /// <param name="locale">The Locale.</param>
     /// <param name="timeZones">The time zone database the engine embeds.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=4C3CC8
+    /// <param name="charge">The caller's meter: one unit per code unit of the Locale's identifier, charged before the work.</param>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=CA526B
     // Broiler-Human:        PENDING
-    public static IReadOnlyList<string>? TimeZones(LocaleRecord locale, ITimeZoneDatabase timeZones)
+    public static IReadOnlyList<string>? TimeZones(LocaleRecord locale, ITimeZoneDatabase timeZones, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
         ArgumentNullException.ThrowIfNull(timeZones);
+        Charge(locale, charge);
         return Tag(locale.Locale).Region is not { } region ? null : timeZones.RegionTimeZones(region);
     }
 
@@ -225,13 +239,15 @@ public static class LocaleInfo
     /// </summary>
     /// <param name="locale">The Locale.</param>
     /// <param name="data">The locale data.</param>
+    /// <param name="charge">The caller's meter: one unit per code unit of the Locale's identifier, charged before the work.</param>
     /// <returns><c>"rtl"</c>, <c>"ltr"</c>, or <see langword="null"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=08E021
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=A99A31
     // Broiler-Human:        PENDING
-    public static string? TextDirection(LocaleRecord locale, ILocaleData data)
+    public static string? TextDirection(LocaleRecord locale, ILocaleData data, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
         ArgumentNullException.ThrowIfNull(data);
+        Charge(locale, charge);
 
         var tag = Tag(locale.Locale);
 
@@ -252,15 +268,17 @@ public static class LocaleInfo
     /// </summary>
     /// <param name="locale">The Locale.</param>
     /// <param name="data">The locale data, whose week data holds the world's, <c>001</c>.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=4FA0FA
+    /// <param name="charge">The caller's meter: as <see cref="RegionPreference"/>'s.</param>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=04097F
     // Broiler-Human:        PENDING
-    public static LocaleWeekInfo WeekInfo(LocaleRecord locale, ILocaleData data)
+    public static LocaleWeekInfo WeekInfo(LocaleRecord locale, ILocaleData data, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
         ArgumentNullException.ThrowIfNull(data);
 
         var world = data.Week("001") ?? throw new ArgumentException("the locale data holds no week data for the world, 001", nameof(data));
-        var preference = RegionPreference(locale.Locale, data);
+        Charge(locale, charge);
+        var preference = Preference(locale.Locale, data, charge);
         var week = (preference.RegionOverride is not null ? data.Week(preference.RegionOverride) : null) ?? data.Week(preference.Region) ?? world;
 
         var firstDay = Day(week.FirstDay.Length != 0 ? week.FirstDay : world.FirstDay);
@@ -294,13 +312,25 @@ public static class LocaleInfo
     /// </summary>
     /// <param name="locale">A canonical locale identifier.</param>
     /// <param name="data">The locale data.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=E62750
+    /// <param name="charge">
+    /// The caller's meter: one unit per code unit of <paramref name="locale"/>, charged before the work, and the alias-table
+    /// keys the likely tag's canonicalisation looks up.
+    /// </param>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=96C249
     // Broiler-Human:        PENDING
-    public static LocaleRegionPreference RegionPreference(string locale, ILocaleData data)
+    public static LocaleRegionPreference RegionPreference(string locale, ILocaleData data, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
         ArgumentNullException.ThrowIfNull(data);
+        charge?.Invoke((ulong)locale.Length);
+        return Preference(locale, data, charge);
+    }
 
+    /// <summary>RegionPreference's steps, once the identifier's length is charged; the canonicalisation charges its alias-table keys.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=6C2213
+    // Broiler-Human:        PENDING
+    private static LocaleRegionPreference Preference(string locale, ILocaleData data, WorkCharge? charge)
+    {
         var tag = Tag(locale);
         var region = tag.Region ?? Subdivision(data, tag, "sd");
 
@@ -308,7 +338,7 @@ public static class LocaleInfo
         {
             var maximal = Tag(locale);
             _ = maximal.Maximize(data);
-            region = maximal.Canonicalize(data).Region ?? "001";
+            region = maximal.Canonicalize(data, charge).Region ?? "001";
         }
 
         return new LocaleRegionPreference(region, Subdivision(data, tag, "rg"));
@@ -352,6 +382,11 @@ public static class LocaleInfo
         "sun" => 7,
         _ => 0,
     };
+
+    /// <summary>Charges the caller's meter one unit per code unit of a Locale's identifier, before a method reads it.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=0; Fingerprint=7F1FE0
+    // Broiler-Human:        PENDING
+    private static void Charge(LocaleRecord locale, WorkCharge? charge) => charge?.Invoke((ulong)locale.Locale.Length);
 
     /// <summary>The parsed form of a Locale's canonical identifier.</summary>
     // Broiler-AI:           Origin=AI; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=195C73

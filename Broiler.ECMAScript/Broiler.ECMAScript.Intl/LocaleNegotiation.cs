@@ -40,10 +40,10 @@ namespace Broiler.ECMAScript.Intl;
 /// not throws <see cref="ArgumentException"/>.
 /// </para>
 /// <para>
-/// <b>Metering</b> (decision D18). CanonicalizeLocaleList charges each tag's length, as <see cref="LocaleId.TryCanonicalize"/>
-/// does; the matchers and FilterLocales charge one unit per requested locale they examine. Broiler.VM charges one unit per
-/// element in its adapter, where it walks the script value (<c>JsRealm.Intl.cs:282</c> and <c>:550</c>), and passes no meter
-/// here; Broiler.JS passes none.
+/// <b>Metering</b> (decision D18). CanonicalizeLocaleList charges each tag's length and the alias-table keys its
+/// canonicalisation looks up, as <see cref="LocaleId.TryCanonicalize"/> does; the matchers and FilterLocales charge one unit
+/// per requested locale they examine. Broiler.VM charges one unit per element in its adapter, where it walks the script value
+/// (<c>JsRealm.Intl.cs:282</c> and <c>:550</c>), and passes no meter here; Broiler.JS passes none.
 /// </para>
 /// </remarks>
 // Broiler-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Medium; Resources=0; Fingerprint=21832C
@@ -59,7 +59,7 @@ public static class LocaleNegotiation
     /// <param name="data">The locale data canonicalisation reads.</param>
     /// <param name="locales">The canonical tags, each once, or an empty list when one is not well-formed.</param>
     /// <param name="failedAt">The index of the first tag that is not well-formed, or -1.</param>
-    /// <param name="charge">The caller's meter: each tag's length in code units, before it is parsed.</param>
+    /// <param name="charge">The caller's meter: each tag's length in code units, before it is parsed, and the alias-table keys its canonicalisation looks up.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidLanguageTag"/>, a <c>RangeError</c>.</returns>
     // Broiler-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Medium; Resources=2; Fingerprint=E00DDD
     // Broiler-Human:        PENDING

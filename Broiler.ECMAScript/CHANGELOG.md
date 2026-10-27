@@ -51,7 +51,12 @@ Not yet packed under a version of its own: the stream's next version is set when
   [`docs/intl/design.md`](docs/intl/design.md)). It is **not packed** until stage SJL-9.3f, so that no version of the
   stream carries part of it (decision D29). Ported from Broiler.VM's JavaScript profile at `4cf9ca44`, with ASCII
   casing and `NumberFormatInfo.InvariantInfo` where Broiler.VM made a culture call (decision D19), a status where it
-  threw, and the caller's `WorkCharge` on every path whose work grows with its input (decision D18):
+  threw, and the caller's `WorkCharge` on every operation whose work grows with a tag, an option or a list it is given,
+  charged before the work in the units each documents: one per code unit of a tag or String it parses or checks, one
+  per requested locale a matcher or FilterLocales examines, and, where it canonicalises, one per alias-table key each
+  round of alias replacement looks up, a number that grows with the square of the tag's variants (decision D18). The
+  members that read an identifier already made, and ResolveLocale over a match already made, whose making was charged,
+  take none, nor do the checks of a language, script or region subtag, which read at most eight code units:
   - **the data contract** (decision D8): `IIntlDataSet`, the tables an engine hands in, and `IntlTable`, which keeps
     Broiler.VM's `JsIntlTable` numbers with 7, 23 and 24 retired; `TableLocaleData`, the decoder implementation of the
     question-level `ILocaleData`, each table decoded once per process, with the records it answers in
