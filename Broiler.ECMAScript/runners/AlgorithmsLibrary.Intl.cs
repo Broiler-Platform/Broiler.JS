@@ -70,16 +70,43 @@ internal sealed partial class AlgorithmsLibrary
     /// Broiler.Unicode's, and with no locale it reads the engine's default-locale provider (row L35).</item>
     /// <item><c>Number.prototype.toLocaleString</c>: formatting a number, sub-area (c)'s, with the engine's default locale
     /// (row L33).</item>
-    /// <item><c>Intl.NumberFormat.supportedLocalesOf</c>: both vectors pin the engine's available-locale provider (rows L28 and
-    /// L44): one names locales of the host's cultures, the other prepends the default locale an engine resolves, which the
-    /// vector's inputs do not carry.</item>
+    /// <item><c>Intl.NumberFormat.supportedLocalesOf</c> with the one input <c>en</c>: <c>providers/0014</c> (row L44), whose
+    /// script asks for the default locale an engine resolves and <c>en</c>
+    /// (<c>[new Intl.NumberFormat().resolvedOptions().locale, "en"]</c>) while its inputs carry <c>en</c> alone, so no runner
+    /// can hand the library the list the script builds. That is the vector's defect, which a corpus revision mends by giving
+    /// it the default locale as an input. The operation's other vector, <c>providers/0007</c>, is the library's: FilterLocales
+    /// over Broiler.VM's available locales, held to its <c>per-engine.broiler-vm</c> expectation (row L28), as
+    /// <c>Intl.DisplayNames.supportedLocalesOf</c> is.</item>
     /// <item><c>Intl.DisplayNames.supportedLocalesOf</c> with no argument: <c>typeof</c> of the built-in, whether the engine
     /// defines it (row L37).</item>
     /// </list>
     /// </remarks>
+    /// <param name="operation">The vector's operation.</param>
+    /// <param name="input">The vector's inputs as the corpus writes its <c>in</c> field (<see cref="IntlInputText"/>).</param>
     internal static bool IsEngineLevelIntl(string operation, string input) =>
-        operation is "String.prototype.toLocaleLowerCase" or "Number.prototype.toLocaleString" or "Intl.NumberFormat.supportedLocalesOf"
+        operation is "String.prototype.toLocaleLowerCase" or "Number.prototype.toLocaleString"
+        || (operation == "Intl.NumberFormat.supportedLocalesOf" && input == "str:\"en\"")
         || (operation == "Intl.DisplayNames.supportedLocalesOf" && input == "undefined");
+
+    /// <summary>
+    /// Inputs as the corpus writes a vector's <c>in</c> field, for <see cref="IsEngineLevelIntl"/>: <c>undefined</c> and each
+    /// String in the notation, separated by a space; any other kind, which no locale vector gives, as <c>?</c>.
+    /// </summary>
+    internal static string IntlInputText(IReadOnlyList<TypedValue> inputs)
+    {
+        var text = new StringBuilder();
+        foreach (var input in inputs)
+        {
+            text.Append(text.Length == 0 ? string.Empty : " ").Append(input.Kind switch
+            {
+                TypedValueKind.Undefined => "undefined",
+                TypedValueKind.String => TypedValue.RenderString(input.Chars),
+                _ => "?",
+            });
+        }
+
+        return text.ToString();
+    }
 
     /// <summary>Whether a vector is the Intl area's that this runner answers: sub-area (a)'s, but the engine-level ones.</summary>
     internal static bool IsLibraryIntl(VectorRecord vector) =>
@@ -99,7 +126,7 @@ internal sealed partial class AlgorithmsLibrary
 
     private static string IntlArea(string operation, IReadOnlyList<TypedValue> inputs)
     {
-        if (IsEngineLevelIntl(operation, inputs.Count == 1 && inputs[0].Kind == TypedValueKind.Undefined ? "undefined" : string.Empty))
+        if (IsEngineLevelIntl(operation, IntlInputText(inputs)))
             return EmptyLibrary.NotImplemented;
 
         switch (operation)
@@ -206,6 +233,7 @@ internal sealed partial class AlgorithmsLibrary
                     : RangeError;
             }
 
+            case "Intl.NumberFormat.supportedLocalesOf":
             case "Intl.DisplayNames.supportedLocalesOf":
                 return Requested(inputs) is { } requested ? Text(string.Join(",", LocaleNegotiation.FilterLocales(IntlAvailable, requested))) : RangeError;
 

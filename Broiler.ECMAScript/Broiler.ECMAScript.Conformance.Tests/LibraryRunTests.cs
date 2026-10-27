@@ -156,10 +156,16 @@ public class LibraryRunTests
         var engineLevel = locales.Where(static r => r.Verdict == Verdict.NotImplemented).Select(static r => r.Vector).ToList();
         Assert.All(engineLevel, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntl(v), v.Id + " is not answered by the library"));
         Assert.Equal(
-            ["intl/locales/negotiation/0021", "intl/locales/providers/0007", "intl/locales/providers/0012", "intl/locales/providers/0013", "intl/locales/providers/0014"],
+            ["intl/locales/negotiation/0021", "intl/locales/providers/0012", "intl/locales/providers/0013", "intl/locales/providers/0014"],
             engineLevel.Select(static v => v.Id).Order(System.StringComparer.Ordinal));
 
         Assert.All(results.Except(locales), static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+
+        // Intl.NumberFormat.supportedLocalesOf: providers/0007 is the library's FilterLocales, held to Broiler.VM's per-engine
+        // expectation; providers/0014, whose inputs lack the default locale its script prepends, is not answered.
+        var filtered = Assert.Single(locales, static r => r.Vector.Id == "intl/locales/providers/0007");
+        Assert.True(AlgorithmsLibrary.MatchesBroilerVmExpectation(filtered), filtered.Rendered);
+        Assert.Equal("value: str:\"de-CH,en-US-u-ca-gregory,de-DE-x-foo,en-GB,de-1996\"", filtered.Rendered);
 
         var unicode = LibraryRun.Run(Home.Corpus.Records.Where(static v => v["op"] == "String.prototype.toLocaleLowerCase").ToList(), new AlgorithmsLibrary());
         Assert.Contains(unicode, static r => r.Vector["area"] == "unicode");

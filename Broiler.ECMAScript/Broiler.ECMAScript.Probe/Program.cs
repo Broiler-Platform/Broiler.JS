@@ -56,8 +56,9 @@ internal static class Program
         // Every Temporal vector is the library's through the runner's Temporal adapter, over the same tables, but a
         // built-in's length, the properties an engine reads, and the calendar an object lends (milestone SJL-10.3). Of the
         // Intl area, sub-area (a)'s vectors are the Intl library's, over the Intl data home's tables and Broiler.VM's
-        // providers, but the four engine-level ones; an impl-defined one may give Broiler.VM's per-engine expectation,
-        // the engine whose providers the runner takes; every other Intl vector is not implemented (milestone SJL-9.3a).
+        // providers, but the engine-level ones AlgorithmsLibrary.IsEngineLevelIntl names; an impl-defined one may give
+        // Broiler.VM's per-engine expectation, the engine whose providers the runner takes; every other Intl vector is not
+        // implemented (milestone SJL-9.3a).
         var library = new AlgorithmsLibrary();
         var results = LibraryRun.Run(corpus.Records, library);
         foreach (var result in results)
