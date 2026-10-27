@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 1386 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 1390 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 106 |
-| Code units | 1836 |
-| Relevant | 1386 |
-| Exempt | 450 |
-| Assessed | 1386 of 1386 (100%) |
-| Human reviewed | 0 of 1386 (0%) |
-| Unverified | 1386 |
+| Files scanned | 108 |
+| Code units | 1878 |
+| Relevant | 1390 |
+| Exempt | 488 |
+| Assessed | 1390 of 1390 (100%) |
+| Human reviewed | 0 of 1390 (0%) |
+| Unverified | 1390 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1386 |
+| HUMAN_PENDING | 1390 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 450 |
+| EXEMPT | 488 |
 
 ## 5. Aliases In The Tree
 
@@ -191,6 +191,8 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` | 15 | 12 | 3 | 12 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` | 19 | 14 | 5 | 14 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Generation/Time/TzdbTableSource.cs` | 2 | 2 | 0 | 2 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Intl/IIntlDataSet.cs` | 33 | 3 | 30 | 3 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Intl/IntlStatus.cs` | 9 | 1 | 8 | 1 | Low | Low | 0/0 |
 
 ## 7. Decisions Recorded
 
@@ -513,5 +515,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-566 of the 1386 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+567 of the 1390 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

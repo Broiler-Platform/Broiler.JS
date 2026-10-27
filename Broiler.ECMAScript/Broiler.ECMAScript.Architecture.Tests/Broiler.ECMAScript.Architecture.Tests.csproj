@@ -27,6 +27,7 @@
     <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
     <ProjectReference Include="..\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj" />
     <ProjectReference Include="..\Broiler.ECMAScript.Generation\Broiler.ECMAScript.Generation.csproj" />
+    <ProjectReference Include="..\Broiler.ECMAScript.Intl\Broiler.ECMAScript.Intl.csproj" />
     <!-- Built first, read from its own output: an executable is not referenced as an assembly. -->
     <ProjectReference Include="..\Broiler.ECMAScript.Probe\Broiler.ECMAScript.Probe.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
