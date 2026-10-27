@@ -13,8 +13,9 @@ direct eval in a fresh realm; `in` holds the source as one `str:` value, which t
 `script` holds the same source as the one-line Script the engine-level runners evaluate, or, under `PerformEval`, a
 top-level direct `eval` of it. `out` is `error: SyntaxError` for a refusal, or the completion value of an acceptance,
 which completes without throwing. A source that holds a line terminator or a code unit outside printable ASCII is a
-`PerformEval` vector, since a `script` is one line of ASCII; a source an eval code step decides (EA0001, EA0002) is one
-too. Six files, one per class of row: lexical (the lexical grammar, its early errors and the plan's lexical vectors),
+`PerformEval` vector, since a `script` is one line of ASCII; a source an eval code rule decides (EA0001, EA0002, and
+EP0008's using declaration at eval code's top level) is one too. Six files, one per class of row: lexical (the lexical
+grammar, its early errors and the plan's lexical vectors),
 expressions (ECMA-262 clause 13), statements (clause 14 and the explicit-resource-management rules), functions and
 classes (clause 15), scripts and eval (clauses 16 and 19 and the grammar rows) and annex-b (Annex B's B.3 extensions).
 
@@ -23,14 +24,19 @@ input a Script or a top-level direct eval can carry has one accepted and one ref
 notes, beside more where a correction of the correspondence is carried (``check_rows``). The rows only a module goal,
 a switch or a parameter reaches, or whose half no source of schema 1 asserts, are listed in ``UNCOVERED`` with the
 reason, so the count of rows covered is checkable: the parse corpus judges them (the home's part A in configurations V
-and J; Broiler.VM's part B).
+and J; Broiler.VM's part B). Decision D25 of JSD-0083 leaves out only Module-goal and switch-dependent rows; this table
+also leaves out rows no op of the area reaches (EA0010 to EA0012, EP0015, EP0016), the tree-depth bound (EX0012) and
+the explicit-resource-management halves no citable source asserts, which REVISIONS.md's row 29 names as a
+disagreement with D25.
 
 THE EXPECTED VALUES are the specification's, ECMA-262 ES2026 at 0248456c (sources/ecma262.pin), each vector citing the
-clause that decides it and, for a refusal, the test262 tests at ccaac100 that assert it; an acceptance's completion
-value follows from the evaluation semantics, and its sources are chosen so that the value is plain. No expected value
-is read from an engine or from the reference. The rules ECMA-262 main merged after the pinned edition (EP0001 to EP0008,
-explicit resource management) have no clause in the pinned text: their vectors cite the test262 tests that assert them
-alone, and a half no test asserts has no vector (``UNCOVERED``). Every vector is checked against an independent
+clause that decides it and, where one asserts the outcome, the test262 tests at ccaac100 that do; an acceptance's
+completion value follows from the evaluation semantics, and its sources are chosen so that the value is plain. No
+expected value is read from an engine or from the reference. The rules ECMA-262 main merged after the pinned edition
+(EP0001 to EP0008, explicit resource management) have no clause in the pinned text, which has no UsingDeclaration and
+refuses every source that declares one: their vectors' expected values are ECMA-262 main's at 4feb0272, not the pinned
+edition's, they cite the test262 tests that assert them alone, and a half no test asserts has no vector
+(``UNCOVERED``). Every vector is checked against an independent
 reference, the Node.js v26.12.0 bundle sjl-9-001's reference.txt names, by --check-node (syntaxcheck.mjs): a refused
 vector must be a SyntaxError there at parse time and an accepted one must complete there with the vector's `out`;
 where the reference disagrees with the specification the vector follows the specification and ``NODE_DISAGREES``
@@ -206,6 +212,7 @@ class Case:
     note: str
     cls: str = "normative"
     per_engine: dict[str, str] = field(default_factory=dict)
+    since: int = SINCE
 
     @property
     def refused(self) -> bool:
@@ -217,11 +224,11 @@ CASES: list[Case] = []
 
 def add(file: str, group: str, source: str, out: str, *, rows: Sequence[str] = (), corr: Sequence[str] = (),
         clauses: Sequence[str] = (), tests: Sequence[str] = (), note: str = "", op: str | None = None,
-        script: str | None = None, impl: str | None = None) -> None:
+        script: str | None = None, impl: str | None = None, since: int = SINCE) -> None:
     """One vector. `op` is PerformEval where the source needs a line terminator or a code unit outside printable
     ASCII, ParseScript otherwise, unless given; `script` is the source itself under ParseScript and a top-level direct
     eval of it under PerformEval, unless given; `impl` makes it impl-defined, each engine's expectation being `out`,
-    with the reason given."""
+    with the reason given; `since` is the corpus revision that added it."""
     if file not in FILES:
         raise GeneratorError(f"no file {file}")
     if op is None:
@@ -241,9 +248,13 @@ def add(file: str, group: str, source: str, out: str, *, rows: Sequence[str] = (
         note_parts.append(("correspondence row " if len(corr) == 1 else "correspondence rows ") + ", ".join(corr))
     head = "; ".join(note_parts)
     verdict = "refused" if out == SE else "accepted"
-    text = f"{head}: {verdict}, {note}" if head else f"{verdict}, {note}"
-    case = Case(file, group, op, source, script, out, tuple(rows), tuple(corr), tuple(clauses), tuple(tests),
-                text.rstrip(", "))
+    text = f"{verdict}, {note}" if note else verdict
+    if head:
+        text = f"{head}: {text}"
+    if since not in (SINCE, CORPUS_REVISION):
+        raise GeneratorError(f"{group}: a vector is added at revision {SINCE} or {CORPUS_REVISION}, not {since}")
+    case = Case(file, group, op, source, script, out, tuple(rows), tuple(corr), tuple(clauses), tuple(tests), text,
+                since=since)
     if impl is not None:
         case.cls = "impl-defined"
         case.per_engine = {"broiler-js": out, "broiler-vm": out}
@@ -359,13 +370,12 @@ def lexical() -> None:
         note="hexadecimal, Unicode and braced Unicode escapes")
     add(f, "ex0005", "\"\\u1\"", SE, rows=("EX0005",), clauses=C(STR),
         tests=T("test/language/literals/string/S7.8.4_A7.2_T1.js"), note="an incomplete \\u escape")
-    add(f, "ex0005", "\"\\u{110000}\"", SE, rows=("EX0005",), clauses=C(STR, "sec-string-literals-early-errors"),
-        tests=T("test/language/literals/string/unicode-escape-nls-err-double.js"),
+    add(f, "ex0005", "\"\\u{110000}\"", SE, rows=("EX0005",), clauses=C(STR, TEMPLATE_LEX),
         note="a braced escape above U+10FFFF")
     add(f, "ex0006", "/a/.test(\"a\")", V(True), rows=("EX0006",), clauses=C(REGEXP),
         note="a closed RegularExpressionLiteral")
     add(f, "ex0006", "/a", SE, rows=("EX0006",), clauses=C(REGEXP),
-        tests=T("test/language/literals/regexp/S7.8.5_A1.2_T1.js"),
+        tests=T("test/language/line-terminators/invalid-regexp-lf.js"),
         note="a RegularExpressionLiteral with no closing / before the end of the source text")
     add(f, "ex0007", "`a`", V("a"), rows=("EX0007",), clauses=C(TEMPLATE_LEX), note="a closed template")
     add(f, "ex0007", "`a", SE, rows=("EX0007",), clauses=C(TEMPLATE_LEX),
@@ -457,17 +467,17 @@ def lexical_numeric() -> None:
         ("1__0", "dd-nsl-dds-dunder-err.js", "two adjacent separators"),
         ("10_", "dds-nsl-err.js", "a trailing separator"),
         ("0_1", "nzd-nsl-dds-leading-zero-err.js", "a separator after a leading zero"),
-        ("0x_1", "hil-nsl-hd-err.js", "a separator after the radix prefix"),
-        ("0x1_", "hil-hd-nsl-hd-err.js", "a trailing separator in a hexadecimal literal"),
-        ("1._5", "dil-dot-nsl-err.js", "a separator after the decimal point"),
+        ("0x_1", "hil-hd-nsl-hd-err.js", "a separator after the radix prefix"),
+        ("0x1_", "hil-nsl-hd-err.js", "a trailing separator in a hexadecimal literal"),
+        ("1._5", "dil-dot-nsl-dd-err.js", "a separator after the decimal point"),
         ("1_.5", "dds-nsl-err.js", "a separator before the decimal point"),
-        ("1e_1", "dot-nsl-ep-err.js", "a separator after the exponent indicator"),
+        ("1e_1", None, "a separator after the exponent indicator"),
         ("07_0", "lol-07-err.js", "a separator in a LegacyOctalIntegerLiteral"),
         ("08_0", "nonoctal-08-err.js", "a separator in a NonOctalDecimalIntegerLiteral"),
         ("0_8", "nonoctal-0_8-err.js", "a separator after the leading zero of a non-octal decimal"),
     ]
     for text, test, note in refused:
-        add(f, g, text, SE, clauses=C(NUM), tests=T(sep + test), note=note)
+        add(f, g, text, SE, clauses=C(NUM), tests=T(sep + test) if test else (), note=note)
     add(f, g, "07", V(7), rows=("EE0003",), clauses=C(NUM), tests=T("test/language/literals/numeric/legacy-octal-integer.js"),
         note="a LegacyOctalIntegerLiteral in sloppy code")
     add(f, g, "08", V(8), rows=("EE0003",), clauses=C(NUM),
@@ -476,7 +486,7 @@ def lexical_numeric() -> None:
     add(f, g, "09.5", V(9.5), rows=("EE0003",), clauses=C(NUM),
         note="a NonOctalDecimalIntegerLiteral may take a fraction")
     add(f, g, "08e1", V(80), rows=("EE0003",), clauses=C(NUM), note="a NonOctalDecimalIntegerLiteral may take an exponent")
-    add(f, g, "07.5", SE, corr=("T17",), clauses=C(NUM), tests=T("test/language/literals/numeric/S7.8.3_A6.1_T1.js"),
+    add(f, g, "07.5", SE, corr=("T17",), clauses=C(NUM),
         note="a LegacyOctalIntegerLiteral takes no fraction, so a second numeric literal follows it directly")
     add(f, g, "3$", SE, corr=("T17",), clauses=C(NUM), note="a NumericLiteral directly followed by the IdentifierStart $")
     add(f, g, "0b2", SE, clauses=C(NUM), tests=T("test/language/literals/numeric/binary-invalid-digit.js"),
@@ -555,9 +565,10 @@ def lexical_templates() -> None:
     add(f, "t7", "`${1 <!-- }\n}`", V("1"), rows=("EG0001",), corr=("T7",), clauses=C("sec-html-like-comments"),
         note="<!-- inside a substitution begins a SingleLineHTMLOpenComment, so the } after it is in the comment "
              "(a correction of Broiler.VM that step 1 makes)", impl=HTML_COMMENTS)
-    add(f, "t8", "`${typeof /}/}`", V("object"), corr=("T8",), clauses=C(REGEXP, "sec-template-literals"),
-        note="a regular expression holding } after typeof inside a substitution (a correction of Broiler.VM that "
-             "step 1 makes)")
+    add(f, "t8", "`${typeof /[}]/}`", V("object"), corr=("T8",),
+        clauses=C(REGEXP, "sec-patterns", "sec-template-literals"),
+        note="a regular expression holding } in a character class after typeof inside a substitution (a correction "
+             "of Broiler.VM that step 1 makes)")
     add(f, "t8", "`${(function () { return /`/; })().test(\"`\")}`", V("true"), corr=("T8",),
         clauses=C(REGEXP, "sec-template-literals"),
         note="a regular expression holding a backquote after return inside a substitution (a correction of "
@@ -711,6 +722,46 @@ def lexical_regexp() -> None:
     ]
     for text, value, row, note in corrections:
         add(f, g, text, V(value), corr=(row,), clauses=rx, note=note)
+    # Revision 30: the punctuators the list above left out (every assignment operator but =, the shifts, **, ~, &, ^,
+    # <=, >=, ==, !=, !==, a prefix -- and the DivPunctuator / itself), and a body that begins with =, each added after
+    # the vectors before it so that no id moves.
+    added = [
+        ("var x = 1; x += /a/.test(\"a\"); x", 2, "after +="),
+        ("var x = 3; x -= /a/.test(\"a\"); x", 2, "after -="),
+        ("var x = 3; x *= /a/.test(\"a\"); x", 3, "after *="),
+        ("var x = 6; x /= /a/.test(\"a\") + 1; x", 3, "after /="),
+        ("var x = 7; x %= /a/.test(\"a\") + 3; x", 3, "after %="),
+        ("var x = 3; x **= /a/.test(\"a\") + 1; x", 9, "after **="),
+        ("var x = 1; x <<= /a/.test(\"a\"); x", 2, "after <<="),
+        ("var x = 4; x >>= /a/.test(\"a\"); x", 2, "after >>="),
+        ("var x = 4; x >>>= /a/.test(\"a\"); x", 2, "after >>>="),
+        ("var x = 3; x &= /a/.test(\"a\"); x", 1, "after &="),
+        ("var x = 2; x |= /a/.test(\"a\"); x", 3, "after |="),
+        ("var x = 3; x ^= /a/.test(\"a\"); x", 2, "after ^="),
+        ("var x = 1; x &&= /a/; x.test(\"a\")", True, "after &&="),
+        ("var x = 0; x ||= /a/; x.test(\"a\")", True, "after ||="),
+        ("var x = null; x ??= /a/; x.test(\"a\")", True, "after ??="),
+        ("1 << /a/.test(\"a\")", 2, "after <<"),
+        ("4 >> /a/.test(\"a\")", 2, "after >>"),
+        ("4 >>> /a/.test(\"a\")", 2, "after >>>"),
+        ("3 ** /a/.test(\"a\")", 3, "after **"),
+        ("3 & /a/.test(\"a\")", 1, "after &"),
+        ("3 ^ /a/.test(\"a\")", 2, "after ^"),
+        ("~/a/.test(\"a\")", -2, "after ~"),
+        ("0 <= /a/.lastIndex", True, "after <="),
+        ("0 >= /a/.lastIndex", True, "after >="),
+        ("true == /a/.test(\"a\")", True, "after =="),
+        ("false != /a/.test(\"a\")", True, "after !="),
+        ("false !== /a/.test(\"a\")", True, "after !=="),
+        ("4 / /a/.test(\"a\")", 4, "after the DivPunctuator /, a / begins a regular expression"),
+        ("var r = /=/; r.test(\"=\")", True, "after =, a regular expression whose body begins with ="),
+        ("var a = 6, g = 1; a /=2/g; a", 3, "after an identifier /= is a division assignment"),
+    ]
+    for text, value, note in added:
+        add(f, g, text, V(value), clauses=rx, note=note, since=CORPUS_REVISION)
+    add(f, g, "--/x/.lastIndex", V(-1), corr=("T24e",), clauses=rx, since=CORPUS_REVISION,
+        note="after a prefix -- a / begins a regular expression (a correction of both engines; Broiler.VM's at "
+             "step 1)")
 
 
 def lexical_asi() -> None:
@@ -731,14 +782,16 @@ def lexical_asi() -> None:
         tests=T("test/language/asi/S7.9_A9_T8.js"), note="a statement between a do-while's body and while")
     add(f, g, "for (var i = 0\ni < 1; i++) ;", SE, corr=("P16",), clauses=C(ASI), tests=T("test/language/asi/S7.9_A6.2_T1.js"),
         note="no semicolon is inserted in a for statement's head")
-    add(f, g, "var f = a\n=> 1", SE, rows=("EE0025",), clauses=C(ASI, "sec-arrow-function-definitions"),
+    add(f, g, "var f = ()\n=> 1", SE, rows=("EE0025",),
+        clauses=C(ASI, "sec-arrow-function-definitions", "sec-grouping-operator-static-semantics-early-errors"),
         tests=T("test/language/expressions/arrow-function/syntax/early-errors/asi-restriction-invalid.js"),
-        note="a line terminator before =>")
+        note="a line terminator before =>, so the () before it must cover a ParenthesizedExpression, which it does "
+             "not")
     add(f, g, "var x = 1, y = 1\nx\n++\ny\ny", V(2), clauses=C(ASI), note="++ between two line terminators is prefix")
     add(f, g, "var async = 1\nasync\nfunction f() {}\nasync", V(1), clauses=C(ASI, "sec-async-function-definitions"),
         note="async followed by a line terminator is an identifier")
     add(f, g, "({ async\nm() {} })", SE, corr=("P09",), clauses=C("sec-async-function-definitions"),
-        tests=T("test/language/expressions/object/method-definition/async-meth-escaped-async.js"),
+        tests=T("test/language/expressions/object/method-definition/early-errors-object-method-async-lineterminator.js"),
         note="a line terminator after async in a method")
 
 
@@ -804,7 +857,7 @@ def expressions() -> None:
     L = "sec-left-hand-side-expressions-static-semantics-early-errors"
     add(f, "ee0026", "var o = { f: () => 2 }; o?.f()", V(2), rows=("EE0026",), clauses=C(L), note="an optional call")
     add(f, "ee0026", "var a; a?.b`c`;", SE, rows=("EE0026",), clauses=C(L),
-        tests=T("test/language/expressions/optional-chaining/early-errors-tail-position-op-template-string.js"),
+        tests=T("test/language/expressions/optional-chaining/early-errors-tail-position-optchain-template-string.js"),
         note="a template after an optional chain")
     add(f, "ee0027", "import.meta;", SE, rows=("EE0027",), clauses=C(L),
         tests=T("test/language/expressions/import.meta/syntax/goal-script.js"), note="import.meta in a Script")
@@ -814,7 +867,7 @@ def expressions() -> None:
         tests=T("test/language/expressions/postfix-increment/this.js"), note="a postfix increment of a literal")
     add(f, "ee0029", "var y = 1; --y", V(0), rows=("EE0029",), clauses=C(U), note="a prefix decrement of a name")
     add(f, "ee0029", "++this;", SE, rows=("EE0029",), corr=("D39",), clauses=C(U),
-        tests=T("test/language/expressions/prefix-decrement/this.js"), note="a prefix increment of this")
+        tests=T("test/language/expressions/prefix-increment/this.js"), note="a prefix increment of this")
     D = "sec-delete-operator-static-semantics-early-errors"
     add(f, "ee0030", "delete x", V(True), rows=("EE0030",), clauses=C(D), note="delete of a name in sloppy code")
     add(f, "ee0030", "\"use strict\"; delete x;", SE, rows=("EE0030",), clauses=C(D),
@@ -1126,7 +1179,7 @@ def functions_and_classes() -> None:
          "a generator method's parameter name declared lexically in a nested block",
          "a generator method's parameter name declared lexically in its body")
     pair("EE0097", GN, "function* g(a, a) { yield a; } g(1, 2).next().value", 2,
-         "function* g(a, a) { \"use strict\"; }", ["test/language/statements/generators/dflt-params-duplicates.js"],
+         "function* g(a, a) { \"use strict\"; }", [],
          "a sloppy generator's simple list binding one name twice",
          "a generator's list binding one name twice in a generator made strict by its body")
     pair("EE0098", GN, "function* arguments() { yield 5; } arguments().next().value", 5,
@@ -1155,7 +1208,7 @@ def functions_and_classes() -> None:
          "an async generator method's parameter name declared lexically in a nested block",
          "an async generator method's parameter name declared lexically in its body")
     pair("EE0111", AG, "async function* g(a, a) {} typeof g", "function", "async function* g(a, a) { \"use strict\"; }",
-         ["test/language/statements/async-generator/dflt-params-duplicates.js"],
+         [],
          "a sloppy async generator's simple list binding one name twice",
          "an async generator's list binding one name twice in an async generator made strict by its body")
     pair("EE0112", AG, "async function* arguments() {} typeof arguments", "function",
@@ -1346,9 +1399,10 @@ def scripts() -> None:
         note="two default clauses")
     add(f, "grammar", "var a = 1, f = 2; a & f ~ 0", SE, rows=("EX0008",), corr=("P13",),
         clauses=C("sec-bitwise-not-operator"), note="~ is no binary operator")
-    add(f, "grammar", "switch => 1;", SE, rows=("EX0008",), corr=("P14",), clauses=C("sec-arrow-function-definitions"),
-        tests=T("test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bindingidentifier-identifier-futurereservedword.js"),
-        note="a reserved word as an arrow's parameter")
+    add(f, "grammar", "var f = switch => 1;", SE, rows=("EX0008",), corr=("P14",),
+        clauses=C("sec-arrow-function-definitions"),
+        tests=T("test/language/expressions/arrow-function/syntax/early-errors/arrowparameters-bindingidentifier-identifier.js"),
+        note="a reserved word as an arrow's parameter, where an expression stands")
     add(f, "grammar", "var x = true; x = case;", SE, rows=("EX0008",), corr=("P22",),
         clauses=C("sec-keywords-and-reserved-words"), tests=T("test/language/identifiers/val-case.js"),
         note="a reserved word as a reference")
@@ -1526,7 +1580,11 @@ def node_requests(vectors: Sequence[tuple[str, Case]]) -> list[dict[str, str]]:
 
 def check_node(node: str, vectors: Sequence[tuple[str, Case]]) -> tuple[list[str], dict[str, str]]:
     """Runs every vector under the reference; answers the problems and each disagreement found."""
-    version = subprocess.run([node, "--version"], capture_output=True, text=True, check=False).stdout.strip()
+    try:
+        version = subprocess.run([node, "--version"], capture_output=True, text=True, check=False).stdout.strip()
+    except OSError:
+        # A path that names no runnable program (absent, or a script the host cannot start): not the reference.
+        version = ""
     if version != REFERENCE_VERSION:
         return [f"{node} is {version or 'not runnable'}, not the reference {REFERENCE_VERSION}"], {}
     with tempfile.TemporaryDirectory() as scratch:
@@ -1610,7 +1668,7 @@ def render_record(identifier: str, case: Case, divergence: dict[str, str] | None
     lines.append("prov: " + " ".join(dict.fromkeys(prov)))
     lines.append(f"script: {case.script}")
     lines.append("note: " + case.note)
-    lines.append(f"since: {SINCE}")
+    lines.append(f"since: {case.since}")
     for line in lines:
         if any(ord(c) > 0x7E or ord(c) < 0x20 for c in line):
             raise GeneratorError(f"{identifier}: a field holds a character outside printable ASCII: {line!r}")
@@ -1619,9 +1677,10 @@ def render_record(identifier: str, case: Case, divergence: dict[str, str] | None
 
 HEADER = [
     "Expected values: the specification's, ECMA-262 ES2026 at 0248456c, each vector citing the clause that decides it",
-    "and, for a refusal, the test262 tests at ccaac100 that assert it; the explicit-resource-management rules, which",
-    "ECMA-262 main merged after the pinned edition, cite their test262 tests alone. Every vector was checked against",
-    "the reference Node.js v26.12.0 (syntaxcheck.mjs); the generator names each place where it disagrees.",
+    "and, where one asserts the outcome, the test262 tests at ccaac100 that do; the explicit-resource-management",
+    "rules, which ECMA-262 main merged after the pinned edition, take their expected values from ECMA-262 main at",
+    "4feb0272 and cite their test262 tests alone. Every vector was checked against the reference Node.js v26.12.0",
+    "(syntaxcheck.mjs); the generator names each place where it disagrees.",
 ]
 
 

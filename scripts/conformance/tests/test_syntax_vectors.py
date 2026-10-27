@@ -161,6 +161,17 @@ class ReferenceTests(unittest.TestCase):
 
 class ReferenceVersionTests(unittest.TestCase):
     def test_a_node_that_is_not_the_reference_is_refused(self) -> None:
+        # A path that names no program, which no host can start: check_node answers a problem and runs nothing,
+        # on every host the suite runs on.
+        with tempfile.TemporaryDirectory() as scratch:
+            absent = Path(scratch) / "no-such-node"
+            problems, found = generator.check_node(str(absent), generator.identifiers(generator.build()))
+            self.assertEqual({}, found)
+            self.assertEqual(1, len(problems))
+            self.assertIn("not runnable, not the reference v26.12.0", problems[0])
+
+    @unittest.skipIf(os.name == "nt", "a #!/bin/sh script is no program Windows can start")
+    def test_a_node_of_another_version_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
             fake = Path(scratch) / "node"
             fake.write_text("#!/bin/sh\necho v0.0.0\n", encoding="utf-8")
@@ -168,7 +179,7 @@ class ReferenceVersionTests(unittest.TestCase):
             problems, found = generator.check_node(str(fake), generator.identifiers(generator.build()))
             self.assertEqual({}, found)
             self.assertEqual(1, len(problems))
-            self.assertIn("not the reference v26.12.0", problems[0])
+            self.assertIn("is v0.0.0, not the reference v26.12.0", problems[0])
 
 
 class DivergenceFileTests(unittest.TestCase):
@@ -221,7 +232,29 @@ class CommittedFileTests(unittest.TestCase):
                 if line[:2] == "| " and line.split("|")[1].strip().isdigit()]
         self.assertEqual(list(range(1, len(rows) + 1)), rows)
         self.assertEqual(generator.CORPUS_REVISION, rows[-1])
-        self.assertTrue(all(v["since"] == str(generator.SINCE) for v in self.vectors.values()))
+        # Revision 29 added the area; revision 30 added the regular-expression delimiting vectors review asked for.
+        since = Counter(v["since"] for v in self.vectors.values())
+        self.assertEqual({str(generator.SINCE), str(generator.CORPUS_REVISION)}, set(since))
+        self.assertTrue(all(vector_id.startswith("syntax/lexical/regexp-delimiting/")
+                            for vector_id, v in self.vectors.items() if v["since"] == str(generator.CORPUS_REVISION)))
+
+    def test_a_vector_is_added_at_revision_29_or_30(self) -> None:
+        saved = list(generator.CASES)
+        try:
+            with self.assertRaises(generator.GeneratorError):
+                generator.add("scripts", "x", "1", generator.V(1), clauses=("sec-scripts",), note="x", since=31)
+        finally:
+            generator.CASES[:] = saved
+
+    def test_a_note_keeps_a_comma_it_ends_with(self) -> None:
+        saved = list(generator.CASES)
+        try:
+            generator.add("scripts", "x", "[1, 2]", generator.V(None), clauses=("sec-scripts",), note="after ,")
+            self.assertEqual("accepted, after ,", generator.CASES[-1].note)
+            generator.add("scripts", "x", "[3]", generator.V(None), clauses=("sec-scripts",))
+            self.assertEqual("accepted", generator.CASES[-1].note)
+        finally:
+            generator.CASES[:] = saved
 
     def test_one_file_per_class_of_row_and_ids_by_file(self) -> None:
         self.assertEqual(sorted(generator.FILES), sorted(FILES))

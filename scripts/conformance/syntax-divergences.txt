@@ -24,6 +24,15 @@
 # where the specification inserts no semicolon, while row P16 records Broiler.JS's automatic semicolon insertion as
 # the specification's and classes the row the same; no row of the correspondence holds it, and none is invented
 # here. The runs are retained in docs/evidence/sjl-13-001/engine/.
+#
+# Revision 30 as corrected after review, 2026-10-27: the vectors review found defective are rewritten
+# (syntax/lexical/t8/0001 holds its } in a character class, so that its outcome holds without Annex B;
+# syntax/lexical/asi/0010 is a () before a line break and =>; syntax/scripts/grammar/0004 puts `switch => 1` where an
+# expression stands, as row P14's input does), 31 regexp-delimiting vectors are added after the punctuators the area
+# left out, and both engines' runs are taken again on the corrected revision. Of the new and rewritten vectors, three
+# lines are added here: grammar/0004 for Broiler.JS under P14, and regexp-delimiting/0083, a prefix `--`, for both
+# engines under T24e. js-d39's reason no longer says every target throws when it runs, and vm-t8's names the
+# vector's character class.
 
 reason vm-d32: row D32: `new.target` in a class field initialiser at function depth 0 (alone, or in an arrow in it); Broiler.VM answers refused 2101 at `new`: ParseFieldTail parses the initialiser without raising functionDepth, so ParseNewTarget refuses; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 reason vm-p15b: row P15b: a parenthesised nested target that is not a simple target, `({ a: (b = 7) } = ...)`, `({ a: ([b]) } = ...)`; Broiler.VM answers accepted: the parenthesised set is consulted only for the whole left-hand side; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
@@ -35,13 +44,13 @@ reason vm-t24e: row T24e: a regular expression after a prefix `++` or `--`; Broi
 reason vm-t24f: row T24f: a division after `await` used as an identifier in a Script; Broiler.VM answers refused: Await falls to a regular expression; a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 reason vm-t6: row T6: `#!` and `-->` right after a substitution's `${`; Broiler.VM answers accepted (`${#!<LF>1}` and `${--><LF>1}` are `1`): each substitution is read by an inner tokenizer whose text starts after `${`, which treats it as a source start; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 reason vm-t7: row T7: the template-end scan and HTML-like comments in a substitution; Broiler.VM answers `${1 <!-- }<LF>}` is `"1\n}"` (a different template, no error): the scan has no arm for `<!--` or `-->`, so a `}` inside one closes the substitution; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
-reason vm-t8: row T8: the template-end scan's regular-expression-or-division guess; Broiler.VM answers `${typeof /}/}` refused 2006 and `${...return /`/...}` refused 2007: after `typeof` and `return` a `/` is division, so a `}` or a backquote in the literal ends the substitution or opens a template; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+reason vm-t8: row T8: the template-end scan's regular-expression-or-division guess; Broiler.VM answers `${typeof /}/}` refused 2006 and `${...return /`/...}` refused 2007: after `typeof` and `return` a `/` is division, so a `}` or a backquote in the literal ends the substitution or opens a template (the vectors hold the `}` in a character class, `${typeof /[}]/}`, which needs no Annex B, and the backquote after `return`); a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 reason js-d33: row D33: escaped reserved words and contextual keywords as names; Broiler.JS answers accepted: FastScanner.CommitIdentifier admits them (T23 holds the sites); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-d34: row D34: `delete` of a private reference; Broiler.JS answers accepted (not refused at P or K); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-d35: row D35: lexical redeclarations Broiler.JS misses (async functions and generators in blocks, `catch` and others); Broiler.JS answers accepted: FastScopeItem.AddVariable misses these forms; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-d36: row D36: declarations and labelled functions where a single statement stands; Broiler.JS answers accepted (the check is missing; P11 holds the grammar half); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-d38: row D38: `yield` and `await` expressions in parameters; Broiler.JS answers accepted (the check is missing); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
-reason js-d39: row D39: the private name `#constructor`, a parameter and lexical name collision, and assignment and update targets Broiler.JS admits; Broiler.JS answers accepted (the checks are missing; an invalid target throws only when it runs); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
+reason js-d39: row D39: the private name `#constructor`, a parameter and lexical name collision, and assignment and update targets Broiler.JS admits; Broiler.JS answers accepted (the checks are missing; of the targets, a call throws a ReferenceError when the assignment runs, and `++this` completes, with NaN); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-d42: row D42: duplicate parameters in a sloppy async function or generator; Broiler.JS answers refused: its StrictModeValidator refuses them, where a sloppy simple list admits duplicates; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-n26: row N26: a hashbang at the start of a strict caller's direct-eval text, `eval('#!x\n1')`; Broiler.JS answers a SyntaxError in a strict caller (the prefix puts the `#` past offset 0) and 1 in a sloppy one; a correction of Broiler.JS (JSD-0083), which lands when the prefix goes (F24); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-p09: row P09: `[no LineTerminator here]` after `async` before a method name; Broiler.JS answers accepted: CheckAndConsume(async) skips line breaks; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
@@ -49,6 +58,7 @@ reason js-p10: row P10: `do Statement while (...)` with a `;` between the body a
 reason js-p11: row P11: a declaration where a single Statement stands (`const` as a loop's body); Broiler.JS answers accepted: `const` has no single-statement check; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-p12: row P12: a CaseBlock with more than one `default`; Broiler.JS answers accepted; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-p13: row P13: `~` is unary only; Broiler.JS answers accepted: NextExpression reads `~` as a binary operator; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
+reason js-p14: row P14: arrow parameters, a reserved word is no ArrowParameters (`switch => 1`); Broiler.JS answers accepted: the arrow's parameters are converted from the expression by VariableDeclarator.From (the row's baseline is test262's `var af = switch => 1;`); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-p15a: row P15a: cover grammars to patterns, a rest element that is not last; Broiler.JS answers accepted at P (the conversion has no rest-position check; D49 holds its sites); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-p18: row P18: classes and private names (`super.#x`; a ClassHeritage is a LeftHandSideExpression); Broiler.JS answers accepted; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 reason js-p22: row P22: a reserved word where an IdentifierReference stands (`case` as a reference); Broiler.JS answers accepted (it throws a ReferenceError when it runs); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
@@ -126,6 +136,8 @@ broiler-js js-t24e syntax/lexical/regexp-delimiting/0051
 broiler-vm vm-t24e syntax/lexical/regexp-delimiting/0051
 broiler-js js-t24f syntax/lexical/regexp-delimiting/0052
 broiler-vm vm-t24f syntax/lexical/regexp-delimiting/0052
+broiler-js js-t24e syntax/lexical/regexp-delimiting/0083
+broiler-vm vm-t24e syntax/lexical/regexp-delimiting/0083
 broiler-js js-p10 syntax/lexical/asi/0008
 broiler-js js-p09 syntax/lexical/asi/0013
 broiler-vm vm-d32 syntax/scripts/d32/0001
@@ -133,6 +145,7 @@ broiler-vm vm-d32 syntax/scripts/d32/0002
 broiler-js js-p11 syntax/scripts/grammar/0001
 broiler-js js-p12 syntax/scripts/grammar/0002
 broiler-js js-p13 syntax/scripts/grammar/0003
+broiler-js js-p14 syntax/scripts/grammar/0004
 broiler-js js-p22 syntax/scripts/grammar/0005
 broiler-js js-p23 syntax/scripts/grammar/0006
 broiler-js js-p18 syntax/scripts/grammar/0007
