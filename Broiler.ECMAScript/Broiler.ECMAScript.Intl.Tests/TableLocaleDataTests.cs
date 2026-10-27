@@ -226,11 +226,27 @@ public sealed class TableLocaleDataTests
         var tables = SmallTables();
         tables[IntlTable.Aliases] = "planet|Qaai|Zinh";
         tables[IntlTable.Currencies] = "en|USD|$";
-        tables[IntlTable.NumberingSystems] = "latn|012";
         var locale = new TableLocaleData(new TextDataSet(tables));
         Assert.Throws<InvalidDataException>(() => locale.Alias(LocaleAliasKind.Script, "Qaai"));
         Assert.Throws<InvalidDataException>(() => locale.Currency("en", "USD"));
         Assert.Equal("en-Latn-US", locale.LikelySubtags("en"));
+    }
+
+    [Fact]
+    public void A_numbering_system_without_ten_digits_is_refused()
+    {
+        // Every other number table well-formed, so that the refusal is the NumberingSystems decoder's own.
+        var tables = SmallTables();
+        tables[IntlTable.NumberingSystems] = "latn|012";
+        var locale = new TableLocaleData(new TextDataSet(tables));
+        var refused = Assert.Throws<InvalidDataException>(() => locale.NumberingSystemDigits("latn"));
+        Assert.Contains("NumberingSystems table gives latn fewer than ten digits", refused.Message, StringComparison.Ordinal);
+        Assert.Throws<InvalidDataException>(() => locale.NumberingSystems);
+        Assert.Throws<InvalidDataException>(() => locale.NumberValue("en", "symbols.decimal"));
+
+        // A table the number decoder does not read is unaffected.
+        Assert.Equal("en-Latn-US", locale.LikelySubtags("en"));
+        Assert.Equal("German", locale.DisplayName("en", "language", "de"));
     }
 
     [Fact]

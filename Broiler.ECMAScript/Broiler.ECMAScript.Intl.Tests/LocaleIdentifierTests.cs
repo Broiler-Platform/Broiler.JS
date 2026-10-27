@@ -98,6 +98,43 @@ public sealed class LocaleIdentifierTests
     }
 
     [Theory]
+    [InlineData("en-u-nu-arab-ca-gregory", "en-u-ca-gregory-nu-arab")]
+    [InlineData("en-u-bbb-aaa-bbb", "en-u-aaa-bbb")]
+    [InlineData("en-u-ca-gregory-ca-buddhist", "en-u-ca-gregory")]
+    [InlineData("en-u-kn-true-ca-gregory-kn-false", "en-u-ca-gregory-kn")]
+    [InlineData("en-t-s0-ascii-d0-fwidth", "en-t-d0-fwidth-s0-ascii")]
+    [InlineData("EN-T-HI-LATN-M0-UNGEGN", "en-t-hi-latn-m0-ungegn")]
+    [InlineData("en-x-u-ca-buddhist", "en-x-u-ca-buddhist")]
+    [InlineData("EN-X-U-CA-BUDDHIST-T-D0-FWIDTH", "en-x-u-ca-buddhist-t-d0-fwidth")]
+    public void The_canonical_syntax_is_row_L3_s(string tag, string canonical)
+    {
+        // Row L3: -u- keywords sorted by key, the first of a duplicated keyword kept, attributes sorted and deduplicated,
+        // true left implicit, -t- fields sorted and its language lower case, and a -u- or -t- inside private use no extension.
+        Assert.Equal(canonical, Canonical(tag));
+        Assert.Equal(canonical, Canonical(canonical));
+    }
+
+    [Fact]
+    public void A_u_extension_inside_private_use_is_no_extension_row_L3()
+    {
+        Assert.Equal(IntlStatus.Completed, LocaleId.TryParse("en-x-u-ca-buddhist", out var id));
+        Assert.False(id!.HasUnicodeExtension);
+        Assert.Null(id.UnicodeExtensionValue("ca"));
+        Assert.Empty(id.Keywords);
+
+        // Intl.Locale reads no calendar from it, and getCalendars answers the default.
+        var locale = Locale("en-x-u-ca-buddhist");
+        Assert.Null(locale.Calendar);
+        Assert.Equal(["gregory"], LocaleInfo.Calendars(locale));
+
+        // ResolveLocale matches en, and ignores the ca it names.
+        var ca = new RelevantKey("ca", ["gregory", "buddhist"]);
+        var resolved = LocaleNegotiation.ResolveLocale(VmLocales, ["en-x-u-ca-buddhist"], "en-US", [ca], Data);
+        Assert.Equal("en", resolved.Locale);
+        Assert.Equal("gregory", resolved.KeyValues["ca"]);
+    }
+
+    [Theory]
     [InlineData("en-u-sd-fi01", "en-u-sd-axzzzz")]
     [InlineData("en-u-rg-fi01", "en-u-rg-axzzzz")]
     [InlineData("en-u-rg-cn71", "en-u-rg-twzzzz")]
@@ -349,9 +386,16 @@ public sealed class LocaleIdentifierTests
     public void SupportedValuesOf_lists_each_key_sorted_rows_L39_to_L41()
     {
         var zones = HomeTimeZones.Current;
+        // Row L39: the calendars every formatter writes, without the aliases islamic and islamic-rgsa (the Intl era and month
+        // code proposal's AvailableCalendars), and ECMA-402's sanctioned single units, each list as the text gives it.
         Assert.Equal(IntlStatus.Completed, SupportedValues.Of("calendar", Data, zones, new VmCollator(), out var calendars));
-        Assert.Equal(SupportedValues.AvailableCalendars, calendars);
+        Assert.Equal(
+            ["buddhist", "chinese", "coptic", "dangi", "ethioaa", "ethiopic", "gregory", "hebrew", "indian", "islamic-civil",
+                "islamic-tbla", "islamic-umalqura", "iso8601", "japanese", "persian", "roc"],
+            calendars);
         Assert.DoesNotContain("islamic", calendars);
+        Assert.DoesNotContain("islamic-rgsa", calendars);
+        Assert.Equal(SupportedValues.AvailableCalendars, calendars);
         Assert.Equal(IntlStatus.Completed, SupportedValues.Of("collation", Data, zones, new VmCollator(), out var collations));
         Assert.Equal(["phonebk"], collations);
         Assert.Equal(IntlStatus.Completed, SupportedValues.Of("currency", Data, zones, new VmCollator(), out var currencies));
@@ -362,6 +406,13 @@ public sealed class LocaleIdentifierTests
         Assert.Equal(IntlStatus.Completed, SupportedValues.Of("timeZone", Data, zones, new VmCollator(), out var timeZones));
         Assert.Equal(zones.PrimaryIdentifiers.Order(StringComparer.Ordinal), timeZones);
         Assert.Equal(IntlStatus.Completed, SupportedValues.Of("unit", Data, zones, new VmCollator(), out var units));
+        Assert.Equal(
+            ["acre", "bit", "byte", "celsius", "centimeter", "day", "degree", "fahrenheit", "fluid-ounce", "foot", "gallon",
+                "gigabit", "gigabyte", "gram", "hectare", "hour", "inch", "kilobit", "kilobyte", "kilogram", "kilometer", "liter",
+                "megabit", "megabyte", "meter", "microsecond", "mile", "mile-scandinavian", "milliliter", "millimeter",
+                "millisecond", "minute", "month", "nanosecond", "ounce", "percent", "petabyte", "pound", "second", "stone",
+                "terabit", "terabyte", "week", "yard", "year"],
+            units);
         Assert.Equal(SupportedValues.SanctionedUnits, units);
         Assert.Equal(IntlStatus.InvalidKey, SupportedValues.Of("calendars", Data, zones, new VmCollator(), out var none));
         Assert.Empty(none);
