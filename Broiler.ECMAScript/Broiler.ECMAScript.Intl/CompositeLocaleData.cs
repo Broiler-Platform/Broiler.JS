@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   26
 // Annotated:        26/26
-// Exempt:           5
+// Exempt:           6
 // Human-reviewed:   0/26
 // IP risk:          Low
 // Security risk:    High
@@ -27,11 +27,14 @@ namespace Broiler.ECMAScript.Intl;
 /// <remarks>
 /// <para>
 /// <b>A question about a locale</b> walks the locale's chain: the locale, then each tag its last subtag's removal leaves,
-/// then <c>und</c>, CLDR's root. At each tag it asks the shared data, and then the secondary provider. The walk stops at the
-/// first answer, and at the first tag whose table the shared data holds (<see cref="ILocaleData.HoldsLocale"/>): the shared
-/// tables are CLDR's resolved data, so a value a held locale lacks is one CLDR does not give it, and neither a parent nor
-/// the secondary provider may supply it. So the secondary provider answers only for a locale the shared data lacks, as
-/// decision D6 asks of Broiler.JS's host-culture provider.
+/// then <c>und</c>, CLDR's root. At each tag it asks the shared data, and then the secondary provider, but only at a tag the
+/// shared data does not list among its <see cref="ILocaleData.Locales"/>. The walk stops at the first answer, and at the
+/// first tag whose table the shared data holds (<see cref="ILocaleData.HoldsLocale"/>): the shared tables are CLDR's resolved
+/// data, so a value a held locale lacks is one CLDR does not give it, and neither a parent nor the secondary provider may
+/// supply it. A locale the shared data lists but holds no table lines for - CLDR's default-content locales, such as
+/// <c>en-US</c>, <c>fr-FR</c> or <c>zh-Hant-TW</c>, whose data is their parent's - goes on to its parent within the shared
+/// data, so <c>fr-FR</c> reads <c>fr</c>. So the secondary provider answers only for a locale the shared data lacks, one it
+/// neither lists nor holds, as decision D6 asks of Broiler.JS's host-culture provider.
 /// </para>
 /// <para>
 /// <b>A question about the world's data</b> - likely subtags, aliases, extensions, a region's hour cycles and week, a
@@ -40,9 +43,17 @@ namespace Broiler.ECMAScript.Intl;
 /// the shared data's alone: the available locales are an engine's provider's (decision D7), not a data provider's.
 /// </para>
 /// <para>
-/// <b>The parent is the tag less its last subtag.</b> The tables carry no <c>parentLocales</c> data, and for every locale an
-/// embedding lists the truncation is CLDR's parent or a locale the data lacks; a locale outside the lists, which only a
-/// secondary provider can make available, reads its parent's data the same way.
+/// <b>The parent is the tag less its last subtag</b>, not CLDR's parent: the tables carry no <c>parentLocales</c> data, and
+/// the walk does not go through likely subtags. For every locale either embedding lists, the truncation reads the same table
+/// lines as CLDR's parent chain: a locale-keyed table holds each listed locale whose CLDR parent differs from its truncation
+/// (<c>en-AU</c>, whose parent is <c>en-001</c>; <c>zh-Hant</c>, whose parent is root), and the tables keyed by language
+/// (plural, ordinal, plural-range and day-period rules) are inherited by language, as CLDR's empty <c>plurals</c> component
+/// of <c>parentLocales</c> has them. A locale outside the lists is another matter: Broiler.JS's available locales are the
+/// host's cultures (decision D7), whatever provider is registered, and its truncation can name data in another script or
+/// variety - <c>zh-TW</c> reads <c>zh</c>, which is Simplified Chinese, where CLDR reads <c>zh-Hant</c>; <c>es-MX</c> reads
+/// <c>es</c> where CLDR reads <c>es-419</c>; <c>pt-AO</c> reads <c>pt</c> where CLDR reads <c>pt-PT</c>. The design records
+/// this reading (<c>docs/intl/design.md</c>, section 1), and stage SJL-9.5, which makes such locales available, settles it
+/// before it does.
 /// </para>
 /// </remarks>
 // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=0; Fingerprint=E4CD50
@@ -53,17 +64,21 @@ public sealed class CompositeLocaleData : ILocaleData
 
     private readonly ILocaleData? secondary;
 
+    /// <summary>The shared data's locales, at which the secondary provider is never asked; read once, when first needed.</summary>
+    private readonly Lazy<HashSet<string>> listed;
+
     /// <summary>Orders the shared data and an optional secondary provider.</summary>
     /// <param name="shared">The shared data, ordinarily a <see cref="TableLocaleData"/>.</param>
     /// <param name="secondary">The secondary provider, or <see langword="null"/>; Broiler.VM registers none (decision D6).</param>
     /// <exception cref="ArgumentNullException"><paramref name="shared"/> is null.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=1694B4
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=4DB89A
     // Broiler-Human:        PENDING
     public CompositeLocaleData(ILocaleData shared, ILocaleData? secondary = null)
     {
         ArgumentNullException.ThrowIfNull(shared);
         this.shared = shared;
         this.secondary = secondary;
+        listed = new(() => new HashSet<string>(shared.Locales, StringComparer.Ordinal));
     }
 
     /// <summary>The locale chain a question about a locale walks: the locale, each tag its last subtag's removal leaves, and <c>und</c>.</summary>
@@ -242,8 +257,8 @@ public sealed class CompositeLocaleData : ILocaleData
         Resolve(IntlTable.DayPeriods, language, (data, tag) => data.DayPeriods(tag));
 
     /// <summary>A question about a locale whose answer is a reference, asked along the chain.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=High; Resources=1; Fingerprint=3E0643
-    // Broiler-Falsified-If: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, or the secondary provider is asked before the shared data at a tag
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=High; Resources=1; Fingerprint=2867DD
+    // Broiler-Falsified-If: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
     // Broiler-Human:        PENDING
     private T? Resolve<T>(IntlTable table, string locale, Func<ILocaleData, string, T?> question)
         where T : class
@@ -260,7 +275,9 @@ public sealed class CompositeLocaleData : ILocaleData
                 return null;
             }
 
-            if (secondary is not null && question(secondary, tag) is { } secondaryAnswer)
+            // DECISION D6: the secondary provider answers only for a locale the shared data lacks. A locale it lists but holds
+            // no lines for (a default-content locale such as fr-FR) goes on to its parent within the shared data.
+            if (secondary is not null && !listed.Value.Contains(tag) && question(secondary, tag) is { } secondaryAnswer)
             {
                 return secondaryAnswer;
             }
@@ -270,8 +287,8 @@ public sealed class CompositeLocaleData : ILocaleData
     }
 
     /// <summary>A question about a locale whose answer is a value, asked along the chain.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=High; Resources=1; Fingerprint=794AA7
-    // Broiler-Falsified-If: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, or the secondary provider is asked before the shared data at a tag
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=High; Resources=1; Fingerprint=E00AAB
+    // Broiler-Falsified-If: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
     // Broiler-Human:        PENDING
     private T? ResolveValue<T>(IntlTable table, string locale, Func<ILocaleData, string, T?> question)
         where T : struct
@@ -288,7 +305,9 @@ public sealed class CompositeLocaleData : ILocaleData
                 return null;
             }
 
-            if (secondary is not null && question(secondary, tag) is { } secondaryAnswer)
+            // DECISION D6: the secondary provider answers only for a locale the shared data lacks. A locale it lists but holds
+            // no lines for (a default-content locale such as fr-FR) goes on to its parent within the shared data.
+            if (secondary is not null && !listed.Value.Contains(tag) && question(secondary, tag) is { } secondaryAnswer)
             {
                 return secondaryAnswer;
             }

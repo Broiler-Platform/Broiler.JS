@@ -16,7 +16,7 @@ public sealed class CompositeLocaleDataTests
     {
         var tables = TableLocaleDataTests.SmallTables();
         tables[IntlTable.NumberLocales] =
-            "de|symbols.decimal|,\nfr|symbols.decimal|,\nfr|decimal.standard|#,##0.###\nund|symbols.decimal|.\nund|symbols.nan|NaN\nzh|zh.only|zh\nzh-Hant|symbols.decimal|.";
+            "de|symbols.decimal|,\nen|symbols.group|,\nfr|symbols.decimal|,\nfr|decimal.standard|#,##0.###\nund|symbols.decimal|.\nund|symbols.nan|NaN\nzh|zh.only|zh\nzh-Hant|symbols.decimal|.";
         tables[IntlTable.DisplayNames] = "en|language|de|German\nund|language|und|Unknown language";
         return tables;
     }
@@ -148,6 +148,30 @@ public sealed class CompositeLocaleDataTests
 
         Assert.Equal("German", composite.DisplayName("en", "language", "de"));
         Assert.Equal("secondary", composite.DisplayName("fr", "language", "de"));
+    }
+
+    [Fact]
+    public void A_locale_the_shared_data_lists_reads_its_parent_and_never_the_secondary_provider()
+    {
+        // Decision D6: en-US and de-DE are listed - CLDR's default-content locales, which hold no lines of their own - so each
+        // reads its parent within the shared data, and the host is never asked, though it would answer.
+        var secondary = new Secondary();
+        var composite = new CompositeLocaleData(Shared, secondary);
+
+        Assert.Equal(",", composite.NumberValue("en-US", "symbols.group"));
+        Assert.Null(composite.NumberValue("en-US", "symbols.decimal"));
+        Assert.Equal(",", composite.NumberValue("de-DE", "symbols.decimal"));
+        Assert.Equal("German", composite.DisplayName("en-US", "language", "de"));
+        Assert.Equal("Unknown language", composite.DisplayName("de-DE", "language", "und"));
+        Assert.Empty(secondary.Asked);
+
+        // und is listed too: root's data is the shared data's alone.
+        Assert.Null(composite.NumberValue("und", "symbols.none"));
+        Assert.Empty(secondary.Asked);
+
+        // A locale the shared data neither lists nor holds is still the secondary provider's.
+        Assert.Equal("host", composite.NumberValue("en-AU", "symbols.decimal"));
+        Assert.Equal(["en-AU|symbols.decimal"], secondary.Asked);
     }
 
     [Fact]

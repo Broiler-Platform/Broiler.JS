@@ -61,8 +61,9 @@ Not yet packed under a version of its own: the stream's next version is set when
     Broiler.VM's `JsIntlTable` numbers with 7, 23 and 24 retired; `TableLocaleData`, the decoder implementation of the
     question-level `ILocaleData`, each table decoded once per process, with the records it answers in
     (`CurrencyNames`, `RegionWeek`, `RegionHourCycles`, `ListPatterns`, `DayPeriodRule`, `PluralRuleText` and
-    `PluralRuleType`); `CompositeLocaleData`, which asks the shared data first, then an optional secondary provider,
-    then the locale's parent and root; and `IntlStatus`;
+    `PluralRuleType`); `CompositeLocaleData`, which asks the shared data first, then an optional secondary provider
+    at a locale the shared data neither lists nor holds (decision D6), then the locale's parent and root; and
+    `IntlStatus`;
   - **locale identifiers**: `LocaleId`, with `LocaleKeyword` - IsWellFormedLanguageTag over ASCII alone,
     CanonicalizeUnicodeLocaleId over CLDR's aliases and BCP 47 types, Add and Remove Likely Subtags, a tag's parts and
     keywords. A subdivision alias whose replacement is a region is written as UTS #35 Annex C writes it, `axzzzz`
