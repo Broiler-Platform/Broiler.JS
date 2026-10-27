@@ -106,7 +106,11 @@ internal sealed class Section
 {
     private const int ExampleLimit = 20;
 
-    private const int ClassifiedExampleLimit = 3;
+    /// <summary>
+    /// How many classified differences of each row a section keeps for its report: three, unless the command line's
+    /// <c>--classified-examples</c> asks for more, to audit every classified difference.
+    /// </summary>
+    internal static int ClassifiedExampleLimit { get; set; } = 3;
 
     internal Section(string name) => Name = name;
 

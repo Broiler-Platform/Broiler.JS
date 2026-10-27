@@ -552,30 +552,16 @@ internal static partial class LocaleSection
 
     /// <summary>
     /// The differences of sub-area (a) that Broiler.VM's correspondence classes: L9 and L18, corrections of Broiler.VM the
-    /// library makes (decision D32), and L22, each engine's own numbering-system data (data policy C5, decision D5).
+    /// library makes (decision D32), and L22, each engine's own numbering-system data (data policy C5, decision D5). Each row
+    /// is tried in this order and a difference takes the first that covers it; each covers a pair only when the two answers
+    /// are what its correction or policy explains, never by the input alone, so an unrelated difference on the same input
+    /// stays unclassified.
     /// </summary>
     internal static IEnumerable<KnownDifference> Known()
     {
-        // ROW L9: a -u-sd or -u-rg value whose subdivision alias is a region. Broiler.VM writes the region as given
-        // (`en-u-sd-AX`), which is no canonical tag; the library writes UTS #35 Annex C's `axzzzz`. Every answer that reads
-        // such a tag differs, through Intl.Locale's keywords, week and hour cycles too.
-        static bool NamesSubdivisionWithARegion(string input)
-        {
-            foreach (Match match in SubdivisionKeyword().Matches(input.ToLowerInvariant()))
-            {
-                if (SubdivisionsWithARegion.Value.Contains(match.Groups[1].Value))
-                    return true;
-            }
-
-            return false;
-        }
-
-        yield return new KnownDifference("L1", "L9", (input, vm, library) => NamesSubdivisionWithARegion(input));
-        yield return new KnownDifference("L2", "L9", (input, vm, library) => NamesSubdivisionWithARegion(input));
-        yield return new KnownDifference("L3", "L9", (input, vm, library) => NamesSubdivisionWithARegion(input));
-
         // ROW L18: getCollations of a Locale with no -u-co-, whose language is not und and which no Collator locale matches:
-        // Broiler.VM answers emoji and eor; the library DefaultLocale's collations, en-US's none.
+        // Broiler.VM answers emoji and eor; the library DefaultLocale's collations, en-US's none. Tried before L9, so that such
+        // a Locale that also names a subdivision is counted here.
         yield return new KnownDifference("L3", "L18", (input, vm, library) =>
             input.StartsWith("getCollations ", StringComparison.Ordinal)
             && vm == "[emoji,eor]" && library == "[]"
@@ -588,6 +574,61 @@ internal static partial class LocaleSection
             input.StartsWith("getNumberingSystems ", StringComparison.Ordinal)
             && vm == "[latn]" && SingleSystem().IsMatch(library) && library != "[latn]"
             && LocaleOf(input) is { } locale && locale.UnicodeExtensionValue("nu") is null);
+
+        // ROW L9: a -u-sd or -u-rg value whose subdivision alias is a region. Broiler.VM writes the region as given
+        // (`en-u-sd-AX`), which is no canonical tag; the library writes UTS #35 Annex C's `axzzzz`.
+        yield return new KnownDifference("L1", "L9", ExplainedBySubdivisionForm);
+        yield return new KnownDifference("L2", "L9", ExplainedBySubdivisionForm);
+        yield return new KnownDifference("L3", "L9", ExplainedBySubdivisionForm);
+    }
+
+    /// <summary>
+    /// Whether a difference is row L9's: the input names a subdivision whose alias is a region, and either the library's answer
+    /// writes that region as Annex C's subdivision (<c>axzzzz</c>) and the two answers agree once the <c>-u-</c> extensions
+    /// (or the keywords a rendering lists) are set aside, or the answer is a reading of the override - a Locale's week or hour
+    /// cycles - and the Locale the library made carries the corrected form, which Broiler.VM's lost.
+    /// </summary>
+    internal static bool ExplainedBySubdivisionForm(string input, string vm, string library)
+    {
+        var regions = SubdivisionRegions(input);
+
+        if (regions.Count == 0)
+            return false;
+
+        if (input.StartsWith("getWeekInfo ", StringComparison.Ordinal) || input.StartsWith("getHourCycles ", StringComparison.Ordinal))
+        {
+            return LocaleOf(input) is { } locale
+                && regions.Any(region => locale.UnicodeExtensionValue("sd") == region + "zzzz" || locale.UnicodeExtensionValue("rg") == region + "zzzz");
+        }
+
+        if (!regions.Any(region => library.Contains(region + "zzzz", StringComparison.Ordinal)))
+            return false;
+
+        // What the correction leaves alone: the part of a "parts" rendering before its keywords, the locale a lookup matched,
+        // and anything else with its -u- extensions removed.
+        static string Unmoved(string input, string answer)
+        {
+            if (input.StartsWith("parts ", StringComparison.Ordinal))
+                return answer[..Math.Max(0, answer.LastIndexOf(" | ", StringComparison.Ordinal))];
+            if (input.StartsWith("lookup ", StringComparison.Ordinal))
+                return answer.Split(' ')[0];
+            return UnicodeExtension().Replace(answer, string.Empty);
+        }
+
+        return Unmoved(input, vm) == Unmoved(input, library);
+    }
+
+    /// <summary>The regions, lower case, that the subdivision aliases an input names (in a -u-sd or -u-rg value) are replaced by.</summary>
+    private static List<string> SubdivisionRegions(string input)
+    {
+        var regions = new List<string>();
+        foreach (Match match in SubdivisionKeyword().Matches(input.ToLowerInvariant()))
+        {
+            if (SubdivisionsWithARegion.Value.TryGetValue(match.Groups[1].Value, out var region) && !regions.Contains(region))
+                regions.Add(region);
+        }
+
+        return regions;
     }
 
     /// <summary>The Locale a method's input names: the text after the method's name, up to " of ".</summary>
@@ -598,21 +639,24 @@ internal static partial class LocaleSection
         return end > start && LocaleId.TryParse(input[start..end], out var id) == IntlStatus.Completed ? id : null;
     }
 
-    /// <summary>The subdivision aliases whose first replacement is a region (CLDR's <c>subdivisionAlias</c>), the same in both embeddings.</summary>
-    private static readonly Lazy<HashSet<string>> SubdivisionsWithARegion = new(static () =>
+    /// <summary>
+    /// The subdivision aliases whose first replacement is a region (CLDR's <c>subdivisionAlias</c>), the same in both
+    /// embeddings, each with its region in lower case.
+    /// </summary>
+    private static readonly Lazy<Dictionary<string, string>> SubdivisionsWithARegion = new(static () =>
     {
-        var set = new HashSet<string>(StringComparer.Ordinal);
+        var map = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var embedding in Embedding.Both())
         {
             foreach (var fields in embedding.Lines(IntlTable.Aliases).Select(static l => l.Split('|')).Where(static f => f[0] == "subdivision"))
             {
                 var replacement = fields[2].Split(' ')[0];
                 if (replacement.Length == 2 && replacement.All(char.IsAsciiLetter) || replacement.Length == 3 && replacement.All(char.IsAsciiDigit))
-                    set.Add(fields[1]);
+                    map[fields[1]] = LocaleId.AsciiLowercase(replacement);
             }
         }
 
-        return set;
+        return map;
     });
 
     [GeneratedRegex("(?:^|-|\")(?:sd|rg)-([a-z0-9]{3,8})(?=-|\"|$| |,|\\]|_)", RegexOptions.CultureInvariant)]
@@ -620,4 +664,8 @@ internal static partial class LocaleSection
 
     [GeneratedRegex("^\\[[a-z0-9]+\\]$", RegexOptions.CultureInvariant)]
     private static partial Regex SingleSystem();
+
+    /// <summary>A <c>-u-</c> extension sequence of a tag in an answer, in either arm's case: up to the next singleton or the tag's end.</summary>
+    [GeneratedRegex("-[uU](?:-[A-Za-z0-9]{2,8})+", RegexOptions.CultureInvariant)]
+    private static partial Regex UnicodeExtension();
 }

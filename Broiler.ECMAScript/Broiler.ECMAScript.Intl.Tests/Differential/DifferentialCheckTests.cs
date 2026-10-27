@@ -47,6 +47,39 @@ public sealed class DifferentialCheckTests
         Assert.Contains(rows, static r => r.Row == "L18" && r.Section.StartsWith("L3", StringComparison.Ordinal));
     }
 
+    /// <summary>
+    /// A row covers a difference only when its correction explains both answers, never by the input alone: getCollations of
+    /// a Locale that names a subdivision is row L18's, and an answer the subdivision's form does not explain stays
+    /// unclassified, so that an unrelated difference on such an input is not hidden.
+    /// </summary>
+    [Fact]
+    public void A_row_covers_a_difference_only_when_its_correction_explains_both_answers()
+    {
+        var identifiers = new Section("L1 identifiers (test)");
+        identifiers.Compare("canonical \"en-u-sd-fi01\"", "en-u-sd-AX", "en-u-sd-axzzzz");
+        identifiers.Compare("canonical twice \"en-u-sd-fi01\"", "en-u-ax-sd", "en-u-sd-axzzzz");
+        identifiers.Compare("parts \"en-u-sd-fi01\"", "en | en | undefined | undefined |  | sd=;ax=", "en | en | undefined | undefined |  | sd=axzzzz");
+        identifiers.Compare("lookup [\"en-u-rg-cn71\"]", "en rg=;tw=", "en rg=twzzzz");
+        Assert.Equal(4, identifiers.ClassifiedByRow["L9"]);
+        Assert.Equal(0, identifiers.Unclassified);
+
+        // The same inputs with answers the correction does not explain: another region, and no zzzz at all.
+        identifiers.Compare("maximize \"en-u-sd-fi01\"", "found en-Latn-US-u-sd-ax", "found en-Latn-GB-u-sd-axzzzz");
+        identifiers.Compare("canonical \"en-u-sd-fi01\"", "en-u-sd-AX", "en-u-sd-fi01");
+        identifiers.Compare("lookup [\"en-u-rg-cn71\"]", "en rg=;tw=", "de rg=twzzzz");
+        Assert.Equal(3, identifiers.Unclassified);
+
+        var locales = new Section("L3 Intl.Locale (test)");
+        locales.Compare("getCollations zh-u-sd-hkzzzz of \"zh-u-sd-cn91\"", "[emoji,eor]", "[]");
+        locales.Compare("getHourCycles en-u-sd-axzzzz of \"en-u-sd-fi01\"", "[h12,h23]", "[h23]");
+        locales.Compare("getWeekInfo en-u-rg-axzzzz of \"en-u-rg-fi01\"", "{firstDay:7,weekend:[6,7]}", "{firstDay:1,weekend:[6,7]}");
+        locales.Compare("getCalendars en-u-sd-axzzzz of \"en-u-sd-fi01\"", "[gregory]", "[buddhist]");
+        locales.Compare("getHourCycles en-u-sd-fi01 of \"en-u-sd-fi01\"", "[h12,h23]", "[h23]");
+        Assert.Equal(1, locales.ClassifiedByRow["L18"]);
+        Assert.Equal(2, locales.ClassifiedByRow["L9"]);
+        Assert.Equal(2, locales.Unclassified);
+    }
+
     [Fact]
     public void A_difference_in_one_table_is_found_and_left_unclassified()
     {

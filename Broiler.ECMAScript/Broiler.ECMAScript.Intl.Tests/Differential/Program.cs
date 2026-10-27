@@ -12,9 +12,11 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// </summary>
 /// <remarks>
 /// <code>
-/// dotnet Broiler.ECMAScript.Intl.Tests.dll differential [--seed N] [--scale N] [--sections D0,L1,...] [--out FILE]
+/// dotnet Broiler.ECMAScript.Intl.Tests.dll differential [--seed N] [--scale N] [--sections D0,L1,...] [--classified-examples N] [--out FILE]
 /// </code>
-/// It prints the report and writes it to <c>--out</c> when given, and exits 1 when a difference is unclassified. The test
+/// It prints the report and writes it to <c>--out</c> when given, and exits 1 when a difference is unclassified.
+/// <c>--classified-examples</c> lists up to that many classified differences of each row and section, three by default, so
+/// that every one can be audited against its row. The test
 /// host never calls this: it loads the assembly and runs its tests, which is why the project turns the generated entry
 /// point off.
 /// </remarks>
@@ -28,7 +30,7 @@ internal static class Program
 
         if (args.Length == 0 || args[0] != "differential")
         {
-            Console.Error.WriteLine("usage: differential [--seed N] [--scale N] [--sections D0,L1,...] [--out FILE]");
+            Console.Error.WriteLine("usage: differential [--seed N] [--scale N] [--sections D0,L1,...] [--classified-examples N] [--out FILE]");
             return 2;
         }
 
@@ -41,6 +43,8 @@ internal static class Program
         var seed = Option("--seed") is { } s ? ulong.Parse(s, CultureInfo.InvariantCulture) : DifferentialCheck.DefaultSeed;
         var scale = Option("--scale") is { } n ? int.Parse(n, CultureInfo.InvariantCulture) : 1;
         var only = Option("--sections")?.Split(',');
+        if (Option("--classified-examples") is { } examples)
+            Section.ClassifiedExampleLimit = int.Parse(examples, CultureInfo.InvariantCulture);
         var sections = DifferentialCheck.Run(seed, scale, only);
         var report = DifferentialCheck.Report(sections, seed, scale);
         Console.Write(report);
