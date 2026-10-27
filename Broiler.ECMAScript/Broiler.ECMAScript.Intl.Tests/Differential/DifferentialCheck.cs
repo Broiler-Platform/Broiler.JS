@@ -20,7 +20,8 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// </summary>
 /// <remarks>
 /// <b>Sections.</b> Each stage of milestone SJL-9.3 adds the sections of its sub-area; the skeleton's own is D0, the table
-/// decoders (<see cref="DecoderSection"/>). A section names what it compares, and an answer is rendered as text so that
+/// decoders (<see cref="DecoderSection"/>), and sub-area (a)'s are L1 to L4, locale identifiers, negotiation, Intl.Locale
+/// and <c>Intl.supportedValuesOf</c> (<see cref="LocaleSection"/>). A section names what it compares, and an answer is rendered as text so that
 /// the comparison is exact: a string as it is, a missing answer as <c>&lt;none&gt;</c>, a record by its fields.
 /// </remarks>
 internal static class DifferentialCheck
@@ -33,10 +34,11 @@ internal static class DifferentialCheck
 
     /// <summary>The differences Broiler.VM's correspondence classes, by section; a difference matched by none is unclassified.</summary>
     /// <remarks>
-    /// Empty at the skeleton: the decoders are a port with no correction. A stage that ports a row the correspondence classes
-    /// a correction of Broiler.VM (L9, L18, Z8) adds the row here, by the inputs it names, never a new row.
+    /// None for the skeleton's section: the decoders are a port with no correction. A stage that ports a row the
+    /// correspondence classes a correction of Broiler.VM (L9, L18, Z8), or whose answer is each engine's own data, adds the
+    /// row here, by the inputs it names, never a new row: sub-area (a)'s are L9, L18 and L22 (<see cref="LocaleSection.Known"/>).
     /// </remarks>
-    internal static IReadOnlyList<KnownDifference> Known { get; } = [];
+    internal static IReadOnlyList<KnownDifference> Known { get; } = [.. LocaleSection.Known()];
 
     /// <summary>Runs the sections named (all when none is), at a scale, from a seed.</summary>
     internal static IReadOnlyList<Section> Run(ulong seed, int scale, IReadOnlyCollection<string>? only = null)
@@ -48,6 +50,8 @@ internal static class DifferentialCheck
         {
             if (only is null || only.Contains("D0"))
                 sections.AddRange(DecoderSection.Run(embedding, random, scale));
+            if (only is null || only.Any(static s => s is "L1" or "L2" or "L3" or "L4"))
+                sections.AddRange(LocaleSection.Run(embedding, random, scale, only));
         }
 
         return sections;
@@ -80,7 +84,11 @@ internal static class DifferentialCheck
         {
             text.Append('\n').Append(section.Name).Append(": classified differences by row\n");
             foreach (var (row, count) in section.ClassifiedByRow.OrderBy(static p => p.Key, StringComparer.Ordinal))
-                text.Append("  ").Append(row).Append(' ').Append(count.ToString(CultureInfo.InvariantCulture)).Append('\n');
+            {
+                text.Append("  ").Append(row).Append(' ').Append(count.ToString(CultureInfo.InvariantCulture)).Append(", the first of them:\n");
+                foreach (var example in section.ClassifiedExamples[row])
+                    text.Append("    ").Append(example).Append('\n');
+            }
         }
 
         return text.ToString();
@@ -98,6 +106,8 @@ internal sealed class Section
 {
     private const int ExampleLimit = 20;
 
+    private const int ClassifiedExampleLimit = 3;
+
     internal Section(string name) => Name = name;
 
     internal string Name { get; }
@@ -111,6 +121,9 @@ internal sealed class Section
     internal List<string> Examples { get; } = [];
 
     internal Dictionary<string, long> ClassifiedByRow { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>The first few classified differences of each row, so that a reader can see that the row is the difference.</summary>
+    internal Dictionary<string, List<string>> ClassifiedExamples { get; } = new(StringComparer.Ordinal);
 
     /// <summary>Compares one input's answers: Broiler.VM's and the library's, each rendered as text.</summary>
     internal void Compare(string input, string? vm, string? library)
@@ -128,6 +141,10 @@ internal sealed class Section
             {
                 Classified++;
                 ClassifiedByRow[known.Row] = ClassifiedByRow.GetValueOrDefault(known.Row) + 1;
+                if (!ClassifiedExamples.TryGetValue(known.Row, out var examples))
+                    ClassifiedExamples[known.Row] = examples = [];
+                if (examples.Count < ClassifiedExampleLimit)
+                    examples.Add(input + " => vm " + Quote(vm) + ", library " + Quote(library));
                 return;
             }
         }

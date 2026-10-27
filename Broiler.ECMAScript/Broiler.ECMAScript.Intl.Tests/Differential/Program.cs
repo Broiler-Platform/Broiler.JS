@@ -12,7 +12,7 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// </summary>
 /// <remarks>
 /// <code>
-/// dotnet Broiler.ECMAScript.Intl.Tests.dll differential [--seed N] [--scale N] [--sections D0,...] [--out FILE]
+/// dotnet Broiler.ECMAScript.Intl.Tests.dll differential [--seed N] [--scale N] [--sections D0,L1,...] [--out FILE]
 /// </code>
 /// It prints the report and writes it to <c>--out</c> when given, and exits 1 when a difference is unclassified. The test
 /// host never calls this: it loads the assembly and runs its tests, which is why the project turns the generated entry
@@ -28,7 +28,7 @@ internal static class Program
 
         if (args.Length == 0 || args[0] != "differential")
         {
-            Console.Error.WriteLine("usage: differential [--seed N] [--scale N] [--sections D0,...] [--out FILE]");
+            Console.Error.WriteLine("usage: differential [--seed N] [--scale N] [--sections D0,L1,...] [--out FILE]");
             return 2;
         }
 
