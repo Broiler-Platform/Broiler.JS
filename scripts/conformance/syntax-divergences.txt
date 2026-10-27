@@ -23,7 +23,7 @@
 # syntax/lexical/asi/0009, a line break inside a for statement's head, which Broiler.JS accepts where the
 # specification inserts no semicolon, is classified under row P16b, which the correspondence added on 2026-10-27 under
 # the owner's decision D-asi (the last paragraph). The runs are retained in docs/evidence/sjl-13-001/engine/.
-# (Revised 2026-10-27, decision D-asi; the sentence before the last read "One difference of Broiler.JS is left
+# (Revised 2026-10-27, decision D-asi; the sentence on asi/0009 read "One difference of Broiler.JS is left
 # unclassified: syntax/lexical/asi/0009, a line break inside a for statement's head, which Broiler.JS accepts where
 # the specification inserts no semicolon, while row P16 records Broiler.JS's automatic semicolon insertion as the
 # specification's and classes the row the same; no row of the correspondence holds it, and none is invented here.")

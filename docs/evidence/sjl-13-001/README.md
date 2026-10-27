@@ -62,11 +62,14 @@ Corpus revision 29, `a532f41866a7ac080020d8b3c0c8c38907f9c546`, adds the `syntax
 [`conformance/vectors/syntax/`](../../../conformance/vectors/README.md), written by
 [`scripts/conformance/generate_syntax_vectors.py`](../../../scripts/conformance/generate_syntax_vectors.py) under
 Broiler.VM's JSD-0083, decision D25, with schema 1 unchanged. Revision 30,
-`535b9e3469a0d74a0c23244e3271c7853785f00c`, classifies every difference of both engines' first runs on it but one,
+`dc9e09e5ae9583552f8f42a3879527fec7396f3d`, classifies every difference of both engines' first runs on it,
 corrects the vectors those runs and review showed to be defective, and adds 31 regular-expression delimiting vectors
 *(revised 2026-10-27, after review; read "Revision 30, `27139f9e52fe68b86d25c590c6c3b6ac2052f062`, classifies every
 difference of both engines' first runs on it but one, and corrects the vectors those runs showed to be defective.":
-`27139f9e` was revision 30 before review, and `535b9e34` corrects it in place before its merge)*. These are the runs [`SharedLibraries.md`](../../roadmap/SharedLibraries.md)'s "The work, in order",
+`27139f9e` was revision 30 before review, and `535b9e34` corrects it in place before its merge)* *(revised again
+2026-10-27, under the owner's decisions D-asi and D-t24; read "Revision 30, `535b9e3469a0d74a0c23244e3271c7853785f00c`,
+classifies every difference of both engines' first runs on it but one,": `dc9e09e5` completes revision 30 in place
+before its merge, and classifies the difference no row of the correspondence held until then)*. These are the runs [`SharedLibraries.md`](../../roadmap/SharedLibraries.md)'s "The work, in order",
 item 2, asks for, the basis of revision 30's `divergence` fields. They are no part of the rule's parts A to H: part B reads the same vectors at library level,
 at the library commit. Nothing here is a verdict. [`engine/commands.txt`](engine/commands.txt) records how each run was
 taken, and every run here was taken on one host, Ubuntu 24.04.5 LTS (Linux 6.18.44, x86_64, 4 logical CPUs).
@@ -108,14 +111,20 @@ they are not a reading of Broiler.VM's clauses, which its own bundles judge.
 |---|---|---|---|---|---|---|---|
 | 29 | Broiler.JS | `a532f418` | 107,326 | 105,525, 11 of them divergences that no longer hold here | 1,748 (the Intl area's 1,744 and the number area's 4) | 53, all in the syntax area | 0 |
 | 29 | Broiler.VM | `a532f418` | 107,326 | 107,263 | 41 (the Intl area's) | 22, all in the syntax area | 0 |
-| 30 | Broiler.JS | `535b9e34` | 107,357 | 105,554, 11 of them divergences that no longer hold here (the Intl area's, as at revision 29) | 1,802 (the syntax area's 54, the Intl area's 1,744 and the number area's 4) | 1, `syntax/lexical/asi/0009` (below) | 0 |
-| 30 | Broiler.VM | `535b9e34` | 107,357 | 107,294 | 63 (the syntax area's 22 and the Intl area's 41) | 0 | 0 |
+| 30 | Broiler.JS | `dc9e09e5` | 107,357 | 105,554, 11 of them divergences that no longer hold here (the Intl area's, as at revision 29) | 1,803 (the syntax area's 55, the Intl area's 1,744 and the number area's 4) | 0 | 0 |
+| 30 | Broiler.VM | `dc9e09e5` | 107,357 | 107,294 | 63 (the syntax area's 22 and the Intl area's 41) | 0 | 0 |
 
 *(Revised 2026-10-27, after review: the revision 30 rows were the runs on `27139f9e`, revision 30 before review, which
 the runs on `535b9e34` replace. They read "| 30 | Broiler.JS | `27139f9e` | 107,326 | 105,525, 11 of them divergences
 that no longer hold here (the Intl area's, as at revision 29) | 1,800 (the syntax area's 52, the Intl area's 1,744 and
 the number area's 4) | 1, `syntax/lexical/asi/0009` (below) | 0 |" and "| 30 | Broiler.VM | `27139f9e` | 107,326 |
 107,264 | 62 (the syntax area's 21 and the Intl area's 41) | 0 | 0 |".)*
+
+*(Revised again 2026-10-27, under the owner's decisions D-asi and D-t24: the revision 30 rows were the runs on
+`535b9e34`, which the runs on `dc9e09e5` replace. They read "| 30 | Broiler.JS | `535b9e34` | 107,357 | 105,554, 11 of
+them divergences that no longer hold here (the Intl area's, as at revision 29) | 1,802 (the syntax area's 54, the Intl
+area's 1,744 and the number area's 4) | 1, `syntax/lexical/asi/0009` (below) | 0 |" and "| 30 | Broiler.VM |
+`535b9e34` | 107,357 | 107,294 | 63 (the syntax area's 22 and the Intl area's 41) | 0 | 0 |".)*
 
 Each Broiler.JS run's negative control changes `numbers/to-fixed/0001` in a copy of the corpus, and each Broiler.VM
 run's changes `syntax/scripts/ex0008/0001` in memory (`--mutate`); each is reported as the one more, unclassified,
@@ -133,11 +142,12 @@ records it, the class JSD-0083 gives the row, and the record that answers it.
 
 | Engine | Rows (vectors) | Vectors |
 |---|---|---|
-| Broiler.JS | D39 (6); T12, T16, D42, P15a (3 each); D33, D35, D38, P18, P31, T18, T24b, T24c, T24e, T28 (2 each); D34, D36, N26, P09, P10, P11, P12, P13, P14, P22, P23, P24, T21, T24a, T24d, T24f (1 each) | 54 |
+| Broiler.JS | D39 (6); T12, T16, D42, P15a (3 each); D33, D35, D38, P18, P31, T18, T24b, T24c, T24e, T28 (2 each); D34, D36, N26, P09, P10, P11, P12, P13, P14, P16b, P22, P23, P24, T21, T24a, T24d, T24f (1 each) | 55 |
 | Broiler.VM | T13 (4); T16 (3); T6, T8, D32, P15b, P31, T24e (2 each); T7, T24d, T24f (1 each) | 22 |
 
 *(Revised 2026-10-27, after review, with P14 and the second T24e for Broiler.JS and the second T24e for Broiler.VM,
-from the vectors revision 30 rewrote and added; the totals read 52 and 21.)*
+from the vectors revision 30 rewrote and added; the totals read 52 and 21.)* *(Revised again 2026-10-27, decision
+D-asi, with P16b for Broiler.JS, `syntax/lexical/asi/0009`; Broiler.JS's total read 54.)*
 
 - **Broiler.JS.** Every row is a correction of Broiler.JS that SJL-14, its cut-over, answers (JSD-0083, decision
   D45), or of both engines (P31, T16, T24d to T24f), but T18, the `m` suffix, which JSD-0083 classes engine policy
@@ -146,9 +156,14 @@ from the vectors revision 30 rewrote and added; the totals read 52 and 21.)*
   parameter of the shared lexer. Two rows hold their difference with a reading the run adds to: T24b and T24f record
   a regular expression where the specification reads a division, refused at compilation when an operand follows it;
   on the vectors' sources, where `;` or nothing follows the literal, the program completes with the left operand's
-  value. Their reasons say so. That reading matches the rows' mechanism and class, not their recorded answer, and it
-  stands until the plan's owner accepts it or the correspondence records a literal followed by `;` or the end of input
-  *(added 2026-10-27, after review)*. The vectors of P31 render `abort:` (System.NotImplementedException), as P31
+  value. Their reasons say so. The owner's decision D-t24 of 2026-10-27 accepts that reading (Broiler.VM's JSD-0083,
+  "The owner's decisions of 2026-10-27", taken as recommended under the owner's direction of 2026-10-18, "Please do all
+  recommended decisions and skip waiting for review"): both rows record that answer beside the one they held, from a
+  probe of both engines, with the same classes (Broiler.VM divides after `}` and refuses after `await`), and the
+  reasons `js-t24b`, `js-t24f` and `vm-t24f` quote it *(revised 2026-10-27, decision D-t24; after "Their reasons say
+  so." this read "That reading matches the rows' mechanism and class, not their recorded answer, and it stands until
+  the plan's owner accepts it or the correspondence records a literal followed by `;` or the end of input (added
+  2026-10-27, after review).")*. The vectors of P31 render `abort:` (System.NotImplementedException), as P31
   records. Two rows the vectors name do not reach this engine's correction, and the runs show it refusing both, as the
   specification does: T23's vector, `syntax/expressions/ee0012/0003`, an escaped `let` bound in strict code (T23's
   sites are reached by the escaped `yield` and `await` of D33's two vectors), and, at revision 29 and before review,
@@ -157,13 +172,30 @@ from the vectors revision 30 rewrote and added; the totals read 52 and 21.)*
 - **Broiler.VM.** Every row is a correction that decision D25 lists, with P15b, which step 1 of SJL-13.3 makes
   (JSD-0083, "The corrections step 1 makes"). No difference is a refusal of the wide manifest. 7 vectors differ in
   both engines (P31, T16, T24d to T24f) *(revised 2026-10-27, after review; read "6 vectors")*.
-- **One difference is left unclassified.** Broiler.JS accepts `syntax/lexical/asi/0009`, `for (var i = 0` LF `i < 1;
-  i++) ;`, which the specification refuses (12.10.1: no semicolon is inserted where it would become one of the two
-  semicolons of a for statement's head) and the reference refuses at parse time. The correspondence's row for
-  automatic semicolon insertion, P16, records this engine's answer as the specification's and classes the row the
-  same, from test262's `test/language/asi` tests, none of which puts a `var` declaration before the line break. So
-  the difference contradicts P16's class, and no row of the correspondence holds it; none is made here. It is
-  reported for the correspondence to answer, and until it is, this engine's run on revision 30 reports it.
+- **The difference no row held, now row P16b's.** Broiler.JS accepts `syntax/lexical/asi/0009`, `for (var i = 0` LF `i
+  < 1; i++) ;`, which the specification refuses (12.10.1: no semicolon is inserted where it would become one of the
+  two semicolons of a for statement's head) and the reference refuses at parse time. The correspondence's row for
+  automatic semicolon insertion, P16, recorded this engine's answer as the specification's and classed the row the
+  same, from test262's `test/language/asi` tests, none of which puts a declaration before the line break, so no row
+  held the difference. The owner's decision D-asi of 2026-10-27 (JSD-0083, the same section, under the same direction)
+  answers it: it is no falsification of JSD-0083 (none of its "Falsified if" clauses), but a gap in the
+  correspondence, which narrows P16 by a dated note to automatic semicolon insertion outside a for statement's head
+  and adds row P16b, automatic semicolon insertion in a for statement's head, with both engines' answers from code and
+  a probe. Broiler.VM refuses a line break where either of the head's semicolons belongs, as the specification does;
+  Broiler.JS accepts one after a `var`, `let` or `const` declaration, and the loop runs as though the `;` were
+  written, and refuses one after an expression and where the second semicolon belongs. P16b's class is correction of
+  Broiler.JS, which SJL-14 answers as decision D45's other corrections of Broiler.JS (K10's rows, hand-off H22).
+  Revision 30 at `dc9e09e5` classifies the vector for Broiler.JS under P16b (the reason `js-p16b`), and its note names
+  P16b where it named P16. The row is on Broiler.VM's branch `sjl-13-corr-p16`, at
+  `6636798fe6ae78d0a082c027c0bc9518c253e711`, which merges into Broiler.VM before this change merges *(revised
+  2026-10-27, decision D-asi; the bullet read "One difference is left unclassified. Broiler.JS accepts
+  `syntax/lexical/asi/0009`, `for (var i = 0` LF `i < 1; i++) ;`, which the specification refuses (12.10.1: no
+  semicolon is inserted where it would become one of the two semicolons of a for statement's head) and the reference
+  refuses at parse time. The correspondence's row for automatic semicolon insertion, P16, records this engine's answer
+  as the specification's and classes the row the same, from test262's `test/language/asi` tests, none of which puts a
+  `var` declaration before the line break. So the difference contradicts P16's class, and no row of the correspondence
+  holds it; none is made here. It is reported for the correspondence to answer, and until it is, this engine's run on
+  revision 30 reports it.")*.
 - **A vector defect.** Broiler.VM's 22nd difference on revision 29, `syntax/lexical/regexp-delimiting/0044`, renders
   `/[/]/.source` as `"[\/]"`. EscapeRegExpPattern leaves the form of `source` to the implementation ("S may or may
   not differ from P"), so that answer is as conforming as the expected `"[/]"`. Revision 30 rewrites the 33 vectors
@@ -180,29 +212,38 @@ from the vectors revision 30 rewrote and added; the totals read 52 and 21.)*
   every punctuator revision 29 left out; of them, `regexp-delimiting/0083`, a prefix `--`, differs in both engines
   under T24e. `REVISIONS.md`'s rows 29 and 30 list each change.
 
-**On revision 30** both engines were run again, as for revision 29, from scratch archives of `535b9e34`, revision 30
-as corrected after review (Broiler.JS built again in a scratch tree of that commit), and the runs replace those on
-`27139f9e` *(revised 2026-10-27, after review; the paragraph read "both engines were run again, as for revision 29,
-from scratch archives of `27139f9e` (Broiler.JS built again in a scratch tree of that commit).", and went on as it
-does)*. Broiler.VM classifies every difference, and no divergence field reports that it no longer holds. Broiler.JS
-classifies every difference but `syntax/lexical/asi/0009`, which revision 30 leaves unclassified, so this engine's
-corpus test fails on revision 30 until the correspondence answers it; its two zones' reports are byte for byte the
-same again. Each of the 33 vectors rewritten for `source` gives each engine the verdict its revision 29 form gave, but
+**On revision 30** both engines were run again, as for revision 29, from scratch archives of `dc9e09e5`, revision 30
+as corrected after review and completed under the owner's decisions D-asi and D-t24 (Broiler.JS built again in a
+scratch tree of that commit), and the runs replace those on `535b9e34`, which had replaced those on `27139f9e`
+*(revised 2026-10-27, after review; the paragraph read "both engines were run again, as for revision 29, from scratch
+archives of `27139f9e` (Broiler.JS built again in a scratch tree of that commit).", and went on as it does)*
+*(revised again 2026-10-27, under decisions D-asi and D-t24; read "from scratch archives of `535b9e34`, revision 30 as
+corrected after review (Broiler.JS built again in a scratch tree of that commit), and the runs replace those on
+`27139f9e`")*. Broiler.VM classifies every difference, and no divergence field reports that it no longer holds. Broiler.JS
+classifies every difference, `syntax/lexical/asi/0009` under row P16b, and its corpus test passes on revision 30; its
+two zones' reports are byte for byte the same again *(revised 2026-10-27, decision D-asi; read "Broiler.JS classifies
+every difference but `syntax/lexical/asi/0009`, which revision 30 leaves unclassified, so this engine's corpus test
+fails on revision 30 until the correspondence answers it;")*. Against the runs on `535b9e34`, each report differs in
+one vector's line and its header alone: Broiler.JS's in `asi/0009`'s class and verdict, now a classified divergence,
+and in the header's counts; Broiler.VM's, and its negative control's, in `asi/0009`'s class and in the corpus commit
+and digest the header names. Broiler.JS's negative controls are byte for byte the same as before. Each of the 33 vectors rewritten for `source` gives each engine the verdict its revision 29 form gave, but
 `regexp-delimiting/0044`, which now matches in Broiler.VM; the two that differ (`t8/0002` in Broiler.VM,
 `regexp-delimiting/0048` in Broiler.JS) are classified under T8 and T24c. Of the vectors review rewrote and added,
 `t8/0001` differs in Broiler.VM (T8), `grammar/0004` in Broiler.JS (P14) and `regexp-delimiting/0083` in both (T24e),
 each classified, and every other matches in both. Each negative control is reported as the one more difference it
-should be. The runs read the corpus at `535b9e34`; no later commit of this change touches `conformance/vectors/`, so
+should be. The runs read the corpus at `dc9e09e5`; no later commit of this change touches `conformance/vectors/`, so
 the corpus at the branch's head is the one they read *(added 2026-10-27, after review: the runs on `27139f9e` read a
-corpus that a later commit's rewording of `REVISIONS.md`'s row 29 changed)*.
+corpus that a later commit's rewording of `REVISIONS.md`'s row 29 changed)* *(revised 2026-10-27, under decisions
+D-asi and D-t24; read "The runs read the corpus at `535b9e34`;")*.
 
 ## State
 
 **2026-10-26, at SJL-13.1: rules only. Nothing here is a verdict, and nothing has been taken.**
 
 *2026-10-27, at the `syntax` vectors:* they are written, corpus revisions 29 and 30, and both engines' first
-engine-level runs on them are taken, and classified but one difference (the section above) *(revised 2026-10-27,
-after review; read "are taken and classified (the section above)")*. None of those runs is a run of the rule's
+engine-level runs on them are taken and classified (the section above) *(revised 2026-10-27, after review; read "are
+taken and classified (the section above)")* *(revised again 2026-10-27, decision D-asi; read "are taken, and
+classified but one difference (the section above)")*. None of those runs is a run of the rule's
 parts, and nothing here is a verdict; the line above stands for the rule's parts.
 
 - The vectors commit adds the `syntax` area to [`conformance/vectors/`](../../../conformance/vectors/README.md) at its
@@ -225,7 +266,8 @@ parts, and nothing here is a verdict; the line above stands for the rule's parts
 
 The `syntax` vectors' commits on this change's branch are named in the section above: revision 29,
 `a532f41866a7ac080020d8b3c0c8c38907f9c546`, and revision 30, `27139f9e52fe68b86d25c590c6c3b6ac2052f062`, as corrected
-after review by `535b9e3469a0d74a0c23244e3271c7853785f00c` *(the last clause added 2026-10-27)*. The vectors
+after review by `535b9e3469a0d74a0c23244e3271c7853785f00c` *(the last clause added 2026-10-27)* and completed under
+the owner's decisions D-asi and D-t24 by `dc9e09e5ae9583552f8f42a3879527fec7396f3d` *(this clause added 2026-10-27)*. The vectors
 commit, the default-branch merge that carries them, is named here, by all forty digits, when that change has merged.
 No other commit is named yet. *(Revised 2026-10-27, at the `syntax` vectors; read "No other commit is named yet.")*
 

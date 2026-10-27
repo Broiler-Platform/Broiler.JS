@@ -47,34 +47,43 @@ Broiler.VM, at faa8af78cddc32d460a7299f088b18b9e4407d7a (Broiler-Platform/Broile
   exit     1 each: 22 unclassified differences, all in the syntax area, and 23 under the negative control
   files    broiler-vm-run-revision-29.log and broiler-vm-negative-control-revision-29.log, and their .tsv.gz reports
 
-== Revision 30, corpus 535b9e3469a0d74a0c23244e3271c7853785f00c
+== Revision 30, corpus dc9e09e5ae9583552f8f42a3879527fec7396f3d
 
-Revision 30 as corrected after review (2026-10-27): the commit that corrects revision 30 in place before its merge,
-rewriting three vectors, correcting test262 citations and notes, and adding 31 regexp-delimiting vectors. These runs
-replace the runs on 27139f9e, revision 30 before review, which this section named until then: "== Revision 30, corpus
-27139f9e52fe68b86d25c590c6c3b6ac2052f062", Broiler.JS's started 07:39:23Z and ended 08:31:08Z (UTC) and 08:30:33Z (New
-York), each with asi/0009 its one unclassified difference, and Broiler.VM's logs written at 07:56:26Z and 08:13:34Z,
-the run with none. The runs here read the corpus at 535b9e34; no later commit of the change touches
-conformance/vectors/, so the corpus at the branch's head is the one they read.
+Revision 30 as completed under the owner's decisions of 2026-10-27, D-asi and D-t24 (Broiler.VM's JSD-0083, "The
+owner's decisions of 2026-10-27"): the commit that completes revision 30 in place before its merge, classifying
+syntax/lexical/asi/0009 for Broiler.JS under the correspondence's new row P16b and making the T24b and T24f reasons
+quote the answer those rows record where `;` or the end of input follows the literal; no expected value changes.
+These runs replace the runs on 535b9e34, revision 30 as corrected after review ("the commit that corrects revision
+30 in place before its merge, rewriting three vectors, correcting test262 citations and notes, and adding 31
+regexp-delimiting vectors"), which this section named until then: "== Revision 30, corpus
+535b9e3469a0d74a0c23244e3271c7853785f00c", Broiler.JS's both started 09:44:56Z and ended 10:43:08Z (UTC) and
+10:42:58Z (New York), each exiting "1 each: one unclassified difference, syntax/lexical/asi/0009, which revision 30
+leaves unclassified (no row of the correspondence holds it; the bundle's README), and the run's test fails", and
+Broiler.VM's run started 09:44:56Z and ended 10:04:01Z, exiting 0, and its negative control ended 10:31:09Z, exiting
+1. Those runs had replaced the runs on 27139f9e, revision 30 before review: Broiler.JS's started 07:39:23Z and ended
+08:31:08Z (UTC) and 08:30:33Z (New York), each with asi/0009 its one unclassified difference, and Broiler.VM's logs
+written at 07:56:26Z and 08:13:34Z, the run with none. The runs here read the corpus at dc9e09e5; no later commit of
+the change touches conformance/vectors/, so the corpus at the branch's head is the one they read. (Revised
+2026-10-27, under decisions D-asi and D-t24: the section was the one on 535b9e34, whose heading, description, times
+and exit lines are quoted above; the rest of it reads as below with that commit's id.)
 
 Broiler.JS, under TZ=UTC and under TZ=America/New_York.
-  tree     a scratch tree written by `git archive 535b9e3469a0d74a0c23244e3271c7853785f00c`, whose Broiler.JS/ is the
+  tree     a scratch tree written by `git archive dc9e09e5ae9583552f8f42a3879527fec7396f3d`, whose Broiler.JS/ is the
            branch base's, as for revision 29; built once beforehand, as for revision 29
   command  as for revision 29
-  times    both started 2026-10-27T09:44:56Z; ended 10:43:08Z (UTC) and 10:42:58Z (New York), as the logs say
-  exit     1 each: one unclassified difference, syntax/lexical/asi/0009, which revision 30 leaves unclassified (no row
-           of the correspondence holds it; the bundle's README), and the run's test fails, as the logs show; the two
-           reports, and the two negative controls, are byte for byte the same
+  times    both started 2026-10-27T12:37:53Z; ended 13:29:01Z (UTC) and 13:29:07Z (New York), as the logs say
+  exit     0 each: no unclassified difference, and the run's tests pass, as the logs show; the two reports, and the
+           two negative controls, are byte for byte the same
   files    run-revision-30-utc.log, run-revision-30-new-york.log, the reports run-revision-30-*.tsv.gz and the
            negative controls negative-control-revision-30-*.tsv
 
 Broiler.VM, at faa8af78cddc32d460a7299f088b18b9e4407d7a, under TZ=UTC, as for revision 29.
-  corpus   git archive --format=tar.gz 535b9e3469a0d74a0c23244e3271c7853785f00c -- conformance/vectors
+  corpus   git archive --format=tar.gz dc9e09e5ae9583552f8f42a3879527fec7396f3d -- conformance/vectors
              ':(exclude)conformance/vectors/controls'
            written twice, byte for byte the same; pinned by broiler-vm-revision-30.pin, whose content digest was
            checked again over the extracted files
   command  as for revision 29, with --expect broiler-vm-revision-30.pin
-  times    the run started 2026-10-27T09:44:56Z and ended 10:04:01Z; the negative control ended 10:31:09Z, as the logs
+  times    the run started 2026-10-27T12:37:53Z and ended 12:48:21Z; the negative control ended 13:01:29Z, as the logs
            say
   exit     0 for the run: no unclassified difference; 1 for the negative control, its one difference
   files    broiler-vm-run-revision-30.log and broiler-vm-negative-control-revision-30.log, and their .tsv.gz reports

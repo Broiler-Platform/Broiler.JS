@@ -1,44 +1,23 @@
-== start 2026-10-27T09:44:56Z TZ=UTC, the corpus at 535b9e3469a0d74a0c23244e3271c7853785f00c (a scratch tree written by git archive of that commit, built once beforehand with dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers, run with --no-build, in one evaluating process, with no LANG)
+== start 2026-10-27T12:37:53Z TZ=UTC, the corpus at dc9e09e5ae9583552f8f42a3879527fec7396f3d (a scratch tree written by git archive of that commit, built once beforehand with dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers, run with --no-build, in one evaluating process, with no LANG)
 == host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v165 x86_64; 4 logical CPUs; ICU: libicu74 74.2-1ubuntu3.1 (libicuuc.so.74, the only ICU installed), which .NET's globalization loads; dotnet 10.0.401, runtime 10.0.12
 == command: env -u LANG -u LANGUAGE -u BROILER_VECTORS_WORKERS TZ=UTC BROILER_VECTORS_REPORT=run-revision-30-utc.tsv dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --logger "console;verbosity=normal"
-Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-wp2/fix/jsbuild/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-wp2/p16b/jsbuild/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
 A total of 1 test files matched the specified pattern.
 [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
-[xUnit.net 00:00:00.06]   Discovering: Broiler.JavaScript.Vectors.Tests
-[xUnit.net 00:00:00.12]   Discovered:  Broiler.JavaScript.Vectors.Tests
-[xUnit.net 00:00:00.12]   Starting:    Broiler.JavaScript.Vectors.Tests
-  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [5 s]
-  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [2 s]
-  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [14 s]
-  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [416 ms]
-107357 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 57 min 29.1 s; the slowest, numerics/instant-since/0538, took 1.258 s of the 5 s limit.
-[xUnit.net 00:57:52.73]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
-[xUnit.net 00:57:52.73]       1 of 107357 vectors differ and nothing classifies them:
-[xUnit.net 00:57:52.73]       syntax/lexical/asi/0009: expected error: SyntaxError, rendered value: undefined
-[xUnit.net 00:57:52.73]       Stack Trace:
-[xUnit.net 00:57:52.74]         /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-wp2/fix/jsbuild/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(57,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
-[xUnit.net 00:57:52.74]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
-[xUnit.net 00:57:52.74]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
-[xUnit.net 00:57:52.74]       Output:
-[xUnit.net 00:57:52.74]         107357 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 57 min 29.1 s; the slowest, numerics/instant-since/0538, took 1.258 s of the 5 s limit.
-  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [57 m 29 s]
-  Error Message:
-   1 of 107357 vectors differ and nothing classifies them:
-syntax/lexical/asi/0009: expected error: SyntaxError, rendered value: undefined
-  Stack Trace:
-     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-wp2/fix/jsbuild/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 57
-   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
-   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
-  Standard Output Messages:
- 107357 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 57 min 29.1 s; the slowest, numerics/instant-since/0538, took 1.258 s of the 5 s limit.
-
-
-[xUnit.net 00:58:10.14]   Finished:    Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.24]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.72]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.73]   Starting:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [6 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [5 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [21 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [1 s]
+107357 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 50 min 10.9 s; the slowest, unicode/normalize-part2/0076, took 1.000 s of the 5 s limit.
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [50 m 11 s]
+[xUnit.net 00:51:04.09]   Finished:    Broiler.JavaScript.Vectors.Tests
   Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [17 s]
 
-Test Run Failed.
+Test Run Successful.
 Total tests: 6
-     Passed: 5
-     Failed: 1
- Total time: 58.1799 Minutes
-== end 2026-10-27T10:43:08Z exit=1
+     Passed: 6
+ Total time: 51.0931 Minutes
+== end 2026-10-27T13:29:01Z exit=0

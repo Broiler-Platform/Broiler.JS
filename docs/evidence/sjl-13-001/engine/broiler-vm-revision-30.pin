@@ -4,9 +4,9 @@
 
 suite broiler-js-vectors
 upstream Broiler-Platform/broiler.js
-revision 535b9e3469a0d74a0c23244e3271c7853785f00c
-archive git archive --format=tar.gz 535b9e3469a0d74a0c23244e3271c7853785f00c -- conformance/vectors :(exclude)conformance/vectors/controls
-archive-sha256 94ac863317d089510ecada59ad02a8e22a83d33e25c3924ab8b78b9e3d1fc8cf
-content-sha256 2da61eba364244955d26d3224549dd0e5332a9de2144f66191fde190ab0739fb
+revision dc9e09e5ae9583552f8f42a3879527fec7396f3d
+archive git archive --format=tar.gz dc9e09e5ae9583552f8f42a3879527fec7396f3d -- conformance/vectors :(exclude)conformance/vectors/controls
+archive-sha256 d18ee673fa1ec5a5ccc5960164ddd3eb312f12f56624470e197757ffa1de6b0c
+content-sha256 d0a29715d26f3022bfc55d735c622a3b50c8fcc20d27acca7c9547cd7026dd99
 files 69
 archived no
