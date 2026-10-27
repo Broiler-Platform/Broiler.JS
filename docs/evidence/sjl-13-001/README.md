@@ -62,8 +62,11 @@ Corpus revision 29, `a532f41866a7ac080020d8b3c0c8c38907f9c546`, adds the `syntax
 [`conformance/vectors/syntax/`](../../../conformance/vectors/README.md), written by
 [`scripts/conformance/generate_syntax_vectors.py`](../../../scripts/conformance/generate_syntax_vectors.py) under
 Broiler.VM's JSD-0083, decision D25, with schema 1 unchanged. Revision 30,
-`27139f9e52fe68b86d25c590c6c3b6ac2052f062`, classifies every difference of both engines' first runs on it but one,
-and corrects the vectors those runs showed to be defective. These are the runs [`SharedLibraries.md`](../../roadmap/SharedLibraries.md)'s "The work, in order",
+`535b9e3469a0d74a0c23244e3271c7853785f00c`, classifies every difference of both engines' first runs on it but one,
+corrects the vectors those runs and review showed to be defective, and adds 31 regular-expression delimiting vectors
+*(revised 2026-10-27, after review; read "Revision 30, `27139f9e52fe68b86d25c590c6c3b6ac2052f062`, classifies every
+difference of both engines' first runs on it but one, and corrects the vectors those runs showed to be defective.":
+`27139f9e` was revision 30 before review, and `535b9e34` corrects it in place before its merge)*. These are the runs [`SharedLibraries.md`](../../roadmap/SharedLibraries.md)'s "The work, in order",
 item 2, asks for, the basis of revision 30's `divergence` fields. They are no part of the rule's parts A to H: part B reads the same vectors at library level,
 at the library commit. Nothing here is a verdict. [`engine/commands.txt`](engine/commands.txt) records how each run was
 taken, and every run here was taken on one host, Ubuntu 24.04.5 LTS (Linux 6.18.44, x86_64, 4 logical CPUs).
@@ -71,12 +74,17 @@ taken, and every run here was taken on one host, Ubuntu 24.04.5 LTS (Linux 6.18.
 **The vectors.** Each pins one source text's parse: `op` is `ParseScript` (the source as a Script) or `PerformEval`
 (the source as the eval code of a top-level direct eval in a fresh realm); `in` holds the source; `script` holds it as
 the one-line Script the engine-level runners evaluate, or a top-level direct `eval` of it; `out` is `error:
-SyntaxError` or the completion value. Every expected value is the pinned edition's, ECMA-262 ES2026 at `0248456c`, and
-177 of the 230 refusals and 34 of the 288 acceptances also cite the test262 tests at `ccaac100` that assert the
-outcome. Of the stage table's 211 `syntax` rows, 145 have an accepted and a refused vector, 11 one half and 55 none, and
+SyntaxError` or the completion value. Every expected value is the pinned edition's, ECMA-262 ES2026 at `0248456c`, but
+those of the 10 explicit-resource-management vectors, which are ECMA-262 main's at `4feb0272` (the pinned edition has no
+UsingDeclaration); and at revision 30, 549 vectors, 172 of the 230 refusals and 34 of the 319 acceptances also cite
+a test262 test at `ccaac100` that asserts the outcome *(revised 2026-10-27, after review; read "Every expected value is
+the pinned edition's, ECMA-262 ES2026 at `0248456c`, and 177 of the 230 refusals and 34 of the 288 acceptances also
+cite the test262 tests at `ccaac100` that assert the outcome.", the counts of revision 29's 518 vectors, some of whose
+citations asserted another source or rule)*. Of the stage table's 211 `syntax` rows, 145 have an accepted and a refused vector, 11 one half and 55 none, and
 the generator's `UNCOVERED` table names each missing half with its reason (the Module goal, the regular-expression
 provider, the proposal flags, the dynamic-function and ShadowRealm goals, the bounds, and the explicit-resource-
-management halves no citable source asserts). The 13 `impl-defined` vectors are Annex B's, whose outcome holds only
+management halves no citable source asserts; decision D25 leaves out only Module-goal and switch-dependent rows, and
+`REVISIONS.md`'s row 29 names where the table goes beyond it). The 13 `impl-defined` vectors are Annex B's, whose outcome holds only
 with it; both engines' requests turn it on for scripts, and so does the library's (the design document's request).
 Every vector was checked against the reference Node.js v26.12.0 that bundle `sjl-9-001`'s `reference.txt` names: it
 agrees but on one, `syntax/annex-b/eg0008/0002`, a call as an assignment target in strict code, which the
@@ -100,8 +108,14 @@ they are not a reading of Broiler.VM's clauses, which its own bundles judge.
 |---|---|---|---|---|---|---|---|
 | 29 | Broiler.JS | `a532f418` | 107,326 | 105,525, 11 of them divergences that no longer hold here | 1,748 (the Intl area's 1,744 and the number area's 4) | 53, all in the syntax area | 0 |
 | 29 | Broiler.VM | `a532f418` | 107,326 | 107,263 | 41 (the Intl area's) | 22, all in the syntax area | 0 |
-| 30 | Broiler.JS | `27139f9e` | 107,326 | 105,525, 11 of them divergences that no longer hold here (the Intl area's, as at revision 29) | 1,800 (the syntax area's 52, the Intl area's 1,744 and the number area's 4) | 1, `syntax/lexical/asi/0009` (below) | 0 |
-| 30 | Broiler.VM | `27139f9e` | 107,326 | 107,264 | 62 (the syntax area's 21 and the Intl area's 41) | 0 | 0 |
+| 30 | Broiler.JS | `535b9e34` | 107,357 | 105,554, 11 of them divergences that no longer hold here (the Intl area's, as at revision 29) | 1,802 (the syntax area's 54, the Intl area's 1,744 and the number area's 4) | 1, `syntax/lexical/asi/0009` (below) | 0 |
+| 30 | Broiler.VM | `535b9e34` | 107,357 | 107,294 | 63 (the syntax area's 22 and the Intl area's 41) | 0 | 0 |
+
+*(Revised 2026-10-27, after review: the revision 30 rows were the runs on `27139f9e`, revision 30 before review, which
+the runs on `535b9e34` replace. They read "| 30 | Broiler.JS | `27139f9e` | 107,326 | 105,525, 11 of them divergences
+that no longer hold here (the Intl area's, as at revision 29) | 1,800 (the syntax area's 52, the Intl area's 1,744 and
+the number area's 4) | 1, `syntax/lexical/asi/0009` (below) | 0 |" and "| 30 | Broiler.VM | `27139f9e` | 107,326 |
+107,264 | 62 (the syntax area's 21 and the Intl area's 41) | 0 | 0 |".)*
 
 Each Broiler.JS run's negative control changes `numbers/to-fixed/0001` in a copy of the corpus, and each Broiler.VM
 run's changes `syntax/scripts/ex0008/0001` in memory (`--mutate`); each is reported as the one more, unclassified,
@@ -119,8 +133,11 @@ records it, the class JSD-0083 gives the row, and the record that answers it.
 
 | Engine | Rows (vectors) | Vectors |
 |---|---|---|
-| Broiler.JS | D39 (6); T12, T16, D42, P15a (3 each); D33, D35, D38, P18, P31, T18, T24b, T24c, T28 (2 each); D34, D36, N26, P09, P10, P11, P12, P13, P22, P23, P24, T21, T24a, T24d, T24e, T24f (1 each) | 52 |
-| Broiler.VM | T13 (4); T16 (3); T6, T8, D32, P15b, P31 (2 each); T7, T24d, T24e, T24f (1 each) | 21 |
+| Broiler.JS | D39 (6); T12, T16, D42, P15a (3 each); D33, D35, D38, P18, P31, T18, T24b, T24c, T24e, T28 (2 each); D34, D36, N26, P09, P10, P11, P12, P13, P14, P22, P23, P24, T21, T24a, T24d, T24f (1 each) | 54 |
+| Broiler.VM | T13 (4); T16 (3); T6, T8, D32, P15b, P31, T24e (2 each); T7, T24d, T24f (1 each) | 22 |
+
+*(Revised 2026-10-27, after review, with P14 and the second T24e for Broiler.JS and the second T24e for Broiler.VM,
+from the vectors revision 30 rewrote and added; the totals read 52 and 21.)*
 
 - **Broiler.JS.** Every row is a correction of Broiler.JS that SJL-14, its cut-over, answers (JSD-0083, decision
   D45), or of both engines (P31, T16, T24d to T24f), but T18, the `m` suffix, which JSD-0083 classes engine policy
@@ -129,10 +146,17 @@ records it, the class JSD-0083 gives the row, and the record that answers it.
   parameter of the shared lexer. Two rows hold their difference with a reading the run adds to: T24b and T24f record
   a regular expression where the specification reads a division, refused at compilation when an operand follows it;
   on the vectors' sources, where `;` or nothing follows the literal, the program completes with the left operand's
-  value. Their reasons say so. The vectors of P31 render `abort:` (System.NotImplementedException), as P31 records.
+  value. Their reasons say so. That reading matches the rows' mechanism and class, not their recorded answer, and it
+  stands until the plan's owner accepts it or the correspondence records a literal followed by `;` or the end of input
+  *(added 2026-10-27, after review)*. The vectors of P31 render `abort:` (System.NotImplementedException), as P31
+  records. Two rows the vectors name do not reach this engine's correction, and the runs show it refusing both, as the
+  specification does: T23's vector, `syntax/expressions/ee0012/0003`, an escaped `let` bound in strict code (T23's
+  sites are reached by the escaped `yield` and `await` of D33's two vectors), and, at revision 29 and before review,
+  P14's, `switch => 1;` at a statement's start; revision 30 rewrites it to row P14's input, `var f = switch => 1;`, which
+  this engine accepts *(added 2026-10-27, after review)*.
 - **Broiler.VM.** Every row is a correction that decision D25 lists, with P15b, which step 1 of SJL-13.3 makes
-  (JSD-0083, "The corrections step 1 makes"). No difference is a refusal of the wide manifest. 6 vectors differ in
-  both engines (P31, T16, T24d to T24f).
+  (JSD-0083, "The corrections step 1 makes"). No difference is a refusal of the wide manifest. 7 vectors differ in
+  both engines (P31, T16, T24d to T24f) *(revised 2026-10-27, after review; read "6 vectors")*.
 - **One difference is left unclassified.** Broiler.JS accepts `syntax/lexical/asi/0009`, `for (var i = 0` LF `i < 1;
   i++) ;`, which the specification refuses (12.10.1: no semicolon is inserted where it would become one of the two
   semicolons of a for statement's head) and the reference refuses at parse time. The correspondence's row for
@@ -146,22 +170,39 @@ records it, the class JSD-0083 gives the row, and the record that answers it.
   whose expected value read a regular expression's `source` or its string form to read an outcome the specification
   fixes (`test`, `exec`, `lastIndex`), keeping each one's id, row, class and what it delimits; they were checked again
   against the reference and on this engine, which answers each as at revision 29.
+- **What review corrected** *(added 2026-10-27)*. `syntax/lexical/t8/0001`, `${typeof /}/}`, held only with Annex
+  B's ExtendedPatternCharacter (`}` is a SyntaxCharacter of the main pattern grammar) and was classed `normative`;
+  revision 30 rewrites it to `${typeof /[}]/}`, whose `}` is a ClassAtom, and Broiler.VM still refuses it under T8
+  (it accepts `${typeof /[a]/}` and `${(/[}]/).test("}")}`, which places the refusal at the guess after `typeof`).
+  `syntax/lexical/asi/0010` becomes `var f = ()` LF `=> 1`, which row EE0025 decides; `syntax/scripts/grammar/0004`
+  becomes `var f = switch => 1;`, which Broiler.JS accepts as P14 records. 13 test262 citations change or go where
+  the test asserted another source or rule, a note keeps its comma, and 31 vectors delimit a regular expression after
+  every punctuator revision 29 left out; of them, `regexp-delimiting/0083`, a prefix `--`, differs in both engines
+  under T24e. `REVISIONS.md`'s rows 29 and 30 list each change.
 
-**On revision 30** both engines were run again, as for revision 29, from scratch archives of `27139f9e` (Broiler.JS
-built again in a scratch tree of that commit). Broiler.VM classifies every difference, and no divergence field
-reports that it no longer holds. Broiler.JS classifies every difference but `syntax/lexical/asi/0009`, which
-revision 30 leaves unclassified, so this engine's corpus test fails on revision 30 until the correspondence answers
-it; its two zones' reports are byte for byte the same again. Each of the 33 rewritten vectors gives each engine the verdict its revision 29 form gave, but
+**On revision 30** both engines were run again, as for revision 29, from scratch archives of `535b9e34`, revision 30
+as corrected after review (Broiler.JS built again in a scratch tree of that commit), and the runs replace those on
+`27139f9e` *(revised 2026-10-27, after review; the paragraph read "both engines were run again, as for revision 29,
+from scratch archives of `27139f9e` (Broiler.JS built again in a scratch tree of that commit).", and went on as it
+does)*. Broiler.VM classifies every difference, and no divergence field reports that it no longer holds. Broiler.JS
+classifies every difference but `syntax/lexical/asi/0009`, which revision 30 leaves unclassified, so this engine's
+corpus test fails on revision 30 until the correspondence answers it; its two zones' reports are byte for byte the
+same again. Each of the 33 vectors rewritten for `source` gives each engine the verdict its revision 29 form gave, but
 `regexp-delimiting/0044`, which now matches in Broiler.VM; the two that differ (`t8/0002` in Broiler.VM,
-`regexp-delimiting/0048` in Broiler.JS) are classified under T8 and T24c. Each
-negative control is reported as the one more difference it should be.
+`regexp-delimiting/0048` in Broiler.JS) are classified under T8 and T24c. Of the vectors review rewrote and added,
+`t8/0001` differs in Broiler.VM (T8), `grammar/0004` in Broiler.JS (P14) and `regexp-delimiting/0083` in both (T24e),
+each classified, and every other matches in both. Each negative control is reported as the one more difference it
+should be. The runs read the corpus at `535b9e34`; no later commit of this change touches `conformance/vectors/`, so
+the corpus at the branch's head is the one they read *(added 2026-10-27, after review: the runs on `27139f9e` read a
+corpus that a later commit's rewording of `REVISIONS.md`'s row 29 changed)*.
 
 ## State
 
 **2026-10-26, at SJL-13.1: rules only. Nothing here is a verdict, and nothing has been taken.**
 
 *2026-10-27, at the `syntax` vectors:* they are written, corpus revisions 29 and 30, and both engines' first
-engine-level runs on them are taken and classified (the section above). None of those runs is a run of the rule's
+engine-level runs on them are taken, and classified but one difference (the section above) *(revised 2026-10-27,
+after review; read "are taken and classified (the section above)")*. None of those runs is a run of the rule's
 parts, and nothing here is a verdict; the line above stands for the rule's parts.
 
 - The vectors commit adds the `syntax` area to [`conformance/vectors/`](../../../conformance/vectors/README.md) at its
@@ -183,7 +224,8 @@ parts, and nothing here is a verdict; the line above stands for the rule's parts
   It is named here, by all forty digits, when the change that carries it has merged.
 
 The `syntax` vectors' commits on this change's branch are named in the section above: revision 29,
-`a532f41866a7ac080020d8b3c0c8c38907f9c546`, and revision 30, `27139f9e52fe68b86d25c590c6c3b6ac2052f062`. The vectors
+`a532f41866a7ac080020d8b3c0c8c38907f9c546`, and revision 30, `27139f9e52fe68b86d25c590c6c3b6ac2052f062`, as corrected
+after review by `535b9e3469a0d74a0c23244e3271c7853785f00c` *(the last clause added 2026-10-27)*. The vectors
 commit, the default-branch merge that carries them, is named here, by all forty digits, when that change has merged.
 No other commit is named yet. *(Revised 2026-10-27, at the `syntax` vectors; read "No other commit is named yet.")*
 

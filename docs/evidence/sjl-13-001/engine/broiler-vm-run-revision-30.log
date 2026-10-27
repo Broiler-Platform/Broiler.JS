@@ -1,7 +1,7 @@
-== run at Broiler.VM faa8af78cddc32d460a7299f088b18b9e4407d7a (a scratch tree written by git archive of that commit; its Release build, dotnet build src/compositions/Broiler.VM.Composition.JavaScript.Conformance -c Release --disable-build-servers), pin broiler-vm-revision-30.pin sha256=d635118baf5d58a488d2862c3b119620e27dc08d144195acebfeea0b126d9d5d (a scratch pin of git archive --format=tar.gz 27139f9e52fe68b86d25c590c6c3b6ac2052f062 -- conformance/vectors ':(exclude)conformance/vectors/controls'), start 2026-10-27T07:39:23Z
+== run at Broiler.VM faa8af78cddc32d460a7299f088b18b9e4407d7a (a scratch tree written by git archive of that commit; its Release build, dotnet build src/compositions/Broiler.VM.Composition.JavaScript.Conformance -c Release --disable-build-servers), pin broiler-vm-revision-30.pin sha256=e80c952921045a2eae3db038ffd315ea3e83fe215e1263712de41c20451e37f2 (a scratch pin of git archive --format=tar.gz 535b9e3469a0d74a0c23244e3271c7853785f00c -- conformance/vectors ':(exclude)conformance/vectors/controls'), start 2026-10-27T09:44:56Z
 == host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v165 x86_64; 4 logical CPUs; ICU: libicu74 74.2-1ubuntu3.1 (libicuuc.so.74, the only ICU installed), which .NET's globalization loads; dotnet 10.0.401, runtime 10.0.12
 == command: env -u LANG -u LANGUAGE TZ=UTC dotnet src/compositions/Broiler.VM.Composition.JavaScript.Conformance/bin/Release/net10.0/Broiler.VM.Composition.JavaScript.Conformance.dll --vectors vectors-rev30.tar.gz --expect broiler-vm-revision-30.pin --report broiler-vm-run-revision-30.tsv 
-broiler-js-conformance: vectors broiler-js-vectors Broiler-Platform/broiler.js@27139f9e52fe68b86d25c590c6c3b6ac2052f062 content sha256 18e87e9705e701b1278a01ebd09b585db3e3ca647767ebb2eea69a6295e8f90f over 69 files - retrieved and hashed, NOT archived
-broiler-js-conformance: 107326 vectors: 107264 match, 62 classified divergences, 0 unclassified differences
+broiler-js-conformance: vectors broiler-js-vectors Broiler-Platform/broiler.js@535b9e3469a0d74a0c23244e3271c7853785f00c content sha256 2da61eba364244955d26d3224549dd0e5332a9de2144f66191fde190ab0739fb over 69 files - retrieved and hashed, NOT archived
+broiler-js-conformance: 107357 vectors: 107294 match, 63 classified divergences, 0 unclassified differences
 exit code 0
-== end 2026-10-27T07:56:26Z
+== end 2026-10-27T10:04:01Z
