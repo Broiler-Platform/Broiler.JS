@@ -780,8 +780,10 @@ def lexical_asi() -> None:
         note="a semicolon inserted after a do-while statement's )")
     add(f, g, "do {}; while (false)", SE, corr=("P10",), clauses=C("sec-do-while-statement"),
         tests=T("test/language/asi/S7.9_A9_T8.js"), note="a statement between a do-while's body and while")
-    add(f, g, "for (var i = 0\ni < 1; i++) ;", SE, corr=("P16",), clauses=C(ASI), tests=T("test/language/asi/S7.9_A6.2_T1.js"),
-        note="no semicolon is inserted in a for statement's head")
+    # Row P16b, added to the correspondence on 2026-10-27 by the owner's decision D-asi (Broiler.VM's JSD-0083): row P16
+    # holds automatic semicolon insertion outside a for statement's head, and P16b the head, where Broiler.JS differs.
+    add(f, g, "for (var i = 0\ni < 1; i++) ;", SE, corr=("P16b",), clauses=C(ASI),
+        tests=T("test/language/asi/S7.9_A6.2_T1.js"), note="no semicolon is inserted in a for statement's head")
     add(f, g, "var f = ()\n=> 1", SE, rows=("EE0025",),
         clauses=C(ASI, "sec-arrow-function-definitions", "sec-grouping-operator-static-semantics-early-errors"),
         tests=T("test/language/expressions/arrow-function/syntax/early-errors/asi-restriction-invalid.js"),

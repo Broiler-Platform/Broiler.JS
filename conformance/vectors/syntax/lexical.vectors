@@ -2340,7 +2340,7 @@ op: ParseScript
 in: str:"var b = 2, g = 3; var x = function () {} /b/g; x"
 out: value: f64:0x7FF8000000000000
 class: divergence
-divergence.broiler-js: row T24b: after a `}` that closes an expression (object literal, function expression); Broiler.JS answers a regular expression where the specification reads a division; the row records P accepted and K refused ("Undefined binary operation RegExLiteral") for a regular expression followed by an operand, and with `;` after it the run completes with the left operand's value, no error; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
+divergence.broiler-js: row T24b: after a `}` that closes an expression (object literal, function expression); Broiler.JS answers a regular expression where the specification reads a division: followed by an operand, P accepted and K refused ("Undefined binary operation RegExLiteral"); where `;` or the end of input follows the literal, P and K accepted, and the program completes with the left operand's value, the object or the function, where the specification divides (NaN), the answer the row records since 2026-10-27 from a probe, which the owner's decision D-t24 of 2026-10-27 accepts; a correction of Broiler.JS (JSD-0083), the answer added 2026-10-27 of the same class (D-t24); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: var b = 2, g = 3; var x = function () {} /b/g; x
 note: correspondence row T24b: accepted, after } of a function expression a / is division
@@ -2352,7 +2352,7 @@ op: ParseScript
 in: str:"var b = 2, g = 3; var x = {} /b/g; x"
 out: value: f64:0x7FF8000000000000
 class: divergence
-divergence.broiler-js: row T24b: after a `}` that closes an expression (object literal, function expression); Broiler.JS answers a regular expression where the specification reads a division; the row records P accepted and K refused ("Undefined binary operation RegExLiteral") for a regular expression followed by an operand, and with `;` after it the run completes with the left operand's value, no error; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
+divergence.broiler-js: row T24b: after a `}` that closes an expression (object literal, function expression); Broiler.JS answers a regular expression where the specification reads a division: followed by an operand, P accepted and K refused ("Undefined binary operation RegExLiteral"); where `;` or the end of input follows the literal, P and K accepted, and the program completes with the left operand's value, the object or the function, where the specification divides (NaN), the answer the row records since 2026-10-27 from a probe, which the owner's decision D-t24 of 2026-10-27 accepts; a correction of Broiler.JS (JSD-0083), the answer added 2026-10-27 of the same class (D-t24); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: var b = 2, g = 3; var x = {} /b/g; x
 note: correspondence row T24b: accepted, after } of an object literal a / is division
@@ -2414,8 +2414,8 @@ op: ParseScript
 in: str:"var await = 6, b = 2, g = 3; await /b/g"
 out: value: f64:0x3FF0000000000000
 class: divergence
-divergence.broiler-js: row T24f: a division after `await` used as an identifier in a Script; Broiler.JS answers a regular expression, which the parser takes as a binary operator (as T24b); the row records P accepted and K refused for one followed by an operand, and with nothing after it the run completes with `await`'s value, no error; a correction of both (JSD-0083); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
-divergence.broiler-vm: row T24f: a division after `await` used as an identifier in a Script; Broiler.VM answers refused: Await falls to a regular expression; a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
+divergence.broiler-js: row T24f: a division after `await` used as an identifier in a Script; Broiler.JS answers a regular expression, which the parser takes as a binary operator (as T24b): followed by an operand, P accepted and K refused; where `;` or the end of input follows the literal, P and K accepted, and the program completes with `await`'s value (6) where the specification divides (1), the answer the row records since 2026-10-27 from a probe, which the owner's decision D-t24 of 2026-10-27 accepts; a correction of both (JSD-0083), the answer added 2026-10-27 of the same class (D-t24); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
+divergence.broiler-vm: row T24f: a division after `await` used as an identifier in a Script; Broiler.VM answers refused: Await falls to a regular expression, and where `;` or the end of input follows the literal too, refused 2102 at the regular expression (1:36), an answer the row records since 2026-10-27 from a probe (decision D-t24); a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: var await = 6, b = 2, g = 3; await /b/g
 note: correspondence row T24f: accepted, after await used as an identifier in a Script a / is division (a correction of both engines; Broiler.VM's at step 1)
@@ -2858,10 +2858,11 @@ area: syntax
 op: PerformEval
 in: str:"for (var i = 0\u000Ai < 1; i++) ;"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P16b: automatic semicolon insertion in a for statement's head (no semicolon is inserted where it would become one of the head's two semicolons, ES2026 12.10.1), added to the correspondence on 2026-10-27 by the owner's decision D-asi; Broiler.JS answers, after a `var`, `let` or `const` declaration, P and K accepted, and the loop runs as though the `;` were written: the initialiser's Expression ends at the line break, Parameters ends the declarator list without reading the `;`, and ForStatement reads the test with no check that the head's first `;` was read (after an expression, and where the second `;` belongs, refused); a correction of Broiler.JS (JSD-0083, decision D-asi); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45, whose K10 rows include P16b by JSD-0083's note of 2026-10-27)
 prov: spec:es2026@0248456c#sec-rules-of-automatic-semicolon-insertion test262:test/language/asi/S7.9_A6.2_T1.js
 script: eval("for (var i = 0\u000ai < 1; i++) ;")
-note: correspondence row P16: refused, no semicolon is inserted in a for statement's head
+note: correspondence row P16b: refused, no semicolon is inserted in a for statement's head
 since: 29
 
 id: syntax/lexical/asi/0010
