@@ -42,7 +42,7 @@ import numref as R  # noqa: E402
 # which retired them, nor revision 24, which added the Temporal area, which generate_temporal_vectors.py writes,
 # and widened the schema's provenance, nor revision 25, which classified its differences, nor revision 26, which
 # retired them).
-CORPUS_REVISION = 28
+CORPUS_REVISION = 29
 FIRST_REVISION = 1
 GENERATOR = "ref:numref@1"
 SPEC = "spec:es2026@0248456c"

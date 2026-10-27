@@ -46,7 +46,7 @@ from generate_number_vectors import js_string_literal, splitmix64, string_value 
 # revision 23, which retires them, nor revision 24, which adds the Temporal area (generate_temporal_vectors.py) and
 # widens the schema's provenance, nor revision 25, which classifies its differences, nor revision 26, which retires
 # them.
-CORPUS_REVISION = 28
+CORPUS_REVISION = 29
 FIRST_REVISION = 14
 OUTSIDE_FORMAT_REVISION = 16
 GENERATOR = "ref:dateref@1"
