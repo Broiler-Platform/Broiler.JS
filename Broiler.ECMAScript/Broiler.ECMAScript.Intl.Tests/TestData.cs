@@ -91,3 +91,35 @@ internal sealed class HomeDataSet : IIntlDataSet
         return name.Append(text ? ".txt" : ".bin").ToString();
     }
 }
+
+/// <summary>
+/// The shared time zone database over the time data home's tables as committed, <c>Broiler.ECMAScript/data/time/generated/</c>:
+/// what an engine hands TimeZonesOfLocale and <c>Intl.supportedValuesOf("timeZone")</c>.
+/// </summary>
+internal static class HomeTimeZones
+{
+    private static readonly Lazy<Time.TimeZoneDatabase> Instance = new(Load);
+
+    internal static Time.TimeZoneDatabase Current => Instance.Value;
+
+    private static Time.TimeZoneDatabase Load()
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            var generated = Path.Combine(directory.FullName, "Broiler.ECMAScript", "data", "time", "generated");
+            if (!File.Exists(Path.Combine(generated, "tables.manifest")))
+                continue;
+
+            var release = File.ReadAllLines(Path.Combine(generated, "tables.manifest"))
+                .Select(static line => line.Split(' '))
+                .Single(static fields => fields.Length == 2 && fields[0] == "tzdb-release")[1];
+            return new Time.TimeZoneDatabase(
+                release,
+                File.ReadAllBytes(Path.Combine(generated, "time-zones.bin")),
+                File.ReadAllBytes(Path.Combine(generated, "time-zone-ids.txt")),
+                File.ReadAllBytes(Path.Combine(generated, "time-zone-regions.txt")));
+        }
+
+        throw new DirectoryNotFoundException("no Broiler.ECMAScript/data/time/generated/tables.manifest above " + AppContext.BaseDirectory);
+    }
+}

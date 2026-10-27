@@ -13,15 +13,15 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 113 |
+| Files scanned | 119 |
 | Files not covered | 0 |
-| Files carrying an annotation | 113 |
-| Code units | 2029 |
-| Relevant | 1513 |
-| Exempt by predicate | 516 |
-| Annotated | 1513 of 1513 (100%) |
-| Human reviewed | 0 of 1513 (0%) |
-| Unverified | 1513 |
+| Files carrying an annotation | 119 |
+| Code units | 2164 |
+| Relevant | 1609 |
+| Exempt by predicate | 555 |
+| Annotated | 1609 of 1609 (100%) |
+| Human reviewed | 0 of 1609 (0%) |
+| Unverified | 1609 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1513 |
+| HUMAN_PENDING | 1609 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 516 |
+| EXEMPT | 555 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 1510 |
+| Low | 1606 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,9 +51,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 874 |
-| Medium | 468 |
-| High | 150 |
+| Low | 949 |
+| Medium | 482 |
+| High | 157 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.2 / 10 |
-| Units scored | 1513 |
+| Units scored | 1609 |
 
 ## High-security review areas
 
@@ -215,6 +215,13 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.Resolve<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.ResolveValue<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.IntlTableText.Unescape(string)` in `Broiler.ECMAScript.Intl/IntlTableText.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.LocaleInfo.Collations(LocaleRecord, ICollatorLocaleData, string)` in `Broiler.ECMAScript.Intl/LocaleInfo.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.LocaleNegotiation.ResolveLocale(LocaleMatch, IReadOnlyList<RelevantKey>, ILocaleData)` in `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.LocaleNegotiation.ResolveLocale(IReadOnlyList<string>, IReadOnlyList<string>, string, IReadOnlyList<RelevantKey>, ILocaleData, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.LocaleRecord.TryCreate(string, LocaleOptions, ILocaleData, out LocaleRecord?, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleRecord.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.LocaleTag.Parse(string)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.LocaleTag.Canonicalize(ILocaleData)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.LocaleTag.CanonicalType(ILocaleData, string, string)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadNumbers()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadDates()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, human line PENDING
 
@@ -222,8 +229,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 150 |
-| Units required to carry one | 150 |
+| Units carrying a criterion | 157 |
+| Units required to carry one | 157 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -244,13 +251,13 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 108 |
+| TrivialPropertyOrAccessor | 129 |
 | ParameterAssigningConstructor | 13 |
-| TrivialExpressionBodiedMember | 31 |
-| CompilerSuppliedRecordOrEnumMember | 35 |
+| TrivialExpressionBodiedMember | 32 |
+| CompilerSuppliedRecordOrEnumMember | 50 |
 | DelegatingOverrideOrOperator | 3 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 79 |
+| FieldDeclaringStorage | 81 |
 | EnumMemberOfADeclaredVocabulary | 247 |
 | DeclaredInSource | 0 |
 
@@ -275,14 +282,14 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 4 covered assemblies -
-2029 of them, exempt and relevant alike - with the fingerprint of its declaration.
+2164 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
 trivial is no longer invisible: a semantic change to one moves a value in a generated file
 the check compares byte for byte. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` holds the manifest to the tree.
 
-Beside the units it lists **every covered file** - 113 of them - with a
+Beside the units it lists **every covered file** - 119 of them - with a
 fingerprint over the complete token stream of its compilation unit. A unit entry exists only
 for a declaration kind the scanner enumerates, and an enumeration is a whitelist: an
 `[assembly: ...]` attribute is a member of nothing and can be in no unit at all.
