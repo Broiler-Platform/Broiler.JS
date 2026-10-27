@@ -38,6 +38,7 @@
     <Compile Include="..\runners\AlgorithmsLibrary.Date.cs" Link="AlgorithmsLibrary.Date.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.TimeZones.cs" Link="AlgorithmsLibrary.TimeZones.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.Temporal.cs" Link="AlgorithmsLibrary.Temporal.cs" />
+    <Compile Include="..\runners\AlgorithmsLibrary.Intl.cs" Link="AlgorithmsLibrary.Intl.cs" />
     <Compile Include="..\runners\TemporalAdapter.cs" Link="TemporalAdapter.cs" />
     <Compile Include="..\runners\TemporalAdapter.Methods.cs" Link="TemporalAdapter.Methods.cs" />
     <!-- Rule SL7 regenerates the time data home's tables with the generator, which reads no file itself. -->

@@ -81,8 +81,9 @@ internal sealed partial class AlgorithmsLibrary
             return "error: TypeError";
         }
 
+        // NOT A TEMPORAL OPERATION: the Intl area's sub-area (a) is the last the chain asks (milestone SJL-9.3a).
         if (answer is NotTemporal)
-            return EmptyLibrary.NotImplemented;
+            return IntlArea(operation, inputs);
 
         reader.End(operation);
         return answer switch
