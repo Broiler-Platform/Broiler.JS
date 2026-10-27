@@ -1,0 +1,56 @@
+bucket	rows-negative	rows-other	resolution-other
+D:JS over-refuses (duplicate parameters, sloppy async or generator)	-	D42	correction: sloppy accepted; the strict variant refused by the duplicate-parameter rows
+D:early-error JS misses (EE0003)	D39	-	-
+D:early-error JS misses (EE0006;EE0007;EE0008;EE0009)	D37	-	-
+D:early-error JS misses (EE0006;EE0007;EE0008;EE0009;EE0087;EE0155;EP0003;EX0008;EX0009)	D37	-	-
+D:early-error JS misses (EE0006;EE0007;EE0008;EE0009;EE0087;EE0155;EX0008)	D37	-	-
+D:early-error JS misses (EE0006;EE0007;EE0140;EX0008;EX0023)	D37	-	-
+D:early-error JS misses (EE0006;EE0007;EX0008)	D37	-	-
+D:early-error JS misses (EE0010;EE0011;EE0012;EE0013;EE0014)	D33	-	-
+D:early-error JS misses (EE0012)	D37	-	-
+D:early-error JS misses (EE0028;EE0029;EG0008)	D39	-	-
+D:early-error JS misses (EE0030;EE0031)	D34	-	-
+D:early-error JS misses (EE0033;EE0034;EE0035;EE0039;EG0008)	D39	-	-
+D:early-error JS misses (EE0036;EE0039)	D39	-	-
+D:early-error JS misses (EE0040;EE0062;EE0078;EE0133;EE0160;EE0168;EG0004)	D35	-	-
+D:early-error JS misses (EE0041;EE0063;EE0079;EE0134;EE0161;EE0168;EE0169)	D35	-	-
+D:early-error JS misses (EE0042;EE0055;EP0001;EP0004)	D39	-	-
+D:early-error JS misses (EE0045;EE0046;EE0047;EE0048;EE0049;EE0050;EE0052;EE0060;EE0061)	D36	-	-
+D:early-error JS misses (EE0051;EE0056)	D35	-	-
+D:early-error JS misses (EE0054;EG0008)	D39	-	-
+D:early-error JS misses (EE0064;EG0003;EG0005;EX0008)	D36	-	-
+D:early-error JS misses (EE0066)	D35	-	-
+D:early-error JS misses (EE0073;EE0086;EE0089;EE0092;EE0096;EE0100;EE0110;EE0114;EE0144;EE0149;EE0154;EE0158)	D39	-	-
+D:early-error JS misses (EE0083;EE0094;EE0101;EE0107;EE0115;EE0156)	D38	-	-
+D:early-error JS misses (EE0084;EE0108;EE0116;EE0143;EE0146;EE0157)	D38	-	-
+D:early-error JS misses (EE0130;EE0138)	D39	-	-
+D:early-error JS misses (EE0132)	D39	-	-
+D:early-error JS misses (EX0025)	D39	-	-
+D:early-error JS misses (strict reserved word or static-block await)	-	D37	correction: refused by the rows of Broiler.VM's code
+D:early-error JS misses (super property in a non-method function)	-	D41	semantics-only: the super-property rows are `semantics`
+D:stage-E (JS checks it in its compiler)	D31	D31	stage: the catalogue row Broiler.JS's compile-stage message names; refused if `syntax`, either if `semantics`
+P02	-	P02	correction: Broiler.JS refuses `using` and `await using` at a module's top level, which the Module goal admits; accepted
+P04	-	P04	json-as-script: read under the Script goal
+P05	-	P05b	engine-row EX0021: Broiler.VM's lowering refuses an import attribute it cannot honour; accepted
+P06a	P06a	P06a	proposal: the import phases' call forms; refused in V, accepted in J
+P07	P07	-	-
+P09	P09	-	-
+P10	P10	-	-
+P11	P11	-	-
+P12	P12	-	-
+P13	-	P13	correction: `~` is unary only; refused
+P14	P14	-	-
+P15	P15a	P15b;D49	correction: a parenthesised nested destructuring target that is not simple; refused
+P18	P18	-	-
+P19	-	P19	proposal: decorators; refused in V, accepted in J
+P20	-	P20	proposal: auto-accessors; refused in V, accepted in J
+P21	P21	-	-
+P22	P22	-	-
+P23	P23	-	-
+P24	P24	-	-
+P34	-	P34	module-graph: accepted
+P36	-	P36	tool: entry K has no module record; accepted
+R:engine-kept-format-ceiling	-	R34	engine-row: a format ceiling of Broiler.VM's lowering; accepted
+R:nesting-and-tree-depth	-	R12;R13	limit: refused in V; accepted in J, where a refusal past the bound is outcome L
+R:regexp-validator	R18;R20	R18	provider: each configuration takes its engine's validator (R19, or R20)
+R:top-level-await-at-K	-	R04	tool: entry K has no top-level await; accepted

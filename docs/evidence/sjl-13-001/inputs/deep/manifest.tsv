@@ -1,0 +1,61 @@
+# Bundle sjl-13-001 (Broiler.JS), rule part G: the deep-nesting corpus. Written by
+# scripts/frontend/write_home_inputs.py; never edited by hand. inputs/README.md states the measure.
+# One row per source and nesting parameter; every source is a Script, parsed alone, in configuration V's
+# request with the row's nesting parameter.
+#% format	sjl-13-001-deep	1
+#% tree-depth-bound	10000
+id	file	shape	kind	goal	nesting-parameter	levels	charge	expect	sha256
+G001	brackets-62.js	brackets	nesting	script	64	62	64	accepted	7c94c6ee1b41370ffe469bf3df850e00c452af9b99feafcec85dd19bb63dc9ae
+G002	brackets-63.js	brackets	nesting	script	64	63	65	refused	70c114b2e42b434e18b2fc70663b6b6923271dbb3d4c165871a3bfb73345c367
+G003	brackets-100000.js	brackets	nesting	script	64	100000	100002	refused	eb3a6e9dbaff012904dacdd6afc756645b0ccfbbeafd397eae693233104d0eca
+G004	parentheses-62.js	parentheses	nesting	script	64	62	64	accepted	b2bec5866c0871540eebcf16f0dfd05b9372eb0c250ca3574ffef6a601831227
+G005	parentheses-63.js	parentheses	nesting	script	64	63	65	refused	7e7e6e7ea63b6e41058db08bb4666a07c8bc56c892a280a1f108d87e09a0e974
+G006	parentheses-100000.js	parentheses	nesting	script	64	100000	100002	refused	734a5730e78bba5896284371a541ae82b40e8f9bc4acb25fe01f1b9184ac9eba
+G007	templates-62.js	templates	nesting	script	64	62	64	accepted	81476a555190aed4baa4e6b60ffa2e6d0a9d810c6b06ebba287ebf327d04710d
+G008	templates-63.js	templates	nesting	script	64	63	65	refused	0fe500a904bcf872223e156fa3e5f52c2f380f7c40529925036b605efb9c7b16
+G009	templates-100000.js	templates	nesting	script	64	100000	100002	refused	2749a7667c3088c950501c603fafe40990272daec32360e57e23258f8d3317fa
+G010	blocks-64.js	blocks	nesting	script	64	64	64	accepted	94024911085fcf2297eb45c734979102d26bd6b7247a37258fd4ce07a4ab5e98
+G011	blocks-65.js	blocks	nesting	script	64	65	65	refused	17d398f8919a5ea17df5cd403ecc9511fda88852b78e7a97a76d809f27de3815
+G012	blocks-100000.js	blocks	nesting	script	64	100000	100000	refused	523c2d840bb90e016c20a131546ff396263e0f2162d90c404942c06fe0ad6bca
+G013	functions-64.js	functions	nesting	script	64	64	64	accepted	8a21f84afce48136d413649884fb17ad601719e99c11f3a2e0af66551943fb7c
+G014	functions-65.js	functions	nesting	script	64	65	65	refused	d7358b652c906801ca62bc8934c7f817f343ddc24fa02f80ee9f92987db37d1d
+G015	functions-100000.js	functions	nesting	script	64	100000	100000	refused	2b09f9f1dfab8b6ce24272d493ad6f57e6360b9b662e0e40155d6b9dd789577d
+G016	substitutions-31-30.js	substitutions	nesting	script	64	61	64	accepted	0873b39f81519d1c21b1e1d0c44dd949cc6c5af0cd85c68782f18546520bbbba
+G017	substitutions-31-31.js	substitutions	nesting	script	64	62	65	refused	f5ae048c292d50e2c961d5b719bc24218b39b72e284b795a6414093945f53fb6
+G018	substitutions-50000-50000.js	substitutions	nesting	script	64	100000	100003	refused	15b3f6a578735435ea6a70a3141db76ae2f0ee16a0bd4c8915a97a73d0e76049
+G019	brackets-510.js	brackets	nesting	script	512	510	512	accepted	b76b28d1ed56e90147a8b7439cc813a8fe6d3fe30aac78184808c7eccd61d471
+G020	brackets-511.js	brackets	nesting	script	512	511	513	refused	82076090a61fce33aea9870aaadc24d060da339844acc30e95dadb1b5159ce69
+G021	brackets-100000.js	brackets	nesting	script	512	100000	100002	refused	eb3a6e9dbaff012904dacdd6afc756645b0ccfbbeafd397eae693233104d0eca
+G022	parentheses-510.js	parentheses	nesting	script	512	510	512	accepted	dcb2e88e400daf22b844dc06827e3e9bdb07a62a44d8259f49e52173f167475a
+G023	parentheses-511.js	parentheses	nesting	script	512	511	513	refused	5299bbd551e4000268427048b725e0c3247994332f7047112489efd2e4166649
+G024	parentheses-100000.js	parentheses	nesting	script	512	100000	100002	refused	734a5730e78bba5896284371a541ae82b40e8f9bc4acb25fe01f1b9184ac9eba
+G025	templates-510.js	templates	nesting	script	512	510	512	accepted	318ee7978edf8d491fb3265ddee43f511e0991f7035835b6c79cc61ba544185b
+G026	templates-511.js	templates	nesting	script	512	511	513	refused	cb24d3fbf451675b00b45d057fd358a0d4634e476f3cef9f853197211881c45e
+G027	templates-100000.js	templates	nesting	script	512	100000	100002	refused	2749a7667c3088c950501c603fafe40990272daec32360e57e23258f8d3317fa
+G028	blocks-512.js	blocks	nesting	script	512	512	512	accepted	b0fe0dc99c8a8d96c06c5e2ec5f3047d173ba9a3e2b724af3a8a88f150214d3c
+G029	blocks-513.js	blocks	nesting	script	512	513	513	refused	b0de9991d1c26d208b67bc3607e2e91828dae56da7fad7f93f9be2a1f72039b6
+G030	blocks-100000.js	blocks	nesting	script	512	100000	100000	refused	523c2d840bb90e016c20a131546ff396263e0f2162d90c404942c06fe0ad6bca
+G031	functions-512.js	functions	nesting	script	512	512	512	accepted	1233177903093f010fc365df4551639f0e00532d1dbaf92f55338191e1d6d69f
+G032	functions-513.js	functions	nesting	script	512	513	513	refused	ead174527b4f85ee350c58f162746c4dc46ccfe00cec6fce8561d184486bfbd7
+G033	functions-100000.js	functions	nesting	script	512	100000	100000	refused	2b09f9f1dfab8b6ce24272d493ad6f57e6360b9b662e0e40155d6b9dd789577d
+G034	substitutions-255-254.js	substitutions	nesting	script	512	509	512	accepted	675c8d26dc9ed7f23fa02a800f95a918e508080df131b78148a862e115141515
+G035	substitutions-255-255.js	substitutions	nesting	script	512	510	513	refused	84048ec2988fb47b68816d47b53b9351c53de9f2807423f71b51bafd42cf1a9c
+G036	substitutions-50000-50000.js	substitutions	nesting	script	512	100000	100003	refused	15b3f6a578735435ea6a70a3141db76ae2f0ee16a0bd4c8915a97a73d0e76049
+G037	binary-chain-10000.js	binary-chain	tree-depth	script	64	10000	10000	accepted	943903c8e1fd979ce08a87de41e4c20e454ac3beaee0710876994fb6aa56a720
+G038	binary-chain-10001.js	binary-chain	tree-depth	script	64	10001	10001	refused	1d7e52b843c047dd5a425d78cf500389f1205cec2fae3ed9c0afb703e97cb662
+G039	binary-chain-100000.js	binary-chain	tree-depth	script	64	100000	100000	refused	791da840e54d35253e1812c08ebec65187270821263fd736437c9b9e95d8ec14
+G040	member-chain-10000.js	member-chain	tree-depth	script	64	10000	10000	accepted	a57def8497f7a98953c173c1e6b5fb261792edc322f925dcf267e0d17d4be9fa
+G041	member-chain-10001.js	member-chain	tree-depth	script	64	10001	10001	refused	911fe14102a3bbd159b20d5be71307610ad5c8d1da3f590d1230aafffbdccc5b
+G042	member-chain-100000.js	member-chain	tree-depth	script	64	100000	100000	refused	ff3908ee0c72eb60475887ae77a8ae79a87c8603c4cf9eabdc4a9ec3496c8394
+G043	left-parenthesised-chain-5000-5000.js	left-parenthesised-chain	tree-depth	script	64	10000	10000	accepted	21d412022e4bdff1a08d8c069119bc95611d50bb408243db161442493c9e2243
+G044	left-parenthesised-chain-5000-5001.js	left-parenthesised-chain	tree-depth	script	64	10001	10001	refused	9007349cd605a66fda984a22c5a7ad32d1464724dc2e3f2fe2da7d81f1f2d5cb
+G045	left-parenthesised-chain-50000-50000.js	left-parenthesised-chain	tree-depth	script	64	100000	100000	refused	e2aca6de921ff13763a96aa5c9b2aa099829870c8ba7c179e3a778a87aac8d1a
+G046	left-template-chain-5000-5000.js	left-template-chain	tree-depth	script	64	10000	10000	accepted	9dada65f595bbbd8e337d097a7405d855db141b6b6ba36adbe3477981d7faaf0
+G047	left-template-chain-5000-5001.js	left-template-chain	tree-depth	script	64	10001	10001	refused	fa474334f0bdd370ea1ee73703ed8719df2b9262361ac9be163a06fc54098531
+G048	left-template-chain-50000-50000.js	left-template-chain	tree-depth	script	64	100000	100000	refused	919981ec0b97619698163d27d9a917bc0cf49591beaaa96b6cefca67aa0e66b0
+G049	left-member-chain-5000-5000.js	left-member-chain	tree-depth	script	64	10000	10000	accepted	9868ad0e686034a2e583fe6f7589597dec30132bb860a2c19641c830502425c7
+G050	left-member-chain-5000-5001.js	left-member-chain	tree-depth	script	64	10001	10001	refused	4f190dc8161bd1361124c789c9854b89c0d35f8c1bf630dbe398a632a3f28b63
+G051	left-member-chain-50000-50000.js	left-member-chain	tree-depth	script	64	100000	100000	refused	72e5b24371b550bc47b11a3da29d01f9b9fada4399a9fca08070e26e0f401df0
+G052	object-parenthesised-chain-5000-5000.js	object-parenthesised-chain	tree-depth	script	64	10000	10000	accepted	fc8b6b4545b35d2400e1a3fcd70121f754c67bcfca58f912575bb78e0ed7c8d8
+G053	object-parenthesised-chain-5000-5001.js	object-parenthesised-chain	tree-depth	script	64	10001	10001	refused	a7e43f4795d628587b7bf0468d0d296c49305a4bc35c07fb8001c69e452fb9a5
+G054	object-parenthesised-chain-50000-50000.js	object-parenthesised-chain	tree-depth	script	64	100000	100000	refused	1b46d0d7af692d8a77a911c2c97dc3335c6e7bce854f6606e1a0fbbd872aaf22

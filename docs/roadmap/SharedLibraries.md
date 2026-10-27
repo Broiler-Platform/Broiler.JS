@@ -1758,6 +1758,193 @@ None of it is accepted: no second holder exists to review it. Broiler.VM's claus
 the same name, and SJL-9 may not meet its gate before SJL-7 and SJL-8 meet theirs, and so not before SJL-3 meets
 SJL-3's.
 
+**The frontend's syntax half (SJL-13.1), filed 2026-10-26: all five sub-areas accepted, the library's shape and its
+request decided, the stage table and the classification filed, and the owner's decisions of 2026-10-26 recorded.**
+- **The records.** Broiler.VM's record is
+  `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0083-the-shared-syntax-library-and-the-wide-path.md`
+  (JSD-0083), decided on 2026-10-26. It states each condition of the extraction gate for the five sub-areas, each on its
+  own (decision D4): T, the tokenizer; P, the parser and its tree; N, positions; D, diagnostics and the parse-time
+  early errors; and R, the request, its switches, limits and providers. They are one library, so a refusal of any
+  would have been a refusal of SJL-13. It reads ADR 0011's standing refusal of "a shared syntax tree or parser" through
+  ADR 0014's scope reading and decision SJL-D-8, since this is the first library that is literally one (decision D5).
+  It is the frontend's one area verdict: it covers this engine's front end too, which SJL-14 moves onto the library.
+- **Its input** is `Broiler.VM/docs/evidence/sjl-13-001/correspondence.md`, the correspondence from code. It read this
+  repository at `d6795fc8` and Broiler.VM at `4cf9ca4`, whose product code is SJL-12's after commit `1de3af6`'s, with
+  the early-error catalogue (SHA-256 `7a9109b0db685df98a7327cd95b9337cc538337f834fe4f22692b249058aa4f1`), the parse
+  corpus and both engines' SJL-12 after baselines. Every row whose answer no retained run held was probed in both
+  engines, this engine's through the shell and SJL-12's parse-corpus tool (entries P and K). This repository's default
+  branch moved to `8a95076c` (#1079) while it was written; #1079 changes only the for-loop pass, for a labelled C-style
+  `for (using …)` or `for (await using …)` loop, and no row's answer can differ there. Every behavioural difference is
+  classified, none as unknown, and what the rows do not settle is handed on by name (its hand-offs H1 to H24). Every
+  probe and answer is retained beside it.
+- **SJL-13 started at the owner's words of 2026-10-25**, "Continue with the remaining SJL milestones", which the
+  programme's ledger reads in its SJL-13.0 entry, in Broiler.VM's own change for SJL-13.1, as the choice to start
+  SJL-13; SJL-14 and SJL-15 file their own start entries, reading the same words the same way. That is a reading of the owner's words, not a
+  decision taken under the direction below (decision D1). SJL-13 may not meet its gate before SJL-12, SJL-3 and SJL-7
+  meet theirs.
+- **The owner's direction.** On 2026-10-18 the owner wrote: "Please do all recommended decisions and skip waiting for
+  review." Each decision SJL-13's plan left open is taken as it recommends, D2 to D39. The correspondence's findings F1
+  to F32 and the stage table's four items are answered by revisions of D7, D10 to D18, D20, D21, D23, D25, D26, D28 and
+  D39, and of D41 and D44 to D47, which bind SJL-14 and which this plan's SJL-14 section records at SJL-14.1, each
+  quoting the text it replaces, or recorded where they ask for no decision. JSD-0083 records them all as the owner's
+  decisions of 2026-10-26. Decision D48, on SJL-14's clause 6, and each publication stay the owner's own choices.
+  **It changes no rule**: nothing is accepted without review, and the gate waits as above. In this record a decision
+  is "decision Dn", JSD-0083's, and a row of the correspondence "row Xn". This record carries decisions D6 to D17, D25,
+  D26 and D28, as revised.
+
+This repository's part of it:
+- **The sub-area verdicts.** Conditions X1 to X7, as JSD-0083 states them for each of T, P, N, D and R:
+  - **X1**: both engines implement every sub-area in merged code: this engine's `FastScanner`, `FastParser` and its
+    scope check `FastScopeItem.AddVariable`, with `SyntaxValidation` and the compiler's other early-error checks for
+    the rows the stage table says it checks only in its compiler; Broiler.VM's `SliceTokenizer`'s wide members,
+    `JsParser` and its binder's checks;
+  - **X2**: the correspondence compares them at the heads above, against ECMA-262's ES2026 edition at
+    `tc39/ecma262@0248456c`, test262 `ccaac100` and the catalogue's digest, and classifies every difference;
+  - **X3**: the contract is neutral: no engine type, the providers and limits parameters of the request, and an
+    optional `WorkCharge` (decision D32);
+  - **X4**: the library references `Broiler.ECMAScript.Algorithms` and `Broiler.Unicode.Algorithms` only, and
+    neither engine (rule SL1), with no `Broiler.Regex` edge (decisions D6 and D7);
+  - **X5**: no `System.Text.RegularExpressions`, no culture and no ambient state in the library, and Broiler.VM admits
+    it for its compiler only, out of its compiler-free roots;
+  - **X6**: each engine's deletion list. This engine's is SJL-14's: SJL-14.5's list as decision D41 reads it,
+    completed member by member by a dated note on JSD-0083 at SJL-14.1, from that milestone's `dispositions.md`.
+    Broiler.VM's is `JsParser`, its tokenizer's wide-only members, its binder's `CheckRegExp` and every binder check of
+    a row the stage table assigns `syntax`, at its step 1, and `JsSyntax` with its adapter at its step 2 (decision
+    D20);
+  - **X7**: the owners accept. One person holds every role (Broiler.VM's EX-30).
+- **The library** (decision D6). `Broiler.ECMAScript.Frontend`, project and package, in
+  `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` with `Broiler.ECMAScript.Frontend.Tests/`; the namespaces
+  `Broiler.ECMAScript.Syntax` (the request, the tokenizer, the tree, the parser and the diagnostics) and
+  `Broiler.ECMAScript.Semantics` (the declarations walk now, SJL-15's model later); SL1's layering row
+  `Frontend → [Algorithms, Broiler.Unicode.Algorithms]`; a `PublicAPI.txt`; assurance from its first commit; and
+  `IsPackable` false until SJL-13.2's done-when. **`Broiler.ECMAScript.Algorithms` does not change at SJL-13**, not
+  even by an added member (decision D9): a helper the library needs is internal to it. This engine references
+  `Algorithms` by project, so any change to it is a product change here, and SJL-13 has no cut-over here to carry one.
+  The home's design document,
+  [`Broiler.ECMAScript/docs/frontend/design.md`](../../Broiler.ECMAScript/docs/frontend/design.md), revised at SJL-13.1,
+  gives the names, the request and the result.
+- **The request** (decisions D7, D8, D16, D17 and D32, as revised):
+  - **providers**: Broiler.Unicode's `IUnicodeTables`, required, with no default, through which this engine passes
+    its own tables; a regular-expression validator interface, with no package edge, through which each engine
+    supplies its own validator, this engine's at SJL-14, answering valid, or invalid with the failing condition's
+    message identifier where the validator can tell it and EE0019's `regexp.literal.invalid` where it cannot; and an
+    optional `WorkCharge`, which both engines pass as null at SJL-13;
+  - **goals**: Script, Module, eval code, and the dynamic function's parameters and body;
+  - **switches**: forced strictness; Annex B, on for scripts; HTML-like comments by goal; and top-level `await`, which
+    applies to whichever goal a request sets it for: this engine sets it for a module, and for a script whose top
+    level may await (its `ScriptWithTopLevelAwait` preset, `JSContext.EvalWithTopLevelAwaitAsync` and the shell's
+    retry); Broiler.VM sets it for a module only;
+  - **the inherited context of eval code**: strictness and the function, method, derived-constructor and
+    field-initialiser flags; an optional set of visible private names, whose absence leaves that check to the engine;
+    and **no caller's lexical names at SJL-13 or SJL-14**: the conflict they serve is EvalDeclarationInstantiation's,
+    a run-time `SyntaxError` each engine raises today (row R28), until SJL-15's model;
+  - **proposal flags**, off by default and **one per form**, each its own catalogue row: decorators, auto-accessors,
+    and the import phases' declaration forms `import source x from` and `import defer * as ns from` (EP0011, EP0013)
+    and call forms `import.source(…)` and `import.defer(…)` (EP0012, EP0014). This engine's configuration turns on the
+    forms it parses today, decorators, `accessor` and the two call forms, and no other (rows R09 and P06b);
+  - **the lexer extension**, the only way this engine's `m` suffix reaches the library; its `Decimal` meaning stays
+    here (SJL-D-17). Broiler.VM passes none.
+- **What the syntax half reports** (decision D10, as revised: the union). The grammar, and every early error either
+  engine's parser reports at parse time today, Broiler.VM's `JsParser` family and this engine's
+  `FastScopeItem.AddVariable` and its parser's other checks, through a declarations walk in
+  `Broiler.ECMAScript.Semantics`, with a regular-expression literal's validity asked of the provider. The walk exposes
+  side tables ordered by source position (each scope's kind and its declarations, each block-level function
+  declaration with whether it is an `if` clause's, each function's parameter names, and each program's and function's
+  strictness), so that neither engine computes them again. The catalogue's engine-only rows are sorted by their kind:
+  - Grammar rows and the contract's two limits, nesting and tree depth, are the library's;
+  - a Policy row governed by a switch the request already has is applied by the library: EX0023, top-level `await`,
+    where with the switch off a top level is read as a non-async function's body of the same goal, so the row has no
+    diagnostic of its own;
+  - every other Policy or Limit row stays with its engine, and the library never reports it, EX0021 among them, an
+    import attribute the host cannot honour, which this engine's bridge refuses at SJL-14 as its parser does today.
+
+  Everything else stays with each engine until SJL-15's model: this engine's compiler stages, and Broiler.VM's binder.
+- **The stage table**,
+  [`Broiler.ECMAScript/docs/frontend/stages.tsv`](../../Broiler.ECMAScript/docs/frontend/stages.tsv), records that
+  assignment for every row of the catalogue: `syntax`, `request`, `engine` or `semantics`, with each engine's current
+  stage and site re-read at the correspondence's heads. For each `syntax` row it says whether this engine checks it
+  only in its compiler, and whether lazily, the input of SJL-14's classes E (early-error stage) and T (timing). The
+  stages decided by hand: EE0017 is `syntax` by the grammar clause, though no parser checks it today; EE0179 is
+  `syntax`, because EE0168 refuses every source it refuses; EE0018 and EE0054, which no parser checks, are
+  `semantics`. No `semantics` row has this engine's parser as its site, and the two rows of another stage that do,
+  EX0021 (`engine`) and EX0023 (`request`), were read and confirmed.
+- **The catalogue's cells are not edited** (decision D28, as revised). The stage table re-reads the sites, and its
+  `stale_cells` column names the catalogue cells that no longer hold beyond their line numbers. Among them is the
+  `status` of EE0082, EE0137, EE0166 and EE0176, whose "both" has been stale for this engine since #1075, which lets
+  `continue` name any label of a loop's label set, and is wrong for the specification. JSD-0083 records them as stale.
+- **Diagnostics** (decision D11, as revised): shared codes, `JSE` and four digits, from the catalogue; message
+  identifiers with arguments, defined at SJL-13.2's stage 4d from `early-errors.md`'s section 6; phases; source order;
+  the cap a parameter. First-error or all-errors is a parameter, and **both engines ask for the first error at SJL-13
+  and SJL-14**: the library stops at its first refusal, in its order, which is a refusal as the parse reaches its
+  construct, and a scope's declared-name conflicts when the scope closes, in the source order of the conflicting
+  declarations. So this engine's first refusal moves on a source with a grammar error later in a scope than a
+  redeclaration in it, which SJL-14's corrections name. This engine renders its own V8-style text, and keeps the texts
+  hosts and tests read, "Unexpected await" among them, which the shell's retry reads.
+- **Positions** (decision D15, as revised): offsets are 0-based in UTF-16 code units, and lines and columns 1-based,
+  columns in UTF-16 code units; every line terminator of the specification starts a new line, and CR LF is one; the
+  request takes text, and a leading byte-order mark is the host's to drop; every node has a full span. Where the
+  library takes a refusal from Broiler.VM's front end, its diagnostic's span starts where that front end anchored it.
+  This engine's message positions move under SJL-14's class M.
+- **The limits** (decision D14, as revised). The tree-depth constant is derived at SJL-13.2's stage 4e as Broiler.VM's
+  JSD-0022 derived Broiler.VM's, with the stack it requires stated beside it, and must admit Broiler.VM's bound on the
+  stack Broiler.VM's `CompilationStack` declares; if it cannot, the library is reworked, with explicit stacks, and the
+  bound is not lowered. The nesting depth is a parameter with each engine's default; this engine passes the library's
+  supported maximum. **The left-operand gap is closed in the library** in all four shapes Broiler.VM's base compiles
+  past its bound: a binary chain whose first operand is a parenthesised chain, a template whose substitution holds
+  one, a binary chain whose first operand is a member or call chain, and a member or call chain whose object is a
+  parenthesised binary chain. Each such refusal is an implementation limit, never a correction. **The tree depth is
+  charged as Broiler.VM's `JsParser.Deepen` charges it**: one level for each node a binary chain or a member or call
+  chain adds, and none for a parenthesis, a template or a substitution; and a left operand's spine adds its own length
+  to the chain it begins, so a chain of `a` nodes as the left operand of a chain of `b` nodes is charged `a + b`. The
+  home's rule, part G, reads that charge at the bound (its `docs/evidence/sjl-13-001/inputs/README.md`). This engine's
+  acceptances past the bound become listed refusals at SJL-14 (JSD-0080, decision D27).
+- **The vectors** (decision D25, as revised): a `syntax` area in schema 1, at a corpus revision before the library's
+  first code, with both engines' first runs classified, and no schema revision. `op` names the parse (`ParseScript`,
+  or `PerformEval`); `in` holds the source for the library-level runner, which gains a frontend adapter at stage 4a;
+  `script` holds the same source, or a top-level direct `eval` of it, for the engine-level runners; `out` is `error:
+  SyntaxError` or the completion value. A row that only a module goal, a switch or a parameter reaches has no vector,
+  and the parse corpus judges it. The lexical and `syntax` vectors carry every correction of Broiler.VM that its step 1
+  makes and a script or a direct eval can carry, each with its row in its provenance. Engine-policy rows are
+  `impl-defined`, with per-engine fields; Broiler.VM's manifest refusals of normative constructs and this engine's `m`
+  extension are `divergence` fields; each cites that engine's records. A revision after each engine's cut-over retires
+  the divergence fields that no longer hold. Rule SL9 is not revised: it already runs the whole vector corpus through
+  the library-level runner.
+- **The classification** (decision D26, as revised):
+  [`docs/evidence/sjl-13-001/classification/`](../evidence/sjl-13-001/classification/README.md), written at SJL-13.1
+  by [`scripts/frontend/classify_parse_corpus.py`](../../scripts/frontend/classify_parse_corpus.py) from test262's
+  metadata, the stage table, both engines' SJL-12 after baselines and the correspondence's corpus join, in two
+  configurations, V (Broiler.VM's request) and J (this engine's). It gives every input, variant and configuration, and
+  every eval request, its expected outcome at the syntax half, the rows whose shared codes may come first, and the
+  reason. **The home's corpus runner answers a regular-expression literal as each configuration's engine validator
+  answered the input in its SJL-12 after baseline**, as the classification records it, since the home holds neither
+  validator, and reads a `json` variant under the Script goal.
+- **Broiler.VM's half asks nothing of this repository**: its registry revision 19 at its step 1's registry commit
+  (decisions D12 and D13), whose meanings are Broiler.VM's while the catalogue's shared codes keep the catalogue's
+  conditions apart; its admission walk (decision D18); its adapter and its two steps (decisions D15 and D19); its
+  deletions (decision D20); the two tokenizers' agreement (decision D21); and its tools commit, fuzz session and
+  measurement (decisions D22 to D24 and D27). The stream version that carries the library is published with the
+  owner's approval before Broiler.VM's step 1 merges (decision D30).
+- **What does not change here at SJL-13.** This engine's front end, which SJL-14 moves onto the library (the
+  milestone's "Does not do"). Every correction of this engine the correspondence classes is SJL-14's, listed in that
+  milestone's `corrections.md` (hand-off H22); SJL-14's own section, at SJL-14.1, records decisions D40 to D56, with
+  the revisions of D41 and D44 to D47 that JSD-0083 records.
+- **The rule**, [`docs/evidence/sjl-13-001/decision-rule.md`](../evidence/sjl-13-001/decision-rule.md), is committed
+  before any code of the library, with the classification, part F's fuzz seeds and part G's deep-nesting corpus. Its
+  parts, each judged at the library commit:
+  - A, the parse corpus and test262's syntax tests at library level, against the classification, in V and J;
+  - B, the `syntax` vectors at library level (template T3);
+  - C, determinism, by rule SL9 and three runs of the corpus in two orders and on two threads;
+  - D, the Native AOT probe;
+  - E, rules SL1 to SL10 with the frontend's layering row, the API baseline, package validation and the assurance check;
+  - F, fuzzing at library level;
+  - G, the contract's limits, over the deep-nesting corpus, with the tree-depth constant's derivation;
+  - H, the contract's checklist: every item of the contract has a public member, but the caller's lexical names,
+    which it lists as absent with decision D16's reason; no public type names an engine type; no `engine` row has a
+    producer.
+
+None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 4 to 10 are judged in its bundles
+`sjl-13-001` and `sjl-13-002`, and SJL-13 may not meet its gate before SJL-12, SJL-3 and SJL-7 meet theirs.
+
 ## The frontend contract (SJL-12)
 
 SJL-12 is not an area milestone: it applies no extraction gate, so its record is here and not under "Area verdicts",
@@ -1848,6 +2035,10 @@ This repository's part of it:
     default, and **no default throws**. `CancellableDisposableAction` moves to `Ast` with a
     forwarder, and `UndoMark` is marked `[Obsolete]` (SJL-D-25 (b)); removing it waits for a recorded check of its
     consumers. SJL-13 defines the shared provider, and the tables move once more then.
+    *(Noted 2026-10-26, at SJL-13.1: "SJL-13 defines the shared provider, and the tables move once more then." no
+    longer holds. The library's provider is Broiler.Unicode's `IUnicodeTables`, which this engine's options already
+    take, and SJL-13 changes nothing of this engine (Broiler.VM's JSD-0083, decisions D8 and D9). The tables' next
+    move is SJL-14's, whose decision D50 gives their home.)*
   - **One counter per parse, and an end-of-file token per scanner**, the milestone's items 2 and 3.
   - **The for-loop pass** (decision D22): a preparation pass of the compiler after `ParseProgram`, in `FastCompiler`
     and in `DirectEvalSupport`, before `SyntaxValidation`, emitting today's shapes exactly. The parser records
@@ -2028,6 +2219,66 @@ files each part reads ([`sjl-12-001`](../evidence/sjl-12-001/README.md), section
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 4 to 6, and its half of shared
 clauses 7 and 8, are read by the programme's ledger. **SJL-12 may not meet its gate before SJL-3 meets SJL-3's.**
 
+## The shared syntax library (SJL-13)
+
+SJL-13 is the frontend's area milestone. Its verdict is "The frontend's syntax half (SJL-13.1)" under "Area
+verdicts", with Broiler.VM's JSD-0083, and this section is this repository's record of the library's work: its
+design, the stage table, the classification, the rule and its commits. *(Added 2026-10-26, at SJL-13.1.)* In this
+section, as in that entry, "decision Dn" is JSD-0083's.
+
+- **The design and the API.** The library is built to the contract "The frontend contract (SJL-12)" records, above,
+  with Broiler.VM's JSD-0080. Its names, its request and its result are in the home's design document,
+  [`Broiler.ECMAScript/docs/frontend/design.md`](../../Broiler.ECMAScript/docs/frontend/design.md), section 9, which
+  SJL-13.1 adds, with dated revisions of the sections the decisions change (decisions D6 to D17). Each type and
+  member name is fixed by the library's `PublicAPI.txt` when SJL-13.2's stage 4a lands; the design document names
+  what each carries.
+- **The stage table**,
+  [`Broiler.ECMAScript/docs/frontend/stages.tsv`](../../Broiler.ECMAScript/docs/frontend/stages.tsv), beside the
+  catalogue: every catalogue row's stage under decision D10, the basis of that stage, the request switch that
+  governs it, each engine's current stage and site, this engine's compiler-only and lazy checks, the correspondence's
+  rows and the catalogue's stale cells. Its columns are described in the classification's README.
+- **The classification**,
+  [`docs/evidence/sjl-13-001/classification/`](../evidence/sjl-13-001/classification/README.md), written by
+  [`scripts/frontend/classify_parse_corpus.py`](../../scripts/frontend/classify_parse_corpus.py), whose `check` mode
+  rebuilds it byte for byte. It is what "as classified" means in the home's clause 2 and in SJL-13.2's done-when.
+- **The work, in order**, each merge outside SJL-11.5's span:
+  1. **SJL-13.1**, these records, with Broiler.VM's: the verdict, the start entry, and its bundles `sjl-13-001` and
+     `sjl-13-002`'s rules;
+  2. **the `syntax` vectors** at the next free corpus revision, both engines' first runs classified, and Broiler.VM's
+     pin (decision D25): the rule's vectors commit;
+  3. **SJL-13.2, the library**, one merge per stage, developed against the parse corpus, the vectors, the
+     classification and the home's fuzz target, with no change to `Algorithms` (decision D9):
+     - 4a, the skeleton: the projects, SL1's row, the solution filter and the solution, the assurance list,
+       `PublicAPI.txt`, and every type of the request, with the library-level runner's frontend adapter and the probe's
+       syntax path;
+     - 4b, the tokenizer: the lexical grammar, identifiers through the Unicode provider, numeric literals through
+       `NumericLiterals.Evaluate`, regular-expression delimiting by the parser's goal, structured templates, and the
+       `m` suffix only through the extension;
+     - 4c, the tree and the parser, seeded from Broiler.VM's `JsSyntax`, with full spans, raw facts and the module's
+       top-level-`await` fact as the specification defines it; cover grammars by conversion, arrows without
+       rewinding, and nesting and tree-depth checks before the stack;
+     - 4d, the diagnostics and the parse-time early errors: the declarations walk, the side tables, the first refusal
+       in the library's order, the `request` rows, no `engine` row, and the validator through the provider;
+     - 4e, the limits, determinism and fuzzing: the tree-depth constant's derivation, the left-operand charge, the
+       home's fuzz target and the deep-nesting corpus;
+     - 4f, done: `IsPackable` true, the changelog and the assurance artefacts. Its merge is the rule's library commit,
+       where every part of the rule is run.
+
+     Until SJL-14's bridge merges, no product project of this repository references the library;
+  4. **the publication** of the shared stream's version that carries the library, with the owner's approval, before
+     Broiler.VM's step 1 merges (decision D30). This engine's SJL-14 references the library by project and needs no
+     publication to build.
+
+  Broiler.VM's tools commit and its steps 1 and 2 are Broiler.VM's, judged by its bundles `sjl-13-001` and
+  `sjl-13-002`.
+- **The rule and its commits.** [`docs/evidence/sjl-13-001/decision-rule.md`](../evidence/sjl-13-001/decision-rule.md)
+  names three commits before they exist: the rule commit, which carries it; the vectors commit; and the library
+  commit, where its parts A to H are run, each from a clean checkout. Bundle
+  [`sjl-13-001`](../evidence/sjl-13-001/README.md) names each when it exists.
+- **What SJL-13 leaves to the next milestones.** SJL-14 files its own start entry; its records can be written once
+  SJL-13.1's have merged and stage 4c's tree is stable, and its bridge merges after stage 4f. SJL-15's model grows from
+  the declarations walk SJL-13.2 begins in `Broiler.ECMAScript.Semantics` (decision D10).
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
@@ -2068,10 +2319,10 @@ the summary here does not replace them.
 | **SJL-10** — Temporal core | The area's library work and cut-over | Its Broiler.JS clauses, the polyfill dataset included |
 | **SJL-9** — locale data and Intl | SJL-9.2: the acceptance data (Broiler.VM's Intl reference datasets copied here, and the Intl vectors), then the data home here, the CLDR generator and its pins with this engine's tables; SJL-9.3: `Broiler.ECMAScript.Intl`, stage by stage; publication with the owner's approval; then SJL-9.5, this engine's cut-over, in one merge, with host globalization only behind the optional provider (SJL-D-22 (c)) *(revised 2026-10-26, at SJL-9.1, by Broiler.VM's JSD-0082, decisions D3 and D16; read "Move the CLDR generator and pins here; host globalization only behind the optional provider (SJL-D-22 (c))")* | Its Broiler.JS clauses 7 to 10, and the data-home and home clauses 1 to 6, which this repository hosts *(revised 2026-10-26, at SJL-9.1; read "Its Broiler.JS clauses")* |
 | **SJL-17** — collation | Share the collation algorithm after SJL-9 | Its Broiler.JS clauses: host collation only behind the optional provider |
-| **SJL-13** — the shared syntax library | Implement the frontend's syntax half in this repository | Home clauses 1 to 3: under the contract and conventions, the parse corpus and syntax tests at library level, SL9 and the Native AOT probe |
-| **SJL-14** — Broiler.JS on the shared syntax library | Move the compiler and the portable compiler onto the frontend; make `Ast` and `Parser` obsolete adapter packages (SJL-D-12 (i)) | Clauses 1 to 6, the Native AOT sample regenerated and run included |
-| **SJL-15** — shared static semantics | Implement the semantic model here; delete the scattered early errors and scope analysis | Home clauses 1 to 3 and Broiler.JS clauses 10 and 11 |
-| **SJL-16** — close-out | Sweep the deletion lists, retire the reference arms, confirm SJL-D-18 | The close-out's sweep in this repository |
+| **SJL-13** — the shared syntax library | SJL-13.1 is filed: the area verdict, the stage table, the classification and the rule ("The frontend's syntax half (SJL-13.1)" and "The shared syntax library (SJL-13)" above). Next, the `syntax` vectors at a corpus revision; then SJL-13.2, `Broiler.ECMAScript.Frontend` in stages 4a to 4f, one merge each, developed against the parse corpus, the vectors and the classification; then the publication of the stream version that carries it, with the owner's approval. Broiler.VM's two steps are Broiler.VM's *(revised 2026-10-26, at SJL-13.1, by Broiler.VM's JSD-0083; read "Implement the frontend's syntax half in this repository")* | Home clauses 1 to 3: under the contract and conventions, the parse corpus and syntax tests at library level as the classification fixes them, SL9 and the Native AOT probe, each judged at the library commit by bundle [`sjl-13-001`](../evidence/sjl-13-001/README.md)'s rule *(revised 2026-10-26, at SJL-13.1; read "Home clauses 1 to 3: under the contract and conventions, the parse corpus and syntax tests at library level, SL9 and the Native AOT probe")* |
+| **SJL-14** — Broiler.JS on the shared syntax library | Move the compiler and the portable compiler onto the frontend; make `Ast` and `Parser` obsolete adapter packages (SJL-D-12 (i)) *(Noted 2026-10-26, at SJL-13.1: SJL-14 waits on SJL-13. It files its own start entry; its records can be written once SJL-13.1's have merged and SJL-13.2's stage 4c has given the tree, and its bridge merges after stage 4f. SJL-13.1's area verdict, Broiler.VM's JSD-0083, covers this engine's front end too, so SJL-14 files no verdict of its own. JSD-0083's decision D41 reads how the compiler parses with the frontend at SJL-14: through a bridge to its own tree, moving onto the shared tree at SJL-15.5. SJL-14.1's records revise this row.)* | Clauses 1 to 6, the Native AOT sample regenerated and run included |
+| **SJL-15** — shared static semantics | Implement the semantic model here; delete the scattered early errors and scope analysis *(Noted 2026-10-26, at SJL-13.1: SJL-15 waits on SJL-13 and SJL-14. Its model grows from the declarations walk SJL-13.2 begins in `Broiler.ECMAScript.Semantics`, which reports the parse-time early errors and exposes each scope's declarations as side tables, by JSD-0083's decision D10.)* | Home clauses 1 to 3 and Broiler.JS clauses 10 and 11 |
+| **SJL-16** — close-out | Sweep the deletion lists, retire the reference arms, confirm SJL-D-18 *(Noted 2026-10-26, at SJL-13.1: SJL-16 waits on every milestone from SJL-0 to SJL-15, and SJL-17, being met or `Refused`, as its milestone file says.)* | The close-out's sweep in this repository |
 
 The state of each item is one line in [`SharedLibraries.status.md`](SharedLibraries.status.md).
 Following this directory's convention, no changing count is written here: a test262 total, a vector
