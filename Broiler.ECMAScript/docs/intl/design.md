@@ -6,7 +6,8 @@
 **Library:** `Broiler.ECMAScript.Intl`, which the programme's milestone SJL-9.3 creates, over the locale data whose
 home, `Broiler.ECMAScript/data/intl/`, and generator, in `Broiler.ECMAScript.Generation`, SJL-9.2 creates.
 **Status:** design. **Filed:** 2026-10-26, at milestone SJL-9 (work package SJL-9.1), before any of the library's code
-or the home's data exists. **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
+or the home's data exists. **Revised:** 2026-10-27, at stage SJL-9.3a, by a dated note on "Why there is no project yet",
+the library's project now existing ("Corrections" lists it). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
 both roles (Broiler.VM's exception EX-30), and nothing here has been read by anyone but its author.
 
 **What this document is.** The Intl library's design document in its home, one of the three places SJL-9.1 files the
@@ -26,7 +27,12 @@ findings of SJL-9.1's correspondence. Each is the owner's decision of 2026-10-26
 **Why there is no project yet.** SJL-9.1 writes no code. `Broiler.ECMAScript/` has no `Broiler.ECMAScript.Intl/`
 folder and no `data/intl/`: a project would bring the library under [the conventions](../conventions.md)' scope and
 rule SL1's layering table before it exists. SJL-9.2 creates the data home and the generator, and SJL-9.3 the library,
-one stage at a time.
+one stage at a time. *(Noted 2026-10-27, at SJL-9.3a: the paragraph, as filed, no longer holds. SJL-9.2b created
+`data/intl/` and the generator's Intl namespace, and SJL-9.3a creates `Broiler.ECMAScript/Broiler.ECMAScript.Intl/` and
+`Broiler.ECMAScript.Intl.Tests/`, with SL1's row: section 1's contract (the plan's task 5.0) and sub-area (a), whose
+names are `LocaleId`, `LocaleNegotiation`, `LocaleRecord`, `LocaleInfo` and `SupportedValues`, with
+`ICollatorLocaleData` for the engine's Collator data that section 2's "A locale's collations" reads. The project is not
+packed until SJL-9.3f (decision D29).)*
 
 ## 1. The two layers of the provider contract
 
@@ -303,4 +309,5 @@ available locales, which are section 2's.
 
 ## Corrections
 
-None.
+*(Revised 2026-10-27, at SJL-9.3a; it read "None.")* The header gains a "Revised" line, and "Why there is no project
+yet" a dated note that the project now exists and names sub-area (a)'s types; nothing else here is changed.

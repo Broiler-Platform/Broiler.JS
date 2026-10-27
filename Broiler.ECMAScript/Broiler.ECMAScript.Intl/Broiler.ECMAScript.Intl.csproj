@@ -13,6 +13,12 @@
     It also holds the statuses that replace the engines' errors. Every later stage adds its sub-area's
     algorithms over that contract.
 
+    Stage SJL-9.3a's sub-area (a) (the plan's task 5.a): locale identifiers (LocaleId), negotiation
+    (LocaleNegotiation), the Intl.Locale constructor's steps (LocaleRecord), Locale info (LocaleInfo)
+    and Intl.supportedValuesOf (SupportedValues), ported from Broiler.VM's JsLocaleTag and its realm's
+    Intl, Locale and supportedValuesOf code at 4cf9ca44, with ASCII casing (decision D19), statuses for
+    its errors, the caller's WorkCharge (decision D18) and rows L9 and L18 corrected (decision D32).
+
     References (decision D9; architecture section 2's "Algorithms, Unicode; data through a provider
     interface"): Broiler.ECMAScript.Algorithms, whose WorkCharge every input-growing path takes
     (decision D18), and Broiler.Unicode.Algorithms. No engine, nothing of Broiler.VM, and no table:
@@ -26,7 +32,7 @@
     <RootNamespace>Broiler.ECMAScript.Intl</RootNamespace>
     <AssemblyName>Broiler.ECMAScript.Intl</AssemblyName>
     <PackageId>Broiler.ECMAScript.Intl</PackageId>
-    <Description>The Intl algorithms shared by the Broiler JavaScript engines (ECMA-402), over the locale data an engine hands in: the data contract (the generated tables as an IIntlDataSet, decoded once into the question-level ILocaleData, with CompositeLocaleData ordering the shared data, an optional secondary provider, and the locale's parent and root) and the statuses that replace engine errors.</Description>
+    <Description>The Intl algorithms shared by the Broiler JavaScript engines (ECMA-402), over the locale data an engine hands in: the data contract (the generated tables as an IIntlDataSet, decoded once into the question-level ILocaleData, with CompositeLocaleData ordering the shared data, an optional secondary provider, and the locale's parent and root), the statuses that replace engine errors, and locale identifiers, negotiation, Intl.Locale's record, Locale info and supportedValuesOf.</Description>
     <PackageTags>broiler;ecmascript;javascript;shared;intl;ecma-402;cldr</PackageTags>
     <IsPackable>false</IsPackable>
     <EnablePackageValidation>true</EnablePackageValidation>

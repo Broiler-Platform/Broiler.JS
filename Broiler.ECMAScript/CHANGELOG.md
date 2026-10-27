@@ -46,6 +46,32 @@ Not yet packed under a version of its own: the stream's next version is set when
 
   The package still reads no file and carries no table and no pinned input (decision SJL-D-6 (c)): those are
   files of this repository, under [`data/intl/`](data/intl/README.md).
+- `Broiler.ECMAScript.Intl`, a new library: the ECMA-402 algorithms over the locale data an engine hands in
+  (milestone SJL-9.3a; Broiler.VM's JSD-0082, decisions D3, D8, D9, D18, D19 and D32; design
+  [`docs/intl/design.md`](docs/intl/design.md)). It is **not packed** until stage SJL-9.3f, so that no version of the
+  stream carries part of it (decision D29). Ported from Broiler.VM's JavaScript profile at `4cf9ca44`, with ASCII
+  casing and `NumberFormatInfo.InvariantInfo` where Broiler.VM made a culture call (decision D19), a status where it
+  threw, and the caller's `WorkCharge` on every path whose work grows with its input (decision D18):
+  - **the data contract** (decision D8): `IIntlDataSet`, the tables an engine hands in, and `IntlTable`, which keeps
+    Broiler.VM's `JsIntlTable` numbers with 7, 23 and 24 retired; `TableLocaleData`, the decoder implementation of the
+    question-level `ILocaleData`, each table decoded once per process, with the records it answers in
+    (`CurrencyNames`, `RegionWeek`, `RegionHourCycles`, `ListPatterns`, `DayPeriodRule`, `PluralRuleText` and
+    `PluralRuleType`); `CompositeLocaleData`, which asks the shared data first, then an optional secondary provider,
+    then the locale's parent and root; and `IntlStatus`;
+  - **locale identifiers**: `LocaleId`, with `LocaleKeyword` - IsWellFormedLanguageTag over ASCII alone,
+    CanonicalizeUnicodeLocaleId over CLDR's aliases and BCP 47 types, Add and Remove Likely Subtags, a tag's parts and
+    keywords. A subdivision alias whose replacement is a region is written as UTS #35 Annex C writes it, `axzzzz`
+    (row L9, a correction of Broiler.VM);
+  - **negotiation**: `LocaleNegotiation`, with `LocaleMatch`, `RelevantKey` and `ResolvedLocale` -
+    CanonicalizeLocaleList's steps over the elements' Strings, LookupMatchingLocaleByPrefix, best fit as the lookup
+    matcher (row L38), FilterLocales, and ResolveLocale over the default locale, the available locales and the
+    relevant keys' values an engine gives;
+  - **Intl.Locale**: `LocaleRecord`, the constructor's steps after an engine has read its options (`LocaleOptions`),
+    each option checked over ASCII alone; and `LocaleInfo`, with `LocaleWeekInfo`, `LocaleRegionPreference` and
+    `ICollatorLocaleData` for the engine's Collator data - calendars, collations, hour cycles, numbering systems, time
+    zones, text direction and week info. A locale whose language the Collator lacks answers DefaultLocale's
+    collations, and only `und` answers `emoji` and `eor` (row L18, a correction of Broiler.VM);
+  - **`SupportedValues`**: `Intl.supportedValuesOf`'s lists, with `AvailableCalendars` and `SanctionedUnits`.
 
 ### Changed
 
@@ -53,9 +79,13 @@ None.
 
 ### Observable changes
 
-None: no engine reads the Intl generator or its tables yet. Broiler.VM regenerates its table with the generator
-at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone SJL-9.5, whose own
-records list what each observes.
+None: no engine reads the Intl generator, its tables or the Intl library yet. Broiler.VM regenerates its table with
+the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone SJL-9.5, whose
+own records list what each observes; rows L9 and L18's corrections move Broiler.VM's answers when it cuts over to the
+library, at SJL-9.4. *(Revised 2026-10-27, at SJL-9.3a, when the Intl library was added; it read "None: no engine
+reads the Intl generator or its tables yet. Broiler.VM regenerates its table with the generator at its work package
+SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone SJL-9.5, whose own records list what each
+observes.")*
 
 ### Data
 
