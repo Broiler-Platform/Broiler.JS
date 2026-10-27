@@ -1,4 +1,4 @@
-"""Tests of the syntax area's generator (corpus revision 29, milestone SJL-13, work package SJL-13.2).
+"""Tests of the syntax area's generator (corpus revisions 29 and 30, milestone SJL-13, work package SJL-13.2).
 
 The generator states every expected value itself, from the specification, so the committed files are checked against
 what it writes everywhere. The check against the reference Node.js v26.12.0 that bundle sjl-9-001's reference.txt
@@ -290,6 +290,22 @@ class CommittedFileTests(unittest.TestCase):
             self.assertNotEqual(generator.SE, vector["out"], vector_id)
             self.assertIn("JSD-0083, decision D17", vector["note"], vector_id)
             self.assertIn("docs/roadmap/SharedLibraries.md", vector["note"], vector_id)
+
+    def test_every_divergence_names_a_correspondence_row_the_note_names(self) -> None:
+        # Revision 30: each reason names the row of bundle sjl-13-001's correspondence whose answer the engine gives,
+        # which is a row the vector's note names (syntax-divergences.txt's header).
+        classified = 0
+        for vector_id, vector in self.vectors.items():
+            for key, text in vector.items():
+                if not key.startswith("divergence."):
+                    continue
+                classified += 1
+                row = re.match(r"^row ([A-Z]\d+[a-z]?|[A-Z]\d+-\d+): ", text)
+                self.assertIsNotNone(row, (vector_id, text))
+                named = re.match(r"^(?:catalogue rows? [^;:]*; )?correspondence rows? ([^:]*):", vector["note"])
+                self.assertIsNotNone(named, vector_id)
+                self.assertIn(row.group(1), re.split(r", | and ", named.group(1)), vector_id)
+        self.assertGreater(classified, 0)
 
     def test_every_note_names_its_verdict(self) -> None:
         for vector_id, vector in self.vectors.items():

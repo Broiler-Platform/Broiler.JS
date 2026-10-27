@@ -88,7 +88,8 @@ area: syntax
 op: ParseScript
 in: str:"class C { f = new.target === undefined; } new C().f"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row D32: `new.target` in a class field initialiser at function depth 0 (alone, or in an arrow in it); Broiler.VM answers refused 2101 at `new`: ParseFieldTail parses the initialiser without raising functionDepth, so ParseNewTarget refuses; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-scripts-static-semantics-early-errors spec:es2026@0248456c#sec-static-semantics-contains
 script: class C { f = new.target === undefined; } new C().f
 note: catalogue row EE0163; correspondence row D32: accepted, new.target in a class field initialiser, which Contains does not enter (a correction of Broiler.VM that step 1 makes)
@@ -99,7 +100,8 @@ area: syntax
 op: ParseScript
 in: str:"class C { f = () => new.target; } new C().f() === undefined"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row D32: `new.target` in a class field initialiser at function depth 0 (alone, or in an arrow in it); Broiler.VM answers refused 2101 at `new`: ParseFieldTail parses the initialiser without raising functionDepth, so ParseNewTarget refuses; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-scripts-static-semantics-early-errors spec:es2026@0248456c#sec-static-semantics-contains
 script: class C { f = () => new.target; } new C().f() === undefined
 note: catalogue row EE0163; correspondence row D32: accepted, new.target in an arrow in a class field initialiser (a correction of Broiler.VM that step 1 makes)
@@ -308,7 +310,8 @@ area: syntax
 op: ParseScript
 in: str:"while (0) const x = 1;"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P11: a declaration where a single Statement stands (`const` as a loop's body); Broiler.JS answers accepted: `const` has no single-statement check; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-ecmascript-language-statements-and-declarations test262:test/language/statements/while/decl-const.js
 script: while (0) const x = 1;
 note: catalogue row EX0008; correspondence row P11: refused, a lexical declaration as a while's body
@@ -319,7 +322,8 @@ area: syntax
 op: ParseScript
 in: str:"switch (0) { default: default: }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P12: a CaseBlock with more than one `default`; Broiler.JS answers accepted; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-switch-statement test262:test/language/statements/switch/S12.11_A2_T1.js
 script: switch (0) { default: default: }
 note: catalogue row EX0008; correspondence row P12: refused, two default clauses
@@ -330,7 +334,8 @@ area: syntax
 op: ParseScript
 in: str:"var a = 1, f = 2; a & f ~ 0"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P13: `~` is unary only; Broiler.JS answers accepted: NextExpression reads `~` as a binary operator; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-bitwise-not-operator
 script: var a = 1, f = 2; a & f ~ 0
 note: catalogue row EX0008; correspondence row P13: refused, ~ is no binary operator
@@ -352,7 +357,8 @@ area: syntax
 op: ParseScript
 in: str:"var x = true; x = case;"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P22: a reserved word where an IdentifierReference stands (`case` as a reference); Broiler.JS answers accepted (it throws a ReferenceError when it runs); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-keywords-and-reserved-words test262:test/language/identifiers/val-case.js
 script: var x = true; x = case;
 note: catalogue row EX0008; correspondence row P22: refused, a reserved word as a reference
@@ -363,7 +369,8 @@ area: syntax
 op: ParseScript
 in: str:"function f(...a,) {}"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P23: a rest parameter followed by a trailing comma; Broiler.JS answers accepted: Parameters has no rest-position or trailing-comma check; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-function-definitions test262:test/language/statements/function/rest-params-trailing-comma-early-error.js
 script: function f(...a,) {}
 note: catalogue row EX0008; correspondence row P23: refused, a comma after a rest parameter
@@ -374,7 +381,8 @@ area: syntax
 op: ParseScript
 in: str:"var c = 1; class C extends c ? Object : Object {}"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P18: classes and private names (`super.#x`; a ClassHeritage is a LeftHandSideExpression); Broiler.JS answers accepted; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-class-definitions
 script: var c = 1; class C extends c ? Object : Object {}
 note: catalogue row EX0008; correspondence row P18: refused, a ClassHeritage is a LeftHandSideExpression, not a conditional
@@ -385,7 +393,8 @@ area: syntax
 op: ParseScript
 in: str:"class C { m() { super.#x; } }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P18: classes and private names (`super.#x`; a ClassHeritage is a LeftHandSideExpression); Broiler.JS answers accepted; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-class-definitions test262:test/language/statements/class/elements/syntax/early-errors/super-private-access-invalid.js
 script: class C { m() { super.#x; } }
 note: catalogue row EX0008; correspondence row P18: refused, a private name after super

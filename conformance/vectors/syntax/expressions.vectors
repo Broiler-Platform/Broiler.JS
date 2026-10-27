@@ -121,10 +121,11 @@ area: syntax
 op: ParseScript
 in: str:"function* g() { var yi\\u0065ld; }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D33: escaped reserved words and contextual keywords as names; Broiler.JS answers accepted: FastScanner.CommitIdentifier admits them (T23 holds the sites); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-identifiers-static-semantics-early-errors test262:test/language/statements/generators/yield-as-binding-identifier-escaped.js
 script: function* g() { var yi\u0065ld; }
-note: catalogue row EE0010: refused, an escaped yield as a binding in a generator
+note: catalogue row EE0010; correspondence row D33: refused, an escaped yield as a binding in a generator
 since: 29
 
 id: syntax/expressions/ee0011/0001
@@ -143,10 +144,11 @@ area: syntax
 op: ParseScript
 in: str:"async function f() { var aw\\u0061it; }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D33: escaped reserved words and contextual keywords as names; Broiler.JS answers accepted: FastScanner.CommitIdentifier admits them (T23 holds the sites); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-identifiers-static-semantics-early-errors test262:test/language/statements/async-function/await-as-binding-identifier-escaped.js
 script: async function f() { var aw\u0061it; }
-note: catalogue row EE0011: refused, an escaped await as a binding in an async function
+note: catalogue row EE0011; correspondence row D33: refused, an escaped await as a binding in an async function
 since: 29
 
 id: syntax/expressions/ee0012/0001
@@ -352,10 +354,11 @@ area: syntax
 op: ParseScript
 in: str:"++this;"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D39: the private name `#constructor`, a parameter and lexical name collision, and assignment and update targets Broiler.JS admits; Broiler.JS answers accepted (the checks are missing; an invalid target throws only when it runs); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-update-expressions-static-semantics-early-errors test262:test/language/expressions/prefix-decrement/this.js
 script: ++this;
-note: catalogue row EE0029: refused, a prefix increment of this
+note: catalogue row EE0029; correspondence row D39: refused, a prefix increment of this
 since: 29
 
 id: syntax/expressions/ee0030/0001
@@ -385,10 +388,11 @@ area: syntax
 op: ParseScript
 in: str:"class C { #p; m() { delete this.#p; } }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D34: `delete` of a private reference; Broiler.JS answers accepted (not refused at P or K); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-delete-operator-static-semantics-early-errors test262:test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-privatename.js
 script: class C { #p; m() { delete this.#p; } }
-note: catalogue row EE0030: refused, delete of a private reference
+note: catalogue row EE0030; correspondence row D34: refused, delete of a private reference
 since: 29
 
 id: syntax/expressions/ee0031/0001
@@ -429,10 +433,11 @@ area: syntax
 op: ParseScript
 in: str:"var a, b; [...a, b] = [];"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P15a: cover grammars to patterns, a rest element that is not last; Broiler.JS answers accepted at P (the conversion has no rest-position check; D49 holds its sites); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-assignment-operators-static-semantics-early-errors test262:test/language/expressions/assignment/dstr/array-rest-before-element.js
 script: var a, b; [...a, b] = [];
-note: catalogue row EE0032: refused, an array literal with a rest element before the last, which covers no AssignmentPattern
+note: catalogue row EE0032; correspondence row P15a: refused, an array literal with a rest element before the last, which covers no AssignmentPattern
 since: 29
 
 id: syntax/expressions/ee0033/0001
@@ -539,7 +544,9 @@ area: syntax
 op: ParseScript
 in: str:"({ ...{ a } } = {});"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P31: an AssignmentRestProperty whose target is an object or array literal; Broiler.JS answers P accepted, K crashed (System.NotImplementedException), not a SyntaxError, which the runner renders abort:; a correction of both (JSD-0083); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
+divergence.broiler-vm: row P31: an AssignmentRestProperty whose target is an object or array literal, `({...{a}} = o)`, `({...[a]} = o)`; Broiler.VM answers accepted (the rest object is destructured, so with an array literal it throws a TypeError when it runs); a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-destructuring-assignment-static-semantics-early-errors
 script: ({ ...{ a } } = {});
 note: catalogue row EE0037; correspondence row P31: refused, an AssignmentRestProperty whose target is an object literal (a correction of both engines; Broiler.VM's at step 1)
@@ -550,7 +557,9 @@ area: syntax
 op: ParseScript
 in: str:"var a; ({ ...[a] } = {});"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P31: an AssignmentRestProperty whose target is an object or array literal; Broiler.JS answers P accepted, K crashed (System.NotImplementedException), not a SyntaxError, which the runner renders abort:; a correction of both (JSD-0083); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
+divergence.broiler-vm: row P31: an AssignmentRestProperty whose target is an object or array literal, `({...{a}} = o)`, `({...[a]} = o)`; Broiler.VM answers accepted (the rest object is destructured, so with an array literal it throws a TypeError when it runs); a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-destructuring-assignment-static-semantics-early-errors
 script: var a; ({ ...[a] } = {});
 note: catalogue row EE0037; correspondence row P31: refused, an AssignmentRestProperty whose target is an array literal (a correction of both engines; Broiler.VM's at step 1)
@@ -627,7 +636,8 @@ area: syntax
 op: ParseScript
 in: str:"var b; ({ a: (b = 7) } = {});"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row P15b: a parenthesised nested target that is not a simple target, `({ a: (b = 7) } = ...)`, `({ a: ([b]) } = ...)`; Broiler.VM answers accepted: the parenthesised set is consulted only for the whole left-hand side; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-destructuring-assignment-static-semantics-early-errors
 script: var b; ({ a: (b = 7) } = {});
 note: catalogue row EE0039; correspondence row P15b: refused, a parenthesised assignment as a destructuring target is not simple (a correction of Broiler.VM that step 1 makes)
@@ -638,7 +648,8 @@ area: syntax
 op: ParseScript
 in: str:"var b; ({ a: ([b]) } = { a: [1] });"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row P15b: a parenthesised nested target that is not a simple target, `({ a: (b = 7) } = ...)`, `({ a: ([b]) } = ...)`; Broiler.VM answers accepted: the parenthesised set is consulted only for the whole left-hand side; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-destructuring-assignment-static-semantics-early-errors
 script: var b; ({ a: ([b]) } = { a: [1] });
 note: catalogue row EE0039; correspondence row P15b: refused, a parenthesised array literal as a destructuring target is not simple (a correction of Broiler.VM that step 1 makes)

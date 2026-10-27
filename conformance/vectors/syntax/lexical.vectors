@@ -132,7 +132,8 @@ area: syntax
 op: ParseScript
 in: str:"\"use strict\"; ({ 010: 1 })"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row T16: strict refusal of legacy octal integer literals in object keys and class element names; Broiler.VM answers strict `{ 010: 1 }` accepted, class `010(){}` accepted, function-strict key accepted: PropertyKey's numeric arm has no legacy-octal check; a correction of both (JSD-0083), Broiler.VM's for a legacy octal object key or class element name in strict code; answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-numeric-literals-early-errors test262:test/language/literals/numeric/legacy-octal-integer-strict.js
 script: "use strict"; ({ 010: 1 })
 note: catalogue row EE0003; correspondence row T16: refused, a legacy octal numeric property key in strict code (a correction of Broiler.VM that step 1 makes)
@@ -143,7 +144,9 @@ area: syntax
 op: ParseScript
 in: str:"class C { 010() {} }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row T16: strict refusal of legacy octal and non-octal decimal integer literals; Broiler.JS answers strict `08` and `08.5` accepted (K1: the strict re-scan counts a second character 0-7 only) and a class body's `010(){}` accepted (no check of a class body's strictness); a correction of both (JSD-0083), Broiler.JS's for K1's `08`, `09` and `08.5` and a class body's strictness; answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
+divergence.broiler-vm: row T16: strict refusal of legacy octal integer literals in object keys and class element names; Broiler.VM answers strict `{ 010: 1 }` accepted, class `010(){}` accepted, function-strict key accepted: PropertyKey's numeric arm has no legacy-octal check; a correction of both (JSD-0083), Broiler.VM's for a legacy octal object key or class element name in strict code; answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-numeric-literals-early-errors spec:es2026@0248456c#sec-strict-mode-code test262:test/language/literals/numeric/legacy-octal-integer-strict.js
 script: class C { 010() {} }
 note: catalogue row EE0003; correspondence row T16: refused, a legacy octal method name in a class body, which is strict code (a correction of both engines)
@@ -154,7 +157,8 @@ area: syntax
 op: ParseScript
 in: str:"function f() { \"use strict\"; return { 010: 1 }; }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row T16: strict refusal of legacy octal integer literals in object keys and class element names; Broiler.VM answers strict `{ 010: 1 }` accepted, class `010(){}` accepted, function-strict key accepted: PropertyKey's numeric arm has no legacy-octal check; a correction of both (JSD-0083), Broiler.VM's for a legacy octal object key or class element name in strict code; answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-numeric-literals-early-errors spec:es2026@0248456c#sec-directive-prologues-and-the-use-strict-directive test262:test/language/literals/numeric/legacy-octal-integer-strict.js
 script: function f() { "use strict"; return { 010: 1 }; }
 note: catalogue row EE0003; correspondence row T16: refused, a legacy octal numeric property key in a function made strict by its own directive
@@ -165,7 +169,8 @@ area: syntax
 op: ParseScript
 in: str:"\"use strict\"; 08"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row T16: strict refusal of legacy octal and non-octal decimal integer literals; Broiler.JS answers strict `08` and `08.5` accepted (K1: the strict re-scan counts a second character 0-7 only) and a class body's `010(){}` accepted (no check of a class body's strictness); a correction of both (JSD-0083), Broiler.JS's for K1's `08`, `09` and `08.5` and a class body's strictness; answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-numeric-literals-early-errors test262:test/language/literals/numeric/non-octal-decimal-integer-strict.js
 script: "use strict"; 08
 note: catalogue row EE0003; correspondence row T16: refused, a NonOctalDecimalIntegerLiteral in strict code
@@ -176,7 +181,8 @@ area: syntax
 op: ParseScript
 in: str:"\"use strict\"; 08.5"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row T16: strict refusal of legacy octal and non-octal decimal integer literals; Broiler.JS answers strict `08` and `08.5` accepted (K1: the strict re-scan counts a second character 0-7 only) and a class body's `010(){}` accepted (no check of a class body's strictness); a correction of both (JSD-0083), Broiler.JS's for K1's `08`, `09` and `08.5` and a class body's strictness; answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-numeric-literals-early-errors spec:es2026@0248456c#sec-literals-numeric-literals test262:test/language/literals/numeric/non-octal-decimal-integer-strict.js
 script: "use strict"; 08.5
 note: catalogue row EE0003; correspondence row T16: refused, a NonOctalDecimalIntegerLiteral with a fraction in strict code
@@ -275,7 +281,8 @@ area: syntax
 op: ParseScript
 in: str:"var d = 1m; 0"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row T18: the `m` suffix; Broiler.JS answers `1m` and `08m` accepted (a Decimal); engine policy (the lexer-extension parameter, SJL-D-17, JSD-0083 decision D17), which decision D25 keeps a divergence field; this engine's record is decision SJL-D-17 of docs/roadmap/SharedLibraries.md: the extension stays in Broiler.JS, as a parameter of the shared lexer
 prov: spec:es2026@0248456c#sec-literals-numeric-literals test262:test/language/literals/numeric/numeric-followed-by-ident.js
 script: var d = 1m; 0
 note: catalogue row EX0003; correspondence row T18: refused, a NumericLiteral directly followed by the IdentifierStart m, which Broiler.JS's extension reads as a Decimal (SJL-D-17)
@@ -286,7 +293,8 @@ area: syntax
 op: ParseScript
 in: str:"var d = 1.5m; 0"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row T18: the `m` suffix; Broiler.JS answers `1m` and `08m` accepted (a Decimal); engine policy (the lexer-extension parameter, SJL-D-17, JSD-0083 decision D17), which decision D25 keeps a divergence field; this engine's record is decision SJL-D-17 of docs/roadmap/SharedLibraries.md: the extension stays in Broiler.JS, as a parameter of the shared lexer
 prov: spec:es2026@0248456c#sec-literals-numeric-literals test262:test/language/literals/numeric/numeric-followed-by-ident.js
 script: var d = 1.5m; 0
 note: catalogue row EX0003; correspondence row T18: refused, a fractional NumericLiteral directly followed by m, which Broiler.JS's extension reads as a Decimal (SJL-D-17)
@@ -350,11 +358,11 @@ since: 29
 id: syntax/lexical/ex0006/0001
 area: syntax
 op: ParseScript
-in: str:"/a/.source"
-out: value: str:"a"
+in: str:"/a/.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals
-script: /a/.source
+script: /a/.test("a")
 note: catalogue row EX0006: accepted, a closed RegularExpressionLiteral
 since: 29
 
@@ -407,7 +415,8 @@ area: syntax
 op: ParseScript
 in: str:"var \\u{00_76} = 1;"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row T12: `_` among an escape's hex digits; Broiler.JS answers accepted: IsDigitPart is true for `_` whatever the radix and HexValue(`_`) is 0; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-identifier-names test262:test/language/identifiers/unicode-escape-nls-err.js
 script: var \u{00_76} = 1;
 note: catalogue row EX0025; correspondence row T12: refused, a numeric separator among a braced escape's digits
@@ -429,7 +438,8 @@ area: syntax
 op: ParseScript
 in: str:"var s = \"\\x_1\";"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row T12: `_` among an escape's hex digits; Broiler.JS answers accepted: IsDigitPart is true for `_` whatever the radix and HexValue(`_`) is 0; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-literals-string-literals
 script: var s = "\x_1";
 note: catalogue row EX0005; correspondence row T12: refused, an underscore among a \x escape's digits
@@ -440,7 +450,8 @@ area: syntax
 op: ParseScript
 in: str:"var s = \"\\u{0_41}\";"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row T12: `_` among an escape's hex digits; Broiler.JS answers accepted: IsDigitPart is true for `_` whatever the radix and HexValue(`_`) is 0; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-literals-string-literals
 script: var s = "\u{0_41}";
 note: catalogue row EX0005; correspondence row T12: refused, a numeric separator among a braced escape's digits
@@ -451,7 +462,8 @@ area: syntax
 op: ParseScript
 in: str:"var s = \"\\x 41\";"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row T13: ASCII white space inside `\x`/`\u` escapes; Broiler.VM answers accepted on the wide path: .NET's HexNumber parses allow leading and trailing white space, so `"\x 1"`, `"\x1 "`, `"\u 041"` and `"\x<LF>1"` are accepted; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-string-literals
 script: var s = "\x 41";
 note: catalogue row EX0005; correspondence row T13: refused, white space inside a \x escape's digits (a correction of Broiler.VM that step 1 makes)
@@ -462,7 +474,8 @@ area: syntax
 op: ParseScript
 in: str:"var s = \"\\x1 \";"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row T13: ASCII white space inside `\x`/`\u` escapes; Broiler.VM answers accepted on the wide path: .NET's HexNumber parses allow leading and trailing white space, so `"\x 1"`, `"\x1 "`, `"\u 041"` and `"\x<LF>1"` are accepted; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-string-literals
 script: var s = "\x1 ";
 note: catalogue row EX0005; correspondence row T13: refused, white space after a \x escape's one digit (a correction of Broiler.VM that step 1 makes)
@@ -473,7 +486,8 @@ area: syntax
 op: ParseScript
 in: str:"var s = \"\\u 0041\";"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row T13: ASCII white space inside `\x`/`\u` escapes; Broiler.VM answers accepted on the wide path: .NET's HexNumber parses allow leading and trailing white space, so `"\x 1"`, `"\x1 "`, `"\u 041"` and `"\x<LF>1"` are accepted; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-string-literals
 script: var s = "\u 0041";
 note: catalogue row EX0005; correspondence row T13: refused, white space inside a \u escape's digits (a correction of Broiler.VM that step 1 makes)
@@ -495,7 +509,8 @@ area: syntax
 op: PerformEval
 in: str:"var s = '\\x\u000A1';"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row T13: ASCII white space inside `\x`/`\u` escapes; Broiler.VM answers accepted on the wide path: .NET's HexNumber parses allow leading and trailing white space, so `"\x 1"`, `"\x1 "`, `"\u 041"` and `"\x<LF>1"` are accepted; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-string-literals
 script: eval("var s = '\\x\u000a1';")
 note: catalogue row EX0005; correspondence row T13: refused, a line feed inside a \x escape (a correction of Broiler.VM that step 1 makes)
@@ -682,7 +697,8 @@ area: syntax
 op: ParseScript
 in: str:"class C { # x; }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row T21: a private name `#x` is one token; Broiler.JS answers `# x` accepted: `#` is a Hash token joined with the next identifier with no adjacency check; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-names-and-keywords test262:test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-field.js
 script: class C { # x; }
 note: correspondence row T21: refused, white space between # and the name
@@ -1320,7 +1336,8 @@ area: syntax
 op: ParseScript
 in: str:"String.raw`${1}}}x`"
 out: value: str:"1}}x"
-class: normative
+class: divergence
+divergence.broiler-js: row T28: the raw strings of a tagged template; Broiler.JS answers with every leading `}` of a segment dropped (`"1x2y"` for `${1}}}x${2}}y`, `"a1"` for `}}a${1}`); a correction of Broiler.JS (K3) (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-static-semantics-trv
 script: String.raw`${1}}}x`
 note: correspondence row T28: accepted, braces after a substitution are raw template text
@@ -1331,7 +1348,8 @@ area: syntax
 op: ParseScript
 in: str:"String.raw`}}a${1}`"
 out: value: str:"}}a1"
-class: normative
+class: divergence
+divergence.broiler-js: row T28: the raw strings of a tagged template; Broiler.JS answers with every leading `}` of a segment dropped (`"1x2y"` for `${1}}}x${2}}y`, `"a1"` for `}}a${1}`); a correction of Broiler.JS (K3) (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-static-semantics-trv
 script: String.raw`}}a${1}`
 note: correspondence row T28: accepted, braces at a template's start are raw template text
@@ -1342,7 +1360,8 @@ area: syntax
 op: PerformEval
 in: str:"`${#!\u000A1}`"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row T6: `#!` and `-->` right after a substitution's `${`; Broiler.VM answers accepted (`${#!<LF>1}` and `${--><LF>1}` are `1`): each substitution is read by an inner tokenizer whose text starts after `${`, which treats it as a source start; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-hashbang spec:es2026@0248456c#sec-template-literals
 script: eval("`${#!\u000a1}`")
 note: correspondence row T6: refused, a hashbang only begins a Script, so #! after a substitution's ${ is no token (a correction of Broiler.VM that step 1 makes)
@@ -1353,7 +1372,8 @@ area: syntax
 op: PerformEval
 in: str:"`${-->\u000A1}`"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row T6: `#!` and `-->` right after a substitution's `${`; Broiler.VM answers accepted (`${#!<LF>1}` and `${--><LF>1}` are `1`): each substitution is read by an inner tokenizer whose text starts after `${`, which treats it as a source start; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-html-like-comments spec:es2026@0248456c#sec-template-literals
 script: eval("`${-->\u000a1}`")
 note: correspondence row T6: refused, --> after a substitution's ${ is no SingleLineHTMLCloseComment, which a line terminator precedes, so it is -- and > (a correction of Broiler.VM that step 1 makes)
@@ -1380,6 +1400,7 @@ out: value: str:"1"
 class: impl-defined
 per-engine.broiler-js: value: str:"1"
 per-engine.broiler-vm: value: str:"1"
+divergence.broiler-vm: row T7: the template-end scan and HTML-like comments in a substitution; Broiler.VM answers `${1 <!-- }<LF>}` is `"1\n}"` (a different template, no error): the scan has no arm for `<!--` or `-->`, so a `}` inside one closes the substitution; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-html-like-comments
 script: eval("`${1 <!-- }\u000a}`")
 note: catalogue row EG0001; correspondence row T7: accepted, <!-- inside a substitution begins a SingleLineHTMLOpenComment, so the } after it is in the comment (a correction of Broiler.VM that step 1 makes); HTML-like comments are Annex B's (B.1.1), on for scripts in both engines' requests (Broiler.VM's JSD-0083, decision D17, rows T4 and R07; Broiler.JS's docs/roadmap/SharedLibraries.md, the frontend's syntax half, the request's switches), so each engine's expectation is the comment's
@@ -1390,7 +1411,8 @@ area: syntax
 op: ParseScript
 in: str:"`${typeof /}/}`"
 out: value: str:"object"
-class: normative
+class: divergence
+divergence.broiler-vm: row T8: the template-end scan's regular-expression-or-division guess; Broiler.VM answers `${typeof /}/}` refused 2006 and `${...return /`/...}` refused 2007: after `typeof` and `return` a `/` is division, so a `}` or a backquote in the literal ends the substitution or opens a template; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-template-literals
 script: `${typeof /}/}`
 note: correspondence row T8: accepted, a regular expression holding } after typeof inside a substitution (a correction of Broiler.VM that step 1 makes)
@@ -1399,11 +1421,12 @@ since: 29
 id: syntax/lexical/t8/0002
 area: syntax
 op: ParseScript
-in: str:"`${(function () { return /`/; })().source}`"
-out: value: str:"`"
-class: normative
+in: str:"`${(function () { return /`/; })().test(\"`\")}`"
+out: value: str:"true"
+class: divergence
+divergence.broiler-vm: row T8: the template-end scan's regular-expression-or-division guess; Broiler.VM answers `${typeof /}/}` refused 2006 and `${...return /`/...}` refused 2007: after `typeof` and `return` a `/` is division, so a `}` or a backquote in the literal ends the substitution or opens a template; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-template-literals
-script: `${(function () { return /`/; })().source}`
+script: `${(function () { return /`/; })().test("`")}`
 note: correspondence row T8: accepted, a regular expression holding a backquote after return inside a substitution (a correction of Broiler.VM that step 1 makes)
 since: 29
 
@@ -1599,7 +1622,8 @@ area: syntax
 op: PerformEval
 in: str:"var a = 6, b = 2, g = 3; a\u000A/b/g"
 out: value: f64:0x3FF0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: row T24a: a regular expression or a division after a line terminator; Broiler.JS answers `a<LF>/b/g` is `a; /b/g` (a different program, no error); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-rules-of-automatic-semicolon-insertion spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar
 script: eval("var a = 6, b = 2, g = 3; a\u000a/b/g")
 note: correspondence row T24a: accepted, after a line terminator a / that continues an expression is division
@@ -1720,7 +1744,8 @@ area: syntax
 op: PerformEval
 in: str:"#!x\u000A1"
 out: value: f64:0x3FF0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: row N26: a hashbang at the start of a strict caller's direct-eval text, `eval('#!x\n1')`; Broiler.JS answers a SyntaxError in a strict caller (the prefix puts the `#` past offset 0) and 1 in a sloppy one; a correction of Broiler.JS (JSD-0083), which lands when the prefix goes (F24); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-hashbang spec:es2026@0248456c#sec-performeval test262:test/language/comments/hashbang/eval.js
 script: "use strict"; eval("#!x\u000a1")
 note: correspondence row N26: accepted, a hashbang begins the eval code of a strict caller's direct eval, whose strictness changes no token
@@ -1816,66 +1841,66 @@ since: 29
 id: syntax/lexical/regexp-delimiting/0001
 area: syntax
 op: ParseScript
-in: str:"(/a/).source"
-out: value: str:"a"
+in: str:"(/a/).test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: (/a/).source
+script: (/a/).test("a")
 note: accepted, after ( a / begins a regular expression
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0002
 area: syntax
 op: ParseScript
-in: str:"[/a/][0].source"
-out: value: str:"a"
+in: str:"[/a/][0].test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: [/a/][0].source
+script: [/a/][0].test("a")
 note: accepted, after [
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0003
 area: syntax
 op: ParseScript
-in: str:"({ x: /a/ }).x.source"
-out: value: str:"a"
+in: str:"({ x: /a/ }).x.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: ({ x: /a/ }).x.source
+script: ({ x: /a/ }).x.test("a")
 note: accepted, after : in an object literal
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0004
 area: syntax
 op: ParseScript
-in: str:"[1, /a/][1].source"
-out: value: str:"a"
+in: str:"[1, /a/][1].test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: [1, /a/][1].source
+script: [1, /a/][1].test("a")
 note: accepted, after
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0005
 area: syntax
 op: ParseScript
-in: str:"; /a/.source"
-out: value: str:"a"
+in: str:"; /a/.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: ; /a/.source
+script: ; /a/.test("a")
 note: accepted, after ;
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0006
 area: syntax
 op: ParseScript
-in: str:"var r = /a/; r.source"
-out: value: str:"a"
+in: str:"var r = /a/; r.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: var r = /a/; r.source
+script: var r = /a/; r.test("a")
 note: accepted, after =
 since: 29
 
@@ -1893,121 +1918,121 @@ since: 29
 id: syntax/lexical/regexp-delimiting/0008
 area: syntax
 op: ParseScript
-in: str:"true ? /a/.source : 0"
-out: value: str:"a"
+in: str:"true ? /a/.test(\"a\") : 0"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: true ? /a/.source : 0
+script: true ? /a/.test("a") : 0
 note: accepted, after ?
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0009
 area: syntax
 op: ParseScript
-in: str:"false ? 0 : /a/.source"
-out: value: str:"a"
+in: str:"false ? 0 : /a/.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: false ? 0 : /a/.source
+script: false ? 0 : /a/.test("a")
 note: accepted, after : of a conditional
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0010
 area: syntax
 op: ParseScript
-in: str:"1 && /a/.source"
-out: value: str:"a"
+in: str:"1 && /a/.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: 1 && /a/.source
+script: 1 && /a/.test("a")
 note: accepted, after &&
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0011
 area: syntax
 op: ParseScript
-in: str:"0 || /a/.source"
-out: value: str:"a"
+in: str:"0 || /a/.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: 0 || /a/.source
+script: 0 || /a/.test("a")
 note: accepted, after ||
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0012
 area: syntax
 op: ParseScript
-in: str:"null ?? /a/.source"
-out: value: str:"a"
+in: str:"null ?? /a/.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: null ?? /a/.source
+script: null ?? /a/.test("a")
 note: accepted, after ??
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0013
 area: syntax
 op: ParseScript
-in: str:"(() => /a/)().source"
-out: value: str:"a"
+in: str:"(() => /a/)().test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: (() => /a/)().source
+script: (() => /a/)().test("a")
 note: accepted, after =>
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0014
 area: syntax
 op: ParseScript
-in: str:"\"\" + /a/"
-out: value: str:"/a/"
+in: str:"1 + /1/.test(\"1\")"
+out: value: f64:0x4000000000000000
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: "" + /a/
+script: 1 + /1/.test("1")
 note: accepted, after +
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0015
 area: syntax
 op: ParseScript
-in: str:"-/1/.source"
+in: str:"-/1/.test(\"1\")"
 out: value: f64:0xBFF0000000000000
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: -/1/.source
+script: -/1/.test("1")
 note: accepted, after -
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0016
 area: syntax
 op: ParseScript
-in: str:"2 * /3/.source"
-out: value: f64:0x4018000000000000
+in: str:"2 * /3/.test(\"3\")"
+out: value: f64:0x4000000000000000
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: 2 * /3/.source
+script: 2 * /3/.test("3")
 note: accepted, after *
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0017
 area: syntax
 op: ParseScript
-in: str:"7 % /4/.source"
-out: value: f64:0x4008000000000000
+in: str:"7 % /4/.test(\"4\")"
+out: value: f64:0x0000000000000000
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: 7 % /4/.source
+script: 7 % /4/.test("4")
 note: accepted, after %
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0018
 area: syntax
 op: ParseScript
-in: str:"1 | /2/.source"
+in: str:"2 | /2/.test(\"2\")"
 out: value: f64:0x4008000000000000
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: 1 | /2/.source
+script: 2 | /2/.test("2")
 note: accepted, after |
 since: 29
 
@@ -2036,22 +2061,22 @@ since: 29
 id: syntax/lexical/regexp-delimiting/0021
 area: syntax
 op: ParseScript
-in: str:"\"a\" === /a/.source"
+in: str:"true === /a/.test(\"a\")"
 out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: "a" === /a/.source
+script: true === /a/.test("a")
 note: accepted, after ===
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0022
 area: syntax
 op: ParseScript
-in: str:"[.../ab/.source].length"
+in: str:"[.../a(b)/.exec(\"ab\")].length"
 out: value: f64:0x4000000000000000
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: [.../ab/.source].length
+script: [.../a(b)/.exec("ab")].length
 note: accepted, after ...
 since: 29
 
@@ -2102,33 +2127,33 @@ since: 29
 id: syntax/lexical/regexp-delimiting/0027
 area: syntax
 op: ParseScript
-in: str:"new /a/.constructor(\"b\").source"
-out: value: str:"b"
+in: str:"new /a/.constructor(\"b\").test(\"b\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: new /a/.constructor("b").source
+script: new /a/.constructor("b").test("b")
 note: accepted, after new
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0028
 area: syntax
 op: ParseScript
-in: str:"(function () { return /a/; })().source"
-out: value: str:"a"
+in: str:"(function () { return /a/; })().test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: (function () { return /a/; })().source
+script: (function () { return /a/; })().test("a")
 note: accepted, after return
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0029
 area: syntax
 op: ParseScript
-in: str:"try { throw /a/; } catch (e) { e.source }"
-out: value: str:"a"
+in: str:"try { throw /a/; } catch (e) { e.test(\"a\") }"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: try { throw /a/; } catch (e) { e.source }
+script: try { throw /a/; } catch (e) { e.test("a") }
 note: accepted, after throw
 since: 29
 
@@ -2146,66 +2171,66 @@ since: 29
 id: syntax/lexical/regexp-delimiting/0031
 area: syntax
 op: ParseScript
-in: str:"{ /a/.source }"
-out: value: str:"a"
+in: str:"{ /a/.test(\"a\") }"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: { /a/.source }
+script: { /a/.test("a") }
 note: accepted, after { of a block
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0032
 area: syntax
 op: ParseScript
-in: str:"{} /a/.source"
-out: value: str:"a"
+in: str:"{} /a/.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: {} /a/.source
+script: {} /a/.test("a")
 note: accepted, after } of a block
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0033
 area: syntax
 op: ParseScript
-in: str:"function f() {} /a/.source"
-out: value: str:"a"
+in: str:"function f() {} /a/.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: function f() {} /a/.source
+script: function f() {} /a/.test("a")
 note: accepted, after } of a function declaration
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0034
 area: syntax
 op: ParseScript
-in: str:"if (true) /a/.source"
-out: value: str:"a"
+in: str:"if (true) /a/.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: if (true) /a/.source
+script: if (true) /a/.test("a")
 note: accepted, after ) of an if statement's head
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0035
 area: syntax
 op: ParseScript
-in: str:"if (false) ; else /a/.source"
-out: value: str:"a"
+in: str:"if (false) ; else /a/.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: if (false) ; else /a/.source
+script: if (false) ; else /a/.test("a")
 note: accepted, after else
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0036
 area: syntax
 op: ParseScript
-in: str:"function* g() { yield /a/; } g().next().value.source"
-out: value: str:"a"
+in: str:"function* g() { yield /a/; } g().next().value.test(\"a\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: function* g() { yield /a/; } g().next().value.source
+script: function* g() { yield /a/; } g().next().value.test("a")
 note: accepted, after yield in a generator
 since: 29
 
@@ -2289,22 +2314,22 @@ since: 29
 id: syntax/lexical/regexp-delimiting/0044
 area: syntax
 op: ParseScript
-in: str:"/[/]/.source"
-out: value: str:"[/]"
+in: str:"/[/]/.test(\"/\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: /[/]/.source
+script: /[/]/.test("/")
 note: accepted, a / inside a class does not end the literal
 since: 29
 
 id: syntax/lexical/regexp-delimiting/0045
 area: syntax
 op: ParseScript
-in: str:"/a\\/b/.source"
-out: value: str:"a\\/b"
+in: str:"/a\\/b/.test(\"a/b\")"
+out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: /a\/b/.source
+script: /a\/b/.test("a/b")
 note: accepted, an escaped / does not end the literal
 since: 29
 
@@ -2313,7 +2338,8 @@ area: syntax
 op: ParseScript
 in: str:"var b = 2, g = 3; var x = function () {} /b/g; x"
 out: value: f64:0x7FF8000000000000
-class: normative
+class: divergence
+divergence.broiler-js: row T24b: after a `}` that closes an expression (object literal, function expression); Broiler.JS answers a regular expression where the specification reads a division; the row records P accepted and K refused ("Undefined binary operation RegExLiteral") for a regular expression followed by an operand, and with `;` after it the run completes with the left operand's value, no error; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: var b = 2, g = 3; var x = function () {} /b/g; x
 note: correspondence row T24b: accepted, after } of a function expression a / is division
@@ -2324,7 +2350,8 @@ area: syntax
 op: ParseScript
 in: str:"var b = 2, g = 3; var x = {} /b/g; x"
 out: value: f64:0x7FF8000000000000
-class: normative
+class: divergence
+divergence.broiler-js: row T24b: after a `}` that closes an expression (object literal, function expression); Broiler.JS answers a regular expression where the specification reads a division; the row records P accepted and K refused ("Undefined binary operation RegExLiteral") for a regular expression followed by an operand, and with `;` after it the run completes with the left operand's value, no error; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: var b = 2, g = 3; var x = {} /b/g; x
 note: correspondence row T24b: accepted, after } of an object literal a / is division
@@ -2333,11 +2360,12 @@ since: 29
 id: syntax/lexical/regexp-delimiting/0048
 area: syntax
 op: ParseScript
-in: str:"var r = \"\"; for (var c of /ab/.source) r += c; r"
-out: value: str:"ab"
-class: normative
+in: str:"var r = \"\"; for (var c of /a(b)/.exec(\"ab\")) r += c; r"
+out: value: str:"abb"
+class: divergence
+divergence.broiler-js: row T24c: after `of` in a for-of head and after `extends`; Broiler.JS answers division (refused); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
-script: var r = ""; for (var c of /ab/.source) r += c; r
+script: var r = ""; for (var c of /a(b)/.exec("ab")) r += c; r
 note: correspondence row T24c: accepted, after of in a for-of head a / begins a regular expression
 since: 29
 
@@ -2346,7 +2374,8 @@ area: syntax
 op: ParseScript
 in: str:"class C extends /a/.constructor {} typeof C"
 out: value: str:"function"
-class: normative
+class: divergence
+divergence.broiler-js: row T24c: after `of` in a for-of head and after `extends`; Broiler.JS answers division (refused); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: class C extends /a/.constructor {} typeof C
 note: correspondence row T24c: accepted, after extends a / begins a regular expression
@@ -2357,7 +2386,9 @@ area: syntax
 op: ParseScript
 in: str:"async function f() { for await (var x of []) /a/g; } typeof f"
 out: value: str:"function"
-class: normative
+class: divergence
+divergence.broiler-js: row T24d: a regular expression after a `for await (...)` head; Broiler.JS answers refused: OpensStatementHead reads division; a correction of both (JSD-0083); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
+divergence.broiler-vm: row T24d: a regular expression after a `for await (...)` head; Broiler.VM answers refused: a head needs if, while, for or with before `(`, so after `await` a `/` is division; a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: async function f() { for await (var x of []) /a/g; } typeof f
 note: correspondence row T24d: accepted, after a for-await head a / begins a regular expression (a correction of both engines; Broiler.VM's at step 1)
@@ -2368,7 +2399,9 @@ area: syntax
 op: ParseScript
 in: str:"++/x/.lastIndex"
 out: value: f64:0x3FF0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: row T24e: a regular expression after a prefix `++` or `--`; Broiler.JS answers refused: Increment and Decrement read division; a correction of both (JSD-0083); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
+divergence.broiler-vm: row T24e: a regular expression after a prefix `++` or `--`; Broiler.VM answers refused: PlusPlus and MinusMinus read division; a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: ++/x/.lastIndex
 note: correspondence row T24e: accepted, after a prefix ++ a / begins a regular expression (a correction of both engines; Broiler.VM's at step 1)
@@ -2379,7 +2412,9 @@ area: syntax
 op: ParseScript
 in: str:"var await = 6, b = 2, g = 3; await /b/g"
 out: value: f64:0x3FF0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: row T24f: a division after `await` used as an identifier in a Script; Broiler.JS answers a regular expression, which the parser takes as a binary operator (as T24b); the row records P accepted and K refused for one followed by an operand, and with nothing after it the run completes with `await`'s value, no error; a correction of both (JSD-0083); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
+divergence.broiler-vm: row T24f: a division after `await` used as an identifier in a Script; Broiler.VM answers refused: Await falls to a regular expression; a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: var await = 6, b = 2, g = 3; await /b/g
 note: correspondence row T24f: accepted, after await used as an identifier in a Script a / is division (a correction of both engines; Broiler.VM's at step 1)
@@ -2467,7 +2502,8 @@ area: syntax
 op: ParseScript
 in: str:"do {}; while (false)"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P10: `do Statement while (...)` with a `;` between the body and `while`; Broiler.JS answers accepted: DoWhile consumes a semicolon after the body; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-do-while-statement test262:test/language/asi/S7.9_A9_T8.js
 script: do {}; while (false)
 note: correspondence row P10: refused, a statement between a do-while's body and while
@@ -2481,7 +2517,7 @@ out: error: SyntaxError
 class: normative
 prov: spec:es2026@0248456c#sec-rules-of-automatic-semicolon-insertion test262:test/language/asi/S7.9_A6.2_T1.js
 script: eval("for (var i = 0\u000ai < 1; i++) ;")
-note: refused, no semicolon is inserted in a for statement's head
+note: correspondence row P16: refused, no semicolon is inserted in a for statement's head
 since: 29
 
 id: syntax/lexical/asi/0010
@@ -2522,7 +2558,8 @@ area: syntax
 op: PerformEval
 in: str:"({ async\u000Am() {} })"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P09: `[no LineTerminator here]` after `async` before a method name; Broiler.JS answers accepted: CheckAndConsume(async) skips line breaks; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-async-function-definitions test262:test/language/expressions/object/method-definition/async-meth-escaped-async.js
 script: eval("({ async\u000am() {} })")
 note: correspondence row P09: refused, a line terminator after async in a method

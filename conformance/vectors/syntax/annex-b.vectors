@@ -48,10 +48,11 @@ area: syntax
 op: ParseScript
 in: str:"{ function f() {} function* f() {} }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D35: lexical redeclarations Broiler.JS misses (async functions and generators in blocks, `catch` and others); Broiler.JS answers accepted: FastScopeItem.AddVariable misses these forms; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-block-level-function-declarations-web-legacy-compatibility-semantics spec:es2026@0248456c#sec-block-static-semantics-early-errors test262:test/language/block-scope/syntax/redeclaration/function-name-redeclaration-attempt-with-generator.js
 script: { function f() {} function* f() {} }
-note: catalogue row EG0004: refused, a function and a generator of one name in a block
+note: catalogue row EG0004; correspondence row D35: refused, a function and a generator of one name in a block
 since: 29
 
 id: syntax/annex-b/eg0005/0001
@@ -144,8 +145,9 @@ area: syntax
 op: ParseScript
 in: str:"\"use strict\"; function f() {} f() = 1;"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D39: the private name `#constructor`, a parameter and lexical name collision, and assignment and update targets Broiler.JS admits; Broiler.JS answers accepted (the checks are missing; an invalid target throws only when it runs); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-runtime-errors-for-function-call-assignment-targets spec:es2026@0248456c#sec-assignment-operators-static-semantics-early-errors test262:test/language/expressions/assignmenttargettype/direct-callexpression.js
 script: "use strict"; function f() {} f() = 1;
-note: catalogue row EG0008: refused, a call as an assignment target in strict code
+note: catalogue row EG0008; correspondence row D39: refused, a call as an assignment target in strict code
 since: 29

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Write the syntax area of the conformance corpus (corpus revision 29, milestone SJL-13, work package SJL-13.2).
+"""Write the syntax area of the conformance corpus (corpus revisions 29 and 30, milestone SJL-13, SJL-13.2).
 
     python3 -I scripts/conformance/generate_syntax_vectors.py [--out conformance/vectors/syntax]
     python3 -I scripts/conformance/generate_syntax_vectors.py --check-node <Node v26.12.0>
@@ -43,8 +43,8 @@ turn Annex B and HTML-like comments on for scripts (Broiler.VM's JSD-0083, decis
 R08; this repository's docs/roadmap/SharedLibraries.md, the frontend's syntax half, "The request"). Broiler.JS's `m`
 suffix admits a source the specification refuses: its vectors carry a `divergence.broiler-js` field from this
 engine's record (SJL-D-17, and the correspondence's row T18), read from syntax-divergences.txt like every other
-classification of the area: each engine's first run on the area is classified in the revision after the one that
-adds it, in scripts/conformance/syntax-divergences.txt, which this generator reads where it exists.
+classification of the area: each engine's first run on revision 29, which added the area, is classified at revision
+30 in scripts/conformance/syntax-divergences.txt, which this generator reads.
 
 The generator is deterministic and reads nothing but this file, the stage table and syntax-divergences.txt: the same
 inputs write the same bytes.
@@ -73,7 +73,7 @@ STAGES = REPOSITORY / "Broiler.ECMAScript" / "docs" / "frontend" / "stages.tsv"
 DIVERGENCES = SCRIPTS / "syntax-divergences.txt"
 CHECKER = SCRIPTS / "syntaxcheck.mjs"
 SINCE = 29              # the corpus revision that added the area
-CORPUS_REVISION = 29    # the corpus revision this generator writes: REVISIONS.md's last row
+CORPUS_REVISION = 30    # the corpus revision this generator writes: REVISIONS.md's last row
 GENERATOR = "generate_syntax_vectors.py"
 REFERENCE_VERSION = "v26.12.0"
 
@@ -362,7 +362,8 @@ def lexical() -> None:
     add(f, "ex0005", "\"\\u{110000}\"", SE, rows=("EX0005",), clauses=C(STR, "sec-string-literals-early-errors"),
         tests=T("test/language/literals/string/unicode-escape-nls-err-double.js"),
         note="a braced escape above U+10FFFF")
-    add(f, "ex0006", "/a/.source", V("a"), rows=("EX0006",), clauses=C(REGEXP), note="a closed RegularExpressionLiteral")
+    add(f, "ex0006", "/a/.test(\"a\")", V(True), rows=("EX0006",), clauses=C(REGEXP),
+        note="a closed RegularExpressionLiteral")
     add(f, "ex0006", "/a", SE, rows=("EX0006",), clauses=C(REGEXP),
         tests=T("test/language/literals/regexp/S7.8.5_A1.2_T1.js"),
         note="a RegularExpressionLiteral with no closing / before the end of the source text")
@@ -557,7 +558,7 @@ def lexical_templates() -> None:
     add(f, "t8", "`${typeof /}/}`", V("object"), corr=("T8",), clauses=C(REGEXP, "sec-template-literals"),
         note="a regular expression holding } after typeof inside a substitution (a correction of Broiler.VM that "
              "step 1 makes)")
-    add(f, "t8", "`${(function () { return /`/; })().source}`", V("`"), corr=("T8",),
+    add(f, "t8", "`${(function () { return /`/; })().test(\"`\")}`", V("true"), corr=("T8",),
         clauses=C(REGEXP, "sec-template-literals"),
         note="a regular expression holding a backquote after return inside a substitution (a correction of "
              "Broiler.VM that step 1 makes)")
@@ -643,42 +644,42 @@ def lexical_regexp() -> None:
     f, g = "lexical", "regexp-delimiting"
     rx = C(REGEXP, LEX, "sec-lexical-and-regexp-grammars")
     cases = [
-        ("(/a/).source", "a", "after ( a / begins a regular expression"),
-        ("[/a/][0].source", "a", "after ["),
-        ("({ x: /a/ }).x.source", "a", "after : in an object literal"),
-        ("[1, /a/][1].source", "a", "after ,"),
-        ("; /a/.source", "a", "after ;"),
-        ("var r = /a/; r.source", "a", "after ="),
+        ("(/a/).test(\"a\")", True, "after ( a / begins a regular expression"),
+        ("[/a/][0].test(\"a\")", True, "after ["),
+        ("({ x: /a/ }).x.test(\"a\")", True, "after : in an object literal"),
+        ("[1, /a/][1].test(\"a\")", True, "after ,"),
+        ("; /a/.test(\"a\")", True, "after ;"),
+        ("var r = /a/; r.test(\"a\")", True, "after ="),
         ("!/a/", False, "after !"),
-        ("true ? /a/.source : 0", "a", "after ?"),
-        ("false ? 0 : /a/.source", "a", "after : of a conditional"),
-        ("1 && /a/.source", "a", "after &&"),
-        ("0 || /a/.source", "a", "after ||"),
-        ("null ?? /a/.source", "a", "after ??"),
-        ("(() => /a/)().source", "a", "after =>"),
-        ("\"\" + /a/", "/a/", "after +"),
-        ("-/1/.source", -1, "after -"),
-        ("2 * /3/.source", 6, "after *"),
-        ("7 % /4/.source", 3, "after %"),
-        ("1 | /2/.source", 3, "after |"),
+        ("true ? /a/.test(\"a\") : 0", True, "after ?"),
+        ("false ? 0 : /a/.test(\"a\")", True, "after : of a conditional"),
+        ("1 && /a/.test(\"a\")", True, "after &&"),
+        ("0 || /a/.test(\"a\")", True, "after ||"),
+        ("null ?? /a/.test(\"a\")", True, "after ??"),
+        ("(() => /a/)().test(\"a\")", True, "after =>"),
+        ("1 + /1/.test(\"1\")", 2, "after +"),
+        ("-/1/.test(\"1\")", -1, "after -"),
+        ("2 * /3/.test(\"3\")", 2, "after *"),
+        ("7 % /4/.test(\"4\")", 0, "after %"),
+        ("2 | /2/.test(\"2\")", 3, "after |"),
         ("-1 < /a/.lastIndex", True, "after <"),
         ("1 > /a/.lastIndex", True, "after >"),
-        ("\"a\" === /a/.source", True, "after ==="),
-        ("[.../ab/.source].length", 2, "after ..."),
+        ("true === /a/.test(\"a\")", True, "after ==="),
+        ("[.../a(b)/.exec(\"ab\")].length", 2, "after ..."),
         ("typeof /a/", "object", "after typeof"),
         ("void /a/", None, "after void"),
         ("\"source\" in /a/", True, "after in"),
         ("({}) instanceof /a/.constructor", False, "after instanceof"),
-        ("new /a/.constructor(\"b\").source", "b", "after new"),
-        ("(function () { return /a/; })().source", "a", "after return"),
-        ("try { throw /a/; } catch (e) { e.source }", "a", "after throw"),
+        ("new /a/.constructor(\"b\").test(\"b\")", True, "after new"),
+        ("(function () { return /a/; })().test(\"a\")", True, "after return"),
+        ("try { throw /a/; } catch (e) { e.test(\"a\") }", True, "after throw"),
         ("switch (1) { case /a/.lastIndex + 1: 2 }", 2, "after case"),
-        ("{ /a/.source }", "a", "after { of a block"),
-        ("{} /a/.source", "a", "after } of a block"),
-        ("function f() {} /a/.source", "a", "after } of a function declaration"),
-        ("if (true) /a/.source", "a", "after ) of an if statement's head"),
-        ("if (false) ; else /a/.source", "a", "after else"),
-        ("function* g() { yield /a/; } g().next().value.source", "a", "after yield in a generator"),
+        ("{ /a/.test(\"a\") }", True, "after { of a block"),
+        ("{} /a/.test(\"a\")", True, "after } of a block"),
+        ("function f() {} /a/.test(\"a\")", True, "after } of a function declaration"),
+        ("if (true) /a/.test(\"a\")", True, "after ) of an if statement's head"),
+        ("if (false) ; else /a/.test(\"a\")", True, "after else"),
+        ("function* g() { yield /a/; } g().next().value.test(\"a\")", True, "after yield in a generator"),
         ("var a = 6, b = 2, g = 3; a /b/g", 1, "after an identifier a / is division"),
         ("6 /2/ 3", 1, "after a numeric literal a / is division"),
         ("\"6\" /2/ 3", 1, "after a string literal a / is division"),
@@ -686,8 +687,8 @@ def lexical_regexp() -> None:
         ("(6) /2/ 3", 1, "after ) of a parenthesised expression a / is division"),
         ("[6][0] /2/ 3", 1, "after ] a / is division"),
         ("var a = 6, b = 2; a++ /b/ 3", 1, "after a postfix ++ a / is division"),
-        ("/[/]/.source", "[/]", "a / inside a class does not end the literal"),
-        ("/a\\/b/.source", "a\\/b", "an escaped / does not end the literal"),
+        ("/[/]/.test(\"/\")", True, "a / inside a class does not end the literal"),
+        ("/a\\/b/.test(\"a/b\")", True, "an escaped / does not end the literal"),
     ]
     for text, value, note in cases:
         add(f, g, text, V(value), clauses=rx, note=note)
@@ -695,7 +696,7 @@ def lexical_regexp() -> None:
         ("var b = 2, g = 3; var x = function () {} /b/g; x", NAN, "T24b",
          "after } of a function expression a / is division"),
         ("var b = 2, g = 3; var x = {} /b/g; x", NAN, "T24b", "after } of an object literal a / is division"),
-        ("var r = \"\"; for (var c of /ab/.source) r += c; r", "ab", "T24c",
+        ("var r = \"\"; for (var c of /a(b)/.exec(\"ab\")) r += c; r", "abb", "T24c",
          "after of in a for-of head a / begins a regular expression"),
         ("class C extends /a/.constructor {} typeof C", "function", "T24c",
          "after extends a / begins a regular expression"),
@@ -728,7 +729,7 @@ def lexical_asi() -> None:
         note="a semicolon inserted after a do-while statement's )")
     add(f, g, "do {}; while (false)", SE, corr=("P10",), clauses=C("sec-do-while-statement"),
         tests=T("test/language/asi/S7.9_A9_T8.js"), note="a statement between a do-while's body and while")
-    add(f, g, "for (var i = 0\ni < 1; i++) ;", SE, clauses=C(ASI), tests=T("test/language/asi/S7.9_A6.2_T1.js"),
+    add(f, g, "for (var i = 0\ni < 1; i++) ;", SE, corr=("P16",), clauses=C(ASI), tests=T("test/language/asi/S7.9_A6.2_T1.js"),
         note="no semicolon is inserted in a for statement's head")
     add(f, g, "var f = a\n=> 1", SE, rows=("EE0025",), clauses=C(ASI, "sec-arrow-function-definitions"),
         tests=T("test/language/expressions/arrow-function/syntax/early-errors/asi-restriction-invalid.js"),
@@ -765,12 +766,12 @@ def expressions() -> None:
         note="await as a binding in an async function")
     add(f, "ee0010", "var yi\\u0065ld = 4; yield", V(4), rows=("EE0010",), clauses=C(I),
         note="an escaped yield as a binding in sloppy code outside a generator")
-    add(f, "ee0010", "function* g() { var yi\\u0065ld; }", SE, rows=("EE0010",), clauses=C(I),
+    add(f, "ee0010", "function* g() { var yi\\u0065ld; }", SE, rows=("EE0010",), corr=("D33",), clauses=C(I),
         tests=T("test/language/statements/generators/yield-as-binding-identifier-escaped.js"),
         note="an escaped yield as a binding in a generator")
     add(f, "ee0011", "var aw\\u0061it = 5; await", V(5), rows=("EE0011",), clauses=C(I),
         note="an escaped await as a binding in a Script")
-    add(f, "ee0011", "async function f() { var aw\\u0061it; }", SE, rows=("EE0011",), clauses=C(I),
+    add(f, "ee0011", "async function f() { var aw\\u0061it; }", SE, rows=("EE0011",), corr=("D33",), clauses=C(I),
         tests=T("test/language/statements/async-function/await-as-binding-identifier-escaped.js"),
         note="an escaped await as a binding in an async function")
     add(f, "ee0012", "var implements = 6; implements", V(6), rows=("EE0012",), clauses=C(I),
@@ -812,13 +813,13 @@ def expressions() -> None:
     add(f, "ee0028", "1++;", SE, rows=("EE0028",), clauses=C(U),
         tests=T("test/language/expressions/postfix-increment/this.js"), note="a postfix increment of a literal")
     add(f, "ee0029", "var y = 1; --y", V(0), rows=("EE0029",), clauses=C(U), note="a prefix decrement of a name")
-    add(f, "ee0029", "++this;", SE, rows=("EE0029",), clauses=C(U),
+    add(f, "ee0029", "++this;", SE, rows=("EE0029",), corr=("D39",), clauses=C(U),
         tests=T("test/language/expressions/prefix-decrement/this.js"), note="a prefix increment of this")
     D = "sec-delete-operator-static-semantics-early-errors"
     add(f, "ee0030", "delete x", V(True), rows=("EE0030",), clauses=C(D), note="delete of a name in sloppy code")
     add(f, "ee0030", "\"use strict\"; delete x;", SE, rows=("EE0030",), clauses=C(D),
         tests=T("test/language/expressions/delete/identifier-strict.js"), note="delete of a name in strict code")
-    add(f, "ee0030", "class C { #p; m() { delete this.#p; } }", SE, rows=("EE0030",), clauses=C(D),
+    add(f, "ee0030", "class C { #p; m() { delete this.#p; } }", SE, rows=("EE0030",), corr=("D34",), clauses=C(D),
         tests=T("test/language/expressions/class/elements/syntax/early-errors/delete/"
                 "field-delete-err-delete-member-expression-privatename.js"),
         note="delete of a private reference")
@@ -830,7 +831,7 @@ def expressions() -> None:
     A = "sec-assignment-operators-static-semantics-early-errors"
     add(f, "ee0032", "var a, b; [a, b] = [1, 2]; b", V(2), rows=("EE0032",), clauses=C(A),
         note="an array literal that covers an AssignmentPattern")
-    add(f, "ee0032", "var a, b; [...a, b] = [];", SE, rows=("EE0032",), clauses=C(A),
+    add(f, "ee0032", "var a, b; [...a, b] = [];", SE, rows=("EE0032",), corr=("P15a",), clauses=C(A),
         tests=T("test/language/expressions/assignment/dstr/array-rest-before-element.js"),
         note="an array literal with a rest element before the last, which covers no AssignmentPattern")
     add(f, "ee0033", "var a; a = 3", V(3), rows=("EE0033",), clauses=C(A), note="an assignment to a name")
@@ -947,7 +948,7 @@ def statements() -> None:
         tests=T("test/language/statements/for-in/labelled-fn-stmt-var.js"), note="a labelled function as a for-in's body")
     add(f, "ee0053", "var a; for ([a] of [[5]]) ; a", V(5), rows=("EE0053",), clauses=C(FIO),
         note="an array literal that covers an AssignmentPattern in a for-of head")
-    add(f, "ee0053", "var a, b; for ([...a, b] of []) ;", SE, rows=("EE0053",), clauses=C(FIO),
+    add(f, "ee0053", "var a, b; for ([...a, b] of []) ;", SE, rows=("EE0053",), corr=("P15a",), clauses=C(FIO),
         tests=T("test/language/statements/for-of/dstr/array-rest-before-element.js"),
         note="an array literal that covers no AssignmentPattern in a for-of head")
     add(f, "ee0055", "var r = 0; for (let x of [1, 2]) r += x; r", V(3), rows=("EE0055",), clauses=C(FIO),
@@ -971,7 +972,7 @@ def statements() -> None:
         tests=T("test/language/statements/with/strict-script.js"), note="with in strict code")
     add(f, "ee0061", "var r = 0; with ({}) L: r = 1; r", V(1), rows=("EE0061",), clauses=C(W),
         note="a labelled statement as a with's body")
-    add(f, "ee0061", "with ({}) L: function f() {}", SE, rows=("EE0061",), clauses=C(W),
+    add(f, "ee0061", "with ({}) L: function f() {}", SE, rows=("EE0061",), corr=("D36",), clauses=C(W),
         tests=T("test/language/statements/with/labelled-fn-stmt.js"), note="a labelled function as a with's body")
     SW = "sec-switch-statement-static-semantics-early-errors"
     add(f, "ee0062", "var r; switch (1) { case 1: let a = 1; r = a; } r", V(1), rows=("EE0062",), clauses=C(SW),
@@ -998,7 +999,7 @@ def statements() -> None:
         note="a catch parameter pattern binding one name twice")
     add(f, "ee0066", "var r; try { throw 1; } catch (e) { { let e = 2; r = e; } } r", V(2), rows=("EE0066",),
         clauses=C(TRY), note="a lexical declaration of the catch parameter's name in a nested block")
-    add(f, "ee0066", "try {} catch (e) { let e; }", SE, rows=("EE0066",), clauses=C(TRY),
+    add(f, "ee0066", "try {} catch (e) { let e; }", SE, rows=("EE0066",), corr=("D35",), clauses=C(TRY),
         tests=T("test/language/statements/try/early-catch-lex.js"),
         note="a lexical declaration of the catch parameter's name in the catch block")
     add(f, "ee0067", "var r; try { throw 1; } catch (e) { var f = e; r = f; } r", V(1), rows=("EE0067",),
@@ -1042,10 +1043,18 @@ def functions_and_classes() -> None:
     AF = "sec-async-function-definitions-static-semantics-early-errors"
     AA = "sec-async-arrow-function-definitions-static-semantics-early-errors"
 
+    # The correspondence's row of a half where an engine's first run differs (revision 30): the row whose answer the
+    # engine gives, which each note names beside the catalogue row.
+    accepted_rows = {"EE0097": ("D42",), "EE0111": ("D42",), "EE0147": ("D42",)}
+    refused_rows = {"EE0086": ("D39",), "EE0087": ("P15a",), "EE0094": ("D38",), "EE0107": ("D38",),
+                    "EE0132": ("D39",), "EE0154": ("D39",), "EE0158": ("D39",)}
+
     def pair(row: str, clause: str, accepted: str, value, refused: str, tests: Sequence[str], acc_note: str,
              ref_note: str, corr: Sequence[str] = ()) -> None:
-        add(f, row.lower(), accepted, V(value), rows=(row,), clauses=C(clause), note=acc_note)
-        add(f, row.lower(), refused, SE, rows=(row,), corr=corr, clauses=C(clause), tests=T(*tests), note=ref_note)
+        add(f, row.lower(), accepted, V(value), rows=(row,), corr=accepted_rows.get(row, ()), clauses=C(clause),
+            note=acc_note)
+        add(f, row.lower(), refused, SE, rows=(row,), corr=tuple(corr) + refused_rows.get(row, ()),
+            clauses=C(clause), tests=T(*tests), note=ref_note)
 
     pair("EE0068", P, "((a, b) => a + b)(1, 2)", 3, "(a, a) => 1;",
          ["test/language/expressions/arrow-function/params-duplicate.js"],
@@ -1367,7 +1376,7 @@ def annex_b() -> None:
         clauses=C("sec-block-level-function-declarations-web-legacy-compatibility-semantics"),
         tests=T("test/annexB/language/function-code/function-redeclaration-block.js"),
         note="one function name declared twice in a block in sloppy code", impl=ANNEX_B)
-    add(f, "eg0004", "{ function f() {} function* f() {} }", SE, rows=("EG0004",),
+    add(f, "eg0004", "{ function f() {} function* f() {} }", SE, rows=("EG0004",), corr=("D35",),
         clauses=C("sec-block-level-function-declarations-web-legacy-compatibility-semantics",
                   "sec-block-static-semantics-early-errors"),
         tests=T("test/language/block-scope/syntax/redeclaration/function-name-redeclaration-attempt-with-generator.js"),
@@ -1398,7 +1407,7 @@ def annex_b() -> None:
         rows=("EG0008",), clauses=C("sec-runtime-errors-for-function-call-assignment-targets"),
         tests=T("test/annexB/language/expressions/assignmenttargettype/callexpression.js"),
         note="a call as an assignment target in sloppy code throws a ReferenceError when it runs", impl=ANNEX_B)
-    add(f, "eg0008", "\"use strict\"; function f() {} f() = 1;", SE, rows=("EG0008",),
+    add(f, "eg0008", "\"use strict\"; function f() {} f() = 1;", SE, rows=("EG0008",), corr=("D39",),
         clauses=C("sec-runtime-errors-for-function-call-assignment-targets",
                   "sec-assignment-operators-static-semantics-early-errors"),
         tests=T("test/language/expressions/assignmenttargettype/direct-callexpression.js"),

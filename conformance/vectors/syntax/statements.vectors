@@ -308,10 +308,11 @@ area: syntax
 op: ParseScript
 in: str:"var a, b; for ([...a, b] of []) ;"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P15a: cover grammars to patterns, a rest element that is not last; Broiler.JS answers accepted at P (the conversion has no rest-position check; D49 holds its sites); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-for-in-and-for-of-statements-static-semantics-early-errors test262:test/language/statements/for-of/dstr/array-rest-before-element.js
 script: var a, b; for ([...a, b] of []) ;
-note: catalogue row EE0053: refused, an array literal that covers no AssignmentPattern in a for-of head
+note: catalogue row EE0053; correspondence row P15a: refused, an array literal that covers no AssignmentPattern in a for-of head
 since: 29
 
 id: syntax/statements/ee0055/0001
@@ -418,10 +419,11 @@ area: syntax
 op: ParseScript
 in: str:"with ({}) L: function f() {}"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D36: declarations and labelled functions where a single statement stands; Broiler.JS answers accepted (the check is missing; P11 holds the grammar half); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-with-statement-static-semantics-early-errors test262:test/language/statements/with/labelled-fn-stmt.js
 script: with ({}) L: function f() {}
-note: catalogue row EE0061: refused, a labelled function as a with's body
+note: catalogue row EE0061; correspondence row D36: refused, a labelled function as a with's body
 since: 29
 
 id: syntax/statements/ee0062/0001
@@ -528,10 +530,11 @@ area: syntax
 op: ParseScript
 in: str:"try {} catch (e) { let e; }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D35: lexical redeclarations Broiler.JS misses (async functions and generators in blocks, `catch` and others); Broiler.JS answers accepted: FastScopeItem.AddVariable misses these forms; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-try-statement-static-semantics-early-errors test262:test/language/statements/try/early-catch-lex.js
 script: try {} catch (e) { let e; }
-note: catalogue row EE0066: refused, a lexical declaration of the catch parameter's name in the catch block
+note: catalogue row EE0066; correspondence row D35: refused, a lexical declaration of the catch parameter's name in the catch block
 since: 29
 
 id: syntax/statements/ee0067/0001

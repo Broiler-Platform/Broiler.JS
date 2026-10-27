@@ -286,10 +286,11 @@ area: syntax
 op: ParseScript
 in: str:"(a) => { let a; };"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D39: the private name `#constructor`, a parameter and lexical name collision, and assignment and update targets Broiler.JS admits; Broiler.JS answers accepted (the checks are missing; an invalid target throws only when it runs); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-arrow-function-definitions-static-semantics-early-errors
 script: (a) => { let a; };
-note: catalogue row EE0086: refused, an arrow's parameter name declared lexically in its body
+note: catalogue row EE0086; correspondence row D39: refused, an arrow's parameter name declared lexically in its body
 since: 29
 
 id: syntax/functions-and-classes/ee0087/0001
@@ -308,10 +309,11 @@ area: syntax
 op: ParseScript
 in: str:"([...a, b]) => 1;"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P15a: cover grammars to patterns, a rest element that is not last; Broiler.JS answers accepted at P (the conversion has no rest-position check; D49 holds its sites); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-arrow-function-definitions-static-semantics-early-errors test262:test/language/expressions/arrow-function/dstr/ary-ptrn-rest-not-final-id.js
 script: ([...a, b]) => 1;
-note: catalogue row EE0087: refused, a cover that is no ArrowFormalParameters
+note: catalogue row EE0087; correspondence row P15a: refused, a cover that is no ArrowFormalParameters
 since: 29
 
 id: syntax/functions-and-classes/ee0088/0001
@@ -440,10 +442,11 @@ area: syntax
 op: ParseScript
 in: str:"({ *g(a = yield) {} });"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D38: `yield` and `await` expressions in parameters; Broiler.JS answers accepted (the check is missing); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-generator-function-definitions-static-semantics-early-errors test262:test/language/expressions/object/method-definition/generator-param-init-yield.js
 script: ({ *g(a = yield) {} });
-note: catalogue row EE0094: refused, a generator method's default holding a yield expression
+note: catalogue row EE0094; correspondence row D38: refused, a generator method's default holding a yield expression
 since: 29
 
 id: syntax/functions-and-classes/ee0095/0001
@@ -495,10 +498,11 @@ area: syntax
 op: ParseScript
 in: str:"function* g(a, a) { yield a; } g(1, 2).next().value"
 out: value: f64:0x4000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: row D42: duplicate parameters in a sloppy async function or generator; Broiler.JS answers refused: its StrictModeValidator refuses them, where a sloppy simple list admits duplicates; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-generator-function-definitions-static-semantics-early-errors
 script: function* g(a, a) { yield a; } g(1, 2).next().value
-note: catalogue row EE0097: accepted, a sloppy generator's simple list binding one name twice
+note: catalogue row EE0097; correspondence row D42: accepted, a sloppy generator's simple list binding one name twice
 since: 29
 
 id: syntax/functions-and-classes/ee0097/0002
@@ -616,10 +620,11 @@ area: syntax
 op: ParseScript
 in: str:"({ async *g(a = yield) {} });"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D38: `yield` and `await` expressions in parameters; Broiler.JS answers accepted (the check is missing); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-async-generator-function-definitions-static-semantics-early-errors
 script: ({ async *g(a = yield) {} });
-note: catalogue row EE0107: refused, an async generator method's default holding a yield expression
+note: catalogue row EE0107; correspondence row D38: refused, an async generator method's default holding a yield expression
 since: 29
 
 id: syntax/functions-and-classes/ee0108/0001
@@ -693,10 +698,11 @@ area: syntax
 op: ParseScript
 in: str:"async function* g(a, a) {} typeof g"
 out: value: str:"function"
-class: normative
+class: divergence
+divergence.broiler-js: row D42: duplicate parameters in a sloppy async function or generator; Broiler.JS answers refused: its StrictModeValidator refuses them, where a sloppy simple list admits duplicates; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-async-generator-function-definitions-static-semantics-early-errors
 script: async function* g(a, a) {} typeof g
-note: catalogue row EE0111: accepted, a sloppy async generator's simple list binding one name twice
+note: catalogue row EE0111; correspondence row D42: accepted, a sloppy async generator's simple list binding one name twice
 since: 29
 
 id: syntax/functions-and-classes/ee0111/0002
@@ -968,10 +974,11 @@ area: syntax
 op: ParseScript
 in: str:"class C { #constructor; }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D39: the private name `#constructor`, a parameter and lexical name collision, and assignment and update targets Broiler.JS admits; Broiler.JS answers accepted (the checks are missing; an invalid target throws only when it runs); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-class-definitions-static-semantics-early-errors test262:test/language/statements/class/elements/syntax/early-errors/grammar-privatename-constructor.js
 script: class C { #constructor; }
-note: catalogue row EE0132: refused, a private name #constructor
+note: catalogue row EE0132; correspondence row D39: refused, a private name #constructor
 since: 29
 
 id: syntax/functions-and-classes/ee0133/0001
@@ -1177,10 +1184,11 @@ area: syntax
 op: ParseScript
 in: str:"async function f(a, a) {} typeof f"
 out: value: str:"function"
-class: normative
+class: divergence
+divergence.broiler-js: row D42: duplicate parameters in a sloppy async function or generator; Broiler.JS answers refused: its StrictModeValidator refuses them, where a sloppy simple list admits duplicates; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-async-function-definitions-static-semantics-early-errors
 script: async function f(a, a) {} typeof f
-note: catalogue row EE0147: accepted, a sloppy async function's simple list binding one name twice
+note: catalogue row EE0147; correspondence row D42: accepted, a sloppy async function's simple list binding one name twice
 since: 29
 
 id: syntax/functions-and-classes/ee0147/0002
@@ -1254,10 +1262,11 @@ area: syntax
 op: ParseScript
 in: str:"async a => { let a; };"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D39: the private name `#constructor`, a parameter and lexical name collision, and assignment and update targets Broiler.JS admits; Broiler.JS answers accepted (the checks are missing; an invalid target throws only when it runs); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-async-arrow-function-definitions-static-semantics-early-errors
 script: async a => { let a; };
-note: catalogue row EE0154: refused, an async arrow's parameter name declared lexically in its body
+note: catalogue row EE0154; correspondence row D39: refused, an async arrow's parameter name declared lexically in its body
 since: 29
 
 id: syntax/functions-and-classes/ee0155/0001
@@ -1342,10 +1351,11 @@ area: syntax
 op: ParseScript
 in: str:"async (a) => { let a; };"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row D39: the private name `#constructor`, a parameter and lexical name collision, and assignment and update targets Broiler.JS admits; Broiler.JS answers accepted (the checks are missing; an invalid target throws only when it runs); a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-async-arrow-function-definitions-static-semantics-early-errors test262:test/language/expressions/async-arrow-function/early-errors-arrow-formals-body-duplicate.js
 script: async (a) => { let a; };
-note: catalogue row EE0158: refused, an async arrow's parameter name declared lexically in its body
+note: catalogue row EE0158; correspondence row D39: refused, an async arrow's parameter name declared lexically in its body
 since: 29
 
 id: syntax/functions-and-classes/ee0159/0001
@@ -1397,7 +1407,8 @@ area: syntax
 op: ParseScript
 in: str:"function f() { class C { static { return; } } }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row P24: `return` in a class static block inside a function; Broiler.JS answers accepted: Return refuses only at function depth 0; a correction of Broiler.JS (JSD-0083); answered by SJL-14, Broiler.JS's cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
 prov: spec:es2026@0248456c#sec-class-definitions test262:test/language/statements/class/static-init-invalid-return.js
 script: function f() { class C { static { return; } } }
 note: catalogue row EX0033; correspondence row P24: refused, return in a static block of a class inside a function

@@ -1,0 +1,48 @@
+How the engine-level runs in this directory were taken (SJL-13.2, the `syntax` vectors, 2026-10-27).
+
+They are each engine's first run on the syntax area, which revision 30 classifies, and both engines' runs on revision
+30. They are no part of the rule's parts A to H, and nothing here is a verdict.
+
+Host, for every run here: Ubuntu 24.04.5 LTS; Linux 6.18.44 x86_64; 4 logical CPUs; ICU 74.2 (the package libicu74
+74.2-1ubuntu3.1, the only ICU installed), which .NET's globalization loads; dotnet SDK 10.0.401, runtime
+Microsoft.NETCore.App 10.0.12. The syntax area reads no locale data, so no run here depends on the host's ICU.
+
+Every run reads a scratch copy of the corpus, written by git archive of the corpus commit it names, with no LANG and
+no LANGUAGE. Each Broiler.JS run is one evaluating process (BROILER_VECTORS_WORKERS unset); its negative control
+changes numbers/to-fixed/0001 in a copy of the corpus and is written beside its report. Each Broiler.VM run's
+negative control is a second run with --mutate syntax/scripts/ex0008/0001. Each log was written whole by the run's
+script: a header that names the commits, the build, the corpus and its pin, the host and the command, then the
+runner's output, then the exit code and the end time. The run script started Broiler.VM's run and its negative
+control one after the other, beside Broiler.JS's two runs, in parallel.
+
+== Revision 29, corpus a532f41866a7ac080020d8b3c0c8c38907f9c546
+
+Broiler.JS, under TZ=UTC and under TZ=America/New_York.
+  tree     a scratch tree written by `git archive a532f41866a7ac080020d8b3c0c8c38907f9c546`, whose Broiler.JS/ is the
+           branch base's, 238069ab8150858a112461b42b95c1f49c1f4eb1; built once beforehand:
+           dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers
+  command  env -u LANG -u LANGUAGE -u BROILER_VECTORS_WORKERS TZ=<zone> BROILER_VECTORS_REPORT=<report>
+             dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build
+             --logger "console;verbosity=normal"
+  times    started 2026-10-27T06:40:02Z (UTC) and 06:40:03Z (New York); ended 07:27:01Z and 07:27:21Z, as the
+           logs say
+  exit     1 each: 53 unclassified differences, all in the syntax area, and the run's test fails, as the logs show
+  files    run-revision-29-utc.log, run-revision-29-new-york.log, the reports run-revision-29-*.tsv.gz and the
+           negative controls negative-control-revision-29-*.tsv
+
+Broiler.VM, at faa8af78cddc32d460a7299f088b18b9e4407d7a (Broiler-Platform/Broiler.VM#172, SJL-13.1), under TZ=UTC.
+  tree     a scratch tree written by `git archive faa8af78cddc32d460a7299f088b18b9e4407d7a` of Broiler.VM, built once
+           beforehand:
+           dotnet build src/compositions/Broiler.VM.Composition.JavaScript.Conformance -c Release
+             --disable-build-servers
+  corpus   git archive --format=tar.gz a532f41866a7ac080020d8b3c0c8c38907f9c546 -- conformance/vectors
+             ':(exclude)conformance/vectors/controls'
+           written twice, byte for byte the same, the second extracted and hashed for the pin; pinned by
+           broiler-vm-revision-29.pin, as the pins README of Broiler.VM's src/tests/vectors/pins/ says
+  command  env -u LANG -u LANGUAGE TZ=UTC dotnet
+             src/compositions/Broiler.VM.Composition.JavaScript.Conformance/bin/Release/net10.0/Broiler.VM.Composition.JavaScript.Conformance.dll
+             --vectors <archive> --expect broiler-vm-revision-29.pin --report <report>
+             [--mutate syntax/scripts/ex0008/0001]
+  times    the run's log was written at 06:50:19Z and the negative control's at 06:56:33Z, as the logs say
+  exit     1 each: 22 unclassified differences, all in the syntax area, and 23 under the negative control
+  files    broiler-vm-run-revision-29.log and broiler-vm-negative-control-revision-29.log, and their .tsv.gz reports
