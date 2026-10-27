@@ -4,6 +4,12 @@
     table readers, the decoder implementation over small tables and over Broiler.JS's generated tables in the data
     home, the composite's order, and the decoding once per process (decision D23's L3 reading). JIT only: the Native
     AOT probe runs the vectors, not these.
+
+    It also holds the differential check of JSD-0082, decision D22 (Differential/): Broiler.VM's code at its SJL-9 rule
+    commit, 4cf9ca44, as pinned copies compiled into this project (Differential/Vm/, each copy's source and every edit in
+    its header and in Differential/Vm/README.md), against the library, over a declared population. The copies are
+    referenced by nothing but this project, which is never packed, and run under the JIT only: the check is a test, and
+    the assembly's entry point runs it at any scale.
   -->
   <PropertyGroup>
     <IsPackable>false</IsPackable>
@@ -12,6 +18,9 @@
     <IsAotCompatible>false</IsAotCompatible>
     <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- The assembly's entry point is the differential check (Differential/Program.cs); the test host loads the
+         assembly and never calls it. -->
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -21,5 +30,13 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Broiler.ECMAScript.Intl\Broiler.ECMAScript.Intl.csproj" />
+    <!-- The differential check's population: both embeddings' tables, as the data home's generator writes them, and the
+         Intl vectors, as the corpus reader reads them. -->
+    <ProjectReference Include="..\Broiler.ECMAScript.Generation\Broiler.ECMAScript.Generation.csproj" />
+    <ProjectReference Include="..\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\runners\IntlDataHome.cs" Link="Differential\IntlDataHome.cs" />
+    <Compile Include="..\runners\CorpusDirectory.cs" Link="Differential\CorpusDirectory.cs" />
   </ItemGroup>
 </Project>
