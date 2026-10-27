@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Write the syntax area of the conformance corpus (corpus revisions 29 and 30, milestone SJL-13, SJL-13.2).
+"""Write the syntax area of the conformance corpus (corpus revisions 29 and 30, milestone SJL-13).
 
     python3 -I scripts/conformance/generate_syntax_vectors.py [--out conformance/vectors/syntax]
     python3 -I scripts/conformance/generate_syntax_vectors.py --check-node <Node v26.12.0>

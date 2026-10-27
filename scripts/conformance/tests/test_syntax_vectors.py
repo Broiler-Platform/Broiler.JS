@@ -1,4 +1,4 @@
-"""Tests of the syntax area's generator (corpus revisions 29 and 30, milestone SJL-13, work package SJL-13.2).
+"""Tests of the syntax area's generator (corpus revisions 29 and 30, milestone SJL-13).
 
 The generator states every expected value itself, from the specification, so the committed files are checked against
 what it writes everywhere. The check against the reference Node.js v26.12.0 that bundle sjl-9-001's reference.txt

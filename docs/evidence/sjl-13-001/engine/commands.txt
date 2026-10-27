@@ -1,4 +1,4 @@
-How the engine-level runs in this directory were taken (SJL-13.2, the `syntax` vectors, 2026-10-27).
+How the engine-level runs in this directory were taken (SJL-13, the `syntax` vectors, 2026-10-27).
 
 They are each engine's first run on the syntax area, which revision 30 classifies, and both engines' runs on revision
 30. They are no part of the rule's parts A to H, and nothing here is a verdict.
@@ -46,3 +46,24 @@ Broiler.VM, at faa8af78cddc32d460a7299f088b18b9e4407d7a (Broiler-Platform/Broile
   times    the run's log was written at 06:50:19Z and the negative control's at 06:56:33Z, as the logs say
   exit     1 each: 22 unclassified differences, all in the syntax area, and 23 under the negative control
   files    broiler-vm-run-revision-29.log and broiler-vm-negative-control-revision-29.log, and their .tsv.gz reports
+
+== Revision 30, corpus 27139f9e52fe68b86d25c590c6c3b6ac2052f062
+
+Broiler.JS, under TZ=UTC and under TZ=America/New_York.
+  tree     a scratch tree written by `git archive 27139f9e52fe68b86d25c590c6c3b6ac2052f062`, whose Broiler.JS/ is the
+           branch base's, as for revision 29; built once beforehand, as for revision 29
+  command  as for revision 29
+  times    both started 2026-10-27T07:39:23Z; ended 08:31:08Z (UTC) and 08:30:33Z (New York), as the logs say
+  exit     1 each: one unclassified difference, syntax/lexical/asi/0009, which revision 30 leaves unclassified (no row
+           of the correspondence holds it; the bundle's README), and the run's test fails, as the logs show
+  files    run-revision-30-utc.log, run-revision-30-new-york.log, the reports run-revision-30-*.tsv.gz and the
+           negative controls negative-control-revision-30-*.tsv
+
+Broiler.VM, at faa8af78cddc32d460a7299f088b18b9e4407d7a, under TZ=UTC, as for revision 29.
+  corpus   git archive --format=tar.gz 27139f9e52fe68b86d25c590c6c3b6ac2052f062 -- conformance/vectors
+             ':(exclude)conformance/vectors/controls'
+           written twice, byte for byte the same; pinned by broiler-vm-revision-30.pin
+  command  as for revision 29, with --expect broiler-vm-revision-30.pin
+  times    the run's log was written at 07:56:26Z and the negative control's at 08:13:34Z, as the logs say
+  exit     0 for the run: no unclassified difference; 1 for the negative control, its one difference
+  files    broiler-vm-run-revision-30.log and broiler-vm-negative-control-revision-30.log, and their .tsv.gz reports

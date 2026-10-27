@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// The syntax area's independent check (corpus revision 29, milestone SJL-13, work package SJL-13.2's vectors): runs
+// The syntax area's independent check (corpus revision 29, milestone SJL-13's `syntax` vectors): runs
 // every vector of the area under the reference Node.js v26.12.0 that bundle sjl-9-001's reference.txt names, and
 // prints what it answers. generate_syntax_vectors.py --check-node starts it; it is no source of an expected value,
 // which the generator states from the specification, and it only says where the reference agrees.
