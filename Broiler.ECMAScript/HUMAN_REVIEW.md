@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 1609 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 1612 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 119 |
-| Code units | 2164 |
-| Relevant | 1609 |
-| Exempt | 555 |
-| Assessed | 1609 of 1609 (100%) |
-| Human reviewed | 0 of 1609 (0%) |
-| Unverified | 1609 |
+| Code units | 2168 |
+| Relevant | 1612 |
+| Exempt | 556 |
+| Assessed | 1612 of 1612 (100%) |
+| Human reviewed | 0 of 1612 (0%) |
+| Unverified | 1612 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1609 |
+| HUMAN_PENDING | 1612 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 555 |
+| EXEMPT | 556 |
 
 ## 5. Aliases In The Tree
 
@@ -191,17 +191,17 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` | 15 | 12 | 3 | 12 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` | 19 | 14 | 5 | 14 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Generation/Time/TzdbTableSource.cs` | 2 | 2 | 0 | 2 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` | 31 | 26 | 5 | 26 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` | 32 | 26 | 6 | 26 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/IIntlDataSet.cs` | 33 | 3 | 30 | 3 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/ILocaleData.cs` | 25 | 22 | 3 | 22 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlStatus.cs` | 9 | 1 | 8 | 1 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlTableText.cs` | 6 | 6 | 0 | 6 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/LocaleDataAnswers.cs` | 15 | 8 | 7 | 8 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/LocaleId.cs` | 28 | 22 | 6 | 22 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Intl/LocaleInfo.cs` | 18 | 16 | 2 | 16 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Intl/LocaleInfo.cs` | 20 | 18 | 2 | 18 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` | 15 | 12 | 3 | 12 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/LocaleRecord.cs` | 25 | 12 | 13 | 12 | Low | High | 1/1 |
-| `Broiler.ECMAScript.Intl/LocaleTag.cs` | 43 | 30 | 13 | 30 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Intl/LocaleTag.cs` | 44 | 31 | 13 | 31 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Intl/SupportedValues.cs` | 6 | 4 | 2 | 4 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/TableLocaleData.cs` | 74 | 61 | 13 | 61 | Low | High | 2/2 |
 
@@ -510,23 +510,23 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a table is written from a tzdb member or a CLDR file that failed its pin's check, or two runs over the same inputs write different bytes
 - `Broiler.ECMAScript.Generation.Time.TzdbTableGenerator.Generate(TzdbPin, IReadOnlyDictionary<string, byte[]>, CldrPin, IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` - Security=High, Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator, `CA2F6C`, PENDING
   - Falsified if: tables are answered for a tzdb member or a CLDR file whose length or hash differs from its pin
-- `Broiler.ECMAScript.Intl.CompositeLocaleData.Resolve<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, Spec=JSD-0082 D8 composite order, `3E0643`, PENDING
-  - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, or the secondary provider is asked before the shared data at a tag
-- `Broiler.ECMAScript.Intl.CompositeLocaleData.ResolveValue<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, Spec=JSD-0082 D8 composite order, `794AA7`, PENDING
-  - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, or the secondary provider is asked before the shared data at a tag
+- `Broiler.ECMAScript.Intl.CompositeLocaleData.Resolve<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, Spec=JSD-0082 D8 composite order, `2867DD`, PENDING
+  - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
+- `Broiler.ECMAScript.Intl.CompositeLocaleData.ResolveValue<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, Spec=JSD-0082 D8 composite order, `E00AAB`, PENDING
+  - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
 - `Broiler.ECMAScript.Intl.IntlTableText.Unescape(string)` in `Broiler.ECMAScript.Intl/IntlTableText.cs` - Security=High, Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables, `9C6D2C`, PENDING
   - Falsified if: an escape \uXXXX resolves to another code unit than its four hexadecimal digits name, or a value without an escape is changed
-- `Broiler.ECMAScript.Intl.LocaleInfo.Collations(LocaleRecord, ICollatorLocaleData, string)` in `Broiler.ECMAScript.Intl/LocaleInfo.cs` - Security=High, Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale, `ED121E`, PENDING
+- `Broiler.ECMAScript.Intl.LocaleInfo.Collations(LocaleRecord, ICollatorLocaleData, string, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleInfo.cs` - Security=High, Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale, `284344`, PENDING
   - Falsified if: a locale whose language is not und and that the Collator's available locales do not match answers anything but DefaultLocale's collations (row L18), or und answers anything but emoji and eor
 - `Broiler.ECMAScript.Intl.LocaleNegotiation.ResolveLocale(LocaleMatch, IReadOnlyList<RelevantKey>, ILocaleData)` in `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` - Security=High, Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl, `71E8F5`, PENDING
   - Falsified if: a resolved locale names a keyword the locale data does not support, an option the data supports is not honoured, or a key's value differs from what ECMA-402's ResolveLocale gives for the same data
 - `Broiler.ECMAScript.Intl.LocaleNegotiation.ResolveLocale(IReadOnlyList<string>, IReadOnlyList<string>, string, IReadOnlyList<RelevantKey>, ILocaleData, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` - Security=High, Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl, `1FBC7D`, PENDING
   - Falsified if: a resolved locale names a keyword the locale data does not support, an option the data supports is not honoured, or a key's value differs from what ECMA-402's ResolveLocale gives for the same data
-- `Broiler.ECMAScript.Intl.LocaleRecord.TryCreate(string, LocaleOptions, ILocaleData, out LocaleRecord?, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleRecord.cs` - Security=High, Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale, `94404F`, PENDING
+- `Broiler.ECMAScript.Intl.LocaleRecord.TryCreate(string, LocaleOptions, ILocaleData, out LocaleRecord?, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleRecord.cs` - Security=High, Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale, `218F87`, PENDING
   - Falsified if: an option outside ASCII or outside its grammar is accepted, an option is checked in another order than ECMA-402's, or the record's locale is not the canonical tag of the tag and options
 - `Broiler.ECMAScript.Intl.LocaleTag.Parse(string)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag, `6AE67A`, PENDING
   - Falsified if: a tag the grammar or ECMA-402's duplicate rules refuse parses, or one they admit does not, or a tag with a code unit outside A-Z a-z 0-9 - parses
-- `Broiler.ECMAScript.Intl.LocaleTag.Canonicalize(ILocaleData)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag, `8D1B63`, PENDING
+- `Broiler.ECMAScript.Intl.LocaleTag.Canonicalize(ILocaleData, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag, `A64040`, PENDING
   - Falsified if: a canonical tag canonicalizes to anything but itself, or an alias the CLDR data names survives canonicalization
 - `Broiler.ECMAScript.Intl.LocaleTag.CanonicalType(ILocaleData, string, string)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag, `4D5433`, PENDING
   - Falsified if: a subdivision alias whose replacement is a region is written other than as the region in lower case followed by zzzz (row L9), or a type CLDR's BCP 47 data replaces is kept
@@ -550,5 +550,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-683 of the 1609 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+685 of the 1612 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

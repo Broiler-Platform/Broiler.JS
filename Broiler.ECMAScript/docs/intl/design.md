@@ -6,8 +6,9 @@
 **Library:** `Broiler.ECMAScript.Intl`, which the programme's milestone SJL-9.3 creates, over the locale data whose
 home, `Broiler.ECMAScript/data/intl/`, and generator, in `Broiler.ECMAScript.Generation`, SJL-9.2 creates.
 **Status:** design. **Filed:** 2026-10-26, at milestone SJL-9 (work package SJL-9.1), before any of the library's code
-or the home's data exists. **Revised:** 2026-10-27, at stage SJL-9.3a, by a dated note on "Why there is no project yet",
-the library's project now existing ("Corrections" lists it). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
+or the home's data exists. **Revised:** 2026-10-27, at stage SJL-9.3a, by dated notes on "Why there is no project yet",
+the library's project now existing, and on sections 1 and 5, the composite's parent walk and its secondary provider, and
+week data keyed by region ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
 both roles (Broiler.VM's exception EX-30), and nothing here has been read by anyone but its author.
 
 **What this document is.** The Intl library's design document in its home, one of the three places SJL-9.1 files the
@@ -65,6 +66,30 @@ numbering system, its plural rules, its patterns, its names, its week. Its decod
 `IIntlDataSet` is the library's, and Broiler.JS's host-culture provider implements the same interface (section 5).
 `CompositeLocaleData` orders the providers: the shared data first, then an optional secondary provider, then the
 locale's parent and root.
+
+*(Noted 2026-10-27, at SJL-9.3a: three readings of the question layer that the paragraph above does not state and the
+library's code makes, so that SJL-9.3f, which packs the interface, and SJL-9.5, which registers Broiler.JS's host
+provider, inherit them knowingly.)*
+- **The secondary provider is asked only at a locale the shared data lacks**, one it neither lists among its locales nor
+  holds the table's lines for. A locale the shared data lists but holds no lines for, CLDR's default-content locales such
+  as `en-US`, `fr-FR` or `zh-Hant-TW`, reads its parent within the shared data, so `fr-FR`'s grouping separator is
+  CLDR's `fr` one, never the host's (decision D6, section 5).
+- **A locale's parent is the tag less its last subtag**, not CLDR's parent: the tables carry no `parentLocales` data, and
+  the walk goes through no likely subtags. For every locale either embedding lists, this reads the same table lines as
+  CLDR's parent chain: each listed locale whose CLDR parent is another (`en-AU`'s `en-001`, `zh-Hant`'s root) is held by
+  every locale-keyed table, and plural, ordinal, plural-range and day-period rules are inherited by language, as CLDR's
+  empty `plurals` component of `parentLocales` has them. A locale outside the lists is not covered: Broiler.JS's
+  available locales are the host's cultures whatever provider is registered (decision D7), and such a locale's
+  truncation can name another script or variety - `zh-TW` reads `zh`, Simplified Chinese, where CLDR reads `zh-Hant`;
+  `es-MX` reads `es` where CLDR reads `es-419`; `pt-AO` reads `pt` where CLDR reads `pt-PT`. SJL-9.5, before it makes
+  such a locale available, either walks through likely subtags (`zh-TW`, `zh-Hant-TW`, `zh-Hant`) or adds a
+  `parentLocales` table, an `IntlTable` value appended for a table Broiler.VM's data never carries (decision D8).
+- **Week and hour-cycle data are keyed by region**, as ECMA-402's WeekInfoOfLocale and HourCyclesOfLocale read them:
+  `ILocaleData.Week(region)` and `HourCycles(region)`, world data the composite asks of the shared data first. A
+  secondary provider is asked only for a region the shared week table does not list, where CLDR's answer is the
+  world's, `001`, so a secondary provider answers `Week` with no data; and a host culture's first day of the week, which
+  .NET gives by culture, has no region-keyed question to answer. So section 5's "the first day of the week" is not part
+  of the contract (see the note there).
 
 **The algorithms.** `Broiler.ECMAScript.Intl` references `Broiler.ECMAScript.Algorithms` and
 `Broiler.Unicode.Algorithms` (decision D9). It is organised by sub-area, in the order the sub-areas are built
@@ -252,6 +277,13 @@ host cultures**, `HostCultureLocaleData` in `Broiler.JavaScript.BuiltIns`' `Intl
 the composite's secondary provider. **It is never a second implementation of the algorithms.**
 - **It answers only what .NET exposes exactly**: number symbols and native digits; month, day and era names; AM and PM;
   the first day of the week. It answers only for a locale the shared data lacks.
+  *(Noted 2026-10-27, at SJL-9.3a: two readings of this item. "A locale the shared data lacks" is one it neither lists
+  nor holds lines for, and `CompositeLocaleData` asks the host at no other (section 1's note). "The first day of the
+  week" has no question to answer: week data is keyed by region, as WeekInfoOfLocale reads it, the shared week table
+  answers for every region it lists, and CLDR gives a region it does not list the world's week, `001`, so a culture's
+  first day, which .NET gives by culture, has no region-keyed question that could carry it, and the host answers
+  `Week` with no data. Decision D6 names it; this reading, that it is not part of the contract, is the code's, and the
+  owner confirms it or asks for a locale-keyed question before SJL-9.3f packs the interface.)*
 - **Every other question answers "no data"**, so the algorithm uses the parent or root: .NET has no plural, compact,
   unit, list, relative-time, display-name, interval or day-period data.
 - **It never throws for want of host data.** Under `InvariantGlobalization`, which Native AOT applications commonly set,
@@ -309,5 +341,8 @@ available locales, which are section 2's.
 
 ## Corrections
 
-*(Revised 2026-10-27, at SJL-9.3a; it read "None.")* The header gains a "Revised" line, and "Why there is no project
-yet" a dated note that the project now exists and names sub-area (a)'s types; nothing else here is changed.
+*(Revised 2026-10-27, at SJL-9.3a; it read "None.")* The header gains a "Revised" line; "Why there is no project yet" a
+dated note that the project now exists and names sub-area (a)'s types; section 1 a dated note on three readings of the
+question layer - the secondary provider asked only at a locale the shared data neither lists nor holds, the parent as the
+tag less its last subtag and what that means for a locale outside the lists, and week and hour-cycle data keyed by
+region; and section 5 a dated note on its first item. Nothing else here is changed.

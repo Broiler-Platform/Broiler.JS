@@ -16,12 +16,12 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Files scanned | 119 |
 | Files not covered | 0 |
 | Files carrying an annotation | 119 |
-| Code units | 2164 |
-| Relevant | 1609 |
-| Exempt by predicate | 555 |
-| Annotated | 1609 of 1609 (100%) |
-| Human reviewed | 0 of 1609 (0%) |
-| Unverified | 1609 |
+| Code units | 2168 |
+| Relevant | 1612 |
+| Exempt by predicate | 556 |
+| Annotated | 1612 of 1612 (100%) |
+| Human reviewed | 0 of 1612 (0%) |
+| Unverified | 1612 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1609 |
+| HUMAN_PENDING | 1612 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 555 |
+| EXEMPT | 556 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 1606 |
+| Low | 1609 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,7 +51,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 949 |
+| Low | 952 |
 | Medium | 482 |
 | High | 157 |
 | Critical | 0 |
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.2 / 10 |
-| Units scored | 1609 |
+| Units scored | 1612 |
 
 ## High-security review areas
 
@@ -215,12 +215,12 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.Resolve<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.ResolveValue<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.IntlTableText.Unescape(string)` in `Broiler.ECMAScript.Intl/IntlTableText.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Intl.LocaleInfo.Collations(LocaleRecord, ICollatorLocaleData, string)` in `Broiler.ECMAScript.Intl/LocaleInfo.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.LocaleInfo.Collations(LocaleRecord, ICollatorLocaleData, string, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleInfo.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.LocaleNegotiation.ResolveLocale(LocaleMatch, IReadOnlyList<RelevantKey>, ILocaleData)` in `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.LocaleNegotiation.ResolveLocale(IReadOnlyList<string>, IReadOnlyList<string>, string, IReadOnlyList<RelevantKey>, ILocaleData, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.LocaleRecord.TryCreate(string, LocaleOptions, ILocaleData, out LocaleRecord?, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleRecord.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.LocaleTag.Parse(string)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Intl.LocaleTag.Canonicalize(ILocaleData)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.LocaleTag.Canonicalize(ILocaleData, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.LocaleTag.CanonicalType(ILocaleData, string, string)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadNumbers()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadDates()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, human line PENDING
@@ -257,7 +257,7 @@ that the rule is reviewable in one place rather than in several hundred.
 | CompilerSuppliedRecordOrEnumMember | 50 |
 | DelegatingOverrideOrOperator | 3 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 81 |
+| FieldDeclaringStorage | 82 |
 | EnumMemberOfADeclaredVocabulary | 247 |
 | DeclaredInSource | 0 |
 
@@ -282,7 +282,7 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 4 covered assemblies -
-2164 of them, exempt and relevant alike - with the fingerprint of its declaration.
+2168 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
