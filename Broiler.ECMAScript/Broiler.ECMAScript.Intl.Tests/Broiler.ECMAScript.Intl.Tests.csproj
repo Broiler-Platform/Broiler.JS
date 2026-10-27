@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The tests of the Intl library (milestone SJL-9.3; Broiler.VM's JSD-0082): the table contract's numbers, the
+    table readers, the decoder implementation over small tables and over Broiler.JS's generated tables in the data
+    home, the composite's order, and the decoding once per process (decision D23's L3 reading). JIT only: the Native
+    AOT probe runs the vectors, not these.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- A test project is not a library the Native AOT probe runs; xunit discovers by reflection. -->
+    <IsAotCompatible>false</IsAotCompatible>
+    <IsTrimmable>false</IsTrimmable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Broiler.ECMAScript.Intl\Broiler.ECMAScript.Intl.csproj" />
+  </ItemGroup>
+</Project>

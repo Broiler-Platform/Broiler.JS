@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 1390 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 1513 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 108 |
-| Code units | 1878 |
-| Relevant | 1390 |
-| Exempt | 488 |
-| Assessed | 1390 of 1390 (100%) |
-| Human reviewed | 0 of 1390 (0%) |
-| Unverified | 1390 |
+| Files scanned | 113 |
+| Code units | 2029 |
+| Relevant | 1513 |
+| Exempt | 516 |
+| Assessed | 1513 of 1513 (100%) |
+| Human reviewed | 0 of 1513 (0%) |
+| Unverified | 1513 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1390 |
+| HUMAN_PENDING | 1513 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 488 |
+| EXEMPT | 516 |
 
 ## 5. Aliases In The Tree
 
@@ -191,8 +191,13 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` | 15 | 12 | 3 | 12 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` | 19 | 14 | 5 | 14 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Generation/Time/TzdbTableSource.cs` | 2 | 2 | 0 | 2 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` | 31 | 26 | 5 | 26 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/IIntlDataSet.cs` | 33 | 3 | 30 | 3 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Intl/ILocaleData.cs` | 25 | 22 | 3 | 22 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlStatus.cs` | 9 | 1 | 8 | 1 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Intl/IntlTableText.cs` | 6 | 6 | 0 | 6 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Intl/LocaleDataAnswers.cs` | 15 | 8 | 7 | 8 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Intl/TableLocaleData.cs` | 74 | 61 | 13 | 61 | Low | High | 2/2 |
 
 ## 7. Decisions Recorded
 
@@ -499,6 +504,16 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a table is written from a tzdb member or a CLDR file that failed its pin's check, or two runs over the same inputs write different bytes
 - `Broiler.ECMAScript.Generation.Time.TzdbTableGenerator.Generate(TzdbPin, IReadOnlyDictionary<string, byte[]>, CldrPin, IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` - Security=High, Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator, `CA2F6C`, PENDING
   - Falsified if: tables are answered for a tzdb member or a CLDR file whose length or hash differs from its pin
+- `Broiler.ECMAScript.Intl.CompositeLocaleData.Resolve<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, Spec=JSD-0082 D8 composite order, `3E0643`, PENDING
+  - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, or the secondary provider is asked before the shared data at a tag
+- `Broiler.ECMAScript.Intl.CompositeLocaleData.ResolveValue<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, Spec=JSD-0082 D8 composite order, `794AA7`, PENDING
+  - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, or the secondary provider is asked before the shared data at a tag
+- `Broiler.ECMAScript.Intl.IntlTableText.Unescape(string)` in `Broiler.ECMAScript.Intl/IntlTableText.cs` - Security=High, Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables, `9C6D2C`, PENDING
+  - Falsified if: an escape \uXXXX resolves to another code unit than its four hexadecimal digits name, or a value without an escape is changed
+- `Broiler.ECMAScript.Intl.TableLocaleData.ReadNumbers()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `21E4C4`, PENDING
+  - Falsified if: a number, currency, unit, plural, plural-range or numbering-system answer differs from what Broiler.VM's JsIntlTables.ReadNumbers decodes from the same tables
+- `Broiler.ECMAScript.Intl.TableLocaleData.ReadDates()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `E8AF35`, PENDING
+  - Falsified if: a language's date data in a calendar holds a key or a value, or enumerates in an order, other than Broiler.VM's JsIntlTables.ReadDates decodes from the same table
 
 ## 10. What This Record Does Not Say
 
@@ -515,5 +530,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-567 of the 1390 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+647 of the 1513 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

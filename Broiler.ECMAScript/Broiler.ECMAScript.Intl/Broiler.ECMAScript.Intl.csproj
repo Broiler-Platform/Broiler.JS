@@ -35,4 +35,8 @@
     <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
     <PackageReference Include="Broiler.Unicode.Algorithms" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- The tests call the table text readers, internal to the decoder implementation, directly. -->
+    <InternalsVisibleTo Include="Broiler.ECMAScript.Intl.Tests" />
+  </ItemGroup>
 </Project>
