@@ -16,7 +16,8 @@ namespace Broiler.ECMAScript.Probe;
 /// From milestone SJL-3 the library it runs is <c>Broiler.ECMAScript.Algorithms</c>, through the
 /// runners' <c>AlgorithmsLibrary</c>: every number vector must match, and a vector of any area the
 /// library does not implement yet must be "not implemented". The contract types are exercised
-/// directly as well. What the probe proves is that the library, the reader, the validator, the
+/// directly as well. From milestone SJL-9.3a it also runs <c>Broiler.ECMAScript.Intl</c>, through the
+/// same runner, on the Intl area's sub-area (a). What the probe proves is that the library, the reader, the validator, the
 /// runner and the report compile into a Native AOT image under Broiler.VM's root settings and give
 /// there, over the whole corpus, the answers they give under the JIT. Until SJL-3 it ran the empty
 /// library, whose every answer was <c>status: not-implemented</c>.
@@ -53,7 +54,11 @@ internal static class Program
         // setters' conversions and their order, and the sequences of local setter calls. Every time-zone vector is
         // the library's, over the data home's generated tables, which the runner reads from disk (milestone SJL-8.4).
         // Every Temporal vector is the library's through the runner's Temporal adapter, over the same tables, but a
-        // built-in's length, the properties an engine reads, and the calendar an object lends (milestone SJL-10.3).
+        // built-in's length, the properties an engine reads, and the calendar an object lends (milestone SJL-10.3). Of the
+        // Intl area, sub-area (a)'s vectors are the Intl library's, over the Intl data home's tables and Broiler.VM's
+        // providers, but the engine-level ones AlgorithmsLibrary.IsEngineLevelIntl names; an impl-defined one may give
+        // Broiler.VM's per-engine expectation, the engine whose providers the runner takes; every other Intl vector is not
+        // implemented (milestone SJL-9.3a).
         var library = new AlgorithmsLibrary();
         var results = LibraryRun.Run(corpus.Records, library);
         foreach (var result in results)
@@ -66,9 +71,11 @@ internal static class Program
                 "date" => !AlgorithmsLibrary.IsEngineLevelDate(result.Vector["op"] ?? string.Empty),
                 "time-zones" => true,
                 "temporal" => !AlgorithmsLibrary.IsEngineLevelTemporal(result.Vector["op"] ?? string.Empty),
+                "intl" => AlgorithmsLibrary.IsLibraryIntl(result.Vector),
                 _ => false,
             };
-            if (implemented ? result.Verdict != Verdict.Match : result.Verdict != Verdict.NotImplemented)
+            var passes = result.Verdict == Verdict.Match || AlgorithmsLibrary.MatchesBroilerVmExpectation(result);
+            if (implemented ? !passes : result.Verdict != Verdict.NotImplemented)
                 failures.Add(result.Vector.Id + ": " + library.Name + " gave " + VectorRun.Name(result.Verdict));
         }
 

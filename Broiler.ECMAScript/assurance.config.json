@@ -17,7 +17,8 @@
   "projects": [
     "Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj",
     "Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj",
-    "Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj"
+    "Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj",
+    "Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj"
   ],
   "exemptionPredicate": "strict",
   "forbidDirectives": true,
