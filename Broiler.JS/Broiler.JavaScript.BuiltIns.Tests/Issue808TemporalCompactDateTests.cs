@@ -32,7 +32,7 @@ public class Issue808TemporalCompactDateTests
     public void PlainTime_From_CompactDate(string input, string expected)
         => Assert.Equal(expected, Eval($"Temporal.PlainTime.from('{input}').toString();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PlainDateTime_From_BareZDesignator_StillRejected()
         => Assert.Equal("RangeError", Eval("""
             var err = "none";

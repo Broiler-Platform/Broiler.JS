@@ -39,7 +39,7 @@ jobs:
   # without a completed run. A pull request's diff is its whole change, so it can skip safely.
   changes:
     name: Changed paths
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       code: ${{ steps.diff.outputs.code }}
     steps:
@@ -87,7 +87,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-24.04, windows-latest]
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -164,7 +164,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-24.04, windows-latest]
     env:
       BROILER_VECTORS_WORKERS: ${{ inputs.vectors-workers || '4' }}
       BROILER_VECTORS_REPORT: engine-vectors.tsv
@@ -227,7 +227,7 @@ jobs:
     name: engine vectors (Windows against Linux)
     needs: vectors
     if: needs.vectors.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Fetch both reports
         uses: actions/download-artifact@v8
@@ -237,7 +237,7 @@ jobs:
 
       - name: Compare
         run: |
-          linux=reports/engine-vectors-ubuntu-latest/engine-vectors.tsv
+          linux=reports/engine-vectors-ubuntu-24.04/engine-vectors.tsv
           windows=reports/engine-vectors-windows-latest/engine-vectors.tsv
           for report in "$linux" "$windows"; do
             if [ ! -f "$report" ]; then
@@ -270,7 +270,7 @@ jobs:
     name: CI result
     needs: [changes, build, vectors]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check the jobs' results
         env:

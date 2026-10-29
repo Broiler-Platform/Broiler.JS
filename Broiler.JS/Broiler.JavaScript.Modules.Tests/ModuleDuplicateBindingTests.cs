@@ -65,7 +65,7 @@ public class ModuleDuplicateBindingTests
 
     // ---- No duplicate among the ImportedBoundNames ----
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("import { a, a } from './dep.js';")]                                 // twice in one clause
     [InlineData("import { a, b as a } from './dep.js';")]                            // renamed onto an earlier one
     [InlineData("import a, { b as a } from './dep.js';")]                            // default and a named
@@ -76,7 +76,7 @@ public class ModuleDuplicateBindingTests
 
     // ---- ImportedBoundNames must not intersect VarDeclaredNames ----
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("import { a } from './dep.js'; var a = 1;")]
     [InlineData("import { a } from './dep.js'; { var a; }")]            // a nested `var` still hoists here
     [InlineData("import { a } from './dep.js'; function a() {}")]
@@ -90,7 +90,7 @@ public class ModuleDuplicateBindingTests
     // which is why a second `export default` and an `export { x as default }` beside one are the
     // same error.
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("export default 1; export default 2;")]
     [InlineData("export default function f() {};\nexport default 2;")]
     [InlineData("const x = 1; export { x as default }; export default 2;")]
@@ -98,7 +98,7 @@ public class ModuleDuplicateBindingTests
     public async Task ASecondDefaultExportIsRejected(string main)
         => await AssertRejected(main, "Duplicate export name 'default'");
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("const x = 1, y = 2; export { x, y as x };")]                 // twice in one clause
     [InlineData("const x = 1, y = 2; export { x }; export { y as x };")]      // across two clauses
     [InlineData("export const x = 1; const y = 2; export { y as x };")]       // declaration then clause
@@ -110,34 +110,34 @@ public class ModuleDuplicateBindingTests
 
     // ---- Valid neighbours: none of these may be caught by the checks above ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task DistinctImportedNamesAreAccepted()
         => Assert.Equal("3", await Run("import { a, b } from './dep.js'; globalThis.r = a + b;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ADefaultAndANamedImportAreAccepted()
         => Assert.Equal("10", await Run("import d, { a } from './dep.js'; globalThis.r = d + a;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ANamespaceImportIsAccepted()
         => Assert.Equal("1", await Run("import * as ns from './dep.js'; globalThis.r = ns.a;"));
 
     // The name is only reserved at the MODULE's top level: a nested function may declare its own.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ANestedFunctionMayShadowAnImportedName()
         => Assert.Equal("2", await Run(
             "import { a } from './dep.js'; function g() { var a = 2; return a; } globalThis.r = g();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnImportAlongsideAnUnrelatedVarIsAccepted()
         => Assert.Equal("2", await Run("import { a } from './dep.js'; var b = 1; globalThis.r = a + b;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ASingleDefaultExportIsAccepted()
         => Assert.Equal("1", await Run("export default 1; globalThis.r = 1;"));
 
     // Distinct exported names, across every form, must all still be accepted together.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task DistinctExportedNamesAcrossEveryFormAreAccepted()
         => Assert.Equal("1", await Run(
             "export const c = 1;"
@@ -150,14 +150,14 @@ public class ModuleDuplicateBindingTests
             + "globalThis.r = 1;"));
 
     // `export * from` names nothing statically, so two of them do not collide with each other.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task TwoStarReExportsAreAccepted()
         => Assert.Equal("1", await Run(
             "export * from './dep.js'; export * from './dep.js'; globalThis.r = 1;"));
 
     // A program with no import declaration is not module code for this purpose, so an ordinary
     // duplicate `var` — legal in a script — must stay legal.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ADuplicateVarWithoutAnyImportIsStillAccepted()
         => Assert.Equal("2", await Run("var x = 1; var x = 2; globalThis.r = x;"));
 }

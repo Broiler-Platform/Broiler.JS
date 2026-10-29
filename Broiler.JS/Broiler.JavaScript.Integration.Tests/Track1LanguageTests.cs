@@ -22,44 +22,44 @@ public class Track1LanguageTests
     // had been initialised. The fold is still taken for a free reference — the global
     // property is non-writable and non-configurable, so it cannot be anything else.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AParameterNamedUndefinedShadowsTheGlobalProperty()
         => Assert.Equal("5", Eval("(function (undefined) { return undefined; })(5)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypeofSeesTheParameterRatherThanTheGlobalProperty()
         => Assert.Equal("number", Eval("(function (undefined) { return typeof undefined; })(5)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AParameterNamedUndefinedIsAssignable()
         => Assert.Equal("3", Eval("(function (undefined) { undefined = 3; return undefined; })(1)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ALexicalBindingNamedUndefinedShadowsTheGlobalProperty()
         => Assert.Equal("4", Eval("(function () { { let undefined = 4; return undefined; } })()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AVarNamedUndefinedShadowsTheGlobalPropertyInsideAFunction()
         => Assert.Equal("7", Eval("(function () { var undefined = 7; return undefined; })()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ACatchParameterNamedUndefinedShadowsTheGlobalProperty()
         => Assert.Equal("9", Eval("(function () { try { throw 9; } catch (undefined) { return undefined; } })()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AClosureCapturesTheBindingNamedUndefined()
         => Assert.Equal("6", Eval(
             "(function (undefined) { return (function () { return undefined; })(); })(6)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AWithObjectSuppliesUndefinedDynamically()
         => Assert.Equal("8", Eval("(function () { with ({ undefined: 8 }) { return undefined; } })()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AFreeUndefinedIsStillTheUndefinedValue()
         => Assert.Equal("true", Eval("(function () { var x; return x === undefined; })()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AWithObjectWithoutUndefinedFallsBackToTheGlobalProperty()
         => Assert.Equal("true", Eval(
             "(function () { with ({ other: 1 }) { var x; return x === undefined; } })()"));
@@ -74,45 +74,45 @@ public class Track1LanguageTests
     // not. `typeof this` is the witness: a sloppy function called with undefined `this`
     // gets the global object, a strict one gets undefined.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnEmptyStatementAfterADirectiveEndsThePrologue()
         => Assert.Equal("object", Eval(
             "(function () { 'x'; ; 'use strict'; return typeof this; }).call(undefined)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TwoEmptyStatementsAfterADirectiveEndThePrologue()
         => Assert.Equal("object", Eval(
             "(function () { 'x'; ; ; 'use strict'; return typeof this; }).call(undefined)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnEmptyStatementBeforeAnyDirectiveEndsThePrologue()
         => Assert.Equal("object", Eval(
             "(function () { ; 'use strict'; return typeof this; }).call(undefined)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnEmptyStatementEndsAProgramsPrologueToo()
         => Assert.Equal("object", Eval(
             "eval(\"'x'; ; 'use strict'; (function () { return typeof this; }).call(undefined)\")"));
 
     // The prologue itself still works: adjacent directives stay directives.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AdjacentDirectivesStillMakeAFunctionStrict()
         => Assert.Equal("undefined", Eval(
             "(function () { 'x'; 'use strict'; return typeof this; }).call(undefined)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ALeadingUseStrictStillMakesAFunctionStrict()
         => Assert.Equal("undefined", Eval(
             "(function () { 'use strict'; return typeof this; }).call(undefined)"));
 
     // An empty statement is a statement wherever it appears, not only in a prologue.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnEmptyStatementAfterAnOrdinaryStatementIsStillParsed()
         => Assert.Equal("3", Eval("(function () { var n = 0; n++; ; n += 2; return n; })()"));
 
     // Automatic semicolon insertion is unchanged: a statement without its own `;` still
     // ends at the line terminator.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AutomaticSemicolonInsertionStillEndsAStatementAtALineBreak()
         => Assert.Equal("7", Eval("(function () { var n = 3\n n = n + 4\n return n })()"));
 
@@ -131,13 +131,13 @@ public class Track1LanguageTests
         + "Reflect.set(base, 'x', 2, receiver);"
         + "var d = Object.getOwnPropertyDescriptor(receiver, 'x');";
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReflectSetGivesANewReceiverPropertyTheAllTrueDescriptor()
         => Assert.Equal("true,true,true,2", Eval(
             DescribeReceiverProperty
             + "[d.writable, d.enumerable, d.configurable, receiver.x].join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReflectSetGivesANewIndexedReceiverPropertyTheAllTrueDescriptor()
         => Assert.Equal("true,true,true", Eval(
             "var base = {};"
@@ -148,7 +148,7 @@ public class Track1LanguageTests
             + "var d = Object.getOwnPropertyDescriptor(receiver, '0');"
             + "[d.writable, d.enumerable, d.configurable].join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReflectSetGivesANewSymbolKeyedReceiverPropertyTheAllTrueDescriptor()
         => Assert.Equal("true,true,true", Eval(
             "var s = Symbol('s');"
@@ -162,7 +162,7 @@ public class Track1LanguageTests
 
     // An assignment through the prototype chain is the same algorithm with the receiver
     // implied, so it creates the same all-true own property on the object written to.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AssigningThroughThePrototypeChainCreatesAnAllTrueOwnProperty()
         => Assert.Equal("true,true,true,3", Eval(
             "var proto = {};"
@@ -175,7 +175,7 @@ public class Track1LanguageTests
 
     // The receiver's OWN property is not re-described: [[DefineOwnProperty]] is called with
     // a value-only descriptor, so the attributes it already has survive the write.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReflectSetKeepsTheAttributesOfAPropertyTheReceiverAlreadyHas()
         => Assert.Equal("true,true,false,false,5", Eval(
             "var base = { x: 1 };"
@@ -187,7 +187,7 @@ public class Track1LanguageTests
             + "[set, d.writable, d.enumerable, d.configurable, receiver.x].join(',')"));
 
     // A non-writable data property on the BASE still refuses the write before any of this.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ANonWritableBasePropertyStillBlocksTheWrite()
         => Assert.Equal("false,false", Eval(
             "var base = {};"
@@ -195,7 +195,7 @@ public class Track1LanguageTests
             + "var receiver = {};"
             + "[Reflect.set(base, 'x', 2, receiver), 'x' in receiver].join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ANonExtensibleReceiverStillRefusesANewProperty()
         => Assert.Equal("false,false", Eval(
             "var base = { x: 1 };"
@@ -216,18 +216,18 @@ public class Track1LanguageTests
         "var a = Symbol('a'), b = Symbol('b'), c = Symbol('c');"
         + "var o = {}; o[c] = 1; o[a] = 2; o[b] = 3;";
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetOwnPropertySymbolsUsesInsertionOrder()
         => Assert.Equal("c,a,b", Eval(
             ThreeSymbolsInsertedCAB + "Object.getOwnPropertySymbols(o).map(s => s.description).join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReflectOwnKeysUsesInsertionOrderForSymbols()
         => Assert.Equal("c,a,b", Eval(
             ThreeSymbolsInsertedCAB
             + "Reflect.ownKeys(o).filter(k => typeof k === 'symbol').map(s => s.description).join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReflectOwnKeysOrdersIntegersThenStringsThenSymbolsEachInInsertionOrder()
         => Assert.Equal("0,2,y,x,b,a", Eval(
             "var a = Symbol('a'), b = Symbol('b');"
@@ -236,7 +236,7 @@ public class Track1LanguageTests
 
     // A deleted symbol that is added again is a NEW property: it goes to the end, not back to
     // its old slot (same rule as string keys).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AReaddedSymbolMovesToTheEnd()
         => Assert.Equal("b,c,a", Eval(
             "var a = Symbol('a'), b = Symbol('b'), c = Symbol('c');"
@@ -244,7 +244,7 @@ public class Track1LanguageTests
             + "Object.getOwnPropertySymbols(o).map(s => s.description).join(',')"));
 
     // Redefining an existing symbol key keeps its position.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RedefiningASymbolKeepsItsPosition()
         => Assert.Equal("a,b,c", Eval(
             "var a = Symbol('a'), b = Symbol('b'), c = Symbol('c');"
@@ -253,7 +253,7 @@ public class Track1LanguageTests
 
     // Object.assign copies symbol keys in the source's insertion order, so the copy's own
     // symbol order matches the source's rather than the symbol map's hash order.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectAssignCopiesSymbolsInInsertionOrder()
         => Assert.Equal("c,a,b", Eval(
             ThreeSymbolsInsertedCAB
@@ -271,29 +271,29 @@ public class Track1LanguageTests
     private const string FrozenSetInBody =
         "try { Object.freeze({ x: 1 }).x = 2; r = 'no-throw'; } catch (e) { r = e.name; }";
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AFailedStrictSetInAGeneratorBodyThrows()
         => Assert.Equal("TypeError", Eval(
             "var r; (function* () { 'use strict'; " + FrozenSetInBody + " })().next(); r"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AFailedStrictSetInAnAsyncBodyThrows()
         => Assert.Equal("TypeError", Eval(
             "var r; (async function () { 'use strict'; " + FrozenSetInBody + " })(); r"));
 
     // The function inherits strictness from an outer directive too, not only its own.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AFailedSetInAGeneratorInsideStrictCodeThrows()
         => Assert.Equal("TypeError", Eval(
             "'use strict'; var r; (function* () { " + FrozenSetInBody + " })().next(); r"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AFailedSetInAnAsyncGeneratorBodyThrows()
         => Assert.Equal("TypeError", Eval(
             "var r; (async function* () { 'use strict'; " + FrozenSetInBody + " })().next(); r"));
 
     // The strict effect still applies after a yield resumes the body on a later step.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AFailedStrictSetAfterAYieldThrows()
         => Assert.Equal("TypeError", Eval(
             "var r; var g = (function* () { 'use strict'; yield 1; " + FrozenSetInBody + " })();"
@@ -301,18 +301,18 @@ public class Track1LanguageTests
 
     // A strict async function's `this` is undefined (an ordinary strict function's is), not
     // the global object a sloppy async function would coerce it to.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AStrictAsyncFunctionsThisIsUndefined()
         => Assert.Equal("undefined", Eval(
             "var r; (async function () { 'use strict'; r = typeof this; })(); r"));
 
     // Regression guard: a SLOPPY async/generator body keeps lenient [[Set]] semantics.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AFailedSetInASloppyGeneratorBodyIsSilent()
         => Assert.Equal("no-throw", Eval(
             "var r; (function* () { " + FrozenSetInBody + " })().next(); r"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AFailedSetInASloppyAsyncBodyIsSilent()
         => Assert.Equal("no-throw", Eval(
             "var r; (async function () { " + FrozenSetInBody + " })(); r"));
@@ -335,7 +335,7 @@ public class Track1LanguageTests
 
     // (A) A `var` collides with a lexical binding of the same name declared FIRST,
     // wherever the `var` hoists to.
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("let a; var a;")]
     [InlineData("const a = 1; var a;")]
     [InlineData("let a; { var a; }")]
@@ -352,7 +352,7 @@ public class Track1LanguageTests
 
     // (A) The same conflict when the `var` is declared FIRST and the lexical second —
     // even after the `var` has hoisted out of the block the lexical sits in.
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("var a; let a;")]
     [InlineData("var a; const a = 1;")]
     [InlineData("{ var a; let a; }")]
@@ -363,7 +363,7 @@ public class Track1LanguageTests
     // (A) A block-nested function declaration is lexical, so it conflicts with a `var`
     // of the same name in that block (in either order), while two block functions of
     // one name still coexist in sloppy mode (Annex B 3.3.4).
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("{ function a() {} var a; }")]
     [InlineData("{ var a; function a() {} }")]
     public void ABlockFunctionAndVarOfTheSameNameConflict(string code)
@@ -372,7 +372,7 @@ public class Track1LanguageTests
     // (A) Guard against over-rejecting: a `var` and a lexical of the same name in
     // DIFFERENT scopes, or a `var` deduping against a same-named parameter, are legal.
     // Each snippet ends in an expression that evaluates to "ok" once it is accepted.
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("var a; { let a; } 'ok'")]
     [InlineData("{ var a; } { let a; } 'ok'")]
     [InlineData("{ var a; { let a; } } 'ok'")]
@@ -386,7 +386,7 @@ public class Track1LanguageTests
 
     // (B) A labelled function declaration as a loop body is an early error for every
     // loop head, including the `let`/`const` heads whose body is rewritten to a block.
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("for (let x of []) label: function h() {}")]
     [InlineData("for (const x of []) label: function h() {}")]
     [InlineData("for (let x in {}) label: function h() {}")]
@@ -400,7 +400,7 @@ public class Track1LanguageTests
 
     // (B) Guard: a labelled function is fine at statement/block position, and an
     // ordinary or labelled non-function loop body is unaffected.
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("label: function top() {} 'ok'")]
     [InlineData("{ label: function b() {} } 'ok'")]
     [InlineData("for (let x of []) { label: function h() {} } 'ok'")]
@@ -411,7 +411,7 @@ public class Track1LanguageTests
     // (C) An `export` in script code is an early SyntaxError, not a crash — for every
     // export form, including the `export default <expr>` that used to throw a
     // NullReferenceException.
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("export default 1;")]
     [InlineData("export default function g() {}")]
     [InlineData("export const e = 1;")]
@@ -431,7 +431,7 @@ public class Track1LanguageTests
     // to a constant `false` (a captured binding read as non-deletable), so the binding survived
     // and every read still saw the eval's value.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DeleteOfClosureCapturedEvalVarReturnsTrue()
         => Assert.Equal("true", Eval(
             "var x = 'global';" +
@@ -441,7 +441,7 @@ public class Track1LanguageTests
             "  return String(delete x);" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ClosureReadAfterDeletingCapturedEvalVarReresolvesOutward()
         => Assert.Equal("global", Eval(
             "var x = 'global';" +
@@ -452,7 +452,7 @@ public class Track1LanguageTests
             "  return read();" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DirectReadAfterDeletingCapturedEvalVarReresolvesOutward()
         => Assert.Equal("global", Eval(
             "var x = 'global';" +
@@ -465,7 +465,7 @@ public class Track1LanguageTests
 
     // With no outer binding to fall back to, the name is unresolvable after the delete: a read
     // throws a ReferenceError and `typeof` answers "undefined".
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ClosureReadAfterDeletingCapturedEvalVarWithNoOuterThrows()
         => Assert.Equal("ReferenceError", Eval(
             "(function () {" +
@@ -475,7 +475,7 @@ public class Track1LanguageTests
             "  try { read(); return 'no throw'; } catch (e) { return e.name; }" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypeofAfterDeletingCapturedEvalVarWithNoOuterIsUndefined()
         => Assert.Equal("undefined", Eval(
             "(function () {" +
@@ -496,7 +496,7 @@ public class Track1LanguageTests
     // (A function- or block-local lexical of the same name was already caught by the direct-eval
     // validator's compile-time lexical set; only the global lexical slipped through.)
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("let g = 1; eval('var g;'); 'ok'")]
     [InlineData("const c = 1; eval('var c;'); 'ok'")]
     [InlineData("class K {} eval('var K;'); 'ok'")]
@@ -507,12 +507,12 @@ public class Track1LanguageTests
         => AssertSyntaxError(code);
 
     // An indirect eval already rejected the same collision — keep it rejected.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnIndirectEvalVarCollidingWithAGlobalLexicalStaysASyntaxError()
         => AssertSyntaxError("let g = 1; (0,eval)('var g;'); 'ok'");
 
     // Guards: valid neighbours that must still be accepted.
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("(function () { var g = 1; eval('var g;'); return 'ok'; })()")]  // function-local var, not a lexical
     [InlineData("let g = 1; eval('var h;'); 'ok'")]                              // no collision
     [InlineData("let g = 1; eval('let g;'); 'ok'")]                             // the eval's own lexical scope
@@ -536,7 +536,7 @@ public class Track1LanguageTests
         return (await ctx.EvalWithTopLevelAwaitAsync(code)).ToString();
     }
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("6", "var s = 0; for await (const v of [1, 2, 3]) { s += v; } s")]
     [InlineData("3", "var s = 0; for await (const v of [Promise.resolve(1), Promise.resolve(2)]) { s += v; } s")]
     [InlineData("3", "async function* g() { yield 1; yield 2; } var s = 0; for await (const v of g()) s += v; s")]
@@ -547,22 +547,22 @@ public class Track1LanguageTests
         => Assert.Equal(expected, await EvalTopLevelAwait(code));
 
     // Guards: the neighbouring forms that already worked must keep working.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task APlainTopLevelAwaitStillRuns()
         => Assert.Equal("7", await EvalTopLevelAwait("var x = await Promise.resolve(7); x"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AForAwaitInsideAnAsyncFunctionStillRuns()
         => Assert.Equal("6", await EvalTopLevelAwait(
             "(async function () { var s = 0; for await (const v of [1, 2, 3]) s += v; return s; })()"));
 
     // `for await` is still a SyntaxError where no await is allowed: an ordinary script's top
     // level (no top-level-await scope) and a non-async function body.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AForAwaitInAnOrdinaryScriptIsASyntaxError()
         => AssertSyntaxError("for await (const v of [1]) {}");
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AForAwaitInANonAsyncFunctionIsASyntaxError()
         => AssertSyntaxError("(function () { for await (const v of [1]) {} })");
 }

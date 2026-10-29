@@ -53,7 +53,7 @@ public class ComputedKeyCallReceiverTests
     public void TheSameHoldsForAnOptionalCall(string call)
         => Assert.Equal("o", InFunction(call));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AMethodReachedThroughThisAndAComputedKeyRunsOnThis()
         => Assert.Equal("true", Eval(
             "var k = { name: function () { return 'm'; } }; "
@@ -66,7 +66,7 @@ public class ComputedKeyCallReceiverTests
     /// computed key that calls into a table first. The jump has to reach the context, or the
     /// loop never ends; the guard stops it at ten runs if it does not.
     /// </summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AStateMachinesJumpThroughAComputedKeyReachesItsContext()
         => Assert.Equal("2:0", Eval(
             "function Ctx() { this.S = 1; } "
@@ -79,7 +79,7 @@ public class ComputedKeyCallReceiverTests
             + "while (ctx.S && guard++ < 10) program(ctx); "
             + "runs + ':' + ctx.S"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EvaluationOrderIsUnchanged()
         // The receiver, then the key, then each argument, then the call -- and the call still
         // runs on the receiver, with the key's call and the argument's call each run once.

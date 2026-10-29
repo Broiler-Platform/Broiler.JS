@@ -1,4 +1,5 @@
-﻿#nullable enable
+using System.Diagnostics.CodeAnalysis;
+#nullable enable
 using System;
 using System.Linq;
 using System.Reflection;
@@ -37,7 +38,7 @@ public static class TypeExtensions
         return $"\"{sb.ToString()}\"";
     }
 
-    public static ConstructorInfo GetConstructor(this Type type, params Type[] args)
+    public static ConstructorInfo GetConstructor([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] this Type type, params Type[] args)
         => type.GetConstructor(args);
 
 

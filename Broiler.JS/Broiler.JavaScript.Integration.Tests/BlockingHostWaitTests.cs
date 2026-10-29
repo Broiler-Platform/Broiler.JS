@@ -23,6 +23,7 @@ namespace Broiler.JavaScript.Integration.Tests;
 // **Every fixture runs on a worker with a bounded wait**, so a regression fails in seconds instead
 // of hanging the suite. That is not caution — the deadlock these cover took twelve minutes and
 // `--blame-hang` to identify the last time it was met.
+[Collection(nameof(ExecutionExclusionTests))]
 public sealed class BlockingHostWaitTests
 {
     private const int Budget = 15000;
@@ -45,7 +46,7 @@ public sealed class BlockingHostWaitTests
             throw new Xunit.Sdk.XunitException($"worker threw: {failure}");
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WaitForCompletesWhenOnlyAQueuedJobCanCompleteTheTask()
     {
         // Form one. The reaction that signals the task is queued behind the very execution that is
@@ -71,7 +72,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WaitForCompletesWhenTheTaskNeedsAnotherThreadToEnterTheContext()
     {
         // Form two, and the one the execution lock introduced. Draining cannot help here — the work
@@ -101,7 +102,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WaitForRunsQueuedJobsBeforeItReleasesTheContext()
     {
         // "Nothing is left owed" — a job queued by the suspending execution runs on the thread that
@@ -131,7 +132,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WaitForReturnsTheValueAndPropagatesAFault()
     {
         WithinBudget(() =>
@@ -146,7 +147,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WaitForOutsideAnExecutionIsAnOrdinaryWait()
     {
         // There is no context held to release, so the suspension is a no-op and the depth
@@ -159,7 +160,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReleasingAndRetakingTheContextLeavesTheExclusionIntact()
     {
         // The suspension hands the context to another thread on purpose, so the invariant has to
@@ -193,7 +194,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NestedExecutionsAreReleasedAndRestoredTogether()
     {
         // The depth released is also the number of lock entries this thread holds, so a wait made

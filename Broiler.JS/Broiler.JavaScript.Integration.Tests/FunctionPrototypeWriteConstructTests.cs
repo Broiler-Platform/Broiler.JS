@@ -36,7 +36,7 @@ public class FunctionPrototypeWriteConstructTests
 
     // ---- A rejected write leaves BOTH the property and [[Construct]] on the old object ----
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("Object.freeze(F);")]                                                  // frozen function
     [InlineData("Object.defineProperty(F, 'prototype', { writable: false });")]         // explicitly non-writable
     public void ARejectedPrototypeWriteLeavesConstructOnTheOriginalObject(string makeNonWritable)
@@ -48,14 +48,14 @@ public class FunctionPrototypeWriteConstructTests
             + "        Object.getPrototypeOf(Reflect.construct(F, [])) === p].join('|');"));
 
     // The sharpest form: the instance must NOT be built on the object the rejected write named.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ARejectedPrototypeWriteNeverReachesTheInstance()
         => Assert.Equal("false", Eval(
             "function F() {} Object.freeze(F); var q = { z: 1 }; F.prototype = q;"
             + "return String(Object.getPrototypeOf(new F()) === q);"));
 
     // In strict mode the rejected write also throws — and still must not take effect.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AStrictModeRejectedPrototypeWriteThrowsAndDoesNotTakeEffect()
         => Assert.Equal("TypeError|true|true", Eval(
             "'use strict';"
@@ -67,7 +67,7 @@ public class FunctionPrototypeWriteConstructTests
 
     // A class constructor's `prototype` is non-writable by specification, so the same rule holds
     // without any explicit freezing.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AClassPrototypeIsNonWritableAndConstructIgnoresTheRejectedWrite()
         => Assert.Equal("true|true", Eval(
             "class K {} var p = K.prototype;"
@@ -77,7 +77,7 @@ public class FunctionPrototypeWriteConstructTests
     // ---- An ACCEPTED change must reach [[Construct]] — the opposite failure ----
 
     // Object.defineProperty legally replaces the property; [[Construct]] has to follow it.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ADefinePropertyThatReplacesPrototypeIsUsedByConstruct()
         => Assert.Equal("true|true|true", Eval(
             "function F() {} var q = { z: 1 };"
@@ -89,14 +89,14 @@ public class FunctionPrototypeWriteConstructTests
     // An ordinary writable assignment keeps working. This is the DeltaBlue shape
     // (`this.prototype = new Inheriter()` from one repeatedly-executed site) that the cache
     // exists for, so it is pinned alongside the rejection cases.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnOrdinaryPrototypeAssignmentIsUsedByConstruct()
         => Assert.Equal("true|true", Eval(
             "function F() {} var q = { z: 1 }; F.prototype = q;"
             + "return [F.prototype === q, Object.getPrototypeOf(new F()) === q].join('|');"));
 
     // Repeated assignment from one site (the cached/shape-tracked store path) stays correct.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RepeatedPrototypeAssignmentsFromOneSiteAllReachConstruct()
         => Assert.Equal("true", Eval(
             "function make() { function F() {} F.prototype = { tag: 1 }; return F; }"
@@ -106,7 +106,7 @@ public class FunctionPrototypeWriteConstructTests
 
     // Successive accepted writes each take effect, mixing the assignment and defineProperty
     // paths — the cache stays live rather than latching on the first object it saw.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SuccessiveAcceptedWritesEachReachConstruct()
         => Assert.Equal("true|true|true", Eval(
             "function F() {} var results = [];"
@@ -119,7 +119,7 @@ public class FunctionPrototypeWriteConstructTests
     // Making `prototype` non-writable is permanent for a function (the property is
     // non-configurable from creation), so a later attempt to redefine it is refused and neither
     // the property nor [[Construct]] moves.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void OnceNonWritableThePrototypeCannotBeRedefinedAndConstructHoldsStill()
         => Assert.Equal("true|true|true", Eval(
             "function F() {} var p = F.prototype;"
@@ -130,7 +130,7 @@ public class FunctionPrototypeWriteConstructTests
 
     // ---- Assigning a non-object does not demote the function from being a constructor ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AssigningANonObjectPrototypeLeavesTheFunctionConstructable()
         => Assert.Equal("object|true", Eval(
             "function F() {} F.prototype = 1;"

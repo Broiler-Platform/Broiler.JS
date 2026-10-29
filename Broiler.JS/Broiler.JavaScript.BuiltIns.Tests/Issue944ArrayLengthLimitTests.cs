@@ -35,7 +35,7 @@ public class Issue944ArrayLengthLimitTests
     // ---- Array.prototype.slice: count above the array-index limit -------------------------------
 
     // test262 Array/prototype/slice/S15.4.4.10_A3_T1 and _A3_T2.
-    [Theory(Timeout = 60000)]
+    [Theory]
     [InlineData(4294967296L)]
     [InlineData(4294967297L)]
     public void SliceRejectsCountAboveTheArrayIndexLimit(long length)
@@ -51,7 +51,7 @@ public class Issue944ArrayLengthLimitTests
 
     // test262 Array/prototype/slice/create-proxied-array-invalid-len — the RangeError comes out of
     // array creation, so the proxy's set trap is never reached.
-    [Fact(Timeout = 60000)]
+    [Fact]
     public void SliceOverProxiedInvalidLengthThrowsBeforeAnyWrite()
         => Assert.Equal("RangeError|0", Eval("""
             (function () {
@@ -69,7 +69,7 @@ public class Issue944ArrayLengthLimitTests
             """));
 
     // A count within the limit is unaffected, including the sparse/array-like paths.
-    [Fact(Timeout = 60000)]
+    [Fact]
     public void SliceWithinTheLimitIsUnchanged()
         => Assert.Equal("2,3|3,4|3|false|c|5", Eval("""
             (function () {
@@ -91,7 +91,7 @@ public class Issue944ArrayLengthLimitTests
 
     // test262 Array/prototype/unshift/clamps-to-integer-limit — a zero-argument call reports (and
     // stores) the ToLength-clamped 2^53-1 without iterating.
-    [Theory(Timeout = 60000)]
+    [Theory]
     [InlineData("Math.pow(2, 53) - 1")]
     [InlineData("Math.pow(2, 53)")]
     [InlineData("Math.pow(2, 53) + 2")]
@@ -108,7 +108,7 @@ public class Issue944ArrayLengthLimitTests
 
     // test262 Array/prototype/unshift/throws-if-integer-limit-exceeded — a resulting length past
     // 2^53-1 is a TypeError, and it is raised before anything is shifted.
-    [Theory(Timeout = 60000)]
+    [Theory]
     [InlineData("Math.pow(2, 53) - 1")]
     [InlineData("Math.pow(2, 53)")]
     [InlineData("Math.pow(2, 53) + 2")]
@@ -125,7 +125,7 @@ public class Issue944ArrayLengthLimitTests
     // test262 Array/prototype/unshift/length-near-integer-limit — the shift walks DOWN from the
     // length, so it touches four properties and then the getter throws. Under the old 32-bit clamp
     // it started four billion indices too low and never reached them.
-    [Fact(Timeout = 60000)]
+    [Fact]
     public void UnshiftNearIntegerLimitTouchesOnlyTheTopProperties()
         => Assert.Equal("StopUnshift|9007199254740990|9007199254740987|9007199254740987|false|9007199254740989|9007199254740991", Eval("""
             (function () {
@@ -154,7 +154,7 @@ public class Issue944ArrayLengthLimitTests
 
     // test262 staging/sm/Array/unshift-01 — the length setter observes the clamped value, and
     // ToLength's coercions (string, null, negative) are unchanged.
-    [Fact(Timeout = 60000)]
+    [Fact]
     public void UnshiftReportsToLengthThroughTheLengthSetter()
         => Assert.Equal("0|10|1|0|9007199254740991|0", Eval("""
             (function () {
@@ -177,7 +177,7 @@ public class Issue944ArrayLengthLimitTests
 
     // Ordinary unshift behaviour — element shifting, holes, the returned length and the
     // non-writable-length TypeError — is unchanged.
-    [Fact(Timeout = 60000)]
+    [Fact]
     public void UnshiftWithinTheLimitIsUnchanged()
         => Assert.Equal("4|0,1,2,3|3|1,2,3|true|false|4|za|2|4294967295", Eval("""
             (function () {
@@ -199,7 +199,7 @@ public class Issue944ArrayLengthLimitTests
             })()
             """));
 
-    [Fact(Timeout = 60000)]
+    [Fact]
     public void UnshiftOnAFrozenArrayStillThrowsTypeError()
         => Assert.Equal("TypeError", ThrownErrorName("var a = [1, 2]; Object.freeze(a); a.unshift(0)"));
 
@@ -207,7 +207,7 @@ public class Issue944ArrayLengthLimitTests
 
     // test262 Array/prototype/toReversed/length-exceeding-array-length-limit — the RangeError comes
     // from creating the result, so none of the element getters run.
-    [Fact(Timeout = 60000)]
+    [Fact]
     public void ToReversedRejectsLengthAboveTheArrayIndexLimit()
         => Assert.Equal("RangeError|0", Eval("""
             (function () {
@@ -227,7 +227,7 @@ public class Issue944ArrayLengthLimitTests
 
     // Reversal within the limit is unchanged, holes included (toReversed uses Get, so a hole
     // becomes undefined rather than staying a hole).
-    [Fact(Timeout = 60000)]
+    [Fact]
     public void ToReversedWithinTheLimitIsUnchanged()
         => Assert.Equal("4,3,2,1|3|true|c,,a", Eval("""
             (function () {
@@ -246,7 +246,7 @@ public class Issue944ArrayLengthLimitTests
 
     // test262 Array/prototype/reduceRight/length-near-integer-limit — the walk starts at len-1, so
     // it reaches the two present properties near 2^53 immediately.
-    [Fact(Timeout = 60000)]
+    [Fact]
     public void ReduceRightVisitsElementsNearTheIntegerLimit()
         => Assert.Equal("2|1,9007199254740990|3,9007199254740988", Eval("""
             (function () {
@@ -269,7 +269,7 @@ public class Issue944ArrayLengthLimitTests
 
     // test262 staging/sm/Array/to-length — ToLength(Infinity) is 2^53-1, so the callback is reached
     // rather than the walk starting four billion indices too low.
-    [Fact(Timeout = 60000)]
+    [Fact]
     public void ReduceRightOverInfiniteLengthReachesTheCallback()
         => Assert.Equal("invoked", Eval("""
             (function () {
@@ -285,7 +285,7 @@ public class Issue944ArrayLengthLimitTests
 
     // Ordinary reduceRight behaviour — direction, index argument, the missing-initial-value
     // TypeError and hole skipping — is unchanged.
-    [Fact(Timeout = 60000)]
+    [Fact]
     public void ReduceRightWithinTheLimitIsUnchanged()
         => Assert.Equal("4,3,2,1|y:1,x:0|10|TypeError|c,a", Eval("""
             (function () {

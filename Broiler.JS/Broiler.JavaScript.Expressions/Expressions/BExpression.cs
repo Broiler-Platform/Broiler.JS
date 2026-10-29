@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 #nullable enable
 using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.ExpressionCompiler.Core;
@@ -346,7 +347,7 @@ public abstract class BExpression(BExpressionType nodeType, Type type)
 
 
     public static BNewExpression New(ConstructorInfo constructor, IEnumerable<BExpression> args) => new(constructor, args.AsSequence());
-    public static BNewExpression New(Type type, params BExpression[] args)
+    public static BNewExpression New([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type, params BExpression[] args)
     {
         var constructor = type.GetConstructor(args.Select(x => x.Type).ToArray());
         return new BNewExpression(constructor, args.AsSequence());
@@ -355,6 +356,7 @@ public abstract class BExpression(BExpressionType nodeType, Type type)
 
     public static BFieldExpression Field(BExpression target, FieldInfo field) => new(target, field);
 
+    [RequiresUnreferencedCode("This reflection helper requires the caller to preserve the selected members.")]
     public static BFieldExpression Field(BExpression target, string name)
     {
         var field = target.Type.GetUnderlyingTypeIfRef().GetField(name);
@@ -362,6 +364,7 @@ public abstract class BExpression(BExpressionType nodeType, Type type)
         return new BFieldExpression(target, field);
     }
 
+    [RequiresUnreferencedCode("This reflection helper requires the caller to preserve the selected members.")]
     public static BInvokeExpression Invoke(BExpression target, IFastEnumerable<BExpression> args)
     {
         var t = target.Type;
@@ -370,6 +373,7 @@ public abstract class BExpression(BExpressionType nodeType, Type type)
     }
 
 
+    [RequiresUnreferencedCode("This reflection helper requires the caller to preserve the selected members.")]
     public static BInvokeExpression Invoke(BExpression target, params BExpression[] args)
     {
         var t = target.Type;
@@ -381,16 +385,21 @@ public abstract class BExpression(BExpressionType nodeType, Type type)
 
     public static BPropertyExpression Property(BExpression target, PropertyInfo field) => new(target, field);
 
+    [RequiresDynamicCode("This helper constructs runtime generic or array types; use the portable backend for Native AOT.")]
     public static BNewArrayExpression NewArray(Type type, IFastEnumerable<BExpression> elements) => new(type, elements);
 
 
+    [RequiresDynamicCode("This helper constructs runtime generic or array types; use the portable backend for Native AOT.")]
     public static BNewArrayExpression NewArray(Type type, params BExpression[] elements) => new(type, elements.AsSequence());
 
+    [RequiresDynamicCode("This helper constructs runtime generic or array types; use the portable backend for Native AOT.")]
     public static BNewArrayExpression NewArrayInit(Type type, IEnumerable<BExpression> elements) => new(type, elements.AsSequence());
 
 
+    [RequiresDynamicCode("This helper constructs runtime generic or array types; use the portable backend for Native AOT.")]
     public static BNewArrayExpression NewArrayInit(Type type, IFastEnumerable<BExpression> elements) => new(type, elements);
 
+    [RequiresDynamicCode("This helper constructs runtime generic or array types; use the portable backend for Native AOT.")]
     public static BNewArrayBoundsExpression NewArrayBounds(Type type, BExpression size) => new(type, size);
 
     public static BMemberElementInit ListBind(MemberInfo member, BElementInit[] elements) => new(member, elements);
@@ -497,6 +506,7 @@ public abstract class BExpression(BExpressionType nodeType, Type type)
 
     public static BIndexExpression Index(BExpression target, PropertyInfo propertyInfo, params BExpression[] args) => new(target, propertyInfo, args.AsSequence());
 
+    [RequiresUnreferencedCode("This reflection helper requires the caller to preserve the selected members.")]
     public static BIndexExpression Index(BExpression target, IFastEnumerable<BExpression> args)
     {
         var types = args.Select(x => x.Type).ToArray();
@@ -511,6 +521,7 @@ public abstract class BExpression(BExpressionType nodeType, Type type)
         return new BIndexExpression(target, propertyInfo, args);
     }
 
+    [RequiresUnreferencedCode("This reflection helper requires the caller to preserve the selected members.")]
     public static BIndexExpression Index(BExpression target, params BExpression[] args)
     {
         var types = args.Select(x => x.Type).ToArray();

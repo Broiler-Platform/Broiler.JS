@@ -14,7 +14,8 @@ public static class Program
         if (args.Length == 2 && args[0] == BroilerJsEngine.ChildSwitch)
             return BroilerJsEngine.Serve(args[1]);
 
-        Console.Error.WriteLine($"usage: {BroilerJsEngine.ChildSwitch} <prelude.js>, with one script per line on standard input");
-        return 2;
+        if (args.Any(arg => arg is "--server" or "--internal-msbuild-node"))
+            return Xunit.MicrosoftTestingPlatform.TestPlatformTestFramework.RunAsync(args, SelfRegisteredExtensions.AddSelfRegisteredExtensions).GetAwaiter().GetResult();
+        return Xunit.Runner.InProc.SystemConsole.ConsoleRunner.Run(args).GetAwaiter().GetResult();
     }
 }

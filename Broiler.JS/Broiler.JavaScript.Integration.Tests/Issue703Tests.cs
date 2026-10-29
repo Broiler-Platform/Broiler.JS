@@ -46,7 +46,7 @@ public class Issue703Tests
     // ---- Problem 6: RegExp groups created with CreateDataProperty ----
 
     // Setting `result.groups` must not trigger an inherited setter on Array.prototype.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpGroupsAreDefinedNotSet()
         => Assert.Equal("0", Eval(
             "var counter = 0;" +
@@ -54,14 +54,14 @@ public class Issue703Tests
             "/(?<x>.)/.exec('a'); counter;").ToString());
 
     // The groups object has a null prototype; a `__proto__` group is an own property.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpGroupsObjectHasNullProtoAndPlainProtoKey()
         => Assert.Equal("a,true", Eval(
             "var g = /(?<__proto__>.)/.exec('a').groups;" +
             "[g.__proto__, Object.getPrototypeOf(g) === null].join(',');").ToString());
 
     // Named-group properties are not created with [[Set]] (no inherited setter fires).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpNamedGroupPropertiesAreDefinedNotSet()
         => Assert.Equal("0", Eval(
             "var counter = 0;" +
@@ -69,7 +69,7 @@ public class Issue703Tests
             "/(?<x>.)/.exec('a'); counter;").ToString());
 
     // The `indices.groups` object also uses CreateDataProperty and a null prototype.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpIndicesGroupsAreDefinedWithNullProto()
         => Assert.Equal("0,true", Eval(
             "var counter = 0;" +
@@ -80,26 +80,26 @@ public class Issue703Tests
     // ---- Problem 3: derived constructor return-value normalization ----
 
     // `return Symbol()` (a tail-positioned call) from a derived ctor throws TypeError.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DerivedConstructorReturnSymbolCallThrows()
         => Assert.Equal("TypeError", Catch(
             "class B {} class D extends B { constructor() { super(); return Symbol(); } } new D();"));
 
     // A non-object primitive returned via a tail call still throws.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DerivedConstructorReturnPrimitiveCallThrows()
         => Assert.Equal("TypeError", Catch(
             "class B {} class D extends B { constructor() { super(); return String(5); } } new D();"));
 
     // An object returned via a tail call passes through unchanged.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DerivedConstructorReturnObjectCallPassesThrough()
         => Assert.Equal("tag", Eval(
             "class B {} class D extends B { constructor() { super(); return Object({ t: 'tag' }); } }" +
             "new D().t;").ToString());
 
     // A base constructor ignores a non-object returned via a tail call (returns this).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BaseConstructorReturnPrimitiveCallReturnsThis()
         => Assert.Equal("true", Eval(
             "class B { constructor() { this.ok = true; return Symbol(); } } new B().ok;").ToString());
@@ -107,7 +107,7 @@ public class Issue703Tests
     // ---- Problem 7: array for-of iterator is live ----
 
     // Entries pushed during for-of traversal are visited.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForOfVisitsEntriesPushedDuringTraversal()
         => Assert.Equal("2", Eval(
             "var array = [0], count = 0, first = 0, second = 1;" +
@@ -115,21 +115,21 @@ public class Issue703Tests
             "  if (first !== null) array.push(1); count += 1; } count;").ToString());
 
     // Shrinking the array during traversal ends iteration early.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForOfStopsWhenArrayShrinks()
         => Assert.Equal("2", Eval(
             "var a = [1, 2, 3, 4, 5], count = 0;" +
             "for (var y of a) { count++; if (y === 2) a.length = 2; } count;").ToString());
 
     // Spread of an array is unchanged.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SpreadOfArrayUnchanged()
         => Assert.Equal("1,2,3", Eval("[...[1, 2, 3]].join(',');").ToString());
 
     // ---- Problem 6: Object.keys over a Proxy filters by enumerability ----
 
     // A non-enumerable key reported by the ownKeys trap is excluded from Object.keys.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectKeysOnProxyFiltersNonEnumerableTrapKeys()
         => Assert.Equal("0", Eval(
             "var target = {};" +
@@ -139,7 +139,7 @@ public class Issue703Tests
             "Object.keys(proxy).length;").ToString());
 
     // getOwnPropertyNames still reports the non-enumerable key.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectGetOwnPropertyNamesOnProxyKeepsNonEnumerable()
         => Assert.Equal("a,b", Eval(
             "var t = {};" +

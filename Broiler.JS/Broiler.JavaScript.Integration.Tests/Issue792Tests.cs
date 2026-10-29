@@ -58,7 +58,7 @@ public class Issue792Tests
         => Assert.Equal("SyntaxError", CompileError(source));
 
     // a block body still allows lexical declarations
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LexicalDeclaration_InBlockBody_Allowed()
         => Assert.Equal("1", Eval("let r; if (true) { let x = 1; r = x; } r"));
 
@@ -107,15 +107,15 @@ public class Issue792Tests
     private const string HebrewLeapDate =
         "Temporal.PlainDate.from({year:5784,monthCode:'M05L',day:1,calendar:'hebrew'})";
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Hebrew_LeapToLeapYear_KeepsLeapMonthCode()
         => Assert.Equal("M05L", Eval($"{HebrewLeapDate}.with({{year:5782}}).monthCode"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Hebrew_LeapToCommonYear_ConstrainsToAdar()
         => Assert.Equal("M06", Eval($"{HebrewLeapDate}.with({{year:5783}}).monthCode"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Hebrew_LeapToCommonYear_RejectThrows()
         => Assert.Equal("RangeError",
             ErrorNameRuntime($"{HebrewLeapDate}.with({{year:5783}}, {{overflow:'reject'}})"));
@@ -129,13 +129,13 @@ public class Issue792Tests
 
     // ── Problem 9: Temporal.Instant accepts a ZonedDateTime ──────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void InstantFrom_AcceptsZonedDateTime()
         => Assert.Equal(
             "1970-01-01T00:00:00Z",
             Eval("Temporal.Instant.from(new Temporal.ZonedDateTime(0n, 'UTC')).toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void InstantCompare_AcceptsZonedDateTime()
         => Assert.Equal(
             "0",

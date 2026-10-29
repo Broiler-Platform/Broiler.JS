@@ -140,7 +140,7 @@ env:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -340,7 +340,7 @@ jobs:
   # assembly, subset, feature slice, alternate suite, or negative-test run.
   plan:
     needs: validate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       full-shard-matrix: ${{ steps.resolve.outputs.full-shard-matrix }}
       full-expected-shards: ${{ steps.resolve.outputs.full-expected-shards }}
@@ -490,7 +490,7 @@ jobs:
   # this exact commit and cache key, so one run cannot straddle a moving branch.
   prepare:
     needs: validate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       suite-commit: ${{ steps.resolve.outputs.suite-commit }}
       suite-cache-key: ${{ steps.resolve.outputs.suite-cache-key }}
@@ -582,7 +582,7 @@ jobs:
   rerun-failed:
     needs: [plan, prepare]
     if: ${{ needs.plan.outputs.should-rerun-failed == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     continue-on-error: true
     timeout-minutes: 360
     strategy:
@@ -616,7 +616,7 @@ jobs:
   retry-plan-rerun:
     needs: [plan, rerun-failed]
     if: ${{ !cancelled() && needs.plan.outputs.should-rerun-failed == 'true' && needs.rerun-failed.result != 'skipped' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       retry-matrix: ${{ steps.detect.outputs.incomplete_shard_matrix }}
       has-retries: ${{ steps.detect.outputs.has_incomplete_shards }}
@@ -646,7 +646,7 @@ jobs:
   retry-rerun:
     needs: [plan, prepare, retry-plan-rerun]
     if: ${{ !cancelled() && needs.retry-plan-rerun.outputs.has-retries == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     continue-on-error: true
     timeout-minutes: 360
     strategy:
@@ -683,7 +683,7 @@ jobs:
   evaluate-rerun:
     needs: [plan, rerun-failed, retry-rerun]
     if: ${{ always() && !cancelled() && needs.plan.outputs.should-rerun-failed == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       suite-passed: ${{ steps.merge.outputs.suite_passed }}
       incomplete-shard-count: ${{ steps.merge.outputs.incomplete_shard_count }}
@@ -732,7 +732,7 @@ jobs:
           || needs.evaluate-rerun.outputs.suite-passed == 'true'
         )
       }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     continue-on-error: true
     timeout-minutes: 360
     strategy:
@@ -770,7 +770,7 @@ jobs:
   retry-plan-full:
     needs: [plan, run-full]
     if: ${{ !cancelled() && needs.run-full.result != 'skipped' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       retry-matrix: ${{ steps.detect.outputs.incomplete_shard_matrix }}
       has-retries: ${{ steps.detect.outputs.has_incomplete_shards }}
@@ -800,7 +800,7 @@ jobs:
   retry-full:
     needs: [plan, prepare, retry-plan-full]
     if: ${{ !cancelled() && needs.retry-plan-full.outputs.has-retries == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     continue-on-error: true
     timeout-minutes: 360
     strategy:
@@ -847,7 +847,7 @@ jobs:
         && !cancelled()
         && (needs.run-full.result != 'skipped' || needs.rerun-failed.result != 'skipped')
       }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       authoritative-phase: ${{ steps.authoritative.outputs.phase }}
       authoritative-expected-shards: ${{ steps.authoritative.outputs.expected-shards }}
@@ -1064,7 +1064,7 @@ jobs:
         && (github.event.inputs.minifier || 'terser') == 'terser'
         && github.ref_type == 'branch'
       }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: test262-failure-manifest-${{ github.repository }}-${{ github.ref }}
       cancel-in-progress: false
@@ -1146,7 +1146,7 @@ jobs:
   conclusion:
     needs: [plan, report, persist-failed]
     if: ${{ always() && !cancelled() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Enforce authoritative test262 result
         shell: bash

@@ -1583,7 +1583,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     /// Resolves an identifier from the direct-eval / global / internal scopes only,
     /// without consulting the <c>with</c> object scopes. Used by the call path after a
     /// preceding <see cref="ResolveWithObject"/> has already walked the with scopes (and
-    /// found no binding): re-running <see cref="ResolveIdentifier"/> there would fire a
+    /// found no binding): re-running <see cref="Broiler.JavaScript.Engine.JSContext.ResolveIdentifier(in Broiler.JavaScript.Storage.KeyString)"/> there would fire a
     /// second, spec-violating <c>has</c> trap on the binding object
     /// (test262 with/has-binding-call-with-proxy-env).
     /// </summary>
@@ -1628,7 +1628,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     }
 
     /// <summary>
-    /// Read of an eval-introduced global <c>var</c>. Like <see cref="ResolveIdentifier"/> but,
+    /// Read of an eval-introduced global <c>var</c>. Like <see cref="Broiler.JavaScript.Engine.JSContext.ResolveIdentifier(in Broiler.JavaScript.Storage.KeyString)"/> but,
     /// after any <c>with</c> object / direct-eval overlay, it consults the live global-object
     /// property BEFORE the <see cref="globalVars"/> mirror: an eval var assignment writes the
     /// property, so the property is the authoritative value while the mirror may be a stale
@@ -1661,7 +1661,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     }
 
     /// <summary>
-    /// Resolves an identifier the way <see cref="ResolveIdentifier"/> does — with
+    /// Resolves an identifier the way <see cref="Broiler.JavaScript.Engine.JSContext.ResolveIdentifier(in Broiler.JavaScript.Storage.KeyString)"/> does — with
     /// the same precedence (`with` object, direct-eval / `with`-fallback overlay,
     /// global var, global property) — but yields <c>undefined</c> instead of
     /// throwing when the name is unresolvable. Used by `typeof` so it consults a

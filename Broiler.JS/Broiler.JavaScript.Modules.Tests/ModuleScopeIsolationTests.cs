@@ -52,7 +52,7 @@ public class ModuleScopeIsolationTests
     // The regression: a module imports a second module WHILE its own body is mid-execution, and both
     // declare a top-level exported `const` of the same name. Before the fix the transitive import's
     // `const x` collided with the still-live outer module's read-only `x`.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ATransitiveImportDoesNotCollideWithTheImportersExportedConst()
         => Assert.Equal("MA", await Run(
             new()
@@ -64,7 +64,7 @@ public class ModuleScopeIsolationTests
             "import { x, seen } from './mod.js'; globalThis.r = x + seen;"));
 
     // The same, for `let` and a class declaration exported from the transitively imported module.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ATransitiveImportDoesNotCollideForLetOrClass()
         => Assert.Equal("MA2", await Run(
             new()
@@ -78,7 +78,7 @@ public class ModuleScopeIsolationTests
 
     // Two independent sibling modules each declaring the same top-level const name stay isolated —
     // this always worked, and must keep working after the fix.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task TwoSiblingModulesWithTheSameConstNameStayIsolated()
         => Assert.Equal("AB", await Run(
             new()
@@ -92,7 +92,7 @@ public class ModuleScopeIsolationTests
     // consults local/indirect entries before star entries), even when the star follows the local
     // export in source order — which previously threw "Cannot assign to read only variable" as the
     // runtime star-copy tried to overwrite the read-only local binding.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ALocalExportShadowsAStarReExportOfTheSameName()
         => Assert.Equal("local", await Run(
             new()
@@ -103,7 +103,7 @@ public class ModuleScopeIsolationTests
             "import { x } from './mod.js'; globalThis.r = x;"));
 
     // A named re-export likewise shadows an `export *` of the same name, independent of source order.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ANamedReExportShadowsAStarReExportOfTheSameName()
         => Assert.Equal("named", await Run(
             new()

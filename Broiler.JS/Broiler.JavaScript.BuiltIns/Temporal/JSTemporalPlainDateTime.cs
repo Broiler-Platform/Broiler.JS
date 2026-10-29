@@ -339,11 +339,11 @@ public partial class JSTemporalPlainDateTime : JSObject
         => new JSString(TemporalFormat.DateTimeToString(IsoDateTime, calendarId, TemporalFormat.AutoPrecision, ShowCalendarName.Auto));
 
     [JSExport("toLocaleString", Length = 0)]
-    public JSValue ToLocaleString(in Arguments a)
+    public new JSValue ToLocaleString(in Arguments a)
         => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1));
 
     [JSExport("valueOf", Length = 0)]
-    public JSValue ValueOf(in Arguments a)
+    public new JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.PlainDateTime.prototype.valueOf, which is not supported. Use Temporal.PlainDateTime.compare for comparison.");
 
     [JSExport("toPlainDate", Length = 0)]

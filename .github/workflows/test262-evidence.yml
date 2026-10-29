@@ -97,7 +97,7 @@ env:
 
 jobs:
   prepare:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       suite-commit: ${{ steps.resolve.outputs.suite-commit }}
       suite-cache-key: ${{ steps.resolve.outputs.suite-cache-key }}
@@ -141,7 +141,7 @@ jobs:
 
   shard:
     needs: prepare
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 240
     strategy:
       fail-fast: false
@@ -245,7 +245,7 @@ jobs:
   collect:
     needs: [prepare, shard]
     if: ${{ always() && !cancelled() && needs.prepare.result == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v5

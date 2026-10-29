@@ -263,7 +263,7 @@ public sealed partial class JSNumber : JSPrimitive
     /// (docs/performance-roadmap.md item 3-8a).
     /// </summary>
     /// <remarks>
-    /// Separate from <see cref="CreateConversion"/>, which it would otherwise be a case of, because
+    /// Separate from <see cref="Broiler.JavaScript.BuiltIns.Number.JSNumber.CreateConversion(double)"/>, which it would otherwise be a case of, because
     /// the two answer opposite questions. A conversion box is the cost of a representation that
     /// PAID somewhere else; this one is the cost of a representation that has not paid yet, and the
     /// item is worth keeping exactly while the steps it removes outnumber these.

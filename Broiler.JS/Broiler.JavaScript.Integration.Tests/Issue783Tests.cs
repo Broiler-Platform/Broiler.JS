@@ -71,12 +71,12 @@ public class Issue783Tests
     // defined disposal point) is a SyntaxError — including eval evaluated in a script context. It is
     // only valid inside a block / function body / for-of head, or at the top level of a Module.
     // (Verified against the Explicit Resource Management proposal, MDN and V8.)
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TopLevelUsingInScriptIsSyntaxError()
         => Assert.Equal("SyntaxError",
             ErrorName("eval('using x = { [Symbol.dispose]() {} };')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void UsingAllowsNullAndUndefinedInitializer()
         => Assert.Equal("ok", Eval("{ using a = null; using b = undefined; } 'ok'"));
 
@@ -84,7 +84,7 @@ public class Issue783Tests
     // also throws, the result is a SuppressedError whose `error` is the disposer's throw and
     // whose `suppressed` is the body's throw (issue #842 Problem 46 —
     // staging/explicit-resource-management/exception-handling).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void UsingBodyErrorIsSuppressedByDisposeError()
         => Assert.Equal("SuppressedError|dispose|user", Eval("""
             (function () {
@@ -99,7 +99,7 @@ public class Issue783Tests
         """));
 
     // When only a disposer throws (clean body), that error propagates directly — no wrapping.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void UsingDisposeErrorWithCleanBodyPropagatesDirectly()
         => Assert.Equal("plain", Eval("""
             (function () {
@@ -126,7 +126,7 @@ public class Issue783Tests
         => Assert.Equal("RangeError", ErrorName($"Temporal.Instant.fromEpochMilliseconds(0).toZonedDateTimeISO({s})"));
 
     // A leap second in the *time* with a valid zone designator is still fine (collapses to :59).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LeapSecondInTimeWithValidZoneSucceeds()
         => Assert.Equal("UTC", Eval("Temporal.ZonedDateTime.from('2016-12-31T23:59:60+00:00[UTC]').timeZoneId"));
 
@@ -170,7 +170,7 @@ public class Issue783Tests
 
     // On any other object the setter creates an own data property (it does not recurse through the
     // inherited accessor).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IteratorConstructorSetterCreatesOwnProperty()
         => Assert.Equal("x", Eval(
             "let o=Object.create(Iterator.prototype);" +
@@ -179,7 +179,7 @@ public class Issue783Tests
 
     // ───────────── Problem 5: persian calendar over the full ISO range ─────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PersianExtremeDatesRoundTrip()
     {
         // Minimum / maximum of the supported ISO range, expressed in the persian calendar.
@@ -191,7 +191,7 @@ public class Issue783Tests
                  "[d.year,d.month,d.day].join('-')"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PersianNegativeYearRoundTrips()
         => Assert.Equal("-621-10-11", // numbers print unpadded
             Eval("let d=Temporal.PlainDate.from({era:'ap',eraYear:-621,month:10,day:11,calendar:'persian'});" +
@@ -207,7 +207,7 @@ public class Issue783Tests
         => Assert.Equal("RangeError", ErrorName(code));
 
     // A within-range withPlainTime still works.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WithPlainTimeInRangeSucceeds()
         => Assert.Equal("2020-01-01T12:30:00",
             Eval("new Temporal.PlainDateTime(2020,1,1).withPlainTime(new Temporal.PlainTime(12,30)).toString()"));
@@ -239,28 +239,28 @@ public class Issue783Tests
         => Eval($"let d=Temporal.PlainDate.from({{{from},calendar:'chinese'}}).add({dur}{opts});" +
                 "[d.year,d.monthCode,d.day].join('/')");
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AddYearToLeapMonthConstrainsToCommonMonth()
         // 1966-M03L lands in 1967, which has no leap third month, so it constrains to M03.
         => Assert.Equal("1967/M03/1", ChineseAdd("year:1966,monthCode:'M03L',day:1", "{years:1}"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SubtractYearFromLeapMonthConstrainsToCommonMonth()
         => Assert.Equal("1965/M03/1",
             Eval("let d=Temporal.PlainDate.from({year:1966,monthCode:'M03L',day:1,calendar:'chinese'}).subtract({years:1});" +
                  "[d.year,d.monthCode,d.day].join('/')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AddYearToLeapMonthDayConstrained()
         // 1938-M07L-30 -> 1939-M07-29 (the common seventh month of 1939 has 29 days).
         => Assert.Equal("1939/M07/29", ChineseAdd("year:1938,monthCode:'M07L',day:30", "{years:1}"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AddYearToLeapMonthRejectThrows()
         => Assert.Equal("RangeError",
             ErrorName("Temporal.PlainDate.from({year:1966,monthCode:'M03L',day:1,calendar:'chinese'}).add({years:1}, {overflow:'reject'})"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AddMonthsAcrossLeapMonth()
         // 2019-M04 + 13 months -> 2020-M04L (2020 has a leap fourth month).
         => Assert.Equal("2020/M04L/1", ChineseAdd("year:2019,monthCode:'M04',day:1", "{months:13}"));
@@ -271,7 +271,7 @@ public class Issue783Tests
     // table) over the authority's published years, 1206 to 1498 AP, and over every year from 1178 to 1534,
     // so the persian-calendar-authority Nowrúz fixtures keep passing (row K10 of SJL-8.1's correspondence).
     // Outside them .NET's astronomy differs (K11), and at its bounds it repeated dates (K12).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PersianMatchesDotNetOverTheAuthorityRange()
     {
         var pc = new PersianCalendar();

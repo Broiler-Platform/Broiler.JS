@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 
 namespace Broiler.JavaScript.BuiltIns.Tests;
 
@@ -32,6 +33,18 @@ internal static class TestCultureInitializer
         // .NET derives TimeZoneInfo.Local from the TZ environment variable on Unix; set it to UTC and
         // drop the cache so the local zone is UTC even when the host runs in another zone.
         Environment.SetEnvironmentVariable("TZ", "UTC");
+        SetLocalTimeZone(TimeZoneInfo.Utc);
+    }
+
+    // Windows ignores TZ. Use the same process-local cache override as the
+    // existing New York fixtures, without changing the operating system zone.
+    internal static void SetLocalTimeZone(TimeZoneInfo zone)
+    {
         TimeZoneInfo.ClearCachedData();
+        var cache = typeof(TimeZoneInfo).GetField("s_cachedData", BindingFlags.NonPublic | BindingFlags.Static)?.GetValue(null);
+        var local = cache?.GetType().GetField("_localTimeZone", BindingFlags.NonPublic | BindingFlags.Instance)
+            ?? throw new InvalidOperationException("TimeZoneInfo's cache of the local zone was not found.");
+        lock (cache)
+            local.SetValue(cache, zone);
     }
 }

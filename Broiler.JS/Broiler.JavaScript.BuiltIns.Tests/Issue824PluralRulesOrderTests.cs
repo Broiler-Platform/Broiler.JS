@@ -17,7 +17,7 @@ public class Issue824PluralRulesOrderTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ResolvedOptionsOrder()
     {
         var r = Eval("""

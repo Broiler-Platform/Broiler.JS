@@ -176,11 +176,11 @@ public partial class JSTemporalDuration : JSObject
     public JSValue ToJSON(in Arguments a) => new JSString(TemporalFormat.DurationToString(Fields, TemporalFormat.AutoPrecision));
 
     [JSExport("toLocaleString", Length = 0)]
-    public JSValue ToLocaleString(in Arguments a)
+    public new JSValue ToLocaleString(in Arguments a)
         => Intl.JSIntlDurationFormat.TemporalToLocaleString(this, a.Get1(), a.GetAt(1));
 
     [JSExport("valueOf", Length = 0)]
-    public JSValue ValueOf(in Arguments a)
+    public new JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.Duration.prototype.valueOf, which is not supported. Use Temporal.Duration.compare for comparison.");
 
     [JSExport("add", Length = 1)]

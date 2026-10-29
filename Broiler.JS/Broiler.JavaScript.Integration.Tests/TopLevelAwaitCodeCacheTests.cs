@@ -17,7 +17,7 @@ public class TopLevelAwaitCodeCacheTests
     private static async Task<string> EvalWithTopLevelAwait(JSContext context, string source)
         => (await context.EvalWithTopLevelAwaitAsync(source)).ToString();
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task A_script_compiled_after_the_same_text_with_top_level_await_calls_await()
     {
         var source = Source(nameof(A_script_compiled_after_the_same_text_with_top_level_await_calls_await));
@@ -26,7 +26,7 @@ public class TopLevelAwaitCodeCacheTests
         Assert.Equal("42", Eval(context, source));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task A_program_with_top_level_await_compiled_after_the_same_script_awaits()
     {
         var source = Source(nameof(A_program_with_top_level_await_compiled_after_the_same_script_awaits));
@@ -35,7 +35,7 @@ public class TopLevelAwaitCodeCacheTests
         Assert.Equal("21", await EvalWithTopLevelAwait(context, source));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task Each_mode_answers_alone_as_it_answers_after_the_other()
     {
         var source = Source(nameof(Each_mode_answers_alone_as_it_answers_after_the_other));

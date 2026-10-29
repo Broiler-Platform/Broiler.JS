@@ -30,7 +30,7 @@ public class LegacyRegExpStaticsAllocationTests
         })()
         """;
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AGlobalReplaceDoesNotCopyTheSubjectPerMatch()
     {
         using var context = new JSContext();
@@ -58,7 +58,7 @@ public class LegacyRegExpStaticsAllocationTests
                 + $"({bytes / 5000.0:F0} B/match); copying the subject per match is ~42 KB/match");
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheStaticsStillDescribeTheLastMatchAfterAGlobalReplace()
     {
         // The allocation test above passes trivially if the statics stop being recorded, so

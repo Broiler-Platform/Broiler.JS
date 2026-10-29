@@ -18,6 +18,9 @@
 
   <PropertyGroup>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <!-- Keep the repository's VSTest CLI/filter/coverage contract while using
+         xUnit v3. Standalone tests still have xUnit's executable runner. -->
+    <IsTestingPlatformApplication Condition="$(MSBuildProjectName.EndsWith('.Tests'))">false</IsTestingPlatformApplication>
 
     <BroilerBaseConfiguration Condition="'$(Configuration)' == 'Debug-Linux' Or '$(Configuration)' == 'Debug-Windows'">Debug</BroilerBaseConfiguration>
     <BroilerBaseConfiguration Condition="'$(Configuration)' == 'Release-Linux' Or '$(Configuration)' == 'Release-Windows'">Release</BroilerBaseConfiguration>

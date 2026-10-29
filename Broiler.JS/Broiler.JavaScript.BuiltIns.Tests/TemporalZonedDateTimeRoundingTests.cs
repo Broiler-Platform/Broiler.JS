@@ -32,7 +32,7 @@ public class TemporalZonedDateTimeRoundingTests
     public void Since_NegativeDirection_Ceil(string unit, string expected)
         => Assert.Equal(expected, E($"{Pair} earlier.since(later, {{ smallestUnit: '{unit}', roundingMode: 'ceil' }}).toString();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Since_TruncIsDefault()
         => Assert.Equal("P2Y", E($"{Pair} later.since(earlier, {{ smallestUnit: 'years' }}).toString();"));
 
@@ -54,7 +54,7 @@ public class TemporalZonedDateTimeRoundingTests
         Assert.Equal(expected, actual);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Until_RoundsCalendarUnit_HalfExpand()
         => Assert.Equal("P3Y", E($"{Pair} earlier.until(later, {{ smallestUnit: 'years', roundingMode: 'halfExpand' }}).toString();"));
 }

@@ -67,7 +67,7 @@ public class SharedRuleTests
         // a library, so it is the witness for the assembly half as Broiler.VM's is for B1.
         var self = AssemblyFacts.Read(typeof(SharedRuleTests).Assembly.Location);
         var violations = SharedRules.SL1Assembly(self).ToList();
-        Assert.Contains(violations, static v => v.EndsWith("references the assembly xunit.core", StringComparison.Ordinal));
+        Assert.Contains(violations, static v => v.EndsWith("references the assembly " + typeof(FactAttribute).Assembly.GetName().Name, StringComparison.Ordinal));
         Assert.Contains(violations, static v => v.EndsWith("references the assembly Broiler.ECMAScript.Conformance", StringComparison.Ordinal));
     }
 

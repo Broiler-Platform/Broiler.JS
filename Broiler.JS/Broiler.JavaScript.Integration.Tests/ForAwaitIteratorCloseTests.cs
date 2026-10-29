@@ -18,7 +18,7 @@ public class ForAwaitIteratorCloseTests
         return ctx.Eval("'' + globalThis.r").ToString();
     }
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     // An async generator is closed by break, return and throw, and the loop waits for its
     // finally, awaits included.
     [InlineData("var log = []; async function* g(){ try { yield 1; yield 2; } finally { log.push('fin'); } } (async () => { for await (var x of g()) { log.push(x); break; } log.push('after'); r = JSON.stringify(log); })();",

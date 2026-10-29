@@ -13,7 +13,7 @@ public class StorageTests
         public override string ToString() => name;
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void KeyStrings_GetOrCreate_ReturnsSameKeyForSameString()
     {
         var span1 = new StringSpan("testProp");
@@ -23,7 +23,7 @@ public class StorageTests
         Assert.Equal(key1.Key, key2.Key);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void KeyStrings_GetOrCreate_ReturnsDifferentKeysForDifferentStrings()
     {
         var key1 = KeyStrings.GetOrCreate(new StringSpan("alpha"));
@@ -31,7 +31,7 @@ public class StorageTests
         Assert.NotEqual(key1.Key, key2.Key);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void VirtualMemory_Allocate_ReturnsNonEmptyArray()
     {
         var vm = new VirtualMemory<int>();
@@ -46,7 +46,7 @@ public class StorageTests
     // `last * 2 <= max`, grew a large map linearly rather than geometrically. These pin both
     // halves of the replacement: exact at the bottom, doubling above it.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void VirtualMemory_FirstAllocation_ReservesOnlyWhatWasAsked()
     {
         var vm = new VirtualMemory<int>();
@@ -56,7 +56,7 @@ public class StorageTests
         Assert.Equal(4, vm.Capacity);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void VirtualMemory_FirstAllocation_NeverReservesBelowOneNodeGroup()
     {
         // A sub-group request still gets a group: the trie asks in fours, and rounding a 1 down
@@ -67,7 +67,7 @@ public class StorageTests
         Assert.Equal(4, vm.Capacity);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void VirtualMemory_GrowsGeometrically_NotByAFixedIncrement()
     {
         // Twenty four-slot requests. Doubling reaches 80 slots in a handful of allocations; the
@@ -94,7 +94,7 @@ public class StorageTests
             $"expected geometric growth, got {capacities.Count} reallocations: {string.Join(",", capacities)}");
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void VirtualMemory_ContentsSurviveEveryGrowth()
     {
         // The whole policy is only safe if a resize copies. Write a distinguishable value into
@@ -115,7 +115,7 @@ public class StorageTests
                 Assert.Equal((i * 4) + j, vm[arrays[i], j]);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SAUint32Map_KeepsEveryEntryAcrossTheNewGrowthPolicy()
     {
         // The policy change is in the layer beneath the trie, so the trie's own invariant — every
@@ -133,7 +133,7 @@ public class StorageTests
         Assert.Equal(2000, map.Count);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void VirtualMemory_Count_GrowsWithAllocations()
     {
         var vm = new VirtualMemory<int>();
@@ -146,7 +146,7 @@ public class StorageTests
         Assert.Equal(countAfterFirst + 2, vm.Count);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SAUint32Map_EnumeratesOnlyLiveNodesAfterLargeReserve()
     {
         var map = new SAUint32Map<string>();
@@ -164,7 +164,7 @@ public class StorageTests
         Assert.False(enumerator.MoveNext());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSPropertyAttributes_FlagCombinations()
     {
         var attrs = JSPropertyAttributes.Value | JSPropertyAttributes.Enumerable | JSPropertyAttributes.Configurable;
@@ -174,7 +174,7 @@ public class StorageTests
         Assert.False(attrs.HasFlag(JSPropertyAttributes.Readonly));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void KeyStrings_PublishesImmutableIndexAndPrivateMetadata()
     {
         var index = KeyStrings.GetOrCreate("4294967294");
@@ -196,7 +196,7 @@ public class StorageTests
         Assert.Equal(index.Metadata.StableOrdinalHash, KeyStrings.GetOrCreate("4294967294").Metadata.StableOrdinalHash);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void KeyStrings_ConcurrentHitsPublishOneKey()
     {
         var ids = new uint[256];
@@ -205,7 +205,7 @@ public class StorageTests
         Assert.Equal("contended-key", KeyStrings.GetNameString(ids[0]).Value);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PropertySequence_DeleteAndReaddMovesKeyToTail()
     {
         var sequence = new PropertySequence();
@@ -227,7 +227,7 @@ public class StorageTests
         Assert.Equal([a.Key, c.Key, b.Key], keys);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ElementArray_TransitionsPackedHoleyAndDictionaryInOrder()
     {
         var elements = new ElementArray();
@@ -248,7 +248,7 @@ public class StorageTests
         Assert.Equal([1u, 1_000_000u], keys);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ElementArray_CustomDescriptorSelectsDictionaryMode()
     {
         var elements = new ElementArray();
@@ -269,7 +269,7 @@ public class StorageTests
     // JSContext.ResolveIdentifierOrUndefined, whose globalVars entries are removed when a
     // direct-eval binding is torn down). It looked intermittent only because whether the
     // displacement happens depends on the interned key values.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SAUint32Map_ARemovedKeyIsNotResurrectedByALaterSmallerInsert()
     {
         var map = new SAUint32Map<string>();
@@ -303,7 +303,7 @@ public class StorageTests
         }
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StringMap_ARemovedKeyIsNotResurrectedByALaterSmallerInsert()
     {
         var map = new StringMap<string>();
@@ -346,7 +346,7 @@ public class StorageTests
     // empty, so ScriptInfo.Indices (sized to List.Count) was indexed out of
     // bounds at runtime. Fill one StringArray heavily to exercise the overflow,
     // then assert a fresh StringArray is fully independent.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StringArray_FreshInstance_IsNotPoisonedByHeavyPriorInstance()
     {
         var heavy = new StringArray();

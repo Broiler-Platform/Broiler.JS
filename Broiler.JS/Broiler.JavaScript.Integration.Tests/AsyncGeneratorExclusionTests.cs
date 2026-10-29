@@ -54,8 +54,8 @@ public sealed class AsyncGeneratorExclusionTests
     private const string Busy =
         "(function () { var t = 0; for (var j = 0; j < 20000; j++) { t += j; } return t; })()";
 
-    [Fact(Timeout = 600000)]
-    public void AnAsyncGeneratorResumedFromAHostThreadDoesNotOverlapAnEvaluation()
+    [Fact]
+    public async Task AnAsyncGeneratorResumedFromAHostThreadDoesNotOverlapAnEvaluation()
     {
         // The generator suspends at `await` with nothing else running, so firing the thenable's
         // callback from a host thread dispatches the resumption while the main thread is inside
@@ -77,12 +77,12 @@ public sealed class AsyncGeneratorExclusionTests
             // context, so the pre-fix code took its `ThreadPool.QueueUserWorkItem` branch here.
             // That is deliberate: it is the branch the fix removes.
             var fire = context["fire"];
-            var settled = Task.Run(() => fire.InvokeFunction(new Arguments(JSUndefined.Value, JSUndefined.Value)));
+            var settled = Task.Run(() => fire.InvokeFunction(new Arguments(JSUndefined.Value, JSUndefined.Value)), TestContext.Current.CancellationToken);
 
             for (var i = 0; i < 20; i++)
                 context.Eval(Busy);
 
-            settled.Wait();
+            await settled.WaitAsync(TestContext.Current.CancellationToken);
             context.Eval("1");
         }
 
@@ -91,7 +91,7 @@ public sealed class AsyncGeneratorExclusionTests
         Assert.Equal(1, peak);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheResumptionStillRunsAndItsSideEffectIsWhole()
     {
         // **The discriminating case.** Two things are asserted at once and both matter: the

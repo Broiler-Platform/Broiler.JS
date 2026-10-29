@@ -848,7 +848,7 @@ partial class JSTypedArray
     public new JSValue Values(in Arguments a) { ValidateTypedArray("values"); return GetArrayIterator(ArrayIteratorKind.Value); }
 
     [JSExport("toLocaleString", Length = 0)]
-    internal JSValue ToLocaleString(in Arguments a)
+    internal new JSValue ToLocaleString(in Arguments a)
     {
         ValidateTypedArray("toLocaleString");
         var (locale, format) = a.Get2();

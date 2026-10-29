@@ -111,7 +111,7 @@ public static class DeferredCaptureLayout
     private static long repeatChecks;
     private static long repeatDisagreements;
 
-    /// <summary>Calls to <see cref="Check"/> that found a prediction, repeats included.</summary>
+    /// <summary>Calls to <see cref="Broiler.JavaScript.ExpressionCompiler.DeferredCaptureLayout.Check(Broiler.JavaScript.ExpressionCompiler.Expressions.BLambdaExpression, Broiler.JavaScript.ExpressionCompiler.ClosureRepository)"/> that found a prediction, repeats included.</summary>
     public static long Checks => Interlocked.Read(ref checks);
 
     /// <summary>

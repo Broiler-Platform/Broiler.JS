@@ -56,14 +56,14 @@ public class CapturedScopeCallbackTests
 
     // The same call, made from JavaScript — what already worked, and what the callback path
     // now agrees with.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ADirectEvalClosure_ResolvesItsBinding_WhenCalledDirectly()
     {
         Assert.Equal("22", ThroughCallback("return f(1);"));
     }
 
     // A `with`-captured closure loses its object environment the same way.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AWithClosure_ResolvesThroughItsObject_WhenABuiltinCallsIt()
     {
         Assert.Equal(
@@ -75,7 +75,7 @@ public class CapturedScopeCallbackTests
 
     // The binding is shared, not snapshotted, on the callback path too: a write made after the
     // function was created is visible to the builtin's call of it.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheBindingIsShared_OnTheCallbackPath()
     {
         Assert.Equal(
@@ -86,7 +86,7 @@ public class CapturedScopeCallbackTests
 
     // ...and a write from inside the callback reaches the caller's binding rather than creating
     // a global.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AWriteFromTheCallback_ReachesTheCallersBinding()
     {
         Assert.Equal(
@@ -97,13 +97,13 @@ public class CapturedScopeCallbackTests
 
     // What must NOT change: an ordinary closure keeps resolving through its own compiled body,
     // and a genuinely undeclared name still throws from a callback.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnOrdinaryClosure_IsUnaffected()
     {
         Assert.Equal("22", Eval("(function(){ var b = 21; return [1].map(function(x){ return b + x; })[0]; })()"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AGenuinelyUndeclaredName_StillThrowsFromACallback()
     {
         Assert.Equal(

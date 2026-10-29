@@ -35,7 +35,7 @@ public class JobQueueSettlementTests
         return ctx.Eval("log.join('|')").ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AllKeyedSettlesFromDeferredInputsOnTheJobQueue()
         => Assert.Equal("rejected 1|fulfilled a=2,b=3", LogAfter("""
             function later(settle, value) {
@@ -49,7 +49,7 @@ public class JobQueueSettlementTests
                 .then(function (r) { log.push('fulfilled ' + Object.keys(r).map(function (k) { return k + '=' + r[k]; })); });
             """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AllSettledKeyedReportsEachInputsEventualOutcome()
         => Assert.Equal("null|a:fulfilled:1|b:rejected:2|c:fulfilled:3", LogAfter("""
             var pending = new Promise(function (resolve) { Promise.resolve().then(function () { resolve(1); }); });
@@ -62,7 +62,7 @@ public class JobQueueSettlementTests
             });
             """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitUsingDisposalFinishesOnTheJobQueue()
         => Assert.Equal("dispose inner|dispose outer|asyncDispose|after", LogAfter("""
             (async function () {
@@ -75,7 +75,7 @@ public class JobQueueSettlementTests
             })();
             """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitUsingDisposalErrorsRejectOnTheJobQueue()
         => Assert.Equal("SuppressedError:1:2", LogAfter("""
             (async function () {
@@ -84,7 +84,7 @@ public class JobQueueSettlementTests
             })().then(null, function (e) { log.push(e.name + ':' + e.error + ':' + e.suppressed); });
             """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncDisposableStackDisposeAsyncSettlesOnTheJobQueue()
         => Assert.Equal("second|first|done|again", LogAfter("""
             var stack = new AsyncDisposableStack();
@@ -99,7 +99,7 @@ public class JobQueueSettlementTests
     // Every input goes through Call(promiseResolve, C, value), and Promise.resolve used to fulfil
     // with an object directly, so a thenable input's own object — not what it resolved to — was
     // the keyed result (and Promise.all's element, and Promise.resolve's value).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void KeyedCombinatorsAdoptThenableInputs()
         => Assert.Equal("allKeyed number 8 1 2|allKeyed rejected 9|allSettledKeyed fulfilled 8 rejected 9", LogAfter("""
             var fulfils = { then: function (resolve) { resolve(8); } };
@@ -117,7 +117,7 @@ public class JobQueueSettlementTests
             tick.then(function () { out.sort().forEach(function (x) { log.push(x); }); });
             """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PromiseResolveAdoptsAThenable()
         => Assert.Equal("TypeError|number 8|all number 8", LogAfter("""
             var fulfils = { then: function (resolve) { resolve(8); } };

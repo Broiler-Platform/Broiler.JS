@@ -1,4 +1,5 @@
-﻿using System;
+using Broiler.JavaScript.ExpressionCompiler.Core;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -55,7 +56,7 @@ public partial class LinqConverter
     protected override BExpression VisitGreaterThanOrEqual(BinaryExpression node) => BExpression.Binary(Visit(node.Left), BOperator.GreaterOrEqual, Visit(node.Right));
     protected override BExpression VisitIncrement(UnaryExpression node) => throw new NotImplementedException();
     protected override BExpression VisitIndex(IndexExpression node) => BExpression.Index(Visit(node.Object), node.Indexer, VisitList(node.Arguments));
-    protected override BExpression VisitInvoke(InvocationExpression node) => BExpression.Invoke(Visit(node.Expression), VisitList(node.Arguments));
+    protected override BExpression VisitInvoke(InvocationExpression node) => new BInvokeExpression(Visit(node.Expression), VisitList(node.Arguments).AsSequence(), node.Type);
     protected override BExpression VisitIsFalse(UnaryExpression node) => throw new NotImplementedException();
     protected override BExpression VisitIsTrue(UnaryExpression node) => throw new NotImplementedException();
     protected override BExpression VisitLabel(LabelExpression node) => BExpression.Label(labels[node.Target], Visit(node.DefaultValue));
@@ -85,8 +86,8 @@ public partial class LinqConverter
     protected override BExpression VisitNegate(UnaryExpression node) => BExpression.Negative(Visit(node.Operand));
     protected override BExpression VisitNegateChecked(BinaryExpression node) => throw new NotImplementedException();
     protected override BExpression VisitNew(NewExpression node) => BExpression.New(node.Constructor, VisitList(node.Arguments));
-    protected override BExpression VisitNewArrayBounds(NewArrayExpression node) => BExpression.NewArrayBounds(node.Type.GetElementType(), Visit(node.Expressions.First()));
-    protected override BExpression VisitNewArrayInit(NewArrayExpression node) => BExpression.NewArray(node.Type.GetElementType(), VisitList(node.Expressions));
+    protected override BExpression VisitNewArrayBounds(NewArrayExpression node) => new BNewArrayBoundsExpression(node.Type.GetElementType(), node.Type, Visit(node.Expressions.First()));
+    protected override BExpression VisitNewArrayInit(NewArrayExpression node) => new BNewArrayExpression(node.Type.GetElementType(), node.Type, VisitList(node.Expressions).AsSequence());
     protected override BExpression VisitNot(UnaryExpression node) => BExpression.Not(Visit(node.Operand));
     protected override BExpression VisitNotEqual(BinaryExpression node) => BExpression.NotEqual(Visit(node.Left), Visit(node.Right));
     protected override BExpression VisitOnesComplement(UnaryExpression node) => BExpression.OnesComplement(Visit(node.Operand));

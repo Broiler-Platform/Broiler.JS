@@ -103,7 +103,7 @@ public class Issue781Tests
             Eval($"Temporal.PlainDate.from({{year:2019, monthCode:'M11', day:18, calendar:'{calendar}'}}).calendarId"));
 
     // The [u-ca=…] annotation of a calendar string is honoured, not just the iso8601 default.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void CalendarPropertyBagIsoStringAdoptsAnnotation()
         => Assert.Equal("gregory",
             Eval("Temporal.PlainDate.from({year:2019, monthCode:'M11', day:18, calendar:'1970-01-01[u-ca=gregory]'}).calendarId"));
@@ -140,13 +140,13 @@ public class Issue781Tests
         => Assert.Equal("RangeError", ErrorName($"new Temporal.ZonedDateTime(0n, '{timeZone}')"));
 
     // The property-bag timeZone field accepts the same ISO strings.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TimeZonePropertyBagIsoStringExtractsDesignator()
         => Assert.Equal("UTC",
             Eval("Temporal.PlainDate.from('2021-08-19').toZonedDateTime('2021-08-19T17:30Z').timeZoneId"));
 
     // A bare, unrecognized time-zone string is still a RangeError.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void UnknownTimeZoneStringThrowsRangeError()
         => Assert.Equal("RangeError", ErrorName("new Temporal.ZonedDateTime(0n, 'Not/AZone')"));
 
@@ -217,7 +217,7 @@ public class Issue781Tests
         => Assert.Equal("TypeError", ErrorName(code));
 
     // A plain property bag still works.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ZonedDateTimeWithPlainBagWorks()
         => Assert.Equal("2024", Eval("String(new Temporal.ZonedDateTime(0n, 'UTC').with({ year: 2024 }).year)"));
 
@@ -290,7 +290,7 @@ public class Issue781Tests
             Eval($"Temporal.ZonedDateTime.from({{ year: 2000, month: 1, day: 1, timeZone: 'UTC', calendar: '{calendar}' }}).calendarId"));
 
     // A missing timeZone is still a TypeError.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FromMissingTimeZoneThrowsTypeError()
         => Assert.Equal("TypeError", ErrorName("Temporal.ZonedDateTime.from({ year: 2000, month: 1, day: 1 })"));
 
@@ -347,7 +347,7 @@ public class Issue781Tests
             "const d = Temporal.PlainDate.from({ year: 1726, month: 5, day: 10, calendar: 'coptic' });" + expr));
 
     // The calendar id is preserved through with().
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WithPreservesNonIsoCalendar()
         => Assert.Equal("coptic", Eval(
             "Temporal.PlainDate.from({ year: 1726, month: 5, day: 10, calendar: 'coptic' }).with({ day: 1 }).calendarId"));
@@ -367,7 +367,7 @@ public class Issue781Tests
             "const d = Temporal.PlainDate.from({ year: 1726, month: 5, day: 10, calendar: 'coptic' });" + expr));
 
     // PlainDateTime.with on a non-ISO calendar keeps the time and resolves the date.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PlainDateTimeWithNonIsoKeepsTime()
         => Assert.Equal("15:30", Eval(
             "const dt = Temporal.PlainDateTime.from({ year: 1726, month: 5, day: 10, hour: 15, minute: 30, calendar: 'coptic' });" +
@@ -375,7 +375,7 @@ public class Issue781Tests
             "String(r.hour).padStart(2,'0') + ':' + String(r.minute).padStart(2,'0')"));
 
     // ZonedDateTime.with delegates to the same non-ISO resolution.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ZonedDateTimeWithNonIsoResolves()
         => Assert.Equal("12", Eval(
             "Temporal.ZonedDateTime.from({ year: 1726, month: 5, day: 10, timeZone: 'UTC', calendar: 'coptic' })" +
@@ -417,14 +417,14 @@ public class Issue781Tests
         => Assert.Equal(expected, Eval($"String({code})"));
 
     // A relativeTo property bag (with a Gregorian-family calendar) also works.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DurationCompareWithRelativeToPropertyBag()
         => Assert.Equal("1", Eval(
             "String(Temporal.Duration.compare({ months: 1 }, { days: 30 }, " +
             "{ relativeTo: { year: 2000, month: 1, day: 1 } }))"));
 
     // Calendar units without a relativeTo are still a RangeError.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DurationCompareCalendarUnitsNoRelativeToThrows()
         => Assert.Equal("RangeError", ErrorName("Temporal.Duration.compare({ months: 1 }, { days: 30 })"));
 
@@ -479,11 +479,11 @@ public class Issue781Tests
         => Assert.Equal("ok", Eval(code));
 
     // A plain dynamic import and an unknown phase keyword are still handled as before.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PlainDynamicImportStillParses()
         => Assert.Equal("ok", Eval("let f = () => import('./x.js'); 'ok'"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void UnknownImportPhaseThrowsSyntaxError()
         => Assert.Equal("SyntaxError", ErrorName("eval(\"import.bogus('./x.js')\")"));
 
@@ -504,7 +504,7 @@ public class Issue781Tests
 
     // ───────────── Problem 2: the indian calendar's canonical era is "shaka" (not "saka") ─────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IndianEraIsShaka()
         => Assert.Equal("shaka",
             Eval("Temporal.PlainDate.from('1957-03-22').withCalendar('indian').era"));
@@ -512,12 +512,12 @@ public class Issue781Tests
     // The "saka" spelling is not an era of the indian calendar: an era is matched exactly against Table 2's codes and
     // aliases at the pinned revision (row C9 of bundle sjl-10-001's correspondence, decision D4 of JSD-0078), so it is
     // a RangeError, as "shaka" is not.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IndianEraRefusesSakaSpelling()
         => Assert.Equal("RangeError",
             ErrorName("Temporal.PlainDate.from({ era: 'saka', eraYear: 1922, month: 1, day: 1, calendar: 'indian' })"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IndianEraAcceptsShaka()
         => Assert.Equal("1922",
             Eval("String(Temporal.PlainDate.from({ era: 'shaka', eraYear: 1922, month: 1, day: 1, calendar: 'indian' }).eraYear)"));

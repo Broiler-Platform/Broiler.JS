@@ -81,7 +81,7 @@ public class Issue824NumberFormatOrderTests
 {
     private static void Load() => RuntimeHelpers.RunClassConstructor(typeof(Clr.DefaultClrInterop).TypeHandle);
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ResolvedOptionsOrder()
     {
         Load();

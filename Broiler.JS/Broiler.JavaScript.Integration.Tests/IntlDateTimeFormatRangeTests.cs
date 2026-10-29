@@ -30,7 +30,7 @@ public class IntlDateTimeFormatRangeTests
     // ---- "Proxy-ordering": the options bag is read in InitializeDateTimeFormat order ----
 
     // ECMA-402 reads the options in a fixed order, and a Proxy is how a test observes it.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheOptionsBagIsReadInSpecifiedOrder()
         => Assert.Equal(
             "localeMatcher,calendar,numberingSystem,hour12,hourCycle,timeZone,"
@@ -47,7 +47,7 @@ public class IntlDateTimeFormatRangeTests
 
     // ---- "parts": formatToParts and formatRangeToParts shape ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FormatToPartsSplitsTheRenderingIntoTypedParts()
         => Assert.Equal("month:01|literal:/|day:02|literal:/|year:2020", Eval(
             Formatter + Jan2
@@ -55,7 +55,7 @@ public class IntlDateTimeFormatRangeTests
 
     // Every part of a two-instant range carries a `source`: the start components are
     // startRange, the separator between them is shared, the end components are endRange.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FormatRangeToPartsMarksEachPartWithItsSource()
         => Assert.Equal(
             "month/startRange,literal/startRange,day/startRange,literal/startRange,year/startRange,"
@@ -67,7 +67,7 @@ public class IntlDateTimeFormatRangeTests
 
     // The rendered range still begins with the start date and ends with the end date, whatever
     // separator the locale data supplies.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FormatRangeRendersBothEndpoints()
         => Assert.Equal("true|true", Eval(
             Formatter + Jan2 + Jan5
@@ -76,13 +76,13 @@ public class IntlDateTimeFormatRangeTests
 
     // ---- "SameValue": two equal instants collapse to the single, non-range rendering ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ARangeOfOneInstantFormatsAsThatSingleValue()
         => Assert.Equal("true", Eval(
             Formatter + Jan2 + "return String(f.formatRange(d1, d1) === f.format(d1));"));
 
     // ...and every part of it is `shared`, since neither endpoint distinguishes it.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EveryPartOfAOneInstantRangeIsShared()
         => Assert.Equal("shared,shared,shared,shared,shared", Eval(
             Formatter + Jan2
@@ -90,7 +90,7 @@ public class IntlDateTimeFormatRangeTests
 
     // ---- Argument validation ----
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("f.formatRange(new Date(NaN), d1)")]
     [InlineData("f.formatRange(d1, new Date(NaN))")]
     [InlineData("f.formatRangeToParts(new Date(NaN), d1)")]
@@ -100,7 +100,7 @@ public class IntlDateTimeFormatRangeTests
             Formatter + Jan2
             + "try { " + call + "; return 'no throw'; } catch (e) { return e.name; }"));
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("f.formatRange(undefined, undefined)")]
     [InlineData("f.formatRange(d1, undefined)")]
     [InlineData("f.formatRangeToParts(undefined, d1)")]
@@ -110,7 +110,7 @@ public class IntlDateTimeFormatRangeTests
             + "try { " + call + "; return 'no throw'; } catch (e) { return e.name; }"));
 
     // resolvedOptions hands back a fresh object each call, carrying the same resolved values.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ResolvedOptionsIsAFreshObjectWithStableContents()
         => Assert.Equal("true|true", Eval(
             Formatter

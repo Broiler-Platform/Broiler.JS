@@ -31,7 +31,7 @@ public class SharedTemporalAdapterTests
     public void ATemporalObjectLendsItsOwnCalendar(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PlainDateTimeFromAZonedDateTimeCallsNoGetter()
         => Assert.Equal("2020-01-15T10:00:00|", Eval("""
             var reads = [];
@@ -52,7 +52,7 @@ public class SharedTemporalAdapterTests
     public void AZonedDateTimeFromAPlainTypeIsATypeError(string code)
         => Assert.Equal("TypeError", ErrorName(code));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void APlainDateCarryingATimeZoneConverts()
         => Assert.Equal("2020-01-01T00:00:00+00:00[UTC]", Eval("""
             var d = Temporal.PlainDate.from('2020-01-01');

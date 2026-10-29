@@ -38,7 +38,7 @@ public class GeneratorReturnCompletionTests
         }
     }
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     // A generator's own `return`, with and without a value.
     [InlineData("function* g(){ yield 1; return 2; } var it = g(); it.next(); r = JSON.stringify(it.next());",
         "{\"value\":2,\"done\":true}")]

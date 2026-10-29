@@ -28,7 +28,7 @@ public class Issue845ClusterTests3
     public void SymmetricDifference(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SymmetricDifferenceTogglesAgainstLiveReceiver()
     {
         // A set-like whose keys() iterator mutates the receiver mid-iteration; the toggle
@@ -58,7 +58,7 @@ public class Issue845ClusterTests3
     public void NativeFunctionToString(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NativeAccessorKeepsItsNameProperty()
         => Assert.Equal("get $&", Eval("Object.getOwnPropertyDescriptor(RegExp, '$&').get.name"));
 
@@ -74,9 +74,9 @@ public class Issue845ClusterTests3
     [Theory]
     // Shrinking the buffer during argument coercion: the copy is clamped to the live
     // length, but the in-bounds part of an overlap-reversed copy still runs.
-    [InlineData("3", "{ valueOf(){ rab.resize(3); return 2; } }", "1", "0,1,1")] // overlapping forward
-    [InlineData("3", "0", "{ valueOf(){ rab.resize(3); return 2; } }", "2,1,2")] // truncated backward
-    public void CopyWithinShrinkDuringCoercion(string newLen, string target, string start, string expected)
+    [InlineData("{ valueOf(){ rab.resize(3); return 2; } }", "1", "0,1,1")] // overlapping forward
+    [InlineData("0", "{ valueOf(){ rab.resize(3); return 2; } }", "2,1,2")] // truncated backward
+    public void CopyWithinShrinkDuringCoercion(string target, string start, string expected)
     {
         var code = $@"
             const rab = new ArrayBuffer(4, {{ maxByteLength: 8 }});

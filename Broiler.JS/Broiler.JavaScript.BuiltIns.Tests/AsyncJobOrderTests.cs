@@ -49,28 +49,28 @@ public class AsyncJobOrderTests
         return ctx.Eval("log.join(',')").ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitOfANativePromiseResumesInTheReactionJob()
         => Assert.Equal("f0,t1,f1,t2,t3", Run("""
             async function f() { log.push('f0'); await Promise.resolve(1); log.push('f1'); }
             f();
             """, 3));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitOfAPlainValueTakesOneJob()
         => Assert.Equal("t1,a,t2,b,t3,done,t4,t5", Run("""
             async function f() { await null; log.push('a'); await 1; log.push('b'); }
             f().then(function () { log.push('done'); });
             """, 5));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitOfARejectedPromiseThrowsInTheReactionJob()
         => Assert.Equal("t1,caught,t2,t3", Run("""
             async function f() { try { await Promise.reject(1); } catch (e) { log.push('caught'); } }
             f();
             """, 3));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitOfAnAsyncCallResumesOneJobAfterItSettles()
         => Assert.Equal("f,t1,g1,t2,g2,t3,gdone,t4,t5", Run("""
             async function f() { log.push('f'); return 1; }
@@ -78,7 +78,7 @@ public class AsyncJobOrderTests
             g().then(function () { log.push('gdone'); });
             """, 5));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitDoesNotCallPromisePrototypeThen()
         => Assert.Equal("t1,f1,t2", Run("""
             var then = Promise.prototype.then;
@@ -92,7 +92,7 @@ public class AsyncJobOrderTests
             Promise.prototype.then = then;
             """, 2));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitReadsTheConstructorOfANativePromiseOnce()
         => Assert.Equal("ctor,t1,f1,t2", Run("""
             async function f() {
@@ -104,7 +104,7 @@ public class AsyncJobOrderTests
             f();
             """, 2));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitOfAThenableCallsThenInAJob()
         => Assert.Equal("get then,sync,t1,then,t2,v5,t3", Run("""
             var thenable = { get then() { log.push('get then'); return function (r) { log.push('then'); r(5); }; } };
@@ -113,14 +113,14 @@ public class AsyncJobOrderTests
             log.push('sync');
             """, 3));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncFunctionReturningAPromiseAdoptsIt()
         => Assert.Equal("t1,t2,t3,done,t4", Run("""
             async function f() { return Promise.resolve(1); }
             f().then(function () { log.push('done'); });
             """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitUsingNullAwaitsBeforeASyncDisposer()
         => Assert.Equal("body,t1,a,after,t2,t3", Run("""
             (async function () {
@@ -133,7 +133,7 @@ public class AsyncJobOrderTests
             })();
             """, 3));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitUsingNullAwaitsWhenTheBlockThrows()
         => Assert.Equal("body,t1,caught,after,t2,t3", Run("""
             (async function () {
@@ -146,7 +146,7 @@ public class AsyncJobOrderTests
             })();
             """, 3));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitUsingSeedsTheBodyErrorIntoTheDisposal()
         => Assert.Equal("SuppressedError dispose body", Run("""
             (async function () {
@@ -159,7 +159,7 @@ public class AsyncJobOrderTests
             })();
             """, 0));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitUsingRethrowsTheBodyErrorAfterACleanDisposal()
         => Assert.Equal("disp,body", Run("""
             (async function () {
@@ -172,7 +172,7 @@ public class AsyncJobOrderTests
             })();
             """, 0));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitUsingInAnAsyncGeneratorYieldsNothingExtra()
         => Assert.Equal("v1,d,end", Run("""
             async function* g() {
@@ -185,14 +185,14 @@ public class AsyncJobOrderTests
             })();
             """, 0));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncGeneratorAwaitAndYieldTakeOneJobEach()
         => Assert.Equal("g0,t1,g1,t2,t3,n,t4,t5,t6", Run("""
             async function* g() { log.push('g0'); await 1; log.push('g1'); yield 2; }
             g().next().then(function () { log.push('n'); });
             """, 6));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitInAnAsyncGeneratorIsNotAForAwaitValue()
         => Assert.Equal("v2,v3,fin,end", Run("""
             async function* g() {
@@ -206,7 +206,7 @@ public class AsyncJobOrderTests
             })();
             """, 0));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncDisposableStackUseNullAwaits()
         => Assert.Equal("t1,t2,done,t3", Run("""
             var s = new AsyncDisposableStack();
@@ -214,7 +214,7 @@ public class AsyncJobOrderTests
             s.disposeAsync().then(function () { log.push('done'); });
             """, 3));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncDisposableStackUseFallbackDiscardsTheResult()
         => Assert.Equal("dispose,done", Run("""
             var thenable = { then: function (r) { log.push('then called'); r(); } };
@@ -223,7 +223,7 @@ public class AsyncJobOrderTests
             s.disposeAsync().then(function () { log.push('done'); });
             """, 0));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncDisposableStackUseFallbackRejectionIsNotObserved()
         => Assert.Equal("done", Run("""
             var s = new AsyncDisposableStack();
@@ -233,7 +233,7 @@ public class AsyncJobOrderTests
             s.disposeAsync().then(function () { log.push('done'); }, function () { log.push('rejected'); });
             """, 0));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void YieldStarOverAnAsyncGeneratorAwaitsItsAwaits()
         => Assert.Equal("t1,t2,t3,v1,t4,t5,t6,t7,v2,t8,r=r,end", Run("""
             async function* inner() { yield 1; await null; yield 2; return 'r'; }
@@ -244,7 +244,7 @@ public class AsyncJobOrderTests
             })();
             """, 8));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void YieldStarOverAnAsyncGeneratorTakesTheSpecJobs()
         => Assert.Equal("o0,i0,t1,t2,i1,t3,n1 a,i2,t4,t5,o=R,t6,t7,n2 b,n3 true,t8", Run("""
             async function* inner() { log.push('i0'); yield 'a'; log.push('i1'); await 0; log.push('i2'); return 'R'; }
@@ -255,7 +255,7 @@ public class AsyncJobOrderTests
             it.next().then(function (s) { log.push('n3 ' + s.done); });
             """, 8));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void YieldStarDelegateAwaitUsingDisposalIsNotAValue()
         => Assert.Equal("t1,t2,t3,v1,d,t4,t5,t6,end,t7,t8", Run("""
             async function* g() {
@@ -269,7 +269,7 @@ public class AsyncJobOrderTests
             })();
             """, 8));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void YieldStarAwaitsAPendingAsyncIteratorResult()
         => Assert.Equal("next undefined,t1,t2,t3,1 false,next s1,t4,t5,t6,2 false,next s2,t7,t8,r=3,undefined true", Run("""
             var source = {
@@ -285,7 +285,7 @@ public class AsyncJobOrderTests
             })();
             """, 8));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void YieldStarForwardsThrowAndReturnToAnAsyncGeneratorDelegate()
         => Assert.Equal("t1,t2,t3,caught E,t4,t5,t6,c,inner finally,t7,t8,r=x,after,inner finally,RV true", Run("""
             async function* inner() {
@@ -305,7 +305,7 @@ public class AsyncJobOrderTests
             })();
             """, 8));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void YieldStarReturnWithoutADelegateReturnAwaitsTheValue()
         => Assert.Equal("t1,t2,t3,t4,t5,t6,t7,3 true,t8", Run("""
             var source = { [Symbol.asyncIterator]() { return this; }, next() { return { value: 1, done: false }; } };
@@ -316,7 +316,7 @@ public class AsyncJobOrderTests
             }).then(function (s) { log.push(s.value + ' ' + s.done); });
             """, 8));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncGeneratorReturnStatementAwaitsItsOperand()
         => Assert.Equal("t1,t2,5,t3,caught Z,t4,t5,kk,t6,t7,t8", Run("""
             async function* g() { return Promise.resolve(5); }
@@ -327,7 +327,7 @@ public class AsyncJobOrderTests
             })();
             """, 8));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncGeneratorReturnMethodAwaitsTheValue()
         => Assert.Equal("t1,t2,t3,t4,6,t5,t6,t7,caught Y,t8,2,rejected X,7", Run("""
             async function* h() { try { yield 1; } catch (e) { log.push('caught ' + e); yield 2; } }
@@ -345,7 +345,7 @@ public class AsyncJobOrderTests
             })();
             """, 8));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForAwaitDoesNotAwaitAnAsyncIteratorValue()
         => Assert.Equal("t1,promise,t2,t3", Run("""
             var p = Promise.resolve(5);

@@ -107,7 +107,7 @@ public class NamespacedIntrinsicPrototypeTests
         Assert.Equal("intrinsic", AfterNamespaceIsReplaced("Intl", cls, make, memberOnly: true));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DeletingTheNamespacesKeepsEngineCreatedObjectsIntact()
         => Assert.Equal("true,true", Eval("""
             var PD = Temporal.PlainDate, NF = Intl.NumberFormat;
@@ -116,7 +116,7 @@ public class NamespacedIntrinsicPrototypeTests
              Object.getPrototypeOf(NF()) === NF.prototype].join(',');
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EachRealmKeepsItsOwnNamespacedIntrinsics()
     {
         Load();
@@ -131,7 +131,7 @@ public class NamespacedIntrinsicPrototypeTests
     // With the lazy (default "full") profile, the namespaces are unrealized cells until first
     // read. An engine-created object needs the realm's intrinsics before that happens, and must
     // get the very prototypes the guest's namespace carries once it is read.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LazyNamespacesYieldTheSamePrototypesTheirGlobalsLaterExpose()
     {
         Load();
@@ -140,7 +140,7 @@ public class NamespacedIntrinsicPrototypeTests
             "var made = new Date(0).toTemporalInstant(); String(Object.getPrototypeOf(made) === Temporal.Instant.prototype)").ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LazyNamespacesReplacedBeforeTheirFirstReadStillYieldTheIntrinsics()
     {
         Load();
@@ -171,7 +171,7 @@ public class NamespacedIntrinsicPrototypeTests
              gen.next().value].join(',');
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GeneratorFunctionWithANonObjectPrototypeFallsBackToTheIntrinsic()
         => Assert.Equal("true", Eval("""
             var intrinsic = Object.getPrototypeOf(function* () {}).prototype;
@@ -181,7 +181,7 @@ public class NamespacedIntrinsicPrototypeTests
             String(Object.getPrototypeOf(g()) === intrinsic);
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GeneratorFunctionConstructorInheritsFromTheIntrinsicFunction()
         => Assert.Equal("true", Eval("""
             var F = Function;

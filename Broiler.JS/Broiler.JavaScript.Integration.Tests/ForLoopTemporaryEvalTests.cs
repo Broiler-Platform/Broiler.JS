@@ -37,7 +37,7 @@ public class ForLoopTemporaryEvalTests
     public void A_scripts_temporary_survives_an_eval_that_numbers_its_own_alike(string source, string expected)
         => Assert.Equal(expected, Eval(source));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void An_async_functions_temporary_survives_an_eval_after_an_await()
     {
         using var ctx = new JSContext();

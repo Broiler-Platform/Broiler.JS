@@ -418,11 +418,11 @@ public partial class JSTemporalZonedDateTime : JSObject
     // injected into the formatter options (a conflicting timeZone option is a RangeError). Direct
     // DateTimeFormat.format on a ZonedDateTime is a TypeError, but toLocaleString is allowed.
     [JSExport("toLocaleString", Length = 0)]
-    public JSValue ToLocaleString(in Arguments a)
+    public new JSValue ToLocaleString(in Arguments a)
         => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1), defaultTimeZone: timeZoneId);
 
     [JSExport("valueOf", Length = 0)]
-    public JSValue ValueOf(in Arguments a)
+    public new JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.ZonedDateTime.prototype.valueOf, which is not supported. Use Temporal.ZonedDateTime.compare for comparison.");
 
     // Calendar and zone arithmetic: add, subtract, until and since are the shared library's, over the calendars and the

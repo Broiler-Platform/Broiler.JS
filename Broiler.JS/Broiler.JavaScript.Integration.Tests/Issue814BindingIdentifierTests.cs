@@ -38,15 +38,15 @@ public class Issue814BindingIdentifierTests
     public void LetAsLexicalBindingNameIsSyntaxError(string code)
         => Assert.Equal("SyntaxError", ParseResult(code));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LetAsVarBindingIsAllowedInSloppyMode()
         => Assert.Equal("5", Eval("var let = 5; '' + let"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LetAsVarShorthandPatternIsAllowedInSloppyMode()
         => Assert.Equal("5", Eval("var { let } = { let: 5 }; '' + let"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LetAsPropertyKeyIsAllowed()
         => Assert.Equal("1", Eval("var o = { let: 1 }; '' + o.let"));
 
@@ -62,19 +62,19 @@ public class Issue814BindingIdentifierTests
     public void AwaitAsBindingNameInAsyncIsSyntaxError(string code)
         => Assert.Equal("SyntaxError", ParseResult(code));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitAsVarBindingIsAllowedInSloppyNonAsync()
         => Assert.Equal("7", Eval("var await = 7; '' + await"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitAsBindingIsAllowedInNonAsyncNestedInAsync()
         => Assert.Equal("OK", ParseResult("(async function () { function g() { let await = 1; return await; } })"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitAsPropertyKeyIsAllowedInAsync()
         => Assert.Equal("OK", ParseResult("(async function () { var o = { await: 1 }; return o.await; })"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AwaitAsOperatorStillWorksInAsync()
         => Assert.Equal("OK", ParseResult("(async function () { return await Promise.resolve(1); })"));
 

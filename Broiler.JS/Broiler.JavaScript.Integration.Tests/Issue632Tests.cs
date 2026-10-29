@@ -55,7 +55,7 @@ public class Issue632Tests
         Assert.Equal("TypeError", settled.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AsyncGeneratorNextStillResolvesForRealAsyncGenerator()
     {
         using var ctx = new JSContext();

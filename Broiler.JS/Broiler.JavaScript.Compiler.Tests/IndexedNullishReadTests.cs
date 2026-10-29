@@ -42,7 +42,7 @@ public class IndexedNullishReadTests
     // A member expression is the shape minified code actually writes — `o.K[q]`, where the base is
     // itself a read that came back undefined. It is the same arm; it is called out because it is
     // the one that hid the defect in the wild.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnUndefinedMemberBase_Throws()
     {
         Assert.Equal(
@@ -52,7 +52,7 @@ public class IndexedNullishReadTests
 
     // A loop counter is unboxed for the same reason, and reads one element per iteration — the
     // shape most likely to turn one silent `undefined` into a whole loop of them.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ALoopCounterIndex_Throws()
     {
         Assert.Equal(
@@ -85,7 +85,7 @@ public class IndexedNullishReadTests
     // The write twin already threw (SetElementByNumber checks IsNullOrUndefined in
     // ThrowOnFailedElementAssignment); asserted so the read fix is not read as having moved it.
     // It names the key too, as a browser does — see UndefinedPropertyReadMessageTests.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnIndexedWriteToANullishBase_StillThrows()
     {
         Assert.Equal("threw: Cannot set properties of undefined (setting '360')", Run("var u; var k = 360; u[k] = 1; return 'ok';"));
@@ -93,7 +93,7 @@ public class IndexedNullishReadTests
 
     // Optional chaining is the one place the read must NOT throw, and it short-circuits before
     // GetElementByNumber is reached. The fix must not have made `u?.[k]` throw.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void OptionalChaining_StillShortCircuits()
     {
         Assert.Equal("undefined", Run("var u; var k = 360; return String(u?.[k]);"));
@@ -101,7 +101,7 @@ public class IndexedNullishReadTests
     }
 
     // A real base still reads its element, through the same arm.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnIndexedReadOnARealBase_IsUnchanged()
     {
         Assert.Equal("30", Run("var a = [10, 20, 30]; var k = 2; return String(a[k]);"));

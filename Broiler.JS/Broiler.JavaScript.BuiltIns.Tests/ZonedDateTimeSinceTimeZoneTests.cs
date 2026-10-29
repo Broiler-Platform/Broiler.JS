@@ -8,7 +8,7 @@ public class ZonedDateTimeSinceTimeZoneTests
 {
     private static string Eval(string e){ using var c=new JSContext(); try { return c.Eval(e).ToString(); } catch(System.Exception ex){ return "THROW:"+ex.GetType().Name; } }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void CalendarUnit_DifferentZones_Throws()
     {
         var r = Eval(@"
@@ -18,7 +18,7 @@ public class ZonedDateTimeSinceTimeZoneTests
         Assert.Equal("RangeError", r);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void CalendarUnit_SameZone_Works()
     {
         var r = Eval(@"
@@ -28,7 +28,7 @@ public class ZonedDateTimeSinceTimeZoneTests
         Assert.Equal("-P609D", r);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TimeUnit_DifferentZones_Works()
     {
         var r = Eval(@"
@@ -38,7 +38,7 @@ public class ZonedDateTimeSinceTimeZoneTests
         Assert.Equal("-PT24H", r);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Until_CalendarUnit_DifferentZones_Throws()
     {
         var r = Eval(@"

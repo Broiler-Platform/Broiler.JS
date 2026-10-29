@@ -52,7 +52,7 @@ public class ModuleAwaitReservedTests
 
     // ---- Reserved as a binding, in every binding position ----
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("var await = 1;")]
     [InlineData("let await = 1;")]
     [InlineData("const await = 1;")]
@@ -71,30 +71,30 @@ public class ModuleAwaitReservedTests
 
     // ---- Still legal in module code: not a binding ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task TopLevelAwaitStillWorks()
         => Assert.Equal("1", await RunModule("const x = await Promise.resolve(1); globalThis.r = x;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AwaitInsideAnAsyncFunctionStillWorks()
         => Assert.Equal("1", await RunModule(
             "async function f() { return await Promise.resolve(1); } f().then(v => { globalThis.r = v; });"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AwaitIsStillLegalAsAPropertyName()
         => Assert.Equal("1", await RunModule("const o = { await: 1 }; globalThis.r = o.await;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AwaitIsStillLegalAsAMethodName()
         => Assert.Equal("1", await RunModule("class K { await() { return 1; } } globalThis.r = new K().await();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnOrdinaryImportIsUnaffected()
         => Assert.Equal("1", await RunModule("import { a } from './dep.js'; globalThis.r = a;"));
 
     // ---- SCRIPT code is untouched: the rule applies only under the module goal ----
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("var await = 1; await")]
     [InlineData("(function () { var await = 2; return await; })()")]
     [InlineData("function await() { return 3; } await()")]

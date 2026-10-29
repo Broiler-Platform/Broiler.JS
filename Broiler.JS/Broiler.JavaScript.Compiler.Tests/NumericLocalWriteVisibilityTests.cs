@@ -67,7 +67,7 @@ public class NumericLocalWriteVisibilityTests
     public void AVarReDeclaredInANestedStatementIsAWrite(string body, string expected)
         => Assert.Equal(expected, Eval(body));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ANumericReDeclarationKeepsTheLocalSpecialized()
     {
         // The fix records a store; it must not record a REJECTION, or every loop with an
@@ -99,7 +99,7 @@ public class NumericLocalWriteVisibilityTests
 
     // ── what the fix must not take away ──────────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RejectingAPatternDoesNotRejectAnIndexOrAMemberBase()
     {
         // The pattern rule refuses every name in a non-identifier assignment target, so it has

@@ -21,7 +21,7 @@ public class AsyncContinuationDrainTests
 
     // ---- The continuation is deferred, not run inline ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void APromiseReactionDoesNotRunDuringTheScriptThatQueuesIt()
     {
         using var ctx = NewContext();
@@ -36,7 +36,7 @@ public class AsyncContinuationDrainTests
 
     // ---- ...but it has run by the time the Eval returns ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void APromiseReactionQueuedInOneEvalHasRunByTheNextOne()
     {
         using var ctx = NewContext();
@@ -44,7 +44,7 @@ public class AsyncContinuationDrainTests
         Assert.Equal("true", ctx.Eval("String(globalThis.ran)").ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AChainOfReactionsAllRunAndKeepTheirOrder()
     {
         using var ctx = NewContext();
@@ -57,7 +57,7 @@ public class AsyncContinuationDrainTests
         Assert.Equal("a,b,c", ctx.Eval("globalThis.log.join(',')").ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnAsyncFunctionResumesAfterItsAwait()
     {
         using var ctx = NewContext();
@@ -67,7 +67,7 @@ public class AsyncContinuationDrainTests
         Assert.Equal("resumed", ctx.Eval("globalThis.out").ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnAsyncFunctionResumesAcrossSeveralAwaits()
     {
         using var ctx = NewContext();
@@ -82,7 +82,7 @@ public class AsyncContinuationDrainTests
     }
 
     // A rejection handler is reached the same way.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ARejectionHandlerRunsBeforeTheEvalReturns()
     {
         using var ctx = NewContext();
@@ -93,7 +93,7 @@ public class AsyncContinuationDrainTests
     }
 
     // The same holds through the top-level-await entry point.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AReactionQueuedUnderTopLevelAwaitHasRunWhenItCompletes()
     {
         using var ctx = NewContext();
@@ -104,7 +104,7 @@ public class AsyncContinuationDrainTests
         Assert.Equal("true", ctx.Eval("String(globalThis.ran)").ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task TopLevelAwaitObservesTheAwaitedValue()
     {
         using var ctx = NewContext();

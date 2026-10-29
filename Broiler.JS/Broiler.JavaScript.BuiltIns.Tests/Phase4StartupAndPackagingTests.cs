@@ -11,7 +11,7 @@ public sealed class Phase4StartupAndPackagingTests
     private static readonly KeyString IntlKey = KeyStrings.GetOrCreate("Intl");
     private static readonly KeyString TemporalKey = KeyStrings.GetOrCreate("Temporal");
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FullProfileInstallsUnrealizedDataCellsWithoutAffectingEnumeration()
     {
         using var context = new JSContext(options: new JSContextOptions
@@ -36,7 +36,7 @@ public sealed class Phase4StartupAndPackagingTests
         Assert.False(temporalCell.IsRealized);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ValueAndDescriptorAccessRealizeOncePerRealm()
     {
         using var first = new JSContext();
@@ -58,7 +58,7 @@ public sealed class Phase4StartupAndPackagingTests
         Assert.Same(second[TemporalKey], second[TemporalKey]);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DeleteAndRedefinitionCancelUnrealizedFactories()
     {
         using var context = new JSContext();
@@ -82,7 +82,7 @@ public sealed class Phase4StartupAndPackagingTests
         Assert.False(temporalCell.IsRealized);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AttributeOnlyRedefinitionPreservesTheUnrealizedDataValue()
     {
         using var context = new JSContext();
@@ -100,7 +100,7 @@ public sealed class Phase4StartupAndPackagingTests
         Assert.True(updated.IsEnumerable);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void MinimalProfileOmitsHeavyNamespacesButRetainsCoreExecution()
     {
         using var context = JavaScriptBootstrap.CreateContextBuilder()
@@ -116,7 +116,7 @@ public sealed class Phase4StartupAndPackagingTests
                 "Object.prototype.hasOwnProperty.call(globalThis,'Temporal')].join('|')").ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LazyAndEagerFullProfilesPreserveGlobalKeyOrder()
     {
         using var lazy = new JSContext(options: new JSContextOptions
@@ -134,7 +134,7 @@ public sealed class Phase4StartupAndPackagingTests
         Assert.Equal(eagerKeys, lazyKeys);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GeneratedManifestDescribesFeatureOwnershipWithoutRuntimeTypeScanning()
     {
         var manifest = DefaultBuiltInRegistry.Instance.Manifest;
@@ -147,7 +147,7 @@ public sealed class Phase4StartupAndPackagingTests
         Assert.DoesNotContain(manifest.Registrations, static item => string.IsNullOrWhiteSpace(item.TypeName));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FeatureSatelliteRequiresExplicitCompositionAndRealizesLazily()
     {
         var registry = JavaScriptBootstrap.Compose(
@@ -175,7 +175,7 @@ public sealed class Phase4StartupAndPackagingTests
         Assert.True(cell.IsRealized);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RecursiveLazyInitializationFailsDeterministically()
     {
         var resolver = new RecursiveResolver();

@@ -22,7 +22,7 @@ public class Issue912P3Char
     }
 
     // The shape of that annexB file, with the outcome current 10.2.11 gives (simple params).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FullSimpleParams()
     {
         var code = @"
@@ -42,17 +42,17 @@ public class Issue912P3Char
     }
 
     // The copy-out in isolation: after the block, `arguments` is the declared function.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FunctionOverwritesArgumentsAfterBlock()
         => Assert.Equal("function", Raw("(function(){ { function arguments(){} } return typeof arguments; }(1,2,3))"));
 
     // The var binding is NOT created, so the object is intact until the declaration evaluates.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArgumentsObjectSurvivesUntilTheDeclarationRuns()
         => Assert.Equal("[object Arguments]", Raw("(function(){ var s = arguments.toString(); { function arguments(){} } return s; }(1,2,3))"));
 
     // A parameter really spelled `arguments` IS in paramNames, so the whole step is skipped.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NamedArgumentsParameterBlocksTheHoist()
         => Assert.Equal("number", Raw("(function(arguments){ { function arguments(){} } return typeof arguments; }(1))"));
 
@@ -80,7 +80,7 @@ __ok;";
     }
 
     // An arrow has no arguments object: a block `function arguments` there still hoists.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrowBlockArgumentsStillHoists()
         => Assert.Equal("function", Raw("var f = () => { { function arguments(){} } return typeof arguments; }; f();"));
 }

@@ -16,7 +16,7 @@ public sealed class Phase3DiagnosticsCollection
 [Collection(Phase3DiagnosticsCollection.Name)]
 public sealed class Phase3CompilerSpecializationTests
 {
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ScalarReplacement_UsesRawLocals_OnlyWhenBindingsAreUnobservable()
     {
         using var context = new JSContext();
@@ -53,7 +53,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.Equal(capturedCounts.NumericLocals, capturedCounts.ScalarLocals);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ScalarReplacement_DoesNotCrossNestedDirectEvalShadowBoundaries()
     {
         using var context = new JSContext();
@@ -71,7 +71,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.Equal("2|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DenseIntegerAndStringSwitches_UseBoundedDispatchTables()
     {
         using var context = new JSContext();
@@ -106,7 +106,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.InRange(snapshot.SwitchTableSlots, 8, 32);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SwitchSpecialization_PreservesDuplicateDefaultFallthroughAndGenericFallbacks()
     {
         using var context = new JSContext();
@@ -146,21 +146,24 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.InRange(snapshot.SwitchTableSlots, 6, 16);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PropertyCaches_PromoteBoundedly_AndKeepDictionaryAndProxySlowPaths()
     {
         using var context = new JSContext();
         using var recording = PropertyOptimizationDiagnostics.Enable();
         PropertyOptimizationDiagnostics.Reset();
 
-        var result = context.Eval("""
+        // Shapes are interned process-wide; force fresh transitions regardless
+        // of which xUnit test ran first or populated the shared shape cache.
+        var shapeKey = "__phase3_" + Guid.NewGuid().ToString("N");
+        var result = context.Eval($$"""
             var traps = 0;
             function read(o) { return o.x; }
-            var a = { x: 1 };
-            var b = { a: 0, x: 2 };
-            var c = { a: 0, b: 0, x: 3 };
-            var d = { a: 0, b: 0, c: 0, x: 4 };
-            var e = { a: 0, b: 0, c: 0, d: 0, x: 5 };
+            var a = { {{shapeKey}}: 0, x: 1 };
+            var b = { {{shapeKey}}: 0, a: 0, x: 2 };
+            var c = { {{shapeKey}}: 0, a: 0, b: 0, x: 3 };
+            var d = { {{shapeKey}}: 0, a: 0, b: 0, c: 0, x: 4 };
+            var e = { {{shapeKey}}: 0, a: 0, b: 0, c: 0, d: 0, x: 5 };
             var sum = 0;
             for (var i = 0; i < 8; i++) sum += read(a);
             sum += read(b) + read(c) + read(d) + read(e);
@@ -182,7 +185,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.True(snapshot.DictionaryFallbacks > 0);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PropertyCaches_RemainReadOnlyAcrossAllMemberWriteForms()
     {
         using var context = new JSContext();
@@ -199,7 +202,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.Equal("1|2|3|4|5,6|second", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PrototypeMutations_AdvanceTheVersion_AndInvalidateSafely()
     {
         using var context = new JSContext();
@@ -224,7 +227,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.True(after.PrototypeInvalidations > before.PrototypeInvalidations);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PersistentCache_CommitsPeManifestAndPortablePdb_ThenHitsCold()
     {
         var folder = Path.Combine(Path.GetTempPath(), "broiler-phase3-" + Guid.NewGuid().ToString("N"));
@@ -269,7 +272,7 @@ public sealed class Phase3CompilerSpecializationTests
         }
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PersistentCache_DoesNotLoadAnEntryWrittenUnderAnotherEngine()
     {
         var folder = Path.Combine(Path.GetTempPath(), "broiler-phase3-" + Guid.NewGuid().ToString("N"));
@@ -323,7 +326,7 @@ public sealed class Phase3CompilerSpecializationTests
         }
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PersistentCache_EngineCoversEveryEngineAssemblyAnEntryCalls()
     {
         var folder = Path.Combine(Path.GetTempPath(), "broiler-phase3-" + Guid.NewGuid().ToString("N"));
@@ -371,7 +374,7 @@ public sealed class Phase3CompilerSpecializationTests
     // them from dynamic methods that skip visibility checks; a persisted entry reaches them only
     // because it names the assemblies it references in an `IgnoresAccessChecksToAttribute`, and
     // without that each of these failed with a FieldAccessException or MethodAccessException.
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("class A { #x = 1; get x() { return this.#x; } static s() { return new A().x; } } A.s();", "1")]
     [InlineData("var o = { a: 1, ...{ b: 2 } }; var { a, ...r } = o; a + '|' + JSON.stringify(r);", "1|{\"b\":2}")]
     [InlineData("try { throw new Error('e'); } catch ({ message }) { message }", "e")]

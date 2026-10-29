@@ -24,7 +24,7 @@ concurrency:
 jobs:
   version:
     name: Resolve preview version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -77,7 +77,7 @@ jobs:
   publish:
     name: Publish to nuget.org
     needs: [version, validate, shared]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       # Recording the published version as a tag is what keeps the next run's
       # numbering cumulative, so this job writes one ref and nothing else.

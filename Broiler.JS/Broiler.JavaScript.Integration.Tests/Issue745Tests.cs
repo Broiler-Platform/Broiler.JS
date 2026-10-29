@@ -80,13 +80,13 @@ public class Issue745Tests
 
     // ---- Problem 11: entries/values snapshot keys before reading values ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectEntriesDoesNotEnumeratePropertyAddedByGetter()
         => Assert.Equal("a,b", Eval(
             "var o={a:1};Object.defineProperty(o,'b',{enumerable:true,get:function(){o.c=3;return 2;}});" +
             "Object.entries(o).map(function(e){return e[0];}).join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectValuesDoesNotEnumeratePropertyAddedByGetter()
         => Assert.Equal("1,2", Eval(
             "var o={a:1};Object.defineProperty(o,'b',{enumerable:true,get:function(){o.c=3;return 2;}});" +
@@ -94,56 +94,56 @@ public class Issue745Tests
 
     // ---- Problem 14: async keyword preserved in toString ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncGeneratorDeclarationToStringKeepsAsync()
         => Assert.Equal("async function* f(x,y){ }", Eval(
             "async function* f(x,y){ }\nf.toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncGeneratorExpressionToStringKeepsAsync()
         => Assert.Equal("async function* g(x){ yield 1; }", Eval(
             "var h=(async function* g(x){ yield 1; });h.toString()"));
 
     // ---- Problem 16: first class member source span excludes leading trivia ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FirstClassMethodToStringExcludesLeadingNewline()
         => Assert.Equal("m(){ return 1; }", Eval(
             "var C=class {\n  m(){ return 1; }\n};(new C()).m.toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FirstClassPrivateMethodToStringExcludesLeadingComment()
         => Assert.Equal("#f(){ return 2; }", Eval(
             "var C=class {\n  /* before */#f(){ return 2; }\n  g(){ return this.#f.toString(); }\n};(new C()).g()"));
 
     // ---- Problem 19: Intl invalid option RangeError ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormatRejectsInvalidTrailingZeroDisplay()
         => Assert.Equal("RangeError", Eval(
             "var e;try{new Intl.NumberFormat([], {trailingZeroDisplay:''});}catch(x){e=x.constructor.name;}e"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormatRejectsInvalidTimeZoneName()
         => Assert.Equal("RangeError", Eval(
             "var e;try{new Intl.DateTimeFormat('en', {timeZoneName:'offset'});}catch(x){e=x.constructor.name;}e"));
 
     // ---- Problem 22: ArrayBuffer.prototype.transfer ToIndex RangeError ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayBufferTransferRejectsExcessiveLength()
         => Assert.Equal("RangeError", Eval(
             "var e;try{new ArrayBuffer(0).transfer(9007199254740992);}catch(x){e=x.constructor.name;}e"));
 
     // ---- Problem 23: toSpliced enforces ArrayCreate limits in the right order ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToSplicedThrowsRangeErrorBeyond2Pow32()
         => Assert.Equal("RangeError", Eval(
             "var al={length:Math.pow(2,32)};var e;" +
             "try{Array.prototype.toSpliced.call(al,0,0,1);}catch(x){e=x.constructor.name;}e"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToSplicedThrowsTypeErrorBeyond2Pow53()
         => Assert.Equal("TypeError", Eval(
             "var al={length:Math.pow(2,53)};var e;" +
@@ -151,26 +151,26 @@ public class Issue745Tests
 
     // ---- Problem 24: significant-digit validation and defaults ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormatRejectsZeroMaximumSignificantDigits()
         => Assert.Equal("RangeError", Eval(
             "var e;try{new Intl.NumberFormat(undefined,{maximumSignificantDigits:0});}catch(x){e=x.constructor.name;}e"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormatDefaultsMinimumSignificantDigits()
         => Assert.Equal("1", Eval(
             "new Intl.NumberFormat(undefined,{maximumSignificantDigits:1}).resolvedOptions().minimumSignificantDigits + ''"));
 
     // ---- Problem 25: super[key] does GetThisBinding before evaluating the key ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SuperComputedReadChecksThisBeforeKey()
         => Assert.Equal("ReferenceError", Eval(
             "class B{constructor(){throw new Error('base');}}" +
             "class D extends B{constructor(){return super[super()];}}" +
             "var e;try{new D();}catch(x){e=x.constructor.name;}e"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DeleteSuperComputedChecksThisBeforeKey()
         => Assert.Equal("ReferenceError", Eval(
             "class B{constructor(){throw new Error('base');}}" +
@@ -179,76 +179,76 @@ public class Issue745Tests
 
     // ---- Problem 26: class name in its own heritage is a TDZ ReferenceError ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ClassNameInOwnHeritageThrowsReferenceError()
         => Assert.Equal("ReferenceError", Eval(
             "var e;try{var x=(class x extends x {});}catch(t){e=t.constructor.name;}e"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NamedClassStillResolvesOwnNameInBody()
         => Assert.Equal("true", Eval(
             "class B{} class C extends B { m(){ return C; } } (new C().m()===C)+''"));
 
     // ---- Problem 29: JSON.stringify unwraps wrappers; BigInt is a TypeError ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JsonStringifyBigIntWrapperThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "var e;try{JSON.stringify(Object(1n));}catch(x){e=x.constructor.name;}e"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JsonStringifyNonFiniteNumbersBecomeNull()
         => Assert.Equal("[null,1.5,null]", Eval("JSON.stringify([NaN,1.5,Infinity])"));
 
     // ---- Problem 30: empty-description symbol method name is "[]" not "" ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EmptyDescriptionSymbolMethodNameIsBrackets()
         => Assert.Equal("[]", Eval("var s=Symbol('');var o={[s](){}};o[s].name"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void UndefinedDescriptionSymbolMethodNameIsEmpty()
         => Assert.Equal("", Eval("var s=Symbol();var o={[s](){}};o[s].name"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NonEmptyDescriptionSymbolMethodNameIsBracketed()
         => Assert.Equal("[foo]", Eval("var s=Symbol('foo');var o={[s](){}};o[s].name"));
 
     // ---- Problem 18: duplicate named group in the same alternative is a SyntaxError ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DuplicateNamedGroupSameAlternativeThrowsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(
             "var e;try{new RegExp('(?<x>a)(?<x>b)');}catch(t){e=t.constructor.name;}e"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DuplicateNamedGroupSeparateAlternativesParses()
         => Assert.Equal("(?<x>a)|(?<x>b)", Eval("new RegExp('(?<x>a)|(?<x>b)').source"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DuplicateNamedGroupNestedThrowsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(
             "var e;try{new RegExp('(?<x>(?<x>a))');}catch(t){e=t.constructor.name;}e"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DistinctNamedGroupsSameAlternativeParse()
         => Assert.Equal("ok", Eval(
             "var e='ok';try{new RegExp('(?<a>x)(?<b>y)');}catch(t){e=t.constructor.name;}e"));
 
     // ---- Problem 20: arguments iterator re-reads length each step ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArgumentsIteratorHonoursShrunkLength()
         => Assert.Equal("done", Eval(
             "(function(a,b,c){var it=arguments[Symbol.iterator]();it.next();it.next();" +
             "arguments.length=2;var r=it.next();return r.done && r.value===undefined ? 'done':'value';}(2,1,3))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArgumentsForOfStillYieldsAllElements()
         => Assert.Equal("1,2,3", Eval(
             "(function(){var r=[];for(var x of arguments)r.push(x);return r.join(',');}(1,2,3))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayPrototypeValuesOnArrayLikeHonoursLength()
         => Assert.Equal("a,b", Eval(
             "var o={0:'a',1:'b',2:'c',length:2};var it=Array.prototype.values.call(o);" +
@@ -256,7 +256,7 @@ public class Issue745Tests
 
     // ---- Problem 13: Promise.race passes the capability resolve directly to then ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PromiseRacePassesCapabilityResolveDirectlyToThen()
         => Assert.Equal("0,3", Eval(
             "var callCount=0;" +

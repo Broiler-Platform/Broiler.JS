@@ -26,52 +26,52 @@ public class AsyncGeneratorAwaitTests
         return ctx.Eval("'' + globalThis.r").ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForAwaitInternalAwaitDoesNotLeakAsYield()
         // The per-iteration await of `{}` must not surface; the consumer sees 'BODY'.
         => Assert.Equal("BODY", Drive(
             "async function* g(){ for await (var z of [{}]) { yield 'BODY'; } }"
             + " var it = g(); it.next().then(a => { globalThis.r = a.value; });"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForAwaitWithDestructuringDefaultYield()
         => Assert.Equal("def", Drive(
             "async function* g(){ for await ({ x = yield 'def' } of [{}]) {} }"
             + " var it = g(); it.next().then(a => { globalThis.r = a.value; });"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ExplicitAwaitOfPlainValueThenYield()
         => Assert.Equal("42", Drive(
             "async function* g(){ var q = await 41; yield q + 1; }"
             + " var it = g(); it.next().then(a => { globalThis.r = a.value; });"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ExplicitAwaitOfPromiseThenYield()
         => Assert.Equal("10", Drive(
             "async function* g(){ var q = await Promise.resolve(5); yield q * 2; }"
             + " var it = g(); it.next().then(a => { globalThis.r = a.value; });"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PlainYieldStillWorks()
         => Assert.Equal("def", Drive(
             "async function* g(){ yield 'def'; }"
             + " var it = g(); it.next().then(a => { globalThis.r = a.value; });"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void YieldAwaitsItsOperand()
         // AsyncGeneratorYield awaits the operand: `yield <promise>` surfaces 7, not the promise.
         => Assert.Equal("7", Drive(
             "async function* g(){ yield Promise.resolve(7); }"
             + " var it = g(); it.next().then(a => { globalThis.r = a.value; });"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void YieldStarOverAsyncIterable()
         => Assert.Equal("i1,i2", Drive(
             "async function* inner(){ yield 'i1'; yield 'i2'; }"
             + " async function* g(){ yield* inner(); }"
             + " var it = g(); it.next().then(a => { it.next().then(b => { globalThis.r = a.value + ',' + b.value; }); });"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForAwaitTwoIterationsThenDone()
         // The steps are chained into the script's completion value: Execute pumps jobs only until
         // that value settles, so nested `.then` calls whose promises it does not wait for could be
@@ -84,7 +84,7 @@ public class AsyncGeneratorAwaitTests
             + "   .then(b => { out.push(b.value); return it.next(); })"
             + "   .then(c => { globalThis.r = out.join(',') + '|done=' + c.done; });"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NoArgNextResumesWithUndefinedNotStaleAwaitValue()
         // The destructuring default `x = yield` resumes with undefined when next()
         // is called with no argument — not the prior internal await's value ({}).
@@ -95,7 +95,7 @@ public class AsyncGeneratorAwaitTests
             + " iter.next().then(function(){ return iter.next(); }).then(function(){"
             + "   globalThis.r = (x === undefined && iterCount === 1) ? 'PASS' : ('FAIL x=' + x + ' c=' + iterCount); });"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SentValueFlowsIntoDestructuringDefaultYield()
         => Assert.Equal("PASS", Drive(
             "var x, iterCount = 0;"

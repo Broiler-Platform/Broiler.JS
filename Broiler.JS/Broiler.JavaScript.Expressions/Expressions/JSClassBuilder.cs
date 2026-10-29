@@ -1,4 +1,5 @@
-﻿using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
+using System.Diagnostics.CodeAnalysis;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 using System;
 using System.Reflection;
 
@@ -21,7 +22,7 @@ public static class JSClassBuilder
     /// Initializes the builder with the concrete JSClass type.
     /// Called by the BuiltIns assembly via <c>[ModuleInitializer]</c>.
     /// </summary>
-    internal static void Initialize(Type classType, Type functionType, Type delegateType)
+    internal static void Initialize([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] Type classType, Type functionType, Type delegateType)
     {
         var jsValueType = Type.GetType("Broiler.JavaScript.Runtime.JSValue, Broiler.JavaScript.Runtime")
             ?? throw new InvalidOperationException("JSValue type not found in BuiltIns assembly");

@@ -19,7 +19,6 @@ using Broiler.JavaScript.Runtime.Unicode;
 using Broiler.Unicode.Algorithms;
 using Broiler.Unicode.Segmentation;
 using UnicodeCldr.LocaleData;
-using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
 
@@ -2206,8 +2205,8 @@ public static class JSIntl
             if (mnfd == null && mxfd == null) { rmin = rmax = mnfdDefault; }
             else
             {
-                rmin = mnfd ?? Math.Min(mnfdDefault, mxfd.Value);
-                rmax = mxfd ?? Math.Max(mnfdDefault, mnfd.Value);
+                rmin = mnfd ?? Math.Min(mnfdDefault, mxfd.GetValueOrDefault());
+                rmax = mxfd ?? Math.Max(mnfdDefault, mnfd.GetValueOrDefault());
             }
             if (rmax != rmin)
                 throw JSEngine.NewRangeError("maximumFractionDigits is not equal to minimumFractionDigits");

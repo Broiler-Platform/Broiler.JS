@@ -4,6 +4,9 @@ using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Integration.Tests;
 
+[CollectionDefinition(nameof(ExecutionExclusionTests), DisableParallelization = true)]
+public sealed class ExecutionExclusionCollectionDefinition;
+
 // One thread runs JavaScript in a context at a time. ECMAScript's agent is single-threaded and this
 // engine is written throughout on that assumption, so a second thread inside a context is not a
 // slow program, it is a heap modified from two threads at once.
@@ -30,8 +33,8 @@ public sealed class ExecutionExclusionTests
     private const string Busy =
         "(function () { var t = 0; for (var j = 0; j < 20000; j++) { t += j; } return t; })()";
 
-    [Fact(Timeout = 600000)]
-    public void AJobDispatchedWithNothingRunningDoesNotOverlapALaterEvaluation()
+    [Fact]
+    public async Task AJobDispatchedWithNothingRunningDoesNotOverlapALaterEvaluation()
     {
         // The residual the job queue could not close, and the reason the execution LOCK exists
         // beside it. The queue is taken only while an execution is already in progress — which is
@@ -46,12 +49,12 @@ public sealed class ExecutionExclusionTests
             context.Eval(Arm);
 
             var fire = context["fire"];
-            var settled = Task.Run(() => fire.InvokeFunction(new Arguments(JSUndefined.Value, JSUndefined.Value)));
+            var settled = Task.Run(() => fire.InvokeFunction(new Arguments(JSUndefined.Value, JSUndefined.Value)), TestContext.Current.CancellationToken);
 
             for (var i = 0; i < 20; i++)
                 context.Eval(Busy);
 
-            settled.Wait();
+            await settled.WaitAsync(TestContext.Current.CancellationToken);
             context.Eval("1");
         }
 
@@ -60,7 +63,7 @@ public sealed class ExecutionExclusionTests
         Assert.Equal(1, peak);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TwoThreadsEvaluatingOnOneContextTakeTurns()
     {
         // The plainest violation the lock has to prevent, and one no dispatch rule addresses: two
@@ -85,8 +88,8 @@ public sealed class ExecutionExclusionTests
         Assert.Equal("160", context.Eval("String(globalThis.n)").ToString());
     }
 
-    [Fact(Timeout = 600000)]
-    public void AHostCallIntoJavaScriptJoinsTheExclusionThroughEnterExecution()
+    [Fact]
+    public async Task AHostCallIntoJavaScriptJoinsTheExclusionThroughEnterExecution()
     {
         // The contract itself. The engine cannot guard every route into JavaScript — invoking a
         // JSValue is an ordinary call on an ordinary object, and locking it would put a mutex on
@@ -107,7 +110,7 @@ public sealed class ExecutionExclusionTests
                 using (context.EnterExecution())
                     bump.InvokeFunction(new Arguments(JSUndefined.Value, one));
             }
-        });
+        }, TestContext.Current.CancellationToken);
 
         for (var i = 0; i < 60; i++)
         {
@@ -115,7 +118,7 @@ public sealed class ExecutionExclusionTests
                 bump.InvokeFunction(new Arguments(JSUndefined.Value, one));
         }
 
-        work.Wait();
+        await work.WaitAsync(TestContext.Current.CancellationToken);
 
         var (peak, overlaps) = JSContext.ExecutionConcurrency;
         Assert.Equal(0, overlaps);
@@ -123,7 +126,7 @@ public sealed class ExecutionExclusionTests
         Assert.Equal("120", context.Eval("String(globalThis.total)").ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheScopeIsReentrantSoNestingIsNotADeadlock()
     {
         // Required rather than convenient: a host that wraps an entry point which turns out to be
@@ -139,7 +142,7 @@ public sealed class ExecutionExclusionTests
         }
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JobsQueuedUnderAHostScopeRunWhenTheOutermostOneIsReleased()
     {
         // The scope is an execution, so the queue is live inside it and drains on the way out —

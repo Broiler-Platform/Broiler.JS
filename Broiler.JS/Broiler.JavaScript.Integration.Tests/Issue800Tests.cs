@@ -40,7 +40,7 @@ public class Issue800Tests
         Assert.Equal("TypeError", ErrorName(code));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Using_ValidResources_DisposeLastInFirstOut()
     {
         Assert.Equal("body,b,a", Eval("""
@@ -54,13 +54,13 @@ public class Issue800Tests
         """));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Using_NullOrUndefined_IsNoOp()
     {
         Assert.Equal("ok", Eval("{ using x = null; using y = undefined; } 'ok';"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Using_SingleDisposalError_IsNotWrappedInSuppressedError()
     {
         // A lone error thrown during disposal propagates as-is (not a SuppressedError chain).
@@ -71,11 +71,11 @@ public class Issue800Tests
 
     // ── Problems 1 & 9: Temporal parsing completeness ────────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PlainMonthDay_From_NumericMonthWithoutYear()
         => Assert.Equal("M02|29", Eval("const d = Temporal.PlainMonthDay.from({ month: 2, day: 29 }); d.monthCode + '|' + d.day;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PlainDate_From_BasicDateForm()
         => Assert.Equal("2020-01-01", Eval("Temporal.PlainDate.from('20200101').toString();"));
 }

@@ -52,7 +52,7 @@ public class Issue665Tests
 
     // ---- Problem 8: isDisjointFrom does not touch keys() when this.size <= arg.size ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IsDisjointFromSkipsKeysIteratorForSmallerReceiver()
         => Assert.Equal("true", Eval(
             "var s1 = new Set([1, 2]);"
@@ -61,7 +61,7 @@ public class Issue665Tests
             + " keys: function(){ throw new Error('keys must not be called'); } };"
             + "String(s1.isDisjointFrom(s2))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IsDisjointFromUsesKeysIteratorForLargerReceiver()
         => Assert.Equal("false", Eval(
             "var s1 = new Set([1, 2, 3]);"
@@ -71,33 +71,33 @@ public class Issue665Tests
             + "   return { next: function(){ return i < d.length ? { value: d[i++], done:false } : { value: undefined, done:true }; } }; } };"
             + "String(s1.isDisjointFrom(s2))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IsDisjointFromTrueWhenDisjoint()
         => Assert.Equal("true", Eval(
             "String(new Set([1, 2]).isDisjointFrom(new Set([3, 4])))"));
 
     // ---- Problem 9: empty zip is immediately done; zipKeyed result is null-proto ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ZipWithNoIteratorsIsImmediatelyDone()
         => Assert.Equal("true,undefined", Eval(
             "var it = Iterator.zip([]); var r = it.next();"
             + "r.done + ',' + r.value"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ZipKeyedWithNoIteratorsIsImmediatelyDone()
         => Assert.Equal("true,undefined", Eval(
             "var it = Iterator.zipKeyed({}); var r = it.next();"
             + "r.done + ',' + r.value"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ZipKeyedResultHasNullPrototype()
         => Assert.Equal("true", Eval(
             "var it = Iterator.zipKeyed({ a: [1], b: [2] });"
             + "var r = it.next().value;"
             + "String(Object.getPrototypeOf(r) === null)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ZipYieldsRowsThenDone()
         => Assert.Equal("1-3,2-4,done", Eval(
             "var it = Iterator.zip([[1, 2], [3, 4]]);"
@@ -107,7 +107,7 @@ public class Issue665Tests
 
     // ---- Problem 10: return() does not throw "already executing" reentrantly ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ZipReturnFromSuspendedStartAllowsReentrantNext()
         => Assert.Equal("1,undefined,true", Eval(
             "var calls = 0;"
@@ -118,7 +118,7 @@ public class Issue665Tests
             + "var res = it.return();"
             + "calls + ',' + res.value + ',' + res.done"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ZipReturnFromSuspendedStartAllowsReentrantReturn()
         => Assert.Equal("1,undefined,true", Eval(
             "var calls = 0;"
@@ -131,31 +131,31 @@ public class Issue665Tests
 
     // ---- Generator loop bodies whose completion value is a yield ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GeneratorForLoopWithYieldTail()
         => Assert.Equal("012", Eval(
             "function* g(){ for (var i = 0; i < 3; ++i) { yield i; } }"
             + "var s = ''; for (var x of g()) s += x; s"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GeneratorWhileLoopWithYieldTail()
         => Assert.Equal("123", Eval(
             "function* g(){ var i = 0; while (i < 3) { ++i; yield i; } }"
             + "var s = ''; for (var x of g()) s += x; s"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GeneratorForOfLoopWithYieldTail()
         => Assert.Equal("123", Eval(
             "function* g(a){ for (var v of a) { yield v; } }"
             + "var s = ''; for (var x of g([1, 2, 3])) s += x; s"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GeneratorNestedForLoopsWithYieldTail()
         => Assert.Equal("00 01 10 11 ", Eval(
             "function* g(){ for (var i = 0; i < 2; ++i) { for (var j = 0; j < 2; ++j) { yield i + '' + j; } } }"
             + "var s = ''; for (var x of g()) s += x + ' '; s"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GeneratorForLoopWithDeclarationYieldTail()
         => Assert.Equal("a,ab", Eval(
             "function* prefixes(str){ for (var i = 1; i <= str.length; ++i) { var p = yield str.slice(0, i); } }"
@@ -163,17 +163,17 @@ public class Issue665Tests
 
     // ---- Array length shrink from a huge sparse length must not iterate the gap ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayLengthGrowThenShrinkDoesNotHang()
         => Assert.Equal("a,b", Eval(
             "var a = ['a', 'b']; a.length = 4294967295; a.length = 2; a.join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayLengthShrinkDropsHighElements()
         => Assert.Equal("1,2|2", Eval(
             "var a = [1, 2, 3, 4, 5]; a.length = 2; a.join(',') + '|' + a.length"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayLengthShrinkStopsAtNonConfigurable()
         => Assert.Equal("4", Eval(
             "var a = [1, 2, 3, 4, 5];"
@@ -182,35 +182,35 @@ public class Issue665Tests
 
     // ---- Problem 4: Date across the full ECMAScript range (years outside 1–9999) ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateUtcSupportsExpandedYears()
         => Assert.Equal("+275760-09-13T00:00:00.000Z|-271821-04-20T00:00:00.000Z", Eval(
             "new Date(Date.UTC(275760, 8, 13)).toISOString() + '|'"
             + " + new Date(Date.UTC(-271821, 3, 20)).toISOString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateUtcStillHandlesNormalAndTwoDigitYears()
         => Assert.Equal("1577836800000|1999-01-01T00:00:00.000Z", Eval(
             "Date.UTC(2020, 0, 1) + '|' + new Date(Date.UTC(99, 0, 1)).toISOString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumericConstructorAndToIsoStringSpanFullRange()
         => Assert.Equal("+275760-09-13T00:00:00.000Z|-271821-04-20T00:00:00.000Z", Eval(
             "new Date(8.64e15).toISOString() + '|' + new Date(-8.64e15).toISOString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToIsoStringThrowsJustOutsideRange()
         => Assert.Equal("RangeError", Eval(
             "(function(){ try { new Date(8.64e15 + 1).toISOString(); return 'no-throw'; }"
             + "catch(e){ return e.constructor.name; } })()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void UtcGettersReadExtendedDates()
         => Assert.Equal("275760-8-13", Eval(
             "var d = new Date(8.64e15);"
             + "d.getUTCFullYear() + '-' + d.getUTCMonth() + '-' + d.getUTCDate()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SetUtcFullYearAndHoursSupportExtendedYears()
         => Assert.Equal("-271821-04-20T00:00:00.000Z", Eval(
             "var d = new Date(0);"
@@ -218,14 +218,14 @@ public class Issue665Tests
             + "d.setUTCHours(0, 0, 0, 0);"
             + "d.toISOString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SetUtcFullYearRevivesNaNReceiver()
         // Per the spec, setUTCFullYear treats a NaN time value as +0 and revives the
         // date (it does not early-return NaN). 2001-01-01T00:00:00Z is the result.
         => Assert.Equal("2001-01-01T00:00:00.000Z", Eval(
             "var d = new Date(NaN); d.setUTCFullYear(2001); d.toISOString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ParsesExpandedYearIsoStringsRoundTrip()
         => Assert.Equal("true|true|true", Eval(
             "function rt(s){ return new Date(Date.parse(s)).toISOString() === s; }"
@@ -233,12 +233,12 @@ public class Issue665Tests
             + " + rt('-271821-04-20T00:00:00.000Z') + '|'"
             + " + rt('+010000-01-01T00:00:00.000Z')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StringConstructorParsesExpandedYears()
         => Assert.Equal("-000001-12-31T23:59:59.999Z", Eval(
             "new Date('-000001-12-31T23:59:59.999Z').toISOString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NormalIsoAndRfc2822ParsingUnaffected()
         => Assert.Equal("2023-06-15T10:30:00.000Z|2023-06-15T10:30:00.000Z", Eval(
             "new Date('2023-06-15T10:30:00.000Z').toISOString() + '|'"

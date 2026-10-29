@@ -279,7 +279,7 @@ public class SharedBigIntTests
     // StringToBigInt of a prefixed text is linear: TryParsePrefixedDigits multiplied the whole value by
     // the radix for every digit, so a hexadecimal text of 262,144 digits did not complete within the
     // vector runner's five seconds.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void A_long_hexadecimal_text_parses_in_linear_time()
     {
         Assert.Equal("1", Eval("String(1n)"));

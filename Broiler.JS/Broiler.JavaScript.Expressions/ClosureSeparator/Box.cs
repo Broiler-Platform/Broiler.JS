@@ -1,4 +1,5 @@
-﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Reflection;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
@@ -6,6 +7,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.ClosureSeparator;
 
 public abstract class BoxHelper
 {
+    [RequiresDynamicCode("This helper constructs runtime generic or array types; use the portable backend for Native AOT.")]
     public static BoxHelper For(Type type) => Activator.CreateInstance(typeof(BoxHelper<>).MakeGenericType(type)) as BoxHelper;
     public abstract Type BoxType { get; }
     public abstract BExpression New(BExpression value);
@@ -14,6 +16,7 @@ public abstract class BoxHelper
 
 public class BoxHelper<T> : BoxHelper
 {
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
     public static readonly Type _BoxType = typeof(Box<T>);
     public override Type BoxType => _BoxType;
     public static readonly ConstructorInfo _new = _BoxType.GetConstructor([]);

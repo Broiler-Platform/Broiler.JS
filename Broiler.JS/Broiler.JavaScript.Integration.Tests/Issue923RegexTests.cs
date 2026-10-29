@@ -32,7 +32,7 @@ public class Issue923RegexTests
         => Assert.Equal(expected, Eval($"JSON.stringify({expr})"));
 
     // Problem 8 — nullable quantifier matches the whole string.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NullableQuantifier()
         => Assert.Equal("ab", Eval("/(a?b??)*/.exec(\"ab\")[0]"));
 

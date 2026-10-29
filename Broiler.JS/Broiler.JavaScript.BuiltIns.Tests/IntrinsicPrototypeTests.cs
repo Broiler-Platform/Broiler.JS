@@ -90,7 +90,7 @@ public class IntrinsicPrototypeTests
         Assert.Equal("intrinsic", AfterGlobalIsReplaced(global, make, global + ".prototype", delete: true));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PrimitivePropertyLookupsUseTheIntrinsicPrototype()
         => Assert.Equal("ABC,1.5,true,1,Symbol(x),3", Eval("""
             var saved = [String, Number, Boolean, BigInt, Symbol];
@@ -155,7 +155,7 @@ public class IntrinsicPrototypeTests
     // Promise.any rejects with an AggregateError created from the intrinsic %AggregateError%
     // (the specification's ThrowCompletion of a newly created AggregateError), not from whatever
     // the global binding holds when the last input rejects.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async System.Threading.Tasks.Task PromiseAnyRejectsWithTheIntrinsicAggregateError()
     {
         Load();
@@ -173,7 +173,7 @@ public class IntrinsicPrototypeTests
         Assert.Equal("intrinsic", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WithStatementReadsTheIntrinsicUnscopables()
         => Assert.Equal("outer", Eval("""
             var x = 'outer', r;
@@ -185,7 +185,7 @@ public class IntrinsicPrototypeTests
             r;
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ScriptConstructionStillFollowsNewTarget()
         => Assert.Equal("true,true,true,true", Eval("""
             class MyArray extends Array {}
@@ -200,7 +200,7 @@ public class IntrinsicPrototypeTests
             r;
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EachRealmKeepsItsOwnIntrinsics()
     {
         Load();

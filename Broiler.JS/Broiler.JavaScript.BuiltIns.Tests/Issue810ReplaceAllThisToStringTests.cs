@@ -17,7 +17,7 @@ public class Issue810ReplaceAllThisToStringTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToPrimitive_IsUsedBeforeToStringAndValueOf()
         => Assert.Equal("zz|1", Eval("""
             var called = 0;
@@ -30,7 +30,7 @@ public class Issue810ReplaceAllThisToStringTests
             result + "|" + called;
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FallsBackToToString_WhenNoToPrimitive()
         => Assert.Equal("zz|1", Eval("""
             var called = 0;

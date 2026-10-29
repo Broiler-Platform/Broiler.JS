@@ -304,8 +304,8 @@ public partial class JSPromise : JSObject, IJSPromise
 
     /// <summary>
     /// Guards the settle: the state transition and the taking of the reaction lists in
-    /// <see cref="Resolve"/>/<see cref="Reject"/>, against the state test and the registration in
-    /// <see cref="Then"/>. Those two are the pair that must not interleave — see the comment in
+    /// <see cref="Broiler.JavaScript.BuiltIns.Promise.JSPromise.Resolve(Broiler.JavaScript.Runtime.JSValue)"/>/<see cref="Broiler.JavaScript.BuiltIns.Promise.JSPromise.Reject(Broiler.JavaScript.Runtime.JSValue)"/>, against the state test and the registration in
+    /// <see cref="Broiler.JavaScript.BuiltIns.Promise.JSPromise.Then(Broiler.JavaScript.Runtime.JSFunctionDelegate, Broiler.JavaScript.Runtime.JSFunctionDelegate, Broiler.JavaScript.BuiltIns.Promise.JSPromise)"/>. Those two are the pair that must not interleave — see the comment in
     /// <c>Then</c> for what a stranded reaction costs.
     /// </summary>
     /// <remarks>

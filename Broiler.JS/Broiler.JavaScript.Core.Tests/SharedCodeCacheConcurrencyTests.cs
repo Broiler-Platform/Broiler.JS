@@ -78,7 +78,7 @@ public class SharedCodeCacheConcurrencyTests
     /// its own copy and allocates its own sites, which is the contrast that makes the measurement
     /// mean something.
     /// </remarks>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ASharedCacheGivesTwoContextsTheSameInlineCacheSites()
     {
         // A marker no stress round below uses, so this test's site is its own.
@@ -145,7 +145,7 @@ public class SharedCodeCacheConcurrencyTests
     /// what this would notice.
     /// </para>
     /// </remarks>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheSameCachedCodeOnManyThreadsAgreesAndDoesNotThrow()
     {
         var threads = Math.Max(8, Environment.ProcessorCount * 2);

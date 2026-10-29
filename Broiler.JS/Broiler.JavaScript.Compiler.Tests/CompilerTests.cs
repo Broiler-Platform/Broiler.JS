@@ -72,7 +72,7 @@ public class CompilerTests
     // The for-loop pass wraps a C-style `for (await using …)` loop in a block, and the loop's labels go
     // inside it. Regression: they stayed outside and labelled the block, so `continue M` was rejected
     // with "No label found for M". The resource is still disposed once, when the loop ends.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task Labeled_Continue_Targets_An_Await_Using_Loop()
     {
         using var ctx = new JSContext();
@@ -111,7 +111,7 @@ public class CompilerTests
         Assert.Equal("SyntaxError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_SimpleExpression_ProducesResult()
     {
         using var ctx = new JSContext();
@@ -119,7 +119,7 @@ public class CompilerTests
         Assert.Equal(7.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_LetConst_ScopingWorks()
     {
         using var ctx = new JSContext();
@@ -127,7 +127,7 @@ public class CompilerTests
         Assert.Equal(15.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Destructuring_Array_Defaults_Compile_To_Valid_IL()
     {
         using var ctx = new JSContext();
@@ -142,7 +142,7 @@ public class CompilerTests
         Assert.Equal("2||12|13|14|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generator_Yield_In_If_Block_Compiles_To_Valid_IL()
     {
         using var ctx = new JSContext();
@@ -161,7 +161,7 @@ public class CompilerTests
         Assert.Equal("42|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_SloppyMode_Allows_Future_Reserved_Binding_Names()
     {
         using var ctx = new JSContext();
@@ -176,7 +176,7 @@ public class CompilerTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ArrowFunction_Works()
     {
         using var ctx = new JSContext();
@@ -184,7 +184,7 @@ public class CompilerTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ArrowFunction_Is_Not_A_Constructor()
     {
         using var ctx = new JSContext();
@@ -202,7 +202,7 @@ public class CompilerTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Assigning_Callable_Proxy_Does_Not_Infer_Function_Name()
     {
         using var ctx = new JSContext();
@@ -221,7 +221,7 @@ public class CompilerTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Proxy_GetTrap_Undefined_Forwards_Prototype_Get_With_Receiver()
     {
         using var ctx = new JSContext();
@@ -242,7 +242,7 @@ public class CompilerTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ClassExtends_Proxy_Of_ArrowFunction_Throws_TypeError_Before_Prototype_Lookup()
     {
         using var ctx = new JSContext();
@@ -267,7 +267,7 @@ public class CompilerTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_CompoundAssignment_ComputedMembers_Preserve_Nullish_Base_Evaluation_Order()
     {
         using var ctx = new JSContext();
@@ -329,7 +329,7 @@ public class CompilerTests
         Assert.Equal("RangeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_LogicalAssignment_ComputedPropertyNames_Parse_And_ShortCircuit()
     {
         using var ctx = new JSContext();
@@ -355,7 +355,7 @@ public class CompilerTests
         Assert.Equal("2|0|3|3|4|fallback", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_LogicalAssignment_ShortCircuits_RightHandSide()
     {
         using var ctx = new JSContext();
@@ -383,7 +383,7 @@ public class CompilerTests
     }
 
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ClassStaticBlock_RunsWithClassThis()
     {
         using var ctx = new JSContext();
@@ -392,7 +392,7 @@ public class CompilerTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectLiteralSuper_Method_Getter_Setter_Access_Work()
     {
         using var ctx = new JSContext();
@@ -421,7 +421,7 @@ public class CompilerTests
         Assert.Equal(123.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectLiteralSuper_ResolvesPrototypeAtCallTime()
     {
         using var ctx = new JSContext();
@@ -439,7 +439,7 @@ public class CompilerTests
         Assert.Equal(7.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ClassSuper_Method_And_Property_Access_Work()
     {
         using var ctx = new JSContext();
@@ -468,7 +468,7 @@ public class CompilerTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_DerivedClass_Constructor_CanCallSuper()
     {
         using var ctx = new JSContext();
@@ -493,7 +493,7 @@ public class CompilerTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ArrowFunction_ArrayDestructuringElisions_Work()
     {
         using var ctx = new JSContext();
@@ -526,7 +526,7 @@ public class CompilerTests
         Assert.Equal("1|0;1|0;1|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectSpread_Copies_Getter_As_Data_Property()
     {
         using var ctx = new JSContext();
@@ -547,7 +547,7 @@ public class CompilerTests
         Assert.Equal("42|42|true|true|true|a,c,d", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectSpread_Preserves_EnumerableKeyOrder()
     {
         using var ctx = new JSContext();
@@ -562,7 +562,7 @@ public class CompilerTests
         Assert.Equal("1,z,a", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectSpread_Copies_Sparse_Elements_Without_Dense_Length_Scan()
     {
         using var ctx = new JSContext();
@@ -585,7 +585,7 @@ public class CompilerTests
         Assert.Equal("1,4294967294|2|7|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectSpread_Uses_Snapshot_Of_Sparse_Element_Keys()
     {
         using var ctx = new JSContext();
@@ -614,7 +614,7 @@ public class CompilerTests
         Assert.Equal("1,3|one|three|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectSpread_Uses_Snapshot_Of_String_And_Symbol_Keys()
     {
         using var ctx = new JSContext();
@@ -649,7 +649,7 @@ public class CompilerTests
         Assert.Equal("a|a|undefined|false|symbol", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectDestructuring_Rest_Copies_Only_Remaining_Properties()
     {
         using var ctx = new JSContext();
@@ -664,7 +664,7 @@ public class CompilerTests
         Assert.Equal("1|1,b|3|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectDestructuring_Rest_Copies_Sparse_Elements_Without_Dense_Length_Scan()
     {
         using var ctx = new JSContext();
@@ -689,7 +689,7 @@ public class CompilerTests
         Assert.Equal("skip|5,4294967294|keep|last|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectDestructuring_Rest_Uses_Snapshot_Of_Sparse_Element_Keys()
     {
         using var ctx = new JSContext();
@@ -718,7 +718,7 @@ public class CompilerTests
         Assert.Equal("1,3|one|three|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectDestructuring_Assignment_Rest_Copies_Only_Remaining_Properties()
     {
         using var ctx = new JSContext();
@@ -733,7 +733,7 @@ public class CompilerTests
         Assert.Equal("1,b|3|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Global_Lexical_Closure_Throws_TDZ_Before_Initialization()
     {
         using var ctx = new JSContext();
@@ -753,7 +753,7 @@ public class CompilerTests
         Assert.Equal("ReferenceError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_AnnexB_Block_Function_Without_Preexisting_Binding_Does_Not_Throw()
     {
         using var ctx = new JSContext();
@@ -769,7 +769,7 @@ public class CompilerTests
         Assert.Equal("a", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_AnnexB_Block_Function_Is_Var_Hoisted_To_Function_Scope()
     {
         // Annex B 3.3: a block-nested function declaration also creates a var
@@ -788,7 +788,7 @@ public class CompilerTests
         Assert.Equal("undefined,42", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_AnnexB_Switch_Function_Is_Var_Hoisted_To_Function_Scope()
     {
         using var ctx = new JSContext();
@@ -803,7 +803,7 @@ public class CompilerTests
         Assert.Equal("undefined,7", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_AnnexB_Block_Function_Blocked_By_Lexical_Conflict()
     {
         // Annex B 3.3 is blocked when a lexical binding with the same name exists
@@ -820,7 +820,7 @@ public class CompilerTests
         Assert.Equal("5", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_AnnexB_Block_Function_Not_Hoisted_In_Strict_Mode()
     {
         // In strict mode block-scoped function declarations are NOT var-hoisted;
@@ -837,7 +837,7 @@ public class CompilerTests
         Assert.Equal("undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_UnicodeIdentifierEscape_Surrogate_Is_SyntaxError_Not_ArgumentOutOfRange()
     {
         using var ctx = new JSContext();
@@ -846,7 +846,7 @@ public class CompilerTests
         Assert.IsNotType<ArgumentOutOfRangeException>(ex);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ArrowFunction_ArrayDestructuringElisions_Work_With_BareYield_Generator()
     {
         using var ctx = new JSContext();
@@ -875,7 +875,7 @@ public class CompilerTests
         Assert.Equal("1|0;1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Generator_ArrayDestructuring_Parameter_Does_Not_Lose_IteratorClose_Catch_Local()
     {
         using var ctx = new JSContext();
@@ -892,7 +892,7 @@ public class CompilerTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_NonStrict_Yield_Identifier_In_Default_Parameter_Works()
     {
         using var ctx = new JSContext();
@@ -911,7 +911,7 @@ public class CompilerTests
         Assert.Equal(23.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_NonStrict_Yield_Identifier_In_Destructuring_Initializer_Works()
     {
         using var ctx = new JSContext();
@@ -930,7 +930,7 @@ public class CompilerTests
         Assert.Equal(4.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_NonStrict_Yield_Identifier_In_Computed_Accessor_Name_Works()
     {
         using var ctx = new JSContext();
@@ -953,7 +953,7 @@ public class CompilerTests
         Assert.Equal("get yield|set yield", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ArrayDestructuring_DoesNotCloseExhaustedIterator()
     {
         using var ctx = new JSContext();
@@ -987,7 +987,7 @@ public class CompilerTests
         Assert.Equal("0|1|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ArrayDestructuring_Closes_Iterator_Without_Arguments_On_Abrupt_Assignment_Target()
     {
         using var ctx = new JSContext();
@@ -1027,7 +1027,7 @@ public class CompilerTests
         Assert.Equal("boom|0|1|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ArgumentsObject_WorksWithoutExplicitModulesLoad()
     {
         using var ctx = new JSContext();
@@ -1035,7 +1035,7 @@ public class CompilerTests
         Assert.Equal(3.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ArgumentsObject_TypeOf_Is_Object()
     {
         using var ctx = new JSContext();
@@ -1043,7 +1043,7 @@ public class CompilerTests
         Assert.Equal("object", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_NonStrict_Arguments_Can_Be_Reassigned()
     {
         using var ctx = new JSContext();
@@ -1051,7 +1051,7 @@ public class CompilerTests
         Assert.Equal(42d, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_NonStrict_ArgumentsObject_Maps_NonConfigurable_Parameters()
     {
         using var ctx = new JSContext();
@@ -1066,7 +1066,7 @@ public class CompilerTests
         Assert.Equal("2|2|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_NonStrict_ArgumentsObject_Preserves_Current_Value_When_Becoming_NonWritable()
     {
         using var ctx = new JSContext();
@@ -1084,7 +1084,7 @@ public class CompilerTests
         Assert.Equal("2|2|2|3|2|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_NonStrict_ArgumentsObject_Delete_False_Keeps_Mapping()
     {
         using var ctx = new JSContext();
@@ -1100,7 +1100,7 @@ public class CompilerTests
         Assert.Equal("false|2|2|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_NonStrict_Delete_Arguments_Identifier_Returns_False()
     {
         using var ctx = new JSContext();
@@ -1113,7 +1113,7 @@ public class CompilerTests
         Assert.Equal("false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSContext_LoadsClrInteropWithoutExplicitClrReference()
     {
         using var ctx = new JSContext();
@@ -1122,7 +1122,7 @@ public class CompilerTests
         Assert.NotNull(JSEngine.ClrModuleProvider);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectDestructuringDefault_OnlyFallsBackForUndefined()
     {
         using var ctx = new JSContext();
@@ -1138,7 +1138,7 @@ public class CompilerTests
         Assert.Equal("null|fallback-b|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ObjectDestructuringParameterDefault_KeepsNullValues()
     {
         using var ctx = new JSContext();
@@ -1152,7 +1152,7 @@ public class CompilerTests
         Assert.Equal("null|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_DestructuringDefaults_Infer_Anonymous_Arrow_Function_Names()
     {
         using var ctx = new JSContext();
@@ -1167,7 +1167,7 @@ public class CompilerTests
         Assert.Equal("arrow|arrow", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_DestructuringDefaults_Infer_Anonymous_Class_Names()
     {
         using var ctx = new JSContext();
@@ -1182,7 +1182,7 @@ public class CompilerTests
         Assert.Equal("cls|cls", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Parenthesized_Assignment_Does_Not_Infer_Anonymous_Function_Name()
     {
         using var ctx = new JSContext();
@@ -1205,7 +1205,7 @@ public class CompilerTests
         Assert.Equal("""["direct","direct",false,false,true]|["","",false,false,true]""", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Class_Accessor_Literal_Names_Are_Canonicalized_And_Inferred()
     {
         using var ctx = new JSContext();
@@ -1239,7 +1239,7 @@ public class CompilerTests
         Assert.Equal("get string|set string|get 2|get static|set static|get 100", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Object_Property_Value_Names_Are_Inferred()
     {
         using var ctx = new JSContext();
@@ -1278,7 +1278,7 @@ public class CompilerTests
         Assert.Equal("x|id|arrow|cls|gen|false|method|methodGen||[test262]", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Object_Accessor_Literal_Names_Are_Canonicalized_And_Inferred()
     {
         using var ctx = new JSContext();
@@ -1312,7 +1312,7 @@ public class CompilerTests
         Assert.Equal("get string|set string|get 2|get static|set static|get 100", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Object_Accessor_Computed_And_NonCanonical_Literal_Keys_Work()
     {
         using var ctx = new JSContext();
@@ -1348,7 +1348,7 @@ public class CompilerTests
         Assert.Equal("get default|set default|get unicode|set unicode|get numeric|set numeric", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Class_Accessor_CodePointEscapes_And_NonCanonical_Literal_Keys_Work()
     {
         using var ctx = new JSContext();
@@ -1391,7 +1391,7 @@ public class CompilerTests
         Assert.Equal("get instance default|set instance default|get instance numeric|set instance numeric|get static unicode|set static unicode|get static numeric|set static numeric", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_DestructuringDefaults_DoNotInfer_Function_Names_Through_Cover_Grammar()
     {
         using var ctx = new JSContext();
@@ -1406,7 +1406,7 @@ public class CompilerTests
         Assert.Equal("true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_FunctionLength_Ignores_Trailing_Commas_And_Stops_At_First_Initializer_Or_Rest()
     {
         using var ctx = new JSContext();
@@ -1450,7 +1450,7 @@ public class CompilerTests
         Assert.Equal("1|0|0|1|0|1|0|1|0|1|0|1|0|1|0|1|0|1|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_TaggedTemplate_NoSubstitution_Invokes_Tag_Function()
     {
         using var ctx = new JSContext();
@@ -1473,7 +1473,7 @@ public class CompilerTests
         Assert.Equal(@"1|A|\x41", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_TemplateLiteral_WithSubstitution_Returns_Interpolated_String()
     {
         using var ctx = new JSContext();
@@ -1494,7 +1494,7 @@ public class CompilerTests
         Assert.Equal("U+0000FF", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_DestructuringAssignmentProperties_OnlyInfer_Direct_Anonymous_Function_Names()
     {
         using var ctx = new JSContext();
@@ -1510,7 +1510,7 @@ public class CompilerTests
         Assert.Equal("true|cover", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_StaticPrivateAsyncGeneratorMethod_DoesNotAppear_In_Property_Introspection()
     {
         using var ctx = new JSContext();
@@ -1535,7 +1535,7 @@ public class CompilerTests
         Assert.Equal("false|false|false|true|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Class_Static_Fields_With_Initializers_Remain_On_The_Class()
     {
         using var ctx = new JSContext();
@@ -1561,7 +1561,7 @@ public class CompilerTests
         Assert.Equal("true|1|1|1|42", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Class_Public_Fields_Are_Enumerable_Writable_Configurable()
     {
         using var ctx = new JSContext();
@@ -1590,7 +1590,7 @@ public class CompilerTests
         Assert.Equal("1|true|true|true|2|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task Compile_Private_Method_Call_Allows_Following_Call_Chain()
     {
         using var ctx = new JSContext();
@@ -1622,7 +1622,7 @@ public class CompilerTests
         Assert.Equal("42|1|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Nested_Class_Direct_Eval_Can_Access_Outer_Private_Method()
     {
         using var ctx = new JSContext();
@@ -1643,7 +1643,7 @@ public class CompilerTests
         Assert.Equal("test262", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Class_Private_Methods_Infer_Function_Names()
     {
         using var ctx = new JSContext();
@@ -1686,7 +1686,7 @@ public class CompilerTests
         Assert.Equal("#method|#gen|#asyncMethod|#asyncGen|#staticMethod|#staticGen|#staticAsyncMethod|#staticAsyncGen", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Strict_Function_Unresolved_Assignment_Throws_ReferenceError()
     {
         using var ctx = new JSContext();
@@ -1702,7 +1702,7 @@ public class CompilerTests
         Assert.Equal("missing is not defined", ex.Error[KeyStrings.message].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Compound_And_Destructuring_Assignment_Targets_Preserve_Reference_Errors()
     {
         using var ctx = new JSContext();
@@ -1742,7 +1742,7 @@ public class CompilerTests
         Assert.Equal("Cannot access 'x' before initialization", arrayTdz.Error[KeyStrings.message].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Object_Destructuring_Assignment_Expression_Returns_Rhs_Object()
     {
         using var ctx = new JSContext();
@@ -1767,7 +1767,7 @@ public class CompilerTests
         Assert.Equal("true|42|42|true|7|7", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Array_Destructuring_Member_Target_Evaluation_Order()
     {
         using var ctx = new JSContext();
@@ -1823,7 +1823,7 @@ public class CompilerTests
         Assert.Equal("source|iterator|target|target-key|iterator-step|iterator-done|target-key-tostring|set", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Strict_Accessor_Bodies_Invoke_With_Strict_Mode()
     {
         using var ctx = new JSContext();
@@ -1844,7 +1844,7 @@ public class CompilerTests
         Assert.Equal("test262unresolvable is not defined", ex.Error[KeyStrings.message].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Eval_Strict_Directive_And_Top_Level_Lexical_Tdz_Throw_ReferenceError()
     {
         using var ctx = new JSContext();
@@ -1862,7 +1862,7 @@ public class CompilerTests
         Assert.Equal("Cannot access 'y' before initialization", indirectLexicalEval.Error[KeyStrings.message].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Switch_Case_Declarations_Respect_Switch_Lexical_Scope()
     {
         using var ctx = new JSContext();
@@ -1892,7 +1892,7 @@ public class CompilerTests
         Assert.Equal("ReferenceError", tdz.Error[KeyStrings.constructor][KeyStrings.name].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ForIn_Lexical_Head_Creates_Tdz_For_Target_Expression()
     {
         using var ctx = new JSContext();
@@ -1925,7 +1925,7 @@ public class CompilerTests
         Assert.Equal("outside|ReferenceError", scopeOpen.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ForOf_Lexical_Head_Creates_Tdz_For_Target_Expression()
     {
         using var ctx = new JSContext();
@@ -1958,7 +1958,7 @@ public class CompilerTests
         Assert.Equal("outside|ReferenceError", scopeOpen.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task Compile_ForOf_AssignmentPattern_Heads_Work()
     {
         using var ctx = new JSContext();
@@ -1984,7 +1984,7 @@ public class CompilerTests
         Assert.Equal("1|1", syncResult.ToString() + "|" + asyncResult.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Syntax_Errors_Are_Reported_For_Strict_And_Direct_Eval_Cases()
     {
         using var ctx = new JSContext();
@@ -2031,7 +2031,7 @@ public class CompilerTests
         AssertSyntaxError("""eval("await 10");""");
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Direct_Eval_In_Parameter_Defaults_Rejects_Var_Conflicts()
     {
         using var ctx = new JSContext();
@@ -2068,7 +2068,7 @@ public class CompilerTests
         Assert.Equal("SyntaxError|0|SyntaxError|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Direct_Eval_Arrow_Bodies_See_Lexical_Bindings()
     {
         using var ctx = new JSContext();
@@ -2092,7 +2092,7 @@ public class CompilerTests
         Assert.Equal("1|1|ReferenceError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Shadowed_Eval_Calls_Are_Not_Treated_As_Direct_Eval()
     {
         using var ctx = new JSContext();
@@ -2139,7 +2139,7 @@ public class CompilerTests
         Assert.Equal("2|1|3|1|4|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Functions_Created_Inside_With_Capture_With_Scope()
     {
         using var ctx = new JSContext();
@@ -2160,7 +2160,7 @@ public class CompilerTests
         Assert.Equal("1|3", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Var_Initializer_Inside_With_Updates_With_Object_Property()
     {
         using var ctx = new JSContext();
@@ -2186,7 +2186,7 @@ public class CompilerTests
         Assert.Equal("value|value", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Parse_Dot_Followed_By_Number_Is_Syntax_Error()
     {
         using var ctx = new JSContext();
@@ -2195,7 +2195,7 @@ public class CompilerTests
         Assert.Equal("SyntaxError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Update_Expressions_Modify_Captured_Variables()
     {
         using var ctx = new JSContext();
@@ -2217,7 +2217,7 @@ public class CompilerTests
         Assert.Equal("1|1|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_CallExpression_Update_Targets_Throw_ReferenceError_In_Sloppy_Mode()
     {
         using var ctx = new JSContext();
@@ -2260,7 +2260,7 @@ public class CompilerTests
         Assert.Equal("ReferenceError|1|0|ReferenceError|2|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_CallExpression_Update_Targets_Are_SyntaxError_In_Strict_Mode()
     {
         using var ctx = new JSContext();
@@ -2272,7 +2272,7 @@ public class CompilerTests
         Assert.Equal("SyntaxError", prefix.Error[KeyStrings.constructor][KeyStrings.name].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Strict_Update_Delete_With_And_Direct_Eval_Delete_Match_Test262()
     {
         using var ctx = new JSContext();
@@ -2349,7 +2349,7 @@ public class CompilerTests
     }
 
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Eval_Early_Errors_For_Invalid_Control_Flow_And_Super_Match_Test262()
     {
         using var ctx = new JSContext();
@@ -2397,7 +2397,7 @@ public class CompilerTests
         Assert.Equal("SyntaxError|SyntaxError|SyntaxError|false|262", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Direct_Eval_Delete_Preserves_Lexical_Nondeletable_And_Removes_Deletable_Vars()
     {
         using var ctx = new JSContext();
@@ -2413,7 +2413,7 @@ public class CompilerTests
         Assert.Equal("false|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Indirect_Eval_Global_Vars_Remain_Deletable_And_Frozen_Delete_Uses_Strict_Mode_Rules()
     {
         using var ctx = new JSContext();
@@ -2437,7 +2437,7 @@ public class CompilerTests
         Assert.Equal("true|false|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Map_And_Set_Constructors_Close_Iterators_When_Subclass_Mutators_Throw()
     {
         using var ctx = new JSContext();
@@ -2491,7 +2491,7 @@ public class CompilerTests
         Assert.Equal("true|setter throws|true|setter throws|true|adder throws|true|adder throws", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Default_Parameter_Self_Reference_Throws_ReferenceError()
     {
         using var ctx = new JSContext();
@@ -2506,7 +2506,7 @@ public class CompilerTests
         Assert.Equal("Cannot access 'x' before initialization", ex.Error[KeyStrings.message].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForOf_Iterator_Close_On_Break_And_Throw()
     {
         using var ctx = new JSContext();
@@ -2572,7 +2572,7 @@ public class CompilerTests
         Assert.Equal("false", result3);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Const_ForOf_Throws_TypeError_On_Assignment()
     {
         using var ctx = new JSContext();
@@ -2586,10 +2586,10 @@ public class CompilerTests
                 }
             })()
             """);
-        Assert.Equal(true, result.BooleanValue);
+        Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Const_ForStatement_Update_Throws_TypeError()
     {
         using var ctx = new JSContext();
@@ -2603,10 +2603,10 @@ public class CompilerTests
                 }
             })()
             """);
-        Assert.Equal(true, result.BooleanValue);
+        Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Const_ForStatement_ArrayDestructuring_Defaults_And_Elisions()
     {
         using var ctx = new JSContext();
@@ -2626,7 +2626,7 @@ public class CompilerTests
         Assert.Equal("1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Delete_String_Wrapper_Length_Throws_In_Strict_Mode()
     {
         using var ctx = new JSContext();
@@ -2640,10 +2640,10 @@ public class CompilerTests
                 }
             })()
             """);
-        Assert.Equal(true, result.BooleanValue);
+        Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Labeled_Block_Break_Preserves_Completion_Value()
     {
         using var ctx = new JSContext();
@@ -2651,7 +2651,7 @@ public class CompilerTests
         Assert.Equal("a", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Labeled_Block_Without_Break_Returns_Last_Expression()
     {
         using var ctx = new JSContext();
@@ -2659,7 +2659,7 @@ public class CompilerTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Statement_Completion_Preserves_Loop_Values()
     {
         using var ctx = new JSContext();
@@ -2673,7 +2673,7 @@ public class CompilerTests
         Assert.Equal(3.0, ctx.Eval("""eval("2; for (var v of [1]) { 3; }")""").DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Statement_Completion_Preserves_Nested_Statement_Values()
     {
         using var ctx = new JSContext();
@@ -2689,7 +2689,7 @@ public class CompilerTests
         Assert.True(ctx.Eval("""eval("5; do { 6; with({}) { break; } 7; } while (false)")""").IsUndefined);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Statement_Completion_Skips_Declarations_Ending_A_Loop_Body()
     {
         using var ctx = new JSContext();
@@ -2710,7 +2710,7 @@ public class CompilerTests
         Assert.True(ctx.Eval("1; for (var i = 0; i < 2; i++) var z = 9;", "x.js").IsUndefined);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Statement_Completion_Skips_Declarations_Ending_A_Branch_Case_Or_With_Body()
     {
         using var ctx = new JSContext();
@@ -2731,7 +2731,7 @@ public class CompilerTests
         Assert.True(ctx.Eval("1; with ({}) { var w = 3; }", "x.js").IsUndefined);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Labeled_Statement_Completes_With_Its_Items_Completion()
     {
         using var ctx = new JSContext();
@@ -2750,7 +2750,7 @@ public class CompilerTests
         Assert.True(ctx.Eval("1; L: { try { break L; } finally {} }", "x.js").IsUndefined);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Statement_Completion_Skips_Declarations_Ending_A_Body_In_Eval_Code()
     {
         using var ctx = new JSContext();
@@ -2761,7 +2761,7 @@ public class CompilerTests
         Assert.Equal(2.0, ctx.Eval("""(function () { "use strict"; return eval("1; switch (1) { case 1: 2; class K {} }"); })()""").DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task Compile_Labeled_Block_Break_Leaves_The_Block_In_Generators_And_Async_Functions()
     {
         using var ctx = new JSContext();
@@ -2790,7 +2790,7 @@ public class CompilerTests
         Assert.Equal("a,b,c,1", asyncFunction.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ScriptGoal_AllowsAwaitAsIdentifier()
     {
         using var ctx = new JSContext();
@@ -2799,7 +2799,7 @@ public class CompilerTests
         Assert.Equal(2.0, ctx.Eval("var await = 2; (function() { return await; })();").DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ClassStaticBlock_NestedFunctions_CanReferenceAwaitIdentifier()
     {
         using var ctx = new JSContext();
@@ -2821,7 +2821,7 @@ public class CompilerTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Duplicate_Params_Allowed_In_Non_Strict_Mode()
     {
         using var ctx = new JSContext();
@@ -2834,7 +2834,7 @@ public class CompilerTests
         Assert.Equal(2.0, result2.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Duplicate_Params_Rejected_In_Strict_Mode()
     {
         using var ctx = new JSContext();
@@ -2845,7 +2845,7 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval("(function(x,x) { 'use strict'; })"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_LastIndex_Is_Own_Data_Property()
     {
         using var ctx = new JSContext();
@@ -2866,7 +2866,7 @@ public class CompilerTests
         Assert.Equal(0.0, value.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Whitespace_Matches_Unicode_Zs_Characters()
     {
         using var ctx = new JSContext();
@@ -2883,7 +2883,7 @@ public class CompilerTests
         Assert.False(result3.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Duplicate_Params_Rejected_In_Arrow_Functions()
     {
         using var ctx = new JSContext();
@@ -2891,49 +2891,49 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval("(a, b, a) => a"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Duplicate_Params_Rejected_In_Generators()
     {
         using var ctx = new JSContext();
         Assert.ThrowsAny<Exception>(() => ctx.Eval("function* g(a, a) {}"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Duplicate_Params_Rejected_In_Async_Functions()
     {
         using var ctx = new JSContext();
         Assert.ThrowsAny<Exception>(() => ctx.Eval("async function f(a, a) {}"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Duplicate_Params_Rejected_In_Methods()
     {
         using var ctx = new JSContext();
         Assert.ThrowsAny<Exception>(() => ctx.Eval("({ m(a, a) {} })"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Duplicate_Params_Rejected_With_Rest()
     {
         using var ctx = new JSContext();
         Assert.ThrowsAny<Exception>(() => ctx.Eval("function f(a, ...a) {}"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Duplicate_Params_Rejected_With_Defaults()
     {
         using var ctx = new JSContext();
         Assert.ThrowsAny<Exception>(() => ctx.Eval("function f(a, a = 1) {}"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Line_Terminator_Before_Arrow_Rejected()
     {
         using var ctx = new JSContext();
         Assert.ThrowsAny<Exception>(() => ctx.Eval("(x)\n=> x"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Numeric_Literal_0x_Without_Digits_Rejected()
     {
         using var ctx = new JSContext();
@@ -2942,7 +2942,7 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval("0o"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Numeric_Separator_Invalid_Positions_Rejected()
     {
         using var ctx = new JSContext();
@@ -2950,7 +2950,7 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval("10__0"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Identifier_Start_After_Numeric_Literal_Rejected()
     {
         using var ctx = new JSContext();
@@ -2958,7 +2958,7 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval("1a"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Unicode_Escaped_Reserved_Word_Rejected_As_Identifier()
     {
         using var ctx = new JSContext();
@@ -2989,7 +2989,7 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval(source));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Function_Constructor_Rejects_Block_Method_Definition_Syntax()
     {
         using var ctx = new JSContext();
@@ -3007,7 +3007,7 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval(source));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Unicode_Escaped_Keyword_Allowed_As_Property_Name()
     {
         using var ctx = new JSContext();
@@ -3016,7 +3016,7 @@ public class CompilerTests
         Assert.Equal(7.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Getter_Must_Have_Zero_Params()
     {
         using var ctx = new JSContext();
@@ -3024,7 +3024,7 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval("class C { get x(a) { return a; } }"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Setter_Must_Have_Exactly_One_Param()
     {
         using var ctx = new JSContext();
@@ -3033,7 +3033,7 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval("({ set x(...a) {} })"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Delete_String_Index_Returns_False()
     {
         using var ctx = new JSContext();
@@ -3053,7 +3053,7 @@ public class CompilerTests
         Assert.False(result4.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reserved_Word_Shorthand_Destructuring_Throws()
     {
         using var ctx = new JSContext();
@@ -3067,7 +3067,7 @@ public class CompilerTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Catch_With_Array_Destructuring()
     {
         using var ctx = new JSContext();
@@ -3075,7 +3075,7 @@ public class CompilerTests
         Assert.Equal(6.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Catch_With_Object_Destructuring()
     {
         using var ctx = new JSContext();
@@ -3083,7 +3083,7 @@ public class CompilerTests
         Assert.Equal(30.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Catch_Without_Binding()
     {
         using var ctx = new JSContext();
@@ -3091,7 +3091,7 @@ public class CompilerTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Catch_Destructured_Eval_Binding_Rejected_In_Strict()
     {
         using var ctx = new JSContext();
@@ -3101,7 +3101,7 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval("'use strict'; try {} catch({x: eval}) {}"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnnexB_Eval_Block_Function_Skip_Early_Err_Try_Destructured_Catch()
     {
         using var ctx = new JSContext();
@@ -3140,7 +3140,7 @@ public class CompilerTests
         Assert.Equal("ReferenceError", ex3.Error[KeyStrings.constructor][KeyStrings.name].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnnexB_Eval_Block_Function_No_Skip_Try_Simple_Catch()
     {
         using var ctx = new JSContext();
@@ -3154,7 +3154,7 @@ public class CompilerTests
         Assert.Equal("true|function|123", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnnexB_Global_Block_Function_No_Skip_Try_Simple_Catch()
     {
         // B.3.3.2 / B.3.5: a block-scoped function declaration nested inside a
@@ -3182,7 +3182,7 @@ public class CompilerTests
         Assert.Equal("true|function|123", switchCase.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnnexB_Eval_Global_Switch_Function_No_Skip_Try_Simple_Catch()
     {
         using var ctx = new JSContext();
@@ -3343,7 +3343,7 @@ public class CompilerTests
 
     #region FnNameCover
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FnNameCover_VarDeclaration_CommaExpression_DoesNotInferName()
     {
         using var ctx = new JSContext();
@@ -3351,7 +3351,7 @@ public class CompilerTests
         Assert.Equal("", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FnNameCover_LetDeclaration_CommaExpression_DoesNotInferName()
     {
         using var ctx = new JSContext();
@@ -3359,7 +3359,7 @@ public class CompilerTests
         Assert.Equal("", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FnNameCover_Assignment_CommaExpression_DoesNotInferName()
     {
         using var ctx = new JSContext();
@@ -3367,7 +3367,7 @@ public class CompilerTests
         Assert.Equal("", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FnNameCover_DirectFunctionExpression_InfersName()
     {
         using var ctx = new JSContext();
@@ -3379,7 +3379,7 @@ public class CompilerTests
 
     #region TaggedTemplateCaching
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TaggedTemplate_SameSourcePosition_ReturnsSameObject()
     {
         using var ctx = new JSContext();
@@ -3389,10 +3389,10 @@ public class CompilerTests
             for (var i = 0; i < 2; i++) results.push(tag`hello`);
             results[0] === results[1];
         ");
-        Assert.Equal(true, result.BooleanValue);
+        Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TaggedTemplate_Object_IsFrozen()
     {
         using var ctx = new JSContext();
@@ -3400,14 +3400,14 @@ public class CompilerTests
             function tag(t) { return t; }
             Object.isFrozen(tag`hello`);
         ");
-        Assert.Equal(true, result.BooleanValue);
+        Assert.True(result.BooleanValue);
     }
 
     #endregion
 
     #region Prefix Update Expression
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PrefixIncrement_NonWritableProperty_ReturnsNewValue()
     {
         using var ctx = new JSContext();
@@ -3421,7 +3421,7 @@ public class CompilerTests
         Assert.Equal(2.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PrefixDecrement_NonWritableProperty_ReturnsNewValue()
     {
         using var ctx = new JSContext();
@@ -3433,7 +3433,7 @@ public class CompilerTests
         Assert.Equal(0.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PrefixIncrement_NonWritableProperty_StrictMode_ThrowsTypeError()
     {
         using var ctx = new JSContext();
@@ -3445,7 +3445,7 @@ public class CompilerTests
         "));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void UpdateExpression_ComputedMembers_Null_Base_Throws_TypeError_Before_ToPropertyKey()
     {
         using var ctx = new JSContext();
@@ -3510,7 +3510,7 @@ public class CompilerTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ComputedMemberExpression_Null_Undefined_Throws_TypeError_Before_ToPropertyKey()
     {
         using var ctx = new JSContext();
@@ -3559,7 +3559,7 @@ public class CompilerTests
 
     #region Octal Escapes in Strict Mode
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void OctalEscape_08_StrictMode_ThrowsSyntaxError()
     {
         using var ctx = new JSContext();
@@ -3569,7 +3569,7 @@ public class CompilerTests
         ));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void OctalEscape_8_StrictMode_ThrowsSyntaxError()
     {
         using var ctx = new JSContext();
@@ -3579,7 +3579,7 @@ public class CompilerTests
         ));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void OctalEscape_08_SloppyMode_Parses()
     {
         using var ctx = new JSContext();
@@ -3592,7 +3592,7 @@ public class CompilerTests
 
     #region Function Declarations in Statement Bodies
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FunctionDeclaration_InIf_SloppyMode_Parses()
     {
         using var ctx = new JSContext();
@@ -3605,7 +3605,7 @@ public class CompilerTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FunctionDeclaration_InWhile_SloppyMode_ThrowsSyntaxError()
     {
         using var ctx = new JSContext();
@@ -3615,7 +3615,7 @@ public class CompilerTests
         Assert.Throws<JSException>(() => ctx.Eval("(function() { while (false) function f() {} })()"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FunctionDeclaration_InWhile_StrictMode_ThrowsSyntaxError()
     {
         using var ctx = new JSContext();
@@ -3628,7 +3628,7 @@ public class CompilerTests
     #endregion
     #region Issue 475 TypeError propagation
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_NewTarget_Call_Without_Constructor_Throws_TypeError()
     {
         using var ctx = new JSContext();
@@ -3646,7 +3646,7 @@ public class CompilerTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ForOf_ArrayPattern_With_NonCallable_ArrayIterator_Throws_TypeError()
     {
         using var ctx = new JSContext();
@@ -3670,7 +3670,7 @@ public class CompilerTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Empty_Object_Destructuring_Null_ForOf_Throws_TypeError()
     {
         using var ctx = new JSContext();
@@ -3691,7 +3691,7 @@ public class CompilerTests
     }
 
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ForOf_ArrayDestructuring_Preserves_TypeError_When_IteratorReturn_Throws()
     {
         using var ctx = new JSContext();
@@ -3723,7 +3723,7 @@ public class CompilerTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ArrayDestructuring_Assignment_Preserves_TypeError_When_IteratorReturn_Throws()
     {
         using var ctx = new JSContext();
@@ -3754,7 +3754,7 @@ public class CompilerTests
     }
 
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_FunctionBind_NonCallableFunctionPrototypeInstance_ThrowsTypeError()
     {
         using var ctx = new JSContext();
@@ -3776,7 +3776,7 @@ public class CompilerTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ClassComputedInstanceFieldName_ToPrimitiveTypeError_HappensAtDefinition()
     {
         using var ctx = new JSContext();
@@ -3800,7 +3800,7 @@ public class CompilerTests
         Assert.Equal("TypeError|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ClassComputedStaticFieldName_ToPrimitiveTypeError_PrecedesInitializer()
     {
         using var ctx = new JSContext();
@@ -3824,7 +3824,7 @@ public class CompilerTests
         Assert.Equal("TypeError|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_ClassComputedFieldNames_FromArrowFunctionExpressions_Are_Evaluated()
     {
         using var ctx = new JSContext();
@@ -3849,7 +3849,7 @@ public class CompilerTests
 
     #endregion
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Assignment_WithScope_Uses_Initial_ObjectReference()
     {
         using var ctx = new JSContext();
@@ -3878,7 +3878,7 @@ public class CompilerTests
         Assert.Equal("1|5|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Strict_WithScope_PutValue_Rechecks_Deleted_Bindings()
     {
         using var ctx = new JSContext();
@@ -3947,7 +3947,7 @@ public class CompilerTests
         Assert.Equal("ReferenceError|1|false|ReferenceError|1|false|ReferenceError|1|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_UpdateExpression_WithScope_Uses_Initial_ObjectReference()
     {
         using var ctx = new JSContext();
@@ -3975,7 +3975,7 @@ public class CompilerTests
         Assert.Equal("2|0|0|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_TailPosition_Call_Uses_Trampoline()
     {
         using var ctx = new JSContext(options: new JSContextOptions { ScriptHostMode = true });
@@ -3998,7 +3998,7 @@ public class CompilerTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Compile_Generator_TryFinally_Propagates_Throw_After_Yield()
     {
         using var ctx = new JSContext();

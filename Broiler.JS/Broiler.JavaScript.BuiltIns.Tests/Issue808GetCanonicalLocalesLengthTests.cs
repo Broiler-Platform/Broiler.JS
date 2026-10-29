@@ -18,7 +18,7 @@ public class Issue808GetCanonicalLocalesLengthTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NegativeLength_ReturnsEmpty_AndDoesNotReadIndex()
         => Assert.Equal("[]", Eval("""
             var l = { length: -Math.pow(2, 32) + 1 };
@@ -26,7 +26,7 @@ public class Issue808GetCanonicalLocalesLengthTests
             JSON.stringify(Intl.getCanonicalLocales(l));
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NegativeInfinityLength_ReturnsEmpty()
         => Assert.Equal("[]", Eval("""
             var l = { "0": "en-US" };
@@ -34,7 +34,7 @@ public class Issue808GetCanonicalLocalesLengthTests
             JSON.stringify(Intl.getCanonicalLocales(l));
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SymbolLength_ThrowsTypeError()
         => Assert.Equal("TypeError", Eval("""
             var l = { "0": "en-US" };
@@ -56,7 +56,7 @@ public class Issue808GetCanonicalLocalesLengthTests
             JSON.stringify(Intl.getCanonicalLocales(l));
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LengthGetter_ReadOnce()
         => Assert.Equal("[]|1", Eval("""
             var count = 0;

@@ -29,7 +29,7 @@ public class SharedTemporalDurationsTests
     public void AddWithCalendarUnitsIsARangeError(string code)
         => Assert.Equal("RangeError", ErrorName(code));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AddReadsNoSecondArgument()
         => Assert.Equal("PT2H,PT0S,", Eval("""
             var reads = [];
@@ -40,7 +40,7 @@ public class SharedTemporalDurationsTests
 
     // Row D4: compare relative to a plain date adds only the years, months and weeks (DateDurationDays), so no
     // date-time limit is involved.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void CompareRelativeToAPlainDateHasNoDateTimeLimit()
         => Assert.Equal("1,1", Eval("""
             [Temporal.Duration.compare({years: 1, seconds: 9e15}, {years: 1}, {relativeTo: '2020-01-01'}),
@@ -83,7 +83,7 @@ public class SharedTemporalDurationsTests
         => Assert.Equal(expected, Eval($"({code}).toString()"));
 
     // Row F7: a ZonedDateTime difference rounded to days measures the zone's real days (New York's 23-hour day).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ZonedDayRoundingMeasuresRealDays()
         => Assert.Equal("P1D", Eval("""
             Temporal.ZonedDateTime.from('2026-03-07T12:00-05:00[America/New_York]')
@@ -99,7 +99,7 @@ public class SharedTemporalDurationsTests
     public void ADayWindowAZoneSkipsIsARangeError(string code)
         => Assert.Equal("RangeError", ErrorName($"var apia = Temporal.ZonedDateTime.from('2011-12-31T16:15+14:00[Pacific/Apia]'); {code};"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ADayWindowThatDoesNotReachTheSkippedDayAnswers()
         => Assert.Equal("PT0S,PT16H15M", Eval("""
             var apia = Temporal.ZonedDateTime.from('2011-12-31T16:15+14:00[Pacific/Apia]');

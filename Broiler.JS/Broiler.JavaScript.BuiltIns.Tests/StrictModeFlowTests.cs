@@ -18,7 +18,7 @@ public class StrictModeFlowTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StrictCallee_FromSloppyCaller_ThrowsOnFailingSet()
     {
         var result = Eval("""
@@ -31,7 +31,7 @@ public class StrictModeFlowTests
         Assert.Equal("TypeError", result);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SloppyCallee_FromStrictCaller_DoesNotInheritStrictSetSemantics()
     {
         // A sloppy callee entered from strict code must drop back to non-strict, so its
@@ -49,7 +49,7 @@ public class StrictModeFlowTests
         Assert.Equal("no-throw|1", result);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StrictnessIsRestored_AfterANestedSloppyCall()
     {
         var result = Eval("""
@@ -66,7 +66,7 @@ public class StrictModeFlowTests
         Assert.Equal("inner-ok|TypeError", result);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StrictnessIsRestored_AfterANestedStrictCall()
     {
         var result = Eval("""
@@ -82,7 +82,7 @@ public class StrictModeFlowTests
         Assert.Equal("inner-ok|no-throw", result);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DeepSameStrictnessNesting_KeepsTheFlag()
     {
         // No transition occurs anywhere in this chain, which is the case the scope
@@ -99,7 +99,7 @@ public class StrictModeFlowTests
         Assert.Equal("TypeError", result);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncAndGeneratorBodiesEnterRuntimeStrictMode()
     {
         // An async or generator body runs its code during the rewritten driver's steps, not
@@ -150,7 +150,7 @@ public class StrictModeFlowTests
         Assert.Equal("TypeError", ordinary);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ClassBodiesAreAlwaysStrict()
     {
         var result = Eval("""

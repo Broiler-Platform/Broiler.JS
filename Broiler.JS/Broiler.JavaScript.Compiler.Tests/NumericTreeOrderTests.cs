@@ -43,7 +43,7 @@ public sealed class NumericTreeOrderTests
         }
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheSwitchDefaultsOn()
     {
         Assert.True(NumericTreeOrdering.Enabled);
@@ -217,7 +217,7 @@ public sealed class NumericTreeOrderTests
             """, ordered));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheOrderedFormSpecializesTheTreeTheHoistingFormRefuses()
     {
         // The counter assertion, because every fixture above also passes when nothing specializes.
@@ -236,7 +236,7 @@ public sealed class NumericTreeOrderTests
         Assert.Equal(2, ordered.SpeculativeNumericGuards);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheOrderUnsafeRefusalIsWhatTheOrderedFormRemoves()
     {
         // The refusal waterfall, asserted rather than only reported: a left-leaning chain of four
@@ -257,7 +257,7 @@ public sealed class NumericTreeOrderTests
         Assert.Equal(4, ordered.SpeculativeNumericGuards);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheOrderBlockerSubCensusNamesTheLeafKind()
     {
         // The sub-census reads against the OrderUnsafe row one for one, so it has to attribute the

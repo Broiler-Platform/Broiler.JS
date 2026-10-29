@@ -3,7 +3,6 @@ using System.Globalization;
 using Broiler.ECMAScript.Conformance;
 using Broiler.ECMAScript.Runners;
 using Broiler.JavaScript.Vectors.Tests.Runners;
-using Xunit.Abstractions;
 
 namespace Broiler.JavaScript.Vectors.Tests;
 

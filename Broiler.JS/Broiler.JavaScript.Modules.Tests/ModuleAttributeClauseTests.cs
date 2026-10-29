@@ -63,7 +63,7 @@ public class ModuleAttributeClauseTests
 
     // ---- AttributeKey may be a StringLiteral, not only an identifier ----
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("import d from './data.json' with { \"type\": 'json' }; globalThis.r = d.a;")]
     [InlineData("import d from './data.json' with { type: 'json' }; globalThis.r = d.a;")]
     [InlineData("import d from './data.json' with { \"type\": \"json\" }; globalThis.r = d.a;")]
@@ -72,42 +72,42 @@ public class ModuleAttributeClauseTests
 
     /// <summary>An empty clause is legal and constrains nothing, so it is the one clause a
     /// JavaScript module can carry.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnEmptyClauseIsAccepted()
         => Assert.Equal("1", await Run("import { a } from './dep.js' with { }; globalThis.r = a;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ADefaultImportTakesAttributes()
         => Assert.Equal("1", await Run(
             "import d from './data.json' with { \"type\": 'json' }; globalThis.r = d.a;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ANamespaceImportTakesAttributes()
         => Assert.Equal("1", await Run(
             "import * as ns from './data.json' with { type: 'json' }; globalThis.r = ns.default.a;"));
 
     // ---- Every export `from` form takes a WithClause too ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AReExportClauseTakesAttributes()
         => Assert.Equal("1", await Run(
             "export { default as d } from './data.json' with { type: 'json' };"
             + "import { a } from './dep.js'; globalThis.r = a;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AStarReExportTakesAttributes()
         => Assert.Equal("3", await Run(
             "export * from './data.json' with { \"type\": 'json' };"
             + "import { a, b } from './dep.js'; globalThis.r = a + b;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AStarAsNamespaceReExportTakesAttributes()
         => Assert.Equal("1", await Run(
             "export * as ns from './data.json' with { type: 'json' };"
             + "import { a } from './dep.js'; globalThis.r = a;"));
 
     // A malformed clause is still rejected: the value must be a string literal.
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("import { a } from './dep.js' with { type: javascript };")]
     [InlineData("import { a } from './dep.js' with { type };")]
     public async Task AMalformedAttributeClauseIsRejected(string main)

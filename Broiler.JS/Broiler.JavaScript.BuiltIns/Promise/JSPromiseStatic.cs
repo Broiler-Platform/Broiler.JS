@@ -423,9 +423,6 @@ public partial class JSPromise
         var constructor = a.This;
         return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
         {
-            var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
-                ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
-
             // Per §27.2.4.5, an abrupt completion while obtaining the constructor's
             // "resolve" method, or while obtaining or stepping the iterable (e.g. a
             // throwing @@iterator, next, or result-property access), must reject the

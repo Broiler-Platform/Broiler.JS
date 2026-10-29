@@ -29,11 +29,11 @@ public class Issue808TurkicLowercaseTests
     public void PlainI_LowercasesToDotlessI(string locale)
         => Assert.Equal("true", Eval($"String('I'.toLocaleLowerCase('{locale}') === '\\u0131');"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IDotAbove_InContext()
         => Assert.Equal("aib", Eval("'A\\u0049\\u0307B'.toLocaleLowerCase('tr');"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NonTurkicLocale_KeepsCombiningDot()
         => Assert.Equal("true", Eval("String('\\u0049\\u0307'.toLocaleLowerCase('en') === '\\u0069\\u0307');"));
 }

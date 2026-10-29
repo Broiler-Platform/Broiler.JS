@@ -106,7 +106,7 @@ public class ImportAttributeEnforcementTests
 
     /// <summary><c>type</c> is the only key the platform defines. An unknown one is an early
     /// SyntaxError on a static declaration, exactly as in a browser.</summary>
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("import d from './mod.js' with { flavour: 'x' };", "flavour")]
     [InlineData("import d from './data.json' with { type: 'json', extra: '1' };", "extra")]
     [InlineData("import d from './mod.js' with { assert: 'json' };", "assert")]
@@ -117,7 +117,7 @@ public class ImportAttributeEnforcementTests
 
     /// <summary>A duplicate key is a Syntax Error in the proposal itself, whichever spelling the
     /// two keys use.</summary>
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("import d from './mod.js' with { type: 'json', type: 'json' };")]
     [InlineData("import d from './mod.js' with { type: 'json', \"type\": 'json' };")]
     [InlineData("export { x } from './mod.js' with { \"type\": 'json', type: 'json' };")]
@@ -126,7 +126,7 @@ public class ImportAttributeEnforcementTests
 
     /// <summary>The module-type vocabulary is the platform's, so a value outside it is a typo and
     /// says so — at load time, because only the module can settle it.</summary>
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("import d from './mod.js' with { type: 'bogus' };", "bogus")]
     [InlineData("import d from './data.json' with { type: 'javascript' };", "javascript")]
     [InlineData("export * as n from './mod.js' with { type: 'nope' };", "nope")]
@@ -137,7 +137,7 @@ public class ImportAttributeEnforcementTests
     /// <c>css</c> is a real module type and a real capability this engine does not have, so it is
     /// told apart from a typo: a page can distinguish "not implemented here" from "not a thing".
     /// </summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ACssModuleTypeIsRejectedAsUnimplementedRatherThanAsATypo()
         => Assert.Equal("TypeError|CSS module scripts are not implemented.",
             await ErrorFrom("import d from './mod.js' with { type: 'css' };"));
@@ -148,7 +148,7 @@ public class ImportAttributeEnforcementTests
     /// checks the response MIME type; this host has no MIME types and checks the resolved module
     /// key, which is the same fact by the only means available — it is what decided the module
     /// would be parsed as JSON in the first place.</summary>
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("import d from './mod.js' with { type: 'json' };")]
     [InlineData("export { x } from './mod.js' with { type: 'json' };")]
     [InlineData("export * from './mod.js' with { type: 'json' };")]
@@ -160,7 +160,7 @@ public class ImportAttributeEnforcementTests
     }
 
     /// <summary>A matching assertion loads, on every import form that takes a clause.</summary>
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("import d from './data.json' with { type: 'json' }; globalThis.r = d.a;", "1")]
     [InlineData("import * as ns from './data.json' with { type: 'json' }; globalThis.r = Object.keys(ns).join(',');", "default")]
     [InlineData("import d from './mod.js' with { }; globalThis.r = d;", "9")]
@@ -174,7 +174,7 @@ public class ImportAttributeEnforcementTests
     /// the same file read through <c>require</c>, which has no attributes at all and must keep
     /// agreeing with it.
     /// </summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AJsonModuleWithNoAttributeStillLoads()
         => Assert.Equal("1|1", await Run(
             "import d from './data.json'; import r from './reader.cjs'; globalThis.r = d.a + '|' + r.json.a;"));
@@ -183,12 +183,12 @@ public class ImportAttributeEnforcementTests
 
     /// <summary>A dynamic import's keys are a runtime value, so the key check that is an early
     /// SyntaxError on a declaration is a TypeError here — as in a browser.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ADynamicImportReportsABadKeyAsATypeError()
         => Assert.Equal("TypeError|Invalid attribute key \"flavour\".",
             await DynamicError("await import('./mod.js', { with: { flavour: 'x' } })"));
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("await import('./mod.js', 'nonsense')", "The second argument to import() must be an object")]
     [InlineData("await import('./mod.js', null)", "The second argument to import() must be an object")]
     [InlineData("await import('./mod.js', { with: 5 })", "The 'with' option must be an object")]
@@ -201,7 +201,7 @@ public class ImportAttributeEnforcementTests
 
     /// <summary>Options that assert nothing are not an error: no second argument, an options object
     /// with no <c>with</c>, and a matching assertion all load.</summary>
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("await import('./mod.js')", "OK:default,x")]
     [InlineData("await import('./mod.js', { other: 1 })", "OK:default,x")]
     [InlineData("await import('./mod.js', { with: { } })", "OK:default,x")]
@@ -212,7 +212,7 @@ public class ImportAttributeEnforcementTests
     /// <summary><c>require</c> takes no attributes and is untouched by any of this. It exists only
     /// in CommonJS code, and it loads CommonJS: a file written as an ECMAScript module does not
     /// parse as one, so requiring it is a SyntaxError.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task RequireIsUnaffected()
         => Assert.Equal("{\"a\":1}|SyntaxError", await Run(
             "import r from './reader.cjs'; globalThis.r = JSON.stringify(r.json) + '|' + r.esm;"));

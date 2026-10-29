@@ -170,7 +170,7 @@ public sealed class SharedDateAlgorithmNewYorkTests : IDisposable
     public void Dispose()
     {
         Environment.SetEnvironmentVariable("TZ", "UTC");
-        TimeZoneInfo.ClearCachedData();
+        TestCultureInitializer.SetLocalTimeZone(TimeZoneInfo.Utc);
     }
 
     private static string Eval(string source) => SharedDateAlgorithmTests.Eval(source);

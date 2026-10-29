@@ -92,6 +92,10 @@ aims to pass nearly the full suite, and conformance is tracked continuously in C
 
 ## Building and testing
 
+Tests use xUnit v3 with the existing VSTest CLI and a process hang watchdog.
+See the [migration and ILCompiler investigation](docs/xunit-v3-migration.md)
+for runner compatibility, warning fixes and the SDK-managed Native AOT version.
+
 Restore and run the .NET test projects:
 
 ```bash

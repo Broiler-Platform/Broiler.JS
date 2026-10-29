@@ -68,14 +68,14 @@ public class ChainBoundaryCallTests
     public void AnOptionalCallStillShortCircuits(string expression, string expected)
         => Assert.Equal(expected, Run(expression));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void APrivateMethodInAParenthesisedChain()
         => Assert.Equal("self [] | threw TypeError []", Eval(
             Fixture +
             " class C { #m() { return this === c ? 'self' : 'other'; } t(x) { return (x?.#m)(); } }" +
             " var c = new C(); run(function () { return c.t(c); }) + ' | ' + run(function () { return c.t(null); })"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheSameHoldsInAGeneratorAndInAnAsyncFunction()
     {
         // The arguments of a generator's call are where it suspends: the call throws once they are in.

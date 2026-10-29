@@ -43,7 +43,7 @@ public class RegExpUnicodeRoutingTests
     public void InClassCaseFoldingUnderUnicode_NowMatches(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SingleCharQuantifierOverALongSubject_MatchesNativelyViaTheIterativePath()
     {
         // /a+/u over 100k characters is a single-code-point body, so Broiler repeats it
@@ -56,7 +56,7 @@ public class RegExpUnicodeRoutingTests
         Assert.Equal("100000", Eval("'x'.repeat(100000).match(/.*/u)[0].length + ''"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ComplexBodyQuantifierOverALongSubject_MatchesNativelyViaTheIterativeDriver()
     {
         // A capturing-group body is not eligible for the fast path; it runs through the
@@ -68,7 +68,7 @@ public class RegExpUnicodeRoutingTests
         Assert.Equal("100000", Eval("'ab'.repeat(50000).match(/(?:ab|a)+/u)[0].length + ''"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NonUnicodePatterns_StayOnTheNetEngine()
     {
         // Widening is Unicode-only; a plain non-Unicode pattern keeps the fast .NET path and

@@ -7,6 +7,8 @@
     probe runs the vectors, not these.
   -->
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <StartupObject>Broiler.ECMAScript.Algorithms.Tests.ReferenceArms.Program</StartupObject>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <!-- A test project is not a library the Native AOT probe runs; xunit discovers by reflection. -->
@@ -19,9 +21,15 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" />
-    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />

@@ -8,7 +8,7 @@ namespace Broiler.JavaScript.Debugger.Tests;
 
 public class DebuggerTests
 {
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void V8RemoteObject_FromNumber_HasNumberType()
     {
         using var ctx = new JSContext();
@@ -17,14 +17,14 @@ public class DebuggerTests
         Assert.Equal("number", remote.Type);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void V8RemoteObject_FromString_HasStringType()
     {
         var remote = new V8RemoteObject("test");
         Assert.Equal("string", remote.Type);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void V8CallFrame_DefaultValues()
     {
         var frame = new V8CallFrame();
@@ -35,7 +35,7 @@ public class DebuggerTests
     // The engine's lines and columns are 1-based (SpanLocation); the DevTools protocol's
     // columnNumber is 0-based, so a call indented by two spaces reports column 2. (The line stays
     // 1-based here, as it was before the scanner's columns were made consistent.)
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void V8StackTrace_ReportsZeroBasedColumns()
     {
         using var ctx = new JSContext();
@@ -81,7 +81,7 @@ public class DebuggerTests
     // Runtime.callFunctionOn compile a script without top-level await under the options of the context
     // they target, also when they are called while that context runs a program EvalWithTopLevelAwaitAsync
     // was given. Before, that program's permission was an ambient scope, and their compiles took it.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task The_runtime_domain_compiles_without_top_level_await_while_a_program_with_it_runs()
     {
         using var ctx = new JSContext();

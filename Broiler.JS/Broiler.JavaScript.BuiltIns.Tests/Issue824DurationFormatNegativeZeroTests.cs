@@ -17,7 +17,7 @@ public class Issue824DurationFormatNegativeZeroTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NegativeZeroMatchesPositiveZero()
     {
         var r = Eval("""

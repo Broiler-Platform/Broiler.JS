@@ -81,7 +81,7 @@ public class SharedTimeZoneTests
     public void The_retired_time_zone_data_is_gone()
     {
         Assert.Equal(
-            Tables.Select(static row => ResourcePrefix + (string)row[0]).OrderBy(static name => name, StringComparer.Ordinal),
+            Tables.Select(static row => ResourcePrefix + row.Data).OrderBy(static name => name, StringComparer.Ordinal),
             BuiltIns.GetManifestResourceNames().Where(static name => name.Contains("TimeData", StringComparison.Ordinal) || name.Contains("tzdata", StringComparison.Ordinal))
                 .OrderBy(static name => name, StringComparer.Ordinal));
 
@@ -265,7 +265,7 @@ public sealed class SharedTimeZoneHostTests : IDisposable
     public void Dispose()
     {
         Environment.SetEnvironmentVariable("TZ", "UTC");
-        TimeZoneInfo.ClearCachedData();
+        TestCultureInitializer.SetLocalTimeZone(TimeZoneInfo.Utc);
     }
 
     // A15: Date and Temporal read one zone from one dataset; after 2037 both continue New York's rules.

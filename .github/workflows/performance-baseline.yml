@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
     env:
@@ -50,28 +50,28 @@ jobs:
         run: python -m unittest discover -s scripts/performance/tests -v
 
       - name: Validate Phase 2 collection and element invariants
-        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        if: matrix.os == 'ubuntu-24.04' && env.PROFILE == 'smoke'
         run: |
           dotnet test Broiler.JS/Broiler.JavaScript.Storage.Tests/Broiler.JavaScript.Storage.Tests.csproj -c Release -m:1
           dotnet test Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Broiler.JavaScript.BuiltIns.Tests.csproj -c Release -m:1 --filter Phase2CollectionsAndArraysTests
 
       - name: Validate Phase 3 compiler specialization and invalidation
-        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        if: matrix.os == 'ubuntu-24.04' && env.PROFILE == 'smoke'
         run: dotnet test Broiler.JS/Broiler.JavaScript.Compiler.Tests/Broiler.JavaScript.Compiler.Tests.csproj -c Release -m:1 --filter Phase3CompilerSpecializationTests
 
       - name: Validate Phase 4 startup profiles and lazy data properties
-        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        if: matrix.os == 'ubuntu-24.04' && env.PROFILE == 'smoke'
         run: dotnet test Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Broiler.JavaScript.BuiltIns.Tests.csproj -c Release -m:1 --filter Phase4StartupAndPackagingTests
 
       - name: Validate Phase 5 tiering and portable execution
-        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        if: matrix.os == 'ubuntu-24.04' && env.PROFILE == 'smoke'
         run: |
           dotnet test Broiler.JS/Broiler.JavaScript.Compiler.Tests/Broiler.JavaScript.Compiler.Tests.csproj -c Release -m:1 --filter Phase5AdvancedExecutionTests
           dotnet test Broiler.JS/Broiler.JavaScript.Runtime.Tests/Broiler.JavaScript.Runtime.Tests.csproj -c Release -m:1 --filter Phase5TaggedValuePrototypeTests
           dotnet test Broiler.JS/Broiler.JavaScript.Portable.Tests/Broiler.JavaScript.Portable.Tests.csproj -c Release -m:1
 
       - name: Validate pristine package consumer
-        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        if: matrix.os == 'ubuntu-24.04' && env.PROFILE == 'smoke'
         run: python scripts/packaging/test_pristine_consumer.py
 
       - name: Collect evidence
@@ -100,7 +100,7 @@ jobs:
         run: python scripts/performance/collect_phase5.py --output artifacts/performance/phase5
 
       - name: Verify deterministic generated output
-        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        if: matrix.os == 'ubuntu-24.04' && env.PROFILE == 'smoke'
         run: python scripts/performance/check_generator_determinism.py --output artifacts/performance/generator-determinism.json
 
       - name: Upload raw evidence

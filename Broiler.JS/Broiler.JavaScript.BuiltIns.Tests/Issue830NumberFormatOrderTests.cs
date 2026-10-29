@@ -20,7 +20,7 @@ public class Issue830NumberFormatOrderTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FullOptionReadOrder()
     {
         var r = Eval("""
@@ -47,7 +47,7 @@ public class Issue830NumberFormatOrderTests
         Assert.Equal("ok", r);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberingSystemReadBeforeStyle()
     {
         var r = Eval("""

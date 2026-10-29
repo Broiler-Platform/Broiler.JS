@@ -84,7 +84,7 @@ public class EvalEventDispatchTests
         Assert.Equal($"SyntaxError:true:{Refusal}", Read(ctx, "r"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnUncaughtRefusalOfAZeroArgumentFunctionReachesTheHost()
     {
         Load();
@@ -97,7 +97,7 @@ public class EvalEventDispatchTests
 
     // The host is asked before GetPrototypeFromConstructor reads newTarget.prototype, which this engine
     // defers until after the function is built.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ARefusalComesBeforeNewTargetPrototypeIsRead()
     {
         Load();
@@ -146,7 +146,7 @@ public class EvalEventDispatchTests
 
     // A handler may rewrite what is compiled on the other routes, so it may here too: a rewritten empty
     // body is compiled like any other body rather than discarded by the shortcut.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AZeroArgumentBodyRewrittenByAHandlerIsCompiled()
     {
         Load();
@@ -168,7 +168,7 @@ public class EvalEventDispatchTests
 
     // Constructing a ShadowRealm compiles nothing and asks nothing; evaluate asks the context that
     // constructed it, which here is also the caller.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ShadowRealmEvaluateRaisesEvalEventOnTheContextThatConstructedIt()
     {
         Load();
@@ -191,7 +191,7 @@ public class EvalEventDispatchTests
     // context that calls evaluate on another context's ShadowRealm is answered by the context that built
     // it: a caller that permits compilation cannot compile a string into a ShadowRealm that a refusing
     // context made, and the refusal still reaches the caller as the host threw it.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ShadowRealmEvaluateAsksTheContextThatConstructedTheShadowRealm()
     {
         Load();
@@ -214,7 +214,7 @@ public class EvalEventDispatchTests
 
     // The source is deliberately unparseable: a refusal raised after the parse, or inside the parse's
     // catch, would surface as evaluate's own "could not be parsed" SyntaxError instead.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ARefusalOfShadowRealmEvaluateReachesTheCallerAsTheHandlerThrewIt()
     {
         Load();
@@ -231,7 +231,7 @@ public class EvalEventDispatchTests
     }
 
     // A handler may rewrite what evaluate compiles, as it may on every other route.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AShadowRealmSourceRewrittenByAHandlerIsTheOneEvaluated()
     {
         Load();
@@ -251,7 +251,7 @@ public class EvalEventDispatchTests
     // that lets evaluate's own string through is still asked about each string that string compiles -
     // eval, the Function constructors and a nested ShadowRealm's evaluate - and a selective refusal
     // reaches the code inside the child (JSD-0030 follow-up SR-6).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void CodeInsideAShadowRealmAsksTheContextThatConstructedIt()
     {
         Load();
@@ -285,7 +285,7 @@ public class EvalEventDispatchTests
     }
 
     // A guard, green before and after: the receiver and argument checks come before the host is asked.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ShadowRealmChecksItsReceiverAndArgumentBeforeAskingTheHost()
     {
         Load();

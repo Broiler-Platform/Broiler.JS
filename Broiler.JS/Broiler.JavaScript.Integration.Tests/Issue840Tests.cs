@@ -22,19 +22,19 @@ public class Issue840Tests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpPrototypeIsNonWritable()
         => Assert.Equal("false", Eval("Object.getOwnPropertyDescriptor(RegExp, 'prototype').writable"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpPrototypeIsNonEnumerable()
         => Assert.Equal("false", Eval("Object.getOwnPropertyDescriptor(RegExp, 'prototype').enumerable"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpPrototypeIsNonConfigurable()
         => Assert.Equal("false", Eval("Object.getOwnPropertyDescriptor(RegExp, 'prototype').configurable"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpPrototypeIsDataDescriptorWithoutAccessors()
         => Assert.Equal("false", Eval(
             "(function () {" +
@@ -42,7 +42,7 @@ public class Issue840Tests
             "  return d.hasOwnProperty('get') || d.hasOwnProperty('set');" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AssigningRegExpPrototypeIsRejectedInStrictMode()
         => Assert.Equal("true", Eval(
             "(function () {" +
@@ -51,7 +51,7 @@ public class Issue840Tests
             "  catch (e) { return e instanceof TypeError; }" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpStillConstructsAndMatches()
         => Assert.Equal("true", Eval("/a(b)c/.test('abc')"));
 
@@ -105,13 +105,13 @@ public class Issue840Tests
     public void TimeTotalBelowTwoPow53SecondsIsValid(string durationLiteral)
         => Assert.Equal("true", FormatsWithoutThrowing(durationLiteral));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void CombinedTimeFieldsExceedingTheLimitThrow()
         => Assert.Equal("true", ThrowsRange(
             "{ days: 104249991374, hours: 7, minutes: 36, seconds: 31, " +
             "milliseconds: 999, microseconds: 999, nanoseconds: 1000 }"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void OrdinaryDurationStillFormats()
         => Assert.Equal("true", FormatsWithoutThrowing("{ hours: 1, minutes: 30 }"));
 
@@ -126,7 +126,7 @@ public class Issue840Tests
     // toDateString().split(' ')[3] was undefined. The fallback now parses the full ECMAScript
     // Date Time String Format directly.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ParsesExpandedNegativeYearWithMinutePrecisionZone()
         => Assert.Equal("-0001", Eval(
             "new Date('-000001-07-01T00:00Z').toDateString().split(' ')[3]"));
@@ -140,12 +140,12 @@ public class Issue840Tests
     public void ToDateStringSerializesParsedNegativeYears(string input, string expected)
         => Assert.Equal(expected, Eval($"new Date({input}).toDateString().split(' ')[3]"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToStringIncludesParsedNegativeYear()
         => Assert.Equal("-0001", Eval(
             "new Date('-000001-07-01T00:00Z').toString().split(' ')[3]"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToUTCStringIncludesParsedNegativeYear()
         // "Day, DD Mon -0001 …" → the year is the third space-separated token.
         => Assert.Equal("-0001", Eval(
@@ -176,7 +176,7 @@ public class Issue840Tests
     public void CarriesADayPastItsMonth(string input, string expected)
         => Assert.Equal(expected, Eval($"Date.parse({input})"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateOnlyExpandedFormParsesAsUtc()
         => Assert.Equal("-62183116800000", Eval("Date.parse('-000001-07-01')"));
 
@@ -249,7 +249,7 @@ public class Issue840Tests
     // every position. The engine assigned the raw argument inside the loop, so the element
     // setter re-ran ToNumber/ToBigInt once per filled index.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArrayFillCoercesNumberValueExactlyOnce()
         => Assert.Equal("2|1,1,1", Eval(
             "(function () {" +
@@ -259,7 +259,7 @@ public class Issue840Tests
             "  return n + '|' + sample.join(',');" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArrayFillCoercesBigIntValueExactlyOnce()
         => Assert.Equal("2|1,1,1", Eval(
             "(function () {" +
@@ -269,7 +269,7 @@ public class Issue840Tests
             "  return n + '|' + sample.join(',');" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArrayFillCoercesValueBeforeStartAndEnd()
         => Assert.Equal("v,s,e", Eval(
             "(function () {" +
@@ -294,7 +294,7 @@ public class Issue840Tests
     // sloppy-mode comparefn observes the global object and a strict one sees undefined. The
     // engine passed the typed array itself as the comparefn's this.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArraySortComparefnSloppyThisIsGlobal()
         => Assert.Equal("true", Eval(
             "(function () {" +
@@ -303,7 +303,7 @@ public class Issue840Tests
             "  return seen === (function () { return this; })();" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArraySortComparefnStrictThisIsUndefined()
         => Assert.Equal("true", Eval(
             "(function () {" +
@@ -313,7 +313,7 @@ public class Issue840Tests
             "  return seen === undefined;" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BigIntTypedArraySortComparefnSloppyThisIsGlobal()
         => Assert.Equal("true", Eval(
             "(function () {" +
@@ -322,7 +322,7 @@ public class Issue840Tests
             "  return seen === (function () { return this; })();" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArrayToSortedComparefnThisIsUndefinedBased()
         => Assert.Equal("true", Eval(
             "(function () {" +
@@ -349,16 +349,16 @@ public class Issue840Tests
     private static string ThrowsRangeError(string code)
         => Eval("(function () { try { " + code + "; return false; } catch (e) { return e instanceof RangeError; } })()");
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToPlainDateTimeAtMinimumDateMidnightThrows()
         => Assert.Equal("true", ThrowsRangeError("Temporal.PlainDate.from('-271821-04-19').toPlainDateTime()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToPlainDateTimeAtMinimumDateWithInRangeTimeSucceeds()
         => Assert.Equal("-271821-04-19T12:00:00",
             Eval("Temporal.PlainDate.from('-271821-04-19').toPlainDateTime('12:00').toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToPlainDateTimeInRangeStillWorks()
         => Assert.Equal("2000-01-01T00:00:00",
             Eval("Temporal.PlainDate.from('2000-01-01').toPlainDateTime().toString()"));
@@ -385,7 +385,7 @@ public class Issue840Tests
     // slots (effectively undefined). GetIndexedValue's long overload now routes indices ≥
     // 2^32 through the numeric-string key, matching how the source was populated.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToSplicedReadsLargeIndicesPastUint32()
         => Assert.Equal("2|9007199254740989,9007199254740990", Eval(
             "(function () {" +
@@ -409,7 +409,7 @@ public class Issue840Tests
     public void ToSplicedOrdinaryArraysStillWork(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToSplicedNewLengthBeyond2Pow53Throws()
         => Assert.Equal("true", ThrowsRangeError(
             "try { Array.prototype.toSpliced.call({ length: 2 ** 53 - 1 }, 0, 0, 'x'); throw new Error('no throw'); }" +
@@ -426,12 +426,12 @@ public class Issue840Tests
     private static string ThrowsTypeError(string code)
         => Eval("(function () { try { " + code + "; return false; } catch (e) { return e instanceof TypeError; } })()");
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayOfThrowsWhenResultIsNonExtensible()
         => Assert.Equal("true", ThrowsTypeError(
             "function T1() { Object.preventExtensions(this); } Array.of.call(T1, 'Bob')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayOfThrowsWhenIndexIsNonConfigurable()
         => Assert.Equal("true", ThrowsTypeError(
             "function T2() { Object.defineProperty(this, 0, { configurable: false, writable: true, enumerable: true }); }" +
@@ -466,7 +466,7 @@ public class Issue840Tests
         "  deleteProperty(t, pk) { return Reflect.deleteProperty(t, pk); }" +
         "});";
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReverseReachesHighIndexBeyondUint32()
         => Assert.Equal("StopReverse", Eval(
             "(function () {" + ReverseProxySetup +
@@ -474,7 +474,7 @@ public class Issue840Tests
             "  catch (e) { return e.message; }" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReverseAccessesLowerThenUpperPerPair()
         => Assert.Equal("Get:length|Has:0|Get:0|Has:9007199254740990|Get:9007199254740990", Eval(
             "(function () {" + ReverseProxySetup +
@@ -562,7 +562,7 @@ public class Issue840Tests
                 "  return m.log.join(',');" +
                 "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReflectDefinePropertyReadsProxyDescriptorFieldsInSpecOrder()
         => Assert.Equal(
             "has enumerable,get enumerable,has configurable,get configurable," +
@@ -587,7 +587,7 @@ public class Issue840Tests
     // that, for a Proxy, fired only the ownKeys trap and never the per-key
     // getOwnPropertyDescriptor trap. It now mirrors Object.values/entries.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void KeysOnProxiedArrayFiresOwnKeysThenGetOwnPropertyDescriptor()
         => Assert.Equal("ownKeys,getOwnPropertyDescriptor", Eval(
             "(function () {" +
@@ -596,7 +596,7 @@ public class Issue840Tests
             "  return log.join(',');" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void KeysFiltersNonEnumerableProxyKeys()
         => Assert.Equal("v", Eval(
             "(function () {" +
@@ -622,21 +622,21 @@ public class Issue840Tests
     // before the RHS is evaluated. The compiler dropped the initializer entirely, so the
     // binding was undefined (and any side effect in the initializer never ran).
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForInVarInitializerIsEvaluatedExactlyOnce()
         => Assert.Equal("1", Eval(
             "(function(){ var effects = 0; for (var a = ++effects in {}); return effects; })()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForInVarInitializerIsAssignedBeforeRhs()
         => Assert.Equal("0", Eval(
             "(function(){ var stored; for (var a = 0 in stored = a, {}); return stored; })()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForInVarInitializedValueSurvivesEmptyIteration()
         => Assert.Equal("0", Eval("(function(){ for (var a = 0 in {}); return a; })()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForInVarInitializerFullSemantics()
         // stored sees the initialized -1; the initializer runs once; the body runs per key.
         => Assert.Equal("-1|1|3", Eval(
@@ -660,7 +660,7 @@ public class Issue840Tests
     // so a splice whose (clamped) deleteCount exceeds that limit aborted before ever calling
     // the species, instead of constructing through it.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SpliceClampedDeleteCountReachesSpeciesAndPropagatesAbrupt()
         => Assert.Equal("StopSplice|9007199254740991", Eval(
             "(function () {" +
@@ -686,7 +686,7 @@ public class Issue840Tests
     // non-writable mid-operation, the TypeError fired before the inserted item was written —
     // leaving the array in the wrong partial state.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SpliceWritesInsertedItemBeforeNonWritableLengthThrows()
         => Assert.Equal("TypeError|6|123,0,1,2,4,5", Eval(
             "(function () {" +
@@ -701,7 +701,7 @@ public class Issue840Tests
             "  return thrown + '|' + array.length + '|' + array.join(',');" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SpliceRemovalWithNonWritableLengthLeavesExpectedState()
         => Assert.Equal("TypeError|6|1,2,,3,4,5", Eval(
             "(function () {" +
@@ -733,22 +733,22 @@ public class Issue840Tests
     private static string IteratorToStringTagGetter =>
         "Object.getOwnPropertyDescriptor(Iterator.prototype, Symbol.toStringTag).get";
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IteratorToStringTagGetterHasSingleGetPrefixInName()
         => Assert.Equal("get [Symbol.toStringTag]", Eval($"{IteratorToStringTagGetter}.name"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IteratorToStringTagGetterConformsToNativeFunctionSyntax()
         => Assert.Equal("true", Eval(
             "/^function get \\[Symbol\\.toStringTag\\]\\(\\) \\{ \\[native code\\] \\}$/.test(" +
             $"{IteratorToStringTagGetter}.toString())"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IteratorToStringTagSetterHasSingleSetPrefixInName()
         => Assert.Equal("set [Symbol.toStringTag]", Eval(
             "Object.getOwnPropertyDescriptor(Iterator.prototype, Symbol.toStringTag).set.name"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IteratorToStringTagGetterStillReportsIterator()
         => Assert.Equal("Iterator", Eval($"{IteratorToStringTagGetter}.call({{}})"));
 
@@ -758,12 +758,12 @@ public class Issue840Tests
     // returns exactly { firstDay, weekend } (in that order). The engine still emitted a third
     // minimalDays key.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetWeekInfoReturnsOnlyFirstDayAndWeekend()
         => Assert.Equal("firstDay,weekend", Eval(
             "Reflect.ownKeys(new Intl.Locale('en').getWeekInfo()).join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetWeekInfoFirstDayIsAWritableEnumerableConfigurableIntegerOneToSeven()
         => Assert.Equal("true", Eval(
             "(function () {" +
@@ -771,7 +771,7 @@ public class Issue840Tests
             "  return d.writable && d.enumerable && d.configurable && d.value >= 1 && d.value <= 7;" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetWeekInfoWeekendIsAscendingIntegersOneToSeven()
         => Assert.Equal("true", Eval(
             "(function () {" +
@@ -788,7 +788,7 @@ public class Issue840Tests
     // function (no primitive) was stringified to "function …" instead of throwing the TypeError
     // that the spec ToString raises.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpReplaceNonCallableReplacementUsesSpecToString()
         => Assert.Equal("true", Eval(
             "(function () {" +
@@ -797,7 +797,7 @@ public class Issue840Tests
             "  catch (e) { return e instanceof TypeError; }" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpReplaceNonCallableReplacementThroughGenericReceiver()
         // The S15.5.4.11_A1_T16 shape: Number.prototype.replace = String.prototype.replace.
         => Assert.Equal("true", Eval(
@@ -835,14 +835,14 @@ public class Issue840Tests
         "  return keys.join(',');" +
         "}";
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForInDoesNotVisitIndicesAddedByUnshift()
         => Assert.Equal("0", Eval(
             "(function () {" + ForInDuringMutation +
             "  return f([1, , 3], Array.prototype.unshift, [0]);" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForInDoesNotVisitIndicesAddedBySplice()
         => Assert.Equal("0", Eval(
             "(function () {" + ForInDuringMutation +
@@ -865,14 +865,14 @@ public class Issue840Tests
     // set (matching V8). Those calendar identifiers still resolve elsewhere; only the
     // supportedValuesOf listing changes.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SupportedCalendarsAreExactlyTheRequiredSet()
         => Assert.Equal(
             "buddhist,chinese,coptic,dangi,ethioaa,ethiopic,gregory,hebrew,indian," +
             "islamic-civil,islamic-tbla,islamic-umalqura,iso8601,japanese,persian,roc",
             Eval("Intl.supportedValuesOf('calendar').join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SupportedCalendarsAreSorted()
         => Assert.Equal("true", Eval(
             "(function () {" +
@@ -880,7 +880,7 @@ public class Issue840Tests
             "  return JSON.stringify(s) === JSON.stringify(s.slice().sort());" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SupportedCalendarsExcludeIslamicAndIslamicRgsa()
         => Assert.Equal("false,false", Eval(
             "(function () {" +
@@ -888,7 +888,7 @@ public class Issue840Tests
             "  return s.includes('islamic') + ',' + s.includes('islamic-rgsa');" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IslamicCivilCalendarStillResolves()
         => Assert.Equal("islamic-civil", Eval(
             "new Intl.DateTimeFormat('en-u-ca-islamic-civil').resolvedOptions().calendar"));
@@ -941,7 +941,7 @@ public class Issue840Tests
     // so a user constructor's resolve — re-invoked by a thenable that calls back repeatedly —
     // fired only once instead of each time.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PromiseAnyFulfillmentCallsCapabilityResolveEachTime()
         => Assert.Equal("3|1,2,3", Eval(
             "(function () {" +
@@ -957,7 +957,7 @@ public class Issue840Tests
             "  return callCount + '|' + sequence.join(',');" +
             "})()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async System.Threading.Tasks.Task PromiseAnyStillResolvesWithFirstFulfillment()
     {
         using var ctx = new JSContext();
@@ -1015,7 +1015,7 @@ public class Issue840Tests
     public void CompactLongSpellsOutTheUnit(string value, string expected)
         => Assert.Equal(expected, Eval(CompactLong(value)));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void CompactLongFormatToPartsIncludesLiteralSpace()
         => Assert.Equal(
             "[\"integer:988\",\"literal: \",\"compact:million\"]",

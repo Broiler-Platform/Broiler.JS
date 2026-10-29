@@ -404,7 +404,7 @@ public class BExpressionMapVisitor : BExpressionVisitor<BExpression>
     {
         var am = Modified(yNewArrayExpression.Elements, out var elements);
         if (am)
-            return new BNewArrayExpression(yNewArrayExpression.ElementType, elements);
+            return new BNewArrayExpression(yNewArrayExpression.ElementType, yNewArrayExpression.Type, elements);
         return yNewArrayExpression;
     }
 
@@ -500,7 +500,7 @@ public class BExpressionMapVisitor : BExpressionVisitor<BExpression>
     protected override BExpression VisitNewArrayBounds(BNewArrayBoundsExpression yNewArrayBoundsExpression)
     {
         if (Modified(yNewArrayBoundsExpression.Size, out var size))
-            return new BNewArrayBoundsExpression(yNewArrayBoundsExpression.ElementType, size);
+            return new BNewArrayBoundsExpression(yNewArrayBoundsExpression.ElementType, yNewArrayBoundsExpression.Type, size);
         return yNewArrayBoundsExpression;
     }
 

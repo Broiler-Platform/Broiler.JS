@@ -144,11 +144,11 @@ public partial class JSTemporalPlainMonthDay : JSObject
     public JSValue ToJSON(in Arguments a) => new JSString(TemporalFormat.MonthDayToString(IsoDate, calendarId, ShowCalendarName.Auto));
 
     [JSExport("toLocaleString", Length = 0)]
-    public JSValue ToLocaleString(in Arguments a)
+    public new JSValue ToLocaleString(in Arguments a)
         => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1));
 
     [JSExport("valueOf", Length = 0)]
-    public JSValue ValueOf(in Arguments a)
+    public new JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.PlainMonthDay.prototype.valueOf, which is not supported.");
 
     // ── helpers ─────────────────────────────────────────────────────────────────

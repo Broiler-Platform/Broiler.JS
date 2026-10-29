@@ -69,7 +69,7 @@ public class TemporalFromOverflowOrderTests
         Assert.Equal(expected, result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PlainDateFrom_PlainDateTime_UsesSlotsNotGetters()
     {
         EnsureBuiltInsLoaded();

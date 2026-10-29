@@ -48,34 +48,34 @@ public class ModuleImportImmutabilityTests
         ["file:///app/a.js"] = "export let x = 1; export default 9;",
     };
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AssigningANamedImportThrows()
         => await Assert.ThrowsAnyAsync<Exception>(() => Run(
             new(Dep), "import { x } from './a.js'; x = 2;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task UpdatingANamedImportThrows()
         => await Assert.ThrowsAnyAsync<Exception>(() => Run(
             new(Dep), "import { x } from './a.js'; x++;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AssigningADefaultImportThrows()
         => await Assert.ThrowsAnyAsync<Exception>(() => Run(
             new(Dep), "import d from './a.js'; d = 2;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AssigningANamespaceImportThrows()
         => await Assert.ThrowsAnyAsync<Exception>(() => Run(
             new(Dep), "import * as ns from './a.js'; ns = 2;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ARenamedImportIsAlsoImmutable()
         => await Assert.ThrowsAnyAsync<Exception>(() => Run(
             new(Dep), "import { x as y } from './a.js'; y = 2;"));
 
     // Sealing the binding must not disturb the ordinary import: the seed value still arrives and is
     // readable through every import form.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task OrdinaryImportsStillBindTheirValues()
         => Assert.Equal("11", await Run(new(Dep),
             "import d, { x } from './a.js'; import * as ns from './a.js'; globalThis.r = d + x + ns.x;"));

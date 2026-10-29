@@ -70,7 +70,7 @@ public class JsonModuleTests
 
     /// <summary>The default import is the parsed value — for every JSON shape, not only objects.
     /// Each of these was <c>undefined</c>, and <c>null</c> threw on load.</summary>
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("{\"a\":1}", "{\"a\":1}")]
     [InlineData("[1,2]", "[1,2]")]
     [InlineData("5", "5")]
@@ -83,7 +83,7 @@ public class JsonModuleTests
 
     /// <summary>The namespace holds exactly one name, <c>default</c> — not the JSON's own keys,
     /// which is what it used to expose.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task TheNamespaceHoldsOnlyDefault()
         => Assert.Equal("default|{\"a\":1}", await Run(
             "{\"a\":1,\"b\":2}",
@@ -91,7 +91,7 @@ public class JsonModuleTests
             + "globalThis.r = Object.keys(ns).join(',') + '|' + JSON.stringify(ns.default).replace(',\"b\":2', '');"));
 
     /// <summary>A dynamic import resolves to the same namespace a static one binds against.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ADynamicImportResolvesToTheSameNamespace()
         => Assert.Equal("default|{\"a\":1}", await Run(
             "{\"a\":1}",
@@ -100,7 +100,7 @@ public class JsonModuleTests
 
     /// <summary><c>require</c> is unchanged: it hands back the parsed value itself, which is what
     /// CommonJS says and what it already did.</summary>
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("{\"a\":1}", "{\"a\":1}")]
     [InlineData("[1,2]", "[1,2]")]
     [InlineData("null", "null")]
@@ -110,7 +110,7 @@ public class JsonModuleTests
 
     /// <summary>The two views of one file coexist in one module, and neither disturbs the other —
     /// the point of splitting them rather than picking a winner.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task BothViewsOfOneFileAgreeOnTheValue()
         => Assert.Equal("{\"a\":1}|{\"a\":1}|true", await Run(
             "{\"a\":1}",
@@ -121,13 +121,13 @@ public class JsonModuleTests
     /// A named import from a JSON module fails to link: the module's only export is
     /// <c>default</c>.
     /// </summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ANamedImportFromAJsonModuleIsALinkError()
         => Assert.Equal("SyntaxError", await Run(
             "{\"a\":1}", "globalThis.r = await import('./named.js').then(() => 'linked', e => e.name);"));
 
     /// <summary>A JavaScript module is untouched by any of this — the split is JSON-only.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AJavaScriptModuleIsUnaffected()
     {
         var files = new Dictionary<string, string>

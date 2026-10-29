@@ -18,7 +18,7 @@ public class UndefinedPropertyReadMessageTests
     }
 
     // The reported shape: a computed read off a call that returned undefined.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AComputedRead_NamesTheProperty()
     {
         Assert.Equal(
@@ -80,7 +80,7 @@ public class UndefinedPropertyReadMessageTests
     }
 
     // The same rule as the read: an object key is not coerced to describe an assignment either.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnObjectKey_IsNotCoercedForTheSettingMessage()
     {
         Assert.Equal(
@@ -91,7 +91,7 @@ public class UndefinedPropertyReadMessageTests
     // An OBJECT key is deliberately left undescribed. GetValue throws before ToPropertyKey because
     // ToObject(base) comes first (6.2.5.5); describing the key would run its toString/@@toPrimitive
     // — user code, in an order the spec forbids. A diagnostic does not get to change evaluation.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnObjectKey_IsNotCoercedForTheMessage()
     {
         var message = MessageOf("var u; var k = { toString: function(){ throw new Error('key coerced'); } }; return u[k];");
@@ -107,7 +107,7 @@ public class UndefinedPropertyReadMessageTests
     // `null.foo` is a literal base, so there is no expression to name that the message does not
     // already contain; the clause is emitted all the same, because a description is recorded per
     // emitted access and not per how interesting the access looks.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AStaticReadIsUnchanged()
     {
         Assert.Equal("Cannot get property foo of undefined (evaluating 'u.foo')", MessageOf("var u; return u.foo;"));
@@ -115,7 +115,7 @@ public class UndefinedPropertyReadMessageTests
     }
 
     // A read that succeeds is untouched.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ASuccessfulReadStillSucceeds()
     {
         Assert.Equal("1", MessageOf("var o = { a: 1 }; return String(o['a']);"));

@@ -27,7 +27,7 @@ public class Issue836IntlOptionOrderTests
 
     // ---- Problem 54: PluralRules reads the rounding options, in order ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PluralRulesReadsRoundingOptionsInOrder()
         => Assert.Equal(
             "localeMatcher,type,notation,minimumIntegerDigits,minimumFractionDigits,maximumFractionDigits,minimumSignificantDigits,maximumSignificantDigits,roundingIncrement,roundingMode,roundingPriority,trailingZeroDisplay",
@@ -56,7 +56,7 @@ public class Issue836IntlOptionOrderTests
                 actual.join(',');
             "));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PluralRulesInvalidRoundingModeThrows()
         => Assert.Equal("RangeError", Eval(@"
             var r;
@@ -67,7 +67,7 @@ public class Issue836IntlOptionOrderTests
 
     // ---- Problem 59: Locale getter order + variants option ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LocaleReadsGettersInOrder()
         => Assert.Equal(
             "language,script,region,variants,calendar,collation,hourCycle,caseFirst,numeric,numberingSystem",
@@ -89,17 +89,17 @@ public class Issue836IntlOptionOrderTests
                 actual.join(',');
             "));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LocaleVariantsOptionAppliedAndSorted()
         => Assert.Equal("xx-1234-12345678-1xyz-abcde", Eval(
             "new Intl.Locale('xx', { variants: '1xyz-1234-abcde-12345678' }).toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LocaleVariantsOptionReplacesTagVariants()
         => Assert.Equal("en-spanglis", Eval(
             "new Intl.Locale('en-fonipa', { variants: 'spanglis' }).toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LocaleInvalidVariantsOptionThrows()
         => Assert.Equal("RangeError", Eval(@"
             var r;

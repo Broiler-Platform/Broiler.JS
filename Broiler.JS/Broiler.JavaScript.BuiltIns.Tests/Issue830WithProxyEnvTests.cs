@@ -32,12 +32,12 @@ public class Issue830WithProxyEnvTests
         });
         """;
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     // Reading: HasBinding [has, unscopables] then GetBindingValue [has, get] — a single has each.
     public void GetBindingValueSequence()
         => Assert.Equal("has,unscopables,has,get", Eval(Pre + "with (p) { x; } log.join(\",\");"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     // Writing: HasBinding [has, unscopables] then SetMutableBinding [has, set].
     public void SetMutableBindingSequence()
         => Assert.Equal("has,unscopables,has,set", Eval(Pre + "with (p) { x = 2; } log.join(\",\");"));

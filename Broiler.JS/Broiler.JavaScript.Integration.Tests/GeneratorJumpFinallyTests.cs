@@ -19,7 +19,7 @@ public class GeneratorJumpFinallyTests
         return ctx.Eval("'' + globalThis.r").ToString();
     }
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     // break and continue out of a try run its finally before going on.
     [InlineData("var log = []; function* g(){ for (;;) { try { yield 1; break; } finally { log.push('fin'); } } log.push('after'); } var it = g(); it.next(); it.next(); r = JSON.stringify(log);",
         "[\"fin\",\"after\"]")]

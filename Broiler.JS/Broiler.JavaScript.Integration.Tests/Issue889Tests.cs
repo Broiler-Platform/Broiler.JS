@@ -52,28 +52,28 @@ public class Issue889Tests
         => Assert.Equal(expected, Eval($"String(eval({Quote(body)}))"));
 
     // Destructuring and optional-binding catch must reset the completion too.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DestructuringCatchEmptyBodyGivesUndefined()
         => Assert.Equal("undefined", Eval(
             "String(eval(\"try { 'try'; throw { a: 1 }; } catch ({ a }) { }\"))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void OptionalCatchBindingEmptyBodyGivesUndefined()
         => Assert.Equal("undefined", Eval(
             "String(eval(\"try { 'try'; throw 'e'; } catch { }\"))"));
 
     // ── Cluster B — Unicode 17.0 emoji properties of strings ──────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Unicode17BasicEmojiLandslideMatches()
         // U+1F6D8 LANDSLIDE is a Basic_Emoji introduced in Emoji 17.0.
         => Assert.Equal("true", Eval(@"String(/\p{Basic_Emoji}/v.test('\u{1F6D8}'))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Unicode17RgiEmojiAlsoCoversLandslide()
         => Assert.Equal("true", Eval(@"String(/\p{RGI_Emoji}/v.test('\u{1F6D8}'))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ModifierAndZwjSequencesStillMatch()
     {
         // 👋🏻 = waving hand + light skin tone.
@@ -82,13 +82,13 @@ public class Issue889Tests
         Assert.Equal("true", Eval(@"String(/\p{RGI_Emoji_ZWJ_Sequence}/v.test('\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}'))"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NonEmojiCodePointStillRejectedByBasicEmoji()
         => Assert.Equal("false", Eval(@"String(/^\p{Basic_Emoji}$/v.test('A'))"));
 
     // ── Cluster C — Intl.ListFormat.formatToParts pattern walking ─────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FormatToPartsForStringIterableSplitsOrConnectorCorrectly()
     {
         // "foo" is iterated as ['f','o','o']; the second element 'o' must not be
@@ -103,7 +103,7 @@ public class Issue889Tests
             Eval(code));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FormatToPartsExistingThreeAndFourElementShapesUnchanged()
     {
         const string codeThree = @"
@@ -126,7 +126,7 @@ public class Issue889Tests
             Eval(codeFour));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FormatToPartsEmptyAndSingletonAndPairShapesUnchanged()
     {
         const string preamble = "var lf = new Intl.ListFormat('en-US', { type: 'disjunction' }); ";

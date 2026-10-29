@@ -276,7 +276,7 @@ public class FastScanner
     /// True once the whole source has been consumed.
     /// </summary>
     /// <remarks>
-    /// <see cref="Peek"/>, <see cref="Next"/> and <see cref="Consume"/> report the end of the
+    /// <see cref="Broiler.JavaScript.Parser.FastScanner.Peek()"/>, <see cref="Next"/> and <see cref="Consume"/> report the end of the
     /// source as <see cref="char.MaxValue"/>, but U+FFFF is also an ordinary BMP character that
     /// a source may contain — inside a string, a template, a regular expression, or a comment it
     /// is content, not a terminator. (Minifiers emit it raw: Terser writes "￿" back out as

@@ -140,7 +140,7 @@ public partial class JSArray
 
     [JSPrototypeMethod]
     [JSExport("toLocaleString", Length = 0)]
-    internal static JSValue ToLocaleString(in Arguments a)
+    internal new static JSValue ToLocaleString(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
         var (locales, options) = a.Get2();

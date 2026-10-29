@@ -28,7 +28,7 @@ public class AsyncResumeAfterRejectionTests
         return result.ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AwaitsAfterACaughtRejectionWaitForTheirOwnOperands()
         => Assert.Equal("1,2,5", await Run(
             "let a, b; try { await Promise.reject(1); } catch (e) { a = e; }" +
@@ -40,13 +40,13 @@ public class AsyncResumeAfterRejectionTests
     /// <c>catch</c> sees the thrown value. It used to reject the async function's promise instead,
     /// bypassing the <c>catch</c> (measured on the unfixed engine).
     /// </summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AThenableWhoseThenThrowsRejectsTheAwaitInsideTheBody()
         => Assert.Equal("caught:true", await Run(
             "const error = {}; try { await { then() { throw error; } }; return 'no throw'; }" +
             " catch (e) { return 'caught:' + (e === error); }"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ARejectionAfterACaughtRejectionRejectsTheFunction()
         => Assert.Equal("caught:1|rejected:2", await Run(
             "let first; try { await Promise.reject(1); } catch (e) { first = e; }" +

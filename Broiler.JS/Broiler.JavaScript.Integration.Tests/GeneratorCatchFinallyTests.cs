@@ -19,7 +19,7 @@ public class GeneratorCatchFinallyTests
         return ctx.Eval("'' + globalThis.r").ToString();
     }
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     // The catch block's own return or throw.
     [InlineData("var log = []; function* g(){ try { yield 1; throw 1; } catch (e) { log.push('c'); return 'r'; } finally { log.push('f'); } } var it = g(); it.next(); r = JSON.stringify([it.next(), log]);",
         "[{\"value\":\"r\",\"done\":true},[\"c\",\"f\"]]")]

@@ -41,14 +41,14 @@ public class Issue753Tests
 
     // ---- Problem 5/19: super in a method's default parameter ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SuperInMethodDefaultParameterResolvesToHomeObject()
         => Assert.Equal("true", Eval(
             "var o={ m(a = super.toString){ return a; } };" +
             "o.toString=null;" +
             "(o.m()===Object.prototype.toString).toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SuperInGeneratorMethodDefaultParameterResolvesToHomeObject()
         => Assert.Equal("true", Eval(
             "var o={ *m(a = super.toString){ return a; } };" +
@@ -57,16 +57,16 @@ public class Issue753Tests
 
     // ---- Problem 29: computed-key class method name ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ComputedSymbolMethodNameUsesBracketedDescription()
         => Assert.Equal("[test262]", Eval(
             "var s=Symbol('test262');class A{ [s](){} }A.prototype[s].name"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ComputedNumberMethodNameUsesKey()
         => Assert.Equal("1", Eval("class A{ [1](){} }A.prototype[1].name"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ComputedMethodNamePropertyIsNonWritable()
         => Assert.Equal("false", Eval(
             "var s=Symbol('x');class A{ [s](){} }" +
@@ -74,7 +74,7 @@ public class Issue753Tests
 
     // ---- Problem 30: computed-number class methods are non-enumerable ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ComputedNumberMethodIsNotEnumerable()
         => Assert.Equal("0", Eval(
             "class C{ a(){} [1](){} c(){} [2](){} }" +
@@ -82,53 +82,53 @@ public class Issue753Tests
 
     // ---- Problem 31: Number(string) non-decimal grammar ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberOfEmptyBinaryPrefixIsNaN()
         => Assert.Equal("true", Eval("isNaN(Number('0b')).toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberOfEmptyOctalPrefixIsNaN()
         => Assert.Equal("true", Eval("isNaN(Number('0o')).toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberOfSignedBinaryLiteralIsNaN()
         => Assert.Equal("true", Eval("isNaN(Number('+0b1')).toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberOfValidBinaryLiteralIsParsed()
         => Assert.Equal("5", Eval("Number('0b101').toString()"));
 
     // ---- Problem 36: TypedArray.prototype.set returns undefined ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArraySetReturnsUndefined()
         => Assert.Equal("undefined", Eval(
             "(typeof new Int8Array(3).set([1,2])).toString()"));
 
     // ---- Problem 37: JSON.stringify replacer wrapper / no spurious valueOf ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JsonReplacerArrayNumberWrapperUsesToString()
         => Assert.Equal("{\"toString\":2}", Eval(
             "var num=new Number(10);num.toString=function(){return 'toString';};" +
             "num.valueOf=function(){throw new Error('nope');};" +
             "JSON.stringify({10:1,toString:2,valueOf:3},[num])"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JsonStringifyDoesNotCallObjectValueOfProperty()
         => Assert.Equal("{\"valueOf\":3}", Eval(
             "JSON.stringify({valueOf:3})"));
 
     // ---- Problem 33: Date.parse rejects -000000 (negative-zero extended year) ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateParseRejectsNegativeZeroExtendedYear()
         => Assert.Equal("true", Eval(
             "isNaN(Date.parse('-000000-03-31T00:45Z')).toString()"));
 
     // ---- Problem 17: Set union / symmetricDifference snapshot order ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SetUnionReadsKeysIteratorNextBeforeCopyingThis()
         => Assert.Equal("4", Eval(
             "var set=new Set([1,2,3]);" +
@@ -136,7 +136,7 @@ public class Issue753Tests
             "keys(){return {get next(){set.clear();set.add(4);return function(){return {done:true};};}};}};" +
             "[...set.union(setLike)].join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SetSymmetricDifferenceReadsKeysIteratorNextBeforeCopyingThis()
         => Assert.Equal("4", Eval(
             "var set=new Set([1,2,3]);" +
@@ -146,133 +146,133 @@ public class Issue753Tests
 
     // ---- Problem 32: private-use-only locale tag is structurally invalid ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IntlRejectsPrivateUseOnlyLocaleTag()
         => Assert.Equal("RangeError", Eval(
             "try{new Intl.ListFormat('x-private');'no throw';}catch(e){e.constructor.name;}"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IntlAcceptsLanguageWithPrivateUseExtension()
         => Assert.Equal("ok", Eval(
             "try{new Intl.ListFormat('en-x-foo');'ok';}catch(e){'threw';}"));
 
     // ---- Problem 18: DateTimeFormat dateStyle/timeStyle coerced to string ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormatDateStyleObjectOptionCoercedToString()
         => Assert.Equal("full", Eval(
             "new Intl.DateTimeFormat('en',{dateStyle:{toString(){return 'full';}}})" +
             ".resolvedOptions().dateStyle"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormatTimeStyleResolvedOptionsIsString()
         => Assert.Equal("string", Eval(
             "typeof new Intl.DateTimeFormat('en',{timeStyle:'short'}).resolvedOptions().timeStyle"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormatInvalidDateStyleThrowsRangeError()
         => Assert.Equal("RangeError", Eval(
             "try{new Intl.DateTimeFormat('en',{dateStyle:'bogus'});'no throw';}catch(e){e.constructor.name;}"));
 
     // ---- Problem 38/39: Greek Final_Sigma in toLowerCase / toLocaleLowerCase ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToLowerCaseUsesFinalSigmaWhenPrecededByCasedLetter()
         => Assert.Equal("aς", Eval("'A\\u03A3'.toLowerCase()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToLowerCaseUsesRegularSigmaWhenFollowedByCasedLetter()
         => Assert.Equal("aσb", Eval("'A\\u03A3B'.toLowerCase()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToLowerCaseFinalSigmaSkipsCaseIgnorableFullStop()
         => Assert.Equal("a.ς", Eval("'A.\\u03A3'.toLowerCase()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToLowerCaseLoneSigmaIsRegular()
         => Assert.Equal("σ", Eval("'\\u03A3'.toLowerCase()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GreekWordFinalSigmaLowercases()
         => Assert.Equal("σοφος", Eval("'\\u03A3\\u039F\\u03A6\\u039F\\u03A3'.toLowerCase()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToLocaleLowerCaseAppliesFinalSigma()
         => Assert.Equal("aς", Eval("'A\\u03A3'.toLocaleLowerCase('en')"));
 
     // ---- Problem 22: with + var binding resolved before initializer ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WithVarBindingResolvedBeforeInitializerRecreatesDeletedProperty()
         => Assert.Equal("true", Eval(
             "var obj={test262id:1};with(obj){var test262id=delete obj.test262id;}" +
             "(obj.test262id===true && typeof test262id==='undefined').toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WithVarAssignsToObjectWhenPropertyPresent()
         => Assert.Equal("5", Eval(
             "var o={x:1};with(o){var x=5;}o.x.toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WithVarAssignsToOuterWhenPropertyAbsent()
         => Assert.Equal("7", Eval(
             "var o={};var y;with(o){var y=7;}(o.y===undefined?y:o.y).toString()"));
 
     // ---- Problem 40: arguments @@iterator is %Array.prototype.values% ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArgumentsIteratorIsArrayPrototypeValues()
         => Assert.Equal("true", Eval(
             "function f(){return arguments[Symbol.iterator]===[][Symbol.iterator];}f(1,2).toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArgumentsIteratorNameIsValues()
         => Assert.Equal("values", Eval(
             "function f(){return arguments[Symbol.iterator].name;}f()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArgumentsIteratorRemainsLengthBound()
         => Assert.Equal("1,2", Eval(
             "function f(){arguments.length=2;return Array.from(arguments).join(',');}f(1,2,3,4)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void MappedArgumentsIterationObservesLiveParameter()
         => Assert.Equal("99,2", Eval(
             "function f(a,b){a=99;return [...arguments].join(',');}f(1,2)"));
 
     // ---- Problem 27/28/34/35: numbering system resolution ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormatResolvesSupportedNuExtension()
         => Assert.Equal("arab", Eval(
             "new Intl.NumberFormat('en-u-nu-arab').resolvedOptions().numberingSystem"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormatIgnoresUnsupportedNumberingSystemOption()
         => Assert.Equal("arab", Eval(
             "new Intl.NumberFormat('en-u-nu-arab',{numberingSystem:'invalid'}).resolvedOptions().numberingSystem"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormatOptionOverridesExtensionAndDropsItFromLocale()
         => Assert.Equal("en|arab", Eval(
             "var ro=new Intl.NumberFormat('en-u-nu-latn',{numberingSystem:'arab'}).resolvedOptions();ro.locale+'|'+ro.numberingSystem"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormatUnsupportedExtensionFallsBackToLatnAndDropsExtension()
         => Assert.Equal("en|latn", Eval(
             "var ro=new Intl.NumberFormat('en-u-nu-invalid').resolvedOptions();ro.locale+'|'+ro.numberingSystem"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormatDropsInvalidNuFromResolvedLocale()
         => Assert.Equal("ja-JP", Eval(
             "new Intl.DateTimeFormat('ja-JP-u-nu-native').resolvedOptions().locale"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SupportedValuesOfNumberingSystemIncludesLatnAndArab()
         => Assert.Equal("true", Eval(
             "var a=Intl.supportedValuesOf('numberingSystem');(a.includes('latn')&&a.includes('arab')&&!a.includes('native')).toString()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SupportedValuesOfNumberingSystemIsSorted()
         => Assert.Equal("true", Eval(
             "var a=Intl.supportedValuesOf('numberingSystem');(JSON.stringify(a)===JSON.stringify([...a].sort())).toString()"));

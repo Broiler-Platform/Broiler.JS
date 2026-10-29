@@ -17,7 +17,7 @@ public class Issue810ArrayLengthPreventExtensionsTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EmptyArray_NonStrict_AssignLength_NoThrow()
         => Assert.Equal("0", Eval("""
             var a = Object.preventExtensions([]);
@@ -25,7 +25,7 @@ public class Issue810ArrayLengthPreventExtensionsTests
             String(a.length);
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EmptyArray_Strict_AssignLength_NoThrow()
         => Assert.Equal("0", Eval("""
             "use strict";
@@ -34,7 +34,7 @@ public class Issue810ArrayLengthPreventExtensionsTests
             String(a.length);
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NonEmptyArray_Strict_TruncateLength_NoThrow()
         => Assert.Equal("0", Eval("""
             "use strict";
@@ -43,7 +43,7 @@ public class Issue810ArrayLengthPreventExtensionsTests
             String(a.length);
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FrozenArray_Strict_AssignLength_StillThrows()
         => Assert.Equal("TypeError", Eval("""
             "use strict";

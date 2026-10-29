@@ -57,7 +57,7 @@ public class AwaitUsingJobOrderTests
     public void OneResourceTakesOneAwait(string symbol, string result, string expected)
         => Assert.Equal(expected, Order(Resource(symbol, result)));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EachAwaitedResourceTakesOneJob()
         => Assert.Equal("dispB,dispA,t1,after,t2,t3,t4", Order("""
             {
@@ -66,7 +66,7 @@ public class AwaitUsingJobOrderTests
             }
             """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FallbackDisposeResultIsNotAwaited()
     {
         // A rejected promise returned by a @@dispose fallback is discarded, not thrown.

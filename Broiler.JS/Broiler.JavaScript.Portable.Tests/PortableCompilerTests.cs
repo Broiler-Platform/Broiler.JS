@@ -19,7 +19,7 @@ public sealed class PortableCompilerTests
         }
         """;
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void OfflineCompilerAndInterpreterExecuteNumericControlFlow()
     {
         var program = new PortableCompiler().Compile(FibonacciSource);
@@ -32,7 +32,7 @@ public sealed class PortableCompilerTests
 
     // 2**-25 and the double below it share .NET's "R" text, 2.980232238769531E-08, which reads back
     // as the second: the emitted constant is the value's bits, exact for every double.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EmittedConstantsAreTheValuesBits()
     {
         var program = new PortableCompiler().Compile("function f() { return 2.9802322387695312e-8; }");
@@ -43,7 +43,7 @@ public sealed class PortableCompilerTests
         Assert.DoesNotContain("E-08", emitted);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnInfiniteConstantIsEmittedAsCompilableCSharp()
     {
         var program = new PortableCompiler().Compile("function f() { return 1e400; }");
@@ -54,7 +54,7 @@ public sealed class PortableCompilerTests
         Assert.DoesNotContain("Infinity", emitted);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void UnsupportedObjectSurfaceIsRejectedAtOfflineCompileTime()
     {
         var error = Assert.Throws<NotSupportedException>(() =>
@@ -63,7 +63,7 @@ public sealed class PortableCompilerTests
         Assert.Contains("does not support", error.Message);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void CompilerCanBeReusedWithoutLeakingPreviousProgramState()
     {
         var compiler = new PortableCompiler();
@@ -74,7 +74,7 @@ public sealed class PortableCompilerTests
         Assert.Equal(9_227_465, PortableInterpreter.Execute(second, [35]));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ProgramValidationRejectsOperandStackUnderflow()
     {
         var error = Assert.Throws<ArgumentException>(() => new PortableProgram(
@@ -87,7 +87,7 @@ public sealed class PortableCompilerTests
         Assert.Contains("underflow", error.Message);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ConstantBindingsAreRejectedInsteadOfLosingAssignmentSemantics()
     {
         var error = Assert.Throws<NotSupportedException>(() => new PortableCompiler().Compile(

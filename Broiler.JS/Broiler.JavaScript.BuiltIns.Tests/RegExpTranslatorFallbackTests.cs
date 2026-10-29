@@ -37,7 +37,7 @@ public class RegExpTranslatorFallbackTests
     public void RoutedButUntranslatable_ConstructsAndMatches(string pattern, string input, string expected)
         => Assert.Equal(expected, Eval($"/{pattern}/v.test({System.Text.Json.JsonSerializer.Serialize(input)})"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RoutedButUntranslatable_DrivesExecSplitAndReplace()
     {
         // exec reports the matched whitespace (as a one-element result array)…
@@ -49,7 +49,7 @@ public class RegExpTranslatorFallbackTests
         Assert.Equal("a b", Eval(@"'a b'.replace(/[\s&&\S]/gv, 'X');"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RoutedButUntranslatable_HasNoNetEngine()
     {
         // A routed pattern the translator cannot represent carries a null .NET Regex; the

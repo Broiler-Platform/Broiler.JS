@@ -82,7 +82,7 @@ public class SuspendedCallArgumentTests
             Recorder + "function* g() { " + statement + " return out.join(','); } "
             + "var it = g(); it.next(); '' + it.next('V').value"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AComputedKeyThatSuspendsStillResolvesAgainstItsOwnReceiver()
         // The key is read after the receiver, so it is inside the same window: a nested call
         // while computing it must not become what the call invokes.
@@ -90,7 +90,7 @@ public class SuspendedCallArgumentTests
             Recorder + "function* g() { obj[String(yield 1)](2); return out.join(','); } "
             + "var it = g(); it.next(); '' + it.next('hit').value"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PlainFunctionCallsAndConstructorsTakeTheSamePath()
     {
         Assert.Equal("1,2,3,4,5", Drive(
@@ -103,7 +103,7 @@ public class SuspendedCallArgumentTests
             "(async function () { globalThis.r = [1, 2, 3, 4, 5, await Promise.resolve(6)].join(','); })();"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArgumentsStillEvaluateInSourceOrderAroundTheSuspension()
         // Hoisting the operands must not reorder them: the receiver is read first, then each
         // argument left to right, and the method runs last.
@@ -114,7 +114,7 @@ public class SuspendedCallArgumentTests
             + "(async function () { recv().m(arg('a', await Promise.resolve(1)), arg('b', 2)); "
             + "globalThis.r = out.join(','); })();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ANestedCallInTheArgumentsStillRunsExactlyOnce()
         => Assert.Equal("inner,outer", Drive(
             "var out = []; "
@@ -136,7 +136,7 @@ public class SuspendedCallArgumentTests
     /// whose argument is a member call. It recorded <c>1,3</c> — the statement did not run, no
     /// error was raised, and the statement after it ran normally.
     /// </summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AMemberCallArgumentToAMemberCallIsNotSkippedInAnAsyncFunction()
         => Assert.Equal("1,a,3", Drive(
             "var t = []; (async function () { t.push('1'); var g = ['a']; "
@@ -160,7 +160,7 @@ public class SuspendedCallArgumentTests
             "var t = []; (async function () { var g = ['a']; " + statement
             + " globalThis.r = t.join(','); })();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheSameHoldsInAGeneratorAndInAnAsyncArrow()
     {
         Assert.Equal("1,a,3", Eval(
@@ -171,7 +171,7 @@ public class SuspendedCallArgumentTests
             + "t.push('3'); globalThis.r = t.join(','); })();"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ANestedPrivateMethodCallDoesNotClobberTheOuterPrivateKey()
         // The private-name key is copied into a pooled temp of its own, and a nested private
         // call in the arguments reaches it the same way.
@@ -179,7 +179,7 @@ public class SuspendedCallArgumentTests
             "var t = []; class C { #b() { return 'b'; } #a(x) { t.push(x); } "
             + "async go() { this.#a(this.#b()); globalThis.r = t.join(','); } } new C().go();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnOrdinaryFunctionIsUnaffected()
         // Nothing hoists outside a state machine, so the pooled temps stay correct there and
         // this path must keep costing nothing.
@@ -187,7 +187,7 @@ public class SuspendedCallArgumentTests
             "var t = []; (function () { t.push('1'); var g = ['a']; t.push(g.join('+')); "
             + "t.push('3'); })(); t.join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EvaluationOrderIsUnchangedWithoutASuspension()
         // The receiver first, then each argument left to right, then the call — the same order
         // ArgumentsStillEvaluateInSourceOrderAroundTheSuspension pins with an await in play.

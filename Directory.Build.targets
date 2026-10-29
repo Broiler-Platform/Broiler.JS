@@ -58,4 +58,18 @@
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(MSBuildProjectDirectory)\obj\generated\$(Configuration)\$(TargetFramework)</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
+  <!-- Synchronous engine execution cannot cooperatively stop on xUnit's token.
+       VSTest terminates the isolated test host if no test completes for ten
+       minutes, covering deadlocks without leaving a timed-out thread running. -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <!-- Also applies to shared-library tests whose own Directory.Build.props
+         intentionally does not import the engine's root props. -->
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
+    <VSTestBlameHang>true</VSTestBlameHang>
+    <VSTestBlameHangTimeout Condition="'$(VSTestBlameHangTimeout)' == ''">10m</VSTestBlameHangTimeout>
+    <!-- The separately scheduled engine corpus is intentionally a single long
+         test; its existing CI job budget is up to ninety minutes. -->
+    <VSTestBlameHangTimeout Condition="'$(MSBuildProjectName)' == 'Broiler.JavaScript.Vectors.Tests'">90m</VSTestBlameHangTimeout>
+    <VSTestBlameHangDumpType>none</VSTestBlameHangDumpType>
+  </PropertyGroup>
 </Project>

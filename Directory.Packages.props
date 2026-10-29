@@ -14,27 +14,28 @@
   <ItemGroup>
     <!-- Broiler component packages -->
     <PackageVersion Include="Broiler.Regex" Version="0.1.0-preview.4" />
-    <PackageVersion Include="Broiler.Unicode.Cldr.LocaleData" Version="0.1.0-preview.3" />
+    <PackageVersion Include="Broiler.Unicode.Cldr.LocaleData" Version="0.1.0-preview.6" />
     <!-- The Unicode area's owner (milestone SJL-7.5, decision SJL-D-6 (c)): its code packages, and its
          generator for this repository's tests alone. No package that carries tables is referenced. -->
-    <PackageVersion Include="Broiler.Unicode.Algorithms" Version="0.1.0-preview.5" />
-    <PackageVersion Include="Broiler.Unicode.Segmentation" Version="0.1.0-preview.5" />
-    <PackageVersion Include="Broiler.Unicode.Generation" Version="0.1.0-preview.5" />
+    <PackageVersion Include="Broiler.Unicode.Algorithms" Version="0.1.0-preview.6" />
+    <PackageVersion Include="Broiler.Unicode.Segmentation" Version="0.1.0-preview.6" />
+    <PackageVersion Include="Broiler.Unicode.Generation" Version="0.1.0-preview.6" />
     <!-- Compiler and build tooling -->
-    <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="$(RoslynVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="$(RoslynVersion)" />
-    <PackageVersion Include="Nerdbank.GitVersioning" Version="3.9.50" />
+    <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="5.9.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.9.0" />
+    <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
     <!-- Runtime dependencies -->
-    <PackageVersion Include="Microsoft.Extensions.DependencyModel" Version="10.0.7" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyModel" Version="10.0.14" />
     <PackageVersion Include="NuGet.Client" Version="4.2.0" />
-    <PackageVersion Include="NuGet.Protocol" Version="$(NuGetClientLibrariesVersion)" />
-    <PackageVersion Include="NuGet.Resolver" Version="$(NuGetClientLibrariesVersion)" />
+    <PackageVersion Include="NuGet.Protocol" Version="7.9.0" />
+    <PackageVersion Include="NuGet.Resolver" Version="7.9.0" />
     <!-- Benchmarks and tests -->
-    <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-    <PackageVersion Include="xunit" Version="2.5.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.3" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageVersion Include="xunit.v3" Version="4.0.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
   </ItemGroup>
 </Project>

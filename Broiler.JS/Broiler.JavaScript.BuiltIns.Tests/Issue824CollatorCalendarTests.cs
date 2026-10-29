@@ -55,7 +55,7 @@ public class Issue824CollatorCalendarTests
     }
 
     // 87 — localeCompare matches Collator for every locale/option combination.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LocaleCompareMatchesCollator()
     {
         var r = Eval("""

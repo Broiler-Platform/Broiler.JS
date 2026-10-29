@@ -13,6 +13,7 @@
     the completeness of Broiler.JS's tables (exit clause 3); and decision D21's symbols against CLDR's XML.
   -->
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <!-- A test project is not a library the Native AOT probe runs; xunit discovers by reflection. -->
@@ -22,9 +23,15 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" />
-    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <!-- The Intl data home's UCD copies are held equal to the owner's pin entries (decision JSD-0082 D12):
          test-only, as Broiler.JavaScript.Ast.Tests references it. -->
     <PackageReference Include="Broiler.Unicode.Generation" />

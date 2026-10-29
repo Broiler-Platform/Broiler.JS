@@ -1,12 +1,21 @@
-﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System;
 using System.CodeDom.Compiler;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Expressions;
 
-public class BNewArrayBoundsExpression(Type type, BExpression size) : BExpression(BExpressionType.NewArrayBounds, type.MakeArrayType())
+public class BNewArrayBoundsExpression : BExpression
 {
-    public readonly Type ElementType = type;
-    public readonly BExpression Size = size;
+    [RequiresDynamicCode("Array element types must have Native AOT instantiations available.")]
+    public BNewArrayBoundsExpression(Type type, BExpression size) : this(type, type.MakeArrayType(), size) { }
+
+    internal BNewArrayBoundsExpression(Type type, Type arrayType, BExpression size) : base(BExpressionType.NewArrayBounds, arrayType)
+    {
+        ElementType = type;
+        Size = size;
+    }
+    public readonly Type ElementType;
+    public readonly BExpression Size;
 
     public override void Print(IndentedTextWriter writer)
     {

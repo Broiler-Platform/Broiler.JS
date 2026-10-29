@@ -17,7 +17,7 @@ public class BuiltInsTests
     private static JSContext CreateContext(JavaScriptFeatureFlags experimentalFeatures = JavaScriptFeatureFlags.AllExperimentalEs2026)
         => new(experimentalFeatures: experimentalFeatures);
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Async_Function_Expression_Allows_Await_Of_Identifier()
     {
         // Regression: in `var f = async function(){ await <expr>; }` the body was
@@ -42,7 +42,7 @@ public class BuiltInsTests
         Assert.Equal("true|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Nonasync_Function_Nested_In_Async_Does_Not_Allow_Await()
     {
         // The async context must not leak into a plain nested function.
@@ -52,7 +52,7 @@ public class BuiltInsTests
             "var x = 1; async function f(){ function g(){ return await x; } return g; } f();"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WeakRef_Construct_And_Deref()
     {
         EnsureBuiltInsLoaded();
@@ -61,7 +61,7 @@ public class BuiltInsTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Expm1_Remains_Monotonic_Around_Small_Negative_Inputs()
     {
         EnsureBuiltInsLoaded();
@@ -76,7 +76,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Number_Prototype_ToString_Uses_Zero_NumberData()
     {
         EnsureBuiltInsLoaded();
@@ -86,7 +86,7 @@ public class BuiltInsTests
         Assert.Equal("0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayBuffer_Prototype_Immutable_Is_Accessor()
     {
         EnsureBuiltInsLoaded();
@@ -108,7 +108,7 @@ public class BuiltInsTests
         Assert.Equal("function|get immutable|0|true|false|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Parse_Preserves_Numeric_Object_Property_Names()
     {
         EnsureBuiltInsLoaded();
@@ -123,7 +123,7 @@ public class BuiltInsTests
         Assert.Equal("42|37", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Match_Indices_Defines_Groups_Property()
     {
         EnsureBuiltInsLoaded();
@@ -142,7 +142,7 @@ public class BuiltInsTests
         Assert.Equal("true|0,1|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Promise_Any_Thenable_Reject_Element_Has_Builtin_Metadata()
     {
         EnsureBuiltInsLoaded();
@@ -163,7 +163,7 @@ public class BuiltInsTests
         Assert.Equal("|false|false|true|1|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ShadowRealm_ImportValue_Length_Is_Two()
     {
         EnsureBuiltInsLoaded();
@@ -173,7 +173,7 @@ public class BuiltInsTests
         Assert.Equal(2.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EventTarget_Construct_Succeeds()
     {
         EnsureBuiltInsLoaded();
@@ -182,7 +182,7 @@ public class BuiltInsTests
         Assert.Equal("object", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FinalizationRegistry_Construct_Succeeds()
     {
         EnsureBuiltInsLoaded();
@@ -191,7 +191,7 @@ public class BuiltInsTests
         Assert.Equal("object", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Native_Error_Prototypes_Have_Own_Message_Property()
     {
         EnsureBuiltInsLoaded();
@@ -215,7 +215,7 @@ public class BuiltInsTests
         Assert.Equal("true,true,true,true,true|true,true,true,true,true|true,true,true,true,true|true,true,true,true,true|true,true,true,true,true|true,true,true,true,true|true,true,true,true,true|true,true,true,true,true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Join_Coerces_Primitive_Receivers()
     {
         EnsureBuiltInsLoaded();
@@ -224,7 +224,7 @@ public class BuiltInsTests
         Assert.Equal("|", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AggregateError_Uses_Custom_NewTarget_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -247,7 +247,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ShadowRealm_Constructs_And_Evaluates_Primitives()
     {
         EnsureBuiltInsLoaded();
@@ -260,7 +260,7 @@ public class BuiltInsTests
         Assert.Equal("function|true|3", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ShadowRealm_Evaluate_Wrapping_A_Function_With_Throwing_Length_Or_Name_Throws_Caller_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -306,7 +306,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Function_Prototype_Apply_With_Primitive_Receiver_Throws_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -317,7 +317,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Function_Prototype_Bind_With_NonCallable_Receiver_Throws_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -328,7 +328,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Enumerable_Inherited_Properties_Appear_On_Common_Builtins()
     {
         EnsureBuiltInsLoaded();
@@ -378,7 +378,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DynamicFunction_Construct_Parses_Before_NewTarget_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -409,7 +409,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_Construct_Coerces_NonObject_Length_Before_NewTarget_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -438,7 +438,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_Subarray_Validates_Species_Constructor_Result()
     {
         EnsureBuiltInsLoaded();
@@ -461,7 +461,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Class_Method_Bodies_Are_Strict_Mode_Code()
     {
         EnsureBuiltInsLoaded();
@@ -489,7 +489,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|SyntaxError|SyntaxError|SyntaxError|ok|ok", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Super_Call_Outside_Derived_Constructor_Is_A_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -518,7 +518,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|SyntaxError|1,bd", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Super_Property_Outside_Method_Is_A_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -547,7 +547,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|SyntaxError|SyntaxError|5|9|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Class_Computed_Property_Names_Evaluate_In_Source_Order()
     {
         EnsureBuiltInsLoaded();
@@ -574,7 +574,7 @@ public class BuiltInsTests
         Assert.Equal("a,b|7|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Base_Class_Initializes_Instance_Fields_Before_Constructor_Parameter_Defaults()
     {
         EnsureBuiltInsLoaded();
@@ -609,7 +609,7 @@ public class BuiltInsTests
         Assert.Equal("hello|field,param|5", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GeneratorFunction_Construct_Parses_Before_NewTarget_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -641,7 +641,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncGeneratorFunction_Construct_Parses_Before_NewTarget_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -673,7 +673,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Json_RawJson_Coerces_Invalid_Primitive_Inputs_To_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -702,7 +702,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|SyntaxError|SyntaxError|SyntaxError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Native_TypeErrors_Remain_TypeError_In_JavaScript_Catch()
     {
         EnsureBuiltInsLoaded();
@@ -735,7 +735,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_BaseConstructor_Throws_TypeError_When_Called_Or_Constructed()
     {
         EnsureBuiltInsLoaded();
@@ -765,7 +765,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generator_BaseConstructor_Throws_TypeError_When_Called_Or_Constructed()
     {
         EnsureBuiltInsLoaded();
@@ -793,7 +793,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Symbol_Primitives_And_Wrappers_Are_Not_Callable()
     {
         EnsureBuiltInsLoaded();
@@ -825,7 +825,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Strict_Assignment_To_Inherited_Readonly_Property_Throws_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -852,7 +852,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|unwritable|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Stringify_BigInt_Throws_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -880,7 +880,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_Delete_Uses_Handler_Context_And_Enforces_Revocation_And_New()
     {
         EnsureBuiltInsLoaded();
@@ -917,7 +917,7 @@ public class BuiltInsTests
         Assert.Equal("true|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Stringify_Circular_Replacer_Value_Throws_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -938,7 +938,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Revoked_Proxy_Array_Checks_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -975,7 +975,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError:1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Strict_Global_Readonly_Value_Assignments_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -992,7 +992,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Strict_Functions_Preserve_This_And_Throw_On_Strict_Only_Assignments()
     {
         EnsureBuiltInsLoaded();
@@ -1061,7 +1061,7 @@ public class BuiltInsTests
         Assert.Equal("true|TypeError|TypeError|undefined|TypeError|42", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Strict_Functions_Propagate_To_Nested_Functions_And_Callbacks()
     {
         EnsureBuiltInsLoaded();
@@ -1098,7 +1098,7 @@ public class BuiltInsTests
         Assert.Equal("undefined|undefined;undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Strict_Scripts_Propagate_To_Nested_Functions()
     {
         EnsureBuiltInsLoaded();
@@ -1141,7 +1141,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Empty_Statements_Key_Coercion_And_Builtin_RegExp_Fallbacks_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -1221,7 +1221,7 @@ public class BuiltInsTests
             """));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Create_Applies_Property_Descriptors_And_Rejects_Invalid_Accessors()
     {
         EnsureBuiltInsLoaded();
@@ -1251,7 +1251,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Create_And_DefineProperties_Coerce_Primitive_Properties_Arguments()
     {
         EnsureBuiltInsLoaded();
@@ -1284,7 +1284,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|same", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_DefineProperty_Uses_SameValue_For_Negative_Zero()
     {
         EnsureBuiltInsLoaded();
@@ -1318,7 +1318,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_DefineProperties_Array_Length_Regressions_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -1372,7 +1372,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError:2|TypeError|TypeError:false|TypeError:0|TypeError:0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Seal_Prevents_Object_Assign_From_Adding_New_Properties()
     {
         EnsureBuiltInsLoaded();
@@ -1395,7 +1395,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WeakRef_TypeOf_IsObject()
     {
         EnsureBuiltInsLoaded();
@@ -1404,14 +1404,14 @@ public class BuiltInsTests
         Assert.Equal("object", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BuiltIns_ModuleInitializer_Registers()
     {
         EnsureBuiltInsLoaded();
         Assert.NotNull(DefaultBuiltInRegistry.AdditionalRegistrations);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PropertyDescriptor_Accessors_Exist_For_Compatibility_BuiltIns()
     {
         EnsureBuiltInsLoaded();
@@ -1443,7 +1443,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Async_Generator_Functions_Share_Their_Intrinsic_Constructor_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -1462,7 +1462,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PropertyDescriptor_Accessors_Exist_For_Legacy_RegExp_Statics()
     {
         EnsureBuiltInsLoaded();
@@ -1484,7 +1484,7 @@ public class BuiltInsTests
 
     // ── M2: JSMath tests ─────────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_PI_ReturnsCorrectValue()
     {
         EnsureBuiltInsLoaded();
@@ -1493,7 +1493,7 @@ public class BuiltInsTests
         Assert.Equal(Math.PI, result.DoubleValue, 10);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Abs_NegativeNumber()
     {
         EnsureBuiltInsLoaded();
@@ -1502,7 +1502,7 @@ public class BuiltInsTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Floor_ReturnsFloor()
     {
         EnsureBuiltInsLoaded();
@@ -1511,7 +1511,7 @@ public class BuiltInsTests
         Assert.Equal(4.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Ceil_ReturnsCeiling()
     {
         EnsureBuiltInsLoaded();
@@ -1520,7 +1520,7 @@ public class BuiltInsTests
         Assert.Equal(5.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Round_RoundsCorrectly()
     {
         EnsureBuiltInsLoaded();
@@ -1529,7 +1529,7 @@ public class BuiltInsTests
         Assert.Equal(5.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Max_ReturnsLargest()
     {
         EnsureBuiltInsLoaded();
@@ -1538,7 +1538,7 @@ public class BuiltInsTests
         Assert.Equal(5.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Min_ReturnsSmallest()
     {
         EnsureBuiltInsLoaded();
@@ -1547,7 +1547,7 @@ public class BuiltInsTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Sqrt_ReturnsSquareRoot()
     {
         EnsureBuiltInsLoaded();
@@ -1556,7 +1556,7 @@ public class BuiltInsTests
         Assert.Equal(5.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Pow_ReturnsPower()
     {
         EnsureBuiltInsLoaded();
@@ -1565,7 +1565,7 @@ public class BuiltInsTests
         Assert.Equal(1024.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Random_ReturnsBetweenZeroAndOne()
     {
         EnsureBuiltInsLoaded();
@@ -1575,7 +1575,7 @@ public class BuiltInsTests
         Assert.InRange(value, 0.0, 1.0);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Trunc_Truncates()
     {
         EnsureBuiltInsLoaded();
@@ -1584,7 +1584,7 @@ public class BuiltInsTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Sign_ReturnsSign()
     {
         EnsureBuiltInsLoaded();
@@ -1593,7 +1593,7 @@ public class BuiltInsTests
         Assert.Equal(-1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Prototype_ToString_UsesBuiltinBrands()
     {
         EnsureBuiltInsLoaded();
@@ -1613,7 +1613,7 @@ public class BuiltInsTests
 
     // ── M2: JSReflect tests ──────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_TypeOf_IsObject()
     {
         EnsureBuiltInsLoaded();
@@ -1622,7 +1622,7 @@ public class BuiltInsTests
         Assert.Equal("object", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_Apply_CallsFunction()
     {
         EnsureBuiltInsLoaded();
@@ -1631,7 +1631,7 @@ public class BuiltInsTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_OwnKeys_ReturnsKeys()
     {
         EnsureBuiltInsLoaded();
@@ -1640,7 +1640,7 @@ public class BuiltInsTests
         Assert.Equal(2.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_Has_ChecksProperty()
     {
         EnsureBuiltInsLoaded();
@@ -1649,7 +1649,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_Has_Recognizes_Boxed_String_Index_Properties()
     {
         EnsureBuiltInsLoaded();
@@ -1668,7 +1668,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_DefineProperty_Succeeds()
     {
         EnsureBuiltInsLoaded();
@@ -1681,7 +1681,7 @@ public class BuiltInsTests
         Assert.Equal(7.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_DefineProperty_And_DeleteProperty_Throw_TypeError_For_Invalid_Arguments()
     {
         EnsureBuiltInsLoaded();
@@ -1715,7 +1715,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_PreventExtensions_Works()
     {
         EnsureBuiltInsLoaded();
@@ -1728,7 +1728,7 @@ public class BuiltInsTests
         Assert.False(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_Get_ReturnsValue()
     {
         EnsureBuiltInsLoaded();
@@ -1737,7 +1737,7 @@ public class BuiltInsTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_Set_SetsValue()
     {
         EnsureBuiltInsLoaded();
@@ -1750,7 +1750,7 @@ public class BuiltInsTests
         Assert.Equal(99.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_Operations_Forward_To_Proxy_Target_Internal_Methods()
     {
         EnsureBuiltInsLoaded();
@@ -1804,7 +1804,7 @@ public class BuiltInsTests
         Assert.Equal("ok:1|ok:object|ok:true|ok:foo|ok:true|2|throw:TypeError|throw:TypeError|throw:TypeError|throw:TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void In_Operator_Uses_Proxy_Has_When_Target_Is_A_Proxy()
     {
         EnsureBuiltInsLoaded();
@@ -1831,7 +1831,7 @@ public class BuiltInsTests
         Assert.Equal("ok:true|throw:TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_Has_Trap_Is_Used_And_Enforces_Target_Invariants()
     {
         EnsureBuiltInsLoaded();
@@ -1889,7 +1889,7 @@ public class BuiltInsTests
         Assert.Equal("ok:true|true:virtual|throw:TypeError|throw:TypeError|throw:TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_BuiltIns_Respect_Proxy_OwnPropertyKey_Order_When_OwnKeys_Trap_Is_Missing()
     {
         EnsureBuiltInsLoaded();
@@ -1989,7 +1989,7 @@ public class BuiltInsTests
 
     // ── M2: JSProxy tests ────────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_TypeOf_IsFunction()
     {
         EnsureBuiltInsLoaded();
@@ -1998,7 +1998,7 @@ public class BuiltInsTests
         Assert.Equal("function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_GetTrap_Intercepts()
     {
         EnsureBuiltInsLoaded();
@@ -2016,7 +2016,7 @@ public class BuiltInsTests
         Assert.Equal(37.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_SetTrap_Intercepts()
     {
         EnsureBuiltInsLoaded();
@@ -2037,7 +2037,7 @@ public class BuiltInsTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_Construct_WithTargetAndHandler()
     {
         EnsureBuiltInsLoaded();
@@ -2051,7 +2051,7 @@ public class BuiltInsTests
         Assert.Equal("hello", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_SetTrap_Receives_Value()
     {
         EnsureBuiltInsLoaded();
@@ -2072,7 +2072,7 @@ public class BuiltInsTests
         Assert.Equal("answer|42|42", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_Revoked_Get_Set_And_ObjectKeys_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -2089,7 +2089,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_Set_Forwards_ThrowError_To_Proxy_Targets()
     {
         EnsureBuiltInsLoaded();
@@ -2130,7 +2130,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_Set_Uses_Inherited_Proxy_Trap_And_Preserves_Function_Prototype_Assignment()
     {
         EnsureBuiltInsLoaded();
@@ -2166,7 +2166,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|1|false|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_Revoked_Construct_Throws_TypeError_When_NewTarget_Prototype_Is_Resolved()
     {
         EnsureBuiltInsLoaded();
@@ -2192,7 +2192,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_NonCallable_And_Invalid_Construct_Traps_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -2227,7 +2227,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_GetTrap_Cannot_Lie_About_NonConfigurable_Readonly_Data_Properties()
     {
         EnsureBuiltInsLoaded();
@@ -2254,7 +2254,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_OwnKeys_Trap_Must_Report_NonConfigurable_Target_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -2281,7 +2281,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_OwnKeys_Trap_Rejects_Non_String_And_Non_Symbol_Entries()
     {
         EnsureBuiltInsLoaded();
@@ -2321,7 +2321,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_Define_Delete_And_GetOwnPropertyDescriptor_Invariants_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -2387,7 +2387,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_Created_With_Revoked_Proxy_Target_Preserves_Typeof_Metadata()
     {
         EnsureBuiltInsLoaded();
@@ -2410,7 +2410,7 @@ public class BuiltInsTests
 
     // ── M2: JSConsole tests ──────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Console_TypeOf_IsObject()
     {
         EnsureBuiltInsLoaded();
@@ -2419,7 +2419,7 @@ public class BuiltInsTests
         Assert.Equal("object", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Console_Log_IsFunction()
     {
         EnsureBuiltInsLoaded();
@@ -2428,7 +2428,7 @@ public class BuiltInsTests
         Assert.Equal("function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Console_Warn_IsFunction()
     {
         EnsureBuiltInsLoaded();
@@ -2437,7 +2437,7 @@ public class BuiltInsTests
         Assert.Equal("function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Console_Error_IsFunction()
     {
         EnsureBuiltInsLoaded();
@@ -2446,7 +2446,7 @@ public class BuiltInsTests
         Assert.Equal("function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Console_Log_ReturnsValue()
     {
         EnsureBuiltInsLoaded();
@@ -2455,14 +2455,14 @@ public class BuiltInsTests
         Assert.Equal("test", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ConsoleFactory_WiredByModuleInitializer()
     {
         EnsureBuiltInsLoaded();
         Assert.NotNull(DefaultBuiltInRegistry.ConsoleFactory);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PropertyIsEnumerable_Supports_Index_And_Symbol_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -2495,7 +2495,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PropertyIsEnumerable_Coerces_Key_Before_Rejecting_Receiver()
     {
         EnsureBuiltInsLoaded();
@@ -2521,7 +2521,7 @@ public class BuiltInsTests
         Assert.Equal("ReferenceError|ReferenceError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetOwnPropertyDescriptor_Of_Array_Length_Has_Enumerable_Fields()
     {
         EnsureBuiltInsLoaded();
@@ -2540,7 +2540,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetOwnPropertyDescriptor_Of_TypedArray_Element_Has_Enumerable_Fields()
     {
         EnsureBuiltInsLoaded();
@@ -2561,7 +2561,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_DefineProperties_And_GetOwnPropertySymbols_Support_Symbol_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -2603,7 +2603,7 @@ public class BuiltInsTests
         Assert.Equal("true|1|true|2|2|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Symbol_Assignment_On_NonExtensible_Object_Is_Silent_Outside_Strict_Mode()
     {
         EnsureBuiltInsLoaded();
@@ -2628,7 +2628,7 @@ public class BuiltInsTests
 
     // ── M3: JSJSON tests ─────────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Parse_ReturnsObject()
     {
         EnsureBuiltInsLoaded();
@@ -2637,7 +2637,7 @@ public class BuiltInsTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Parse_Coerces_Argument_With_Spec_ToString_First()
     {
         EnsureBuiltInsLoaded();
@@ -2672,7 +2672,7 @@ public class BuiltInsTests
         Assert.Equal("ok:null|ok:true|ok:3.14|SyntaxError|TypeError|RangeError|RangeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Stringify_ReturnsString()
     {
         EnsureBuiltInsLoaded();
@@ -2681,7 +2681,7 @@ public class BuiltInsTests
         Assert.Equal("{\"a\":1}", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Parse_WithReviver()
     {
         EnsureBuiltInsLoaded();
@@ -2694,7 +2694,7 @@ public class BuiltInsTests
         Assert.Equal(2.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Parse_Invalid_Text_Throws_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -2712,7 +2712,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|SyntaxError", sourceContext.Eval(script).ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Stringify_WithIndent()
     {
         EnsureBuiltInsLoaded();
@@ -2721,7 +2721,7 @@ public class BuiltInsTests
         Assert.Contains("\"a\"", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Parse_SourceTextAccess_IsDisabled_WhenFlagIsOff()
     {
         EnsureBuiltInsLoaded();
@@ -2737,7 +2737,7 @@ public class BuiltInsTests
         Assert.Equal("missing,missing", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Parse_SourceTextAccess_IsEnabled_WhenFlagIsOn()
     {
         EnsureBuiltInsLoaded();
@@ -2756,7 +2756,7 @@ public class BuiltInsTests
         Assert.Equal("present|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Parse_SourceTextAccess_Passes_Context_For_Composite_Root()
     {
         EnsureBuiltInsLoaded();
@@ -2775,7 +2775,7 @@ public class BuiltInsTests
         Assert.Equal("object|true|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Error_IsError_IsDisabled_WhenFlagIsOff()
     {
         EnsureBuiltInsLoaded();
@@ -2784,7 +2784,7 @@ public class BuiltInsTests
         Assert.Equal("undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Error_IsError_IsEnabled_WhenFlagIsOn()
     {
         EnsureBuiltInsLoaded();
@@ -2793,7 +2793,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Error_Constructors_Preserve_Names_Prototypes_And_Messages()
     {
         EnsureBuiltInsLoaded();
@@ -2841,7 +2841,7 @@ public class BuiltInsTests
         Assert.Equal("ref boom", parts[15]);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Error_Constructors_Expose_Non_Writable_Prototype_Descriptors()
     {
         EnsureBuiltInsLoaded();
@@ -2863,7 +2863,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AggregateError_And_DataView_Writer_Functions_Expose_Spec_Lengths()
     {
         EnsureBuiltInsLoaded();
@@ -2880,7 +2880,7 @@ public class BuiltInsTests
         Assert.Equal("2|2|2|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Function_Family_And_Error_Prototype_Metadata_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();
@@ -2916,7 +2916,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|true|true|true|true|false|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generator_Function_Prototype_Prototype_Descriptors_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -2951,7 +2951,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|function|function|false,false,true|false,false,true|false,false,true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Error_Undefined_Does_Not_Create_Own_Message_Property()
     {
         EnsureBuiltInsLoaded();
@@ -2967,7 +2967,7 @@ public class BuiltInsTests
         Assert.Equal("false|false|null", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Built_In_Constructors_Expose_Non_Writable_Prototype_Descriptors_Without_Changing_User_Functions()
     {
         EnsureBuiltInsLoaded();
@@ -3013,7 +3013,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|false|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_Constructors_Expose_Non_Writable_Prototype_Descriptors()
     {
         EnsureBuiltInsLoaded();
@@ -3045,7 +3045,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Custom_Error_Subclass_Chains_Preserve_Instanceof_And_Message()
     {
         EnsureBuiltInsLoaded();
@@ -3077,7 +3077,7 @@ public class BuiltInsTests
         Assert.Equal("custom boom", parts[7]);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Promise_Task_Preserves_Custom_Error_Subclass_In_Rejection()
     {
         EnsureBuiltInsLoaded();
@@ -3096,7 +3096,7 @@ public class BuiltInsTests
         Assert.Equal("custom boom", ex.Error[KeyStrings.message].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Spread_Iterator_Abrupt_Completion_Preserves_Custom_Error_Subclass()
     {
         EnsureBuiltInsLoaded();
@@ -3123,7 +3123,7 @@ public class BuiltInsTests
         Assert.Equal("Test262Error|true|custom boom", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Promise_Finally_On_Thenable_Preserves_Custom_Error_Subclass()
     {
         EnsureBuiltInsLoaded();
@@ -3146,7 +3146,7 @@ public class BuiltInsTests
         Assert.Equal("Test262Error|true|custom boom", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Error_Constructor_Is_Callable_And_Global_Descriptor_Is_Not_Enumerable()
     {
         EnsureBuiltInsLoaded();
@@ -3162,7 +3162,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|false|Error|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NativeError_Constructors_Have_Error_As_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -3180,7 +3180,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_Constructors_Expose_Function_Metadata()
     {
         EnsureBuiltInsLoaded();
@@ -3199,7 +3199,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|[object Function]|true|[object Function]|true|RelativeTimeFormat|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_Collator_Reads_Options_Through_Getters()
     {
         EnsureBuiltInsLoaded();
@@ -3223,7 +3223,7 @@ public class BuiltInsTests
         Assert.Equal("CustomError|CustomError|search", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BuiltIn_Functions_Keep_Function_Class_Tag()
     {
         EnsureBuiltInsLoaded();
@@ -3239,7 +3239,7 @@ public class BuiltInsTests
         Assert.Equal("true|[object Function]|[object Function]|[object Function]|[object Function]", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_FromAsync_IsDisabled_WhenFlagIsOff()
     {
         EnsureBuiltInsLoaded();
@@ -3248,7 +3248,7 @@ public class BuiltInsTests
         Assert.Equal("undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task Array_FromAsync_IsEnabled_WhenFlagIsOn()
     {
         EnsureBuiltInsLoaded();
@@ -3259,7 +3259,7 @@ public class BuiltInsTests
         Assert.Equal("2,4,6", ctx.Eval("resultArray.join(',')").ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_And_Map_GroupBy_Are_Disabled_WhenFlagIsOff()
     {
         EnsureBuiltInsLoaded();
@@ -3268,7 +3268,7 @@ public class BuiltInsTests
         Assert.Equal("undefined|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_And_Map_GroupBy_Are_Enabled_WhenFlagIsOn()
     {
         EnsureBuiltInsLoaded();
@@ -3290,7 +3290,7 @@ public class BuiltInsTests
         Assert.Equal("1,3|2,4|1,3|2,4", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_Concat_IsDisabled_WhenFlagIsOff()
     {
         EnsureBuiltInsLoaded();
@@ -3299,7 +3299,7 @@ public class BuiltInsTests
         Assert.Equal("undefined|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_Concat_IsEnabled_WhenFlagIsOn()
     {
         EnsureBuiltInsLoaded();
@@ -3310,7 +3310,7 @@ public class BuiltInsTests
 
     // ── M3: DataView tests ───────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DataView_Construct_Succeeds()
     {
         EnsureBuiltInsLoaded();
@@ -3319,7 +3319,7 @@ public class BuiltInsTests
         Assert.Equal(16.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DataView_SetAndGetInt8()
     {
         EnsureBuiltInsLoaded();
@@ -3333,7 +3333,7 @@ public class BuiltInsTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DataView_SetAndGetFloat32()
     {
         EnsureBuiltInsLoaded();
@@ -3347,7 +3347,7 @@ public class BuiltInsTests
         Assert.Equal(3.14, result.DoubleValue, 2);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DataView_Methods_Throw_RangeError_For_Negative_Infinite_ByteOffset()
     {
         EnsureBuiltInsLoaded();
@@ -3369,7 +3369,7 @@ public class BuiltInsTests
         Assert.Equal("RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DataView_Fractional_Negative_ByteOffset_Truncates_Toward_Zero()
     {
         EnsureBuiltInsLoaded();
@@ -3382,7 +3382,7 @@ public class BuiltInsTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayBuffer_And_DataView_Constructors_Expose_Spec_Length()
     {
         EnsureBuiltInsLoaded();
@@ -3391,7 +3391,7 @@ public class BuiltInsTests
         Assert.Equal("1|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_Includes_Propagates_FromIndex_ValueOf_Exception()
     {
         EnsureBuiltInsLoaded();
@@ -3412,7 +3412,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
         Assert.True(result.BooleanValue);
     }
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Proto_Assignment_Falls_Back_To_Own_Data_Property_After_Accessor_Deletion()
     {
         EnsureBuiltInsLoaded();
@@ -3434,7 +3434,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_From_Propagates_Source_Length_Exception()
     {
         EnsureBuiltInsLoaded();
@@ -3455,7 +3455,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_Construct_Propagates_NewTarget_Prototype_Getter_Exception()
     {
         EnsureBuiltInsLoaded();
@@ -3479,7 +3479,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_From_Calls_Custom_Constructor()
     {
         EnsureBuiltInsLoaded();
@@ -3502,7 +3502,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_Of_Calls_Custom_Constructor()
     {
         EnsureBuiltInsLoaded();
@@ -3525,7 +3525,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_ToLocaleString_Propagates_ValueOf_Coercion_Exception()
     {
         EnsureBuiltInsLoaded();
@@ -3551,7 +3551,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_ToLocaleString_Visits_Next_Element()
     {
         EnsureBuiltInsLoaded();
@@ -3581,7 +3581,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_Set_Propagates_Value_Coercion_For_Invalid_Numeric_String_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -3605,7 +3605,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_Set_Propagates_Value_Coercion_For_Out_Of_Bounds_Integer_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -3629,7 +3629,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_DefineProperty_Propagates_Value_Coercion()
     {
         EnsureBuiltInsLoaded();
@@ -3653,7 +3653,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_Methods_Ignore_Shadowed_Length_Properties()
     {
         EnsureBuiltInsLoaded();
@@ -3675,7 +3675,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_Constructs_From_Iterable_Object()
     {
         EnsureBuiltInsLoaded();
@@ -3694,7 +3694,7 @@ public class BuiltInsTests
 
     // ── M2: ArrayBuffer transfer tests ───────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayBuffer_Transfer_Copies_Bytes_And_Detaches_Source()
     {
         EnsureBuiltInsLoaded();
@@ -3711,7 +3711,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|6|7|11|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayBuffer_TransferToFixedLength_Returns_Transferred_Buffer()
     {
         EnsureBuiltInsLoaded();
@@ -3725,7 +3725,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|2|99", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayBuffer_Transferred_Source_ByteLength_Is_Zero()
     {
         EnsureBuiltInsLoaded();
@@ -3742,7 +3742,7 @@ public class BuiltInsTests
 
     // ── M2: Hashbang grammar tests ────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Hashbang_At_Start_Of_Source_Is_Ignored()
     {
         EnsureBuiltInsLoaded();
@@ -3751,7 +3751,7 @@ public class BuiltInsTests
         Assert.Equal(3.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Hashbang_Not_At_Start_Of_Source_Is_Rejected()
     {
         EnsureBuiltInsLoaded();
@@ -3763,7 +3763,7 @@ public class BuiltInsTests
     // lexical (`let`/`const`) binding — that is an early SyntaxError, matching V8/SpiderMonkey and
     // test262's `var-env-global-lex-*` negative tests. These previously asserted the eval `var`
     // silently shadowing the lexical, which the engine has stopped doing.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Eval_Var_Colliding_With_Global_Let_Is_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -3771,7 +3771,7 @@ public class BuiltInsTests
         Assert.Throws<JSException>(() => ctx.Eval("let value = 1; eval('var value = 2; value;'); value;"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Eval_Var_Colliding_With_Global_Const_Is_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -3779,7 +3779,7 @@ public class BuiltInsTests
         Assert.Throws<JSException>(() => ctx.Eval("const value = 1; eval('var value = 2; value;'); value;"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Eval_Var_Colliding_With_Global_Let_Across_Direct_Evals_Is_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -3789,7 +3789,7 @@ public class BuiltInsTests
 
     // A direct eval `var` that does NOT collide with a global lexical still works: two evals may
     // each redeclare the same global `var` name (no `let`/`const` of that name exists).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Eval_Var_Can_Be_Redeclared_Across_Direct_Evals()
     {
         EnsureBuiltInsLoaded();
@@ -3798,7 +3798,7 @@ public class BuiltInsTests
         Assert.Equal("2|3|3", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Direct_Eval_Can_Read_And_Update_Function_Local_Bindings()
     {
         EnsureBuiltInsLoaded();
@@ -3815,7 +3815,7 @@ public class BuiltInsTests
         Assert.Equal("number|2|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Direct_Eval_Function_Local_Var_Declarations_Do_Not_Leak_To_Global()
     {
         EnsureBuiltInsLoaded();
@@ -3837,7 +3837,7 @@ public class BuiltInsTests
         Assert.Equal("undefined|4|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Direct_Eval_Block_Function_Declarations_Update_Visible_Bindings()
     {
         EnsureBuiltInsLoaded();
@@ -3862,7 +3862,7 @@ public class BuiltInsTests
         Assert.Equal("function|declaration||function|inner declaration||function|second declaration", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Eval_Block_Function_Declarations_Update_Existing_Var_Bindings()
     {
         EnsureBuiltInsLoaded();
@@ -3886,7 +3886,7 @@ public class BuiltInsTests
         Assert.Equal("function|direct declaration||function|local declaration||function|indirect declaration", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Direct_Eval_Block_Function_Declarations_Create_Configurable_Global_Bindings()
     {
         EnsureBuiltInsLoaded();
@@ -3907,7 +3907,7 @@ public class BuiltInsTests
         Assert.Equal("undefined|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Eval_Function_Declarations_Create_Configurable_Global_Bindings()
     {
         EnsureBuiltInsLoaded();
@@ -3939,7 +3939,7 @@ public class BuiltInsTests
         Assert.Equal("function|true|true|true||undefined|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnnexB_Block_Function_Declarations_Update_Function_Scope_Bindings()
     {
         using var ctx = CreateContext();
@@ -3955,7 +3955,7 @@ public class BuiltInsTests
         Assert.Equal("function|block", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AggregateError_Has_Global_Function_Descriptor()
     {
         EnsureBuiltInsLoaded();
@@ -3975,7 +3975,7 @@ public class BuiltInsTests
         Assert.Equal("function|true|false|true|1,2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BuiltIn_Globals_Are_NonEnumerable_And_Configurable()
     {
         EnsureBuiltInsLoaded();
@@ -4003,7 +4003,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Context_Startup_Preserves_Global_Descriptors_And_Default_Feature_Gates()
     {
         EnsureBuiltInsLoaded();
@@ -4039,7 +4039,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncIteratorPrototype_Exposes_SymbolAsyncIterator()
     {
         EnsureBuiltInsLoaded();
@@ -4064,7 +4064,7 @@ public class BuiltInsTests
         Assert.Equal("function|true|false|true|42", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Common_Test262_ScriptHost_BuiltIns_Are_Exposed_And_Callable()
     {
         EnsureBuiltInsLoaded();
@@ -4121,7 +4121,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Direct_Eval_In_Function_Context_Rejects_Arguments_Declaration()
     {
         EnsureBuiltInsLoaded();
@@ -4140,7 +4140,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Direct_Eval_In_Parameter_Defaults_Rejects_Function_Body_Arguments_And_Eval_Bindings()
     {
         EnsureBuiltInsLoaded();
@@ -4182,7 +4182,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|SyntaxError|SyntaxError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Direct_Eval_In_Function_Activation_Persists_Local_Eval_Binding()
     {
         EnsureBuiltInsLoaded();
@@ -4204,7 +4204,7 @@ public class BuiltInsTests
 
     // ── M2: JSMap tests ──────────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Map_SetAndGet()
     {
         EnsureBuiltInsLoaded();
@@ -4213,7 +4213,7 @@ public class BuiltInsTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Map_Size()
     {
         EnsureBuiltInsLoaded();
@@ -4222,7 +4222,7 @@ public class BuiltInsTests
         Assert.Equal(2.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Map_Has_ReturnsTrue()
     {
         EnsureBuiltInsLoaded();
@@ -4231,7 +4231,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Map_Delete_RemovesEntry()
     {
         EnsureBuiltInsLoaded();
@@ -4241,7 +4241,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Map_ForEach_Iterates()
     {
         EnsureBuiltInsLoaded();
@@ -4258,7 +4258,7 @@ public class BuiltInsTests
         Assert.Equal(3.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Map_Delete_Removes_Number_BigInt_And_NaN_Keys_From_Lookup()
     {
         EnsureBuiltInsLoaded();
@@ -4280,7 +4280,7 @@ public class BuiltInsTests
         Assert.Equal("2|false|true;false|false|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Map_And_Set_Tolerate_Mutation_During_Iteration()
     {
         EnsureBuiltInsLoaded();
@@ -4322,7 +4322,7 @@ public class BuiltInsTests
         Assert.Equal("map-del:1,3|map-add:1,2|map-readd:1,2|set-del:1,3", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Map_Clear_Preserves_Iterator_And_Resets_Size()
     {
         EnsureBuiltInsLoaded();
@@ -4342,7 +4342,7 @@ public class BuiltInsTests
         Assert.Equal("1|0|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_HasOwn_And_Friends_Accept_Symbol_Property_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -4371,7 +4371,7 @@ public class BuiltInsTests
 
     // ── M3: JSWeakMap tests ──────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WeakMap_SetAndGet()
     {
         EnsureBuiltInsLoaded();
@@ -4380,7 +4380,7 @@ public class BuiltInsTests
         Assert.Equal(99.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WeakMap_Has_ReturnsTrue()
     {
         EnsureBuiltInsLoaded();
@@ -4391,7 +4391,7 @@ public class BuiltInsTests
 
     // ── M3: JSSet tests ──────────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Set_Add_And_Has()
     {
         EnsureBuiltInsLoaded();
@@ -4400,7 +4400,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Set_Size()
     {
         EnsureBuiltInsLoaded();
@@ -4409,7 +4409,7 @@ public class BuiltInsTests
         Assert.Equal(2.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Set_Delete()
     {
         EnsureBuiltInsLoaded();
@@ -4419,7 +4419,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Set_Union()
     {
         EnsureBuiltInsLoaded();
@@ -4428,7 +4428,7 @@ public class BuiltInsTests
         Assert.Equal(3.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Set_Intersection()
     {
         EnsureBuiltInsLoaded();
@@ -4437,7 +4437,7 @@ public class BuiltInsTests
         Assert.Equal(2.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Set_Difference()
     {
         EnsureBuiltInsLoaded();
@@ -4449,7 +4449,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|true|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Set_SymmetricDifference()
     {
         EnsureBuiltInsLoaded();
@@ -4461,7 +4461,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|true|true|3", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Set_Subset_Superset_And_Disjoint_Methods()
     {
         EnsureBuiltInsLoaded();
@@ -4475,7 +4475,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Set_Methods_Accept_SetLike_Objects()
     {
         EnsureBuiltInsLoaded();
@@ -4504,7 +4504,7 @@ public class BuiltInsTests
 
     // ── M3: ES2025 built-in coverage ──────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task Promise_Try_Resolves_Return_Value()
     {
         EnsureBuiltInsLoaded();
@@ -4515,7 +4515,7 @@ public class BuiltInsTests
         Assert.Equal(42.0, resolved.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task Promise_Try_Rejects_Synchronous_Exception()
     {
         EnsureBuiltInsLoaded();
@@ -4525,7 +4525,7 @@ public class BuiltInsTests
         await Assert.ThrowsAsync<JSException>(async () => await promise.Task);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Promise_Try_Uses_The_Receiver_Constructor()
     {
         EnsureBuiltInsLoaded();
@@ -4544,7 +4544,7 @@ public class BuiltInsTests
         Assert.Equal("true|1|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Promise_Invalid_Executors_Receivers_And_Then_Constructors_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -4584,7 +4584,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Promise_And_Iterator_Validate_TypeErrors_Before_Observable_User_Code()
     {
         EnsureBuiltInsLoaded();
@@ -4640,7 +4640,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|0||TypeError|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_Construct_And_Promise_Capability_Functions_Respect_Constructibility()
     {
         EnsureBuiltInsLoaded();
@@ -4688,7 +4688,7 @@ public class BuiltInsTests
         Assert.Equal("false|false|true|false|false|false|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generator_Functions_Object_Literal_Constructor_Methods_And_Reflect_Argument_Lists_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -4724,7 +4724,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Promise_Reactions_Run_After_Synchronous_Code()
     {
         EnsureBuiltInsLoaded();
@@ -4844,7 +4844,7 @@ public class BuiltInsTests
         Assert.Equal(expected, result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Of_Is_Generic_Over_Constructor_This()
     {
         EnsureBuiltInsLoaded();
@@ -4943,7 +4943,7 @@ public class BuiltInsTests
         Assert.Equal(expected, result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ThrowTypeError_Is_Shared_Across_Unmapped_Arguments_Callee()
     {
         EnsureBuiltInsLoaded();
@@ -4969,7 +4969,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Promise_Nested_Resolution_Assimilates_Inner_Promise()
     {
         EnsureBuiltInsLoaded();
@@ -4983,7 +4983,7 @@ public class BuiltInsTests
         Assert.Equal("outer:inner", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Async_Await_Continuation_Runs_After_Synchronous_Code()
     {
         EnsureBuiltInsLoaded();
@@ -5005,7 +5005,7 @@ public class BuiltInsTests
         Assert.Equal("start|sync|after", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Async_Arrow_And_Method_Await_Do_Not_Mark_Program_As_Top_Level_Await()
     {
         EnsureBuiltInsLoaded();
@@ -5036,7 +5036,7 @@ public class BuiltInsTests
         Assert.Equal("sync|arrow-start|ok:arrow|method-start|ok:method", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Promise_Rejection_Handlers_Run_In_Microtask_Order()
     {
         EnsureBuiltInsLoaded();
@@ -5054,7 +5054,7 @@ public class BuiltInsTests
         Assert.Equal("sync|reject:boom", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Escape_Escapes_Syntax_Characters()
     {
         EnsureBuiltInsLoaded();
@@ -5063,7 +5063,7 @@ public class BuiltInsTests
         Assert.Equal(@"\x68ello\.world\?\+\[test\]\{x\}\(y\)\|\/\\\^\$", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Escape_Escapes_Whitespace_And_Rejects_NonStrings()
     {
         EnsureBuiltInsLoaded();
@@ -5073,7 +5073,7 @@ public class BuiltInsTests
         Assert.Throws<JSException>(() => ctx.Eval("RegExp.escape(123);"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Escape_Exposes_Expected_Metadata_And_Descriptors()
     {
         EnsureBuiltInsLoaded();
@@ -5111,7 +5111,7 @@ public class BuiltInsTests
         Assert.Equal("true", parts[10]);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Primitive_Wrapper_Addition_Uses_The_Wrapped_Primitive_Value()
     {
         EnsureBuiltInsLoaded();
@@ -5125,7 +5125,7 @@ public class BuiltInsTests
         Assert.Equal("2|2|1|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Primitive_Wrappers_Respect_Overrides_And_Remain_Truthy()
     {
         EnsureBuiltInsLoaded();
@@ -5153,7 +5153,7 @@ public class BuiltInsTests
         Assert.Equal("true|20|true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BigInt_Wrapper_Addition_Preserves_BigInt_Mixing_Rules()
     {
         EnsureBuiltInsLoaded();
@@ -5174,7 +5174,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|Cannot mix BigInt and other types, use explicit conversions||bigint|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BigInt_Object_ToPrimitive_Works_For_Bitwise_Update_And_Number()
     {
         EnsureBuiltInsLoaded();
@@ -5200,7 +5200,7 @@ public class BuiltInsTests
         Assert.Equal("1|1|-1|11|7|10|9007199254740992", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DataView_BigInt64_Uses_BigInt_Values()
     {
         EnsureBuiltInsLoaded();
@@ -5221,7 +5221,7 @@ public class BuiltInsTests
         Assert.Equal("true|bigint|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_NumberFormat_Range_Accepts_BigInt_Arguments()
     {
         EnsureBuiltInsLoaded();
@@ -5239,7 +5239,7 @@ public class BuiltInsTests
         Assert.Equal("string|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Index_Accessor_Without_Getter_Enumerates_As_Undefined()
     {
         EnsureBuiltInsLoaded();
@@ -5270,7 +5270,7 @@ public class BuiltInsTests
         Assert.Equal("true|42|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_IsArray_Recognizes_ArrayPrototype_And_Proxy_Targets()
     {
         EnsureBuiltInsLoaded();
@@ -5292,7 +5292,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_IsArray_Exposes_Expected_Metadata_And_Non_Array_Results()
     {
         EnsureBuiltInsLoaded();
@@ -5338,7 +5338,7 @@ public class BuiltInsTests
         Assert.Equal("true", parts[14]);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Function_Length_Metadata_Matches_Test262_Regression_Samples()
     {
         EnsureBuiltInsLoaded();
@@ -5376,7 +5376,7 @@ public class BuiltInsTests
         Assert.All(parts, part => Assert.Equal("1,1,false,false,true", part));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Additional_BuiltIn_Length_Metadata_Matches_Test262_Regression_Samples()
     {
         EnsureBuiltInsLoaded();
@@ -5403,7 +5403,7 @@ public class BuiltInsTests
         Assert.All(parts, part => Assert.Equal("1,1,false,false,true", part));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generated_BuiltIn_Method_Length_Metadata_Matches_Map_And_Math_Samples()
     {
         EnsureBuiltInsLoaded();
@@ -5450,7 +5450,7 @@ public class BuiltInsTests
             parts);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Dynamic_Function_Constructors_Preserve_Kind_And_Length_Metadata()
     {
         EnsureBuiltInsLoaded();
@@ -5480,7 +5480,7 @@ public class BuiltInsTests
         Assert.Equal("2|2|1|1|function|3|function|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Symbol_And_Generator_Instance_Prototype_Metadata_Match_Test262_Samples()
     {
         EnsureBuiltInsLoaded();
@@ -5498,7 +5498,7 @@ public class BuiltInsTests
         Assert.Equal("0|0|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Iteration_Methods_Preserve_Abrupt_Completions_From_Length_Property_And_Predicate()
     {
         EnsureBuiltInsLoaded();
@@ -5545,7 +5545,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Function_Prototype_Methods_Inherit_Bind_In_A_Fresh_Context()
     {
         EnsureBuiltInsLoaded();
@@ -5557,7 +5557,7 @@ public class BuiltInsTests
         Assert.Equal("function|a,b", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_IsArray_Is_Not_A_Constructor_In_ReflectConstruct()
     {
         EnsureBuiltInsLoaded();
@@ -5573,7 +5573,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_From_Uses_Constructable_This_And_Falls_Back_For_NonConstructors()
     {
         EnsureBuiltInsLoaded();
@@ -5614,7 +5614,7 @@ public class BuiltInsTests
         Assert.Equal("false|[object Date]|true|2|A|B|false|true|length|0|true|1|1|zero|true|3,4,5", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_From_ArrayLike_Reads_Length_Before_Construct_And_Element_Access()
     {
         EnsureBuiltInsLoaded();
@@ -5644,7 +5644,7 @@ public class BuiltInsTests
         Assert.Equal("true|lC0|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Assign_Throws_TypeError_For_Primitive_Frozen_And_NonExtensible_Targets()
     {
         EnsureBuiltInsLoaded();
@@ -5676,7 +5676,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Integrity_And_DefineProperty_TypeError_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -5736,7 +5736,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError:true:true|TypeError:2|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_IsFrozen_And_IsSealed_Match_Test262_For_Primitives_And_NonExtensible_Objects()
     {
         EnsureBuiltInsLoaded();
@@ -5766,7 +5766,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|true|false|true|true|true|true|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_Seal_And_Freeze_Follow_IntegerIndexed_Object_Rules()
     {
         EnsureBuiltInsLoaded();
@@ -5814,7 +5814,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|false|TypeError|false|false|TypeError|false|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Strict_Arguments_Callee_Uses_Frozen_ThrowTypeError_Getter()
     {
         EnsureBuiltInsLoaded();
@@ -5835,7 +5835,7 @@ public class BuiltInsTests
         Assert.Equal(string.Empty, throwTypeError[KeyStrings.name].ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Anonymous_BuiltIn_Helper_Functions_Expose_Empty_Name_Metadata()
     {
         EnsureBuiltInsLoaded();
@@ -5878,7 +5878,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_DefineProperty_Uses_Array_Length_Invariants()
     {
         EnsureBuiltInsLoaded();
@@ -5915,7 +5915,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Length_Remains_An_Own_Property_After_Prototype_Changes()
     {
         EnsureBuiltInsLoaded();
@@ -5942,7 +5942,7 @@ public class BuiltInsTests
         Assert.Equal("3|true|false|false|true|true|3|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_IsArray_And_Name_Properties_Are_Actually_Configurable()
     {
         EnsureBuiltInsLoaded();
@@ -5962,7 +5962,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|true|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BuiltIn_Functions_Inherit_Length_From_FunctionPrototype_After_Delete()
     {
         EnsureBuiltInsLoaded();
@@ -5982,7 +5982,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Sloppy_Assignment_To_Readonly_Indexed_Properties_Does_Not_Throw()
     {
         EnsureBuiltInsLoaded();
@@ -6015,7 +6015,7 @@ public class BuiltInsTests
         Assert.Equal("throw:TypeError", strict.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Date_Prototype_SetYear_Is_Installed_With_AnnexB_Metadata_And_Behavior()
     {
         EnsureBuiltInsLoaded();
@@ -6045,7 +6045,7 @@ public class BuiltInsTests
         Assert.Equal("true", parts[6]);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Date_Prototype_SetYear_TimeClip_Preserves_Valid_Extreme_Time_Value()
     {
         EnsureBuiltInsLoaded();
@@ -6070,7 +6070,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Date_Prototype_ToGMTString_Is_The_ToUTCString_Alias()
     {
         EnsureBuiltInsLoaded();
@@ -6079,7 +6079,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Escape_And_Unescape_Are_Installed_With_AnnexB_Metadata_And_Basic_Behavior()
     {
         EnsureBuiltInsLoaded();
@@ -6119,7 +6119,7 @@ public class BuiltInsTests
         Assert.Equal("true", parts[11]);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Escape_And_Unescape_Propagate_TypeErrors_From_ToString_Coercion()
     {
         EnsureBuiltInsLoaded();
@@ -6152,7 +6152,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Unescape_Only_Recognizes_Lowercase_Unicode_Escape()
     {
         EnsureBuiltInsLoaded();
@@ -6168,7 +6168,7 @@ public class BuiltInsTests
         Assert.Equal("A|%U0041|%U0000", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DecodeURIComponent_Decodes_Reserved_Characters_And_Rejects_Malformed_Four_Byte_Sequences()
     {
         EnsureBuiltInsLoaded();
@@ -6194,7 +6194,7 @@ public class BuiltInsTests
         }
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Escape_Handles_Initial_Characters_And_Punctuators()
     {
         EnsureBuiltInsLoaded();
@@ -6209,7 +6209,7 @@ public class BuiltInsTests
         Assert.Equal(@"\x66oo|\x31abc|\x2c|\x21|\ud800", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Compile_Exists_And_Preserves_ToString_Abrupt_Completions()
     {
         EnsureBuiltInsLoaded();
@@ -6242,7 +6242,7 @@ public class BuiltInsTests
         Assert.Equal("function|RangeError|SyntaxError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void String_Legacy_Html_Wrappers_Exist_And_Preserve_ToString_Abrupt_Completions()
     {
         EnsureBuiltInsLoaded();
@@ -6278,7 +6278,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Test262_Abrupt_Completions_For_Json_Object_RegExp_And_String_BuiltIns_Are_Preserved()
     {
         EnsureBuiltInsLoaded();
@@ -6440,7 +6440,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Test262_Harness_Abrupt_Completions_For_ReplaceAll_And_Intl_Are_Preserved()
     {
         EnsureBuiltInsLoaded();
@@ -6561,7 +6561,7 @@ public class BuiltInsTests
         Assert.Equal("Test262Error|Test262Error,0|Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReplaceAll_Throws_TypeError_For_Symbol_String_Coercions()
     {
         EnsureBuiltInsLoaded();
@@ -6597,7 +6597,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Symbol_Relational_Comparisons_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -6627,7 +6627,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Test_And_Exec_Throw_When_LastIndex_Is_Not_Writable()
     {
         EnsureBuiltInsLoaded();
@@ -6658,7 +6658,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Test262_Abrupt_Completions_For_Date_Error_Object_And_Promise_BuiltIns_Are_Preserved()
     {
         EnsureBuiltInsLoaded();
@@ -6743,7 +6743,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Error_Subclass_Default_Constructor_Uses_Derived_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -6764,7 +6764,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|Test262Error", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Legacy_Object_Prototype_Helpers_Preserve_Abrupt_Completions_And_Key_Coercion()
     {
         EnsureBuiltInsLoaded();
@@ -6824,7 +6824,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Legacy_Object_Prototype_Helpers_Handle_Uninterned_String_Property_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -6855,7 +6855,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|true|true|false|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Legacy_Object_Prototype_Helpers_Throw_On_Non_Extensible_Targets()
     {
         EnsureBuiltInsLoaded();
@@ -6888,7 +6888,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Unresolved_Identifier_Reads_Throw_ReferenceError_In_Binary_Expressions()
     {
         EnsureBuiltInsLoaded();
@@ -6904,7 +6904,7 @@ public class BuiltInsTests
         Assert.Equal("ReferenceError|missingValue is not defined||ReferenceError|missingValue is not defined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Unresolved_Identifier_Reads_Throw_ReferenceError_In_Grouped_And_Reversed_Binary_Expressions()
     {
         EnsureBuiltInsLoaded();
@@ -6925,7 +6925,7 @@ public class BuiltInsTests
         Assert.Equal(expected, result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Typeof_Unresolved_Identifier_Still_Returns_Undefined()
     {
         EnsureBuiltInsLoaded();
@@ -6936,7 +6936,7 @@ public class BuiltInsTests
         Assert.Equal("undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NewFunction_Can_Assign_To_Global_Var_Identifier()
     {
         EnsureBuiltInsLoaded();
@@ -6951,7 +6951,7 @@ public class BuiltInsTests
         Assert.Equal("ok", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NewFunction_Uses_Global_Object_As_Default_This()
     {
         EnsureBuiltInsLoaded();
@@ -6967,7 +6967,7 @@ public class BuiltInsTests
         Assert.Equal("true|8", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NewFunction_Invalid_Parameter_Syntax_Throws_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -6985,7 +6985,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Direct_Eval_Function_Declaration_Replaces_Global_Accessors()
     {
         EnsureBuiltInsLoaded();
@@ -7017,7 +7017,7 @@ public class BuiltInsTests
         Assert.Equal("false|false|function|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NewFunction_AnnexB_Html_Comment_Parameters_Parse_Correctly()
     {
         EnsureBuiltInsLoaded();
@@ -7035,7 +7035,7 @@ public class BuiltInsTests
             """).ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NewFunction_AnnexB_Html_Comment_Bodies_Parse_Correctly()
     {
         EnsureBuiltInsLoaded();
@@ -7052,7 +7052,7 @@ public class BuiltInsTests
         Assert.Equal("function|function|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NewFunction_Strict_Body_Rejects_Eval_Parameter()
     {
         EnsureBuiltInsLoaded();
@@ -7070,7 +7070,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NewFunction_Strict_Body_Makes_Direct_Eval_Strict()
     {
         EnsureBuiltInsLoaded();
@@ -7089,7 +7089,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NewFunction_Rejects_Invalid_Source_And_Strict_Nested_Function_Early_Errors()
     {
         EnsureBuiltInsLoaded();
@@ -7112,7 +7112,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|SyntaxError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BigInt_Invalid_String_Syntax_Throws_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -7129,7 +7129,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|SyntaxError|SyntaxError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Uint8Array_Base64_Alphabet_Mismatches_Throw_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -7161,7 +7161,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|199,239,242|SyntaxError|4,3,199,239,242,255", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Uint8Array_ToBase64_Honors_OmitPadding_Option()
     {
         EnsureBuiltInsLoaded();
@@ -7184,7 +7184,7 @@ public class BuiltInsTests
         Assert.Equal("x+88|x+88|x+88|x+8|x+8=|x-88|x-88|x-8=|x-8", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetCanonicalLocales_Applies_CLDR_Subtag_Aliases()
     {
         EnsureBuiltInsLoaded();
@@ -7205,7 +7205,7 @@ public class BuiltInsTests
         Assert.Equal("zh|he|ru-RU|en-GB|sr-Latn|sr-Cyrl|sr-Cyrl-RS", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormat_Currency_Compact_Notation_Defaults_Fraction_Digits_To_Zero()
     {
         EnsureBuiltInsLoaded();
@@ -7227,7 +7227,7 @@ public class BuiltInsTests
         Assert.Equal("3|3|0|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetCanonicalLocales_Uses_Script_Conditional_Region_Alias()
     {
         EnsureBuiltInsLoaded();
@@ -7253,7 +7253,7 @@ public class BuiltInsTests
         Assert.Equal("ru-RU|und-Armn-AM|ru-Armn-RU|ru-Cyrl-RU|hy-AM", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetCanonicalLocales_Substitutes_And_Deduplicates_Variant_Aliases()
     {
         EnsureBuiltInsLoaded();
@@ -7272,7 +7272,7 @@ public class BuiltInsTests
         Assert.Equal("ja-Latn-alalc97|el-polyton|ja-Latn-alalc97", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Derived_Constructor_Arrow_Super_Call_Initializes_This()
     {
         EnsureBuiltInsLoaded();
@@ -7296,7 +7296,7 @@ public class BuiltInsTests
         Assert.Equal("A/true/true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Exec_Reports_Undefined_For_Unmatched_Optional_Capture()
     {
         EnsureBuiltInsLoaded();
@@ -7322,7 +7322,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Dynamic_Import_Returns_A_Promise_Whose_Constructor_Is_Promise()
     {
         EnsureBuiltInsLoaded();
@@ -7345,7 +7345,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Collator_Sensitivity_Honors_Resolved_Locale()
     {
         EnsureBuiltInsLoaded();
@@ -7372,7 +7372,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ToLocaleUpperCase_Lithuanian_Returns_Plain_I_For_Lowercase_I()
     {
         EnsureBuiltInsLoaded();
@@ -7394,7 +7394,7 @@ public class BuiltInsTests
         Assert.Equal("1:I|1:I|1:I|1:İ", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Collator_Uses_Resolved_Locale_And_Honors_German_Phonebook_Collation()
     {
         EnsureBuiltInsLoaded();
@@ -7421,7 +7421,7 @@ public class BuiltInsTests
         Assert.Equal("-1|-1|1|1|-1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormat_ResolvedOptions_Do_Not_Leak_Digit_Options_From_Object_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -7449,7 +7449,7 @@ public class BuiltInsTests
         Assert.Equal("true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormat_Default_Options_Do_Not_Leak_From_Object_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -7476,7 +7476,7 @@ public class BuiltInsTests
         Assert.Equal("numeric|numeric", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Splice_With_Species_Throwing_Propagates_The_Species_Error()
     {
         EnsureBuiltInsLoaded();
@@ -7502,7 +7502,7 @@ public class BuiltInsTests
         Assert.Equal("true|species(5)", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Eval_Try_Finally_Completion_Discards_Empty_Finally_Block()
     {
         EnsureBuiltInsLoaded();
@@ -7522,7 +7522,7 @@ public class BuiltInsTests
         Assert.Equal("try-value|try-value|undef|undef", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Parser_LineSeparator_Triggers_ASI_And_Terminates_Line_Comment()
     {
         EnsureBuiltInsLoaded();
@@ -7534,7 +7534,7 @@ public class BuiltInsTests
         Assert.Equal("number", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Parser_ParagraphSeparator_Triggers_ASI_And_Terminates_Line_Comment()
     {
         EnsureBuiltInsLoaded();
@@ -7545,7 +7545,7 @@ public class BuiltInsTests
         Assert.Equal("object", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormat_Renders_FractionalSecondDigits_When_Requested()
     {
         EnsureBuiltInsLoaded();
@@ -7567,7 +7567,7 @@ public class BuiltInsTests
         Assert.Equal("true|3", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Promise_Instance_Constructor_Is_Promise()
     {
         EnsureBuiltInsLoaded();
@@ -7585,7 +7585,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormat_Honors_Buddhist_Calendar_Option_For_Year_Formatting()
     {
         EnsureBuiltInsLoaded();
@@ -7608,7 +7608,7 @@ public class BuiltInsTests
         Assert.Equal("buddhist|2593|buddhist|2593", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Supports_Hex_Property_Escape()
     {
         EnsureBuiltInsLoaded();
@@ -7629,7 +7629,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|false|true|true|true|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormat_Compact_Notation_Supports_German_Suffixes()
     {
         EnsureBuiltInsLoaded();
@@ -7653,7 +7653,7 @@ public class BuiltInsTests
         Assert.Equal("988 Mio.|2,5 Mio.|1200|988 Millionen|2,5 Millionen", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormat_FormatToParts_Compact_German_Reports_Compact_Suffix_Part()
     {
         EnsureBuiltInsLoaded();
@@ -7670,7 +7670,7 @@ public class BuiltInsTests
         Assert.Equal("integer:988|literal: |compact:Mio.", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormat_Hour12_True_PicksLocalePreferred12HourCycle()
     {
         EnsureBuiltInsLoaded();
@@ -7693,7 +7693,7 @@ public class BuiltInsTests
         Assert.Equal("h12|h12|h12|h11|h23", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Anonymous_User_Function_Name_Defaults_To_Empty_String()
     {
         EnsureBuiltInsLoaded();
@@ -7716,7 +7716,7 @@ public class BuiltInsTests
         Assert.Equal("bar||floor", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_Locale_Resolves_Grandfathered_Tag_To_Preferred_Form()
     {
         EnsureBuiltInsLoaded();
@@ -7736,7 +7736,7 @@ public class BuiltInsTests
         Assert.Equal("xtg|xtg|jbo|zh|hak", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NumberFormat_Percent_Style_Multiplies_By_100_And_Appends_Locale_Symbol()
     {
         EnsureBuiltInsLoaded();
@@ -7755,7 +7755,7 @@ public class BuiltInsTests
         Assert.Equal("50%|100%|8,878,000,000%|-5%", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PlainYearMonth_ToString_Keeps_Reference_Day_For_NonIso_Calendar_With_CalendarName_Never()
     {
         EnsureBuiltInsLoaded();
@@ -7779,7 +7779,7 @@ public class BuiltInsTests
         Assert.Equal("2000-05-01|2000-05-01[u-ca=gregory]|2000-05-01[u-ca=gregory]|2000-05|2000-05", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetCanonicalLocales_Sorts_Main_Tag_Variants_Alphabetically()
     {
         EnsureBuiltInsLoaded();
@@ -7797,7 +7797,7 @@ public class BuiltInsTests
         Assert.Equal("de-Latn-DE-1996-fonipa|en-biske-rozaj|sl-1994-biske-rozaj", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetCanonicalLocales_Applies_Subdivision_And_Timezone_Value_Aliases()
     {
         EnsureBuiltInsLoaded();
@@ -7814,7 +7814,7 @@ public class BuiltInsTests
         Assert.Equal("und-NO-u-sd-no50|und-u-rg-no50|und-u-tz-cnsha", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetCanonicalLocales_Sorts_Variants_And_Fields_In_Transformed_Extension()
     {
         EnsureBuiltInsLoaded();
@@ -7831,7 +7831,7 @@ public class BuiltInsTests
         Assert.Equal("sl-t-sl-1994-biske-rozaj|en-t-en-latn-us-biske-rozaj|en-t-en-h0-hybrid-x0-test", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Class_Static_Field_And_Block_Initializers_Run_In_Source_Order()
     {
         EnsureBuiltInsLoaded();
@@ -7853,7 +7853,7 @@ public class BuiltInsTests
         Assert.Equal("first field|first block|second field|second block|third field", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetCanonicalLocales_Applies_Grandfathered_Tags_With_Variant_Suffix()
     {
         EnsureBuiltInsLoaded();
@@ -7871,7 +7871,7 @@ public class BuiltInsTests
         Assert.Equal("jbo|jbo-fonipa|xtg-fonipa|zh-fonipa", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PlainMonthDay_Throws_RangeError_For_Infinite_EraYear()
     {
         EnsureBuiltInsLoaded();
@@ -7888,7 +7888,7 @@ public class BuiltInsTests
         Assert.Equal("RangeError|RangeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Collator_Ignores_Unicode_Keywords_Inside_Private_Use_Sequence()
     {
         EnsureBuiltInsLoaded();
@@ -7904,7 +7904,7 @@ public class BuiltInsTests
         Assert.Equal("default|default", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Arguments_Object_Symbol_ToStringTag_Override_Is_Honored()
     {
         EnsureBuiltInsLoaded();
@@ -7923,7 +7923,7 @@ public class BuiltInsTests
         Assert.Equal("[object Arguments]|[object test262]", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GetCanonicalLocales_Canonicalizes_Unicode_Keyword_Value_Aliases()
     {
         EnsureBuiltInsLoaded();
@@ -7942,7 +7942,7 @@ public class BuiltInsTests
         Assert.Equal("und-u-kb|und-u-kn|und-u-ks-level1|und-u-ks-level3|und-u-ms-uksystem", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Prototype_Sort_Is_Stable_For_Equal_Comparator_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -7965,7 +7965,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Prototype_ToSorted_Is_Stable_For_Equal_Comparator_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -7988,7 +7988,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GlobalThis_Resolves_To_The_Current_Global_Object()
     {
         EnsureBuiltInsLoaded();
@@ -7999,7 +7999,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void With_Statement_Unqualified_Identifiers_Resolve_And_Assign_Against_The_With_Object()
     {
         EnsureBuiltInsLoaded();
@@ -8025,7 +8025,7 @@ public class BuiltInsTests
         Assert.Equal("1|2|2|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void With_Statement_Strict_Read_And_Write_Respect_Unscopables_Deletion()
     {
         EnsureBuiltInsLoaded();
@@ -8094,7 +8094,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Bare_Function_Calls_And_Implicit_Global_Assignments_Use_NonStrict_Global_Semantics()
     {
         EnsureBuiltInsLoaded();
@@ -8110,7 +8110,7 @@ public class BuiltInsTests
         ctx.Eval("delete globalThis.implicitGlobalValue;");
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ForAwait_Over_Sync_And_AsyncIterator_Facades_Awaits_Each_Value()
     {
         EnsureBuiltInsLoaded();
@@ -8155,7 +8155,7 @@ public class BuiltInsTests
         Assert.Equal("promise|promise", asyncFacadeResult.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AsyncGenerator_YieldStar_Prefers_SymbolAsyncIterator_Over_SymbolIterator()
     {
         EnsureBuiltInsLoaded();
@@ -8193,7 +8193,7 @@ public class BuiltInsTests
         Assert.Equal("x|y", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Symbol_Wrapper_Uses_Symbol_Coercion_Path()
     {
         EnsureBuiltInsLoaded();
@@ -8216,7 +8216,7 @@ public class BuiltInsTests
         Assert.Equal("object|TypeError|Cannot convert a Symbol value to a string.", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Prefixed_BigInt_Literals_Parse_And_Compare_Correctly()
     {
         EnsureBuiltInsLoaded();
@@ -8233,7 +8233,7 @@ public class BuiltInsTests
         Assert.Equal("bigint|true|bigint|true|bigint|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BigInt_Relational_Comparisons_Work_For_BigInt_And_Number_Operands()
     {
         EnsureBuiltInsLoaded();
@@ -8257,7 +8257,7 @@ public class BuiltInsTests
         Assert.Equal("false|true|true|true|true|true|true|true|false|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BigInt_Relational_Comparisons_Respect_Equality_Precedence()
     {
         EnsureBuiltInsLoaded();
@@ -8275,7 +8275,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|true|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void String_IsWellFormed_Detects_Paired_And_Lone_Surrogates()
     {
         EnsureBuiltInsLoaded();
@@ -8291,7 +8291,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|false|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void String_ToWellFormed_Replaces_Lone_Surrogates_With_Replacement_Character()
     {
         EnsureBuiltInsLoaded();
@@ -8305,7 +8305,7 @@ public class BuiltInsTests
         Assert.Equal("\uFFFDA\uFFFD|🎉", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void String_ToWellFormed_Always_Produces_A_WellFormed_String()
     {
         EnsureBuiltInsLoaded();
@@ -8314,7 +8314,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Finally_Return_Overrides_Try_And_Catch_Completions()
     {
         EnsureBuiltInsLoaded();
@@ -8328,7 +8328,7 @@ public class BuiltInsTests
         Assert.Equal("finally|finally", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Finally_Return_Skips_Remaining_Finally_Statements()
     {
         EnsureBuiltInsLoaded();
@@ -8349,7 +8349,7 @@ public class BuiltInsTests
         Assert.Equal("try,finally-before", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Finally_Normal_Completion_Preserves_Pending_Return_Value()
     {
         EnsureBuiltInsLoaded();
@@ -8370,7 +8370,7 @@ public class BuiltInsTests
         Assert.Equal("try", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Undefined_Flags_Default_To_Empty_String()
     {
         // test262 S15.10.4.1_A4_T1..T5: "let F be the empty string if flags is undefined".
@@ -8388,7 +8388,7 @@ public class BuiltInsTests
         Assert.Equal("null|false|false|false||", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Atomics_Pause_Exists_And_Returns_Undefined()
     {
         // test262 Atomics/pause/{returns-undefined,length,name,descriptor,not-a-constructor}.js
@@ -8416,7 +8416,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Atomics_Pause_Throws_On_Non_Integral_Argument()
     {
         EnsureBuiltInsLoaded();
@@ -8426,7 +8426,7 @@ public class BuiltInsTests
         Assert.Throws<JSException>(() => ctx.Eval("Atomics.pause(NaN);"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Unicode_GeneralCategory_Property_Escapes()
     {
         // #642 problems 1/4 (partial): General_Category property escapes — including
@@ -8448,7 +8448,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|true|true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Unicode_Script_Han_Matches_Supplementary_Plane()
     {
         // #642 problems 1/4: \p{Script=Han} must match the supplementary-plane Han
@@ -8474,7 +8474,7 @@ public class BuiltInsTests
         Assert.Equal("𠮷@0|𠮷@0|false|a@2|𠮷|𠮷,a,0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Unsupported_Unicode_Property_Escapes_Throw_Clear_Error()
     {
         // Unknown script values and emoji string-properties should fail cleanly as
@@ -8504,7 +8504,7 @@ public class BuiltInsTests
         Assert.Throws<JSException>(() => ctx.Eval(@"/\p{Han}/u;"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_V_Flag_Exposes_UnicodeSets_Metadata()
     {
         EnsureBuiltInsLoaded();
@@ -8516,7 +8516,7 @@ public class BuiltInsTests
         Assert.Equal("v|true|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_V_Flag_Works_For_Literals()
     {
         EnsureBuiltInsLoaded();
@@ -8528,7 +8528,7 @@ public class BuiltInsTests
         Assert.Equal("v|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_V_Flag_Cannot_Be_Combined_With_U()
     {
         EnsureBuiltInsLoaded();
@@ -8537,7 +8537,7 @@ public class BuiltInsTests
         Assert.Throws<JSException>(() => ctx.Eval("/a/vu;"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_V_Flag_Cannot_Be_Specified_Twice()
     {
         EnsureBuiltInsLoaded();
@@ -8546,7 +8546,7 @@ public class BuiltInsTests
         Assert.Throws<JSException>(() => ctx.Eval("/a/vv;"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Flags_Are_Normalized_And_Metadata_Is_Exposed()
     {
         EnsureBuiltInsLoaded();
@@ -8558,7 +8558,7 @@ public class BuiltInsTests
         Assert.Equal("dgiy|true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Prototype_Flags_Getter_Supports_Generic_HasIndices_Coercion()
     {
         EnsureBuiltInsLoaded();
@@ -8572,7 +8572,7 @@ public class BuiltInsTests
         Assert.Equal("d", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_D_And_Y_Flags_Cannot_Be_Specified_Twice()
     {
         EnsureBuiltInsLoaded();
@@ -8581,7 +8581,7 @@ public class BuiltInsTests
         Assert.Throws<JSException>(() => ctx.Eval("new RegExp('a', 'yy');"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Literal_Duplicate_D_And_Y_Flags_Are_Rejected()
     {
         EnsureBuiltInsLoaded();
@@ -8590,7 +8590,7 @@ public class BuiltInsTests
         Assert.Throws<JSException>(() => ctx.Eval("/a/yy"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Sticky_Exec_Uses_LastIndex_And_Resets_On_Failure()
     {
         EnsureBuiltInsLoaded();
@@ -8612,7 +8612,7 @@ public class BuiltInsTests
         Assert.Equal("a|1|2|true|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Sticky_Test_Does_Not_Scan_Past_LastIndex()
     {
         EnsureBuiltInsLoaded();
@@ -8630,7 +8630,7 @@ public class BuiltInsTests
         Assert.Equal("false|0|true|2|false|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Observable_LastIndex_Writes_Throw_For_Exec_And_Match()
     {
         EnsureBuiltInsLoaded();
@@ -8668,7 +8668,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Exec_And_Iterator_Close_Read_Observable_Properties_Exactly_Once()
     {
         EnsureBuiltInsLoaded();
@@ -8719,7 +8719,7 @@ public class BuiltInsTests
         Assert.Equal("1|2|true|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generator_YieldStar_MissingThrow_Closes_Iterator_Without_Arguments()
     {
         EnsureBuiltInsLoaded();
@@ -8767,7 +8767,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|1|1|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_FlatMap_Return_Forwards_To_Mapper_Result_Once()
     {
         EnsureBuiltInsLoaded();
@@ -8803,7 +8803,7 @@ public class BuiltInsTests
         Assert.Equal("1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSON_Stringify_Passes_Property_Key_To_ToJSON()
     {
         EnsureBuiltInsLoaded();
@@ -8829,7 +8829,7 @@ public class BuiltInsTests
         Assert.Equal("{\"p\":17}|1|p", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Exec_LastIndex_Past_End_Returns_Null_And_Resets()
     {
         EnsureBuiltInsLoaded();
@@ -8869,7 +8869,7 @@ public class BuiltInsTests
         Assert.Equal("true|0|true|0|true|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void MatchAll_RegExp_LastIndex_And_SetLike_Iterator_Return_Regressions()
     {
         EnsureBuiltInsLoaded();
@@ -8943,7 +8943,7 @@ public class BuiltInsTests
         Assert.Equal("1|abc|0|1|false|1,1|true|4,0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Exec_Returns_Undefined_For_Unmatched_Optional_Captures()
     {
         EnsureBuiltInsLoaded();
@@ -8960,7 +8960,7 @@ public class BuiltInsTests
         Assert.Equal("b|true|0|b", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_From_Map_Filter_Take_ToArray()
     {
         EnsureBuiltInsLoaded();
@@ -8969,7 +8969,7 @@ public class BuiltInsTests
         Assert.Equal("6,8", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_Concat_Reduce_Across_Iterables()
     {
         EnsureBuiltInsLoaded();
@@ -8978,7 +8978,7 @@ public class BuiltInsTests
         Assert.Equal(10.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generator_Instances_Inherit_Iterator_Helpers()
     {
         EnsureBuiltInsLoaded();
@@ -8990,7 +8990,7 @@ public class BuiltInsTests
         Assert.Equal(2.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_Helper_Callbacks_Receive_Counters()
     {
         EnsureBuiltInsLoaded();
@@ -9016,7 +9016,7 @@ public class BuiltInsTests
         Assert.Equal("a0,b1,c2|0,1,2|0,1,2|0,1,2|1,2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_FlatMap_And_Number_ToExponential_TypeErrors_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -9069,7 +9069,7 @@ public class BuiltInsTests
 
     // ── M3: JSWeakSet tests ──────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WeakSet_Add_And_Has()
     {
         EnsureBuiltInsLoaded();
@@ -9079,7 +9079,7 @@ public class BuiltInsTests
         Assert.Equal("object", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WeakSet_Delete()
     {
         EnsureBuiltInsLoaded();
@@ -9088,7 +9088,7 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void WeakSet_TypeError_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -9129,7 +9129,7 @@ public class BuiltInsTests
 
     // ── M3: StructuredClone with Map/Set ─────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StructuredClone_Map()
     {
         EnsureBuiltInsLoaded();
@@ -9143,7 +9143,7 @@ public class BuiltInsTests
         Assert.Equal(1.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StructuredClone_Set()
     {
         EnsureBuiltInsLoaded();
@@ -9156,7 +9156,7 @@ public class BuiltInsTests
         Assert.Equal(3.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StructuredClone_Transfer_ArrayBuffer_Detaches_Source_And_Returns_Clone()
     {
         EnsureBuiltInsLoaded();
@@ -9173,7 +9173,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|4|7|11|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StructuredClone_TypedArray_Preserves_View_And_Copies_Buffer()
     {
         EnsureBuiltInsLoaded();
@@ -9199,7 +9199,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|2|3|7|13", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StructuredClone_Transfer_Reuses_Transferred_Buffer_For_TypedArray_And_DataView()
     {
         EnsureBuiltInsLoaded();
@@ -9234,7 +9234,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|1|3|2|4|true|true|2|2|3|4", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StructuredClone_Transfer_Rejects_NonArrayBuffer_Entries()
     {
         EnsureBuiltInsLoaded();
@@ -9244,7 +9244,7 @@ public class BuiltInsTests
         "));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StructuredClone_Transfer_Rejects_Duplicate_ArrayBuffers()
     {
         EnsureBuiltInsLoaded();
@@ -9255,7 +9255,7 @@ public class BuiltInsTests
         "));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ExperimentalEs2026Features_CanBeDisabled_PerContext()
     {
         EnsureBuiltInsLoaded();
@@ -9273,7 +9273,7 @@ public class BuiltInsTests
         Assert.Equal("undefined|undefined|undefined|undefined|undefined|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ExperimentalEs2026Features_CanBeEnabled_Selectively()
     {
         EnsureBuiltInsLoaded();
@@ -9294,7 +9294,7 @@ public class BuiltInsTests
     /// which triggers their ModuleInitializers.
     /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JSBoolean_TrueAndFalse()
     {
         Assert.True(JSBoolean.True.BooleanValue);
@@ -9302,7 +9302,7 @@ public class BuiltInsTests
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Boolean_Wrapping_Produces_Correct_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -9323,7 +9323,7 @@ public class BuiltInsTests
             Assert.True(arr[(uint)i].BooleanValue, $"assertion {i} failed");
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Prototype_TypeError_Scenarios_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();
@@ -9387,7 +9387,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError||TypeError||TypeError||TypeError|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Prototype_TypeError_Regressions_Cover_ArrayLike_And_Species_Scenarios()
     {
         EnsureBuiltInsLoaded();
@@ -9454,7 +9454,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Temporal_ZonedDateTime_From_Reads_Options_After_Input_Match_Test262()
     {
         // Regression: Temporal.ZonedDateTime.from read the disambiguation/offset/overflow
@@ -9496,7 +9496,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Temporal_Duration_Total_And_Compare_Read_RelativeTo_Correctly_Match_Test262()
     {
         // Regression: Temporal.Duration.prototype.total read the unit option before
@@ -9533,7 +9533,7 @@ public class BuiltInsTests
         Assert.Equal("total=relativeTo,unit | compare=relativeTo", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Temporal_PlainTime_From_And_With_Read_Fields_Before_Overflow_Match_Test262()
     {
         // Regression: Temporal.PlainTime.from / .prototype.with read the time fields in
@@ -9581,7 +9581,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Temporal_PlainTime_From_PlainDateTime_Uses_Internal_Slots_Not_Getters()
     {
         // ToTemporalTime fast path: a PlainDateTime argument supplies its time from internal
@@ -9603,7 +9603,7 @@ public class BuiltInsTests
         Assert.Equal("[]|12:30:45", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Unicode_NegatedClass_Matches_AstralCodePoint_As_One_Unit()
     {
         // Under the `u` flag a negated character class matches by code point, so [^a]
@@ -9631,7 +9631,7 @@ public class BuiltInsTests
         Assert.Equal("d83d dc38|d83d dc38|5|null|b|d83d", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Literal_BracedUnicodeEscape_Is_Legacy_Quantifier_Without_UnicodeFlag()
     {
         // A `\u{n}` braced escape in a regex *literal* is a code-point escape only with a
@@ -9655,7 +9655,7 @@ public class BuiltInsTests
         Assert.Equal("uuu|zuuz|A|d83d dc38|a?", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Exec_Builds_Result_Array_With_CreateDataProperty_Not_Set()
     {
         // RegExpBuiltinExec installs the matched substring and each capture with
@@ -9684,7 +9684,7 @@ public class BuiltInsTests
         Assert.Equal("bc,c|a[c]d|bc,c", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Temporal_PlainMonthDay_With_Reads_Fields_Alphabetically_And_Coerces_Each_Match_Test262()
     {
         // PlainMonthDay.prototype.with reads the recognised fields « day, month, monthCode,
@@ -9720,7 +9720,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Temporal_ToString_Reads_Options_Alphabetically_Before_Validation_Match_Test262()
     {
         // Regression: Temporal toString reads its options in alphabetical order, coercing
@@ -9769,7 +9769,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Temporal_With_And_From_Read_Fields_In_Alphabetical_Order_Match_Test262()
     {
         // Regression: PrepareCalendarFields reads a property bag's recognised fields in
@@ -9817,7 +9817,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_With_Coerces_Value_Before_Copying_Elements_Match_Test262()
     {
         // Regression: %TypedArray%.prototype.with assigned the raw value during the
@@ -9845,7 +9845,7 @@ public class BuiltInsTests
         Assert.Equal("3,4,2|3,1,2 / 3,4,2|3,1,2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Constructing_A_TypedArray_From_A_Throwing_Generator_Propagates_The_Error()
     {
         EnsureBuiltInsLoaded();
@@ -9869,7 +9869,7 @@ public class BuiltInsTests
         Assert.Equal("RangeError|true|boom", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_With_Revalidates_Index_Against_Live_Length_After_Coercion()
     {
         EnsureBuiltInsLoaded();
@@ -9891,7 +9891,7 @@ public class BuiltInsTests
         Assert.Equal("RangeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_CopyWithin_Uses_PreCoercion_Length_When_Argument_Grows_Buffer()
     {
         EnsureBuiltInsLoaded();
@@ -9913,7 +9913,7 @@ public class BuiltInsTests
         Assert.Equal("2,3,2,3,4,5", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Inline_Modifier_Groups_Scope_DotAll_And_Multiline_Match_Test262()
     {
         // Regression: the '.', '^' and '$' rewrites that bridge .NET and ECMAScript
@@ -9948,7 +9948,7 @@ public class BuiltInsTests
         Assert.Equal("true,false,true,false,false,true,false,true,false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForIn_Does_Not_Visit_Properties_Added_During_Enumeration_Match_Test262()
     {
         // Regression: a property added to the object during for-in must not be visited
@@ -9981,7 +9981,7 @@ public class BuiltInsTests
         Assert.Equal("p1,p2,p3|p1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForIn_Continues_After_Deleting_The_Next_Property_Match_Test262()
     {
         // Regression: deleting the property that for-in is about to visit terminated
@@ -10011,7 +10011,7 @@ public class BuiltInsTests
         Assert.Equal("aa,ca,da|x,z,y", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Var_Arguments_Declaration_Shares_The_Functions_Arguments_Binding_Match_Test262()
     {
         // Regression: a `var arguments` in a sloppy function must share the function's
@@ -10040,7 +10040,7 @@ public class BuiltInsTests
         Assert.Equal("answer|7|3|42", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Operator_Precedence_Right_Operand_Does_Not_Swallow_Looser_Operators_Match_Test262()
     {
         // Regression: the recursion that built the right operand of a binary operator
@@ -10071,7 +10071,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|true|true|ok|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Var_With_Unicode_Escaped_Identifier_Is_Hoisted_Under_Decoded_Name_Match_Test262()
     {
         // Regression: a `var` whose name uses unicode escapes must be hoisted and
@@ -10097,7 +10097,7 @@ public class BuiltInsTests
         Assert.Equal("undefined|false|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForLoop_Var_Head_Inside_Eval_Persists_Binding_Match_Test262()
     {
         // Regression: a `var`-declared for-in/for-of loop variable is, inside a
@@ -10123,7 +10123,7 @@ public class BuiltInsTests
         Assert.Equal("2143|2143|7,8,9|a,b", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForIn_NonEnumerable_Own_Property_Shadows_Inherited_Enumerable_Match_Test262()
     {
         // Regression: a non-enumerable own property must shadow a same-named
@@ -10149,7 +10149,7 @@ public class BuiltInsTests
         Assert.False(result.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_GetOwnPropertyNames_String_Object_Orders_Index_Keys_First_Match_Test262()
     {
         // Regression: String exotic [[OwnPropertyKeys]] (ES 10.4.3.3) lists every
@@ -10170,7 +10170,7 @@ public class BuiltInsTests
         Assert.Equal("0,1,2,5,length", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Prototype_Flat_FlatMap_Recurse_Into_Proxy_Arrays_Match_Test262()
     {
         // Regression: FlattenIntoArray uses the IsArray abstract operation to decide
@@ -10206,7 +10206,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Prototype_Length_Coercion_And_Modification_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -10332,7 +10332,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Prototype_TypeError_Regressions_For_Length_Species_And_Reduction_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -10431,7 +10431,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Prototype_ReduceRight_Returns_Initial_Value_For_Empty_ArrayLike_Length_Accessor()
     {
         EnsureBuiltInsLoaded();
@@ -10463,7 +10463,7 @@ public class BuiltInsTests
         Assert.Equal("111|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Prototype_Invalid_Species_Constructors_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -10507,7 +10507,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypeError_Regressions_For_Array_ArrayBuffer_Boolean_And_Async_Functions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -10648,7 +10648,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BigInt_TypedArray_TypeError_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -10731,7 +10731,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BigInt_TypedArray_DefineOwnProperty_Propagates_ToPrimitive_Exceptions()
     {
         EnsureBuiltInsLoaded();
@@ -10759,7 +10759,7 @@ public class BuiltInsTests
         Assert.Equal("Test262Error", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Prototype_Compile_TypeError_Scenarios_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();
@@ -10799,7 +10799,7 @@ public class BuiltInsTests
         Assert.Equal("ok|TypeError|TypeError|TypeError|updated/gi|45", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Unicode_CodePoint_Literal_Source_RoundTrips_For_ScriptHost_Test262_Cases()
     {
         EnsureBuiltInsLoaded();
@@ -10814,7 +10814,7 @@ public class BuiltInsTests
         Assert.Equal("\\ud834\\udf06|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_WeakRef_And_Function_TypeError_Scenarios_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();
@@ -10899,7 +10899,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError||TypeError|1|1||TypeError||TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Bound_Function_Restricted_Property_Setters_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -10929,7 +10929,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_And_RegExp_TypeError_Regressions_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();
@@ -10972,7 +10972,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|en-US|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void CopyWithin_Date_Bind_And_Json_Parse_Preserve_Test262_Abrupt_Completions()
     {
         EnsureBuiltInsLoaded();
@@ -11092,7 +11092,7 @@ public class BuiltInsTests
         Assert.Equal("Test262Error|Test262Error|Test262Error|true|Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void For_Statement_Const_Object_Destructuring_With_Omitted_Test_Preserves_Test262_Abrupt_Completions()
     {
         EnsureBuiltInsLoaded();
@@ -11134,7 +11134,7 @@ public class BuiltInsTests
         Assert.Equal("Test262Error", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GroupBy_Object_Assign_Object_Prototype_Promise_And_RegExp_Preserve_Test262_Abrupt_Completions()
     {
         EnsureBuiltInsLoaded();
@@ -11246,7 +11246,7 @@ public class BuiltInsTests
         Assert.Equal("Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Native_BuiltIn_Write_Failures_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -11305,7 +11305,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|no-throw|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Numeric_String_Property_Access_Resolves_Element_Backed_Object_Properties()
     {
         EnsureBuiltInsLoaded();
@@ -11323,7 +11323,7 @@ public class BuiltInsTests
         Assert.Equal("null|null", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generator_Throw_Propagates_And_Resumes_Like_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -11378,7 +11378,7 @@ public class BuiltInsTests
         Assert.Equal("Test262Error|0||Test262Error|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generator_Delegated_Throw_Follows_Test262_For_InnerThrow_Methods()
     {
         EnsureBuiltInsLoaded();
@@ -11471,7 +11471,7 @@ public class BuiltInsTests
         Assert.Equal("undefined|true|true||undefined|true|object|TypeError||true|undefined|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Function_Constructor_Only_Rejects_Arguments_And_Eval_Assignment_In_Strict_Mode()
     {
         EnsureBuiltInsLoaded();
@@ -11515,7 +11515,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Direct_Eval_Preserves_Caller_This_And_Strict_Function_Constructor_Rejects_Legacy_Octal()
     {
         EnsureBuiltInsLoaded();
@@ -11550,7 +11550,7 @@ public class BuiltInsTests
         Assert.Equal("true|SyntaxError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Strict_Mode_Rejects_Legacy_Octal_Escape_In_Strings()
     {
         EnsureBuiltInsLoaded();
@@ -11582,7 +11582,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|SyntaxError|SyntaxError|ok|ok|ok|ok", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ForIn_Skips_Array_Holes_After_Shift()
     {
         EnsureBuiltInsLoaded();
@@ -11607,7 +11607,7 @@ public class BuiltInsTests
         Assert.Equal("ok", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Modification_Methods_Respect_Indexed_Setters_On_Prototype_Chain()
     {
         EnsureBuiltInsLoaded();
@@ -11653,7 +11653,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Iteration_Methods_Recheck_Indexed_Presence_After_Mutation()
     {
         EnsureBuiltInsLoaded();
@@ -11759,7 +11759,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generator_And_AsyncGenerator_Parameter_Abrupt_Completions_Throw_On_Call()
     {
         EnsureBuiltInsLoaded();
@@ -11801,7 +11801,7 @@ public class BuiltInsTests
         Assert.Equal("Test262Error|0|Test262Error|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AsyncGenerator_Next_Rejects_With_Original_Object_On_YieldStar_Abrupt_Completions()
     {
         EnsureBuiltInsLoaded();
@@ -11851,7 +11851,7 @@ public class BuiltInsTests
         Assert.Equal("same|true|true|same|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Promise_Resolve_Poisoned_Then_Rejects_With_Thrown_Object()
     {
         EnsureBuiltInsLoaded();
@@ -11890,7 +11890,7 @@ public class BuiltInsTests
         Assert.Equal("same|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_FinalizationRegistry_And_Function_TypeError_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -11943,7 +11943,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|undefined|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Function_Iterator_Global_And_Generator_TypeError_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -12083,7 +12083,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|1", concatReturnResult.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_Wrappers_Call_Underlying_Return_With_Zero_Arguments()
     {
         EnsureBuiltInsLoaded();
@@ -12156,7 +12156,7 @@ public class BuiltInsTests
         Assert.Equal("0|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_SumPrecise_Rejects_NonNumbers_Without_Coercion_And_Closes_Iterators()
     {
         EnsureBuiltInsLoaded();
@@ -12221,7 +12221,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|0|TypeError|1|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_Helper_ShortCircuit_And_ArgumentValidation_Close_Underlying_Iterators()
     {
         EnsureBuiltInsLoaded();
@@ -12277,7 +12277,7 @@ public class BuiltInsTests
         Assert.Equal("true,true|false,true|0,true|TypeError|TypeError|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_Take_Drop_And_Map_Set_Constructors_Close_Iterators_On_Abrupt_Completion()
     {
         EnsureBuiltInsLoaded();
@@ -12374,7 +12374,7 @@ public class BuiltInsTests
         Assert.Equal("RangeError,true|RangeError,true|TypeError,true|set throws,true|set throws,true|add throws,true|add throws,true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Literal_Proto_Setter_Uses_Prototype_Without_Creating_Own_Property()
     {
         EnsureBuiltInsLoaded();
@@ -12424,7 +12424,7 @@ public class BuiltInsTests
         Assert.Equal("true|42|false|true|false|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Bound_HasInstance_Zero_Normalization_And_Proxy_IsPrototypeOf_Regressions()
     {
         EnsureBuiltInsLoaded();
@@ -12455,7 +12455,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void InstanceOf_Uses_SymbolHasInstance_For_Callable_And_NonCallable_Targets()
     {
         EnsureBuiltInsLoaded();
@@ -12488,7 +12488,7 @@ public class BuiltInsTests
         Assert.Equal("false|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Function_Bind_Name_Length_And_HasInstance_Descriptor_Regresions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -12498,7 +12498,7 @@ public class BuiltInsTests
         Assert.Equal("false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Property_Key_Canonicalization_Preserves_Empty_And_NonCanonical_String_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -12530,7 +12530,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|false|undefined|4|true|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generator_Next_Forwards_First_Argument_To_Delegated_Iterator()
     {
         EnsureBuiltInsLoaded();
@@ -12561,7 +12561,7 @@ public class BuiltInsTests
         Assert.Equal("1|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Function_Bind_Uses_Current_Name_And_Length_Descriptors_When_Creating_Bound_Functions()
     {
         EnsureBuiltInsLoaded();
@@ -12593,7 +12593,7 @@ public class BuiltInsTests
         Assert.Equal("bound |0|9007199254740991|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Includes_And_Date_DefaultValue_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -12619,7 +12619,7 @@ public class BuiltInsTests
         Assert.Equal("true|false|true|false|true|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterable_And_Object_TypeError_Regressions_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();
@@ -12651,7 +12651,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|null|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Internal_Method_TypeError_Regressions_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();
@@ -12759,7 +12759,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Object_Binding_Patterns_Require_Object_Coercible_Input()
     {
         EnsureBuiltInsLoaded();
@@ -12792,7 +12792,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Class_Static_Prototype_Members_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -12821,7 +12821,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Map_Constructor_Uses_Iterable_Protocol_And_Rejects_Invalid_Entries()
     {
         EnsureBuiltInsLoaded();
@@ -12855,7 +12855,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Date_String_And_RegExp_Coercions_Propagate_TypeErrors_Like_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -12896,7 +12896,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Date_Setters_Read_Receiver_Value_Before_ToNumber_Coercion()
     {
         EnsureBuiltInsLoaded();
@@ -12936,7 +12936,7 @@ public class BuiltInsTests
         Assert.Equal("false|true|false|false|false|true|false|false", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void String_Symbol_WeakMap_RegExp_And_Instanceof_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -12981,7 +12981,7 @@ public class BuiltInsTests
         Assert.Equal("Symbol(66)|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_TypeError_Regressions_Match_Test262_Basics()
     {
         EnsureBuiltInsLoaded();
@@ -13012,7 +13012,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ScriptHost_Compatibility_BuiltIns_Expose_Missing_Test262_Functions()
     {
         EnsureBuiltInsLoaded();
@@ -13062,7 +13062,7 @@ public class BuiltInsTests
         Assert.Equal("function|function|function|TypeError|function|TypeError|TypeError|function|TypeError|TypeError|function|function|function|function|TypeError|TypeError|TypeError|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_SupportedLocalesOf_Validates_Invalid_Locale_Arguments()
     {
         EnsureBuiltInsLoaded();
@@ -13093,7 +13093,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_DisplayNames_Exposes_Prototype_Methods_And_Resolved_Options()
     {
         EnsureBuiltInsLoaded();
@@ -13132,7 +13132,7 @@ public class BuiltInsTests
         Assert.Equal("function|function|[object Intl.DisplayNames]|true|true|en-US|fr|short|language|none|standard", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_DisplayNames_Validates_Options_Codes_And_Brands()
     {
         EnsureBuiltInsLoaded();
@@ -13172,7 +13172,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|RangeError|RangeError|RangeError|Test262Error|TypeError|RangeError|RangeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_ToSorted_Reads_Through_Holes_And_Creates_Undefined_Properties()
     {
         EnsureBuiltInsLoaded();
@@ -13200,7 +13200,7 @@ public class BuiltInsTests
         Assert.Equal("1,2,3,4,|true|false|false|2", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RangeError_Regressions_For_ArrayBuffer_BigInt_Date_And_Array_Creation_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -13237,7 +13237,7 @@ public class BuiltInsTests
         Assert.Equal("RangeError|RangeError|RangeError|RangeError|RangeError|RangeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_DateTimeFormat_RangeError_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -13267,7 +13267,7 @@ public class BuiltInsTests
         Assert.Equal("RangeError|RangeError|RangeError|string", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Date_And_Intl_RangeError_Regressions_Match_Test262_Samples()
     {
         EnsureBuiltInsLoaded();
@@ -13308,7 +13308,7 @@ public class BuiltInsTests
         Assert.Equal("RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|en-u-0c", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RangeError_Regressions_For_String_Number_Intl_And_TypedArray_Match_Test262_Samples()
     {
         EnsureBuiltInsLoaded();
@@ -13348,7 +13348,7 @@ public class BuiltInsTests
         Assert.Equal("RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_NumberFormat_RelativeTimeFormat_DurationFormat_And_RegExp_Split_TypeErrors_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -13414,7 +13414,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void String_Intl_And_Iterator_Abrupt_Getters_Are_Preserved()
     {
         EnsureBuiltInsLoaded();
@@ -13549,7 +13549,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Species_And_Destructuring_Assignment_Abrupt_Completions_Are_Preserved()
     {
         EnsureBuiltInsLoaded();
@@ -13622,7 +13622,7 @@ public class BuiltInsTests
         Assert.Equal("Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Reflect_And_RegExp_Abrupt_Completions_From_Test262_Are_Preserved()
     {
         EnsureBuiltInsLoaded();
@@ -13686,7 +13686,7 @@ public class BuiltInsTests
         Assert.Equal("Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Search_And_Split_Generic_Observable_Steps_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -13863,7 +13863,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Script_Host_Test262_Style_BuiltIns_Preserve_Abrupt_Completions_And_Are_Exposed()
     {
         EnsureBuiltInsLoaded();
@@ -13973,7 +13973,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void MatchAll_Set_Delete_RegExp_And_Proxy_TypeErrors_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -14075,7 +14075,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_MatchAll_Iterator_Next_Preserves_Test262_Abrupt_Completions()
     {
         EnsureBuiltInsLoaded();
@@ -14117,7 +14117,7 @@ public class BuiltInsTests
     }
 
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnnexB_String_Prototype_Metadata_Matches_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -14164,7 +14164,7 @@ public class BuiltInsTests
             result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BuiltIn_Function_Lengths_Bind_Call_Apply_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -14195,7 +14195,7 @@ public class BuiltInsTests
             result);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_DefineProperty_Invalid_Length_Throws_RangeError()
     {
         EnsureBuiltInsLoaded();
@@ -14218,7 +14218,7 @@ public class BuiltInsTests
         Assert.Equal("RangeError|RangeError|RangeError|RangeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BuiltIn_Length_Metadata_Matches_Optional_Argument_Specs()
     {
         EnsureBuiltInsLoaded();
@@ -14255,7 +14255,7 @@ public class BuiltInsTests
         Assert.Equal("0/0|0/0|0/0|0/0|0/0|0/0|0/0|0/0|0/0|0/0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormat_FormatToParts_NaN_Throws_RangeError()
     {
         EnsureBuiltInsLoaded();
@@ -14277,7 +14277,7 @@ public class BuiltInsTests
         Assert.Equal("RangeError|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormat_DayPeriod_Formatting_Matches_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -14315,7 +14315,7 @@ public class BuiltInsTests
         Assert.Equal("at night|noon|1|dayPeriod|noon|12 n|3|hour|12|literal| |dayPeriod|n", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_Prototype_Constructor_Is_Function()
     {
         EnsureBuiltInsLoaded();
@@ -14332,7 +14332,7 @@ public class BuiltInsTests
         Assert.Equal("function|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Iterator_Prototype_Next_And_Return_Work_For_BuiltIn_Iterators()
     {
         EnsureBuiltInsLoaded();
@@ -14368,7 +14368,7 @@ public class BuiltInsTests
         Assert.Equal("1|false|99|true|undefined|undefined", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_ListFormat_Prototype_Methods_Exist()
     {
         EnsureBuiltInsLoaded();
@@ -14386,7 +14386,7 @@ public class BuiltInsTests
         Assert.Equal("function|function|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_Locale_Prototype_Methods_Exist()
     {
         EnsureBuiltInsLoaded();
@@ -14410,7 +14410,7 @@ public class BuiltInsTests
         Assert.Equal("function|function|function|function|function|function|function|function|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_RelativeTimeFormat_SupportedLocalesOf_And_FormatToParts_Exist()
     {
         EnsureBuiltInsLoaded();
@@ -14428,7 +14428,7 @@ public class BuiltInsTests
         Assert.Equal("function|function|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_Segmenter_Prototype_Methods_And_SupportedLocalesOf_Exist()
     {
         EnsureBuiltInsLoaded();
@@ -14446,7 +14446,7 @@ public class BuiltInsTests
         Assert.Equal("function|function|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_ResolvedOptions_Methods_Are_Exposed_And_Extensible()
     {
         EnsureBuiltInsLoaded();
@@ -14463,7 +14463,7 @@ public class BuiltInsTests
         Assert.Equal("function|function|function|true|true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_NumberFormat_FormatRange_Methods_Exist()
     {
         EnsureBuiltInsLoaded();
@@ -14480,7 +14480,7 @@ public class BuiltInsTests
         Assert.Equal("function|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_PluralRules_SelectRange_Exists()
     {
         EnsureBuiltInsLoaded();
@@ -14497,7 +14497,7 @@ public class BuiltInsTests
         Assert.Equal("function|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Strict_Eval_Var_Does_Not_Leak()
     {
         EnsureBuiltInsLoaded();
@@ -14511,7 +14511,7 @@ public class BuiltInsTests
         Assert.Equal("undefined", r.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Direct_Eval_Function_Local_Declarations_Are_Hoisted_And_Update_Existing_Bindings()
     {
         EnsureBuiltInsLoaded();
@@ -14536,7 +14536,7 @@ public class BuiltInsTests
         Assert.Equal("function|inner declaration||function|33", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Strict_Mode_Delete_NonConfigurable_Throws()
     {
         EnsureBuiltInsLoaded();
@@ -14551,7 +14551,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError", r.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Strict_Function_In_If_Is_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -14565,7 +14565,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError", r.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Strict_Assign_String_Length_Throws()
     {
         EnsureBuiltInsLoaded();
@@ -14579,7 +14579,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError", r.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NonStrict_Assign_String_Length_Silently_Fails()
     {
         EnsureBuiltInsLoaded();
@@ -14594,7 +14594,7 @@ public class BuiltInsTests
         Assert.Equal(3d, r.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IsRegExpLike_Accesses_Symbol_Match()
     {
         EnsureBuiltInsLoaded();
@@ -14613,7 +14613,7 @@ public class BuiltInsTests
         Assert.True(r.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void String_Keyed_Shorthand_Destructuring_Is_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -14627,7 +14627,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError", r.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Unicode_Word_Boundary_Matches_Long_S()
     {
         EnsureBuiltInsLoaded();
@@ -14638,7 +14638,7 @@ public class BuiltInsTests
         Assert.True(r.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_IgnoreCase_Unicode_CaseFolding_Mu_Micro()
     {
         EnsureBuiltInsLoaded();
@@ -14649,7 +14649,7 @@ public class BuiltInsTests
         Assert.True(r.BooleanValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_IgnoreCase_Unicode_CaseFolding_Long_S()
     {
         EnsureBuiltInsLoaded();
@@ -14874,7 +14874,7 @@ public class BuiltInsTests
 
     #endregion
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BuiltIn_Prototypes_Have_Symbol_ToStringTag_As_Own_Property()
     {
         EnsureBuiltInsLoaded();
@@ -14978,7 +14978,7 @@ public class BuiltInsTests
         Assert.Equal(expected, result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void JsonRawJson_Rejects_Empty_And_Whitespace_Bounded_Input()
     {
         EnsureBuiltInsLoaded();
@@ -14998,7 +14998,7 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Splice_Throws_When_Length_Is_Read_Only()
     {
         EnsureBuiltInsLoaded();
@@ -15016,7 +15016,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SuppressedError_Defines_Message_Error_Suppressed_Consecutively()
     {
         EnsureBuiltInsLoaded();
@@ -15038,7 +15038,7 @@ public class BuiltInsTests
         Assert.Equal("true|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_ToSpliced_Returns_New_Array()
     {
         EnsureBuiltInsLoaded();
@@ -15051,7 +15051,7 @@ public class BuiltInsTests
         Assert.Equal("1,2,3,4,5|1,a,b,4,5", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_With_Returns_New_Array()
     {
         EnsureBuiltInsLoaded();
@@ -15064,7 +15064,7 @@ public class BuiltInsTests
         Assert.Equal("1,2,3|1,x,3", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Generator_Prototype_Has_Next_Return_Throw()
     {
         EnsureBuiltInsLoaded();
@@ -15083,7 +15083,7 @@ public class BuiltInsTests
         Assert.Equal("function|function|function", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Date_BigInt_And_IteratorConcat_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -15162,7 +15162,7 @@ public class BuiltInsTests
         Assert.Equal("no-throw|true|true|no-throw", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void YieldStar_Abrupt_Completions_Are_Catchable_In_Sync_Generators()
     {
         EnsureBuiltInsLoaded();
@@ -15328,7 +15328,7 @@ public class BuiltInsTests
         Assert.Equal(expected, result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SetFromHex_Invalid_Char_Throws_SyntaxError_With_Partial_Write()
     {
         using var ctx = CreateContext();
@@ -15343,7 +15343,7 @@ public class BuiltInsTests
         Assert.Equal("true,222,173", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FromHex_Invalid_Char_Throws_SyntaxError()
     {
         using var ctx = CreateContext();
@@ -15356,7 +15356,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Indirect_Eval_Parse_Failure_Throws_SyntaxError()
     {
         using var ctx = CreateContext();
@@ -15373,7 +15373,7 @@ public class BuiltInsTests
 
     #region Proxy HasProperty Prototype Chain
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Proxy_Has_Trap_Invoked_Via_Prototype_Chain()
     {
         EnsureBuiltInsLoaded();
@@ -15392,7 +15392,7 @@ public class BuiltInsTests
 
     #region RegExp DotAll and Unicode
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Dot_Excludes_All_LineTerminators()
     {
         EnsureBuiltInsLoaded();
@@ -15405,7 +15405,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_DotAll_Matches_All_LineTerminators()
     {
         EnsureBuiltInsLoaded();
@@ -15418,7 +15418,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Unicode_DotAll_Matches_All()
     {
         EnsureBuiltInsLoaded();
@@ -15431,7 +15431,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Unicode_Dot_Excludes_LineTerminators()
     {
         EnsureBuiltInsLoaded();
@@ -15444,7 +15444,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Unicode_NonWhitespace_Matches_Surrogate_Pairs()
     {
         EnsureBuiltInsLoaded();
@@ -15456,7 +15456,7 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_Unicode_CharClass_Surrogate_Pairs()
     {
         EnsureBuiltInsLoaded();
@@ -15472,7 +15472,7 @@ public class BuiltInsTests
 
     #region Indirect Eval Global Scope
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Indirect_Eval_Sees_Global_Scope()
     {
         EnsureBuiltInsLoaded();
@@ -15493,7 +15493,7 @@ public class BuiltInsTests
 
     #region DefineProperty TypeError on non-extensible objects
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DefineProperty_Throws_TypeError_On_NonExtensible_PlainObject()
     {
         using var ctx = CreateContext();
@@ -15504,7 +15504,7 @@ public class BuiltInsTests
         """));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DefineProperties_Allows_Redefining_On_NonExtensible_Object()
     {
         using var ctx = CreateContext();
@@ -15517,7 +15517,7 @@ public class BuiltInsTests
         Assert.Equal(2.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DefineProperty_Throws_TypeError_On_NonExtensible_Symbol()
     {
         using var ctx = CreateContext();
@@ -15528,7 +15528,7 @@ public class BuiltInsTests
         """));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DefineProperty_Throws_TypeError_On_NonExtensible_Index()
     {
         using var ctx = CreateContext();
@@ -15543,7 +15543,7 @@ public class BuiltInsTests
 
     #region String.prototype.matchAll flags check
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void String_Prototype_Custom_Matchers_Are_Ignored_For_Primitives()
     {
         using var ctx = CreateContext();
@@ -15582,7 +15582,7 @@ public class BuiltInsTests
         Assert.Equal("[\"true\"]|aXb1c|aXbXc|1|[\"a\",\"b\",\"c\"]|1,1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void MatchAll_Throws_TypeError_On_NonGlobal_RegExp()
     {
         using var ctx = CreateContext();
@@ -15591,7 +15591,7 @@ public class BuiltInsTests
         """));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void MatchAll_Throws_TypeError_On_RegExpLike_UndefinedFlags()
     {
         using var ctx = CreateContext();
@@ -15605,7 +15605,7 @@ public class BuiltInsTests
 
     #region Array abrupt completion regressions
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_At_Uses_ArrayLike_Length_And_Propagates_TypeError()
     {
         using var ctx = CreateContext();
@@ -15630,7 +15630,7 @@ public class BuiltInsTests
         Assert.Equal("first|TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_FlatMap_Throws_TypeError_For_NonCallable_Callback_Before_Species()
     {
         using var ctx = CreateContext();
@@ -15659,7 +15659,7 @@ public class BuiltInsTests
         Assert.Equal("TypeError", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Array_Fill_Propagates_TypeError_From_Start_And_End_Conversions()
     {
         using var ctx = CreateContext();
@@ -15688,7 +15688,7 @@ public class BuiltInsTests
 
     #region RegExp Symbol.search lastIndex TypeError
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExp_SymbolSearch_Throws_On_NonWritable_LastIndex_Init()
     {
         using var ctx = CreateContext();
@@ -15703,7 +15703,7 @@ public class BuiltInsTests
         """));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Intl_Collator_Constructs_And_Uses_Own_Options()
     {
         EnsureBuiltInsLoaded();
@@ -15734,7 +15734,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|upper|true|locale,usage,sensitivity,ignorePunctuation,collation,numeric,caseFirst|length,name|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Constructor_Returning_Object_Preserves_That_Objects_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -15760,7 +15760,7 @@ public class BuiltInsTests
         Assert.Equal("7|true|true|true|3", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArray_Slice_Map_Filter_Subarray_Use_Species_Constructor()
     {
         EnsureBuiltInsLoaded();
@@ -15822,7 +15822,7 @@ public class BuiltInsTests
         Assert.Equal("1|true|true|1|true|1|true|2|11|true|3|42|44", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Map_Set_Without_Value_Argument_Stores_Undefined()
     {
         EnsureBuiltInsLoaded();
@@ -15843,7 +15843,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Bound_Function_Without_ThisArg_Uses_Undefined_This()
     {
         EnsureBuiltInsLoaded();
@@ -15865,7 +15865,7 @@ public class BuiltInsTests
 
     #region Issue 822 — Number.prototype.toString(radix) sign & postfix update coercion
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Number_ToString_Radix_KeepsNegativeSign()
     {
         EnsureBuiltInsLoaded();
@@ -15885,7 +15885,7 @@ public class BuiltInsTests
         Assert.Equal("-1|-1|-1|-ff|ff|10.1|-10.1|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Number_ToString_Radix_FractionalAndBase10()
     {
         EnsureBuiltInsLoaded();
@@ -15905,7 +15905,7 @@ public class BuiltInsTests
         Assert.Equal("0.1|0.01|1010.01|ff.8|0.5|0.3|2.5", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PostfixUpdate_ReturnsCoercedNumericOldValue()
     {
         EnsureBuiltInsLoaded();
@@ -15931,7 +15931,7 @@ public class BuiltInsTests
         Assert.Equal("number:1|number:0|number:1|number:1|bigint:10:11", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PostfixUpdate_CoercesOperandExactlyOnce()
     {
         EnsureBuiltInsLoaded();
@@ -15948,7 +15948,7 @@ public class BuiltInsTests
         Assert.Equal("1/5/6", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PostfixUpdate_OnMemberAndIndex_CoercesAndWritesBack()
     {
         EnsureBuiltInsLoaded();
@@ -15966,7 +15966,7 @@ public class BuiltInsTests
 
     #region Issue 822 — signed zero (toPrecision, Math.max/min) and Number == null
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Number_ToPrecision_NegativeZero_HasNoSign()
     {
         EnsureBuiltInsLoaded();
@@ -15982,7 +15982,7 @@ public class BuiltInsTests
         Assert.Equal("0.0|0.0|0|0|0.0000", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_MaxMin_RespectSignedZero()
     {
         EnsureBuiltInsLoaded();
@@ -16002,7 +16002,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|true|NaN|NaN", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AbstractEquality_NumberAndNull_IsFalse()
     {
         EnsureBuiltInsLoaded();
@@ -16026,7 +16026,7 @@ public class BuiltInsTests
 
     #region Issue 822 — relational ToPrimitive(Number), method lengths, String.slice
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Relational_CoercesViaToPrimitiveNumber_WithToStringFallback()
     {
         EnsureBuiltInsLoaded();
@@ -16046,7 +16046,7 @@ public class BuiltInsTests
         Assert.Equal("true|true|true|true|true|false|true", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void String_LocaleCaseMethods_HaveLengthZero()
     {
         EnsureBuiltInsLoaded();
@@ -16059,7 +16059,7 @@ public class BuiltInsTests
         Assert.Equal("0|0", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void String_Slice_UndefinedEnd_UsesLength()
     {
         EnsureBuiltInsLoaded();
@@ -16082,7 +16082,7 @@ public class BuiltInsTests
 
     #region Issue 822 — generic array-like length (pop / unshift / sort)
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayPop_GenericObject_UsesToLengthNotUint32()
     {
         EnsureBuiltInsLoaded();
@@ -16105,7 +16105,7 @@ public class BuiltInsTests
         Assert.Equal("y|y|9007199254740990", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayUnshift_ChecksSourceViaHasPropertyThroughPrototype()
     {
         EnsureBuiltInsLoaded();
@@ -16126,7 +16126,7 @@ public class BuiltInsTests
         Assert.Equal("1", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArraySort_GenericObject_ReadsInheritedLength()
     {
         EnsureBuiltInsLoaded();
@@ -16151,7 +16151,7 @@ public class BuiltInsTests
 
     #region Issue 822 — Array.prototype.flatMap mapper applied once; Math.cbrt rounding
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FlatMap_AppliesMapperOnlyToSourceElements()
     {
         EnsureBuiltInsLoaded();
@@ -16169,7 +16169,7 @@ public class BuiltInsTests
         Assert.Equal("4:1,2,2,4|0,1,2|[[1],[2]]", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Math_Cbrt_IsExactForPerfectCubes()
     {
         EnsureBuiltInsLoaded();
@@ -16185,7 +16185,7 @@ public class BuiltInsTests
         Assert.Equal("3|-2|9|10000000000|-Infinity", result.ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Host_InvokeFunction_UsesFunctionRealm_WhenAmbientContextDiffers()
     {
         EnsureBuiltInsLoaded();
@@ -16202,7 +16202,7 @@ public class BuiltInsTests
         Assert.Equal("ambient", ambientContext.Eval("marker").ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Host_InvokeFunction_RestoresFunctionRealm_WhenAmbientContextCleared()
     {
         EnsureBuiltInsLoaded();
@@ -16219,7 +16219,7 @@ public class BuiltInsTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Host_CreateInstance_RestoresFunctionRealm_WhenAmbientContextCleared()
     {
         EnsureBuiltInsLoaded();

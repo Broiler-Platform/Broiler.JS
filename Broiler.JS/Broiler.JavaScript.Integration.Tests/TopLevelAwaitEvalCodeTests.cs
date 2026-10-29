@@ -43,7 +43,7 @@ public class TopLevelAwaitEvalCodeTests
         return context;
     }
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("eval('await 1')")]
     [InlineData("(0, eval)('await 1')")]
     [InlineData("eval('for await (const v of []) {}')")]
@@ -60,12 +60,12 @@ public class TopLevelAwaitEvalCodeTests
     }
 
     // After the program's own await, in the continuation the permission's scope used to reach.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task Eval_after_the_programs_own_await_may_not_await_either()
         => Assert.Equal("threw SyntaxError", await EvalWithTopLevelAwait("await 0; " + Probe("eval('await 1')")));
 
     // The program itself keeps its permission, and eval code that does not await is unchanged.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task The_program_keeps_its_own_permission()
     {
         Assert.Equal("3", await EvalWithTopLevelAwait("var a = await Promise.resolve(1); a + eval('2')"));

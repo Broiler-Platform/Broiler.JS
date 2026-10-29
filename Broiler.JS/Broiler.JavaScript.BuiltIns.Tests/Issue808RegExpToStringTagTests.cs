@@ -18,20 +18,20 @@ public class Issue808RegExpToStringTagTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectToString_OnRegExpInstance_IsRegExp()
         => Assert.Equal("[object RegExp]", Eval("Object.prototype.toString.call(/x/);"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectToString_OnRegExpPrototype_IsObject()
         => Assert.Equal("[object Object]", Eval("Object.prototype.toString.call(RegExp.prototype);"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ArrayToString_FallbackOnRegExp_IsRegExp()
         // Array.prototype.toString on a RegExp (no callable "join") falls back to Object.prototype.toString.
         => Assert.Equal("[object RegExp]", Eval("Array.prototype.toString.call(new RegExp('a'));"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectToString_RegExpWithToStringTag_Overrides()
         => Assert.Equal("[object Foo]", Eval("""
             var re = /x/;

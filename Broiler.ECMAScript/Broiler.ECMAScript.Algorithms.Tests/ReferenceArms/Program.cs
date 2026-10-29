@@ -30,11 +30,9 @@ internal static class Program
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         if (args.Length == 0 || args[0] is not ("compare" or "compare-numerics" or "compare-text" or "compare-date"))
         {
-            Console.Error.WriteLine("usage: compare --population DIR --out DIR [--limit LINES] [--operations NAME,NAME]");
-            Console.Error.WriteLine("       compare-numerics --population DIR --out DIR [--limit LINES] [--operations NAME|NAME]");
-            Console.Error.WriteLine("       compare-text --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--culture NAME]");
-            Console.Error.WriteLine("       compare-date --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--culture NAME]");
-            return 2;
+            if (args.Any(arg => arg is "--server" or "--internal-msbuild-node"))
+                return Xunit.MicrosoftTestingPlatform.TestPlatformTestFramework.RunAsync(args, SelfRegisteredExtensions.AddSelfRegisteredExtensions).GetAwaiter().GetResult();
+            return Xunit.Runner.InProc.SystemConsole.ConsoleRunner.Run(args).GetAwaiter().GetResult();
         }
 
         string? Option(string name)

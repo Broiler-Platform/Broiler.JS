@@ -48,7 +48,7 @@ public readonly struct UnhandledRejection
 /// <para>
 /// <b>Why the report is deferred rather than raised at the rejection.</b> <c>Promise.reject(x)</c>
 /// is rejected before <c>.catch(…)</c> on the next line has run, and an <c>await</c> attaches its
-/// handler a microtask after the promise settles. Reporting from inside <see cref="JSPromise.Reject"/>
+/// handler a microtask after the promise settles. Reporting from inside <see cref="Broiler.JavaScript.BuiltIns.Promise.JSPromise.Reject(Broiler.JavaScript.Runtime.JSValue)"/>
 /// would therefore call almost every correctly-handled rejection unhandled. The spec's answer, and
 /// this one, is to collect at the rejection, withdraw when a handler arrives, and let the host ask
 /// what is left once its microtask checkpoint has drained.
@@ -92,7 +92,7 @@ public static class JSPromiseRejectionTracker
 
     /// <summary>
     /// A promise was rejected while nothing was waiting on it. Called from
-    /// <see cref="JSPromise.Reject"/>.
+    /// <see cref="Broiler.JavaScript.BuiltIns.Promise.JSPromise.Reject(Broiler.JavaScript.Runtime.JSValue)"/>.
     /// </summary>
     internal static void Rejected(object promise, JSValue reason)
     {
@@ -107,7 +107,7 @@ public static class JSPromiseRejectionTracker
 
     /// <summary>
     /// A handler was attached to <paramref name="promise"/>, so its rejection — whether it has
-    /// happened yet or not — is somebody's business now. Called from <see cref="JSPromise.Then"/>.
+    /// happened yet or not — is somebody's business now. Called from <see cref="Broiler.JavaScript.BuiltIns.Promise.JSPromise.Then(Broiler.JavaScript.Runtime.JSFunctionDelegate, Broiler.JavaScript.Runtime.JSFunctionDelegate, Broiler.JavaScript.BuiltIns.Promise.JSPromise)"/>.
     /// </summary>
     internal static void Handled(object promise)
     {

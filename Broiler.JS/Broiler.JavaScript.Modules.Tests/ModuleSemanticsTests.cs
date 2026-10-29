@@ -86,13 +86,13 @@ public class ModuleSemanticsTests
 
     // (1) Live bindings.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnImportObservesALaterAssignmentByTheExporter()
         => Assert.Equal("1:2", await Run(
             new() { ["file:///app/dep.js"] = "export let x = 1; export function bump() { x++; }" },
             "import { x, bump } from './dep.js'; const before = x; bump(); globalThis.r = before + ':' + x;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ARenamedAndADefaultImportAreLiveToo()
         => Assert.Equal("a:b:A:B", await Run(
             new()
@@ -104,7 +104,7 @@ public class ModuleSemanticsTests
             "import def, { renamed, set } from './dep.js'; const b = renamed + ':' + def; set();" +
             " globalThis.r = b + ':' + renamed + ':' + def;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnImportIsAnImmutableBindingInTheImporter()
         => Assert.Equal("TypeError:1", await Run(
             new() { ["file:///app/dep.js"] = "export let x = 1;" },
@@ -112,7 +112,7 @@ public class ModuleSemanticsTests
 
     // (2) The module namespace exotic object.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task TheNamespaceIsAModuleExoticObject()
         => Assert.Equal("[object Module]|Module|null|false|a,b,z|true", await Run(
             new() { ["file:///app/dep.js"] = "export const z = 1, b = 2; export function a() {}" },
@@ -120,7 +120,7 @@ public class ModuleSemanticsTests
             " globalThis.r = [Object.prototype.toString.call(ns), ns[Symbol.toStringTag], String(Object.getPrototypeOf(ns))," +
             " Object.isExtensible(ns), Object.keys(ns).join(), Object.isSealed(ns)].join('|');"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task TheNamespaceRefusesWritesDefinitionsAndDeletes()
         => Assert.Equal("TypeError,TypeError,TypeError,TypeError,false,true,1", await Run(
             new() { ["file:///app/dep.js"] = "export let x = 1;" },
@@ -131,14 +131,14 @@ public class ModuleSemanticsTests
             " out.push(Reflect.set(ns, 'x', 3), Reflect.defineProperty(ns, 'x', { value: 1, writable: true, enumerable: true, configurable: false }), ns.x);" +
             " globalThis.r = out.join();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task TheNamespaceReadsLiveValues()
         => Assert.Equal("1,2,{\"value\":2,\"writable\":true,\"enumerable\":true,\"configurable\":false}", await Run(
             new() { ["file:///app/dep.js"] = "export let x = 1; export function bump() { x++; }" },
             "import * as ns from './dep.js'; const a = ns.x; ns.bump();" +
             " globalThis.r = [a, ns.x, JSON.stringify(Object.getOwnPropertyDescriptor(ns, 'x'))].join();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task TheNamespaceReportsEachOwnKeyOnce()
         => Assert.Equal("a,b,x,Symbol(Symbol.toStringTag)|1|a,b,x,Symbol(Symbol.toStringTag)", await Run(
             new() { ["file:///app/dep.js"] = "export let x = 1, b = 2; export function a() {}" },
@@ -147,13 +147,13 @@ public class ModuleSemanticsTests
             " globalThis.r = [Reflect.ownKeys(ns).map(String).join(), Object.getOwnPropertySymbols(ns).length," +
             " Reflect.ownKeys(passThrough).map(String).join()].join('|');"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task JsonStringifySerializesTheNamespacesExports()
         => Assert.Equal("{\"default\":3,\"x\":1}", await Run(
             new() { ["file:///app/dep.js"] = "export let x = 1; export default 3;" },
             "import * as ns from './dep.js'; globalThis.r = JSON.stringify(ns);"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AProxyOwnKeysTrapMustReportEveryExportOfANamespaceTarget()
         => Assert.Equal("TypeError", await Run(
             new() { ["file:///app/dep.js"] = "export let x = 1, y = 2;" },
@@ -161,21 +161,21 @@ public class ModuleSemanticsTests
             " try { Reflect.ownKeys(new Proxy(ns, { ownKeys() { return ['x', Symbol.toStringTag]; } })); globalThis.r = 'none'; }" +
             " catch (e) { globalThis.r = e.name; }"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task StaticAndDynamicImportsShareOneNamespaceAndOneEvaluation()
         => Assert.Equal("true,true,1", await Run(
             new() { ["file:///app/dep.js"] = "globalThis.runs = (globalThis.runs || 0) + 1; export const x = 1;" },
             "import * as ns from './dep.js'; const [a, b] = await Promise.all([import('./dep.js'), import('./dep.js')]);" +
             " globalThis.r = [a === ns, b === ns, globalThis.runs].join();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ScriptCodeImportsThroughTheSameLoader()
         => Assert.Equal("1,true", await Run(
             new() { ["file:///app/dep.js"] = "export const x = 1;" },
             "import * as ns from './dep.js'; const viaScript = await (0, eval)(\"import('./dep.js')\");" +
             " globalThis.r = [viaScript.x, viaScript === ns].join();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ADynamicImportEvaluatesItsModuleAfterTheCallReturns()
         => Assert.Equal("call,body", await Run(
             new() { ["file:///app/dep.js"] = "globalThis.log.push('body');" },
@@ -184,13 +184,13 @@ public class ModuleSemanticsTests
 
     // (3) Link errors are SyntaxErrors raised before any module body runs.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AMissingImportIsASyntaxErrorBeforeAnyModuleEvaluates()
         => Assert.Equal("SyntaxError:undefined", await RunExpectingError(
             new() { ["file:///app/dep.js"] = "globalThis.r = 'dep ran'; export const y = 1;" },
             "globalThis.r = 'main ran'; import { nope } from './dep.js';"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnAmbiguousStarImportIsASyntaxError()
         => Assert.Equal("SyntaxError:undefined", await RunExpectingError(
             new()
@@ -201,7 +201,7 @@ public class ModuleSemanticsTests
             },
             "import { x } from './both.js';"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnAmbiguousStarNameIsOmittedFromTheNamespace()
         => Assert.Equal("y", await Run(
             new()
@@ -214,7 +214,7 @@ public class ModuleSemanticsTests
 
     // (4) Cycles and the cross-module TDZ.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ACycleSeesHoistedFunctionsAndTheTemporalDeadZone()
         => Assert.Equal("ReferenceError|fn|a1", await Run(
             new()
@@ -230,7 +230,7 @@ public class ModuleSemanticsTests
 
     // (5) Top-level await ordering and cached evaluation errors.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ASiblingOfAnAsyncModuleIsNotBlockedByIt()
         => Assert.Equal("slow:start,quick,slow:end,main", await Run(
             new()
@@ -243,13 +243,13 @@ public class ModuleSemanticsTests
             "import { log } from './log.js'; import './slow.js'; import './quick.js'; log.push('main');" +
             " globalThis.r = log.join();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnImporterSeesAnAsyncDependencysFinalValue()
         => Assert.Equal("after", await Run(
             new() { ["file:///app/dep.js"] = "export let v = 'before'; await null; v = 'after';" },
             "import { v } from './dep.js'; globalThis.r = v;"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnAsyncRejectionRejectsTheModulesOwnImportBeforeItsParents()
         => Assert.Equal("a,b", await Run(
             new()
@@ -267,7 +267,7 @@ public class ModuleSemanticsTests
             " for (let i = 0; i < 100; i++) await null;" +
             " globalThis.release(); await Promise.all([pa, pb]); globalThis.r = order.join();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnErroredModuleRejectsEveryLaterImportWithTheSameErrorAndNeverRunsAgain()
         => Assert.Equal("1|true|true", await Run(
             new()
@@ -281,21 +281,21 @@ public class ModuleSemanticsTests
 
     // (6) Module code.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ModuleCodeIsStrictWithAnUndefinedThis()
         => Assert.Equal("undefined|ReferenceError|undefined", await Run(
             new(),
             "let assigned; try { undeclaredName = 1; assigned = 'none'; } catch (e) { assigned = e.name; }" +
             " globalThis.r = [typeof this, assigned, (function () { return typeof this; })()].join('|');"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task TopLevelDeclarationsDoNotReachTheGlobalObject()
         => Assert.Equal("undefined,undefined,1,function", await Run(
             new(),
             "var count = 1; function helper() {}" +
             " globalThis.r = [typeof globalThis.count, typeof globalThis.helper, count, typeof helper].join();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ModuleCodeSeesNoCommonJsBindings()
         => Assert.Equal("undefined,undefined,undefined,undefined,undefined", await Run(
             new(),
@@ -303,25 +303,25 @@ public class ModuleSemanticsTests
 
     // (7) Declaration forms of import and export.
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ASideEffectOnlyImportEvaluatesTheModule()
         => Assert.Equal("side", await Run(
             new() { ["file:///app/side.js"] = "globalThis.r = 'side';" },
             "import './side.js';"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ADefaultFunctionDeclarationMayBeFollowedByOtherExports()
         => Assert.Equal("f,1,function", await Run(
             new() { ["file:///app/dep.js"] = "export default function f() {}\nexport const y = 1;" },
             "import d, { y } from './dep.js'; globalThis.r = [d.name, y, typeof d].join();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnExportedFunctionMayBeReExportedUnderAnotherName()
         => Assert.Equal("true", await Run(
             new() { ["file:///app/dep.js"] = "export function f() {}\nexport { f as g };" },
             "import { f, g } from './dep.js'; globalThis.r = String(f === g);"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task AnAnonymousDefaultExportIsNamedDefault()
         => Assert.Equal("default,default,default", await Run(
             new()
@@ -346,7 +346,7 @@ public class ModuleSemanticsTests
         }
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ATopLevelAwaitUsingMakesTheModuleAsyncAndAwaitsForANullResource()
         // DisposeResources performs Await(undefined) for `await using b = null` before disposing the
         // sync resource `a`, so one job (t1) runs first. The module used to be compiled as a sync
@@ -357,7 +357,7 @@ public class ModuleSemanticsTests
             "{ using a = { [Symbol.dispose]() { log.push('a'); } }; await using b = null; log.push('body'); }" +
             "log.push('after'); globalThis.r = log.join(',');"));
 
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData(true, "function")]
     [InlineData(false, "TypeError")]
     public async Task ARegisteredModuleIsReachedThroughResolveAndOnlyWhenRegistered(bool registerBuiltInModules, string expected)
@@ -371,7 +371,7 @@ public class ModuleSemanticsTests
         Assert.Equal(new[] { "module" }, ctx.Resolved);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task EverySpecifierIsResolvedThroughTheHost()
     {
         List<string>? resolved = null;

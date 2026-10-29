@@ -28,24 +28,24 @@ public class Issue836DateTimeFormatTimeZoneTests
             " catch (e) { return e.constructor.name; } })()").ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void UtcLowercaseNormalizesToUpper() => Assert.Equal("UTC", TimeZoneOf("utc"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NamedZoneCaseInsensitive() => Assert.Equal("Africa/Abidjan", TimeZoneOf("AFRICA/ABIDJAN"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BackwardAliasNotCanonicalized() => Assert.Equal("Asia/Calcutta", TimeZoneOf("Asia/Calcutta"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PrimaryZonePreserved() => Assert.Equal("Asia/Kolkata", TimeZoneOf("Asia/Kolkata"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void InvalidZoneThrowsRangeError() => Assert.Equal("RangeError", ErrorName("'Not/AZone'"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void EmptyZoneThrowsRangeError() => Assert.Equal("RangeError", ErrorName("''"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LegacyNonIanaThrowsRangeError() => Assert.Equal("RangeError", ErrorName("'ACT'"));
 }

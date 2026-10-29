@@ -48,15 +48,15 @@ public class ScalarParameterTests
 
     // ── the gate fires, and exactly where it should ───────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SimpleParametersAreHeldWithoutACell()
         => Assert.Equal(2, ScalarLocalsOf("(function (a, b) { return a + b; })"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AnArrowFunctionsParametersAreHeldWithoutACell()
         => Assert.Equal(2, ScalarLocalsOf("((a, b) => a + b)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AParameterANestedFunctionNamesKeepsItsCell()
     {
         // `b` is named by the closure and keeps its cell; `a` is not and does not. Capturing a
@@ -173,7 +173,7 @@ public class ScalarParameterTests
 
     // ── the item's own acceptance criterion ───────────────────────────────────────────
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AParameterCostsNoAllocationPerCall()
     {
         // The point of the item, asserted as bytes rather than as a counter. Three parameters

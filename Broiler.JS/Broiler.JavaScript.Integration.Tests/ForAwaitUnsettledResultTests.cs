@@ -40,7 +40,7 @@ public class ForAwaitUnsettledResultTests
     }
 
     /// <summary>The shape that hung: <c>next()</c> returns a chained promise.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ChainedNextResult() => Assert.Equal("1,2", Drive(
         "var it = { i: 0 };" +
         "it[Symbol.asyncIterator] = function () { return this; };" +
@@ -49,7 +49,7 @@ public class ForAwaitUnsettledResultTests
         "(async function () { var g = []; for await (const v of it) g.push(v); globalThis.r = g.join(','); })();"));
 
     /// <summary>A promise nothing has resolved when the loop reaches it.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DeferredNextResult() => Assert.Equal("ready", Drive(
         "var release;" +
         "var gate = new Promise(function (resolve) { release = resolve; });" +
@@ -63,7 +63,7 @@ public class ForAwaitUnsettledResultTests
         "release('ready');"));
 
     /// <summary>The already-settled shape still works — it is what used to be the only one that did.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SettledNextResult() => Assert.Equal("1,2", Drive(
         "var it = { i: 0 };" +
         "it[Symbol.asyncIterator] = function () { return this; };" +
@@ -72,7 +72,7 @@ public class ForAwaitUnsettledResultTests
         "(async function () { var g = []; for await (const v of it) g.push(v); globalThis.r = g.join(','); })();"));
 
     /// <summary>A rejected step result rejects the loop rather than hanging it.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RejectedNextResult() => Assert.Equal("caught:boom", Drive(
         "var it = {};" +
         "it[Symbol.asyncIterator] = function () { return this; };" +
@@ -82,7 +82,7 @@ public class ForAwaitUnsettledResultTests
 
     /// <summary>A step result that settles to a non-object is the specified TypeError, checked after
     /// the await rather than before it.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NonObjectNextResult() => Assert.Equal("TypeError", Drive(
         "var it = {};" +
         "it[Symbol.asyncIterator] = function () { return this; };" +
@@ -92,12 +92,12 @@ public class ForAwaitUnsettledResultTests
 
     /// <summary>The synchronous fallback — <c>for await</c> over an array — goes through the same
     /// three pieces and still iterates.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SyncIterableFallback() => Assert.Equal("1,2", Drive(
         "(async function () { var g = []; for await (const v of [1, 2]) g.push(v); globalThis.r = g.join(','); })();"));
 
     /// <summary>An early <c>break</c> still closes the iterator through <c>return()</c>.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BreakClosesTheIterator() => Assert.Equal("1/closed", Drive(
         "var it = { i: 0, closed: false };" +
         "it[Symbol.asyncIterator] = function () { return this; };" +

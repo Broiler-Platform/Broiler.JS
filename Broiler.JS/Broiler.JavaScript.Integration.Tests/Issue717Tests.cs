@@ -75,53 +75,53 @@ public class Issue717Tests
 
     // ---- Problem 10: Error cause own property ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ErrorCauseIsNonEnumerableOwnProperty()
         => Assert.Equal(
             "{\"value\":42,\"writable\":true,\"enumerable\":false,\"configurable\":true}",
             Eval("JSON.stringify(Object.getOwnPropertyDescriptor(new Error('m', { cause: 42 }), 'cause'))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ErrorWithoutOptionsHasNoCause()
         => Assert.Equal("false", Eval("Object.prototype.hasOwnProperty.call(new Error('m'), 'cause')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ErrorWithUndefinedCauseStillInstallsProperty()
         => Assert.Equal("true,undefined",
             Eval("var d = Object.getOwnPropertyDescriptor(new Error('m', { cause: undefined }), 'cause'); ('value' in d) + ',' + String(d.value)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypeErrorCauseIsInstalled()
         => Assert.Equal("9", Eval("new TypeError('m', { cause: 9 }).cause + ''"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AggregateErrorCauseIsInstalled()
         => Assert.Equal(
             "{\"value\":7,\"writable\":true,\"enumerable\":false,\"configurable\":true}",
             Eval("JSON.stringify(Object.getOwnPropertyDescriptor(new AggregateError([], 'm', { cause: 7 }), 'cause'))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ErrorCauseReadFromInheritedProperty()
         => Assert.Equal("5", Eval("var p = { cause: 5 }; var o = Object.create(p); new Error('m', o).cause + ''"));
 
     // ---- Problem 8: FromPropertyDescriptor field order ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DataDescriptorFieldOrder()
         => Assert.Equal("value,writable,enumerable,configurable",
             Eval("Object.getOwnPropertyNames(Reflect.getOwnPropertyDescriptor({ p: 'foo' }, 'p')).join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AccessorDescriptorFieldOrder()
         => Assert.Equal("get,set,enumerable,configurable",
             Eval("Object.getOwnPropertyNames(Object.getOwnPropertyDescriptor({ get x() { return 1; } }, 'x')).join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SymbolPropertyDescriptorFieldOrder()
         => Assert.Equal("value,writable,enumerable,configurable",
             Eval("var s = Symbol(); var o = {}; o[s] = 1; Object.getOwnPropertyNames(Reflect.getOwnPropertyDescriptor(o, s)).join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ProxyDefinePropertyTrapReceivesCanonicalDescriptor()
         => Assert.Equal("set,configurable",
             Eval(@"
@@ -142,22 +142,22 @@ var proxy = new Proxy({}, {
   ownKeys: function () { return ownKeysResult; }
 });";
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectSpreadVisitsProxyOwnKeysInOrder()
         => Assert.Equal("Symbol(),foo,0",
             Eval(ProxySetup + "({ ...proxy }); getOwnKeys.map(String).join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectRestVisitsProxyOwnKeysInOrder()
         => Assert.Equal("Symbol(),foo,0",
             Eval(ProxySetup + "let { ...$ } = proxy; getOwnKeys.map(String).join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectSpreadWithLeadingPropertiesVisitsProxyOwnKeys()
         => Assert.Equal("Symbol(),foo,0",
             Eval(ProxySetup + "var sym = ownKeysResult[0]; ({ [sym]: 0, foo: 0, [0]: 0, ...proxy }); getOwnKeys.map(String).join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectSpreadCopiesEnumerableProxyProperties()
         => Assert.Equal("a,1",
             Eval(@"
@@ -169,7 +169,7 @@ var proxy = new Proxy({}, {
 var o = { ...proxy };
 Object.keys(o).join(',') + ',' + o.a"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ObjectSpreadSkipsNonEnumerableProxyProperties()
         => Assert.Equal("",
             Eval(@"
@@ -181,78 +181,78 @@ Object.keys({ ...proxy }).join(',')"));
 
     // ---- Problem 5: propertyIsEnumerable for exotic synthesized properties ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StringWrapperIndexIsEnumerable()
         => Assert.Equal("true",
             Eval("Object.prototype.propertyIsEnumerable.call(new String('abc'), '0')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StringWrapperLengthIsNotEnumerable()
         => Assert.Equal("false",
             Eval("Object.prototype.propertyIsEnumerable.call(new String('abc'), 'length')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StringWrapperIndexDescriptor()
         => Assert.Equal(
             "{\"value\":\"a\",\"writable\":false,\"enumerable\":true,\"configurable\":false}",
             Eval("JSON.stringify(Object.getOwnPropertyDescriptor(new String('abc'), '0'))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TypedArrayElementIsEnumerable()
         => Assert.Equal("true",
             Eval("Object.prototype.propertyIsEnumerable.call(new Int8Array([1, 2, 3]), '0')"));
 
     // ---- Problem 1: Symbol abstract equality & operator coercion ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SymbolEqualsItsBoxedWrapper()
         => Assert.Equal("true", Eval("var s = Symbol(); s == Object(s)"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SymbolDoesNotEqualUnrelatedWrapper()
         => Assert.Equal("false", Eval("Symbol() == Object(Symbol())"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BoxedSymbolNotLooselyEqualToNumber()
         => Assert.Equal("false", Eval("Object(Symbol()) == 0"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BoxedSymbolRelationalUsesOverriddenValueOf()
         => Assert.Equal("false", Eval(
             "delete Symbol.prototype[Symbol.toPrimitive]; Symbol.prototype.valueOf = function () { return 117.25; }; Object(Symbol()) < 0"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BoxedSymbolAdditionUsesOverriddenValueOf()
         => Assert.Equal("118.25", Eval(
             "delete Symbol.prototype[Symbol.toPrimitive]; Symbol.prototype.valueOf = function () { return 117.25; }; Object(Symbol()) + 1 + ''"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BoxedSymbolStringConcatUsesDefaultHint()
         => Assert.Equal("117.25", Eval(
             "delete Symbol.prototype[Symbol.toPrimitive]; Symbol.prototype.valueOf = function () { return 117.25; }; Symbol.prototype.toString = function () { return 'TS'; }; '' + Object(Symbol())"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BoxedSymbolToNumberUsesOverriddenValueOf()
         => Assert.Equal("117.25", Eval(
             "delete Symbol.prototype[Symbol.toPrimitive]; Symbol.prototype.valueOf = function () { return 117.25; }; Number(Object(Symbol())) + ''"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BoxedSymbolToStringUsesOverriddenToString()
         => Assert.Equal("TS", Eval(
             "delete Symbol.prototype[Symbol.toPrimitive]; Symbol.prototype.toString = function () { return 'TS'; }; String(Object(Symbol()))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SymbolToPrimitiveStillWorksOnBoxedReceiver()
         => Assert.Equal("true", Eval(
             "var s = Symbol('d'); Object(s)[Symbol.toPrimitive]('default') === s"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BoxedSymbolDescriptionStillWorks()
         => Assert.Equal("d", Eval("Object(Symbol('d')).description"));
 
     // ---- Problem 1: legacy function.arguments (Annex B) ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NonStrictFunctionArgumentsIsLiveDuringInvocation()
         => Assert.Equal("true,5,undefined,2", Eval(@"
 var obj = { test: function () {
@@ -261,11 +261,11 @@ var obj = { test: function () {
 } };
 obj.test(5, undefined);"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FunctionArgumentsIsNullWhenNotExecuting()
         => Assert.Equal("true", Eval("function f() {} f(1, 2); f.arguments === null"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StrictFunctionArgumentsThrows()
         => Assert.Equal("true", Eval(@"
 var sobj = { test: function () {
@@ -276,20 +276,20 @@ sobj.test();"));
 
     // ---- Problem 1: `yield` as identifier — `/` is division, not a regex ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SloppyYieldIsIdentifierSoSlashIsDivision()
         => Assert.Equal("true", Eval(
             "var yield = 12, a = 3, b = 6, g = 2, r = false; yield /a; r = true; b/g; r"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GeneratorYieldFollowedBySlashIsRegex()
         => Assert.Equal("ab", Eval("function* g() { yield /ab/.source; } g().next().value"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GeneratorMethodYieldFollowedBySlashIsRegex()
         => Assert.Equal("cd", Eval("class C { *g() { yield /cd/.source; } } new C().g().next().value"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void YieldAsIdentifierInNestedFunctionInsideGenerator()
         => Assert.Equal("5", Eval(
             "function* g() { function h() { var yield = 10, a = 2; return yield /a; } return h(); } g().next().value + ''"));
@@ -300,14 +300,14 @@ sobj.test();"));
     // is observable here without script-host by calling the function after the `with`
     // block has exited, so the dynamic scope is gone in every mode.)
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void FunctionInEvaldWithCapturesScopeAfterBlockExits()
         => Assert.Equal("42", Eval(
             "var o = { x: 42 }; var f;"
             + "eval(\"with (o) { f = function () { return typeof x === 'undefined' ? 'unresolved' : x; }; }\");"
             + "f() + ''"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StrictWriteToNonWritableWithBindingInEvalThrows()
         => Assert.Equal("TypeError", Eval(
             "function obj() { var o = { x: 1 }; Object.defineProperty(o, 'x', { writable: false }); return o; }"
@@ -321,20 +321,20 @@ sobj.test();"));
     // object — the call-form "return the existing RegExp" optimization leaked into
     // the construct form — so the derived regex aliased the source's lastIndex.)
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NewRegExpFromRegExpCreatesFreshInstance()
         => Assert.Equal("false", Eval("var lit = /a/; new RegExp(lit) === lit"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void RegExpCallFormReturnsSameInstance()
         => Assert.Equal("true", Eval("var lit = /a/; RegExp(lit) === lit"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NewRegExpFromRegExpDoesNotAliasLastIndex()
         => Assert.Equal("undefined", Eval(
             "var lit = /a/; var r = new RegExp(lit); r.foo = 1; typeof lit.foo"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DefinePropertyOnDerivedRegExpDoesNotAffectSibling()
         => Assert.Equal("true", Eval(
             "var lit = /a/; var a = new RegExp(lit); var b = new RegExp(lit);"
@@ -343,14 +343,14 @@ sobj.test();"));
 
     // ---- Problem 1: non-global RegExp.prototype[@@match] reads lastIndex ----
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NonGlobalMatchReadsLastIndex()
         => Assert.Equal("true", Eval(
             "var re = /a/; var called = false;"
             + "re.lastIndex = { valueOf: function () { called = true; return 0; } };"
             + "RegExp.prototype[Symbol.match].call(re, 'a'); called + ''"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void GlobalMatchDoesNotReadLastIndexValueOf()
         => Assert.Equal("false", Eval(
             "var re = /a/g; var called = false;"

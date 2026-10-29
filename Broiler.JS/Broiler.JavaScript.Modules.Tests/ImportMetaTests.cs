@@ -55,7 +55,7 @@ public class ImportMetaTests
 
     /// <summary><c>url</c> is the module's own absolute URL, and each module reports its own rather
     /// than the entry point's.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task UrlIsTheModulesOwnUrl()
         => Assert.Equal("file:///app/dep.js|file:///app/main.js", await Run(
             "import { u } from './dep.js'; globalThis.r = u + '|' + import.meta.url;",
@@ -63,7 +63,7 @@ public class ImportMetaTests
 
     /// <summary>One object per module, created once and stable — a module is entitled to hang state
     /// off it, which only works if every read is the same object.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task TheObjectIsOneObjectAndTakesNewProperties()
         => Assert.Equal("true|7", await Run(
             "var first = import.meta; import.meta.mine = 7; "
@@ -71,13 +71,13 @@ public class ImportMetaTests
 
     /// <summary>A null prototype, so a property a module adds cannot be confused with one inherited
     /// from <c>Object.prototype</c>. Chromium answers the same.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ThePrototypeIsNull()
         => Assert.Equal("null|url", await Run(
             "globalThis.r = String(Object.getPrototypeOf(import.meta)) + '|' + Object.keys(import.meta).join(',');"));
 
     /// <summary>It is readable wherever module code runs, not only at the module's top level.</summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ItIsReadableFromNestedFunctionsAndArrows()
         => Assert.Equal("file:///app/main.js|file:///app/main.js", await Run(
             "function f() { return import.meta.url; } "
@@ -87,7 +87,7 @@ public class ImportMetaTests
     /// Outside module code it stays an early SyntaxError, which is what ES2025 §13.3.12 asks for and
     /// what a <c>try { eval('import.meta') }</c> feature-detect expects to see.
     /// </summary>
-    [Theory(Timeout = 600000)]
+    [Theory]
     [InlineData("import.meta.url")]
     [InlineData("eval('import.meta.url')")]
     [InlineData("Function('return import.meta.url')()")]
@@ -105,7 +105,7 @@ public class ImportMetaTests
     /// not anything is at it. Built on this resolver it would throw where a browser answers, which a
     /// page cannot feature-detect; its absence, which this pins, a page can.
     /// </summary>
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task ResolveIsAbsentAndDetectablySo()
         => Assert.Equal("undefined|false", await Run(
             "globalThis.r = (typeof import.meta.resolve) + '|' + ('resolve' in import.meta);"));

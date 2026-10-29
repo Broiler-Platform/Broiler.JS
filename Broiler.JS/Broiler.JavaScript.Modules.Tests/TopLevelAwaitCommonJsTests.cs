@@ -38,7 +38,7 @@ public class TopLevelAwaitCommonJsTests
     private static UrlModuleContext Context(string module)
         => new(new Dictionary<string, string> { ["file:///app/module.cjs"] = module });
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task A_CommonJS_module_the_program_loads_may_not_await_at_its_own_top_level()
     {
         const string module = "module.exports = 1; await 1;";
@@ -50,7 +50,7 @@ public class TopLevelAwaitCommonJsTests
             Assert.Equal("threw SyntaxError", (await ctx.EvalWithTopLevelAwaitAsync(Program, "file:///app/main.js")).ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public async Task A_CommonJS_module_that_does_not_await_loads_as_before()
     {
         using var ctx = Context("module.exports = 1;");

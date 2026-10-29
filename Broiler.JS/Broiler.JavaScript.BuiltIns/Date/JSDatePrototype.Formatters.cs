@@ -102,7 +102,7 @@ public partial class JSDate
     }
 
     [JSExport("toLocaleString", Length = 0)]
-    internal JSValue ToLocaleString(in Arguments a)
+    internal new JSValue ToLocaleString(in Arguments a)
     {
         if (double.IsNaN(timeValue))
             return new JSString(EcmaDateFormatter.InvalidDate);

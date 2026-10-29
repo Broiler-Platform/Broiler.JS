@@ -65,7 +65,7 @@ public class TaggedTemplateMemberTagTests
     public void AMemberTagIsCalledOnTheObjectItWasReadFrom(string expression, string expected)
         => Assert.Equal(expected, InFunction(expression));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void APrivateMethodTagIsTheClassesOwnMethod()
         // `#m` is the private method, not a public property named "#m", and it runs on the instance --
         // as a field holding a function and an accessor answering one do.
@@ -76,7 +76,7 @@ public class TaggedTemplateMemberTagTests
             " t() { return [this.#m`x`, this.#f`x`, this.#g`x`].join(','); } }" +
             " var c = new C(); c.t()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ASuperTagRunsOnThis()
         // The superclass's method, called with the caller's `this` as a super call is -- also through a
         // computed key, and from an arrow function inside the method.
@@ -86,7 +86,7 @@ public class TaggedTemplateMemberTagTests
             " class B extends A { t() { return [super.m`x`, super[(f.g(), 'm')]`x`, (() => super.m`x`)()].join(','); } }" +
             " var b = new B(); b.t()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AParenthesisedChainTagRunsOnItsObjectOrThrowsWhereItShortCircuits()
         // `(o?.m)`x`` calls o.m on o, as `(o?.m)()` does -- through a deeper link too. Where the chain
         // short-circuits, the parens give `undefined` as the tag, and calling it is a TypeError thrown
@@ -97,7 +97,7 @@ public class TaggedTemplateMemberTagTests
             " log = []; try { (n?.inner.m)`x${log.push('sub')}`; out.push('no throw'); } catch (e) { out.push(log.join(',') + ',' + e.name); }" +
             " return out.join('|'); })()"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheTagIsReadBeforeTheSubstitutionsAreEvaluated()
         // The receiver, then the key, then the method read, then each substitution, then the call
         // (EvaluateCall after ArgumentListEvaluation of the template) -- with the key's call and the
@@ -109,7 +109,7 @@ public class TaggedTemplateMemberTagTests
             " var s = { key: function () { log.push('key'); return 'm'; }, sub: function () { log.push('sub'); return 1; } };" +
             " (function () { recv()[s.key()]`a${s.sub()}b`; })(); log.join(',')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AComputedTagKeepsOneTemplateObjectPerSite()
         => Assert.Equal("true,false", Eval(
             Objects +
@@ -127,7 +127,7 @@ public class TaggedTemplateMemberTagTests
     public void AMemberTagInAnAsyncFunctionIsCalledOnItsObject(string statement, string expected)
         => Assert.Equal(expected, Drive(Objects + "(async function () { " + statement + " })();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void TheOrderHoldsInAnAsyncFunction()
         // The rewrite that turns an async body into a state machine must not move the key or a
         // substitution ahead of the receiver.
@@ -138,7 +138,7 @@ public class TaggedTemplateMemberTagTests
             " var s = { key: function () { log.push('key'); return 'm'; }, sub: function () { log.push('sub'); return Promise.resolve(1); } };" +
             " (async function () { recv()[s.key()]`a${await s.sub()}b`; globalThis.r = log.join(','); })();"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void AMemberTagInAGeneratorIsCalledOnItsObject()
         => Assert.Equal("o:|:5", Eval(
             Objects +

@@ -46,7 +46,7 @@ public class JsealAuditEngineFixesTests
             outcome + ',' + trapRuns;
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NoncallableProxyStaysAnObjectAndCallableProxyStillRunsItsTrap()
         => Assert.Equal("object,function,43", Eval("""
             var p = new Proxy({}, { apply: function () { return 42; } });
@@ -103,7 +103,7 @@ public class JsealAuditEngineFixesTests
         Assert.Equal("0", ctx.Eval("String(calls)").ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void OwnKeyEnumerationOfAnIteratorHelperDoesNotAdvanceIt()
         => Assert.Equal("|||0|1,2,3", Eval("""
             var nextCalls = 0;
@@ -113,7 +113,7 @@ public class JsealAuditEngineFixesTests
             keys.concat([forIn]).join('|') + '|' + nextCalls + '|' + [...it].join(',');
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ValueReadingWalksStillRunGetters()
         => Assert.Equal("1,1|2", Eval("""
             var calls = 0;
@@ -146,7 +146,7 @@ public class JsealAuditEngineFixesTests
 
     // ---- 3. host/engine-minted ArrayBuffers take the intrinsic prototype --------------------
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void HostMintedArrayBufferTakesIntrinsicPrototypeAfterGlobalIsReplaced()
     {
         Load();
@@ -169,7 +169,7 @@ public class JsealAuditEngineFixesTests
         """).ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void HostMintedArrayBufferDoesNotReadTheGlobalBinding()
     {
         Load();
@@ -188,7 +188,7 @@ public class JsealAuditEngineFixesTests
         Assert.Equal("0,true", ctx.Eval("[reads, Object.getPrototypeOf(minted) === intrinsic].join(',')").ToString());
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SharedArrayBufferSliceKeepsSharedPrototype()
         => Assert.Equal("true,false", Eval("""
             var s = new SharedArrayBuffer(4).slice(1);
@@ -196,7 +196,7 @@ public class JsealAuditEngineFixesTests
              Object.getPrototypeOf(s) === ArrayBuffer.prototype].join(',');
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ScriptConstructedArrayBufferStillFollowsNewTarget()
         => Assert.Equal("true,true", Eval("""
             class Sub extends ArrayBuffer {}

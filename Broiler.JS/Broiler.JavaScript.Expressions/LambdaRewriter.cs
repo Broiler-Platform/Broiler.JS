@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -7,11 +8,15 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 
 namespace Broiler.JavaScript.ExpressionCompiler;
 
+[RequiresUnreferencedCode("Closure rewriting reflects over runtime-generated box types.")]
+[RequiresDynamicCode("Closure rewriting constructs runtime generic box types.")]
 public static class ClosureRepositoryExtensions
 {
     public static ClosureRepository GetClosureRepository(this BLambdaExpression lambda) => ClosureRepository.For(lambda);
 }
 
+[RequiresUnreferencedCode("Closure rewriting reflects over runtime-generated box types.")]
+[RequiresDynamicCode("Closure rewriting constructs runtime generic box types.")]
 public class ClosureRepository
 {
     private static System.Runtime.CompilerServices.ConditionalWeakTable<BLambdaExpression, ClosureRepository> cache =
@@ -20,7 +25,7 @@ public class ClosureRepository
     public readonly Dictionary<BParameterExpression, (BParameterExpression local, BExpression value, int index, int argIndex)>
         Closures = new(Core.ReferenceEqualityComparer.Instance);
 
-    public List<BParameterExpression> Inputs 
+    public List<BParameterExpression> Inputs
         = [];
 
     private BLambdaExpression lambda;
@@ -78,6 +83,8 @@ public class ClosureRepository
 }
 
 
+[RequiresUnreferencedCode("Closure rewriting reflects over runtime-generated box types.")]
+[RequiresDynamicCode("Closure rewriting constructs runtime generic box types.")]
 public class LambdaRewriter: BExpressionMapVisitor
 {
     /// <summary>
@@ -273,7 +280,7 @@ public class LambdaRewriter: BExpressionMapVisitor
 
     }
 
-    
+
 
     protected override BExpression VisitLambda(BLambdaExpression node)
     {
@@ -282,7 +289,7 @@ public class LambdaRewriter: BExpressionMapVisitor
         ///     available as global static variable to directly run and
         ///     register the method.
         /// 2.  In case of Assembly builder, there is no need to maintain
-        ///     global repository as AssemblyBuilder will become Method 
+        ///     global repository as AssemblyBuilder will become Method
         ///     Repository
         using var scope = lambdaStack.Push(node);
         if (node != RootExpression)

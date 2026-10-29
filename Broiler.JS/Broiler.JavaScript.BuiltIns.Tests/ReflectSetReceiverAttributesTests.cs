@@ -29,7 +29,7 @@ public class ReflectSetReceiverAttributesTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReflectSetGivesTheReceiversNewPropertyTheCreateDataPropertyAttributes()
     {
         // The target's property is writable, NON-enumerable and NON-configurable; the one
@@ -49,7 +49,7 @@ public class ReflectSetReceiverAttributesTests
         Assert.Equal("true,true,true", result);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReflectSet_WritesTheValueToTheReceiverAndNotTheTarget()
     {
         // The value half is correct and is not part of the gap — pinned so a future fix to
@@ -67,7 +67,7 @@ public class ReflectSetReceiverAttributesTests
         Assert.Equal("true,42,1", result);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ReflectSet_OnAnEmptyTarget_GivesTheReceiverAllTrueAttributes()
     {
         // The case test262 DOES cover (creates-a-data-descriptor.js): with no own property

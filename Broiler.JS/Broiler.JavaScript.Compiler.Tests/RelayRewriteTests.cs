@@ -226,7 +226,7 @@ public sealed class RelayRewriteTests
         Assert.Equal("79:17", Eval(source, skip));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NoRelayInANestedProgramNeedsARewriteOfItsOwn()
     {
         // The claim itself, as an assertion rather than as a corpus reading. Compiling and

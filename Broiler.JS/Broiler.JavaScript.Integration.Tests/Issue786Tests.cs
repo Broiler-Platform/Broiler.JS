@@ -122,7 +122,7 @@ public class Issue786Tests
         Assert.Equal("Test262Error", ErrorNameWithCustomError(code));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Take_ReachingLimit_CallsUnderlyingReturn()
     {
         // take(1) reaches its limit after the first element; the underlying iterator's return() is
@@ -177,7 +177,7 @@ public class Issue786Tests
     public void DateTimeFormat_FormatsTemporal(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Temporal_ToLocaleString_AgreesWithDateTimeFormat()
     {
         Assert.Equal("true", Eval(@"
@@ -204,29 +204,29 @@ public class Issue786Tests
     public void DateTimeFormat_Temporal_Throws(string code)
         => Assert.Equal("TypeError", ErrorName(code));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormat_FormatsTemporalRange()
         => Assert.Equal("8/4/2021 – 8/5/2021", Eval(
             "new Intl.DateTimeFormat('en-US').formatRange(new Temporal.PlainDate(2021,8,4), new Temporal.PlainDate(2021,8,5))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormat_WeekdayIsRendered()
         => Assert.Equal("Wednesday", Eval(
             "new Intl.DateTimeFormat('en-US', {weekday:'long'}).format(new Temporal.PlainDate(2021,8,4))"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ZonedDateTime_ToLocaleString_FormatsInOwnZone()
         // Midnight in New York (epoch 05:00 UTC) renders as its own wall clock with the zone name
         // (the bundled CLDR short metazone name), proving the instance's zone — not UTC — is applied.
         => Assert.Equal("1/1/1970, 12:00:00 AM EST", Eval(
             "Temporal.ZonedDateTime.from('1970-01-01T00:00[America/New_York]').toLocaleString('en-US')"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Date_ToLocaleString_HonoursIntlOptions()
         => Assert.Equal("2021", Eval(
             "new Date(Date.UTC(2021,0,1)).toLocaleString('en-US', {year:'numeric', timeZone:'UTC'})"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void Date_ToLocaleString_DefaultsToDateAndTime()
         // ToDateTimeOptions(options, "any", "all"): an options object with no component/style shows
         // the full date+time (a lone supplementary option like era does not suppress the defaults),
@@ -235,7 +235,7 @@ public class Issue786Tests
             Eval("new Temporal.Instant(0n).toLocaleString('en-US', {timeZone:'UTC'})"),
             Eval("new Date(0).toLocaleString('en-US', {timeZone:'UTC'})"));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormat_TimeZoneNameOnlyOnPlainDate_DoesNotThrow()
         // timeZoneName is not a component: a plain date formats its default date, no overlap error.
         => Assert.Equal("1/5/2026", Eval(
@@ -280,7 +280,7 @@ public class Issue786Tests
     public void DayPeriod_RendersCldrName(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void ZonedDateTime_ToLocaleString_IncludesZoneNameByDefault()
         => Assert.Equal("true", Eval(
             "'' + new Temporal.ZonedDateTime(0n, 'UTC').toLocaleString('en-US').includes('UTC')"));
@@ -295,7 +295,7 @@ public class Issue786Tests
     public void DateTimeFormat_RendersCldrZoneName(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateTimeFormat_ShortAndLongZoneNamesDiffer()
         => Assert.Equal("true", Eval(
             "const z = new Temporal.ZonedDateTime(0n, 'Europe/Vienna');" +

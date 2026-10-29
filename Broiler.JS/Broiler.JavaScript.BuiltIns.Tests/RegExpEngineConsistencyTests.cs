@@ -42,14 +42,14 @@ public class RegExpEngineConsistencyTests
         return new JSRegExp(pattern, "").Replace(input, template);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PublicReplace_UsesTheRoutedEngine()
     {
         // Broiler match is "ab" → "[ab]"; the .NET translation matched "a" → "[a]b".
         Assert.Equal("[ab]", PublicReplace("(a?b??)*", "ab", "[$&]"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PublicReplace_Functional_UsesTheRoutedEngine()
     {
         // The functional replacer receives the Broiler match ("ab"), not the .NET one ("a").
@@ -59,7 +59,7 @@ public class RegExpEngineConsistencyTests
         Assert.Equal("<ab>", new JSRegExp("(a?b??)*", "").Replace("ab", replacer));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PublicReplace_CaptureSubstitution_UsesTheRoutedEngine()
     {
         // The whole match is "ab", but $1 is the LAST iteration's capture, "b" (matching
@@ -68,7 +68,7 @@ public class RegExpEngineConsistencyTests
         Assert.Equal("<ab|b>", PublicReplace("(a?b??)*", "ab", "<$&|$1>"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void StringReplace_WithoutSymbolReplace_SearchesForTheText()
     {
         // §22.1.3.19 steps 2 and 3: with no @@replace the search value is ToString'd, so the
@@ -80,7 +80,7 @@ public class RegExpEngineConsistencyTests
         Assert.Equal("ab,x[/(a?b??)*/]", result);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void LegacySplit_UsesTheRoutedEngine()
     {
         // The whole string is one "ab"-long match, so nothing but the empty edges remain:
@@ -92,7 +92,7 @@ public class RegExpEngineConsistencyTests
         Assert.Equal("[\"\",\"\"]", result);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void SymbolAndPublicReplace_Agree_ForARoutedPattern()
     {
         // The spec @@replace path (exec-driven) and the public JSRegExp.Replace must give the
@@ -103,7 +103,7 @@ public class RegExpEngineConsistencyTests
         Assert.Equal("[ab]", viaSymbol);
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void IJSRegExp_IsMatch_RunsThroughTheRoutedEngine()
     {
         // The engine-agnostic IsMatch that replaced IJSRegExp.Value (which handed callers the
@@ -122,7 +122,7 @@ public class RegExpEngineConsistencyTests
         Assert.False(plain.IsMatch("abc"));
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NonRoutedReplace_IsUnchanged()
     {
         // A pattern with no gap keeps using the .NET translation; the abstraction must not

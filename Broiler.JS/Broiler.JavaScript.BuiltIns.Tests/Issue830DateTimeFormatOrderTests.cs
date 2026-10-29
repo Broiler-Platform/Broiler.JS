@@ -18,7 +18,7 @@ public class Issue830DateTimeFormatOrderTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void CalendarThenNumberingSystemAfterLocaleMatcher()
     {
         var r = Eval("""

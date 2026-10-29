@@ -336,7 +336,7 @@ public partial class JSRegExp
 
     [JSPrototypeMethod]
     [JSExport("toString")]
-    public static JSValue ToString(in Arguments a)
+    public new static JSValue ToString(in Arguments a)
     {
         // §22.2.6.13 RegExp.prototype.toString is generic: it requires only that the receiver be an
         // Object and builds the result from its "source" and "flags" properties (each coerced with

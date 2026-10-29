@@ -21,35 +21,35 @@ public class Issue826DurationToStringRoundingTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void PositiveTimeUnits_BalanceUpToHours()
         => Assert.Equal("PT2H0S", Eval("""
             new Temporal.Duration(0, 0, 0, 0, 1, 59, 59, 900)
                 .toString({ fractionalSecondDigits: 0, roundingMode: "expand" });
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NegativeTimeUnits_BalanceUpToHours()
         => Assert.Equal("-PT2H0S", Eval("""
             new Temporal.Duration(0, 0, 0, 0, -1, -59, -59, -900)
                 .toString({ fractionalSecondDigits: 0, roundingMode: "expand" });
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void DateAndTimeUnits_BalanceUpToDays()
         => Assert.Equal("P1Y11M31DT0.00000000S", Eval("""
             new Temporal.Duration(1, 11, 0, 30, 23, 59, 59, 999, 999, 999)
                 .toString({ fractionalSecondDigits: 8, roundingMode: "expand" });
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NegativeDateAndTimeUnits_BalanceUpToDays()
         => Assert.Equal("-P1Y11M31DT0.00000000S", Eval("""
             new Temporal.Duration(-1, -11, 0, -30, -23, -59, -59, -999, -999, -999)
                 .toString({ fractionalSecondDigits: 8, roundingMode: "expand" });
         """));
 
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NoBalancingWhenSecondIsLargestUnit()
         => Assert.Equal("PT60S", Eval("""
             new Temporal.Duration(0, 0, 0, 0, 0, 0, 59, 900)
@@ -57,7 +57,7 @@ public class Issue826DurationToStringRoundingTests
         """));
 
     // The largest unit is "minute", so balancing caps at minutes (60M), not hours.
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void BalancingCapsAtLargestUnitMinute()
         => Assert.Equal("PT60M0S", Eval("""
             new Temporal.Duration(0, 0, 0, 0, 0, 59, 59, 500)
@@ -65,7 +65,7 @@ public class Issue826DurationToStringRoundingTests
         """));
 
     // Without rounding the stored components are emitted as-is (no balancing).
-    [Fact(Timeout = 600000)]
+    [Fact]
     public void NoRounding_LeavesComponentsUnbalanced()
         => Assert.Equal("PT1H59M60S", Eval("""
             new Temporal.Duration(0, 0, 0, 0, 1, 59, 60).toString();

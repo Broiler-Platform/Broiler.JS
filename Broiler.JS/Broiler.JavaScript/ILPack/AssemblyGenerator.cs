@@ -101,7 +101,9 @@ namespace Lokad.ILPack
                 _metadata.GetOrAddString(name.CultureName),
                 assemblyPublicKey.Length > 0 ? _metadata.GetOrAddBlob(name.GetPublicKey()) : default,
                 ConvertGeneratedAssemblyNameFlags(name),
-                ConvertAssemblyHashAlgorithm(name.HashAlgorithm));
+                // AssemblyName.HashAlgorithm is unsupported on modern .NET.
+                // This generated single-module image has no assembly-file hashes.
+                System.Reflection.AssemblyHashAlgorithm.None);
 
             // Add "<Module>" type definition *before* any type definition.
             //

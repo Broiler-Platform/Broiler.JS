@@ -255,7 +255,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     public bool IsUndefined
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => this == UndefinedValue;
+        get => this is JSUndefined;
     }
 
     /// <summary>Gets whether this value is the <c>null</c> singleton.</summary>
@@ -501,13 +501,13 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     }
 
     /// <summary>
-    /// <see cref="Increment"/>, told by the compiler where the operand it is stepping lives
+    /// <see cref="Broiler.JavaScript.Runtime.JSValue.Increment()"/>, told by the compiler where the operand it is stepping lives
     /// (docs/performance-roadmap.md item 3-1).
     /// </summary>
     /// <remarks>
     /// Deliberately a non-virtual overload rather than a parameter on the virtual method: the
     /// override that exists (<c>JSBigInt</c>) is untouched, and the total the census already
-    /// reports keeps being recorded by <see cref="Increment"/> itself — so the target rows sum to
+    /// reports keeps being recorded by <see cref="Broiler.JavaScript.Runtime.JSValue.Increment()"/> itself — so the target rows sum to
     /// <c>UnaryUpdate</c> by construction rather than by inspection, which is what makes a missing
     /// call site visible instead of silent.
     /// </remarks>
@@ -518,7 +518,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         return Increment();
     }
 
-    /// <summary><see cref="Decrement"/>, told where the operand it is stepping lives.</summary>
+    /// <summary><see cref="Broiler.JavaScript.Runtime.JSValue.Decrement()"/>, told where the operand it is stepping lives.</summary>
     public JSValue Decrement(ArithmeticOperandDiagnostics.UpdateTarget target)
     {
         if (ArithmeticOperandDiagnostics.Enabled)
