@@ -74,7 +74,7 @@ from generate_number_vectors import js_string_body, string_value  # noqa: E402
 # divergences, nor revision 23, which retires them, nor revision 24, which adds the Temporal area
 # (generate_temporal_vectors.py), nor revision 25, which classifies its differences, nor revision 26, which retires
 # them.
-CORPUS_REVISION = 28
+CORPUS_REVISION = 30
 FIRST_REVISION = 18
 GENERATOR = "ref:unicoderef@1"
 SPEC = "spec:es2026@0248456c"

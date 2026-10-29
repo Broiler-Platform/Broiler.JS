@@ -1,0 +1,92 @@
+== start 2026-10-27T06:40:03Z TZ=America/New_York, the corpus at a532f41866a7ac080020d8b3c0c8c38907f9c546 (a scratch tree written by git archive of that commit, built once beforehand with dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers, run with --no-build, in one evaluating process, with no LANG)
+== host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v165 x86_64; 4 logical CPUs; ICU: libicu74 74.2-1ubuntu3.1 (libicuuc.so.74, the only ICU installed), which .NET's globalization loads; dotnet 10.0.401, runtime 10.0.12
+== command: env -u LANG -u LANGUAGE -u BROILER_VECTORS_WORKERS TZ=America/New_York BROILER_VECTORS_REPORT=run-revision-29-new-york.tsv dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --logger "console;verbosity=normal"
+Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-wp2/jsbuild/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.11]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.18]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.19]   Starting:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [6 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [5 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [16 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [594 ms]
+107326 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 46 min 26.6 s; the slowest, unicode/identifier-start/0321, took 0.997 s of the 5 s limit.
+[xUnit.net 00:46:55.63]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+[xUnit.net 00:46:55.63]       53 of 107326 vectors differ and nothing classifies them:
+[xUnit.net 00:46:55.63]       syntax/annex-b/eg0004/0002: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:46:55.63]       syntax/annex-b/eg0008/0002: expected error: SyntaxError, rendered error: ReferenceError
+[xUnit.net 00:46:55.63]       syntax/expressions/ee0010/0002: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:46:55.63]       syntax/expressions/ee0011/0002: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:46:55.63]       syntax/expressions/ee0029/0002: expected error: SyntaxError, rendered value: f64:0x7FF8000000000000
+[xUnit.net 00:46:55.63]       syntax/expressions/ee0030/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:46:55.63]       syntax/expressions/ee0032/0002: expected error: SyntaxError, rendered value: object
+[xUnit.net 00:46:55.63]       syntax/expressions/ee0037/0002: expected error: SyntaxError, rendered abort: NotImplementedException: The method or operation is not implemented.
+[xUnit.net 00:46:55.63]       syntax/expressions/ee0037/0003: expected error: SyntaxError, rendered abort: NotImplementedException: The method or operation is not implemented.
+[xUnit.net 00:46:55.63]       syntax/functions-and-classes/ee0086/0002: expected error: SyntaxError, rendered value: object
+[xUnit.net 00:46:55.63]       syntax/functions-and-classes/ee0087/0002: expected error: SyntaxError, rendered value: object
+[xUnit.net 00:46:55.63]       syntax/functions-and-classes/ee0094/0002: expected error: SyntaxError, rendered value: object
+[xUnit.net 00:46:55.63]       syntax/functions-and-classes/ee0097/0001: expected value: f64:0x4000000000000000, rendered error: SyntaxError
+[xUnit.net 00:46:55.63]       syntax/functions-and-classes/ee0107/0002: expected error: SyntaxError, rendered value: object
+[xUnit.net 00:46:55.63]       syntax/functions-and-classes/ee0111/0001: expected value: str:"function", rendered error: SyntaxError
+[xUnit.net 00:46:55.63]       syntax/functions-and-classes/ee0132/0002: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:46:55.63]       syntax/functions-and-classes/ee0147/0001: expected value: str:"function", rendered error: SyntaxError
+[xUnit.net 00:46:55.63]       syntax/functions-and-classes/ee0154/0002: expected error: SyntaxError, rendered value: object
+[xUnit.net 00:46:55.63]       syntax/functions-and-classes/ee0158/0002: expected error: SyntaxError, rendered value: object
+[xUnit.net 00:46:55.63]       syntax/functions-and-classes/ex0033/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:46:55.63]       syntax/lexical/t16/0002: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:46:55.63]       syntax/lexical/t16/0004: expected error: SyntaxError, rendered value: f64:0x4020000000000000
+[xUnit.net 00:46:55.63]       syntax/lexical/t16/0005: expected error: SyntaxError, rendered value: f64:0x4021000000000000
+[xUnit.net 00:46:55.63]       syntax/lexical/m-suffix/0001: expected error: SyntaxError, rendered value: f64:0x0000000000000000
+[xUnit.net 00:46:55.63]       syntax/lexical/m-suffix/0002: expected error: SyntaxError, rendered value: f64:0x0000000000000000
+[xUnit.net 00:46:55.63]       Stack Trace:
+[xUnit.net 00:46:55.63]         /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-wp2/jsbuild/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(57,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
+[xUnit.net 00:46:55.63]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:46:55.63]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:46:55.63]       Output:
+[xUnit.net 00:46:55.63]         107326 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 46 min 26.6 s; the slowest, unicode/identifier-start/0321, took 0.997 s of the 5 s limit.
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [46 m 26 s]
+  Error Message:
+   53 of 107326 vectors differ and nothing classifies them:
+syntax/annex-b/eg0004/0002: expected error: SyntaxError, rendered value: undefined
+syntax/annex-b/eg0008/0002: expected error: SyntaxError, rendered error: ReferenceError
+syntax/expressions/ee0010/0002: expected error: SyntaxError, rendered value: undefined
+syntax/expressions/ee0011/0002: expected error: SyntaxError, rendered value: undefined
+syntax/expressions/ee0029/0002: expected error: SyntaxError, rendered value: f64:0x7FF8000000000000
+syntax/expressions/ee0030/0003: expected error: SyntaxError, rendered value: undefined
+syntax/expressions/ee0032/0002: expected error: SyntaxError, rendered value: object
+syntax/expressions/ee0037/0002: expected error: SyntaxError, rendered abort: NotImplementedException: The method or operation is not implemented.
+syntax/expressions/ee0037/0003: expected error: SyntaxError, rendered abort: NotImplementedException: The method or operation is not implemented.
+syntax/functions-and-classes/ee0086/0002: expected error: SyntaxError, rendered value: object
+syntax/functions-and-classes/ee0087/0002: expected error: SyntaxError, rendered value: object
+syntax/functions-and-classes/ee0094/0002: expected error: SyntaxError, rendered value: object
+syntax/functions-and-classes/ee0097/0001: expected value: f64:0x4000000000000000, rendered error: SyntaxError
+syntax/functions-and-classes/ee0107/0002: expected error: SyntaxError, rendered value: object
+syntax/functions-and-classes/ee0111/0001: expected value: str:"function", rendered error: SyntaxError
+syntax/functions-and-classes/ee0132/0002: expected error: SyntaxError, rendered value: undefined
+syntax/functions-and-classes/ee0147/0001: expected value: str:"function", rendered error: SyntaxError
+syntax/functions-and-classes/ee0154/0002: expected error: SyntaxError, rendered value: object
+syntax/functions-and-classes/ee0158/0002: expected error: SyntaxError, rendered value: object
+syntax/functions-and-classes/ex0033/0003: expected error: SyntaxError, rendered value: undefined
+syntax/lexical/t16/0002: expected error: SyntaxError, rendered value: undefined
+syntax/lexical/t16/0004: expected error: SyntaxError, rendered value: f64:0x4020000000000000
+syntax/lexical/t16/0005: expected error: SyntaxError, rendered value: f64:0x4021000000000000
+syntax/lexical/m-suffix/0001: expected error: SyntaxError, rendered value: f64:0x0000000000000000
+syntax/lexical/m-suffix/0002: expected error: SyntaxError, rendered value: f64:0x0000000000000000
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-wp2/jsbuild/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 57
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 107326 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 46 min 26.6 s; the slowest, unicode/identifier-start/0321, took 0.997 s of the 5 s limit.
+
+
+[xUnit.net 00:47:15.03]   Finished:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [19 s]
+
+Test Run Failed.
+Total tests: 6
+     Passed: 5
+     Failed: 1
+ Total time: 47.2671 Minutes
+== end 2026-10-27T07:27:21Z exit=1

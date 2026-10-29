@@ -1,0 +1,7 @@
+== run at Broiler.VM faa8af78cddc32d460a7299f088b18b9e4407d7a (a scratch tree written by git archive of that commit; its Release build, dotnet build src/compositions/Broiler.VM.Composition.JavaScript.Conformance -c Release --disable-build-servers), pin broiler-vm-revision-30.pin sha256=a7b096ee1050faf6a2ee313b9ceab737dc5e070d59d3b7ee4adbd85f735845b8 (a scratch pin of git archive --format=tar.gz dc9e09e5ae9583552f8f42a3879527fec7396f3d -- conformance/vectors ':(exclude)conformance/vectors/controls'), start 2026-10-27T12:37:53Z
+== host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v165 x86_64; 4 logical CPUs; ICU: libicu74 74.2-1ubuntu3.1 (libicuuc.so.74, the only ICU installed), which .NET's globalization loads; dotnet 10.0.401, runtime 10.0.12
+== command: env -u LANG -u LANGUAGE TZ=UTC dotnet src/compositions/Broiler.VM.Composition.JavaScript.Conformance/bin/Release/net10.0/Broiler.VM.Composition.JavaScript.Conformance.dll --vectors vectors-rev30.tar.gz --expect broiler-vm-revision-30.pin --report broiler-vm-run-revision-30.tsv 
+broiler-js-conformance: vectors broiler-js-vectors Broiler-Platform/broiler.js@dc9e09e5ae9583552f8f42a3879527fec7396f3d content sha256 d0a29715d26f3022bfc55d735c622a3b50c8fcc20d27acca7c9547cd7026dd99 over 69 files - retrieved and hashed, NOT archived
+broiler-js-conformance: 107357 vectors: 107294 match, 63 classified divergences, 0 unclassified differences
+exit code 0
+== end 2026-10-27T12:48:21Z
