@@ -3,6 +3,13 @@
   <!-- Broiler NuGet packaging metadata (vendored; do not edit by hand). -->
   <Import Project="$(MSBuildThisFileDirectory)eng\Broiler.Packaging.props" />
 
+  <!-- The engine and shared libraries publish independent version streams.
+       A global Version/PackageVersion override would also rename referenced shared packages. -->
+  <PropertyGroup Condition="'$(BroilerEnginePackageVersion)' != ''">
+    <Version>$(BroilerEnginePackageVersion)</Version>
+    <PackageVersion>$(BroilerEnginePackageVersion)</PackageVersion>
+  </PropertyGroup>
+
   <!-- Build-time-only projects that must never ship as packages: the Roslyn
        source generator (consumed as an analyzer) and internal perf/log tools
        whose names don't match the standard tool/test suffixes. -->

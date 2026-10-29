@@ -26,9 +26,8 @@ namespace Broiler.JavaScript.Runtime.Unicode;
 /// over them.
 /// </para>
 /// <para>
-/// <b>The case-folding tables are left out</b>: this engine's folding under <c>u</c> and <c>v</c> is
-/// Broiler.Regex's, and without them its .NET translator's, which milestone SJL-11 retires; nothing here
-/// builds a <see cref="UnicodeCaseFolding"/>, which refuses this provider for lacking them.
+/// The case-folding tables are included for Broiler.Regex, which consumes the engine's provider
+/// for Unicode and non-Unicode case-insensitive matching.
 /// </para>
 /// </remarks>
 // Broiler-AI:           Origin=AI; Spec=JSD-0074 SJL-D-6 (c) table provider; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF

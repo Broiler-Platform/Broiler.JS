@@ -115,7 +115,7 @@ jobs:
         run: |
           args=()
           if [ -n "$PACKAGE_VERSION" ]; then
-            args+=("-p:Version=$PACKAGE_VERSION" "-p:PackageVersion=$PACKAGE_VERSION")
+            args+=("-p:BroilerEnginePackageVersion=$PACKAGE_VERSION")
           fi
           dotnet build Broiler.JS.slnx -c Release --nologo "${args[@]}"
 
@@ -181,7 +181,7 @@ jobs:
         run: |
           args=()
           if [ -n "$PACKAGE_VERSION" ]; then
-            args+=("-p:Version=$PACKAGE_VERSION" "-p:PackageVersion=$PACKAGE_VERSION")
+            args+=("-p:BroilerEnginePackageVersion=$PACKAGE_VERSION")
           fi
           dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --nologo "${args[@]}"
 

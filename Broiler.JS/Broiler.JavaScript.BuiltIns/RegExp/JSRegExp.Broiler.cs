@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Broiler.Regex;
 using Broiler.Regex.Ast;
-using Broiler.Regex.Matching;
+using Broiler.JavaScript.Runtime.Unicode;
 using NetMatch = System.Text.RegularExpressions.Match;
 using Broiler.ECMAScript.Text;
 
@@ -73,7 +73,7 @@ public partial class JSRegExp
             // Re-parse with Broiler so the routing decision sees the real grammar
             // (not a textual heuristic). A parse failure here means Broiler can't own
             // the pattern, so fall back to the .NET translator.
-            ast = Broiler.Regex.Parsing.RegexParser.Parse(pattern, brFlags, out _, out _);
+            ast = Broiler.Regex.Parsing.RegexParser.Parse(pattern, brFlags, JSUnicode.Tables, out _);
         }
         catch
         {
@@ -91,7 +91,7 @@ public partial class JSRegExp
 
         try
         {
-            return new BroilerRegex(pattern, brFlags);
+            return new BroilerRegex(pattern, brFlags, JSUnicode.Tables);
         }
         catch
         {
@@ -238,18 +238,17 @@ public partial class JSRegExp
         var count = br.CaptureCount;
         var originalName = new string[count + 1]; // [0] = whole match placeholder
 
-        var indexToName = new Dictionary<int, string>();
-        foreach (var kv in br.GroupNames)
-            indexToName[kv.Value] = kv.Key;
+        for (var i = 1; i <= count; i++)
+            originalName[i] = br.GroupNames.NameOfGroup(i);
 
         var named = new List<(string, List<int>)>();
-        for (var i = 1; i <= count; i++)
+        for (var i = 0; i < br.GroupNames.Count; i++)
         {
-            if (indexToName.TryGetValue(i, out var name))
-            {
-                originalName[i] = name;
-                named.Add((name, new List<int> { i }));
-            }
+            var name = br.GroupNames.NameAt(i);
+            var indices = new List<int>();
+            foreach (var group in br.GroupNames.GroupsNamed(name))
+                indices.Add(group);
+            named.Add((name, indices));
         }
 
         return new CaptureGroupMap(originalName, named);
@@ -285,23 +284,15 @@ public partial class JSRegExp
     {
         if (broiler != null)
         {
-            try
-            {
-                return FromBroiler(broiler.Match(input, start));
-            }
-            catch (Broiler.Regex.RegexOverflowException)
-            {
-                // Broiler's continuation-passing matcher would recurse past the stack for
-                // this subject (a quantifier over a long input). The .NET engine is
-                // iterative, so fall back to it for this match when the translator could
-                // represent the pattern. When it could not (value is null — a pattern only
-                // Broiler can express), there is nothing to fall back to; report no match
-                // rather than crash. Both are rare: the widened routing pairs Broiler with a
-                // .NET translation for almost every pattern.
-                if (value != null)
-                    return FromNet(value.Match(input, start));
-                return RegexMatchData.NoMatch;
-            }
+            var match = broiler.Match(input, start);
+            if (match.Limit == RegexLimit.None)
+                return FromBroiler(match);
+
+            // The iterative matcher reports resource ceilings as data. Preserve the
+            // existing fallback when the .NET translator can represent this pattern.
+            if (value != null)
+                return FromNet(value.Match(input, start));
+            return RegexMatchData.NoMatch;
         }
 
         // Phase 5, item 2: the pattern's thousandth match is where it becomes worth asking

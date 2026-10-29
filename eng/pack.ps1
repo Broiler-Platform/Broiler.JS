@@ -32,7 +32,11 @@ try {
     if ($Version) {
         $pattern = if ($ProjectSet -eq 'Shared') { '^\d+\.\d+\.\d+-(preview|probe)\.[1-9]\d*$' } else { '^\d+\.\d+\.\d+-preview\.[1-9]\d*$' }
         if ($Version -notmatch $pattern) { throw "Expected X.Y.Z-preview.N$(if ($ProjectSet -eq 'Shared') { ' or X.Y.Z-probe.N' })." }
-        $properties += "-p:Version=$Version", "-p:PackageVersion=$Version"
+        if ($ProjectSet -eq 'Engine') {
+            $properties += "-p:BroilerEnginePackageVersion=$Version"
+        } else {
+            $properties += "-p:Version=$Version", "-p:PackageVersion=$Version"
+        }
     }
     $packages = @(
         foreach ($path in $paths) {
@@ -61,6 +65,13 @@ try {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $expected = @{}
     foreach ($package in $packages) { $expected[$package.Metadata.PackageId] = $package.Metadata.PackageVersion }
+    # Referenced shared libraries are not part of the engine upload. Check their
+    # own version so an engine override cannot silently rename that dependency.
+    if ($ProjectSet -eq 'Engine') {
+        $sharedVersion = & dotnet msbuild 'Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj' -nologo @properties '-getProperty:PackageVersion'
+        if ($LASTEXITCODE -ne 0) { throw 'Cannot evaluate the shared dependency version.' }
+        $expected['Broiler.ECMAScript.Algorithms'] = ($sharedVersion -join "`n").Trim()
+    }
     $archives = @(Get-ChildItem -LiteralPath $outputPath -Filter *.nupkg)
     if ($archives.Count -ne $packages.Count) { throw "Expected $($packages.Count) packages; found $($archives.Count)." }
     foreach ($package in $packages) {
