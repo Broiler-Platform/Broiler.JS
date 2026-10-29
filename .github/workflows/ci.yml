@@ -123,7 +123,12 @@ jobs:
       # Broiler.ECMAScript test projects in Shared libraries, on every push and pull request and from
       # Publish. The Build step still builds them.
       - name: Test
-        run: bash ./eng/run-tests.sh Release --filter "Category!=EngineCorpus&FullyQualifiedName!~Broiler.ECMAScript."
+        run: bash ./eng/run-tests.sh Release --filter "Category!=EngineCorpus&Category!=CompilerScaling&FullyQualifiedName!~Broiler.ECMAScript."
+
+      # Timing ratios need the runner without other test assemblies competing for CPU/GC.
+      # Keep the original 8x regression bound and execute this on every build matrix entry.
+      - name: Test compiler scaling in isolation
+        run: dotnet test Broiler.JS/Broiler.JavaScript.Compiler.Tests/Broiler.JavaScript.Compiler.Tests.csproj -c Release --no-build --filter "Category=CompilerScaling"
 
       - name: Pack and verify every package
         if: matrix.os == 'windows-latest'

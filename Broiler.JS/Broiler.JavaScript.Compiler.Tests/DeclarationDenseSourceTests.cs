@@ -41,6 +41,7 @@ public class DeclarationDenseSourceTests
     }
 
     [Fact]
+    [Trait("Category", "CompilerScaling")]
     public void ManyTopLevelDeclarations_CompileInTimeLinearInTheirCount()
     {
         // Four times the declarations should cost about four times as much. Quadratic predicts
@@ -60,14 +61,33 @@ public class DeclarationDenseSourceTests
         Compile(baselineSource);
         Compile(wideSource);
 
-        var baselineMs = Median(baselineSource);
-        var wideMs = Median(wideSource);
+        // Pair sizes and alternate order so a change in host load or JIT tiering
+        // does not charge all later samples to the larger input.
+        var baselineSamples = new double[3];
+        var wideSamples = new double[3];
+        for (var i = 0; i < baselineSamples.Length; i++)
+        {
+            if (i % 2 == 0)
+            {
+                baselineSamples[i] = Measure(baselineSource);
+                wideSamples[i] = Measure(wideSource);
+            }
+            else
+            {
+                wideSamples[i] = Measure(wideSource);
+                baselineSamples[i] = Measure(baselineSource);
+            }
+        }
+        System.Array.Sort(baselineSamples);
+        System.Array.Sort(wideSamples);
+        var baselineMs = baselineSamples[1];
+        var wideMs = wideSamples[1];
 
         Assert.True(
             wideMs < baselineMs * quadraticWouldExceed,
             $"{wide} top-level declarations took {wideMs:F0} ms against {baselineMs:F0} ms for "
                 + $"{baseline} ({wideMs / baselineMs:F1}x for 4x the declarations); the closure "
-                + "rewrite is scanning a linear structure per reference again.");
+                + "pipeline exceeded the scaling bound; inspect compilation costs and host contention.");
 
         static void Compile(string source)
         {
@@ -75,18 +95,11 @@ public class DeclarationDenseSourceTests
             context.Eval(source);
         }
 
-        static double Median(string source)
+        static double Measure(string source)
         {
-            var samples = new double[3];
-            for (var i = 0; i < samples.Length; i++)
-            {
-                var stopwatch = Stopwatch.StartNew();
-                Compile(source);
-                samples[i] = stopwatch.Elapsed.TotalMilliseconds;
-            }
-
-            System.Array.Sort(samples);
-            return samples[1];
+            var stopwatch = Stopwatch.StartNew();
+            Compile(source);
+            return stopwatch.Elapsed.TotalMilliseconds;
         }
     }
 
