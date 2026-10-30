@@ -28,7 +28,6 @@
   <ItemGroup>
     <!-- Override NuGet.Packaging's vulnerable 8.0.1 transitive dependency. -->
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
-    <PackageReference Include="NuGet.Client" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" />
     <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="NuGet.Resolver" />
