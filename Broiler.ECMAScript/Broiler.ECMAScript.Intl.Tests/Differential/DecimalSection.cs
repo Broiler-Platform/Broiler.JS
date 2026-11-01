@@ -786,7 +786,10 @@ internal static class DecimalSection
             _ => double.NaN,
         };
 
-        /// <summary>ToString as Broiler.VM's engine stand-in writes a Number: its round-trip form.</summary>
+        /// <summary>ToString as Broiler.VM's engine stand-in wrote a Number at stage SJL-9.3b: its round-trip form.</summary>
+        /// <remarks><i>(Noted 2026-11-01, at stage SJL-9.3c, when the stand-in came to write a Number by Number::toString, as
+        /// Broiler.VM's engine does: no option this reader converts admits a Number's String, so either form gives the same
+        /// refusal, and sub-area (b)'s answers do not move.)</i></remarks>
         private static string ToStringValue(object value) => value switch
         {
             string s => s,

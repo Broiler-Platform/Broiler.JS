@@ -8,8 +8,8 @@ home, `Broiler.ECMAScript/data/intl/`, and generator, in `Broiler.ECMAScript.Gen
 **Status:** design. **Filed:** 2026-10-26, at milestone SJL-9 (work package SJL-9.1), before any of the library's code
 or the home's data exists. **Revised:** 2026-10-27, at stage SJL-9.3a, by dated notes on "Why there is no project yet",
 the library's project now existing, and on sections 1 and 5, the composite's parent walk and its secondary provider, and
-week data keyed by region; and on 2026-11-01, at stage SJL-9.3b, by a dated note on section 1's sub-area (b) ("Corrections"
-lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
+week data keyed by region; and on 2026-11-01, at stage SJL-9.3b, by a dated note on section 1's sub-area (b), and the same
+day, at stage SJL-9.3c, by a dated note on its sub-area (c) ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
 both roles (Broiler.VM's exception EX-30), and nothing here has been read by anyone but its author.
 
 **What this document is.** The Intl library's design document in its home, one of the three places SJL-9.1 files the
@@ -133,6 +133,40 @@ BigInt's" also covers a String, read by StringIntlMV and held to the Number rang
   `IVectorRecordLibrary`, and the runner's reader of the generator's few script forms. The file's `format` and
   `formatToParts` vectors are answered by PartitionNumberPattern, sub-area (c)'s, though FormatNumericToString decides their
   digits; at this stage the library's unit tests and the differential check hold those rows.
+
+*(Noted 2026-11-01, at SJL-9.3c: sub-area (c) as built, and the readings its code makes that the item above does not
+state, so that sub-areas (d) and (e), SJL-9.3f's packing and the cut-overs inherit them knowingly. Its names are
+`NumberFormatter` with its record `NumberFormatOptions` and `NumberPart`, `ListFormatter` with `ListPart`,
+`RelativeTimeFormatter` with `RelativeTimePart`, and `DisplayNamesCore`, the item's names kept.)*
+- **The formatters read at the data locale.** Each reads its patterns, symbols and names at ResolveLocale's [[DataLocale]]
+  through the `ILocaleData` it is handed, which an engine makes a `CompositeLocaleData` so that `en-US` reads `en`'s lines;
+  Broiler.VM read every value at the data locale's language (`JsLocaleTag.Parse(DataLocale).Language`). For Broiler.VM's
+  tables, which hold its locales' languages alone, the two read the same lines; for Broiler.JS's, `de-AT`, `en-IN` or
+  `fr-CA` read their own (rows N1b to N9e, S1b, S4b and S8, data policy), which a passing `intl402` file such as
+  `useGrouping-en-IN.js` asks for. Plural categories, which pick a unit's or a currency's name, stay the language's, as
+  sub-area (b)'s note says of the plural rules.
+- **A numbering system's own symbols** (decision D21) are read as the generator writes them: the number table's
+  `symbols@<system>.<name>` at the data locale, then at root (`und`), which holds `arab`'s and `arabext`'s, then the data
+  locale's `latn` symbol. Broiler.VM's tables carry no such key, so with them every system writes the `latn` symbols.
+- **The `nu` values put the locale's default numbering system first** (decision D13; `NumberFormatter.NumberingSystemKeyValues`),
+  the number table's `defaultNumberingSystem` along the locale's chain, then `latn`, then the data's others in code-unit
+  order. Broiler.VM's list is `latn` first for every locale, which its tables' `de` and `en` defaults give the same.
+- **The charges are Broiler.VM's** (decision D18): FormatNumericToString's `digits / 16 + 1` at every rounding - the value's,
+  ComputeExponent's in a notation other than standard, both ends of a range twice, and the approximately sign's end once more
+  where the ends write the same String - and one unit per step of a list's template folding. A relative time charges its
+  plural rules' and its number format's roundings. Display names charge nothing in Broiler.VM, so `DisplayNamesCore` takes
+  the caller's meter only for a language code's parse and canonicalisation, in `LocaleId`'s units, where Broiler.VM's adapter
+  passes one that charges nothing (row L43).
+- **What stays the engine's**: the bound `format` and its identity (row N11), the legacy constructor (row N12), the option
+  reads after construction (row N10), ToIntlMathematicalValue's ToPrimitive, a range's `undefined` ends, StringListFromIterable,
+  and the parts arrays with their per-part charges. A currency or unit the constructor has not checked is a precondition of
+  `NumberFormatter.Create` (`ArgumentException`); the checks themselves are `IsWellFormedCurrencyCode` and
+  `IsWellFormedUnitIdentifier`, which an engine calls at their steps.
+- **A locale with no relative-time pattern writes the number alone**, where Broiler.VM's table look-up threw; CLDR gives
+  every locale and root one, so no input of either embedding reaches it.
+- **Three Unicode classifications are written out**, as Broiler.VM's formatter writes them: ICU's default-ignorable set,
+  which a field's ends are trimmed of, Pattern_White_Space, which a range's separator is tested against, and the White_Space
+  that Broiler.VM's `string.Trim()` read, so that no platform table is read (rule SL4).
 
 Each takes **resolved options as records**, never an options object, and answers strings, parts records or a status
 (conventions 2 and 3). Its code takes no culture call: what Broiler.VM's code does today through `ToUpperInvariant`,
@@ -378,5 +412,9 @@ region; and section 5 a dated note on its first item. *(Extended 2026-11-01, at 
 "Nothing else here is changed.")* The header's "Revised" line gains this stage's date, ending where it read "and week data
 keyed by region ("Corrections" lists them)."; and section 1 gains a dated note on sub-area (b): its names, the String's value, and five
 readings - SetNumberFormatDigitOptions split at its conversions, the compact exponent from the number data, plural evaluation
-charged through FormatNumericToString, plural rules selected by language, and the vectors' options in the script. Nothing
-else here is changed.
+charged through FormatNumericToString, plural rules selected by language, and the vectors' options in the script.
+*(Extended 2026-11-01, at SJL-9.3c; the sentence after the list read "Nothing else here is changed.")* The header's
+"Revised" line gains that stage's note, ending where it read "a dated note on section 1's sub-area (b) ("Corrections" lists
+them)."; and section 1 gains a dated note on sub-area (c): its names, and seven readings - the data locale, a numbering
+system's own symbols, the `nu` values' default, the charges, what stays the engine's, a missing relative-time pattern, and
+the Unicode classifications written out. Nothing else here is changed.
