@@ -52,7 +52,9 @@ public sealed class ContractTests
     {
         Assert.Equal(
             [("Completed", 0), ("InvalidLanguageTag", 1), ("InvalidLanguageSubtag", 2), ("InvalidScriptSubtag", 3), ("InvalidRegionSubtag", 4),
-             ("InvalidVariants", 5), ("InvalidType", 6), ("InvalidKey", 7)],
+             ("InvalidVariants", 5), ("InvalidType", 6), ("InvalidKey", 7), ("NumberOptionOutOfRange", 8), ("RoundingIncrementNotAdmitted", 9),
+             ("FractionDigitsOutOfOrder", 10), ("RoundingIncrementNeedsFractionDigits", 11), ("RoundingIncrementNeedsEqualFractionDigits", 12),
+             ("RangeIsNotANumber", 13)],
             Enum.GetValues<IntlStatus>().Select(static s => (s.ToString(), (int)s)).ToArray());
     }
 }

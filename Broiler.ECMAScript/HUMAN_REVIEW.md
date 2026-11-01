@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 1612 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 1691 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 119 |
-| Code units | 2168 |
-| Relevant | 1612 |
-| Exempt | 556 |
-| Assessed | 1612 of 1612 (100%) |
-| Human reviewed | 0 of 1612 (0%) |
-| Unverified | 1612 |
+| Files scanned | 124 |
+| Code units | 2298 |
+| Relevant | 1691 |
+| Exempt | 607 |
+| Assessed | 1691 of 1691 (100%) |
+| Human reviewed | 0 of 1691 (0%) |
+| Unverified | 1691 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1612 |
+| HUMAN_PENDING | 1691 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 556 |
+| EXEMPT | 607 |
 
 ## 5. Aliases In The Tree
 
@@ -192,9 +192,11 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` | 19 | 14 | 5 | 14 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Generation/Time/TzdbTableSource.cs` | 2 | 2 | 0 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` | 32 | 26 | 6 | 26 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/DigitOptions.cs` | 37 | 18 | 19 | 18 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/IIntlDataSet.cs` | 33 | 3 | 30 | 3 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/ILocaleData.cs` | 25 | 22 | 3 | 22 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Intl/IntlStatus.cs` | 9 | 1 | 8 | 1 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Intl/IntlDecimal.cs` | 37 | 27 | 10 | 27 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Intl/IntlStatus.cs` | 15 | 1 | 14 | 1 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlTableText.cs` | 6 | 6 | 0 | 6 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/LocaleDataAnswers.cs` | 15 | 8 | 7 | 8 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/LocaleId.cs` | 28 | 22 | 6 | 22 | Low | Medium | 0/0 |
@@ -202,6 +204,9 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` | 15 | 12 | 3 | 12 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/LocaleRecord.cs` | 25 | 12 | 13 | 12 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/LocaleTag.cs` | 44 | 31 | 13 | 31 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Intl/NumericFormat.cs` | 9 | 9 | 0 | 9 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Intl/PluralEngine.cs` | 25 | 17 | 8 | 17 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/PluralRulesRecord.cs` | 16 | 8 | 8 | 8 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/SupportedValues.cs` | 6 | 4 | 2 | 4 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/TableLocaleData.cs` | 74 | 61 | 13 | 61 | Low | High | 2/2 |
 
@@ -514,6 +519,14 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.ResolveValue<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, Spec=JSD-0082 D8 composite order, `E00AAB`, PENDING
   - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
+- `Broiler.ECMAScript.Intl.DigitOptionRules.SetNumberFormatDigitOptions(DigitOptionValues, FractionDigitDefaults, NumberNotation, out DigitOptions?)` in `Broiler.ECMAScript.Intl/DigitOptions.cs` - Security=High, Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat, `09FF26`, PENDING
+  - Falsified if: a resolved slot differs from SetNumberFormatDigitOptions' for the same option values, or a refusal is another status or none
+- `Broiler.ECMAScript.Intl.IntlDecimal.FromNumber(double)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal, `07012B`, PENDING
+  - Falsified if: a Number's value differs from the decimal its Number::toString digits write
+- `Broiler.ECMAScript.Intl.IntlDecimal.FromString(string, BigIntPolicy, WorkCharge?)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal, `2EE52F`, PENDING
+  - Falsified if: a text outside StringNumericLiteral answers other than not-a-number, or a value that rounds to an infinity or a zero as a Number is kept as written
+- `Broiler.ECMAScript.Intl.IntlDecimal.RoundToUnits(int, int, UnsignedRoundingMode)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal, `9BA72E`, PENDING
+  - Falsified if: a tie, a value just above or just below a tie, or an exact multiple is rounded otherwise than ApplyUnsignedRoundingMode states, for any admitted increment
 - `Broiler.ECMAScript.Intl.IntlTableText.Unescape(string)` in `Broiler.ECMAScript.Intl/IntlTableText.cs` - Security=High, Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables, `9C6D2C`, PENDING
   - Falsified if: an escape \uXXXX resolves to another code unit than its four hexadecimal digits name, or a value without an escape is changed
 - `Broiler.ECMAScript.Intl.LocaleInfo.Collations(LocaleRecord, ICollatorLocaleData, string, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleInfo.cs` - Security=High, Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale, `284344`, PENDING
@@ -530,6 +543,14 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a canonical tag canonicalizes to anything but itself, or an alias the CLDR data names survives canonicalization
 - `Broiler.ECMAScript.Intl.LocaleTag.CanonicalType(ILocaleData, string, string)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag, `4D5433`, PENDING
   - Falsified if: a subdivision alias whose replacement is a region is written other than as the region in lower case followed by zzzz (row L9), or a type CLDR's BCP 47 data replaces is kept
+- `Broiler.ECMAScript.Intl.NumericFormat.FormatNumericToString(DigitOptions, IntlDecimal, WorkCharge?)` in `Broiler.ECMAScript.Intl/NumericFormat.cs` - Security=High, Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal, `854FCF`, PENDING
+  - Falsified if: the String or the rounded value differs from FormatNumericToString's for a value and digit options, or the charge differs from digits / 16 + 1
+- `Broiler.ECMAScript.Intl.PluralEngine.Select(string, int, WorkCharge?)` in `Broiler.ECMAScript.Intl/PluralEngine.cs` - Security=High, Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule, `F39F1C`, PENDING
+  - Falsified if: a decimal String's category differs from the first CLDR rule that holds for its UTS 35 operands, or c and e read other than the exponent given
+- `Broiler.ECMAScript.Intl.PluralRule.Parse(string)` in `Broiler.ECMAScript.Intl/PluralEngine.cs` - Security=High, Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule, `CC8B9B`, PENDING
+  - Falsified if: a CLDR rule text is read as another condition than UTS 35 section 5.1 states
+- `Broiler.ECMAScript.Intl.PluralRulesRecord.ResolvePlural(IntlDecimal, WorkCharge?)` in `Broiler.ECMAScript.Intl/PluralRulesRecord.cs` - Security=High, Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules, `526DAF`, PENDING
+  - Falsified if: the category is selected over another String than FormatNumericToString's, or compact notation passes another exponent than ComputeExponent's
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadNumbers()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `21E4C4`, PENDING
   - Falsified if: a number, currency, unit, plural, plural-range or numbering-system answer differs from what Broiler.VM's JsIntlTables.ReadNumbers decodes from the same tables
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadDates()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `E8AF35`, PENDING
@@ -550,5 +571,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-685 of the 1612 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+705 of the 1691 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.
