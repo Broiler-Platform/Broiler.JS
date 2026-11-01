@@ -163,6 +163,70 @@ public sealed class DifferentialCheckTests
         Assert.Contains(population.VectorCalls, static c => c is { Locale: "ar", Method: "select" } && c.Arguments.Count == 1 && c.Arguments[0].Number == 101);
     }
 
+    /// <summary>
+    /// Sub-area (c) (stage SJL-9.3c): Broiler.VM's number formatter and its list, relative-time and display-name code answer as
+    /// the library does over Broiler.VM's embedding, with no difference at all, and over Broiler.JS's every difference is one the
+    /// library's answer under Broiler.VM's reading of the data removes - the data locale's language, Broiler.VM's numbering
+    /// systems and no own symbols (decisions D5, D13 and D21).
+    /// </summary>
+    [Fact]
+    public void Broiler_VM_s_number_and_text_code_and_the_library_differ_only_by_the_data_they_read()
+    {
+        var sections = DifferentialCheck.Run(DifferentialCheck.DefaultSeed, scale: 1, only: ["N1", "N2", "N3", "S1", "S2", "S3"]);
+        var report = DifferentialCheck.Report(sections, DifferentialCheck.DefaultSeed, 1);
+        Assert.Equal(12, sections.Count);
+        Assert.True(sections.All(static s => s.Unclassified == 0), report);
+        Assert.All(sections, static s => Assert.True(s.Compared > 500, s.Name + " compared almost nothing"));
+        Assert.All(sections.Where(static s => s.Name.EndsWith("(broiler-vm)", StringComparison.Ordinal)), static s => Assert.Equal(0, s.Classified));
+        var rows = sections.SelectMany(static s => s.ClassifiedByRow.Keys).Distinct().ToList();
+        Assert.Equal([NumberTextSection.DataRow], rows);
+    }
+
+    /// <summary>
+    /// The negative control of sub-area (c): the library reads Broiler.VM's tables with English's decimal pattern changed, and the
+    /// difference is found and left unclassified, since Broiler.VM's reading of the same tables gives the library's answer.
+    /// </summary>
+    [Fact]
+    public void A_difference_in_the_decimal_pattern_is_found_and_left_unclassified()
+    {
+        var vm = Embedding.Both().First();
+        var numbers = Encoding.ASCII.GetString(vm.Text[nameof(IntlTable.NumberLocales)]);
+        Assert.Contains("en|decimal.standard|#,##0.###\n", numbers, StringComparison.Ordinal);
+        var changed = Encoding.ASCII.GetBytes(numbers.Replace("en|decimal.standard|#,##0.###\n", "en|decimal.standard|#,##,##0.###\n", StringComparison.Ordinal));
+        var control = Embedding.WithLibraryTables("control", new Dictionary<string, byte[]> { [nameof(IntlTable.NumberLocales)] = changed });
+        var section = Assert.Single(NumberTextSection.Run(control, new SeededRandom(DifferentialCheck.DefaultSeed), 1, ["N1"]));
+        Assert.True(section.Unclassified > 0);
+        Assert.Equal(0, section.Classified);
+        Assert.Contains(section.Examples, static e => e.Contains("vm \"integer:100|group:,|integer:000", StringComparison.Ordinal)
+            && e.Contains("library \"integer:1|group:,|integer:00|group:,|integer:000", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Sub-area (c)'s population keeps every dataset input and each vector's own call (decision D22): the numbers program's
+    /// cases, values and ranges, the lists, relative-times and display-names programs' formats and inputs, and the calls of the
+    /// four services every numbers-and-text vector whose script is one call of literals makes.
+    /// </summary>
+    [Fact]
+    public void Sub_area_c_s_population_keeps_every_dataset_input_and_each_vector_s_own_call()
+    {
+        var population = NumberTextPopulation.Build(Embedding.Both().First(), new SeededRandom(DifferentialCheck.DefaultSeed), 1);
+        Assert.Equal(56, population.DatasetNumberFormats.Count);
+        Assert.Contains(population.DatasetValues, static v => v.Text == "123456789012345678901234567890.5");
+        Assert.NotEmpty(population.DatasetRanges);
+        Assert.Equal(24, population.DatasetRelativeTimeFormats.Count);
+        Assert.Equal(96, population.DatasetRelativeTimes.Count);
+        Assert.Contains(population.Lists, static l => l.SequenceEqual(["Anna", "", "Carl", "Dora", "Emil"]));
+        Assert.Contains("sl-rozaj-biske", population.Codes["language"]);
+        Assert.Contains("abcdefghi", population.Codes["calendar"]);
+
+        var vectors = Population.IntlVectors("numbers-and-text.vectors");
+        var called = population.VectorCalls.Select(static c => c.Id).ToHashSet(StringComparer.Ordinal);
+        var formats = vectors.Where(static v => v["op"] is "Intl.NumberFormat.prototype.format" or "Intl.ListFormat.prototype.format"
+            or "Intl.RelativeTimeFormat.prototype.format" or "Intl.DisplayNames.prototype.of" or "Intl.NumberFormat.prototype.formatRange").ToList();
+        var missed = formats.Where(v => !called.Contains(v["id"]!)).Select(static v => v.Script).ToList();
+        Assert.True(missed.Count <= 3, string.Join("\n", missed));
+    }
+
     [Fact]
     public void Row_P4_covers_a_difference_only_when_the_exponent_at_zero_gives_Broiler_VM_s_answer()
     {

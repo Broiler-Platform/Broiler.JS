@@ -28,6 +28,12 @@ It runs under the JIT only; the Native AOT probe compiles none of it.
   SJL-9.3b).
 - Each stage adds the copies its sections compare, with a row below; `VmCopiesTests` holds every file of this folder to
   its row's SHA-256, and every row to a file.
+- *(Added 2026-11-01, at stage SJL-9.3c.)* A copy of a class that is not partial cannot be split into two files, so where a
+  later stage compares the members an earlier copy removed, the copy is replaced by the whole file at the same commit and
+  blob, its row's length and SHA-256 with it, and nothing it kept changes: `JsNumberFormatter.cs`, which stage SJL-9.3b
+  copied with its resolved options and FormatNumericToString alone, is the whole file from stage SJL-9.3c, whose diff
+  against the earlier copy adds lines and removes none but the header's. This is the one exception to "a copy is never
+  edited afterwards"; the earlier sections compare the same code, and their reports do not move.
 
 | File | Source at `4cf9ca44` | Git blob | Bytes | SHA-256 of the copy |
 |---|---|---|---|---|
@@ -40,14 +46,17 @@ It runs under the JIT only; the Native AOT probe compiles none of it.
 | `JsLocaleTag.cs` | `src/Broiler.VM.Profile.JavaScript/JsLocaleTag.cs` | `7201ae19b2714d2916e7bd5d9b77c4cf2bfa9a59` | 25717 | `b42b6735e730d5e08d0c74aaaaf5f97e3d02b8b5ef92e15c3739af75153a11d2` |
 | `JsNumberData.cs` | `src/Broiler.VM.Profile.JavaScript/JsNumberData.cs` | `a0373603e82f719389f0386e089384f5a6a48708` | 11776 | `5ce292f128c1e363e5d15f13e37eb9812250a1b84fafe9373e1723a110291ff6` |
 | `JsNumberFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsNumberFormat.cs` | `c65c7914ced68db36cf939d9ea2880847c62bbe2` | 3936 | `0a65ec6e3fff21e3bb5f2d24ced264df33e797c2749fcd6ddbbe8ec31bc0d1c5` |
-| `JsNumberFormatter.cs` | `src/Broiler.VM.Profile.JavaScript/JsNumberFormatter.cs` | `e31736af3c25d85e91b2652ea0f849de0f34ed44` | 7321 | `26fc3f9311e7b515d9fcdc51ec210c06ef990d97116bb62fe69957306f59bb71` |
+| `JsNumberFormatter.cs` | `src/Broiler.VM.Profile.JavaScript/JsNumberFormatter.cs` | `e31736af3c25d85e91b2652ea0f849de0f34ed44` | 39203 | `428dc6842c87a12f8ff4bb2615caac570e2b0be870bfb4c04094fe266ade5ad2` |
 | `JsPluralRule.cs` | `src/Broiler.VM.Profile.JavaScript/JsPluralRule.cs` | `5ba6931e402f6bca873448b019f36905033fd61c` | 8063 | `e3d83d18cbaa6fdc37658d830bd24bc1a2143db3360073164637592a3c67ee6f` |
+| `JsRealm.DisplayNames.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.DisplayNames.cs` | `a49be69ade789b2aeea5b422bd9221d78828c174` | 13515 | `dc8cd266db98ade682885da322aa4182cf05342eb3e91a8fcc96fc6fd1bb9ede` |
 | `JsRealm.DateTimeFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.DateTimeFormat.cs` | `bff1811cd34a91f50a9840a2bfc4de81bfb31161` | 4988 | `d22c98a67ef3b08375e7a698caabfe877d4c989fee538d3ac3c31df3128843b4` |
 | `JsRealm.Intl.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.Intl.cs` | `b75e44c777594b41d36a06ddaa366708b83c4159` | 13150 | `5abafd99db6b8f8fe72df71220933652a273b4626ffc77064efd370c3b69c145` |
+| `JsRealm.ListFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.ListFormat.cs` | `df3aac41e14ff7637c3670fb863b07b151e05664` | 6952 | `cbbb5bdd78ea18f1c6df35d3f38fcf150d6054b3b3f018043ed28d5bf394ab72` |
 | `JsRealm.Locale.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.Locale.cs` | `d70618ca673e4d30b47b1e3424d7a734253b68ef` | 23796 | `9bd5f8ad8a81f71559d6a12010e97318ce2e3a1ecab57da9ce351db751f2d302` |
 | `JsRealm.NumberFormat.DigitOptions.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.NumberFormat.cs` | `7ae56e7fcc1a01aa976edb86b137b30bb30fd309` | 17813 | `74def44fad28f8e14c56a851410da0495c4eccc3cd114f7554ede9c9e62e8a2a` |
 | `JsRealm.NumberFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.NumberFormat.cs` | `7ae56e7fcc1a01aa976edb86b137b30bb30fd309` | 2446 | `2282bad9905b42d8eb1d41213cbd9d6ab4245385efae99b2562d2761b3e99360` |
 | `JsRealm.PluralRules.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.PluralRules.cs` | `a6358f49750fd30674c07b8f73e7ff34c2b2b06b` | 8409 | `0fac45951c3d2bd583d2d3a8f5a19da96b60b65e85182298852574a1008fbd0d` |
+| `JsRealm.RelativeTimeFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.RelativeTimeFormat.cs` | `d59be7e2e974fa1083e4750db657bb723dc949b2` | 10129 | `8de93eb2367325ded805566caea451e69cd688a64fce053c724785eb19f50fa0` |
 
 **What the copies are compared on.** The check's sections are in `../`: D0, the table decoders, from stage SJL-9.3a's
 skeleton (the plan's task 5.0), over the six decoder copies; and L1 to L4, locale identifiers, negotiation, Intl.Locale
@@ -56,5 +65,11 @@ and `Intl.supportedValuesOf`, from stage SJL-9.3a's task 5.a (`../LocaleSection.
 mathematical value, the digit options, FormatNumericToString, plural rules and plural ranges, from stage SJL-9.3b's task 5.b
 (`../DecimalSection.cs`, its population in `../DecimalPopulation.cs`), over `JsDecimal.cs`, `JsNumberFormat.cs`,
 `JsBigInt.cs`, `JsNumberFormatter.cs`, `JsRealm.NumberFormat.DigitOptions.cs`, `JsRealm.PluralRules.cs` and the plural
-copies of stage SJL-9.3a (`JsPluralRule.cs`, `JsNumberData.cs`). Each section's population, its counts
+copies of stage SJL-9.3a (`JsPluralRule.cs`, `JsNumberData.cs`). And N1 to N3 and S1 to S3, number formatting and its ranges, the
+number format's construction, lists, relative times and display names, from stage SJL-9.3c's task 5.c
+(`../NumberTextSection.cs`, its population in `../NumberTextPopulation.cs`), over the whole `JsNumberFormatter.cs`, the
+three realm copies `JsRealm.ListFormat.cs`, `JsRealm.RelativeTimeFormat.cs` and `JsRealm.DisplayNames.cs`, and stage
+SJL-9.3b's NumberFormat and PluralRules copies, whose constructors they call; the realm's prototype methods, which those
+three copies remove, are the harness's few lines around each copied operation (`../VmEngine.cs` adds `Base64Options`,
+Broiler.VM's GetOptionsObject, as a stand-in). Each section's population, its counts
 and every difference's class are in its report (`dotnet Broiler.ECMAScript.Intl.Tests.dll differential`, `../Program.cs`).

@@ -7,9 +7,12 @@ using Broiler.Unicode.Algorithms;
 namespace Broiler.ECMAScript.Runners;
 
 /// <summary>
-/// The library-level runner's frontend adapter (milestone SJL-13.2a; Broiler.VM's JSD-0083, decision D25; plan stage 4a):
+/// The library-level runner's frontend adapter (milestone SJL-13.2a, with stage 4b's Unicode provider; Broiler.VM's JSD-0083,
+/// decision D25; plan stage 4a):
 /// the <c>syntax</c> area's vectors (corpus revision 30, <c>conformance/vectors/syntax/</c>) parsed by
 /// <c>Broiler.ECMAScript.Frontend</c> under the library's default request for the goal each vector's <c>op</c> names.
+/// <i>(Revised 2026-11-01, at stage SJL-13.2b, which gave the adapter its Unicode provider; it began "The library-level
+/// runner's frontend adapter (milestone SJL-13.2a; Broiler.VM's JSD-0083, decision D25; plan stage 4a)".)</i>
 /// </summary>
 /// <remarks>
 /// <para>
@@ -24,7 +27,10 @@ namespace Broiler.ECMAScript.Runners;
 /// library-level status (the schema's section 4), since a parse knows that a source is accepted and not what it completes
 /// with; and a parse the library cannot make yet <c>status: not-implemented</c>. <see cref="MatchesAtTheParse"/> then reads a
 /// vector's expected outcome as the home's rule reads it (part B): <c>error: SyntaxError</c> as a refusal, any other outcome
-/// as an acceptance. Until stage 4c gives the library a parser, every syntax vector is <c>status: not-implemented</c>.
+/// as an acceptance. Until stage 4c gives the library a parser, a syntax vector is <c>error: SyntaxError</c> where the
+/// tokenizer (stage 4b) refuses its source, and <c>status: not-implemented</c> everywhere else; no vector is accepted.
+/// <i>(Revised 2026-11-01, at stage SJL-13.2b, when the tokenizer began to refuse a source; the sentence read "Until stage
+/// 4c gives the library a parser, every syntax vector is <c>status: not-implemented</c>.")</i>
 /// </para>
 /// <para>
 /// <b>The operation names collide with no other area's</b>: no vector outside <c>syntax/</c> names <c>ParseScript</c> or
@@ -33,10 +39,15 @@ namespace Broiler.ECMAScript.Runners;
 /// syntax area's.
 /// </para>
 /// <para>
-/// <b>Its providers are placeholders until the stages that read them.</b> The home holds neither engine's tables nor
-/// either engine's validator. <see cref="RunnerUnicodeTables"/> and <see cref="RunnerRegularExpressions"/> carry nothing
-/// and throw if read, so that the stage that first reads one (4b for the tables, 4d for the validator) must give the runner
-/// a real provider rather than have a parse silently read an empty one.
+/// <b>Its providers.</b> The Unicode provider is the tables the owner's generator writes from this repository's pin
+/// (<see cref="UnicodeDataHome"/>, from stage 4b, whose tokenizer reads it): both engines embed tables from the same pinned
+/// files. The home holds neither engine's validator, and <see cref="RunnerRegularExpressions"/> carries nothing and throws if
+/// asked, so that the stage that first asks it (4d) must give the runner a real provider rather than have a parse silently
+/// read an empty one. <i>(Revised 2026-11-01, at stage SJL-13.2b, whose tokenizer reads the Unicode provider; the paragraph
+/// read "<b>Its providers are placeholders until the stages that read them.</b> The home holds neither engine's tables nor
+/// either engine's validator. <c>RunnerUnicodeTables</c> and <see cref="RunnerRegularExpressions"/> carry nothing and throw
+/// if read, so that the stage that first reads one (4b for the tables, 4d for the validator) must give the runner a real
+/// provider rather than have a parse silently read an empty one.")</i>
 /// </para>
 /// </remarks>
 internal sealed partial class AlgorithmsLibrary
@@ -59,8 +70,8 @@ internal sealed partial class AlgorithmsLibrary
     /// <summary>The library's default request for a syntax operation's goal, over the source the vector's <c>in</c> holds; null for any other operation.</summary>
     internal static ParseRequest? SyntaxRequest(string operation, string source) => operation switch
     {
-        ParseScriptOperation => new ParseRequest(new SourceText(source), ParseGoal.Script, RunnerUnicodeTables.Instance, RunnerRegularExpressions.Instance),
-        PerformEvalOperation => new ParseRequest(new SourceText(source), ParseGoal.Eval, RunnerUnicodeTables.Instance, RunnerRegularExpressions.Instance),
+        ParseScriptOperation => new ParseRequest(new SourceText(source), ParseGoal.Script, UnicodeDataHome.Tables, RunnerRegularExpressions.Instance),
+        PerformEvalOperation => new ParseRequest(new SourceText(source), ParseGoal.Eval, UnicodeDataHome.Tables, RunnerRegularExpressions.Instance),
         _ => null,
     };
 
@@ -108,30 +119,6 @@ internal sealed partial class AlgorithmsLibrary
             return EmptyLibrary.NotImplemented;
 
         return RenderParse(parse(SyntaxRequest(operation, inputs[0].Chars)!));
-    }
-
-    /// <summary>
-    /// The runner's Unicode provider at stage 4a: no table. Nothing reads it before stage 4b's tokenizer, which gives the
-    /// runner the tables it reads; until then a read throws, so that no parse reads an empty table unnoticed.
-    /// </summary>
-    internal sealed class RunnerUnicodeTables : IUnicodeTables
-    {
-        private RunnerUnicodeTables()
-        {
-        }
-
-        /// <summary>The one instance.</summary>
-        internal static RunnerUnicodeTables Instance { get; } = new();
-
-        /// <inheritdoc/>
-        public string UnicodeVersion => throw Unread("its Unicode version");
-
-        /// <inheritdoc/>
-        public ReadOnlySpan<byte> Table(UnicodeTable table) => throw Unread("the table " + table);
-
-        private static NotSupportedException Unread(string what) => new(
-            "The library-level runner's stage-4a Unicode provider has no table, and " + what + " was read: the stage whose code "
-            + "reads the provider (4b, the tokenizer) gives the runner its tables.");
     }
 
     /// <summary>

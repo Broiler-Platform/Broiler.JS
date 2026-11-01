@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   1
 // Annotated:        1/1
-// Exempt:           14
+// Exempt:           17
 // Human-reviewed:   0/1
 // IP risk:          Low
 // Security risk:    Low
@@ -32,13 +32,15 @@ namespace Broiler.ECMAScript.Intl;
 /// <see cref="RoundingIncrementNeedsFractionDigits"/>, is SetNumberFormatDigitOptions' own <c>TypeError</c>, which no read of a
 /// script value raises. The sentence read "Every status below is a <c>RangeError</c> in ECMA-402; the <c>TypeError</c>s of the
 /// area are the engines' own, where they read script values".)</i>
+/// <i>(Extended 2026-11-01, at stage SJL-9.3c, which appends sub-area (c)'s three, each a <c>RangeError</c>: a relative time's
+/// value or unit, and a display-name code.)</i>
 /// </para>
 /// <para>
 /// <b>The numbers are stable.</b> Each stage of milestone SJL-9.3 appends the statuses its sub-area's operations answer,
 /// and no number is reused.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 X3 statuses; IP=Low; Security=Low; Resources=0; Fingerprint=34D20E
+// Broiler-AI:           Origin=AI; Spec=JSD-0082 X3 statuses; IP=Low; Security=Low; Resources=0; Fingerprint=9FF49F
 // Broiler-Human:        PENDING
 public enum IntlStatus
 {
@@ -108,4 +110,22 @@ public enum IntlStatus
     /// <c>sec-partitionnumberrangepattern</c>): a <c>RangeError</c>.
     /// </summary>
     RangeIsNotANumber = 13,
+
+    /// <summary>
+    /// A relative time's value is not-a-number or an infinity (PartitionRelativeTimePattern, <c>sec-PartitionRelativeTimePattern</c>,
+    /// step 1): a <c>RangeError</c>.
+    /// </summary>
+    RelativeTimeValueNotFinite = 14,
+
+    /// <summary>
+    /// A relative time's unit is none of the eight units and their plurals (SingularRelativeTimeUnit,
+    /// <c>sec-singularrelativetimeunit</c>): a <c>RangeError</c>.
+    /// </summary>
+    InvalidRelativeTimeUnit = 15,
+
+    /// <summary>
+    /// A display-name code is not well-formed for the format's type (CanonicalCodeForDisplayNames,
+    /// <c>sec-canonicalcodefordisplaynames</c>): a <c>RangeError</c>.
+    /// </summary>
+    InvalidDisplayNamesCode = 16,
 }

@@ -398,16 +398,16 @@ internal static class DecimalSection
 
     private static JsNumberFormatter VmNumberFormat(Arms arms, string locale, OptionsBag bag)
     {
-        var made = JsRealm.NewNumberFormat(arms.Engine, JsValue.Undefined, [JsValue.String(locale), VmBag(arms, bag)], JsValue.Undefined, called: false);
+        var made = JsRealm.NewNumberFormat(arms.Engine, JsValue.Undefined, [JsValue.String(locale), VmBag(arms.Engine, bag)], JsValue.Undefined, called: false);
         return ((JsNumberFormatObject)made.AsObjectOrNull()!).Formatter;
     }
 
     private static JsPluralRulesObject VmPluralRules(Arms arms, string locale, OptionsBag bag) =>
-        (JsPluralRulesObject)JsRealm.NewPluralRules(arms.Engine, JsValue.Undefined, [JsValue.String(locale), VmBag(arms, bag)]).AsObjectOrNull()!;
+        (JsPluralRulesObject)JsRealm.NewPluralRules(arms.Engine, JsValue.Undefined, [JsValue.String(locale), VmBag(arms.Engine, bag)]).AsObjectOrNull()!;
 
-    private static JsValue VmBag(Arms arms, OptionsBag bag)
+    internal static JsValue VmBag(JsEngine engine, OptionsBag bag)
     {
-        var o = new JsObject(arms.Engine.Realm.ObjectPrototype);
+        var o = new JsObject(engine.Realm.ObjectPrototype);
         foreach (var (key, value) in bag.Entries)
         {
             o.DefineOrdinary(key, value switch
@@ -688,7 +688,7 @@ internal static class DecimalSection
     }
 
     /// <summary>An options bag read as an engine reads one: GetOption, GetNumberOption and ToNumber, each at its step.</summary>
-    private sealed class BagReader(OptionsBag bag)
+    internal sealed class BagReader(OptionsBag bag)
     {
         private static readonly string[] Modes = ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"];
 
@@ -787,6 +787,13 @@ internal static class DecimalSection
         };
 
         /// <summary>ToString as Broiler.VM's engine stand-in writes a Number: its round-trip form.</summary>
+        /// <remarks><i>(Noted 2026-11-01, at stage SJL-9.3c: the summary, "ToString as Broiler.VM's engine stand-in writes a
+        /// Number: its round-trip form", now holds of this reader alone, the library arm's, which keeps the round-trip form.
+        /// The stand-in's own <c>JsEngine.ToStringValue</c> (<c>VmEngine.cs</c>) writes a Number by Number::toString since this
+        /// stage, as Broiler.VM's engine does. The two forms differ only for <c>-0</c> and a Number the round-trip form writes
+        /// with an exponent (<c>1E+21</c>, <c>1E-07</c>), and no String of those is in an option's list of values or is a
+        /// well-formed numbering system, currency or unit, so both arms refuse or decline it alike and no answer moves; the
+        /// differential runs at this stage find no unclassified difference in any section.)</i></remarks>
         private static string ToStringValue(object value) => value switch
         {
             string s => s,

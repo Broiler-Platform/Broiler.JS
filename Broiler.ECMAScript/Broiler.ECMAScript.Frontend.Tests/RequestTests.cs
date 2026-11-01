@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Broiler.ECMAScript.Syntax.Tests;
 
-/// <summary>Providers the request takes and these tests never read: the parse reads neither at stage 4a.</summary>
+/// <summary>Providers that throw when read: the request reads neither, and the parse asks the validator nothing at stage 4b.</summary>
 internal sealed class NoTables : IUnicodeTables
 {
     internal static NoTables Instance { get; } = new();

@@ -23,7 +23,8 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// decoders (<see cref="DecoderSection"/>), and sub-area (a)'s are L1 to L4, locale identifiers, negotiation, Intl.Locale
 /// and <c>Intl.supportedValuesOf</c> (<see cref="LocaleSection"/>), and sub-area (b)'s, from stage SJL-9.3b, are M1 to M3 and
 /// P1 and P2, the Intl mathematical value, the digit options, FormatNumericToString, plural rules and plural ranges
-/// (<see cref="DecimalSection"/>). A section names what it compares, and an answer is rendered as text so that
+/// (<see cref="DecimalSection"/>), and sub-area (c)'s, from stage SJL-9.3c, are N1 to N3 and S1 to S3, number formatting, its
+/// ranges and construction, lists, relative times and display names (<see cref="NumberTextSection"/>). A section names what it compares, and an answer is rendered as text so that
 /// the comparison is exact: a string as it is, a missing answer as <c>&lt;none&gt;</c>, a record by its fields.
 /// </remarks>
 internal static class DifferentialCheck
@@ -39,9 +40,11 @@ internal static class DifferentialCheck
     /// None for the skeleton's section: the decoders are a port with no correction. A stage that ports a row the
     /// correspondence classes a correction of Broiler.VM (L9, L18, Z8), or whose answer is each engine's own data, adds the
     /// row here, by the inputs it names, never a new row: sub-area (a)'s are L9, L18 and L22 (<see cref="LocaleSection.Known"/>),
-    /// and sub-area (b)'s is P4, decision D20's compact exponent (<see cref="DecimalSection.Known"/>).
+    /// sub-area (b)'s is P4, decision D20's compact exponent (<see cref="DecimalSection.Known"/>), and sub-area (c)'s is the data
+    /// policy of its rows N1b to N9e, N8a, N8b, S1b, S4b and S8, Broiler.JS's embedding read at the data locale with its own
+    /// numbering-system defaults and symbols (decisions D5, D13 and D21; <see cref="NumberTextSection.Known"/>).
     /// </remarks>
-    internal static IReadOnlyList<KnownDifference> Known { get; } = [.. LocaleSection.Known(), .. DecimalSection.Known()];
+    internal static IReadOnlyList<KnownDifference> Known { get; } = [.. LocaleSection.Known(), .. DecimalSection.Known(), .. NumberTextSection.Known()];
 
     /// <summary>Runs the sections named (all when none is), at a scale, from a seed.</summary>
     internal static IReadOnlyList<Section> Run(ulong seed, int scale, IReadOnlyCollection<string>? only = null)
@@ -51,6 +54,9 @@ internal static class DifferentialCheck
         // SUB-AREA (B)'S OWN STREAM, from the same seed, so that its draws leave the sequence the earlier stages' sections
         // take from the seed as it was (stage SJL-9.3b).
         var decimals = new SeededRandom(seed ^ 0x5D3B_93B0_0000_0000UL);
+
+        // SUB-AREA (C)'S OWN STREAM, from the same seed, so that the earlier stages' sections draw as they did (stage SJL-9.3c).
+        var texts = new SeededRandom(seed ^ 0x9C3C_93C0_0000_0000UL);
         var sections = new List<Section>();
 
         foreach (var embedding in Embedding.Both())
@@ -61,6 +67,8 @@ internal static class DifferentialCheck
                 sections.AddRange(LocaleSection.Run(embedding, random, scale, only));
             if (only is null || only.Any(static s => s is "M1" or "M2" or "M3" or "P1" or "P2"))
                 sections.AddRange(DecimalSection.Run(embedding, decimals, scale, only));
+            if (only is null || only.Any(static s => s is "N1" or "N2" or "N3" or "S1" or "S2" or "S3"))
+                sections.AddRange(NumberTextSection.Run(embedding, texts, scale, only));
         }
 
         return sections;

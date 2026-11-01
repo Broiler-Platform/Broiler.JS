@@ -105,6 +105,39 @@ Not yet packed under a version of its own: the stream's next version is set when
   - **`IntlStatus`** gains `NumberOptionOutOfRange`, `RoundingIncrementNotAdmitted`, `FractionDigitsOutOfOrder`,
     `RoundingIncrementNeedsFractionDigits` (SetNumberFormatDigitOptions' `TypeError`),
     `RoundingIncrementNeedsEqualFractionDigits` and `RangeIsNotANumber`.
+- `Broiler.ECMAScript.Intl`, sub-area (c) (stage SJL-9.3c; Broiler.VM's JSD-0082, rows N and S, decisions D13, D18, D19,
+  D21 and D33): number formatting and the list, relative-time and display-name formatters, ported from Broiler.VM's
+  JavaScript profile at `4cf9ca44` with `NumberFormatInfo.InvariantInfo` and ASCII casing where it made a culture call
+  and its `Trim()`'s white space written out (decision D19), a status where its realm threw, and the caller's `WorkCharge`
+  where Broiler.VM charges, in its units (decision D18). Each formatter reads the locale data at ResolveLocale's data
+  locale through the `ILocaleData` it is handed, ordinarily a `CompositeLocaleData`, where Broiler.VM read the data
+  locale's language; for Broiler.VM's tables the two are the same lines:
+  - **`NumberFormatter`**, with `NumberFormatOptions`, `NumberPart` and the enumerations `CurrencyDisplay`,
+    `CurrencySign`, `UnitDisplay`, `NumberGrouping` and `SignDisplay`: PartitionNumberPattern in three layers - the
+    patterns and signs (rows N1, N2 and N7), compact notation with its exponent taken after rounding over the exact value
+    (row N6), currencies with CLDR's currency spacing and names by the number's plural (rows N3 and N4), units, a compound
+    with no CLDR pattern composed from its two units and the percent unit's percent pattern (rows N5 and N2c, decision
+    D35) - PartitionNumberRangePattern with ICU's collapse, the separator's spacing and the collapsed name's plural range
+    (row N9), and the parts. A numbering system's digits replace the ASCII ones (rows N8 and N17), and a system other than
+    `latn` writes its own symbols where the data carries them, at the data locale then at root, and the `latn` symbols
+    otherwise (decision D21); `NumberingSystemKeyValues` gives the `nu` values with the locale's default numbering system
+    first (decision D13), `latn` for every locale of Broiler.VM's list. `IsWellFormedCurrencyCode` and
+    `IsWellFormedUnitIdentifier` are the checks an engine makes at their steps. FormatNumericToString's
+    `digits / 16 + 1` is charged at every rounding, ComputeExponent's and both of a range's ends' included;
+  - **`ListFormatter`**, with `ListFormatType`, `FormatStyle` and `ListPart`: CreatePartsFromList over CLDR's list
+    patterns, one template per type and style (rows S1 to S3), one unit charged per template step;
+  - **`RelativeTimeFormatter`**, with `RelativeTimeNumeric` and `RelativeTimePart`: PartitionRelativeTimePattern with its
+    own number format in the resolved numbering system (row S5) and plural rules (row S6), the magnitude written in the
+    tense's pattern (row S7, decision D33 (a)), and SingularRelativeTimeUnit;
+  - **`DisplayNamesCore`**, with `DisplayNamesType`, `DisplayNamesFallback` and `LanguageDisplay`:
+    CanonicalCodeForDisplayNames by ASCII casing (row S9) and CLDR's names, a language's composed as ICU composes it (row
+    S8, an adoption);
+  - **`IntlStatus`** gains `RelativeTimeValueNotFinite`, `InvalidRelativeTimeUnit` and `InvalidDisplayNamesCode`.
+
+  The library-level runner answers sub-area (c)'s vectors, `intl/numbers-and-text.vectors`' and the `format` and
+  `formatToParts` vectors of `intl/values-and-plurals.vectors`, through `IVectorRecordLibrary`, and the Native AOT probe
+  holds them; the bound `format`, the legacy constructor, the option reads after construction and StringListFromIterable
+  stay the engines'.
 - `Broiler.ECMAScript.Conformance` (test-only, not packed): `IVectorRecordLibrary`, a library the library-level runner
   hands each vector whole, script included, which `LibraryRun.Run` calls in place of the operation and the decoded
   inputs (stage SJL-9.3b): the Intl area's sub-area (b) vectors give their options and arguments in the script alone.
@@ -135,6 +168,47 @@ Not yet packed under a version of its own: the stream's next version is set when
   The library-level runner gains its frontend adapter, which parses each `syntax` vector under the library's default
   request for the goal its `op` names, and the Native AOT probe runs the `syntax` vectors and records their outcome
   without judging it until the library parses.
+- `Broiler.ECMAScript.Frontend`, stage SJL-13.2b: **the tokenizer**, internal to the library (Broiler.VM's JSD-0083,
+  sub-area T, decisions D7 to D9, D15, D17 and D21; design [`docs/frontend/design.md`](docs/frontend/design.md)). It
+  reads the lexical grammar of ECMA-262 clause 12 one input element at a time, under the lexical goal its caller names
+  (`InputElementDiv`, `InputElementRegExp`, `InputElementRegExpOrTemplateTail`, `InputElementTemplateTail`,
+  `InputElementHashbangOrRegExp`), and never chooses a goal from the tokens it has read:
+  - white space and line terminators, with Broiler.Unicode's classes through the request's `IUnicodeTables` beyond ASCII
+    (decision D8); comments, a `MultiLineComment` holding a line terminator counting as one; the `HashbangComment` at
+    the first code unit of a Script, a Module or eval code; Annex B.1.1's HTML-like comments by the request's switch
+    (decision D17), `-->` only where nothing but trivia stands since the last line terminator or the text's start;
+  - identifier names and private names, with `\u` escapes cooked and their early errors (catalogue rows EE0001, EE0002
+    and EX0025); a reserved or contextual word is an identifier name whose word, escape and spelling the token carries,
+    for the parser to rule on;
+  - numeric literals scanned by their grammar and valued by `NumericLiterals.Evaluate`, with no change to
+    `Broiler.ECMAScript.Algorithms` (decision D9): separators, the legacy octal and non-octal decimal forms recorded for
+    the parser's strict-mode rule, the BigInt suffix checked for its form only, its value left to the engine's ceiling,
+    the touching rule (EX0003), and the `m` suffix only through the request's lexer extension (row T18);
+  - string literals with their SV, the legacy octal and non-octal decimal escapes recorded, line continuations and raw
+    LS and PS (EX0004, EX0005);
+  - templates read in place one piece at a time, each with its TV and its TRV, a `NotEscapeSequence` recorded with no
+    cooked value for the parser's tagged-or-not rule (EE0020, EE0022 to EE0024), an unterminated template refused at
+    its backtick (EX0007), the end of the input inside a substitution included;
+  - regular-expression literals delimited, their body and flags split, their validity left to the request's provider
+    at stage 4d (decision D7; EX0006);
+  - every punctuator by its longest match, `?.` never before a decimal digit, and `@` as a token for the decorators
+    proposal, which the parser refuses where it reaches one when the request's flag is off (decision D17);
+  - positions in UTF-16 code units, 0-based offsets and 1-based lines and columns with the source's base applied, every
+    line terminator a new line and CR LF one (decision D15), and the line-terminator fact automatic semicolon insertion
+    and the restricted productions read.
+
+  A lexical refusal is a `SyntaxDiagnostic` of phase `Tokenizer` with the catalogue's shared code and message
+  identifier, at the construct's start as Broiler.VM's wide front end anchors it (decision D15). Two places follow both
+  engines' front ends rather than the shortest reading of the lexical grammar, so that the refusal keeps their code and
+  place: a legacy octal integer directly followed by a decimal fraction (`07.5`) is refused at the literal, and a numeric
+  literal directly followed by an escaped identifier start (`1\u0061`) is left to the parser, which refuses the name.
+  `SyntaxParser.Parse` now charges the request's meter for the text before it reads it, reads the Unicode provider, and
+  answers `ParseOutcome.Refused` for a source the lexical grammar refuses under every reading the parser could give it,
+  and `ParseOutcome.NotImplemented` for every other until the parser (stage 4c). The library-level runner's Unicode
+  provider is the tables the owner's generator writes from this repository's pin, `data/unicode/pins/`; the probe still
+  records the `syntax` vectors without judging them, a vector the tokenizer refuses now among the matches; since a refusal
+  lost would go back to not implemented, which the probe counts as neither a failure nor a difference, the Conformance
+  tests pin by id the vectors the tokenizer refuses. No public API changes.
 
 ### Changed
 
@@ -145,8 +219,11 @@ None.
 None: no engine reads the Intl generator, its tables, the Intl library or the frontend yet. Broiler.VM regenerates
 its table with the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone
 SJL-9.5, whose own records list what each observes; rows L9 and L18's corrections move Broiler.VM's answers when it
-cuts over to the library, at SJL-9.4. The frontend answers no source before stage 4c, and neither engine references
-it before SJL-13.3's step 1 and SJL-14's bridge. *(Revised 2026-11-01, at SJL-13.2a, when the frontend was added; it
+cuts over to the library, at SJL-9.4. The frontend accepts no source before stage 4c, refusing from stage 4b only a
+source the lexical grammar refuses, and neither engine references it before SJL-13.3's step 1 and SJL-14's bridge.
+*(Revised 2026-11-01, at SJL-13.2b, when the tokenizer was added; the sentence read "The frontend answers no source
+before stage 4c, and neither engine references it before SJL-13.3's step 1 and SJL-14's bridge.")* *(Revised
+2026-11-01, at SJL-13.2a, when the frontend was added; it
 read "None: no engine reads the Intl generator, its tables or the Intl library yet. Broiler.VM regenerates its table
 with the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone SJL-9.5,
 whose own records list what each observes; rows L9 and L18's corrections move Broiler.VM's answers when it cuts over to

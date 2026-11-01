@@ -70,7 +70,9 @@ internal sealed partial class AlgorithmsLibrary : IVectorRecordLibrary
         ArgumentNullException.ThrowIfNull(vector);
         return IsLibraryIntlValues(vector)
             ? IntlValuesArea(vector["op"]!, vector.Script)
-            : Call(vector["op"] ?? string.Empty, LibraryRun.Inputs(vector));
+            : IsLibraryIntlNumbers(vector)
+                ? IntlNumbersArea(vector)
+                : Call(vector["op"] ?? string.Empty, LibraryRun.Inputs(vector));
     }
 
     /// <summary>Whether a vector is sub-area (b)'s and one this runner answers: of the file, and of an operation it answers.</summary>

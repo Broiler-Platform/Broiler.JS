@@ -85,7 +85,9 @@ contain three pieces of third-party code and one set of public-domain formulas, 
   its assurance annotation. The data it reads is the engine's, never the library's (the Intl data home's section below).
   At stage SJL-9.3b its mathematical value, digit options, FormatNumericToString and plural rules are ported the same way,
   from `JsDecimal`, `JsNumberFormatter`, `JsPluralRule`, `JsNumberData`'s plural members and the engine-free steps of
-  `JsRealm.NumberFormat` and `JsRealm.PluralRules`.
+  `JsRealm.NumberFormat` and `JsRealm.PluralRules`. At stage SJL-9.3c its number formatter and its list, relative-time
+  and display-name formatters are ported the same way, from `JsNumberFormatter`, `JsNumberData`'s `JsNumberPattern` and
+  the engine-free steps of `JsRealm.ListFormat`, `JsRealm.RelativeTimeFormat` and `JsRealm.DisplayNames`.
   `Broiler.ECMAScript.Intl.Tests` (not packed) holds, under `Differential/Vm/`, test-only copies of Broiler.VM's code at
   `4cf9ca44` for the differential check of Broiler.VM's JSD-0082, decision D22, compiled into that project alone.
 - `Broiler.ECMAScript.Generation` holds the time data home's generator (milestone SJL-8.2): the tz pin
