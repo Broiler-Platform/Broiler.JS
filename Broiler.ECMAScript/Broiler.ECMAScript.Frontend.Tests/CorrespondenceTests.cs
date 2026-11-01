@@ -69,12 +69,22 @@ public sealed class CorrespondenceTests
         Assert.Equal((TokenFlags)flags, token.Flags & ~TokenFlags.NewLineBefore);
     }
 
-    /// <summary>Row T19: the digit lookahead after <c>?.</c> and <c>.</c> is ASCII's.</summary>
+    /// <summary>
+    /// Row T19: the digit lookahead after <c>?.</c> and <c>.</c> is ASCII's, so a raw U+0663 (ARABIC-INDIC DIGIT THREE)
+    /// after <c>?.</c> leaves the <c>?.</c> whole, and begins no input element (EX0001). Its escaped spelling is another
+    /// case: an escaped code point outside ID_Start at a name's start (EE0001).
+    /// </summary>
     [Fact]
     public void T19_only_an_ascii_digit_makes_a_fraction()
     {
-        Assert.Equal("IdentifierName QuestionDot Invalid", Lex.Names("a?.\\u0663"));
+        Assert.Equal("IdentifierName QuestionDot Invalid", Lex.Names("a?.\u0663"));
+        var raw = Lex.Refusal("a?.\u0663");
+        Assert.Equal(("JSE9101", 3), (raw.Code, raw.Span.Offset));
         Assert.Equal("IdentifierName Question NumericLiteral", Lex.Names("a?.3"));
+
+        Assert.Equal("IdentifierName QuestionDot Invalid", Lex.Names("a?.\\u0663"));
+        var escaped = Lex.Refusal("a?.\\u0663");
+        Assert.Equal(("JSE1201", 3), (escaped.Code, escaped.Span.Offset));
     }
 
     /// <summary>Row T21: a private name is one token, and a <c>#</c> before white space begins none.</summary>
