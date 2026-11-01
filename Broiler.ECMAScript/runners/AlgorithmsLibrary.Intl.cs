@@ -245,7 +245,8 @@ internal sealed partial class AlgorithmsLibrary
                 return SupportedValues.Of(inputs[0].Chars, IntlData, Zones, IntlCollator, out var values) == IntlStatus.Completed ? Json(values) : RangeError;
         }
 
-        return EmptyLibrary.NotImplemented;
+        // NOT AN INTL OPERATION: the syntax area's frontend adapter is the last the chain asks (milestone SJL-13.2a).
+        return SyntaxArea(operation, inputs);
     }
 
     /// <summary>CanonicalizeLocaleList over the inputs, each a String element; <c>undefined</c> alone is no argument.</summary>

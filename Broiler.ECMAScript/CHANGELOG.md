@@ -108,6 +108,33 @@ Not yet packed under a version of its own: the stream's next version is set when
 - `Broiler.ECMAScript.Conformance` (test-only, not packed): `IVectorRecordLibrary`, a library the library-level runner
   hands each vector whole, script included, which `LibraryRun.Run` calls in place of the operation and the decoded
   inputs (stage SJL-9.3b): the Intl area's sub-area (b) vectors give their options and arguments in the script alone.
+- `Broiler.ECMAScript.Frontend`, a new library: the shared syntax library's skeleton (milestone SJL-13.2, stage a;
+  Broiler.VM's JSD-0083, decisions D6 to D11, D14 to D17 and D32; design
+  [`docs/frontend/design.md`](docs/frontend/design.md), section 9). It is **not packed** until stage SJL-13.2f, the
+  done-when, so that no version of the stream carries part of it (decision D6). It references
+  `Broiler.ECMAScript.Algorithms` and `Broiler.Unicode.Algorithms` only, rule SL1's new layering row, and no
+  `Broiler.Regex`. In `Broiler.ECMAScript.Syntax`:
+  - **the request**: `ParseRequest`, immutable once made, over a `SourceText` (text, name, base offset, line and
+    column), one of the five goals of `ParseGoal` (Script, Module, eval code, and the dynamic function's parameters and
+    body, with the `DynamicFunctionKind` that parameterises those two), `ParseSwitches` (forced strictness, top-level
+    `await` for whichever of the Script and Module goals the request sets it, which also governs catalogue row EX0023,
+    Annex B, HTML-like comments by goal), the `InheritedContext` of eval code (the function, method,
+    derived-constructor and field-initialiser flags, and an optional set of visible private names whose absence leaves
+    that check to the engine; the caller's strictness travels as forced strictness, decision D16), `ProposalFlags`
+    (one per form), `LexerExtensions` (the `m` suffix), `ParseLimits` (the nesting depth, the diagnostic cap,
+    `ErrorReporting`'s first error or all errors, and the tree-depth constant), Broiler.Unicode's `IUnicodeTables`,
+    the `IRegularExpressionValidator` provider with its `RegularExpressionVerdict` and `RegularExpressionStatus`,
+    shaped as Broiler.Regex's validate entry answers, and an optional `WorkCharge`. Each request's defaults for its
+    goal are the library's default request; what a goal does not admit is refused when the request is made;
+  - **the diagnostics' types**: `SyntaxDiagnostic` (a shared code of the catalogue, a message identifier of its
+    form, its arguments, a `DiagnosticPhase`, a `SourceSpan` and the source's name);
+  - **the parse entry**: `SyntaxParser.Parse`, with `ParseResult` and `ParseOutcome`, which answers
+    `ParseOutcome.NotImplemented` for every source, reads neither provider and charges no meter: the tokenizer is
+    stage 4b's and the tree and the parser stage 4c's.
+
+  The library-level runner gains its frontend adapter, which parses each `syntax` vector under the library's default
+  request for the goal its `op` names, and the Native AOT probe runs the `syntax` vectors and records their outcome
+  without judging it until the library parses.
 
 ### Changed
 
@@ -115,10 +142,15 @@ None.
 
 ### Observable changes
 
-None: no engine reads the Intl generator, its tables or the Intl library yet. Broiler.VM regenerates its table with
-the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone SJL-9.5, whose
-own records list what each observes; rows L9 and L18's corrections move Broiler.VM's answers when it cuts over to the
-library, at SJL-9.4. *(Revised 2026-10-27, at SJL-9.3a, when the Intl library was added; it read "None: no engine
+None: no engine reads the Intl generator, its tables, the Intl library or the frontend yet. Broiler.VM regenerates
+its table with the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone
+SJL-9.5, whose own records list what each observes; rows L9 and L18's corrections move Broiler.VM's answers when it
+cuts over to the library, at SJL-9.4. The frontend answers no source before stage 4c, and neither engine references
+it before SJL-13.3's step 1 and SJL-14's bridge. *(Revised 2026-11-01, at SJL-13.2a, when the frontend was added; it
+read "None: no engine reads the Intl generator, its tables or the Intl library yet. Broiler.VM regenerates its table
+with the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone SJL-9.5,
+whose own records list what each observes; rows L9 and L18's corrections move Broiler.VM's answers when it cuts over to
+the library, at SJL-9.4.")* *(Revised 2026-10-27, at SJL-9.3a, when the Intl library was added; it read "None: no engine
 reads the Intl generator or its tables yet. Broiler.VM regenerates its table with the generator at its work package
 SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone SJL-9.5, whose own records list what each
 observes.")*

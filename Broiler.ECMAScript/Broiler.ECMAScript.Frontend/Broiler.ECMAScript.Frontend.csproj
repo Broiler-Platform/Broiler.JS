@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The shared syntax library of the shared JavaScript libraries programme (milestone SJL-13.2; Broiler.VM's
+    JSD-0083, decisions D6 to D17 and D32, under the contract of JSD-0080): the frontend's syntax half - the request,
+    the tokenizer, the tree, the parser and the diagnostics in Broiler.ECMAScript.Syntax, and from stage 4d the
+    declarations walk in Broiler.ECMAScript.Semantics - built in six stages, a to f, one merge each. It names neither
+    engine and reads no culture.
+
+    Stage SJL-13.2a's skeleton holds the contract's types alone: the parse request (source, goal, switches, the
+    inherited context of eval code, proposal flags, the lexer extension, limits and providers), the diagnostics'
+    types, and a parse entry that answers "not implemented" for every source. The tokenizer is stage 4b's, the tree
+    and the parser stage 4c's, the diagnostics' identifiers and the parse-time early errors stage 4d's, the limits'
+    derivation, determinism and fuzzing stage 4e's, and the done-when stage 4f's.
+
+    References (decision D6; rule SL1's row Frontend -> [Algorithms, Broiler.Unicode.Algorithms]):
+    Broiler.ECMAScript.Algorithms, whose WorkCharge and DepthLimit the request takes and whose
+    NumericLiterals.Evaluate the tokenizer calls from stage 4b (decision D9: no change to that library at SJL-13), and
+    Broiler.Unicode.Algorithms, whose IUnicodeTables is the request's Unicode provider (decision D8). No
+    Broiler.Regex: the regular-expression validator is an interface of this library that each engine supplies
+    (decision D7). No engine, and nothing of Broiler.VM.
+
+    NOT PACKED YET. IsPackable stays false until stage SJL-13.2f, the done-when (decision D6), so that no version of
+    the shared stream carries part of the library; the package identity is set and nothing is packed.
+  -->
+  <PropertyGroup>
+    <RootNamespace>Broiler.ECMAScript.Syntax</RootNamespace>
+    <AssemblyName>Broiler.ECMAScript.Frontend</AssemblyName>
+    <PackageId>Broiler.ECMAScript.Frontend</PackageId>
+    <Description>The shared syntax library of the Broiler JavaScript engines (ECMA-262): an immutable parse request with goals, switches, the inherited context of eval code, proposal flags, a lexer extension, limits and providers (Broiler.Unicode's tables, a regular-expression validator each engine supplies, an optional work meter), and diagnostics with shared codes, message identifiers, phases and spans. The tokenizer, the tree and the parser follow in later stages.</Description>
+    <PackageTags>broiler;ecmascript;javascript;shared;frontend;parser;syntax;ecma-262</PackageTags>
+    <IsPackable>false</IsPackable>
+    <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
+    <PackageReference Include="Broiler.Unicode.Algorithms" />
+  </ItemGroup>
+</Project>
