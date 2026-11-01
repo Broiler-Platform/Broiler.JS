@@ -136,6 +136,33 @@ public sealed class DifferentialCheckTests
         Assert.Contains(rows, static r => r.Section.StartsWith("P1", StringComparison.Ordinal));
     }
 
+    /// <summary>
+    /// Sub-area (b)'s population keeps what its sections compare in full before their random draws (decision D22): each
+    /// dataset format with its own locale, the dataset values and ranges, and the own call of every <c>select</c> and
+    /// <c>selectRange</c> vector whose arguments are literals - all but the one that selects <c>Object(1n)</c>.
+    /// </summary>
+    [Fact]
+    public void Sub_area_b_s_population_keeps_every_dataset_format_value_and_range_and_each_vector_s_own_call()
+    {
+        var population = DecimalPopulation.Build(Embedding.Both().First(), new SeededRandom(DifferentialCheck.DefaultSeed), 1);
+
+        Assert.Equal(56, population.DatasetNumberFormats.Count);
+        Assert.Equal(27, population.DatasetPluralFormats.Count);
+        Assert.Contains(("de-u-co-phonebk", "{localeMatcher:\"lookup\"}"), population.DatasetPluralFormats.Select(static f => (f.Locale, f.Bag.Label)));
+        Assert.Contains(population.DatasetValues, static v => v.Text == "1.00000000000000000001");
+        Assert.Contains(population.DatasetValues, static v => v.BigInt == System.Numerics.BigInteger.Parse("-12345678901234567890", System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(17, population.DatasetRanges.Count);
+
+        var vectors = Population.IntlVectors("values-and-plurals.vectors")
+            .Where(static v => v["op"] is "Intl.PluralRules.prototype.select" or "Intl.PluralRules.prototype.selectRange")
+            .ToList();
+        var called = population.VectorCalls.Select(static c => c.Id).ToHashSet(StringComparer.Ordinal);
+        var missed = vectors.Where(v => !called.Contains(v["id"]!)).Select(static v => v.Script).ToList();
+        Assert.Equal(["new Intl.PluralRules(\"en\", {}).select(Object(1n))"], missed);
+        Assert.Equal(107, population.VectorCalls.Count(static c => c.Method == "selectRange"));
+        Assert.Contains(population.VectorCalls, static c => c is { Locale: "ar", Method: "select" } && c.Arguments.Count == 1 && c.Arguments[0].Number == 101);
+    }
+
     [Fact]
     public void Row_P4_covers_a_difference_only_when_the_exponent_at_zero_gives_Broiler_VM_s_answer()
     {

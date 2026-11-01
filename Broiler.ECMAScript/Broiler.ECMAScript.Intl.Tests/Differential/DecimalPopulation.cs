@@ -25,6 +25,14 @@ internal sealed record DecimalInput(double Number, string? Text, BigInteger? Big
         : Number.ToString("R", CultureInfo.InvariantCulture);
 }
 
+/// <summary>
+/// One call a <c>values-and-plurals</c> vector's script makes: <c>new Intl.PluralRules(locale, bag).select(x)</c> or
+/// <c>.selectRange(x, y)</c>, <c>new Intl.NumberFormat(locale, bag).format(x)</c> or <c>.formatToParts(x)</c>,
+/// <c>(x).toLocaleString(locale, bag)</c>, which is the format, or each element's <c>select(n)</c> of
+/// <c>[...].map(function (n) { return new Intl.PluralRules(locale, bag).select(n); })</c>.
+/// </summary>
+internal sealed record VectorCall(string Id, string Service, string Locale, OptionsBag Bag, string Method, IReadOnlyList<DecimalInput> Arguments);
+
 /// <summary>An options bag of plain values, in the order written: Strings, Numbers and Booleans.</summary>
 internal sealed record OptionsBag(IReadOnlyList<KeyValuePair<string, object>> Entries)
 {
@@ -49,7 +57,9 @@ internal sealed record OptionsBag(IReadOnlyList<KeyValuePair<string, object>> En
 /// The differential check's population for sub-area (b) (Broiler.VM's JSD-0082, decision D22): every Number, String and BigInt
 /// input of the Intl vector files and every value and options bag the sub-area's vector scripts write; every value, range and
 /// options bag of the <c>numbers</c> and <c>plurals</c> dataset programs; every locale those name and the embedding's own; and
-/// seeded random Numbers, numeric Strings, BigInts, ranges and options bags, so many per unit of scale.
+/// seeded random Numbers, numeric Strings, BigInts, ranges and options bags, so many per unit of scale. It also keeps what the
+/// sections compare in full before their random draws: each dataset format with its own locale, the dataset values and
+/// ranges, and each sub-area (b) vector's own call.
 /// </summary>
 internal sealed class DecimalPopulation
 {
@@ -74,6 +84,21 @@ internal sealed class DecimalPopulation
     internal List<OptionsBag> PluralRulesBags { get; } = [];
 
     internal List<string> Locales { get; } = [];
+
+    /// <summary>The <c>numbers</c> program's cases, <c>new Intl.NumberFormat(locale, bag)</c>, each with its own locale.</summary>
+    internal List<(string Locale, OptionsBag Bag)> DatasetNumberFormats { get; } = [];
+
+    /// <summary>The <c>plurals</c> program's formats, <c>new Intl.PluralRules(locale, bag)</c>, each with its own locale.</summary>
+    internal List<(string Locale, OptionsBag Bag)> DatasetPluralFormats { get; } = [];
+
+    /// <summary>Every value of the <c>numbers</c> and <c>plurals</c> programs, once each.</summary>
+    internal List<DecimalInput> DatasetValues { get; } = [];
+
+    /// <summary>Every range of the <c>numbers</c> and <c>plurals</c> programs whose ends are both values.</summary>
+    internal List<(DecimalInput Start, DecimalInput End)> DatasetRanges { get; } = [];
+
+    /// <summary>Each <c>values-and-plurals</c> vector's own call, where its script is one the sections can read.</summary>
+    internal List<VectorCall> VectorCalls { get; } = [];
 
     internal static DecimalPopulation Build(Embedding embedding, SeededRandom random, int scale)
     {
@@ -108,6 +133,7 @@ internal sealed class DecimalPopulation
                     continue;
 
                 var script = vector.Script;
+                population.VectorCalls.AddRange(Calls(vector["id"] ?? string.Empty, script));
                 foreach (var service in new[] { "PluralRules", "NumberFormat" })
                 {
                     var at = script.IndexOf("new Intl." + service + "(", StringComparison.Ordinal);
@@ -133,13 +159,19 @@ internal sealed class DecimalPopulation
             foreach (var item in Array(program, "values"))
             {
                 if (Input(item) is { } input)
+                {
                     values.Add(input);
+                    population.DatasetValues.Add(input);
+                }
             }
 
             foreach (var item in Array(program, "ranges"))
             {
                 if (item is List<object?> pair && pair.Count == 2 && Input(pair[0]) is { } start && Input(pair[1]) is { } end)
+                {
                     population.Ranges.Add((start, end));
+                    population.DatasetRanges.Add((start, end));
+                }
             }
 
             foreach (var item in Array(program, name == "plurals" ? "formats" : "cases"))
@@ -150,6 +182,7 @@ internal sealed class DecimalPopulation
                 locales.Add(locale);
                 var bag = format.Count > 1 && format[1] is OptionsBag given ? given : OptionsBag.Empty;
                 (name == "plurals" ? pluralBags : numberBags).Add(bag);
+                (name == "plurals" ? population.DatasetPluralFormats : population.DatasetNumberFormats).Add((locale, bag));
             }
         }
 
@@ -170,7 +203,121 @@ internal sealed class DecimalPopulation
         population.NumberFormatBags.AddRange(numberBags.DistinctBy(static b => b.Label));
         population.PluralRulesBags.AddRange(pluralBags.DistinctBy(static b => b.Label));
         population.Locales.AddRange(locales.Distinct(StringComparer.Ordinal));
+
+        var datasetValues = population.DatasetValues.DistinctBy(static v => v.Label + (v.Text is null ? string.Empty : "s")).ToList();
+        population.DatasetValues.Clear();
+        population.DatasetValues.AddRange(datasetValues);
         return population;
+    }
+
+    /// <summary>
+    /// The calls a vector's script makes, when it is one of <see cref="VectorCall"/>'s forms with literal arguments: a locale
+    /// String, an optional options bag, and Numbers, Strings or BigInts; none for any other script.
+    /// </summary>
+    private static IEnumerable<VectorCall> Calls(string id, string script)
+    {
+        if (Call(id, script) is { } call)
+            return [call];
+
+        // JSON.stringify([...].map(function (n) { return new Intl.PluralRules(locale, bag).select(n); })): each element's call.
+        var text = script.Trim();
+        const string Head = "JSON.stringify(";
+        const string Map = ".map(function (n) { return ";
+        const string Tail = ".select(n); }))";
+        if (!text.StartsWith(Head, StringComparison.Ordinal) || !text.EndsWith(Tail, StringComparison.Ordinal))
+            return [];
+
+        var reader = new LiteralReader(text, Head.Length);
+        if (reader.Value() is not List<object?> items || !reader.Take(Map) || !reader.Take("new Intl.PluralRules("))
+            return [];
+        if (reader.Value() is not string locale)
+            return [];
+        var bag = OptionsBag.Empty;
+        if (reader.Take(","))
+        {
+            if (reader.Value() is not OptionsBag options)
+                return [];
+            bag = options;
+        }
+
+        if (!reader.Take(")") || !reader.Take(Tail) || !reader.AtEnd)
+            return [];
+
+        var calls = new List<VectorCall>();
+        foreach (var item in items)
+        {
+            if (Input(item) is not { } value)
+                return [];
+            calls.Add(new VectorCall(id, "PluralRules", locale, bag, "select", [value]));
+        }
+
+        return calls;
+    }
+
+    private static VectorCall? Call(string id, string script)
+    {
+        var text = script.Trim();
+        if (text.StartsWith("JSON.stringify(", StringComparison.Ordinal) && text.EndsWith(')'))
+            text = text["JSON.stringify(".Length..^1];
+
+        var reader = new LiteralReader(text, 0);
+
+        bool Constructor(out string locale, out OptionsBag bag)
+        {
+            locale = string.Empty;
+            bag = OptionsBag.Empty;
+            if (reader.Value() is not string given)
+                return false;
+            locale = given;
+            if (reader.Take(","))
+            {
+                if (reader.Value() is not OptionsBag options)
+                    return false;
+                bag = options;
+            }
+
+            return reader.Take(")");
+        }
+
+        // (x).toLocaleString(locale, bag): Number.prototype.toLocaleString and BigInt.prototype.toLocaleString.
+        if (reader.Take("("))
+        {
+            if (Input(reader.Value()) is not { } value || !reader.Take(")") || !reader.Take(".toLocaleString(") || !Constructor(out var locale, out var bag))
+                return null;
+            return reader.AtEnd ? new VectorCall(id, "NumberFormat", locale, bag, "format", [value]) : null;
+        }
+
+        foreach (var (service, methods) in new[] { ("PluralRules", new[] { "selectRange", "select" }), ("NumberFormat", new[] { "formatToParts", "format" }) })
+        {
+            if (!reader.Take("new Intl." + service + "("))
+                continue;
+            if (!Constructor(out var locale, out var bag))
+                return null;
+
+            var method = methods.FirstOrDefault(m => reader.Take("." + m + "("));
+            if (method is null)
+                return null;
+
+            var arguments = new List<DecimalInput>();
+            if (!reader.Take(")"))
+            {
+                while (true)
+                {
+                    if (Input(reader.Value()) is not { } argument)
+                        return null;
+                    arguments.Add(argument);
+                    if (reader.Take(")"))
+                        break;
+                    if (!reader.Take(","))
+                        return null;
+                }
+            }
+
+            var arity = method == "selectRange" ? 2 : 1;
+            return reader.AtEnd && arguments.Count == arity ? new VectorCall(id, service, locale, bag, method, arguments) : null;
+        }
+
+        return null;
     }
 
     /// <summary>The literal arguments a sub-area (b) script hands <c>select</c>, <c>selectRange</c>, <c>format</c> and a list's <c>map</c>.</summary>
@@ -331,6 +478,16 @@ internal sealed class DecimalPopulation
     private sealed class LiteralReader(string text, int at)
     {
         private int at = at;
+
+        /// <summary>Whether nothing but white space is left.</summary>
+        internal bool AtEnd
+        {
+            get
+            {
+                Skip();
+                return at >= text.Length;
+            }
+        }
 
         internal bool Take(string literal)
         {

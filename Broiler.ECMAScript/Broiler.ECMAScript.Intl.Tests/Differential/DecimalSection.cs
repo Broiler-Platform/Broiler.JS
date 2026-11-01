@@ -24,6 +24,13 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// library's, or a read this harness makes otherwise than Broiler.VM, and the report shows which.
 /// </para>
 /// <para>
+/// <b>The datasets and the vectors in full, then the random draws.</b> Before any seeded draw, M2 constructs every dataset
+/// format and every vector's own object at its own locale; M3 formats every dataset value with every dataset format and each
+/// vector's own value with its own object; P1 selects every dataset value with every <c>plurals</c> format and each vector's
+/// own value with its own object; P2 selects every dataset range with every <c>plurals</c> format and each vector's own range
+/// with its own object. The random draws then add to those, from the sub-area's own stream, as before.
+/// </para>
+/// <para>
 /// <b>Every compared answer carries its charge</b> where Broiler.VM charges (decision D18): the String's
 /// <c>length / 8 + 1</c>, a BigInt's digits, FormatNumericToString's <c>digits / 16 + 1</c>. Broiler.VM's arm counts through its
 /// engine's meter, the library's through the <see cref="WorkCharge"/> it is handed.
@@ -75,23 +82,34 @@ internal static class DecimalSection
     {
         var section = new Section(name);
 
-        foreach (var bag in population.NumberFormatBags)
-        {
-            var locale = random.Next(3) == 0 ? random.Pick(population.Locales) : "en";
+        void NumberFormat(string locale, OptionsBag bag) =>
             section.Compare("NumberFormat " + LocaleSection.Quote(locale) + " " + bag.Label,
                 VmCall(() => Render(VmNumberFormat(arms, locale, bag))),
                 LibraryCall(() => LibraryNumberFormat(arms, locale, bag, out string? rendered) ?? rendered!));
-        }
 
-        foreach (var bag in population.PluralRulesBags)
-        {
-            var locale = random.Next(3) == 0 ? random.Pick(population.Locales) : "en";
+        void PluralRules(string locale, OptionsBag bag) =>
             section.Compare("PluralRules " + LocaleSection.Quote(locale) + " " + bag.Label,
                 VmCall(() => Render(VmPluralRules(arms, locale, bag).Formatter) + " " + VmPluralRules(arms, locale, bag).Type),
                 LibraryCall(() => LibraryPluralRules(arms, locale, bag, out var rules) ?? Render(rules!.DigitOptions, NotationName(rules.Notation),
                     rules.Notation == NumberNotation.Compact ? (rules.CompactDisplay == CompactDisplay.Long ? "long" : "short") : null)
                     + " " + (rules.Type == PluralRuleType.Ordinal ? "ordinal" : "cardinal")));
-        }
+
+        // EVERY DATASET FORMAT AND EVERY VECTOR'S OWN OBJECT, at its own locale.
+        foreach (var (locale, bag) in population.DatasetNumberFormats
+            .Concat(population.VectorCalls.Where(static c => c.Service == "NumberFormat").Select(static c => (c.Locale, c.Bag)))
+            .DistinctBy(static f => f.Item1 + " " + f.Item2.Label))
+            NumberFormat(locale, bag);
+
+        foreach (var (locale, bag) in population.DatasetPluralFormats
+            .Concat(population.VectorCalls.Where(static c => c.Service == "PluralRules").Select(static c => (c.Locale, c.Bag)))
+            .DistinctBy(static f => f.Item1 + " " + f.Item2.Label))
+            PluralRules(locale, bag);
+
+        foreach (var bag in population.NumberFormatBags)
+            NumberFormat(random.Next(3) == 0 ? random.Pick(population.Locales) : "en", bag);
+
+        foreach (var bag in population.PluralRulesBags)
+            PluralRules(random.Next(3) == 0 ? random.Pick(population.Locales) : "en", bag);
 
         return section;
     }
@@ -132,6 +150,36 @@ internal static class DecimalSection
                     var result = NumericFormat.FormatNumericToString(format.Library, x, units => charged += units);
                     return Render(result.RoundedNumber) + " " + result.FormattedString + " charge " + charged;
                 }));
+
+        // EVERY DATASET FORMAT, AT ITS OWN LOCALE, WITH EVERY DATASET VALUE; then each vector's own value with its own object.
+        (string Label, JsNumberFormatter Vm, DigitOptions Library)? NumberFormatAt(string locale, OptionsBag bag) =>
+            Constructed(() => VmNumberFormat(arms, locale, bag)) is { } vm && LibraryNumberFormat(arms, locale, bag, out DigitOptions? digits) is null
+                ? ("NumberFormat " + LocaleSection.Quote(locale) + " " + bag.Label, vm, digits!)
+                : null;
+
+        (string Label, JsNumberFormatter Vm, DigitOptions Library)? PluralRulesAt(string locale, OptionsBag bag) =>
+            Constructed(() => VmPluralRules(arms, locale, bag)) is { } vm && LibraryPluralRules(arms, locale, bag, out var rules) is null
+                ? ("PluralRules " + LocaleSection.Quote(locale) + " " + bag.Label, vm.Formatter, rules!.DigitOptions)
+                : null;
+
+        var datasetValues = population.DatasetValues.Where(v => Finite(arms, v)).ToList();
+        var datasetFormats = population.DatasetNumberFormats.Select(f => NumberFormatAt(f.Locale, f.Bag))
+            .Concat(population.DatasetPluralFormats.Select(f => PluralRulesAt(f.Locale, f.Bag)));
+
+        foreach (var format in datasetFormats)
+        {
+            if (format is null)
+                continue;
+            foreach (var value in datasetValues)
+                Compare(format.Value, value);
+        }
+
+        foreach (var call in population.VectorCalls.Where(static c => c.Method is "format" or "formatToParts" or "select"))
+        {
+            if ((call.Service == "NumberFormat" ? NumberFormatAt(call.Locale, call.Bag) : PluralRulesAt(call.Locale, call.Bag)) is { } format
+                && Finite(arms, call.Arguments[0]))
+                Compare(format, call.Arguments[0]);
+        }
 
         foreach (var format in formats)
         {
@@ -176,39 +224,66 @@ internal static class DecimalSection
         var formats = new List<(string, JsPluralRulesObject, PluralRulesRecord)>();
         foreach (var (locale, bag) in pairs.DistinctBy(static p => p.Locale + " " + p.Bag.Label))
         {
-            if (Constructed(() => VmPluralRules(arms, locale, bag)) is { } vm && LibraryPluralRules(arms, locale, bag, out var rules) is null)
-                formats.Add((LocaleSection.Quote(locale) + " " + bag.Label, vm, rules!));
+            if (PluralFormat(arms, locale, bag) is { } format)
+                formats.Add(format);
         }
 
         return formats;
     }
 
+    /// <summary>The plural rules object both arms construct for a locale and a bag, or <see langword="null"/> when either refuses it (M2 compares that).</summary>
+    private static (string Label, JsPluralRulesObject Vm, PluralRulesRecord Library)? PluralFormat(Arms arms, string locale, OptionsBag bag) =>
+        Constructed(() => VmPluralRules(arms, locale, bag)) is { } vm && LibraryPluralRules(arms, locale, bag, out var rules) is null
+            ? (LocaleSection.Quote(locale) + " " + bag.Label, vm, rules!)
+            : null;
+
     private static Section Plurals(Arms arms, DecimalPopulation population, SeededRandom random, string name)
     {
         var section = new Section(name);
 
-        foreach (var (label, vm, library) in PluralFormats(arms, population, random))
-        {
+        void Categories(string label, JsPluralRulesObject vm, PluralRulesRecord library) =>
             section.Compare("categories " + label,
                 VmCall(() => string.Join(",", JsRealm.VmPluralCategoriesOf(arms.Engine, vm))),
                 LibraryCall(() => string.Join(",", library.PluralCategories)));
 
+        void Select(string label, JsPluralRulesObject vm, PluralRulesRecord library, DecimalInput value)
+        {
+            var input = "select " + label + " " + value.Label + (value.Text is null ? string.Empty : " (String)");
+            section.Compare(input + AtExponentZero(arms, library, () => SelectAtZero(arms, library, value)),
+                VmCall(() =>
+                {
+                    var (category, formatted) = JsRealm.VmResolvePlural(arms.Engine, vm, VmValue(arms, value, out _));
+                    return category + " | " + formatted;
+                }),
+                LibraryCall(() =>
+                {
+                    var resolved = library.ResolvePlural(LibraryValue(arms, value, out _));
+                    return resolved.PluralCategory + " | " + resolved.FormattedString;
+                }));
+        }
+
+        // EVERY PLURALS FORMAT, AT ITS OWN LOCALE, WITH EVERY DATASET VALUE; then each vector's own value with its own object.
+        foreach (var (locale, bag) in population.DatasetPluralFormats)
+        {
+            if (PluralFormat(arms, locale, bag) is not (var label, var vm, var library))
+                continue;
+            Categories(label, vm, library);
+            foreach (var value in population.DatasetValues)
+                Select(label, vm, library, value);
+        }
+
+        foreach (var call in population.VectorCalls.Where(static c => c is { Service: "PluralRules", Method: "select" }))
+        {
+            if (PluralFormat(arms, call.Locale, call.Bag) is (var label, var vm, var library))
+                Select(label, vm, library, call.Arguments[0]);
+        }
+
+        foreach (var (label, vm, library) in PluralFormats(arms, population, random))
+        {
+            Categories(label, vm, library);
+
             for (var i = 0; i < 20; i++)
-            {
-                var value = random.Pick(population.Values);
-                var input = "select " + label + " " + value.Label + (value.Text is null ? string.Empty : " (String)");
-                section.Compare(input + AtExponentZero(arms, library, () => SelectAtZero(arms, library, value)),
-                    VmCall(() =>
-                    {
-                        var (category, formatted) = JsRealm.VmResolvePlural(arms.Engine, vm, VmValue(arms, value, out _));
-                        return category + " | " + formatted;
-                    }),
-                    LibraryCall(() =>
-                    {
-                        var resolved = library.ResolvePlural(LibraryValue(arms, value, out _));
-                        return resolved.PluralCategory + " | " + resolved.FormattedString;
-                    }));
-            }
+                Select(label, vm, library, random.Pick(population.Values));
         }
 
         return section;
@@ -217,6 +292,32 @@ internal static class DecimalSection
     private static Section Ranges(Arms arms, DecimalPopulation population, SeededRandom random, string name)
     {
         var section = new Section(name);
+
+        void Range(string label, JsPluralRulesObject vm, PluralRulesRecord library, DecimalInput start, DecimalInput end)
+        {
+            var input = "selectRange " + label + " " + start.Label + " " + end.Label;
+            section.Compare(input + AtExponentZero(arms, library, () => RangeAtZero(arms, library, start, end)),
+                VmCall(() => JsRealm.VmResolvePluralRange(arms.Engine, vm, VmValue(arms, start, out _), VmValue(arms, end, out _))),
+                LibraryCall(() => library.ResolvePluralRange(LibraryValue(arms, start, out _), LibraryValue(arms, end, out _), out var category) == IntlStatus.Completed
+                    ? category
+                    : "error: RangeError"));
+        }
+
+        // EVERY PLURALS FORMAT, AT ITS OWN LOCALE, WITH EVERY DATASET RANGE; then each vector's own range with its own object.
+        foreach (var (locale, bag) in population.DatasetPluralFormats)
+        {
+            if (PluralFormat(arms, locale, bag) is not (var label, var vm, var library))
+                continue;
+            foreach (var (start, end) in population.DatasetRanges)
+                Range(label, vm, library, start, end);
+        }
+
+        foreach (var call in population.VectorCalls.Where(static c => c is { Service: "PluralRules", Method: "selectRange" }))
+        {
+            if (PluralFormat(arms, call.Locale, call.Bag) is (var label, var vm, var library))
+                Range(label, vm, library, call.Arguments[0], call.Arguments[1]);
+        }
+
         var formats = PluralFormats(arms, population, random);
 
         foreach (var (start, end) in population.Ranges)
@@ -224,12 +325,7 @@ internal static class DecimalSection
             for (var i = 0; i < 4 && formats.Count > 0; i++)
             {
                 var (label, vm, library) = random.Pick(formats);
-                var input = "selectRange " + label + " " + start.Label + " " + end.Label;
-                section.Compare(input + AtExponentZero(arms, library, () => RangeAtZero(arms, library, start, end)),
-                    VmCall(() => JsRealm.VmResolvePluralRange(arms.Engine, vm, VmValue(arms, start, out _), VmValue(arms, end, out _))),
-                    LibraryCall(() => library.ResolvePluralRange(LibraryValue(arms, start, out _), LibraryValue(arms, end, out _), out var category) == IntlStatus.Completed
-                        ? category
-                        : "error: RangeError"));
+                Range(label, vm, library, start, end);
             }
         }
 
