@@ -18,7 +18,8 @@ namespace Broiler.ECMAScript.Probe;
 /// library does not implement yet must be "not implemented". The contract types are exercised
 /// directly as well. From milestone SJL-9.3a it also runs <c>Broiler.ECMAScript.Intl</c>, through the
 /// same runner, on the Intl area's sub-area (a), and from stage SJL-9.3b on the operations of sub-area (b) the runner
-/// answers, whose vectors it reads whole (<c>IVectorRecordLibrary</c>). From milestone SJL-13.2a it also runs
+/// answers, whose vectors it reads whole (<c>IVectorRecordLibrary</c>), and from stage SJL-9.3c on those of sub-area (c), read
+/// whole the same way. From milestone SJL-13.2a it also runs
 /// <c>Broiler.ECMAScript.Frontend</c>, through the runner's frontend adapter, on the <c>syntax</c> area, whose outcomes it
 /// records and does not judge until the library parses (<see cref="IsRecordedArea"/>). What the probe proves is that the library, the reader, the validator, the
 /// runner and the report compile into a Native AOT image under Broiler.VM's root settings and give
@@ -88,7 +89,9 @@ internal static class Program
         // providers, but the engine-level ones AlgorithmsLibrary.IsEngineLevelIntl names; an impl-defined one may give
         // Broiler.VM's per-engine expectation, the engine whose providers the runner takes (milestone SJL-9.3a). So are
         // sub-area (b)'s of the operations AlgorithmsLibrary.IntlValuesOperations names, read whole with their scripts
-        // (stage SJL-9.3b). Every other Intl vector is not implemented.
+        // (stage SJL-9.3b). So are sub-area (c)'s, numbers-and-text's operations AlgorithmsLibrary.IntlNumbersOperations names and
+        // values-and-plurals' format and formatToParts, but the engine-level script forms (stage SJL-9.3c). Every other Intl
+        // vector is not implemented.
         // The syntax area's vectors are the frontend's, through the runner's frontend adapter, and are recorded, not judged
         // (IsRecordedArea; milestone SJL-13.2a).
         var library = new AlgorithmsLibrary();
