@@ -1,4 +1,4 @@
-"""Tests of the regular-expression area's generator (corpus revision 31, milestone SJL-11.3).
+"""Tests of the regular-expression area's generator (corpus revisions 31 and 32, milestone SJL-11.3).
 
 The committed files are checked against what the generator writes, where the pinned Unicode data is (unicoderef's
 BROILER_UNICODE_PINS, or a Broiler.Unicode checkout beside this repository's); writing them takes a minute or two,
@@ -128,7 +128,9 @@ class CommittedFileTests(unittest.TestCase):
         revisions = (CORPUS / "REVISIONS.md").read_text(encoding="utf-8")
         rows = [int(m.group(1)) for m in re.finditer(r"^\| (\d+) \| \d{4}-\d{2}-\d{2} \|", revisions, re.M)]
         self.assertEqual(generator.CORPUS_REVISION, rows[-1])
-        self.assertEqual(generator.SINCE, generator.CORPUS_REVISION)
+        # The area was added at revision 31; revision 32 classifies both engines' first runs and adds no vector.
+        self.assertEqual(31, generator.SINCE)
+        self.assertLessEqual(generator.SINCE, generator.CORPUS_REVISION)
 
     def test_one_file_per_kind_and_ids_by_file(self) -> None:
         self.assertEqual(sorted(generator.FILES), sorted(committed()))
@@ -146,15 +148,36 @@ class CommittedFileTests(unittest.TestCase):
         cited = sum(1 for r in all_records() if generator.REF in r["prov"].split(" "))
         self.assertGreater(cited, 0.9 * len(all_records()))
 
-    def test_no_divergence_field_and_every_class_has_its_fields(self) -> None:
+    def test_divergence_fields_are_the_classified_differences_and_every_class_has_its_fields(self) -> None:
+        classified = generator.read_divergences(generator.DIVERGENCES)
+        self.assertTrue(classified)
+        ids = {r["id"] for r in all_records()}
+        self.assertEqual(set(), set(classified) - ids)
         for record in all_records():
-            self.assertFalse(any(k.startswith("divergence") for k in record), record["id"])
-            self.assertIn(record["class"], ("normative", "impl-defined"), record["id"])
+            fields = {k[len("divergence."):]: v for k, v in record.items() if k.startswith("divergence.")}
+            self.assertEqual(classified.get(record["id"], {}), fields, record["id"])
+            self.assertIn(record["class"], ("normative", "impl-defined", "divergence"), record["id"])
+            self.assertEqual(record["class"] == "divergence", bool(fields) and "per-engine.broiler-js" not in record,
+                             record["id"])
+            self.assertFalse(fields and record["out"].startswith("status: "), record["id"])
             if record["class"] == "impl-defined":
                 self.assertIn("per-engine.broiler-js", record, record["id"])
                 self.assertIn("per-engine.broiler-vm", record, record["id"])
             else:
                 self.assertFalse(any(k.startswith("per-engine") for k in record), record["id"])
+            for engine, text in fields.items():
+                # Each reason names a row the vector's note names.
+                row = re.match(r"row ([A-Z][0-9]+[a-z]?)\b", text)
+                self.assertIsNotNone(row, (record["id"], engine))
+                self.assertRegex(record["note"], rf"correspondence rows? [A-Z0-9a-z, ]*\b{row.group(1)}\b",
+                                 (record["id"], engine))
+
+    def test_the_divergence_file_refuses_an_unknown_id_and_a_status_vector(self) -> None:
+        with self.assertRaises(generator.GeneratorError):
+            generator.write_files(Path(tempfile.mkdtemp()), {"regexp/syntax/none/0001": {"broiler-js": "x"}})
+        status = next(r["id"] for r in committed()["budget"] if r["out"].startswith("status: "))
+        with self.assertRaises(generator.GeneratorError):
+            generator.write_files(Path(tempfile.mkdtemp()), {status: {"broiler-js": "x"}})
 
     def test_every_impl_defined_vector_is_annex_b_nesting_or_decision_d41(self) -> None:
         for record in all_records():

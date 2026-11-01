@@ -593,7 +593,8 @@ area: regexp
 op: EscapeRegExpPattern, one P and F
 in: str:"\\u{61}" str:"u"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-js: row T1: source of a literal with a braced escape and of its constructor twin with the same pattern and flags, \u{61}, \u{1F600}, \u{D83D} under u and [\u{61}-\u{7A}] under v; Broiler.JS answers two different texts: the literal's source is rewritten by the scanner (FastScanner's DecodeBracedUnicodeEscapes), the constructor's is the pattern as written, where EscapeRegExpPattern gives one S for one P and F; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-escaperegexppattern spec:es2026@0248456c#sec-regular-expression-literals-runtime-semantics-evaluation
 script: /\u{61}/u.source === new RegExp("\\u{61}", "u").source
 note: correspondence row T1: a literal and its constructor twin give one pattern text P and flags F, and EscapeRegExpPattern gives one S for them; read from the clause
@@ -604,7 +605,8 @@ area: regexp
 op: EscapeRegExpPattern, one P and F
 in: str:"\\u{1F600}" str:"u"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-js: row T1: source of a literal with a braced escape and of its constructor twin with the same pattern and flags, \u{61}, \u{1F600}, \u{D83D} under u and [\u{61}-\u{7A}] under v; Broiler.JS answers two different texts: the literal's source is rewritten by the scanner (FastScanner's DecodeBracedUnicodeEscapes), the constructor's is the pattern as written, where EscapeRegExpPattern gives one S for one P and F; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-escaperegexppattern spec:es2026@0248456c#sec-regular-expression-literals-runtime-semantics-evaluation
 script: /\u{1F600}/u.source === new RegExp("\\u{1F600}", "u").source
 note: correspondence row T1: a literal and its constructor twin give one pattern text P and flags F, and EscapeRegExpPattern gives one S for them; read from the clause
@@ -615,7 +617,8 @@ area: regexp
 op: EscapeRegExpPattern, one P and F
 in: str:"\\u{D83D}" str:"u"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-js: row T1: source of a literal with a braced escape and of its constructor twin with the same pattern and flags, \u{61}, \u{1F600}, \u{D83D} under u and [\u{61}-\u{7A}] under v; Broiler.JS answers two different texts: the literal's source is rewritten by the scanner (FastScanner's DecodeBracedUnicodeEscapes), the constructor's is the pattern as written, where EscapeRegExpPattern gives one S for one P and F; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-escaperegexppattern spec:es2026@0248456c#sec-regular-expression-literals-runtime-semantics-evaluation
 script: /\u{D83D}/u.source === new RegExp("\\u{D83D}", "u").source
 note: correspondence row T1: a literal and its constructor twin give one pattern text P and flags F, and EscapeRegExpPattern gives one S for them; read from the clause
@@ -626,7 +629,8 @@ area: regexp
 op: EscapeRegExpPattern, one P and F
 in: str:"[\\u{61}-\\u{7A}]" str:"v"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-js: row T1: source of a literal with a braced escape and of its constructor twin with the same pattern and flags, \u{61}, \u{1F600}, \u{D83D} under u and [\u{61}-\u{7A}] under v; Broiler.JS answers two different texts: the literal's source is rewritten by the scanner (FastScanner's DecodeBracedUnicodeEscapes), the constructor's is the pattern as written, where EscapeRegExpPattern gives one S for one P and F; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-escaperegexppattern spec:es2026@0248456c#sec-regular-expression-literals-runtime-semantics-evaluation
 script: /[\u{61}-\u{7A}]/v.source === new RegExp("[\\u{61}-\\u{7A}]", "v").source
 note: correspondence row T1: a literal and its constructor twin give one pattern text P and flags F, and EscapeRegExpPattern gives one S for them; read from the clause
@@ -725,7 +729,8 @@ area: regexp
 op: EscapeRegExpPattern, a literal of S
 in: str:"\\\u000A" str:"" str:"\u000A"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row T3: a backslash before a line terminator in the pattern, new RegExp("\\\n") and new RegExp("\\\u2028"), its source read back as a literal; Broiler.VM answers a source holding the raw LF or U+2028 (VM/JsRealm.RegExp.cs:1826-1831 at aaa39fb), so /S/F is no literal that behaves as the pattern; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-escaperegexppattern spec:es2026@0248456c#sec-literals-regular-expression-literals ref:regexpref@1
 script: var s = new RegExp("\\\u000a", "").source; [s.indexOf("\n"), s.indexOf("\r"), s.indexOf("\u2028"), s.indexOf("\u2029")].join() === "-1,-1,-1,-1" && (0, eval)("/" + s + "/").test("\u000a") === true
 note: correspondence rows T2, T3: S holds no line terminator, and /S/F parses as a literal that behaves as the pattern does (its test on the subject is regexpref's); the form of S is the implementation's
@@ -736,7 +741,8 @@ area: regexp
 op: EscapeRegExpPattern, a literal of S
 in: str:"\\\u2028" str:"" str:"\u2028"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row T3: a backslash before a line terminator in the pattern, new RegExp("\\\n") and new RegExp("\\\u2028"), its source read back as a literal; Broiler.VM answers a source holding the raw LF or U+2028 (VM/JsRealm.RegExp.cs:1826-1831 at aaa39fb), so /S/F is no literal that behaves as the pattern; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-escaperegexppattern spec:es2026@0248456c#sec-literals-regular-expression-literals ref:regexpref@1
 script: var s = new RegExp("\\\u2028", "").source; [s.indexOf("\n"), s.indexOf("\r"), s.indexOf("\u2028"), s.indexOf("\u2029")].join() === "-1,-1,-1,-1" && (0, eval)("/" + s + "/").test("\u2028") === true
 note: correspondence rows T2, T3: S holds no line terminator, and /S/F parses as a literal that behaves as the pattern does (its test on the subject is regexpref's); the form of S is the implementation's
@@ -824,7 +830,8 @@ area: regexp
 op: String.prototype.search
 in: str:"delete RegExp.prototype[Symbol.search]; \"abc\".search(/b/)"
 out: error: TypeError
-class: normative
+class: divergence
+divergence.broiler-js: row M6: String.prototype.search with RegExp.prototype[%Symbol.search%] deleted, and with an own %Symbol.search% of undefined or null; Broiler.JS answers 1, the index of its direct value.Match (BuiltIns/String/JSStringPrototype.Search.cs), where the specification throws a TypeError or answers -1; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the specification's path (decision D20)
 prov: spec:es2026@0248456c#sec-string.prototype.search spec:es2026@0248456c#sec-regexp.prototype-%symbol.search% spec:es2026@0248456c#sec-regexpcreate
 script: delete RegExp.prototype[Symbol.search]; "abc".search(/b/)
 note: correspondence row M6: with RegExp.prototype[%Symbol.search%] deleted, search creates a RegExp from the argument and Invokes its %Symbol.search%, which is undefined; read from the clauses (the match itself is regexpref's where one runs)
@@ -835,7 +842,8 @@ area: regexp
 op: String.prototype.search
 in: str:"delete RegExp.prototype[Symbol.search]; \"abc\".search(/b/y)"
 out: error: TypeError
-class: normative
+class: divergence
+divergence.broiler-js: row M6: String.prototype.search with RegExp.prototype[%Symbol.search%] deleted, and with an own %Symbol.search% of undefined or null; Broiler.JS answers 1, the index of its direct value.Match (BuiltIns/String/JSStringPrototype.Search.cs), where the specification throws a TypeError or answers -1; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the specification's path (decision D20)
 prov: spec:es2026@0248456c#sec-string.prototype.search spec:es2026@0248456c#sec-regexp.prototype-%symbol.search% spec:es2026@0248456c#sec-regexpcreate
 script: delete RegExp.prototype[Symbol.search]; "abc".search(/b/y)
 note: correspondence row M6: the same, sticky; read from the clauses (the match itself is regexpref's where one runs)
@@ -857,7 +865,8 @@ area: regexp
 op: String.prototype.search
 in: str:"var re = /b/; re[Symbol.search] = undefined; \"abc\".search(re)"
 out: value: f64:0xBFF0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: row M6: String.prototype.search with RegExp.prototype[%Symbol.search%] deleted, and with an own %Symbol.search% of undefined or null; Broiler.JS answers 1, the index of its direct value.Match (BuiltIns/String/JSStringPrototype.Search.cs), where the specification throws a TypeError or answers -1; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the specification's path (decision D20)
 prov: spec:es2026@0248456c#sec-string.prototype.search spec:es2026@0248456c#sec-regexp.prototype-%symbol.search% spec:es2026@0248456c#sec-regexpcreate
 script: var re = /b/; re[Symbol.search] = undefined; "abc".search(re)
 note: correspondence row M6: an own %Symbol.search% of undefined: search makes RegExpCreate(re), whose pattern is ToString(re), a pattern matching /b/ itself, and "abc" has no /; read from the clauses (the match itself is regexpref's where one runs)
@@ -868,7 +877,8 @@ area: regexp
 op: String.prototype.search
 in: str:"var re = /b/; re[Symbol.search] = null; \"abc\".search(re)"
 out: value: f64:0xBFF0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: row M6: String.prototype.search with RegExp.prototype[%Symbol.search%] deleted, and with an own %Symbol.search% of undefined or null; Broiler.JS answers 1, the index of its direct value.Match (BuiltIns/String/JSStringPrototype.Search.cs), where the specification throws a TypeError or answers -1; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the specification's path (decision D20)
 prov: spec:es2026@0248456c#sec-string.prototype.search spec:es2026@0248456c#sec-regexp.prototype-%symbol.search% spec:es2026@0248456c#sec-regexpcreate
 script: var re = /b/; re[Symbol.search] = null; "abc".search(re)
 note: correspondence row M6: the same, null; read from the clauses (the match itself is regexpref's where one runs)

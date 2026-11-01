@@ -10,7 +10,8 @@ area: regexp
 op: RegExpBuiltinExec
 in: str:"." str:"gu" str:"\uD834\uDF06" int:1
 out: value: str:"lastIndex=2;index=1;length=1;0=1:\uDF06;groups=u;indices=u"
-class: normative
+class: divergence
+divergence.broiler-vm: row M4: lastIndex inside a surrogate pair under u or v, a non-empty match (/./gu, /./gv, /./yu, a class, with d indices); Broiler.VM answers the pair's start as index and the whole pair as the substring: RegExpMatchOne steps a mid-pair lastIndex back to the pair (VM/JsRealm.RegExp.cs:1926-1932 at aaa39fb), where index is lastIndex and the match starts there; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-getstringindex ref:regexpref@1
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $p(v) { return v === undefined ? "u" : v[0] + "-" + v[1]; } function $g(o, f) { if (o === undefined) return "u"; var k = Object.keys(o), t = "" + k.length; for (var j = 0; j < k.length; j++) t += ";<" + k[j] + ">=" + f(o[k[j]]); return t; } function $x(r, m) { var t = "lastIndex=" + r.lastIndex; if (m === null) return t + ";null"; t += ";index=" + m.index + ";length=" + m.length; for (var i = 0; i < m.length; i++) t += ";" + i + "=" + $s(m[i]); t += ";groups=" + $g(m.groups, $s); if (m.indices === undefined) return t + ";indices=u"; t += ";indices=" + m.indices.length; for (var j = 0; j < m.indices.length; j++) t += ";" + j + "=" + $p(m.indices[j]); return t + ";igroups=" + $g(m.indices.groups, $p); } var r = new RegExp(".", "gu"); r.lastIndex = 1; $x(r, r.exec("\ud834\udf06"))
 note: correspondence row M4: the matcher starts at the character obtained from element lastIndex (the pair); index is lastIndex and the substring starts there
@@ -21,7 +22,8 @@ area: regexp
 op: RegExpBuiltinExec
 in: str:"." str:"gv" str:"\uD834\uDF06" int:1
 out: value: str:"lastIndex=2;index=1;length=1;0=1:\uDF06;groups=u;indices=u"
-class: normative
+class: divergence
+divergence.broiler-vm: row M4: lastIndex inside a surrogate pair under u or v, a non-empty match (/./gu, /./gv, /./yu, a class, with d indices); Broiler.VM answers the pair's start as index and the whole pair as the substring: RegExpMatchOne steps a mid-pair lastIndex back to the pair (VM/JsRealm.RegExp.cs:1926-1932 at aaa39fb), where index is lastIndex and the match starts there; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-getstringindex ref:regexpref@1
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $p(v) { return v === undefined ? "u" : v[0] + "-" + v[1]; } function $g(o, f) { if (o === undefined) return "u"; var k = Object.keys(o), t = "" + k.length; for (var j = 0; j < k.length; j++) t += ";<" + k[j] + ">=" + f(o[k[j]]); return t; } function $x(r, m) { var t = "lastIndex=" + r.lastIndex; if (m === null) return t + ";null"; t += ";index=" + m.index + ";length=" + m.length; for (var i = 0; i < m.length; i++) t += ";" + i + "=" + $s(m[i]); t += ";groups=" + $g(m.groups, $s); if (m.indices === undefined) return t + ";indices=u"; t += ";indices=" + m.indices.length; for (var j = 0; j < m.indices.length; j++) t += ";" + j + "=" + $p(m.indices[j]); return t + ";igroups=" + $g(m.indices.groups, $p); } var r = new RegExp(".", "gv"); r.lastIndex = 1; $x(r, r.exec("\ud834\udf06"))
 note: correspondence row M4: the matcher starts at the character obtained from element lastIndex (the pair); index is lastIndex and the substring starts there
@@ -76,7 +78,8 @@ area: regexp
 op: RegExpBuiltinExec
 in: str:"." str:"yu" str:"\uD834\uDF06" int:1
 out: value: str:"lastIndex=2;index=1;length=1;0=1:\uDF06;groups=u;indices=u"
-class: normative
+class: divergence
+divergence.broiler-vm: row M4: lastIndex inside a surrogate pair under u or v, a non-empty match (/./gu, /./gv, /./yu, a class, with d indices); Broiler.VM answers the pair's start as index and the whole pair as the substring: RegExpMatchOne steps a mid-pair lastIndex back to the pair (VM/JsRealm.RegExp.cs:1926-1932 at aaa39fb), where index is lastIndex and the match starts there; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-getstringindex ref:regexpref@1
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $p(v) { return v === undefined ? "u" : v[0] + "-" + v[1]; } function $g(o, f) { if (o === undefined) return "u"; var k = Object.keys(o), t = "" + k.length; for (var j = 0; j < k.length; j++) t += ";<" + k[j] + ">=" + f(o[k[j]]); return t; } function $x(r, m) { var t = "lastIndex=" + r.lastIndex; if (m === null) return t + ";null"; t += ";index=" + m.index + ";length=" + m.length; for (var i = 0; i < m.length; i++) t += ";" + i + "=" + $s(m[i]); t += ";groups=" + $g(m.groups, $s); if (m.indices === undefined) return t + ";indices=u"; t += ";indices=" + m.indices.length; for (var j = 0; j < m.indices.length; j++) t += ";" + j + "=" + $p(m.indices[j]); return t + ";igroups=" + $g(m.indices.groups, $p); } var r = new RegExp(".", "yu"); r.lastIndex = 1; $x(r, r.exec("\ud834\udf06"))
 note: correspondence row M4: the matcher starts at the character obtained from element lastIndex (the pair); index is lastIndex and the substring starts there
@@ -109,7 +112,8 @@ area: regexp
 op: RegExpBuiltinExec
 in: str:"." str:"gu" str:"a\uD834\uDF06" int:2
 out: value: str:"lastIndex=3;index=2;length=1;0=1:\uDF06;groups=u;indices=u"
-class: normative
+class: divergence
+divergence.broiler-vm: row M4: lastIndex inside a surrogate pair under u or v, a non-empty match (/./gu, /./gv, /./yu, a class, with d indices); Broiler.VM answers the pair's start as index and the whole pair as the substring: RegExpMatchOne steps a mid-pair lastIndex back to the pair (VM/JsRealm.RegExp.cs:1926-1932 at aaa39fb), where index is lastIndex and the match starts there; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-getstringindex ref:regexpref@1
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $p(v) { return v === undefined ? "u" : v[0] + "-" + v[1]; } function $g(o, f) { if (o === undefined) return "u"; var k = Object.keys(o), t = "" + k.length; for (var j = 0; j < k.length; j++) t += ";<" + k[j] + ">=" + f(o[k[j]]); return t; } function $x(r, m) { var t = "lastIndex=" + r.lastIndex; if (m === null) return t + ";null"; t += ";index=" + m.index + ";length=" + m.length; for (var i = 0; i < m.length; i++) t += ";" + i + "=" + $s(m[i]); t += ";groups=" + $g(m.groups, $s); if (m.indices === undefined) return t + ";indices=u"; t += ";indices=" + m.indices.length; for (var j = 0; j < m.indices.length; j++) t += ";" + j + "=" + $p(m.indices[j]); return t + ";igroups=" + $g(m.indices.groups, $p); } var r = new RegExp(".", "gu"); r.lastIndex = 2; $x(r, r.exec("a\ud834\udf06"))
 note: correspondence row M4: the matcher starts at the character obtained from element lastIndex (the pair); index is lastIndex and the substring starts there
@@ -131,7 +135,8 @@ area: regexp
 op: RegExpBuiltinExec
 in: str:"." str:"gdu" str:"\uD834\uDF06" int:1
 out: value: str:"lastIndex=2;index=1;length=1;0=1:\uDF06;groups=u;indices=1;0=1-2;igroups=u"
-class: normative
+class: divergence
+divergence.broiler-vm: row M4: lastIndex inside a surrogate pair under u or v, a non-empty match (/./gu, /./gv, /./yu, a class, with d indices); Broiler.VM answers the pair's start as index and the whole pair as the substring: RegExpMatchOne steps a mid-pair lastIndex back to the pair (VM/JsRealm.RegExp.cs:1926-1932 at aaa39fb), where index is lastIndex and the match starts there; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-makematchindicesindexpairarray spec:es2026@0248456c#sec-getstringindex ref:regexpref@1
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $p(v) { return v === undefined ? "u" : v[0] + "-" + v[1]; } function $g(o, f) { if (o === undefined) return "u"; var k = Object.keys(o), t = "" + k.length; for (var j = 0; j < k.length; j++) t += ";<" + k[j] + ">=" + f(o[k[j]]); return t; } function $x(r, m) { var t = "lastIndex=" + r.lastIndex; if (m === null) return t + ";null"; t += ";index=" + m.index + ";length=" + m.length; for (var i = 0; i < m.length; i++) t += ";" + i + "=" + $s(m[i]); t += ";groups=" + $g(m.groups, $s); if (m.indices === undefined) return t + ";indices=u"; t += ";indices=" + m.indices.length; for (var j = 0; j < m.indices.length; j++) t += ";" + j + "=" + $p(m.indices[j]); return t + ";igroups=" + $g(m.indices.groups, $p); } var r = new RegExp(".", "gdu"); r.lastIndex = 1; $x(r, r.exec("\ud834\udf06"))
 note: correspondence row M4: the matcher starts at the character obtained from element lastIndex (the pair); index is lastIndex and the substring starts there
@@ -142,7 +147,8 @@ area: regexp
 op: RegExpBuiltinExec
 in: str:"(.)" str:"gdu" str:"\uD834\uDF06" int:1
 out: value: str:"lastIndex=2;index=1;length=2;0=1:\uDF06;1=2:\uD834\uDF06;groups=u;indices=2;0=1-2;1=0-2;igroups=u"
-class: normative
+class: divergence
+divergence.broiler-vm: row M4: lastIndex inside a surrogate pair under u or v, a non-empty match (/./gu, /./gv, /./yu, a class, with d indices); Broiler.VM answers the pair's start as index and the whole pair as the substring: RegExpMatchOne steps a mid-pair lastIndex back to the pair (VM/JsRealm.RegExp.cs:1926-1932 at aaa39fb), where index is lastIndex and the match starts there; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-makematchindicesindexpairarray spec:es2026@0248456c#sec-getstringindex ref:regexpref@1
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $p(v) { return v === undefined ? "u" : v[0] + "-" + v[1]; } function $g(o, f) { if (o === undefined) return "u"; var k = Object.keys(o), t = "" + k.length; for (var j = 0; j < k.length; j++) t += ";<" + k[j] + ">=" + f(o[k[j]]); return t; } function $x(r, m) { var t = "lastIndex=" + r.lastIndex; if (m === null) return t + ";null"; t += ";index=" + m.index + ";length=" + m.length; for (var i = 0; i < m.length; i++) t += ";" + i + "=" + $s(m[i]); t += ";groups=" + $g(m.groups, $s); if (m.indices === undefined) return t + ";indices=u"; t += ";indices=" + m.indices.length; for (var j = 0; j < m.indices.length; j++) t += ";" + j + "=" + $p(m.indices[j]); return t + ";igroups=" + $g(m.indices.groups, $p); } var r = new RegExp("(.)", "gdu"); r.lastIndex = 1; $x(r, r.exec("\ud834\udf06"))
 note: correspondence row M4: the matcher starts at the character obtained from element lastIndex (the pair); index is lastIndex and the substring starts there
@@ -164,7 +170,8 @@ area: regexp
 op: RegExpBuiltinExec
 in: str:"[\\ud834\\udf06]" str:"gu" str:"\uD834\uDF06" int:1
 out: value: str:"lastIndex=2;index=1;length=1;0=1:\uDF06;groups=u;indices=u"
-class: normative
+class: divergence
+divergence.broiler-vm: row M4: lastIndex inside a surrogate pair under u or v, a non-empty match (/./gu, /./gv, /./yu, a class, with d indices); Broiler.VM answers the pair's start as index and the whole pair as the substring: RegExpMatchOne steps a mid-pair lastIndex back to the pair (VM/JsRealm.RegExp.cs:1926-1932 at aaa39fb), where index is lastIndex and the match starts there; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-compilecharacterclass spec:es2026@0248456c#sec-compiletocharset spec:es2026@0248456c#sec-getstringindex ref:regexpref@1
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $p(v) { return v === undefined ? "u" : v[0] + "-" + v[1]; } function $g(o, f) { if (o === undefined) return "u"; var k = Object.keys(o), t = "" + k.length; for (var j = 0; j < k.length; j++) t += ";<" + k[j] + ">=" + f(o[k[j]]); return t; } function $x(r, m) { var t = "lastIndex=" + r.lastIndex; if (m === null) return t + ";null"; t += ";index=" + m.index + ";length=" + m.length; for (var i = 0; i < m.length; i++) t += ";" + i + "=" + $s(m[i]); t += ";groups=" + $g(m.groups, $s); if (m.indices === undefined) return t + ";indices=u"; t += ";indices=" + m.indices.length; for (var j = 0; j < m.indices.length; j++) t += ";" + j + "=" + $p(m.indices[j]); return t + ";igroups=" + $g(m.indices.groups, $p); } var r = new RegExp("[\\ud834\\udf06]", "gu"); r.lastIndex = 1; $x(r, r.exec("\ud834\udf06"))
 note: correspondence row M4: the matcher starts at the character obtained from element lastIndex (the pair); index is lastIndex and the substring starts there
@@ -253,11 +260,11 @@ op: RegExpBuiltinExec
 in: str:"(?:)" str:"gu" str:"\uD834\uDF06" int:1
 out: value: str:"lastIndex=0;index=0;length=1;0=0:;groups=u;indices=u" | value: str:"lastIndex=1;index=1;length=1;0=0:;groups=u;indices=u"
 class: impl-defined
-per-engine.broiler-js: value: str:"lastIndex=1;index=1;length=1;0=0:;groups=u;indices=u"
+per-engine.broiler-js: value: str:"lastIndex=0;index=0;length=1;0=0:;groups=u;indices=u"
 per-engine.broiler-vm: value: str:"lastIndex=0;index=0;length=1;0=0:;groups=u;indices=u"
 prov: spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-getmatchstring
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $p(v) { return v === undefined ? "u" : v[0] + "-" + v[1]; } function $g(o, f) { if (o === undefined) return "u"; var k = Object.keys(o), t = "" + k.length; for (var j = 0; j < k.length; j++) t += ";<" + k[j] + ">=" + f(o[k[j]]); return t; } function $x(r, m) { var t = "lastIndex=" + r.lastIndex; if (m === null) return t + ";null"; t += ";index=" + m.index + ";length=" + m.length; for (var i = 0; i < m.length; i++) t += ";" + i + "=" + $s(m[i]); t += ";groups=" + $g(m.groups, $s); if (m.indices === undefined) return t + ";indices=u"; t += ";indices=" + m.indices.length; for (var j = 0; j < m.indices.length; j++) t += ";" + j + "=" + $p(m.indices[j]); return t + ";igroups=" + $g(m.indices.groups, $p); } var r = new RegExp("(?:)", "gu"); r.lastIndex = 1; $x(r, r.exec("\ud834\udf06"))
-note: correspondence row M4: the empty match from a lastIndex inside a surrogate pair under u: RegExpBuiltinExec's Match Record would start at 1 and end at 0, which GetMatchString's assertion forbids, so the text has no answer and regexpref gives none; JSD-0081's decision D41 classes the case implementation-defined until the text is corrected, and records each engine's answer, Broiler.VM index 0 and lastIndex 0, Broiler.JS index 1 and lastIndex 1, which are the per-engine expectations; out lists both
+note: correspondence row M4: the empty match from a lastIndex inside a surrogate pair under u: RegExpBuiltinExec's Match Record would start at 1 and end at 0, which GetMatchString's assertion forbids, so the text has no answer and regexpref gives none; JSD-0081's decision D41 classes the case implementation-defined until the text is corrected, and records each engine's answer, Broiler.VM index 0 and lastIndex 0, Broiler.JS index 1 and lastIndex 1, which are the per-engine expectations; out lists both. Revision 32: Broiler.JS's answer is index 0 and lastIndex 0, Broiler.VM's, since its u patterns went to Broiler.Regex 0.1.0-preview.5 (a58d31d1), as D41's dated note of 2026-11-01 (owner's decision D-p5) records, so its per-engine expectation is that answer; out still lists both answers D41 has recorded
 since: 31
 
 id: regexp/last-index/m5-sticky/0001
@@ -595,10 +602,11 @@ area: regexp
 op: RegExp.prototype [ %Symbol.match% ]
 in: str:"^" str:"gm" str:"a\u000Ab\u2028c"
 out: value: str:"3;0:;0:;0:"
-class: normative
+class: divergence
+divergence.broiler-js: row M3: line terminators without u: ^ and $ under m on U+2028 and U+2029 (exec, %Symbol.match% and %Symbol.split%), and $ without m before a final LF; Broiler.JS answers .NET's: under m only \r is added to .NET's \n (BuiltIns/RegExp/JSRegExp.cs:931-983 at 1f91b8f1), and $ without m matches before a final LF; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexp.prototype-%symbol.match% spec:es2026@0248456c#sec-advancestringindex spec:es2026@0248456c#sec-regexpbuiltinexec ref:regexpref@1
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $a(a) { if (a === null) return "null"; var t = "" + a.length; for (var i = 0; i < a.length; i++) t += ";" + $s(a[i]); return t; } $a(new RegExp("^", "gm")[Symbol.match]("a\u000ab\u2028c"))
-note: correspondence rows M4, M5: an empty match advances lastIndex by AdvanceStringIndex, a code point under u or v
+note: correspondence rows M4, M5, M3: an empty match advances lastIndex by AdvanceStringIndex, a code point under u or v
 since: 31
 
 id: regexp/last-index/match-global/0008
@@ -606,10 +614,11 @@ area: regexp
 op: RegExp.prototype [ %Symbol.match% ]
 in: str:"$" str:"gm" str:"a\u000Ab\u2028c"
 out: value: str:"3;0:;0:;0:"
-class: normative
+class: divergence
+divergence.broiler-js: row M3: line terminators without u: ^ and $ under m on U+2028 and U+2029 (exec, %Symbol.match% and %Symbol.split%), and $ without m before a final LF; Broiler.JS answers .NET's: under m only \r is added to .NET's \n (BuiltIns/RegExp/JSRegExp.cs:931-983 at 1f91b8f1), and $ without m matches before a final LF; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexp.prototype-%symbol.match% spec:es2026@0248456c#sec-advancestringindex spec:es2026@0248456c#sec-regexpbuiltinexec ref:regexpref@1
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $a(a) { if (a === null) return "null"; var t = "" + a.length; for (var i = 0; i < a.length; i++) t += ";" + $s(a[i]); return t; } $a(new RegExp("$", "gm")[Symbol.match]("a\u000ab\u2028c"))
-note: correspondence rows M4, M5: an empty match advances lastIndex by AdvanceStringIndex, a code point under u or v
+note: correspondence rows M4, M5, M3: an empty match advances lastIndex by AdvanceStringIndex, a code point under u or v
 since: 31
 
 id: regexp/last-index/match-global/0009
@@ -694,10 +703,11 @@ area: regexp
 op: RegExp.prototype [ %Symbol.split% ]
 in: str:"$" str:"m" str:"a\u000Ab\u2028c"
 out: value: str:"3;1:a;2:\u000Ab;2:\u2028c"
-class: normative
+class: divergence
+divergence.broiler-js: row M3: line terminators without u: ^ and $ under m on U+2028 and U+2029 (exec, %Symbol.match% and %Symbol.split%), and $ without m before a final LF; Broiler.JS answers .NET's: under m only \r is added to .NET's \n (BuiltIns/RegExp/JSRegExp.cs:931-983 at 1f91b8f1), and $ without m matches before a final LF; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexp.prototype-%symbol.split% spec:es2026@0248456c#sec-advancestringindex spec:es2026@0248456c#sec-regexpbuiltinexec ref:regexpref@1
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $a(a) { if (a === null) return "null"; var t = "" + a.length; for (var i = 0; i < a.length; i++) t += ";" + $s(a[i]); return t; } $a(new RegExp("$", "m")[Symbol.split]("a\u000ab\u2028c"))
-note: correspondence rows M4, M5, M1: the splitter adds y; an empty match does not split at the start, the end or the last split
+note: correspondence rows M4, M5, M1, M3: the splitter adds y; an empty match does not split at the start, the end or the last split
 since: 31
 
 id: regexp/last-index/split/0007

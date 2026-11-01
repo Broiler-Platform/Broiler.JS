@@ -197,7 +197,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<a>x)|(?<a>y)" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?<a>x)|(?<a>y)", "") instanceof RegExp
 note: correspondence row S1: a name may repeat only across alternatives that cannot both participate (MightBothParticipate); /: accepted
@@ -208,7 +209,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<a>x)|(?<a>y)" str:"d"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?<a>x)|(?<a>y)", "d") instanceof RegExp
 note: correspondence row S1: a name may repeat only across alternatives that cannot both participate (MightBothParticipate); /d: accepted
@@ -219,7 +221,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<a>x)|(?<a>y)" str:"u"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?<a>x)|(?<a>y)", "u") instanceof RegExp
 note: correspondence row S1: a name may repeat only across alternatives that cannot both participate (MightBothParticipate); /u: accepted
@@ -230,7 +233,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<a>x)|(?<a>y)" str:"v"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?<a>x)|(?<a>y)", "v") instanceof RegExp
 note: correspondence row S1: a name may repeat only across alternatives that cannot both participate (MightBothParticipate); /v: accepted
@@ -241,7 +245,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?:(?<a>x)|(?<a>y))\\k<a>" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?:(?<a>x)|(?<a>y))\\k<a>", "") instanceof RegExp
 note: correspondence row S1: a name may repeat only across alternatives that cannot both participate (MightBothParticipate); /: accepted
@@ -252,7 +257,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?:(?<a>x)|(?<a>y))\\k<a>" str:"u"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?:(?<a>x)|(?<a>y))\\k<a>", "u") instanceof RegExp
 note: correspondence row S1: a name may repeat only across alternatives that cannot both participate (MightBothParticipate); /u: accepted
@@ -285,7 +291,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<a>x)|(?:(?<a>y)|(?<a>z))" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?<a>x)|(?:(?<a>y)|(?<a>z))", "") instanceof RegExp
 note: correspondence row S1: a name may repeat only across alternatives that cannot both participate (MightBothParticipate); /: accepted
@@ -318,7 +325,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<a>x)|(?<b>y)|(?<a>z)" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?<a>x)|(?<b>y)|(?<a>z)", "") instanceof RegExp
 note: correspondence row S1: a name may repeat only across alternatives that cannot both participate (MightBothParticipate); /: accepted
@@ -329,7 +337,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?:(?<a>x)|(?<a>y))*" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?:(?<a>x)|(?<a>y))*", "") instanceof RegExp
 note: correspondence row S1: a name may repeat only across alternatives that cannot both participate (MightBothParticipate); /: accepted
@@ -362,7 +371,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<b>.)(?<a>.)|(?<a>.)(?<b>.)" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?<b>.)(?<a>.)|(?<a>.)(?<b>.)", "") instanceof RegExp
 note: correspondence row S1: a name may repeat only across alternatives that cannot both participate (MightBothParticipate); /: accepted
@@ -373,7 +383,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?=(?<a>x))|(?<a>y)" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?=(?<a>x))|(?<a>y)", "") instanceof RegExp
 note: correspondence row S1: a name may repeat only across alternatives that cannot both participate (MightBothParticipate); /: accepted
@@ -813,7 +824,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<\\u0061>x)(?<a>y)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S2a: the same name spelled once with an escape in one alternative, (?<a>x)(?<a>y) and its spellings under u and v, by the constructor and by a literal; Broiler.JS answers accepted: its duplicate test compares names as written (RegExpGroupNames.FirstDuplicate), and so does the library's; a correction of Broiler.JS and of Broiler.Regex's preview.4 (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex, whose duplicate test follows decoding (decision D36)
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-mightbothparticipate ref:regexpref@1
 script: new RegExp("(?<\\u0061>x)(?<a>y)", "") instanceof RegExp
 note: correspondence row S2a: the duplicate test compares CapturingGroupName, the decoded name; /: refused (early:duplicate-group-name)
@@ -824,7 +836,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<\\u0061>x)(?<a>y)" str:"u"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S2a: the same name spelled once with an escape in one alternative, (?<a>x)(?<a>y) and its spellings under u and v, by the constructor and by a literal; Broiler.JS answers accepted: its duplicate test compares names as written (RegExpGroupNames.FirstDuplicate), and so does the library's; a correction of Broiler.JS and of Broiler.Regex's preview.4 (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex, whose duplicate test follows decoding (decision D36)
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-mightbothparticipate ref:regexpref@1
 script: new RegExp("(?<\\u0061>x)(?<a>y)", "u") instanceof RegExp
 note: correspondence row S2a: the duplicate test compares CapturingGroupName, the decoded name; /u: refused (early:duplicate-group-name)
@@ -835,10 +848,11 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<\\u0061>x)|(?<a>y)" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?<\\u0061>x)|(?<a>y)", "") instanceof RegExp
-note: correspondence row S2a: the duplicate test compares CapturingGroupName, the decoded name; /: accepted
+note: correspondence rows S2a, S1: the duplicate test compares CapturingGroupName, the decoded name; /: accepted
 since: 31
 
 id: regexp/syntax/s2a-escaped-duplicates/0004
@@ -846,7 +860,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<\\u{61}>x)(?<a>y)" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S2a: the same name spelled once with an escape in one alternative, (?<a>x)(?<a>y) and its spellings under u and v, by the constructor and by a literal; Broiler.JS answers accepted: its duplicate test compares names as written (RegExpGroupNames.FirstDuplicate), and so does the library's; a correction of Broiler.JS and of Broiler.Regex's preview.4 (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex, whose duplicate test follows decoding (decision D36)
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-mightbothparticipate ref:regexpref@1
 script: new RegExp("(?<\\u{61}>x)(?<a>y)", "v") instanceof RegExp
 note: correspondence row S2a: the duplicate test compares CapturingGroupName, the decoded name; /v: refused (early:duplicate-group-name)
@@ -857,7 +872,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<a>x)(?<\\u0061>y)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S2a: the same name spelled once with an escape in one alternative, (?<a>x)(?<a>y) and its spellings under u and v, by the constructor and by a literal; Broiler.JS answers accepted: its duplicate test compares names as written (RegExpGroupNames.FirstDuplicate), and so does the library's; a correction of Broiler.JS and of Broiler.Regex's preview.4 (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex, whose duplicate test follows decoding (decision D36)
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-mightbothparticipate ref:regexpref@1
 script: new RegExp("(?<a>x)(?<\\u0061>y)", "") instanceof RegExp
 note: correspondence row S2a: the duplicate test compares CapturingGroupName, the decoded name; /: refused (early:duplicate-group-name)
@@ -1025,6 +1041,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?:".repeat(512) + "a" + ")".repeat(512), "") instanceof RegExp
 note: correspondence row S3: 512 nested (?:; /: accepted; nesting depth 513: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1038,6 +1055,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?:".repeat(512) + "a" + ")".repeat(512), "u") instanceof RegExp
 note: correspondence row S3: 512 nested (?:; /u: accepted; nesting depth 513: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1051,6 +1069,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(".repeat(512) + "a" + ")".repeat(512), "") instanceof RegExp
 note: correspondence row S3: 512 nested (; /: accepted; nesting depth 513: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1064,6 +1083,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?=".repeat(512) + "a" + ")".repeat(512), "") instanceof RegExp
 note: correspondence row S3: 512 nested (?=; /: accepted; nesting depth 513: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1077,6 +1097,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[".repeat(512) + "a" + "]".repeat(512), "v") instanceof RegExp
 note: correspondence row S3: 512 nested [; /v: accepted; nesting depth 513: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1090,6 +1111,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?:".repeat(1000) + "a" + ")".repeat(1000), "") instanceof RegExp
 note: correspondence row S3: 1000 nested (?:; /: accepted; nesting depth 1001: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1103,6 +1125,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?:".repeat(1000) + "a" + ")".repeat(1000), "u") instanceof RegExp
 note: correspondence row S3: 1000 nested (?:; /u: accepted; nesting depth 1001: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1116,6 +1139,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(".repeat(1000) + "a" + ")".repeat(1000), "") instanceof RegExp
 note: correspondence row S3: 1000 nested (; /: accepted; nesting depth 1001: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1129,6 +1153,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?=".repeat(1000) + "a" + ")".repeat(1000), "") instanceof RegExp
 note: correspondence row S3: 1000 nested (?=; /: accepted; nesting depth 1001: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1142,6 +1167,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[".repeat(1000) + "a" + "]".repeat(1000), "v") instanceof RegExp
 note: correspondence row S3: 1000 nested [; /v: accepted; nesting depth 1001: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1155,6 +1181,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3b as revised 2026-11-01 (owner's decision D-p5): 20,000 nested (?: without and with u, and 200,000 under u; Broiler.JS answers accepted at 20,000, the specification's answer, and since its u patterns went to Broiler.Regex 0.1.0-preview.5 (a58d31d1) at 200,000 too, where the row recorded a process abort in RegexParser.ParseAtom under preview.4; engine policy under JSD-0081 decision D7, the nesting limit's SyntaxError this vector's per-engine field holds; answered by SJL-11.5, which passes Broiler.Regex a nesting limit of 512
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?:".repeat(20000) + "a" + ")".repeat(20000), "") instanceof RegExp
 note: correspondence row S3b: 20000 nested (?:; /: accepted; nesting depth 20001: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1168,6 +1195,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3b as revised 2026-11-01 (owner's decision D-p5): 20,000 nested (?: without and with u, and 200,000 under u; Broiler.JS answers accepted at 20,000, the specification's answer, and since its u patterns went to Broiler.Regex 0.1.0-preview.5 (a58d31d1) at 200,000 too, where the row recorded a process abort in RegexParser.ParseAtom under preview.4; engine policy under JSD-0081 decision D7, the nesting limit's SyntaxError this vector's per-engine field holds; answered by SJL-11.5, which passes Broiler.Regex a nesting limit of 512
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?:".repeat(20000) + "a" + ")".repeat(20000), "u") instanceof RegExp
 note: correspondence row S3b: 20000 nested (?:; /u: accepted; nesting depth 20001: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1181,6 +1209,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3b as revised 2026-11-01 (owner's decision D-p5): 20,000 nested (?: without and with u, and 200,000 under u; Broiler.JS answers accepted at 20,000, the specification's answer, and since its u patterns went to Broiler.Regex 0.1.0-preview.5 (a58d31d1) at 200,000 too, where the row recorded a process abort in RegexParser.ParseAtom under preview.4; engine policy under JSD-0081 decision D7, the nesting limit's SyntaxError this vector's per-engine field holds; answered by SJL-11.5, which passes Broiler.Regex a nesting limit of 512
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?:".repeat(200000) + "a" + ")".repeat(200000), "u") instanceof RegExp
 note: correspondence row S3b: 200000 nested (?:; /u: accepted; nesting depth 200001: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1914,6 +1943,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: value: bool:true
 per-engine.broiler-vm: value: bool:true
+divergence.broiler-js: row S5 as revised 2026-11-01 (owner's decision D-s5): \k in a class beside a named group without u or v, [\k<a>](?<a>x) and [\k](?<a>x), by the constructor, a literal never evaluated and an exec; Broiler.JS answers refused, a SyntaxError "invalid named reference": RegExpGroupNames refuses a \k inside a class whenever the pattern holds a group name, where B.1.2's ClassEscape reads ~NamedCaptureGroups and admits k as an identity escape, the outcome this vector's per-engine field holds (regexpref's reading, which revision 31 took); a correction of Broiler.JS (JSD-0081, by D-s5); answered by SJL-11.5, which deletes RegExpGroupNames' regular-expression prechecks (decision D20)
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb spec:es2026@0248456c#sec-regular-expressions-patterns ref:regexpref@1
 script: new RegExp("[\\k<a>](?<a>x)", "") instanceof RegExp
 note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
@@ -1938,6 +1968,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: value: bool:true
 per-engine.broiler-vm: value: bool:true
+divergence.broiler-js: row S5 as revised 2026-11-01 (owner's decision D-s5): \k in a class beside a named group without u or v, [\k<a>](?<a>x) and [\k](?<a>x), by the constructor, a literal never evaluated and an exec; Broiler.JS answers refused, a SyntaxError "invalid named reference": RegExpGroupNames refuses a \k inside a class whenever the pattern holds a group name, where B.1.2's ClassEscape reads ~NamedCaptureGroups and admits k as an identity escape, the outcome this vector's per-engine field holds (regexpref's reading, which revision 31 took); a correction of Broiler.JS (JSD-0081, by D-s5); answered by SJL-11.5, which deletes RegExpGroupNames' regular-expression prechecks (decision D20)
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb spec:es2026@0248456c#sec-regular-expressions-patterns ref:regexpref@1
 script: new RegExp("[\\k](?<a>x)", "") instanceof RegExp
 note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
@@ -4251,7 +4282,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<=a)*" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?<=a)*", "") instanceof RegExp
 note: correspondence row S7: the main grammar under u, B.1.2's without it: quantified assertions, braces, brackets, class ranges with escapes; /: refused (grammar:nothing-to-repeat)
@@ -4273,7 +4305,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<=a)?" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?<=a)?", "") instanceof RegExp
 note: correspondence row S7: the main grammar under u, B.1.2's without it: quantified assertions, braces, brackets, class ranges with escapes; /: refused (grammar:nothing-to-repeat)
@@ -4284,7 +4317,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<!a){1}" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors-annexb ref:regexpref@1
 script: new RegExp("(?<!a){1}", "") instanceof RegExp
 note: correspondence row S7: the main grammar under u, B.1.2's without it: quantified assertions, braces, brackets, class ranges with escapes; /: refused (early:invalid-braced-quantifier)
@@ -4496,7 +4530,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"^*" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("^*", "") instanceof RegExp
 note: correspondence row S7: the main grammar under u, B.1.2's without it: quantified assertions, braces, brackets, class ranges with escapes; /: refused (grammar:nothing-to-repeat)
@@ -4507,7 +4542,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"$+" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("$+", "") instanceof RegExp
 note: correspondence row S7: the main grammar under u, B.1.2's without it: quantified assertions, braces, brackets, class ranges with escapes; /: refused (grammar:nothing-to-repeat)
@@ -4518,7 +4554,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"\\b*" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("\\b*", "") instanceof RegExp
 note: correspondence row S7: the main grammar under u, B.1.2's without it: quantified assertions, braces, brackets, class ranges with escapes; /: refused (grammar:nothing-to-repeat)
@@ -5320,7 +5357,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?x:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row F3 as widened 2026-11-01 (owner's decision D-widen): the invalid modifier (?x:a), through the constructor; Broiler.JS answers accepted: ValidateInlineModifiers (BuiltIns/RegExp/JSRegExp.cs) passes x through as .NET's inline option, where every other invalid modifier the row ran is refused by the constructor; a correction of Broiler.JS (JSD-0081, by D-widen); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?x:a)", "") instanceof RegExp
 note: correspondence rows F3, S11: Atom :: (? RegularExpressionModifiers : Disjunction ) and its early errors; /: refused (grammar:invalid-group)
@@ -5353,7 +5391,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[(]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[(]", "v") instanceof RegExp
 note: correspondence row S8: ClassSetExpression, ClassSetCharacter, the reserved double punctuators and \q{}; /v: refused (grammar:class-set-syntax-character)
@@ -5496,7 +5535,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[|]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[|]", "v") instanceof RegExp
 note: correspondence row S8: ClassSetExpression, ClassSetCharacter, the reserved double punctuators and \q{}; /v: refused (grammar:class-set-syntax-character)
@@ -5507,7 +5547,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[a|]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[a|]", "v") instanceof RegExp
 note: correspondence row S8: ClassSetExpression, ClassSetCharacter, the reserved double punctuators and \q{}; /v: refused (grammar:class-set-syntax-character)
@@ -5529,7 +5570,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[!!]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[!!]", "v") instanceof RegExp
 note: correspondence row S8: ClassSetExpression, ClassSetCharacter, the reserved double punctuators and \q{}; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -5540,7 +5582,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[a!!b]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[a!!b]", "v") instanceof RegExp
 note: correspondence row S8: ClassSetExpression, ClassSetCharacter, the reserved double punctuators and \q{}; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -5595,7 +5638,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[&&a]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[&&a]", "v") instanceof RegExp
 note: correspondence row S8: ClassSetExpression, ClassSetCharacter, the reserved double punctuators and \q{}; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -5628,7 +5672,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[--a]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[--a]", "v") instanceof RegExp
 note: correspondence row S8: ClassSetExpression, ClassSetCharacter, the reserved double punctuators and \q{}; /v: refused (grammar:class-set-syntax-character)
@@ -5639,7 +5684,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[a-]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[a-]", "v") instanceof RegExp
 note: correspondence row S8: ClassSetExpression, ClassSetCharacter, the reserved double punctuators and \q{}; /v: refused (grammar:class-set-syntax-character)
@@ -5650,7 +5696,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[-a]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[-a]", "v") instanceof RegExp
 note: correspondence row S8: ClassSetExpression, ClassSetCharacter, the reserved double punctuators and \q{}; /v: refused (grammar:class-set-syntax-character)
@@ -5771,7 +5818,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[\\q{(}]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[\\q{(}]", "v") instanceof RegExp
 note: correspondence row S8: ClassSetExpression, ClassSetCharacter, the reserved double punctuators and \q{}; /v: refused (grammar:class-set-syntax-character)
@@ -5903,7 +5951,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[(]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[(]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-01.js's pattern; /v: refused (grammar:class-set-syntax-character)
@@ -5914,7 +5963,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[)]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[)]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-02.js's pattern; /v: refused (grammar:class-set-syntax-character)
@@ -5936,7 +5986,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[{]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[{]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-04.js's pattern; /v: refused (grammar:class-set-syntax-character)
@@ -5947,7 +5998,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[}]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[}]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-05.js's pattern; /v: refused (grammar:class-set-syntax-character)
@@ -5958,7 +6010,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[/]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[/]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-06.js's pattern; /v: refused (grammar:class-set-syntax-character)
@@ -5969,7 +6022,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[-]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[-]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-07.js's pattern; /v: refused (grammar:class-set-syntax-character)
@@ -5980,7 +6034,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[|]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[|]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-08.js's pattern; /v: refused (grammar:class-set-syntax-character)
@@ -5991,7 +6046,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[&&]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[&&]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-09.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6002,7 +6058,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[!!]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[!!]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-10.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6013,7 +6070,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[##]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[##]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-11.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6024,7 +6082,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[$$]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[$$]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-12.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6035,7 +6094,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[%%]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[%%]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-13.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6046,7 +6106,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[**]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[**]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-14.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6057,7 +6118,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[++]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[++]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-15.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6068,7 +6130,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[,,]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[,,]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-16.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6079,7 +6142,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[..]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[..]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-17.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6090,7 +6154,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[::]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[::]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-18.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6101,7 +6166,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[;;]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[;;]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-19.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6112,7 +6178,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[<<]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[<<]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-20.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6123,7 +6190,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[==]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[==]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-21.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6134,7 +6202,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[>>]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[>>]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-22.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6145,7 +6214,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[??]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[??]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-23.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6156,7 +6226,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[@@]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[@@]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-24.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6167,7 +6238,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[``]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[``]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-25.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6178,7 +6250,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[~~]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[~~]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-26.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6189,7 +6262,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[^^^]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[^^^]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-27.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6200,7 +6274,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[_^^]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[_^^]", "v") instanceof RegExp
 note: correspondence row S8: test262's built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-28.js's pattern; /v: refused (grammar:class-set-reserved-double-punctuator)
@@ -6211,7 +6286,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"\\uD83D\\u{DC38}+" str:"u"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S10: under u or v, a four-digit lead-surrogate escape before a braced escape, \uD83D\u{DC38}, \uD83D\u{3042}, [\uD83D\u{3042}], [\uD83D\u{DC38}]; Broiler.VM answers a SyntaxError ("Invalid escape"), early: after a four-digit lead escape a following \u commits to four hexadecimal digits (F/JsRegExpMatcher.cs:3440-3458 at aaa39fb), which throws on {; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("\\uD83D\\u{DC38}+", "u") instanceof RegExp
 note: correspondence row S10: a four-digit lead surrogate escape before a braced escape: only two four-digit escapes pair; /u: accepted
@@ -6255,7 +6331,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"\\uD83D\\u{3042}*" str:"u"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S10: under u or v, a four-digit lead-surrogate escape before a braced escape, \uD83D\u{DC38}, \uD83D\u{3042}, [\uD83D\u{3042}], [\uD83D\u{DC38}]; Broiler.VM answers a SyntaxError ("Invalid escape"), early: after a four-digit lead escape a following \u commits to four hexadecimal digits (F/JsRegExpMatcher.cs:3440-3458 at aaa39fb), which throws on {; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("\\uD83D\\u{3042}*", "u") instanceof RegExp
 note: correspondence row S10: a four-digit lead surrogate escape before a braced escape: only two four-digit escapes pair; /u: accepted
@@ -6266,7 +6343,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[\\uD83D\\u{3042}]*" str:"u"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S10: under u or v, a four-digit lead-surrogate escape before a braced escape, \uD83D\u{DC38}, \uD83D\u{3042}, [\uD83D\u{3042}], [\uD83D\u{DC38}]; Broiler.VM answers a SyntaxError ("Invalid escape"), early: after a four-digit lead escape a following \u commits to four hexadecimal digits (F/JsRegExpMatcher.cs:3440-3458 at aaa39fb), which throws on {; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[\\uD83D\\u{3042}]*", "u") instanceof RegExp
 note: correspondence row S10: a four-digit lead surrogate escape before a braced escape: only two four-digit escapes pair; /u: accepted
@@ -6277,7 +6355,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"[\\uD83D\\u{DC38}]" str:"u"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S10: under u or v, a four-digit lead-surrogate escape before a braced escape, \uD83D\u{DC38}, \uD83D\u{3042}, [\uD83D\u{3042}], [\uD83D\u{DC38}]; Broiler.VM answers a SyntaxError ("Invalid escape"), early: after a four-digit lead escape a following \u commits to four hexadecimal digits (F/JsRegExpMatcher.cs:3440-3458 at aaa39fb), which throws on {; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[\\uD83D\\u{DC38}]", "u") instanceof RegExp
 note: correspondence row S10: a four-digit lead surrogate escape before a braced escape: only two four-digit escapes pair; /u: accepted
@@ -6288,7 +6367,8 @@ area: regexp
 op: RegExpInitialize
 in: str:"\\uD83D\\u{DC38}" str:"v"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S10: under u or v, a four-digit lead-surrogate escape before a braced escape, \uD83D\u{DC38}, \uD83D\u{3042}, [\uD83D\u{3042}], [\uD83D\u{DC38}]; Broiler.VM answers a SyntaxError ("Invalid escape"), early: after a four-digit lead escape a following \u commits to four hexadecimal digits (F/JsRegExpMatcher.cs:3440-3458 at aaa39fb), which throws on {; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("\\uD83D\\u{DC38}", "v") instanceof RegExp
 note: correspondence row S10: a four-digit lead surrogate escape before a braced escape: only two four-digit escapes pair; /v: accepted
@@ -6323,10 +6403,11 @@ area: regexp
 op: RegExpInitialize
 in: str:"(?<a>x)|(?<a>y)" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?<a>x)|(?<a>y)", "") instanceof RegExp
-note: across alternatives; /: accepted
+note: correspondence row S1: across alternatives; /: accepted
 since: 31
 
 id: regexp/syntax/early-errors/0003

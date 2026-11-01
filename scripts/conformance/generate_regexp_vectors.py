@@ -67,15 +67,24 @@ engine's `per-engine` expectation taken from its record, never from a run:
 - the empty match from a lastIndex inside a surrogate pair under u (row M4), which the text leaves ill-formed
   (regexpref raises SpecAssertion) and decision D41 classes implementation-defined: each engine's expectation is its
   answer as D41 records it, and `out` lists both (SCHEMA.md section 4's dated note on such a case).
-No vector carries a `divergence` field: each engine's first run on revision 31 is classified at revision 32.
+No vector carries a `divergence` field at revision 31: each engine's first run on revision 31 is classified at
+revision 32.
+
+THE DIVERGENCES (corpus revision 32). scripts/conformance/regexp-divergences.txt, which this generator reads, holds
+each engine's classified differences: a `reason <key>: <text>` line, which names the row of bundle sjl-11-001's
+correspondence whose answer the engine gives, and `<engine> <key> <id>` lines, each writing the field
+`divergence.<engine>: <text>` on that vector. A normative vector becomes `divergence`; an impl-defined one stays
+impl-defined, the field saying the engine does not meet its own `per-engine` expectation yet (SCHEMA.md section 5).
+No expected value is read from the file. *(Added 2026-11-01, at revision 32; until then the paragraph above was the
+whole of this section's rule, and the generator read no other file.)*
 
 THE ROWS. Each vector's note names the row of bundle sjl-11-001's correspondence (Broiler.VM's
 docs/evidence/sjl-11-001/correspondence.md) it reaches, where it reaches one; `--rows` prints, for every row, the
 vectors that reach it, and REACHED lists the rows with a behavioural difference that must each be reached (or say why
 not, in NOT_REACHED).
 
-The generator is deterministic and reads nothing but this file, regexpref.py and the pinned UCD (through unicoderef):
-the same inputs write the same bytes.
+The generator is deterministic and reads nothing but this file, regexpref.py, the pinned UCD (through unicoderef)
+and regexp-divergences.txt: the same inputs write the same bytes.
 """
 
 from __future__ import annotations
@@ -84,7 +93,7 @@ import argparse
 import math
 import struct
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from functools import lru_cache
 from pathlib import Path
 from typing import Sequence
@@ -98,7 +107,8 @@ REPOSITORY = SCRIPTS.parents[1]
 CORPUS = REPOSITORY / "conformance" / "vectors"
 DEFAULT_OUT = CORPUS / "regexp"
 SINCE = 31             # the corpus revision that added the area
-CORPUS_REVISION = 31   # the corpus revision this generator writes: REVISIONS.md's last row
+CORPUS_REVISION = 32   # the corpus revision this generator writes: REVISIONS.md's last row
+DIVERGENCES = SCRIPTS / "regexp-divergences.txt"
 GENERATOR = "generate_regexp_vectors.py"
 REF = "ref:regexpref@1"
 SPEC = "spec:es2026@0248456c#"
@@ -140,7 +150,10 @@ D41 = ("the empty match from a lastIndex inside a surrogate pair under u: RegExp
        "at 1 and end at 0, which GetMatchString's assertion forbids, so the text has no answer and regexpref gives "
        "none; JSD-0081's decision D41 classes the case implementation-defined until the text is corrected, and "
        "records each engine's answer, Broiler.VM index 0 and lastIndex 0, Broiler.JS index 1 and lastIndex 1, which "
-       "are the per-engine expectations; out lists both")
+       "are the per-engine expectations; out lists both. Revision 32: Broiler.JS's answer is index 0 and lastIndex 0, "
+       "Broiler.VM's, since its u patterns went to Broiler.Regex 0.1.0-preview.5 (a58d31d1), as D41's dated note of "
+       "2026-11-01 (owner's decision D-p5) records, so its per-engine expectation is that answer; out still lists "
+       "both answers D41 has recorded")
 NESTING_LIMIT = 512
 
 # ---- Strings and typed values ---------------------------------------------------------------------------------------
@@ -1171,7 +1184,7 @@ def build_last_index() -> None:
                 value_str(vm) + " | " + value_str(jsa),
                 CANONICAL_JS + ' var r = new RegExp("(?:)", "gu"); r.lastIndex = 1; $x(r, r.exec("\\ud834\\udf06"))',
                 ["sec-regexpbuiltinexec", "sec-getmatchstring"], note_of(("M4",), D41), ("M4",), cls="impl-defined",
-                per_engine={"broiler-js": value_str(jsa), "broiler-vm": value_str(vm)}, reference=False)
+                per_engine={"broiler-js": value_str(vm), "broiler-vm": value_str(vm)}, reference=False)
     add(case)
     # M5: sticky.
     for p, flags, s, li in (("a", "y", "ba", 0), ("a", "y", "ba", 1), ("a", "uy", "ba", 0), ("b|ab", "y", "ab", 0),
@@ -1275,7 +1288,10 @@ def add_budget(f: str, group: str, p: str, flags: str, s, budget: int, rows, wha
     add(Case(f, group, "RegExpBuiltinExec, step budget",
              [s_(p), s_(flags), s_(piece), i_(count), s_(tail), i_(0), i_(budget)], out, script,
              exec_clauses(p, flags), note_of(rows, text + "; a library-level vector (decision D25), which "
-                                                         "engine-level runners skip"), tuple(rows)))
+                                                         + ("engine-level runners skip" if exhausted.exhausted else
+                                                            "engine-level runners evaluate too, as the exec without "
+                                                            "a budget, since only a status vector is skipped "
+                                                            "(revision 32)")), tuple(rows)))
 
 
 def build_text() -> None:
@@ -1424,17 +1440,86 @@ def provenance(case: Case) -> str:
     return " ".join(dict.fromkeys(entries))
 
 
-def render(identifier: str, case: Case) -> str:
+def read_divergences(path: Path) -> dict[str, dict[str, str]]:
+    """regexp-divergences.txt: `reason <key>: <text>` lines, then `<engine> <key> <id>` lines; by id, each engine's
+    text."""
+    if not path.exists():
+        return {}
+    reasons: dict[str, str] = {}
+    out: dict[str, dict[str, str]] = {}
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("reason "):
+            key, sep, text = line[len("reason "):].partition(": ")
+            if not sep or not text or key in reasons:
+                raise GeneratorError(f"{path.name}:{number}: a reason is `reason <key>: <text>`, each key once")
+            if not printable(text):
+                raise GeneratorError(f"{path.name}:{number}: a reason is one line of printable ASCII")
+            reasons[key] = text
+            continue
+        parts = line.split(" ")
+        if len(parts) != 3 or parts[0] not in ("broiler-js", "broiler-vm") or parts[1] not in reasons:
+            raise GeneratorError(f"{path.name}:{number}: `{line}` is not `<engine> <reason key> <id>`")
+        engine, key, identifier = parts
+        if engine in out.setdefault(identifier, {}):
+            raise GeneratorError(f"{path.name}:{number}: {identifier} is classified twice for {engine}")
+        out[identifier][engine] = reasons[key]
+    return out
+
+
+def render(identifier: str, case: Case, divergence: dict[str, str] | None = None) -> str:
+    divergence = divergence or {}
+    cls = case.cls
+    for engine in divergence:
+        if cls == "impl-defined" and engine not in case.per_engine:
+            raise GeneratorError(f"{identifier}: an impl-defined vector classified for {engine}, whose case states "
+                                 "no per-engine expectation for it (SCHEMA.md section 5)")
+        if case.out.startswith("status: "):
+            raise GeneratorError(f"{identifier}: a status vector is library-level, and no engine field classifies it")
+    if divergence and cls == "normative":
+        cls = "divergence"
     lines = [f"id: {identifier}", "area: regexp", f"op: {case.op}", "in: " + " ".join(case.inputs),
-             f"out: {case.out}", f"class: {case.cls}"]
+             f"out: {case.out}", f"class: {cls}"]
     for engine in ("broiler-js", "broiler-vm"):
         if engine in case.per_engine:
             lines.append(f"per-engine.{engine}: {case.per_engine[engine]}")
+    for engine in ("broiler-js", "broiler-vm"):
+        if engine in divergence:
+            lines.append(f"divergence.{engine}: {divergence[engine]}")
     lines.append(f"prov: {provenance(case)}")
     lines.append(f"script: {case.script}")
     lines.append(f"note: {case.note}")
     lines.append(f"since: {SINCE}")
     return "\n".join(lines) + "\n"
+
+
+# Revision 32: the rows a vector's note gains, because both engines' first runs on revision 31 showed a difference
+# whose answer is that row's (the reason in regexp-divergences.txt names it), which the note did not name. The note
+# names the row beside those it named; nothing else of the vector changes.
+ROWS_REVISION_32 = {
+    "regexp/syntax/early-errors/0002": ("S1",),
+    "regexp/syntax/s2a-escaped-duplicates/0003": ("S1",),
+    "regexp/matching/s4-escapes/0031": ("S5",),
+    "regexp/matching/modifiers/0009": ("M2",),
+    "regexp/case-insensitive/m2c-other-folding/0021": ("M2",),
+    "regexp/case-insensitive/m2c-other-folding/0022": ("M2",),
+    "regexp/last-index/match-global/0007": ("M3",),
+    "regexp/last-index/match-global/0008": ("M3",),
+    "regexp/last-index/split/0006": ("M3",),
+}
+
+
+def _revise_rows(identifier: str, case: Case) -> Case:
+    added = ROWS_REVISION_32.get(identifier)
+    if not added:
+        return case
+    head = note_of(case.rows, "")
+    if case.rows and not case.note.startswith(head):
+        raise GeneratorError(f"{identifier}: its note does not start with its rows")
+    rows = tuple(dict.fromkeys(case.rows + added))
+    text = case.note[len(head):] if case.rows else case.note
+    return replace(case, rows=rows, note=note_of(rows, text))
 
 
 def assign_ids(cases: Sequence[Case]) -> list[tuple[str, Case]]:
@@ -1443,11 +1528,15 @@ def assign_ids(cases: Sequence[Case]) -> list[tuple[str, Case]]:
     for case in cases:
         key = (case.file, case.group)
         counters[key] = counters.get(key, 0) + 1
-        out.append((f"regexp/{case.file}/{case.group}/{counters[key]:04d}", case))
+        identifier = f"regexp/{case.file}/{case.group}/{counters[key]:04d}"
+        out.append((identifier, _revise_rows(identifier, case)))
+    missing = sorted(set(ROWS_REVISION_32) - {identifier for identifier, _ in out})
+    if missing:
+        raise GeneratorError(f"ROWS_REVISION_32 names ids the area does not have: {missing}")
     return out
 
 
-def file_text(name: str, vectors: Sequence[tuple[str, Case]]) -> str:
+def file_text(name: str, vectors: Sequence[tuple[str, Case]], divergences: dict[str, dict[str, str]]) -> str:
     header = [
         f"# Generated by scripts/conformance/{GENERATOR}; do not edit by hand.",
         f"# The regular-expression area: {FILES[name]}.",
@@ -1456,16 +1545,20 @@ def file_text(name: str, vectors: Sequence[tuple[str, Case]]) -> str:
         "# clauses it cites. No expected value is read from an engine.",
         "schema: 1",
     ]
-    body = [render(identifier, case) for identifier, case in vectors if case.file == name]
+    body = [render(identifier, case, divergences.get(identifier)) for identifier, case in vectors if case.file == name]
     return "\n".join(header) + "\n\n" + "\n".join(body)
 
 
-def write_files(out: Path) -> dict[str, int]:
+def write_files(out: Path, divergences: dict[str, dict[str, str]] | None = None) -> dict[str, int]:
     vectors = assign_ids(build())
+    divergences = read_divergences(DIVERGENCES) if divergences is None else divergences
+    unknown = sorted(set(divergences) - {identifier for identifier, _ in vectors})
+    if unknown:
+        raise GeneratorError(f"{DIVERGENCES.name} classifies ids the area does not have: {unknown[:10]}")
     out.mkdir(parents=True, exist_ok=True)
     counts = {}
     for name in FILES:
-        text = file_text(name, vectors)
+        text = file_text(name, vectors, divergences)
         (out / f"{name}.vectors").write_bytes(text.encode("utf-8"))
         counts[name] = sum(1 for _, case in vectors if case.file == name)
     return counts

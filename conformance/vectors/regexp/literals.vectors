@@ -10,7 +10,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?ii:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?ii:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?ii:a)/ never evaluated: refused (early:modifier-repeated)
@@ -21,7 +22,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?i-i:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?i-i:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?i-i:a)/ never evaluated: refused (early:modifier-added-and-removed)
@@ -32,7 +34,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?-:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?-:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?-:a)/ never evaluated: refused (early:modifiers-both-empty)
@@ -43,7 +46,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?i)a" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?i)a/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?i)a/ never evaluated: refused (grammar:invalid-group)
@@ -54,7 +58,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?imsi:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?imsi:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?imsi:a)/ never evaluated: refused (early:modifier-repeated)
@@ -65,7 +70,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?I:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?I:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?I:a)/ never evaluated: refused (grammar:invalid-group)
@@ -76,7 +82,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?M:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?M:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?M:a)/ never evaluated: refused (grammar:invalid-group)
@@ -87,7 +94,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?S:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?S:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?S:a)/ never evaluated: refused (grammar:invalid-group)
@@ -98,7 +106,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?m-m:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?m-m:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?m-m:a)/ never evaluated: refused (early:modifier-added-and-removed)
@@ -109,7 +118,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?s-s:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?s-s:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?s-s:a)/ never evaluated: refused (early:modifier-added-and-removed)
@@ -120,7 +130,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?ims-m:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?ims-m:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?ims-m:a)/ never evaluated: refused (early:modifier-added-and-removed)
@@ -131,7 +142,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?m-ims:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?m-ims:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?m-ims:a)/ never evaluated: refused (early:modifier-added-and-removed)
@@ -142,7 +154,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?-ii:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?-ii:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?-ii:a)/ never evaluated: refused (early:modifier-repeated)
@@ -153,7 +166,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?-imsi:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?-imsi:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?-imsi:a)/ never evaluated: refused (early:modifier-repeated)
@@ -164,7 +178,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?ii-:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?ii-:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?ii-:a)/ never evaluated: refused (early:modifier-repeated)
@@ -175,7 +190,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?imsi-:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?imsi-:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?imsi-:a)/ never evaluated: refused (early:modifier-repeated)
@@ -186,7 +202,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?I-:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?I-:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?I-:a)/ never evaluated: refused (grammar:invalid-group)
@@ -197,7 +214,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?M-:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?M-:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?M-:a)/ never evaluated: refused (grammar:invalid-group)
@@ -208,7 +226,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?S-:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?S-:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?S-:a)/ never evaluated: refused (grammar:invalid-group)
@@ -219,7 +238,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?-I:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?-I:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?-I:a)/ never evaluated: refused (grammar:invalid-group)
@@ -230,7 +250,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?-M:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?-M:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?-M:a)/ never evaluated: refused (grammar:invalid-group)
@@ -241,7 +262,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?-S:a)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?-S:a)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?-S:a)/ never evaluated: refused (grammar:invalid-group)
@@ -252,7 +274,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?ms-i)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?ms-i)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?ms-i)/ never evaluated: refused (grammar:invalid-group)
@@ -263,7 +286,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?-s)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?-s)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?-s)/ never evaluated: refused (grammar:invalid-group)
@@ -274,7 +298,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?i-)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?i-)/; }), true
 note: correspondence rows S11, F3: each invalid modifier is an early error of the pattern, reported before evaluation; /(?i-)/ never evaluated: refused (grammar:invalid-group)
@@ -329,7 +354,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[a&&&b]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[a&&&b]/v; }), true
 note: correspondence rows S11, S8: a v-mode class the pattern grammar refuses, reported before evaluation; /[a&&&b]/v never evaluated: refused (grammar:class-set-operator)
@@ -340,7 +366,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[a--b&&c]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[a--b&&c]/v; }), true
 note: correspondence rows S11, S8: a v-mode class the pattern grammar refuses, reported before evaluation; /[a--b&&c]/v never evaluated: refused (grammar:class-set-operator)
@@ -351,7 +378,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[a-\\d]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[a-\d]/v; }), true
 note: correspondence rows S11, S8: a v-mode class the pattern grammar refuses, reported before evaluation; /[a-\d]/v never evaluated: refused (grammar:invalid-class-escape)
@@ -362,7 +390,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"\\q{a}" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /\q{a}/v; }), true
 note: correspondence rows S11, S8: a v-mode class the pattern grammar refuses, reported before evaluation; /\q{a}/v never evaluated: refused (grammar:invalid-escape)
@@ -406,7 +435,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?<=a)*" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?<=a)*/; }), true
 note: correspondence row S7: QuantifiableAssertion is look-ahead only (B.1.2); test262's language/literals/regexp/invalid-optional-lookbehind.js and its neighbours; /(?<=a)*/ never evaluated: refused (grammar:nothing-to-repeat)
@@ -417,7 +447,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?<=a)?" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?<=a)?/; }), true
 note: correspondence row S7: QuantifiableAssertion is look-ahead only (B.1.2); test262's language/literals/regexp/invalid-optional-lookbehind.js and its neighbours; /(?<=a)?/ never evaluated: refused (grammar:nothing-to-repeat)
@@ -428,7 +459,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?<!a)*" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /(?<!a)*/; }), true
 note: correspondence row S7: QuantifiableAssertion is look-ahead only (B.1.2); test262's language/literals/regexp/invalid-optional-lookbehind.js and its neighbours; /(?<!a)*/ never evaluated: refused (grammar:nothing-to-repeat)
@@ -439,7 +471,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?<!a){2}" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?<!a){2}/; }), true
 note: correspondence row S7: QuantifiableAssertion is look-ahead only (B.1.2); test262's language/literals/regexp/invalid-optional-lookbehind.js and its neighbours; /(?<!a){2}/ never evaluated: refused (early:invalid-braced-quantifier)
@@ -450,7 +483,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?<=a){1,2}" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?<=a){1,2}/; }), true
 note: correspondence row S7: QuantifiableAssertion is look-ahead only (B.1.2); test262's language/literals/regexp/invalid-optional-lookbehind.js and its neighbours; /(?<=a){1,2}/ never evaluated: refused (early:invalid-braced-quantifier)
@@ -474,7 +508,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[(]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[(]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[(]/v never evaluated: refused (grammar:class-set-syntax-character)
@@ -485,7 +520,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[)]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[)]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[)]/v never evaluated: refused (grammar:class-set-syntax-character)
@@ -507,7 +543,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[{]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[{]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[{]/v never evaluated: refused (grammar:class-set-syntax-character)
@@ -518,7 +555,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[}]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[}]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[}]/v never evaluated: refused (grammar:class-set-syntax-character)
@@ -529,7 +567,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[-]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[-]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[-]/v never evaluated: refused (grammar:class-set-syntax-character)
@@ -540,7 +579,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[|]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[|]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[|]/v never evaluated: refused (grammar:class-set-syntax-character)
@@ -551,7 +591,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[&&]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[&&]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[&&]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -562,7 +603,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[!!]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[!!]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[!!]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -573,7 +615,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[##]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[##]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[##]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -584,7 +627,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[$$]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[$$]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[$$]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -595,7 +639,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[%%]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[%%]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[%%]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -606,7 +651,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[**]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[**]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[**]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -617,7 +663,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[++]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[++]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[++]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -628,7 +675,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[,,]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[,,]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[,,]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -639,7 +687,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[..]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[..]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[..]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -650,7 +699,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[::]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[::]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[::]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -661,7 +711,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[;;]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[;;]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[;;]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -672,7 +723,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[<<]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[<<]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[<<]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -683,7 +735,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[==]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[==]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[==]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -694,7 +747,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[>>]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[>>]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[>>]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -705,7 +759,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[??]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[??]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[??]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -716,7 +771,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[@@]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[@@]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[@@]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -727,7 +783,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[``]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[``]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[``]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -738,7 +795,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[~~]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[~~]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[~~]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -749,7 +807,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[^^^]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[^^^]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[^^^]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -760,7 +819,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[_^^]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[_^^]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[_^^]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -771,7 +831,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[a|]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[a|]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[a|]/v never evaluated: refused (grammar:class-set-syntax-character)
@@ -782,7 +843,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[a!!b]" str:"v"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax, test262's breaking-change patterns but [[], [a|] and [a!!b], and [&&a], [--a], [a-], [-a] and [\q{(}], by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: (function () { return /[a!!b]/v; }), true
 note: correspondence row S8: the v flag's reserved syntax, a negative test of phase parse; /[a!!b]/v never evaluated: refused (grammar:class-set-reserved-double-punctuator)
@@ -793,7 +855,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?<A>x)\\k<\\u0041>" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-js: row S2b: a reference spelled with an escape in a literal, (?<A>x)\k<A> without and with u, (?<a>x)\k<\u{61}>; Broiler.JS answers refused, early, by the literal path (Parser/RegExpValidator.cs, FastScanner's IsValid), where its constructor accepts the same pattern; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern ref:regexpref@1
 script: (function () { return /(?<A>x)\k<\u0041>/; }), true
 note: correspondence row S2b: the literal admits what the constructor admits; /(?<A>x)\k<\u0041>/ never evaluated: accepted
@@ -804,7 +867,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?<A>x)\\k<\\u0041>" str:"u"
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-js: row S2b: a reference spelled with an escape in a literal, (?<A>x)\k<A> without and with u, (?<a>x)\k<\u{61}>; Broiler.JS answers refused, early, by the literal path (Parser/RegExpValidator.cs, FastScanner's IsValid), where its constructor accepts the same pattern; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern ref:regexpref@1
 script: (function () { return /(?<A>x)\k<\u0041>/u; }), true
 note: correspondence row S2b: the literal admits what the constructor admits; /(?<A>x)\k<\u0041>/u never evaluated: accepted
@@ -815,7 +879,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?<a>x)\\k<\\u{61}>" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-js: row S2b: a reference spelled with an escape in a literal, (?<A>x)\k<A> without and with u, (?<a>x)\k<\u{61}>; Broiler.JS answers refused, early, by the literal path (Parser/RegExpValidator.cs, FastScanner's IsValid), where its constructor accepts the same pattern; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern ref:regexpref@1
 script: (function () { return /(?<a>x)\k<\u{61}>/; }), true
 note: correspondence row S2b: the literal admits what the constructor admits; /(?<a>x)\k<\u{61}>/ never evaluated: accepted
@@ -829,6 +894,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: value: bool:true
 per-engine.broiler-vm: value: bool:true
+divergence.broiler-js: row S5 as revised 2026-11-01 (owner's decision D-s5): \k in a class beside a named group without u or v, [\k<a>](?<a>x) and [\k](?<a>x), by the constructor, a literal never evaluated and an exec; Broiler.JS answers refused, a SyntaxError "invalid named reference": RegExpGroupNames refuses a \k inside a class whenever the pattern holds a group name, where B.1.2's ClassEscape reads ~NamedCaptureGroups and admits k as an identity escape, the outcome this vector's per-engine field holds (regexpref's reading, which revision 31 took); a correction of Broiler.JS (JSD-0081, by D-s5); answered by SJL-11.5, which deletes RegExpGroupNames' regular-expression prechecks (decision D20)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-regular-expressions-patterns ref:regexpref@1
 script: (function () { return /[\k<a>](?<a>x)/; }), true
 note: correspondence rows S1, S2a, S5: group names and references in a literal; /[\k<a>](?<a>x)/ never evaluated: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
@@ -850,7 +916,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?<\\u0061>x)(?<a>y)" str:""
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row S2a: the same name spelled once with an escape in one alternative, (?<a>x)(?<a>y) and its spellings under u and v, by the constructor and by a literal; Broiler.JS answers accepted: its duplicate test compares names as written (RegExpGroupNames.FirstDuplicate), and so does the library's; a correction of Broiler.JS and of Broiler.Regex's preview.4 (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex, whose duplicate test follows decoding (decision D36)
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors ref:regexpref@1
 script: (function () { return /(?<\u0061>x)(?<a>y)/; }), true
 note: correspondence rows S1, S2a, S5: group names and references in a literal; /(?<\u0061>x)(?<a>y)/ never evaluated: refused (early:duplicate-group-name)
@@ -883,7 +950,8 @@ area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"(?<a>x)|(?<a>y)" str:""
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-vm: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern ref:regexpref@1
 script: (function () { return /(?<a>x)|(?<a>y)/; }), true
 note: correspondence rows S1, S2a, S5: group names and references in a literal; /(?<a>x)|(?<a>y)/ never evaluated: accepted
@@ -996,6 +1064,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: SyntaxError
 per-engine.broiler-vm: error: SyntaxError
+divergence.broiler-js: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
 prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern ref:regexpref@1
 script: (function () { return /(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:a))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))/; }), true
 note: correspondence row S3: 512 nested (?: in a literal; /(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:a))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))/ never evaluated: accepted; nesting depth 513: the specification sets no nesting bound; JSD-0081's decision D7 has both engines pass Broiler.Regex a nesting limit of 512, counted as Broiler.VM counts it (the pattern's Disjunction 1, each group and each v-mode class 1 more), and refuse past it with a SyntaxError, so each engine's expectation is that SyntaxError (row S3, engine policy that becomes a parameter)
@@ -1107,7 +1176,8 @@ area: regexp
 op: RegularExpressionLiteral, eval code
 in: str:"/a[bc\\" str:"indirect"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row S9b: a literal ending in a backslash at the end of eval code, /a[bc\, by direct and indirect eval; Broiler.VM answers an EvalError ("the artifact provider did not supply a program"): the scan moves past the end of the source (CP/SliceTokenizer.cs:2227 at aaa39fb); a correction of Broiler.VM outside SJL-11 (JSD-0081: the scanner is the front end's, SJL-12's and SJL-13's); answered by the front end's cut-over to the shared syntax library (SJL-13), not by SJL-11.4
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-performeval
 script: (0, eval)("/a[bc\\")
 note: correspondence row S9b: indirect: RegularExpressionLiteral's own grammar refuses the source, a SyntaxError; the expected value is read from the clauses, which regexpref does not model
@@ -1118,7 +1188,8 @@ area: regexp
 op: RegularExpressionLiteral, eval code
 in: str:"/a[bc\\" str:"direct"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-vm: row S9b: a literal ending in a backslash at the end of eval code, /a[bc\, by direct and indirect eval; Broiler.VM answers an EvalError ("the artifact provider did not supply a program"): the scan moves past the end of the source (CP/SliceTokenizer.cs:2227 at aaa39fb); a correction of Broiler.VM outside SJL-11 (JSD-0081: the scanner is the front end's, SJL-12's and SJL-13's); answered by the front end's cut-over to the shared syntax library (SJL-13), not by SJL-11.4
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-performeval
 script: eval("/a[bc\\")
 note: correspondence row S9b: direct: RegularExpressionLiteral's own grammar refuses the source, a SyntaxError; the expected value is read from the clauses, which regexpref does not model
