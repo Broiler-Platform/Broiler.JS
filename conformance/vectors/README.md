@@ -76,9 +76,10 @@ python3 -I scripts/conformance/generate_intl_vectors.py --node <Node v26.12.0> -
 python3 -I scripts/conformance/generate_syntax_vectors.py --out conformance/vectors/syntax
 python3 -I scripts/conformance/generate_syntax_vectors.py --check-node <Node v26.12.0> --spec <spec.html> --test262 <test262>
 # The collation vectors run ICU through the same reference Node.js v26.12.0 (intlref.mjs) and read the data home's archived
-# CollationTest files and root.xml, each held to Broiler.ECMAScript/data/intl/cldr/cldr.pin; --spec checks every ECMA-402
-# clause id against a checkout of tc39/ecma402 at the pinned revision. Its test that regenerates them reads
-# BROILER_INTL_NODE and is skipped where it is absent.
+# CollationTest files, allkeys_CLDR.txt and root.xml, each held to Broiler.ECMAScript/data/intl/cldr/cldr.pin, and the
+# pinned UCD 17.0.0 under data/unicode/pins (--ucd), held to sources/unicode.pin; --spec checks every ECMA-402 clause id
+# against a checkout of tc39/ecma402 at the pinned revision. Its test that regenerates them reads BROILER_INTL_NODE and
+# is skipped where it is absent; the second reference's answers are checked without it.
 python3 -I scripts/conformance/generate_collation_vectors.py --node <Node v26.12.0> --spec <ecma402 checkout>
 python3 -m unittest discover -s scripts/conformance/tests
 # The Unicode area's tests that read the pinned data look for it in BROILER_UNICODE_PINS, or in a Broiler.Unicode
@@ -191,12 +192,17 @@ Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release".)*
   corpus copies no CLDR file; the generator reads the cldr-json tarballs by their npm integrity.
 - **Syntax.** The syntax area (revision 29) cites the clauses of the pinned ECMA-262 edition that decide each parse, and beside them, for most refusals and some acceptances, the test262 tests at `ccaac100` that assert the same outcome. Its sources are written from the grammar by `scripts/conformance/generate_syntax_vectors.py`, which states every expected value itself; the explicit-resource-management rules, which ECMA-262 main merged after the pinned edition, are cited by their test262 tests alone, and their 10 vectors take their expected values from ECMA-262 main at `4feb0272`, not from the pinned edition, which has no UsingDeclaration and refuses the 6 acceptances among them. Every vector is checked against the reference Node.js v26.12.0 that bundle `sjl-9-001`'s `reference.txt` names (`scripts/conformance/syntaxcheck.mjs`), which is no source of an expected value: where the reference disagrees with the text the vector follows the text, and the generator names the vector.
 - **Collation.** The collation vectors (revision 31) cite ECMA-402 at the revision [`sources/ecma402.pin`](sources/ecma402.pin)
-  names, as the Intl area does, and ECMA-262's `Array.prototype.sort` for the vectors that sort. Every expected value is
-  the Intl area's reference's, ICU 78.3 with CLDR 48.0 through the reference Node.js v26.12.0 (`ref:intlref@1`); a vector
-  of two consecutive lines of CLDR 48.2.0's archived CollationTest files, which the data home holds under
-  `Broiler.ECMAScript/data/intl/cldr/` by its pin, cites them too (`ref:collationtest@1`), and the generator refuses the
-  area if the reference orders such a pair against the file. Han across blocks takes the reference's order, by radical
-  and stroke, which CLDR 48.2.0's `root.xml` names. The corpus copies no CLDR file.
+  names, as the Intl area does, and ECMA-262's `Array.prototype.sort` for the vectors that sort. Every `out` is the
+  Intl area's reference's, ICU 78.3 with CLDR 48.0 through the reference Node.js v26.12.0 (`ref:intlref@1`); a vector of
+  two consecutive lines of CLDR 48.2.0's archived CollationTest files, which the data home holds under
+  `Broiler.ECMAScript/data/intl/cldr/` by its pin, cites them too (`ref:collationtest@1`, which no other vector cites),
+  and the generator refuses the area if the reference orders such a pair against the file. The order of Han characters
+  is the implementation's choice (UTS #35 Part 5, CLDR 48: the UCA's implicit weights or the radical-stroke order): the
+  root's `scripts` and `han` vectors are computed a second time by the UCA over the pinned `allkeys_CLDR.txt` with UCA
+  17's implicit weights (`ref:ucaimplicit@1`, in the generator), held to the reference wherever the Han order does not
+  enter, and a vector whose answer moves with that order is `impl-defined`, with `out` the reference's radical-stroke
+  answer and both engines' expectation the implicit-weight answer, which both take from CLDR 48.2.0's root as
+  Broiler.VM reads it (row O3 of bundle sjl-17-001's correspondence). The corpus copies no CLDR file.
 - **test262.** No vector of revision 1 is derived from a test262 test. A vector that is will cite the
   test with `test262:<path>`, and the corpus will then carry test262's licence notice.
   *(2026-10-27, at corpus revision 29:)* the syntax area cites test262 tests as sources that assert an
