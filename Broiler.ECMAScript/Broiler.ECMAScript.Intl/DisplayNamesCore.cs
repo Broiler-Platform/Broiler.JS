@@ -276,7 +276,8 @@ public sealed class DisplayNamesCore
     }
 
     /// <summary>The name [[Fields]] holds for a canonical code, or <see langword="null"/> where it holds none.</summary>
-    /// <param name="canonicalCode">A code <see cref="CanonicalCode"/> answered.</param>
+    /// <param name="canonicalCode">A code <see cref="CanonicalCode"/> answered. Any other code is looked up as given; for the
+    /// language type one that is not a well-formed Unicode BCP 47 locale identifier holds no name.</param>
     /// <returns>The name, or <see langword="null"/>.</returns>
     // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames; IP=Low; Security=Low; Resources=1; Fingerprint=99C60B
     // Broiler-Human:        PENDING
@@ -330,7 +331,13 @@ public sealed class DisplayNamesCore
     // Broiler-Human:        PENDING
     private string? LanguageName(string code, Func<string, string, string?> named)
     {
-        var tag = LocaleTag.Parse(code)!;
+        // A CODE CANONICALCODE DID NOT ANSWER, and that does not parse, has no name: DisplayName is public, and Broiler.VM's
+        // LanguageName, private, was reached only after CanonicalCodeForDisplayNames.
+        if (LocaleTag.Parse(code) is not { } tag)
+        {
+            return null;
+        }
+
         var language = tag.Language;
         var script = tag.Script;
         var region = tag.Region;

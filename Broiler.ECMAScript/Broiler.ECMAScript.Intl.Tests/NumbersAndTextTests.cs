@@ -226,7 +226,8 @@ public sealed class NumbersAndTextTests
         Formatter("en", notation: NumberNotation.Compact).Format(N(1234.5), charge);
         Assert.Equal(2UL, charged);
 
-        // A range formats each end twice, and the approximately sign's end once more.
+        // A range formats each end once to compare them; then each end again where the two differ, and the start alone again,
+        // with the approximately sign, where they are the same.
         charged = 0;
         Assert.Equal(IntlStatus.Completed, Formatter("en").FormatRange(N(3), N(5), out _, charge));
         Assert.Equal(4UL, charged);
@@ -342,6 +343,14 @@ public sealed class NumbersAndTextTests
         }
 
         Assert.Null(DisplayNamesCore.Create(Data, "en", "en", FormatStyle.Long, DisplayNamesType.Region, DisplayNamesFallback.Code, LanguageDisplay.Dialect).LanguageDisplay);
+
+        // DisplayName called with a language code CanonicalCode did not answer, and that does not parse, holds no name.
+        var languages = DisplayNamesCore.Create(Data, "en", "en", FormatStyle.Long, DisplayNamesType.Language, DisplayNamesFallback.Code, LanguageDisplay.Dialect);
+        Assert.Equal("British English", languages.DisplayName("en-GB"));
+        foreach (var code in new[] { "en_US", string.Empty, "en-", "-en", "en--GB", "\u0661\u0662", "en GB" })
+        {
+            Assert.Null(languages.DisplayName(code));
+        }
     }
 
     private static string? Of(string locale, DisplayNamesType type, string code, FormatStyle style = FormatStyle.Long,
