@@ -152,11 +152,15 @@ state, so that sub-areas (d) and (e), SJL-9.3f's packing and the cut-overs inher
   the number table's `defaultNumberingSystem` along the locale's chain, then `latn`, then the data's others in code-unit
   order. Broiler.VM's list is `latn` first for every locale, which its tables' `de` and `en` defaults give the same.
 - **The charges are Broiler.VM's** (decision D18): FormatNumericToString's `digits / 16 + 1` at every rounding - the value's,
-  ComputeExponent's in a notation other than standard, both ends of a range twice, and the approximately sign's end once more
-  where the ends write the same String - and one unit per step of a list's template folding. A relative time charges its
-  plural rules' and its number format's roundings. Display names charge nothing in Broiler.VM, so `DisplayNamesCore` takes
-  the caller's meter only for a language code's parse and canonicalisation, in `LocaleId`'s units, where Broiler.VM's adapter
-  passes one that charges nothing (row L43).
+  ComputeExponent's in a notation other than standard, each end of a range once to compare the two Strings and then each end
+  again where they differ or the start alone again, with the approximately sign, where they are the same - and one unit per
+  step of a list's template folding. A relative time charges its plural rules' and its number format's roundings. Display
+  names charge nothing in Broiler.VM, so `DisplayNamesCore` takes the caller's meter only for a language code's parse and
+  canonicalisation, in `LocaleId`'s units, where Broiler.VM's adapter passes one that charges nothing (row L43).
+  *(Revised 2026-11-01, at SJL-9.3c's review: a range's charge read "both ends of a range twice, and the approximately sign's
+  end once more where the ends write the same String", which counts five formattings where the ends write the same String;
+  the code, as Broiler.VM's `JsNumberFormatter`, formats three there and four where they differ, as the unit test N16
+  holds.)*
 - **What stays the engine's**: the bound `format` and its identity (row N11), the legacy constructor (row N12), the option
   reads after construction (row N10), ToIntlMathematicalValue's ToPrimitive, a range's `undefined` ends, StringListFromIterable,
   and the parts arrays with their per-part charges. A currency or unit the constructor has not checked is a precondition of

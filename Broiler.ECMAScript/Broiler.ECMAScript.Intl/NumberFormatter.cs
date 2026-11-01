@@ -344,8 +344,9 @@ public sealed class NumberFormatter
     /// <param name="x">The start.</param>
     /// <param name="y">The end.</param>
     /// <param name="formatted">The String, or the empty string.</param>
-    /// <param name="charge">The caller's meter: each end's formatting, twice, and the approximately sign's once more where the
-    /// ends write the same String, as Broiler.VM charges them.</param>
+    /// <param name="charge">The caller's meter, as Broiler.VM charges it: each end formatted once, to compare the two Strings;
+    /// then, where they differ, each end formatted again for its parts, and where they are the same, the start alone formatted
+    /// once more, with the approximately sign. With one unit to a formatting, 4 units and 3.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.RangeIsNotANumber"/>, a <c>RangeError</c>.</returns>
     // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=ACCEEE
     // Broiler-Human:        PENDING
@@ -385,7 +386,7 @@ public sealed class NumberFormatter
     }
 
     // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=D2F819
-    // Broiler-Falsified-If: a range collapses so that two different ranges write the same String, or its charges differ from each end formatted twice
+    // Broiler-Falsified-If: a range collapses so that two different ranges write the same String, or its charges differ from each end formatted once and then each end again where the two differ, or the start alone again where they are the same
     // Broiler-Human:        PENDING
     private List<NumberPart> RangeParts(IntlDecimal x, IntlDecimal y, WorkCharge? charge)
     {
