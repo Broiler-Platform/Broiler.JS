@@ -36,6 +36,9 @@ public enum ParseOutcome
     /// The library cannot judge the source yet. Before the parser exists (stage 4c), it is the answer for every source the
     /// tokenizer (stage 4b) does not refuse: one it reads to its end, and one where it stops at a token whose lexical goal
     /// only the parser can name. No diagnostic; a caller reads it as neither an acceptance nor a refusal. Stage 4c withdraws it.
+    /// <i>(Revised 2026-11-01, at stage SJL-13.2b, when the tokenizer began to refuse a source; the summary began "The library
+    /// cannot parse yet: stage SJL-13.2a's answer for every source, before the tokenizer (stage 4b) and the parser (stage 4c)
+    /// exist.")</i>
     /// </summary>
     NotImplemented = 2,
 }
@@ -43,7 +46,7 @@ public enum ParseOutcome
 /// <summary>
 /// What a parse answers (Broiler.VM's JSD-0080, "Output"; JSD-0083, X3 and decision D11): its outcome and its diagnostics.
 /// The tree and the token stream join it at stage 4c, whose parser names each token's lexical goal, and the side tables at
-/// stage 4d. <i>(Revised at stage 4b, whose tokenizer is internal to the library and reads a text whole only under the
+/// stage 4d. <i>(Revised 2026-11-01, at stage SJL-13.2b, whose tokenizer is internal to the library and reads a text whole only under the
 /// parser's goals; it read "The tree, the token stream and the side tables join it at the stages that build them (4c, 4b
 /// and 4d).")</i>
 /// </summary>
@@ -90,8 +93,11 @@ public sealed class ParseResult
 /// tokenizes the text as far as the lexical grammar decides it without the parser and refuses only what no reading of the
 /// text can tokenize, with the tokenizer's diagnostic (<c>LexicalScan</c>). It charges the request's meter for the whole
 /// text before it reads the first code unit (<see cref="ParseRequest.Meter"/>), and reads the Unicode provider; it asks the
-/// regular-expression provider nothing, the literal's validity being stage 4d's. <i>(At stage SJL-13.2a it answered
-/// <see cref="ParseOutcome.NotImplemented"/> for every source, read no provider and charged no meter.)</i>
+/// regular-expression provider nothing, the literal's validity being stage 4d's. <i>(Revised 2026-11-01, at stage
+/// SJL-13.2b, when the tokenizer was added; it read "At stage SJL-13.2a it answers
+/// <see cref="ParseOutcome.NotImplemented"/> for every source: the tokenizer is stage 4b's and the tree and the parser stage
+/// 4c's. It reads no provider and charges no meter, because it reads none of the source; from stage 4b it charges the
+/// request's meter before it reads the first code unit (<see cref="ParseRequest.Meter"/>).")</i>
 /// </para>
 /// <para>
 /// <b>Safe to call concurrently</b> (convention 10): a parse shares nothing with another but its request's providers,
@@ -110,6 +116,8 @@ public static class SyntaxParser
     /// <returns>
     /// The result: at this stage, <see cref="ParseOutcome.Refused"/> with the tokenizer's one diagnostic for a source the
     /// lexical grammar refuses, and <see cref="ParseOutcome.NotImplemented"/> with none for every other.
+    /// <i>(Revised 2026-11-01, at stage SJL-13.2b; it read "The result: at this stage,
+    /// <see cref="ParseOutcome.NotImplemented"/> with no diagnostic, for every request.")</i>
     /// </returns>
     /// <exception cref="ArgumentNullException">The request is null.</exception>
     /// <exception cref="ArgumentException">The request's Unicode provider is not of the library's Unicode version or lacks a table the lexical classes read.</exception>
