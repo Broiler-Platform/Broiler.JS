@@ -12,21 +12,29 @@
     the assembly's entry point runs it at any scale.
   -->
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <StartupObject>Broiler.ECMAScript.Intl.Tests.Differential.Program</StartupObject>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <!-- A test project is not a library the Native AOT probe runs; xunit discovers by reflection. -->
     <IsAotCompatible>false</IsAotCompatible>
     <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <!-- The assembly's entry point is the differential check (Differential/Program.cs); the test host loads the
-         assembly and never calls it. -->
+    <!-- The assembly's entry point is the differential check (Differential/Program.cs); any other invocation, the
+         test host's included, goes to the xUnit executable runner, as the other custom entry points do. -->
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" />
-    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Broiler.ECMAScript.Intl\Broiler.ECMAScript.Intl.csproj" />
