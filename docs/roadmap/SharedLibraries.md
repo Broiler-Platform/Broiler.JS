@@ -1950,6 +1950,84 @@ This repository's part of it:
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 4 to 10 are judged in its bundles
 `sjl-13-001` and `sjl-13-002`, and SJL-13 may not meet its gate before SJL-12, SJL-3 and SJL-7 meet theirs.
 
+**Collation (SJL-17.1), filed 2026-11-01: the area accepted as an adoption, and the owner's decisions of 2026-11-01
+recorded.**
+- **The records.** Broiler.VM's record is
+  `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0084-collation-moves-to-the-shared-intl-library.md`
+  (JSD-0084), decided on 2026-11-01. It states each condition of the extraction gate for the area: the Unicode
+  Collation Algorithm over CLDR's root collation and each embedding's tailorings, with `sensitivity`,
+  `ignorePunctuation`, `numeric` and `caseFirst`, moving to `Broiler.ECMAScript.Intl` as `UcaCollator`, over the
+  collation tables the data home's generator already writes (JSD-0082's decision D11). It amends Broiler.VM's JSD-0043
+  §5 to §7 where they move.
+- **Its input** is `Broiler.VM/docs/evidence/sjl-17-001/correspondence.md`, the correspondence from code, rows O. It
+  read this repository at `61cb15b5`, Broiler.VM at `83290f9` and test262 at `ccaac100`, and every behavioural cell was
+  run in both engines: this engine's through the shell in UTC with no `LANG`, every probe again under
+  `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1`, and the rows that read the default locale under a `de_DE` and a `tr_TR`
+  culture; test262's `intl402/Collator`, both `localeCompare` directories and `Locale/prototype/getCollations` through
+  this repository's runner, normal and invariant; and the reference Node.js release as a witness. Every row carries its
+  class, and every probe and answer is retained beside it.
+- **SJL-17 started before SJL-9, which it waits on, met its gate**, at the owner's words of 2026-10-19, "Also continue
+  with the other remaining SJL milestones", which the programme's ledger records in its SJL-17.0 entry, in Broiler.VM's
+  own change for SJL-17.1, once SJL-9.3a's provider and locale core merged here (`b22e7d6a`). SJL-17 may not meet its
+  gate before SJL-9 meets SJL-9's.
+- **The owner's direction.** On 2026-10-18 the owner wrote: "Please do all recommended decisions and skip waiting for
+  review." Each decision SJL-17's plan left open is taken as it recommends, E1 to E14, and JSD-0084 records them as the
+  owner's decisions of 2026-11-01; none was decided again, and where the correspondence found a drifted citation or a
+  reading the plan leaves open, the decision says so beside it. **It changes no rule**: nothing is accepted without
+  review, and the gate waits as above. In this record a decision is "decision En" and a row "row On".
+
+This repository's part of it:
+- **X1: an adoption** (decision E2). This engine implements no collation algorithm: `JSIntlCollator.Compare` hands both
+  strings, after Broiler.Unicode's NFD, to the host's `CompareInfo`, with `sensitivity` and `ignorePunctuation` mapped
+  onto `CompareOptions`, and `numeric` and `caseFirst` resolved but not applied. The shared collator is Broiler.VM's
+  `JsCollator` and `JsCollationData`, and this engine adopts it.
+- **What the shared collator covers here** (decision E3), per locale and collation: root, and CLDR 48.2.0's tailorings
+  for `de` (phonebook, search), root `search`, `en`, `es`, `sv` and `th`. **CJK stays on the host provider** until a
+  data decision sizes its tailorings, and so does every other locale, and a collation the shared data does not carry
+  for a covered locale. Two passing test262 files read such collations: `Collator/prototype/resolvedOptions/resolved-collation-unicode-extensions-and-options.js`
+  asks `de` for `eor`, and `Locale/prototype/getCollations/output-array-values.js` asks `en` for at least one
+  collation (JSD-0082's decision D33 (c)); the data home's rule engine refuses the syntax CLDR's `eor` and `emoji`
+  rules use, so SJL-17.3 either carries them or leaves them to the host provider, and the rule's part A names the
+  second file (finding F2). Thai's default `ignorePunctuation` comes from the tailoring data (decision E5).
+- **The corrections**, the correspondence's column "Correction of Broiler.JS", each to be listed in
+  `Broiler.JS/CHANGELOG.md` at SJL-17.5 under decision SJL-D-16 (a):
+  - `ignorePunctuation` ignores spaces and punctuation, as CLDR's root's variable range does, and not symbols (O5a);
+  - `sensitivity: "base"` folds width and compatibility differences (O5b);
+  - `numeric` and `caseFirst` applied (O7, O8), which moves the `orderings` lines that ask for them (O18);
+  - the constructor reads its options in the specification's order, each once, and refuses a `collation` that is not a
+    type sequence (O10);
+  - the bound `compare` is made once and kept (O12, decision E8);
+  - under invariant globalization no comparison falls back to code-unit order: every request resolves as the
+    available-locale policy says (JSD-0082's decision D7) and collates by the root or `en` (O14, decision E4).
+- **The data changes** (C5), each listed with its decision: CLDR 48.2.0's root and the tailorings of decision E3's list
+  replace the host's ICU for the covered locales (O1, O2, O3, O16), and Thai's default from the data (O5c, E5).
+- **What stays as it is.** The rows that are the same in both engines (O4, O6, O9, O13, and O19, whose answer this
+  engine reaches today by the tie-break on the deletion list and the shared collator gives without it); the
+  default-locale provider (O15); this engine's `Intl.Collator` objects, its errors and `localeCompare`'s coercion; and
+  its meter, which is none (decision E7, row O17).
+- **The deletion list** (decision E11): `ResolveCompareInfo` for the covered locales, `StripIgnorablePunctuation`'s
+  tie-break (row O19), the `CompareOptions` mapping and the hard-coded Thai default; `NetCollationSuffix` moves into the
+  host provider. `JSIntlCollator` keeps every public member (SJL-D-25 (a)), which SJL-17.5 records in
+  [`docs/public-api.md`](../public-api.md).
+- **Data size** (decision E13): this engine's collation tables are generated by the data home for decision E3's list,
+  and their size is stated in this repository's bundle `sjl-17-001` when SJL-17.3 generates them.
+- **The rule**, [`docs/evidence/sjl-17-001/decision-rule.md`](../evidence/sjl-17-001/decision-rule.md), is committed
+  before any code of the area, with its divergence groups and its invariant probe (decision E10):
+  - A, test262 per path in UTC with negative-metadata tests, its classes C1 and C5 naming the rows above, and
+    `getCollations/output-array-values.js` named;
+  - B, Broiler.VM's `orderings` dataset in this engine against Broiler.VM's retained answer, which has no divergences
+    file, so its classes V and R hold no line (finding F3);
+  - C, `invariant-probe.js` under invariant globalization, each line's expected answer the reference's for the locale
+    this engine resolves (risk K5, finding F6).
+
+  **The bases** are taken at the base commit, the first parent of the merge that lands SJL-17.5, and the after runs at
+  that merge: part A by `test262 evidence`, and parts B and C locally. Both cut-overs are one merge each, after SJL-9's
+  after commits, and the library merges outside SJL-9's windows (decision E14). The stream version that carries the
+  collator is published with the owner's approval, a `0.1.0-preview.N` by the owner's direction of 2026-11-01.
+
+None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 6 to 9 are judged in its bundle of
+the same name, and SJL-17 may not meet its gate before SJL-9 meets SJL-9's.
+
 ## The frontend contract (SJL-12)
 
 SJL-12 is not an area milestone: it applies no extraction gate, so its record is here and not under "Area verdicts",
