@@ -269,22 +269,24 @@ public class LibraryRunTests
     }
 
     /// <summary>
-    /// The operation names sub-area (c)'s part of the runner answers keep every other file's outcome: each vector of the corpus
-    /// outside the two Intl files it reads, with one of those names, gives what the runner's operation route gives it, and none
-    /// is answered as sub-area (c)'s (<c>IVectorLibrary.Call</c> sees no area).
+    /// The operation names sub-area (c)'s part of the runner answers keep every other file's outcome. At corpus revision 30 no
+    /// vector outside the two Intl files it reads carries one of those names, and the test holds that: a vector that comes to
+    /// carry one fails it, so that the test is revisited to check that such a vector gives what the runner's operation route
+    /// gives it and is not answered as sub-area (c)'s (<c>IVectorLibrary.Call</c> sees no area). Within the two files, a name
+    /// answers only its own file's vectors.
     /// </summary>
     [Fact]
     public void Sub_area_c_s_operation_names_move_no_other_area_s_vector()
     {
-        var library = new AlgorithmsLibrary();
         var names = AlgorithmsLibrary.IntlNumbersOperations.Concat(AlgorithmsLibrary.IntlValuesFormatOperations).ToHashSet(System.StringComparer.Ordinal);
         var others = Home.Corpus.Records
             .Where(v => names.Contains(v["op"]!) && !v.Id.StartsWith(AlgorithmsLibrary.IntlNumbersPrefix, System.StringComparison.Ordinal)
                 && !v.Id.StartsWith(AlgorithmsLibrary.IntlValuesPrefix, System.StringComparison.Ordinal))
             .ToList();
 
-        Assert.All(others, v => Assert.Equal(((IVectorLibrary)library).Call(v["op"]!, LibraryRun.Inputs(v)), library.Call(v)));
-        Assert.All(others, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntlNumbers(v), v.Id));
+        // NO OTHER FILE CARRIES THESE NAMES TODAY. A vector that comes to carry one fails here; the check it is then to pass is
+        // the one sub-area (b)'s test makes: Call(op, inputs) == Call(vector), and IsLibraryIntlNumbers false.
+        Assert.Empty(others.Select(static v => v.Id));
 
         // Within the two files, an operation name of sub-area (c) answers only its own file's vectors.
         var values = Home.Corpus.Records.Where(static v => v.Id.StartsWith(AlgorithmsLibrary.IntlValuesPrefix, System.StringComparison.Ordinal)
