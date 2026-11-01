@@ -18,8 +18,10 @@ What it transliterates, by clause id of the pinned text:
 - the pattern grammar of 22.2.1 (sec-patterns) with every parameter: [UnicodeMode] (`u` and `v`), [UnicodeSetsMode]
   (`v`), [NamedCaptureGroups]; and B.1.2's grammar (sec-regular-expressions-patterns) for patterns without `u` and `v`,
   with B.1.2's ParsePattern (sec-parsepattern-annexb), which parses once without [NamedCaptureGroups] and again with
-  it when the pattern holds a GroupName. With annex_b=False the main grammar alone is read (sec-parsepattern), which
-  the generator uses to tell an outcome that holds only with Annex B from one that holds without it;
+  it when the pattern holds a GroupName (a parameter no production passes into a CharacterClass, so in a class `\\k`
+  is B.1.2's IdentityEscape, the letter, whatever names the pattern holds). With annex_b=False the main grammar alone
+  is read (sec-parsepattern), which the generator uses to tell an outcome that holds only with Annex B from one that
+  holds without it;
 - every early error of 22.2.1.1 (sec-patterns-static-semantics-early-errors) and B.1.2.1's
   (sec-patterns-static-semantics-early-errors-annexb), with the static semantics they read: CountLeftCapturingParens*,
   MightBothParticipate, CapturingGroupNumber, IsCharacterClass, CharacterValue, MayContainStrings,
@@ -1076,8 +1078,17 @@ class Parser:
             raise PatternSyntaxError("early:lone-property", start, name)
         return ClassEscape("P" if negated else "p", key, False)
 
-    def character_escape(self):
-        """CharacterEscape[?UnicodeMode, ?NamedCaptureGroups]: a character value, or None (nothing consumed)."""
+    def character_escape(self, named_groups: bool | None = None):
+        """CharacterEscape[?UnicodeMode, ?NamedCaptureGroups]: a character value, or None (nothing consumed).
+
+        named_groups is the [NamedCaptureGroups] parameter this CharacterEscape has: the pattern's own (self.n) by
+        default, as Term, Atom and AtomEscape pass it on. Inside a CharacterClass it is absent, because no production
+        passes it there: ExtendedAtom has CharacterClass[~UnicodeMode, ~UnicodeSetsMode], and CharacterClass,
+        ClassContents, NonemptyClassRanges, NonemptyClassRangesNoDash and ClassAtom pass only ?UnicodeMode (and
+        ?UnicodeSetsMode) on, so B.1.2's ClassAtomNoDash[UnicodeMode, NamedCaptureGroups] and its ClassEscape read
+        ~NamedCaptureGroups, and SourceCharacterIdentityEscape[~NamedCaptureGroups] admits k.
+        """
+        n = self.n if named_groups is None else named_groups
         c = self.peek()
         if c is None:
             return None
@@ -1114,7 +1125,7 @@ class Parser:
                 return c
             return None
         if self.annex_b:
-            if c == ord("c") or (self.n and c == ord("k")):
+            if c == ord("c") or (n and c == ord("k")):
                 return None
             self.pos += 1
             return c
@@ -1222,7 +1233,9 @@ class Parser:
         escape = self.character_class_escape()
         if escape is not None:
             return escape
-        value = self.character_escape()
+        # ClassEscape's CharacterEscape has no [NamedCaptureGroups] (see character_escape): \k in a class is B.1.2's
+        # IdentityEscape, the letter, whatever group names the pattern has.
+        value = self.character_escape(named_groups=False)
         if value is not None:
             return Character(value)
         if self.annex_b and c == ord("c"):

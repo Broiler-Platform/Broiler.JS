@@ -288,8 +288,22 @@ class EarlyErrorsAndGrammar(unittest.TestCase):
         # the letter without a group name and a reference with one.
         self.assertEqual((0, ["k<a>"], 0), exec_("\\k<a>", "", "k<a>"))
         self.assertFalse(accepted("(?<b>x)\\k<a>"))
-        self.assertFalse(accepted("[\\k<a>](?<a>x)"))
         self.assertTrue(accepted("[\\k<a>]"))
+
+    def test_annex_b_s_k_in_a_class_is_the_letter(self) -> None:
+        # No production passes [NamedCaptureGroups] into a CharacterClass: ExtendedAtom has
+        # CharacterClass[~UnicodeMode, ~UnicodeSetsMode], and ClassContents, NonemptyClassRanges and ClassAtom pass only
+        # ?UnicodeMode on, so B.1.2's ClassEscape reads ~NamedCaptureGroups and SourceCharacterIdentityEscape admits k,
+        # even when the pattern holds a GroupName. The main grammar's IdentityEscape[~UnicodeMode] excludes
+        # UnicodeIDContinue, and u's admits only SyntaxCharacter and /, so both refuse it.
+        for pattern in ("[\\k](?<a>x)", "[\\k<a>](?<a>x)", "(?<a>x)[\\k]"):
+            self.assertTrue(accepted(pattern), pattern)
+            self.assertFalse(accepted(pattern, "", annex_b=False), pattern)
+            self.assertFalse(accepted(pattern, "u"), pattern)
+        self.assertEqual((0, ["kx", "x"], 0), exec_("[\\k](?<b>x)", "", "kx"))
+        self.assertEqual((0, [">x", "x"], 0), exec_("[\\k<a>](?<a>x)", "", ">x"))
+        # Outside a class, in a pattern that holds a GroupName, \k is the reference: one without a GroupName is refused.
+        self.assertFalse(accepted("\\k(?<a>x)"))
 
     def test_annex_b_s_decimal_escapes(self) -> None:
         # B.1.2's DecimalEscape only up to the group count, else LegacyOctalEscapeSequence or IdentityEscape.
