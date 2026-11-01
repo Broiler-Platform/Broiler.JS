@@ -78,6 +78,13 @@ contain three pieces of third-party code and one set of public-domain formulas, 
   contributors: from `JsTemporal.Durations`, the duration members of `JsTemporalCore`, the rule half of
   `JsTemporal.Options`, and the arithmetic of its realm files' duration and difference methods. Each unit records its
   origin in its assurance annotation.
+- `Broiler.ECMAScript.Intl` (not packed until stage SJL-9.3f), at stage SJL-9.3a, is ported from Broiler.VM under the
+  same licence and by the same contributors: its table decoders from `JsIntlTables`, and its locale identifiers,
+  negotiation, `Intl.Locale` steps, Locale info and `supportedValuesOf` from `JsLocaleTag` and the engine-free steps of
+  `JsRealm.Intl`, `JsRealm.Locale`, `JsRealm.DateTimeFormat` and `JsRealm.NumberFormat`. Each unit records its origin in
+  its assurance annotation. The data it reads is the engine's, never the library's (the Intl data home's section below).
+  `Broiler.ECMAScript.Intl.Tests` (not packed) holds, under `Differential/Vm/`, test-only copies of Broiler.VM's code at
+  `4cf9ca44` for the differential check of Broiler.VM's JSD-0082, decision D22, compiled into that project alone.
 - `Broiler.ECMAScript.Generation` holds the time data home's generator (milestone SJL-8.2): the tz pin
   reader, the tz compiler and the time zone table generator, the calendar pin reader and the calendar
   table generator, ported from Broiler.VM's architecture tests under the same licence and by the same

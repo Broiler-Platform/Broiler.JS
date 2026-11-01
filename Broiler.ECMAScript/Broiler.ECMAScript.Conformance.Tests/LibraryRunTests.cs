@@ -133,6 +133,45 @@ public class LibraryRunTests
         Assert.Equal(10878 - 27, results.Count(static r => r.Verdict == Verdict.Match));
     }
 
+    /// <summary>
+    /// Every vector of the Intl area's sub-area (a), <c>intl/locales.vectors</c>, passes against the Intl library (milestone
+    /// SJL-9.3a), over the Intl data home's tables and Broiler.VM's providers, or gives Broiler.VM's <c>per-engine</c>
+    /// expectation, the engine whose providers the runner takes; but the engine-level ones, whose outcome is an engine's or
+    /// another sub-area's. Every other Intl vector is not implemented yet, and no other area's verdict moves: the Unicode
+    /// area's <c>String.prototype.toLocaleLowerCase</c>, the one operation name the two areas share, stays unanswered.
+    /// </summary>
+    [Fact]
+    public void Every_locale_vector_passes_against_the_Intl_library_or_gives_Broiler_VM_s_expectation()
+    {
+        var vectors = Home.Corpus.Records.Where(static v => v["area"] == "intl").ToList();
+        var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
+        var locales = results.Where(static r => r.Vector.Id.StartsWith(AlgorithmsLibrary.IntlLocalesPrefix, System.StringComparison.Ordinal)).ToList();
+
+        Assert.NotEmpty(locales);
+        var differences = locales.Where(static r => r.Verdict == Verdict.Difference && !AlgorithmsLibrary.MatchesBroilerVmExpectation(r))
+            .Select(static r => r.Vector.Id + " " + r.Vector["op"] + " in: " + r.Vector["in"] + " expected: " + r.Expected + " got: " + r.Rendered)
+            .ToList();
+        Assert.True(differences.Count == 0, differences.Count + " differences:\n" + string.Join("\n", differences.Take(60)));
+
+        var engineLevel = locales.Where(static r => r.Verdict == Verdict.NotImplemented).Select(static r => r.Vector).ToList();
+        Assert.All(engineLevel, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntl(v), v.Id + " is not answered by the library"));
+        Assert.Equal(
+            ["intl/locales/negotiation/0021", "intl/locales/providers/0012", "intl/locales/providers/0013", "intl/locales/providers/0014"],
+            engineLevel.Select(static v => v.Id).Order(System.StringComparer.Ordinal));
+
+        Assert.All(results.Except(locales), static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+
+        // Intl.NumberFormat.supportedLocalesOf: providers/0007 is the library's FilterLocales, held to Broiler.VM's per-engine
+        // expectation; providers/0014, whose inputs lack the default locale its script prepends, is not answered.
+        var filtered = Assert.Single(locales, static r => r.Vector.Id == "intl/locales/providers/0007");
+        Assert.True(AlgorithmsLibrary.MatchesBroilerVmExpectation(filtered), filtered.Rendered);
+        Assert.Equal("value: str:\"de-CH,en-US-u-ca-gregory,de-DE-x-foo,en-GB,de-1996\"", filtered.Rendered);
+
+        var unicode = LibraryRun.Run(Home.Corpus.Records.Where(static v => v["op"] == "String.prototype.toLocaleLowerCase").ToList(), new AlgorithmsLibrary());
+        Assert.Contains(unicode, static r => r.Vector["area"] == "unicode");
+        Assert.All(unicode, static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+    }
+
     [Fact]
     public void Against_the_empty_library_every_vector_is_not_implemented()
     {

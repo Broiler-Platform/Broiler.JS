@@ -35,6 +35,11 @@ internal static class SharedRules
         // its caller hands it. It references no other shared library: the shared decoder of its tables
         // is the algorithms library's, and the generator is never in an engine's product closure.
         ["Broiler.ECMAScript.Generation"] = [],
+
+        // Runtime-side; the Intl algorithms over the locale data an engine hands in (milestone SJL-9.3). Its edges are the
+        // ones Broiler.VM's JSD-0082, decision D9, and architecture section 2 give it: the algorithms library, whose
+        // WorkCharge it takes, and Broiler.Unicode's algorithms package. The data generator is not one of them.
+        ["Broiler.ECMAScript.Intl"] = ["Broiler.ECMAScript.Algorithms", "Broiler.Unicode.Algorithms"],
     }.ToFrozenDictionary(StringComparer.Ordinal);
 
     /// <summary>The component packages a shared library may reference at all, where the layering lets it.</summary>
