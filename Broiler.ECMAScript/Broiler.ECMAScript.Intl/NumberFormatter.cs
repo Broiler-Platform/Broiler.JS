@@ -1,5 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
+//
+// Broiler Code Assurance
+// ----------------------
+// Relevant units:   47
+// Annotated:        47/47
+// Exempt:           45
+// Human-reviewed:   0/47
+// IP risk:          Low
+// Security risk:    High
+// Criteria:         7/7
+// Resource impact:  3/10 max
+// Unverified:       47
+//
+// GENERATED - DO NOT EDIT MANUALLY
 
 using System;
 using System.Collections.Frozen;
@@ -51,15 +65,23 @@ namespace Broiler.ECMAScript.Intl;
 /// </para>
 /// <para><b>Immutable</b>: one may be shared between threads (convention 10).</para>
 /// </remarks>
+// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Medium; Resources=3; Fingerprint=A50B32
+// Broiler-Human:        PENDING
 public sealed class NumberFormatter
 {
     /// <summary>The units a sanctioned unit identifier names (ECMA-402 Table 2, <c>sec-issanctionedsingleunitidentifier</c>).</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedunitidentifier via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=0; Fingerprint=A7C6AA
+    // Broiler-Human:        PENDING
     private static readonly FrozenSet<string> Sanctioned = SupportedValues.SanctionedUnits.ToFrozenSet(StringComparer.Ordinal);
 
     /// <summary>One run of text and its part type.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=0; Fingerprint=E898DE
+    // Broiler-Human:        PENDING
     private readonly record struct Segment(string Type, string Text);
 
     /// <summary>A number built in its layers.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=0; Fingerprint=DB8255
+    // Broiler-Human:        PENDING
     private sealed class Built
     {
         internal List<Segment> OuterPrefix { get; } = [];
@@ -101,6 +123,8 @@ public sealed class NumberFormatter
 
     private readonly PluralEngine plurals;
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=00CA7F
+    // Broiler-Human:        PENDING
     private NumberFormatter(ILocaleData data, string locale, string dataLocale, string numberingSystem, NumberFormatOptions options)
     {
         this.data = data;
@@ -183,6 +207,8 @@ public sealed class NumberFormatter
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
     /// <exception cref="ArgumentException">The currency style without a well-formed currency, or the unit style without a
     /// well-formed unit: the constructor's checks, which come first, were not made.</exception>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=07F120
+    // Broiler-Human:        PENDING
     public static NumberFormatter Create(ILocaleData data, string locale, string dataLocale, string numberingSystem, NumberFormatOptions options)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -208,6 +234,8 @@ public sealed class NumberFormatter
     /// <summary>IsWellFormedCurrencyCode (<c>sec-iswellformedcurrencycode</c>): three ASCII letters, in either case.</summary>
     /// <param name="currency">The currency code, as the option's String.</param>
     /// <returns>Whether it is well-formed; an engine throws a <c>RangeError</c> where it is not.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedcurrencycode via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=1; Fingerprint=B717C5
+    // Broiler-Human:        PENDING
     public static bool IsWellFormedCurrencyCode(string currency)
     {
         ArgumentNullException.ThrowIfNull(currency);
@@ -220,6 +248,8 @@ public sealed class NumberFormatter
     /// </summary>
     /// <param name="unit">The unit identifier, as the option's String.</param>
     /// <returns>Whether it is well-formed; an engine throws a <c>RangeError</c> where it is not.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedunitidentifier via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=1; Fingerprint=BD2F65
+    // Broiler-Human:        PENDING
     public static bool IsWellFormedUnitIdentifier(string unit)
     {
         ArgumentNullException.ThrowIfNull(unit);
@@ -242,6 +272,8 @@ public sealed class NumberFormatter
     /// <param name="locale">The matched available locale.</param>
     /// <returns>The values, each once. For Broiler.VM's tables, whose locales' default is <c>latn</c>, they are Broiler.VM's list,
     /// <c>latn</c> first (row N8b).</returns>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=9F212E
+    // Broiler-Human:        PENDING
     public static IReadOnlyList<string?> NumberingSystemKeyValues(ILocaleData data, string locale)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -278,6 +310,8 @@ public sealed class NumberFormatter
     /// <param name="charge">The caller's meter: FormatNumericToString's <c>digits / 16 + 1</c> units at each rounding,
     /// ComputeExponent's included (decision D18).</param>
     /// <returns>The formatted String.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=861D5F
+    // Broiler-Human:        PENDING
     public string Format(IntlDecimal x, WorkCharge? charge = null)
     {
         var text = new StringBuilder();
@@ -294,6 +328,8 @@ public sealed class NumberFormatter
     /// <param name="x">The Intl mathematical value.</param>
     /// <param name="charge">The caller's meter, as for <see cref="Format"/>.</param>
     /// <returns>The parts, with no source.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=C91245
+    // Broiler-Human:        PENDING
     public IReadOnlyList<NumberPart> FormatToParts(IntlDecimal x, WorkCharge? charge = null)
     {
         var built = Build(x, approximately: false, charge);
@@ -311,6 +347,8 @@ public sealed class NumberFormatter
     /// <param name="charge">The caller's meter: each end's formatting, twice, and the approximately sign's once more where the
     /// ends write the same String, as Broiler.VM charges them.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.RangeIsNotANumber"/>, a <c>RangeError</c>.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=ACCEEE
+    // Broiler-Human:        PENDING
     public IntlStatus FormatRange(IntlDecimal x, IntlDecimal y, out string formatted, WorkCharge? charge = null)
     {
         var status = FormatRangeToParts(x, y, out var parts, charge);
@@ -332,6 +370,8 @@ public sealed class NumberFormatter
     /// <param name="charge">The caller's meter, as for <see cref="FormatRange"/>.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.RangeIsNotANumber"/>, a <c>RangeError</c>, at
     /// step 1: an end is not-a-number.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=88F9D9
+    // Broiler-Human:        PENDING
     public IntlStatus FormatRangeToParts(IntlDecimal x, IntlDecimal y, out IReadOnlyList<NumberPart> parts, WorkCharge? charge = null)
     {
         if (x.Kind == IntlDecimalKind.NaN || y.Kind == IntlDecimalKind.NaN)
@@ -344,6 +384,9 @@ public sealed class NumberFormatter
         return IntlStatus.Completed;
     }
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=D2F819
+    // Broiler-Falsified-If: a range collapses so that two different ranges write the same String, or its charges differ from each end formatted twice
+    // Broiler-Human:        PENDING
     private List<NumberPart> RangeParts(IntlDecimal x, IntlDecimal y, WorkCharge? charge)
     {
         if (string.Equals(Format(x, charge), Format(y, charge), StringComparison.Ordinal))
@@ -423,8 +466,12 @@ public sealed class NumberFormatter
     }
 
     /// <summary>What identifies a number's outer layer: its name, without its plural.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=B04E9C
+    // Broiler-Human:        PENDING
     private string OuterKey(Built built) => built.OuterLength == 0 ? string.Empty : StyleName(Style) + "|" + Unit + "|" + Currency;
 
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D19 culture-free formatting; IP=Low; Security=Low; Resources=1; Fingerprint=14CAAA
+    // Broiler-Human:        PENDING
     private static string StyleName(NumberStyle style) => style switch
     {
         NumberStyle.Percent => "percent",
@@ -433,6 +480,8 @@ public sealed class NumberFormatter
         _ => "decimal",
     };
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=A29E7C
+    // Broiler-Human:        PENDING
     private static void Emit(List<(Segment, string?)> parts, List<Segment> first, List<Segment> second, string? source)
     {
         foreach (var segment in first)
@@ -450,6 +499,8 @@ public sealed class NumberFormatter
     /// The digits with the currency spacing on each side: the spacing before them is decided by <paramref name="prefixOf"/>'s
     /// prefix and after them by <paramref name="suffixOf"/>'s suffix (CLDR's <c>currencySpacing</c>, row N3b).
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=EE2AE8
+    // Broiler-Human:        PENDING
     private void AddCore(List<(Segment, string?)> parts, Built? prefixOf, Built? suffixOf, string? source)
     {
         var core = prefixOf ?? suffixOf!;
@@ -474,6 +525,8 @@ public sealed class NumberFormatter
     /// The parts a list of segments is: each field trimmed of the default-ignorable characters at its ends, which become
     /// literals, and adjacent literals joined, shared where their sources differ.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Medium; Resources=2; Fingerprint=66BAEE
+    // Broiler-Human:        PENDING
     private static List<NumberPart> Flatten(List<(Segment Segment, string? Source)> segments)
     {
         var trimmed = new List<(Segment Segment, string? Source)>();
@@ -546,6 +599,8 @@ public sealed class NumberFormatter
     /// not the UCD's Default_Ignorable_Code_Point but ICU's union of the space separators, the tab, Bidi_Control and
     /// Variation_Selector, which Broiler.Unicode names as no set.
     /// </remarks>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=8C71F7
+    // Broiler-Human:        PENDING
     private static bool IsDefaultIgnorable(char c) =>
         c is ' ' or '\t' or '\u00a0' or '\u1680' or '\u202f' or '\u205f' or '\u3000' or '\u061c' or '\u200e' or '\u200f'
         || c is >= '\u2000' and <= '\u200a'
@@ -555,6 +610,8 @@ public sealed class NumberFormatter
         || c is >= '\u180b' and <= '\u180d' or '\u180f';
 
     /// <summary>Pattern_White_Space, which the range separator is tested against.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=B3E3F5
+    // Broiler-Human:        PENDING
     private static bool IsPatternWhiteSpace(char c) =>
         c is ' ' or '\t' or '\n' or '\u000b' or '\f' or '\r' or '\u0085' or '\u200e' or '\u200f' or '\u2028' or '\u2029';
 
@@ -563,10 +620,14 @@ public sealed class NumberFormatter
     /// that no platform Unicode table is read (decision D19, rule SL4; row N15): the controls U+0009 to U+000D and U+0085, and
     /// the space, line and paragraph separators.
     /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D19 culture-free formatting; IP=Low; Security=Low; Resources=1; Fingerprint=006694
+    // Broiler-Human:        PENDING
     private static bool IsWhiteSpace(char c) =>
         c is >= '\u0009' and <= '\u000d' or ' ' or '\u0085' or '\u00a0' or '\u1680' or '\u2028' or '\u2029' or '\u202f' or '\u205f' or '\u3000'
         || c is >= '\u2000' and <= '\u200a';
 
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D19 culture-free formatting; IP=Low; Security=Low; Resources=1; Fingerprint=D5D35B
+    // Broiler-Human:        PENDING
     private static string TrimWhiteSpace(string text)
     {
         var start = 0;
@@ -588,6 +649,9 @@ public sealed class NumberFormatter
     // ---- building one number ----------------------------------------------------------------------------------------------
 
     /// <summary>PartitionNumberPattern, layered.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=523B15
+    // Broiler-Falsified-If: a number's String or parts differ from PartitionNumberPattern's over the locale's CLDR patterns and symbols, or a charge moves
+    // Broiler-Human:        PENDING
     private Built Build(IntlDecimal x, bool approximately, WorkCharge? charge)
     {
         var built = new Built();
@@ -717,6 +781,8 @@ public sealed class NumberFormatter
     }
 
     /// <summary>The outer layer for a plural: a unit's pattern, or a currency's name in its pattern (rows N4 and N5).</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Medium; Resources=2; Fingerprint=7B0AD0
+    // Broiler-Human:        PENDING
     private void AddOuter(Built built, string plural)
     {
         string? pattern = null;
@@ -790,6 +856,9 @@ public sealed class NumberFormatter
     /// A unit's pattern in a width and a plural: CLDR's own for a simple unit or a compound it names, or the numerator's
     /// pattern inside the denominator's per-unit pattern or the width's compound pattern (row N5b, implementation-defined).
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=3ED6B0
+    // Broiler-Falsified-If: a unit's pattern is not CLDR's for the width and plural, or a compound is composed otherwise than per-unit then compound pattern
+    // Broiler-Human:        PENDING
     private string? UnitPattern(string unit, UnitDisplay display, string plural)
     {
         string[] widths = display switch
@@ -864,6 +933,8 @@ public sealed class NumberFormatter
     /// The pattern the value is written by, and a compact pattern whose affix joins it next to the number. A compact currency
     /// pattern carries its own currency, so it is the pattern itself; any other compact pattern's affix joins the style's.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=A7B763
+    // Broiler-Human:        PENDING
     private (NumberPattern Pattern, bool PatternIsCompact, NumberPattern? Joined) Patterns(int compactKey, int exponent, string plural)
     {
         var main = NumberPattern.Parse(MainPattern());
@@ -879,6 +950,8 @@ public sealed class NumberFormatter
     }
 
     /// <summary>The style's pattern.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=E609E2
+    // Broiler-Human:        PENDING
     private string MainPattern() => Style switch
     {
         NumberStyle.Percent => Value("percent.standard") ?? "#,##0%",
@@ -890,6 +963,8 @@ public sealed class NumberFormatter
     };
 
     /// <summary>The compact pattern for a magnitude and a plural, or nothing where the locale does not compact it.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=5D034D
+    // Broiler-Human:        PENDING
     private string? CompactPattern(int magnitude, string plural)
     {
         if (magnitude < 3)
@@ -910,6 +985,8 @@ public sealed class NumberFormatter
     /// ComputeExponentForMagnitude (<c>sec-computeexponentformagnitude</c>): 0 for the standard notation, the magnitude for the
     /// scientific, its multiple of three below for the engineering, and the compact pattern's.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=12FBCC
+    // Broiler-Human:        PENDING
     private int ExponentForMagnitude(int magnitude)
     {
         switch (Notation)
@@ -943,6 +1020,9 @@ public sealed class NumberFormatter
     }
 
     /// <summary>ComputeExponent (<c>sec-computeexponent</c>), with the exponent taken after rounding (row N6a).</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=4D037C
+    // Broiler-Falsified-If: the exponent differs from ComputeExponent's after rounding, or its rounding charges other than digits / 16 + 1
+    // Broiler-Human:        PENDING
     private int ComputeExponent(IntlDecimal x, WorkCharge? charge)
     {
         if (x.IsZero || Notation == NumberNotation.Standard)
@@ -966,6 +1046,8 @@ public sealed class NumberFormatter
     /// One affix as ICU's patternInfoToStringBuilder writes it: the positive or negative subpattern's tokens, with the sign, a
     /// plus sign or the approximately sign at the sign's place.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Medium; Resources=2; Fingerprint=6263F2
+    // Broiler-Human:        PENDING
     private List<Segment> Affix(NumberPattern pattern, bool patternIsCompact, NumberPattern? joined, bool isPrefix, int signType, bool approximately, out bool currencyAtNumber)
     {
         var plusReplacesMinus = signType == 1 && !pattern.PositiveHasPlus;
@@ -1066,6 +1148,8 @@ public sealed class NumberFormatter
     }
 
     /// <summary>The currency's text for one, two or three currency signs in a pattern, and its ends' kinds for spacing.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=E6E33D
+    // Broiler-Human:        PENDING
     private (string Text, string Ends) CurrencyText(int count)
     {
         var code = Currency ?? "XXX";
@@ -1085,6 +1169,9 @@ public sealed class NumberFormatter
     }
 
     /// <summary>Adds the digits of a formatted decimal String: integer groups, the decimal separator, the fraction.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=41FED9
+    // Broiler-Falsified-If: a grouping separator is written where ICU's grouping test with the locale's minimum grouping digits writes none, or the reverse
+    // Broiler-Human:        PENDING
     private void AddDigits(Built built, string n)
     {
         var point = n.IndexOf('.');
@@ -1130,6 +1217,8 @@ public sealed class NumberFormatter
     }
 
     /// <summary>ASCII digits as the numbering system's.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=800AE4
+    // Broiler-Human:        PENDING
     private string Transliterate(string ascii)
     {
         if (digits is null)
@@ -1155,12 +1244,17 @@ public sealed class NumberFormatter
     }
 
     /// <summary>One value of the data locale's number data, or nothing.</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D19 culture-free formatting; IP=Low; Security=Low; Resources=1; Fingerprint=F69C78
+    // Broiler-Human:        PENDING
     private string? Value(string key) => data.NumberValue(dataLocale, key);
 
     /// <summary>
     /// A symbol in the numbering system (decision D21): a system other than <c>latn</c> reads its own symbol at the data
     /// locale, then at root, where the data carries it; every system then reads the data locale's <c>latn</c> symbol.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=1; Fingerprint=5D9D8C
+    // Broiler-Falsified-If: a numbering system's symbol is read otherwise than its own at the data locale, then at root, then the latn one
+    // Broiler-Human:        PENDING
     private string Symbol(string name, string fallback)
     {
         if (NumberingSystem != "latn")
@@ -1177,6 +1271,8 @@ public sealed class NumberFormatter
     }
 
     /// <summary>The code points of a String, which a range's collapse counts (row N17b).</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Low; Resources=1; Fingerprint=7340D5
+    // Broiler-Human:        PENDING
     private static int CodePoints(string text)
     {
         var count = 0;
@@ -1196,6 +1292,8 @@ public sealed class NumberFormatter
 }
 
 /// <summary>One token of a pattern's prefix or suffix.</summary>
+// Broiler-AI:           Origin=Ported; Spec=UTS35 Part 3 section 3 number patterns via Broiler.VM JsNumberPattern; IP=Low; Security=Low; Resources=0; Fingerprint=C8D6E0
+// Broiler-Human:        PENDING
 internal enum AffixKind
 {
     /// <summary>Text, as written.</summary>
@@ -1218,6 +1316,8 @@ internal enum AffixKind
 }
 
 /// <summary>One affix token.</summary>
+// Broiler-AI:           Origin=Ported; Spec=UTS35 Part 3 section 3 number patterns via Broiler.VM JsNumberPattern; IP=Low; Security=Low; Resources=0; Fingerprint=DD6046
+// Broiler-Human:        PENDING
 internal readonly record struct AffixToken(AffixKind Kind, string Text);
 
 /// <summary>
@@ -1228,6 +1328,8 @@ internal readonly record struct AffixToken(AffixKind Kind, string Text);
 /// <b>Only what a formatter reads from it is kept</b>: the affixes, the grouping sizes and, for a compact pattern, how many
 /// digits it shows. The digit counts of the number part are ECMA-402's options and not the pattern's.
 /// </remarks>
+// Broiler-AI:           Origin=Ported; Spec=UTS35 Part 3 section 3 number patterns via Broiler.VM JsNumberPattern; IP=Low; Security=Low; Resources=0; Fingerprint=E89FB2
+// Broiler-Human:        PENDING
 internal sealed class NumberPattern
 {
     private NumberPattern() { }
@@ -1250,14 +1352,20 @@ internal sealed class NumberPattern
     internal int Zeros { get; private set; }
 
     /// <summary>Whether the positive subpattern writes a plus sign itself.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 3 section 3 number patterns via Broiler.VM JsNumberPattern; IP=Low; Security=Low; Resources=0; Fingerprint=27364D
+    // Broiler-Human:        PENDING
     internal bool PositiveHasPlus => PositivePrefix.Exists(static t => t.Kind == AffixKind.Plus) || PositiveSuffix.Exists(static t => t.Kind == AffixKind.Plus);
 
     /// <summary>Whether the negative subpattern has a sign's place.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 3 section 3 number patterns via Broiler.VM JsNumberPattern; IP=Low; Security=Low; Resources=0; Fingerprint=396F7D
+    // Broiler-Human:        PENDING
     internal bool NegativeHasMinus =>
         NegativePrefix is not null &&
         (NegativePrefix.Exists(static t => t.Kind == AffixKind.Minus) || NegativeSuffix!.Exists(static t => t.Kind == AffixKind.Minus));
 
     /// <summary>Reads a pattern; a malformed one reads as its literal text around no number.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 3 section 3 number patterns via Broiler.VM JsNumberPattern; IP=Low; Security=Low; Resources=1; Fingerprint=DC5B0D
+    // Broiler-Human:        PENDING
     internal static NumberPattern Parse(string pattern)
     {
         var result = new NumberPattern();
@@ -1280,6 +1388,8 @@ internal sealed class NumberPattern
     }
 
     /// <summary>The positive and negative subpatterns, split at the first unquoted <c>;</c>.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 3 section 3 number patterns via Broiler.VM JsNumberPattern; IP=Low; Security=Low; Resources=1; Fingerprint=109BB3
+    // Broiler-Human:        PENDING
     private static (string Positive, string? Negative) SplitSubpatterns(string pattern)
     {
         var quoted = false;
@@ -1300,6 +1410,9 @@ internal sealed class NumberPattern
     }
 
     /// <summary>One subpattern's prefix tokens, suffix tokens and number part.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 3 section 3 number patterns via Broiler.VM JsNumberPattern; IP=Low; Security=High; Resources=2; Fingerprint=F7DD86
+    // Broiler-Falsified-If: a CLDR pattern's affix is read as other tokens than UTS 35 Part 3 section 3 states
+    // Broiler-Human:        PENDING
     private static (List<AffixToken> Prefix, List<AffixToken> Suffix, string Number) ParseSubpattern(string text)
     {
         var prefix = new List<AffixToken>();
@@ -1395,6 +1508,8 @@ internal sealed class NumberPattern
     }
 
     /// <summary>Reads the grouping sizes and the count of shown zeros from the number part.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 3 section 3 number patterns via Broiler.VM JsNumberPattern; IP=Low; Security=Low; Resources=1; Fingerprint=A31F46
+    // Broiler-Human:        PENDING
     private void ReadNumber(string number)
     {
         var integerEnd = number.IndexOfAny(['.', 'E']);

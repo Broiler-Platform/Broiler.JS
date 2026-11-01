@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   1
 // Annotated:        1/1
-// Exempt:           14
+// Exempt:           17
 // Human-reviewed:   0/1
 // IP risk:          Low
 // Security risk:    Low
@@ -40,7 +40,7 @@ namespace Broiler.ECMAScript.Intl;
 /// and no number is reused.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 X3 statuses; IP=Low; Security=Low; Resources=0; Fingerprint=34D20E
+// Broiler-AI:           Origin=AI; Spec=JSD-0082 X3 statuses; IP=Low; Security=Low; Resources=0; Fingerprint=9FF49F
 // Broiler-Human:        PENDING
 public enum IntlStatus
 {

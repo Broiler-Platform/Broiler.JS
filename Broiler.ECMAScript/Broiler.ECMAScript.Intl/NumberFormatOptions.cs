@@ -1,9 +1,25 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
+//
+// Broiler Code Assurance
+// ----------------------
+// Relevant units:   7
+// Annotated:        7/7
+// Exempt:           29
+// Human-reviewed:   0/7
+// IP risk:          Low
+// Security risk:    Low
+// Criteria:         0/0
+// Resource impact:  0/10 max
+// Unverified:       7
+//
+// GENERATED - DO NOT EDIT MANUALLY
 
 namespace Broiler.ECMAScript.Intl;
 
 /// <summary>How a currency is written: [[CurrencyDisplay]] of an <c>Intl.NumberFormat</c> (<c>sec-setnumberformatunitoptions</c>).</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.numberformat Table 15 resolved options; IP=Low; Security=Low; Resources=0; Fingerprint=D2C0E2
+// Broiler-Human:        PENDING
 public enum CurrencyDisplay
 {
     /// <summary><c>symbol</c>: the locale's symbol, such as <c>$</c> or <c>US$</c>.</summary>
@@ -20,6 +36,8 @@ public enum CurrencyDisplay
 }
 
 /// <summary>[[CurrencySign]] of an <c>Intl.NumberFormat</c>: how a negative currency amount is written.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.numberformat Table 15 resolved options; IP=Low; Security=Low; Resources=0; Fingerprint=7B2918
+// Broiler-Human:        PENDING
 public enum CurrencySign
 {
     /// <summary><c>standard</c>: the minus sign.</summary>
@@ -30,6 +48,8 @@ public enum CurrencySign
 }
 
 /// <summary>[[UnitDisplay]] of an <c>Intl.NumberFormat</c>: the width of a unit's pattern.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.numberformat Table 15 resolved options; IP=Low; Security=Low; Resources=0; Fingerprint=8FF5E4
+// Broiler-Human:        PENDING
 public enum UnitDisplay
 {
     /// <summary><c>short</c>.</summary>
@@ -43,6 +63,8 @@ public enum UnitDisplay
 }
 
 /// <summary>[[UseGrouping]] of an <c>Intl.NumberFormat</c> (<c>sec-intl.numberformat</c>, GetBooleanOrStringNumberFormatOption).</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.numberformat Table 15 resolved options; IP=Low; Security=Low; Resources=0; Fingerprint=67C26A
+// Broiler-Human:        PENDING
 public enum NumberGrouping
 {
     /// <summary><c>auto</c>: the locale's minimum grouping digits.</summary>
@@ -59,6 +81,8 @@ public enum NumberGrouping
 }
 
 /// <summary>[[SignDisplay]] of an <c>Intl.NumberFormat</c>.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.numberformat Table 15 resolved options; IP=Low; Security=Low; Resources=0; Fingerprint=297010
+// Broiler-Human:        PENDING
 public enum SignDisplay
 {
     /// <summary><c>auto</c>: the sign of negative numbers, negative zero included.</summary>
@@ -89,6 +113,8 @@ public enum SignDisplay
 /// <see cref="CurrencySign"/> outside the currency style, <see cref="Unit"/> and <see cref="UnitDisplay"/> outside the unit
 /// style, and <see cref="CompactDisplay"/> outside compact notation, as the constructor leaves those slots unset.
 /// </remarks>
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.numberformat Table 15 resolved options; IP=Low; Security=Low; Resources=0; Fingerprint=A8888E
+// Broiler-Human:        PENDING
 public sealed record NumberFormatOptions
 {
     /// <summary>[[Style]].</summary>
@@ -131,4 +157,6 @@ public sealed record NumberFormatOptions
 /// <c>exponentMinusSign</c>, <c>exponentInteger</c>, <c>approximatelySign</c>, <c>nan</c>, <c>infinity</c> or <c>literal</c>.</param>
 /// <param name="Value">The part's text.</param>
 /// <param name="Source">In a range, <c>startRange</c>, <c>endRange</c> or <c>shared</c>; <see langword="null"/> for one number.</param>
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.numberformat Table 15 resolved options; IP=Low; Security=Low; Resources=0; Fingerprint=747AEA
+// Broiler-Human:        PENDING
 public readonly record struct NumberPart(string Type, string Value, string? Source);

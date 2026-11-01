@@ -1,5 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
+//
+// Broiler Code Assurance
+// ----------------------
+// Relevant units:   11
+// Annotated:        11/11
+// Exempt:           18
+// Human-reviewed:   0/11
+// IP risk:          Low
+// Security risk:    High
+// Criteria:         2/2
+// Resource impact:  2/10 max
+// Unverified:       11
+//
+// GENERATED - DO NOT EDIT MANUALLY
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +22,8 @@ using System.Collections.Immutable;
 namespace Broiler.ECMAScript.Intl;
 
 /// <summary>[[Type]] of an <c>Intl.DisplayNames</c>: what its codes name.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DisplayNames options; IP=Low; Security=Low; Resources=0; Fingerprint=D9FF17
+// Broiler-Human:        PENDING
 public enum DisplayNamesType
 {
     /// <summary><c>language</c>: a <c>unicode_language_id</c>.</summary>
@@ -30,6 +46,8 @@ public enum DisplayNamesType
 }
 
 /// <summary>[[Fallback]] of an <c>Intl.DisplayNames</c>: what <c>of</c> answers for a code with no name.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DisplayNames options; IP=Low; Security=Low; Resources=0; Fingerprint=AE712D
+// Broiler-Human:        PENDING
 public enum DisplayNamesFallback
 {
     /// <summary><c>code</c>: the canonical code itself.</summary>
@@ -40,6 +58,8 @@ public enum DisplayNamesFallback
 }
 
 /// <summary>[[LanguageDisplay]] of an <c>Intl.DisplayNames</c> of the language type.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DisplayNames options; IP=Low; Security=Low; Resources=0; Fingerprint=DF24B8
+// Broiler-Human:        PENDING
 public enum LanguageDisplay
 {
     /// <summary><c>dialect</c>: a dialect's own name where CLDR has one, "British English".</summary>
@@ -77,9 +97,13 @@ public enum LanguageDisplay
 /// </para>
 /// <para><b>Immutable</b>: one may be shared between threads (convention 10).</para>
 /// </remarks>
+// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames; IP=Low; Security=Low; Resources=0; Fingerprint=E7C80D
+// Broiler-Human:        PENDING
 public sealed class DisplayNamesCore
 {
     /// <summary>The date-time field codes of Table 19 (<c>sec-isvaliddatetimefieldcode</c>).</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames; IP=Low; Security=Low; Resources=0; Fingerprint=1757E1
+    // Broiler-Human:        PENDING
     private static readonly ImmutableArray<string> DateTimeFieldCodes = ["era", "year", "quarter", "month", "weekOfYear", "weekday", "day", "dayPeriod", "hour", "minute", "second", "timeZoneName"];
 
     private readonly ILocaleData data;
@@ -122,6 +146,8 @@ public sealed class DisplayNamesCore
     /// <param name="languageDisplay">The <c>languageDisplay</c> option, kept for the language type alone.</param>
     /// <returns>The record.</returns>
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames; IP=Low; Security=Low; Resources=1; Fingerprint=264A4D
+    // Broiler-Human:        PENDING
     public static DisplayNamesCore Create(ILocaleData data, string locale, string dataLocale, FormatStyle style, DisplayNamesType type, DisplayNamesFallback fallback, LanguageDisplay languageDisplay)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -138,6 +164,8 @@ public sealed class DisplayNamesCore
     /// <param name="name">The name; the canonical code under the <c>code</c> fallback; <see langword="null"/> for <c>undefined</c>.</param>
     /// <param name="charge">The caller's meter, for a language code's parse and canonicalisation (<see cref="CanonicalCode"/>).</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidDisplayNamesCode"/>, a <c>RangeError</c>.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames; IP=Low; Security=Low; Resources=1; Fingerprint=582A27
+    // Broiler-Human:        PENDING
     public IntlStatus Of(string code, out string? name, WorkCharge? charge = null)
     {
         var status = CanonicalCode(code, out var canonical, charge);
@@ -161,6 +189,9 @@ public sealed class DisplayNamesCore
     /// <param name="charge">The caller's meter: a language code's parse and canonicalisation, one unit per code unit and per
     /// alias look-up, as <see cref="LocaleId"/> charges them; no other type charges.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidDisplayNamesCode"/>, a <c>RangeError</c>.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames; IP=Low; Security=High; Resources=2; Fingerprint=00A256
+    // Broiler-Falsified-If: a code is accepted that CanonicalCodeForDisplayNames refuses, or regularized by other than ASCII casing
+    // Broiler-Human:        PENDING
     public IntlStatus CanonicalCode(string code, out string canonical, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(code);
@@ -247,6 +278,8 @@ public sealed class DisplayNamesCore
     /// <summary>The name [[Fields]] holds for a canonical code, or <see langword="null"/> where it holds none.</summary>
     /// <param name="canonicalCode">A code <see cref="CanonicalCode"/> answered.</param>
     /// <returns>The name, or <see langword="null"/>.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames; IP=Low; Security=Low; Resources=1; Fingerprint=99C60B
+    // Broiler-Human:        PENDING
     public string? DisplayName(string canonicalCode)
     {
         ArgumentNullException.ThrowIfNull(canonicalCode);
@@ -277,6 +310,8 @@ public sealed class DisplayNamesCore
         }
     }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DisplayNames options; IP=Low; Security=Low; Resources=1; Fingerprint=F6922E
+    // Broiler-Human:        PENDING
     private static string StyleName(FormatStyle style) => style switch
     {
         FormatStyle.Short => "short",
@@ -290,6 +325,9 @@ public sealed class DisplayNamesCore
     /// pattern. An unnamed part is its code under the code fallback, as ICU writes "xyz (Germany)", and makes the whole name
     /// nothing otherwise.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames; IP=Low; Security=High; Resources=2; Fingerprint=BA3AA8
+    // Broiler-Falsified-If: a language code's name is composed otherwise than its dialect name or its parts in CLDR's locale pattern
+    // Broiler-Human:        PENDING
     private string? LanguageName(string code, Func<string, string, string?> named)
     {
         var tag = LocaleTag.Parse(code)!;
