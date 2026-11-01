@@ -32,6 +32,7 @@ rule for its own engine is [`docs/evidence/sjl-1-001/decision-rule.md`](../../do
 | `temporal/` | The Temporal area: the ISO 8601 and RFC 9557 grammar through every goal's `from()`, duration, calendar, time zone, offset and `relativeTo` strings, with every accept and refuse case of the area design's table and of its rows G1 to G24; duration rounding in every mode and every increment of every unit, with and without `relativeTo`, nudging, bubbling and the shifted window, totals and comparison; the records' limits, and balancing, regulation and addition at them; `until` and `since` in every type and calendar; and the calendars: identifiers, month codes, eras, month-day reference dates, the formula calendars at their edges and the table calendars at their tables' edges where Table 1 publishes them *(added 2026-10-18, at corpus revision 24)* |
 | `intl/` | The Intl area, one file per sub-area of Broiler.VM's JSD-0082: (a) locale identifiers, likely subtags, negotiation, Locale info and `supportedValuesOf` (`locales.vectors`); (b) the Intl mathematical value, digit options, plural rules and plural ranges (`values-and-plurals.vectors`); (c) number, list, relative-time and display-name formatting (`numbers-and-text.vectors`); (d) date-time formatting, intervals, day periods, hour cycles, zone names and Intl over Temporal (`date-times.vectors`); (e) duration formatting (`durations.vectors`); with, for each locale of Broiler.JS's embedding beyond Broiler.VM's, one vector per table family of the locale data *(added 2026-10-26, at corpus revision 27)* |
 | `syntax/` | The syntax area, one file per class of row of the stage table's syntax stage: the lexical grammar (`lexical.vectors`: line terminators, comments, HTML-like comments and the hashbang, identifiers and their escapes, numeric literals with separators and their legacy forms, string literals, templates and their cooking, regular-expression delimiting after every class of punctuator, automatic semicolon insertion), expressions, statements, functions and classes, scripts and eval code, and Annex B's extensions (`annex-b.vectors`); each vector a source text's parse as a Script (`ParseScript`) or as the eval code of a top-level direct eval (`PerformEval`), accepted with its completion value or refused with a SyntaxError *(added 2026-10-27, at corpus revision 29)* |
+| `collation/` | The collation vectors (milestone SJL-17.2), of the area `intl`, since the schema has no `collation` area: root order across scripts from CLDR 48.2.0's archived CollationTest files and the reference, with canonically equivalent and ignorable sequences, compatibility forms and Han across blocks (`root.vectors`); every tailoring of decision E3 of Broiler.VM's JSD-0084, root, `en`, `de`, German phonebook and search, root search, `es`, `sv` and `th` (`tailorings.vectors`); `sensitivity`, `ignorePunctuation`, `numeric` and `caseFirst` (`options.vectors`); and lone surrogates (`surrogates.vectors`) *(added 2026-11-01, at corpus revision 31)* |
 | [`controls/`](controls/README.md) | Malformed files the validator must refuse. **Not part of the corpus.** |
 
 ## Running it
@@ -74,6 +75,11 @@ python3 -I scripts/conformance/generate_intl_vectors.py --node <Node v26.12.0> -
 # read BROILER_SYNTAX_NODE, BROILER_ECMA262_SPEC and BROILER_TEST262, and skip those checks where they are absent.
 python3 -I scripts/conformance/generate_syntax_vectors.py --out conformance/vectors/syntax
 python3 -I scripts/conformance/generate_syntax_vectors.py --check-node <Node v26.12.0> --spec <spec.html> --test262 <test262>
+# The collation vectors run ICU through the same reference Node.js v26.12.0 (intlref.mjs) and read the data home's archived
+# CollationTest files and root.xml, each held to Broiler.ECMAScript/data/intl/cldr/cldr.pin; --spec checks every ECMA-402
+# clause id against a checkout of tc39/ecma402 at the pinned revision. Its test that regenerates them reads
+# BROILER_INTL_NODE and is skipped where it is absent.
+python3 -I scripts/conformance/generate_collation_vectors.py --node <Node v26.12.0> --spec <ecma402 checkout>
 python3 -m unittest discover -s scripts/conformance/tests
 # The Unicode area's tests that read the pinned data look for it in BROILER_UNICODE_PINS, or in a Broiler.Unicode
 # checkout beside this repository, and are skipped where it is absent.
@@ -184,6 +190,13 @@ Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release".)*
   Broiler.VM's composition of a compound unit, which row N5b's `per-engine` expectations hold (decision D35). The
   corpus copies no CLDR file; the generator reads the cldr-json tarballs by their npm integrity.
 - **Syntax.** The syntax area (revision 29) cites the clauses of the pinned ECMA-262 edition that decide each parse, and beside them, for most refusals and some acceptances, the test262 tests at `ccaac100` that assert the same outcome. Its sources are written from the grammar by `scripts/conformance/generate_syntax_vectors.py`, which states every expected value itself; the explicit-resource-management rules, which ECMA-262 main merged after the pinned edition, are cited by their test262 tests alone, and their 10 vectors take their expected values from ECMA-262 main at `4feb0272`, not from the pinned edition, which has no UsingDeclaration and refuses the 6 acceptances among them. Every vector is checked against the reference Node.js v26.12.0 that bundle `sjl-9-001`'s `reference.txt` names (`scripts/conformance/syntaxcheck.mjs`), which is no source of an expected value: where the reference disagrees with the text the vector follows the text, and the generator names the vector.
+- **Collation.** The collation vectors (revision 31) cite ECMA-402 at the revision [`sources/ecma402.pin`](sources/ecma402.pin)
+  names, as the Intl area does, and ECMA-262's `Array.prototype.sort` for the vectors that sort. Every expected value is
+  the Intl area's reference's, ICU 78.3 with CLDR 48.0 through the reference Node.js v26.12.0 (`ref:intlref@1`); a vector
+  of two consecutive lines of CLDR 48.2.0's archived CollationTest files, which the data home holds under
+  `Broiler.ECMAScript/data/intl/cldr/` by its pin, cites them too (`ref:collationtest@1`), and the generator refuses the
+  area if the reference orders such a pair against the file. Han across blocks takes the reference's order, by radical
+  and stroke, which CLDR 48.2.0's `root.xml` names. The corpus copies no CLDR file.
 - **test262.** No vector of revision 1 is derived from a test262 test. A vector that is will cite the
   test with `test262:<path>`, and the corpus will then carry test262's licence notice.
   *(2026-10-27, at corpus revision 29:)* the syntax area cites test262 tests as sources that assert an
