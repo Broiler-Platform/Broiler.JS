@@ -66,7 +66,7 @@ engine's `per-engine` expectation taken from its record, never from a run:
   each engine's expectation is the nesting limit's SyntaxError (D7; row S3, "engine policy that becomes a parameter");
 - the empty match from a lastIndex inside a surrogate pair under u (row M4), which the text leaves ill-formed
   (regexpref raises SpecAssertion) and decision D41 classes implementation-defined: each engine's expectation is its
-  answer as D41 records it, and `out` lists both.
+  answer as D41 records it, and `out` lists both (SCHEMA.md section 4's dated note on such a case).
 No vector carries a `divergence` field: each engine's first run on revision 31 is classified at revision 32.
 
 THE ROWS. Each vector's note names the row of bundle sjl-11-001's correspondence (Broiler.VM's
@@ -686,8 +686,9 @@ def build_syntax() -> None:
                      ("(?<a>.)\\k<>", ""), ("\\k<a>(?<b>x)", ""), ("[\\k<a>](?<a>x)", ""), ("[\\k<a>](?<a>x)", "u"),
                      ("[\\k](?<a>x)", ""), ("[\\k]", ""), ("(?<a>x)\\k<\\u0061>", "")):
         add_construct(f, "s5-named-references", p, flags, rows=("S5",),
-                      text="AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \\k in a class (B.1.2's "
-                           "SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k)")
+                      text="AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \\k in a class, which no "
+                           "production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so "
+                           "SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it)")
     # S6: property names.
     names = ["L", "Letter", "Lu", "Uppercase_Letter", "gc=Lu", "General_Category=Lu", "General_Category=Uppercase_Letter",
              "Script=Greek", "Script=Grek", "sc=Grek", "scx=Grek", "Script_Extensions=Greek",
@@ -898,7 +899,7 @@ def build_matching() -> None:
                         ("\\a", "", "a"), ("[\\b]", "", "\u0008"), ("[\\b]", "u", "\u0008"),
                         ("\\uD83D\\uDE00", "", "\ud83d\ude00"), ("\\uD83D\\uDE00", "u", "\ud83d\ude00")):
         add_exec(f, "s4-escapes", p, flags, s, rows=("S4",), text="what each escape matches")
-    # S5: a class with \k (refused) and the forward reference.
+    # S5: the forward reference (a class with \k is in s4-escapes: the letter, under B.1.2).
     for p, flags, s in (("\\k<a>(?<a>x)", "u", "x"), ("(?<a>x)\\k<a>", "u", "xx"), ("\\k<a>(?<b>x)", "", "x")):
         add_exec(f, "s5-references", p, flags, s, rows=("S5",), text="a reference to a group not yet captured matches "
                                                                    "the empty string, or the reference is refused")
@@ -966,10 +967,13 @@ def build_matching() -> None:
                         ("[\\q{\ud83d\ude00\ud83d\ude00|a}]", "v", "\ud83d\ude00\ud83d\ude00"),
                         ("[[a-c]&&[b-d]]+", "v", "abcd"), ("[\\q{a}\\q{ab}]", "v", "ab"), ("[a-z&&[^aeiou]]", "v", "x")):
         add_exec(f, "v-mode", p, flags, s, rows=("S8",), text="the v flag's set operations and strings, longest first")
-    # Long inputs: rows B1 (the VM's frame ceiling), B5, B6, B8 and S3b's breadth.
-    add_repeated("b1-greedy-run", "a*", 1, "", "", "a", 1049000, "", ("B1",),
-                 "a* over 1,049,000 characters: the whole input (past 2^20, where Broiler.VM's frame ceiling stops it, "
-                 "engine policy that becomes a parameter)")
+    # Long inputs: rows B1, B5, B6, B8 and S3b's breadth. Rows B1 and B6 are sized inside the frame and trail ceilings
+    # decision D10 has both engines pass (frames 1 << 20, trail 1 << 21), at the largest sizes the correspondence
+    # records completing in Broiler.VM: past them each engine stops by its policy (D10), which no outcome renders
+    # (SCHEMA.md section 7), so a vector there could be neither normative nor impl-defined (PARTLY).
+    add_repeated("b1-greedy-run", "a*", 1, "", "", "a", 1048000, "", ("B1",),
+                 "a* over 1,048,000 characters: the whole input (inside the frame ceiling of decision D10, which "
+                 "Broiler.VM reaches past 2^20 characters, one frame each; row B1's b1h)")
     add_repeated("b1-greedy-run", "[a]*", 1, "", "u", "a", 100000, "", ("B1",),
                  "a greedy class over 100,000 characters under u: the whole input, never a shortened match")
     add_repeated("b5-quantifier-sequence", "(?:ab)*", 50000, "c", "u", "ab", 10, "c", ("B5",),
@@ -978,13 +982,23 @@ def build_matching() -> None:
                  "50,000 general quantifiers in sequence before c, under v")
     add_repeated("b5-quantifier-sequence", "(?:ab)*", 1, "", "u", "ab", 100000, "", ("B5",),
                  "a general quantifier over 100,000 iterations under u")
-    add_repeated("b6-frames-and-trail", "(?:ab)*", 1, "", "", "ab", 1049000, "", ("B6",),
-                 "(?:ab)* over 1,049,000 iterations: the whole input (Broiler.VM's frame ceiling stops it, engine "
-                 "policy that becomes a parameter)")
+    # Row B5's u-mode fallback (probe b5g): past the stack guard Broiler.JS answers with the .NET translation, whose
+    # answers for these two tails differ from the specification's; 10 in sequence stay with the library.
+    for count in (10, 50000):
+        add_repeated("b5-quantifier-sequence", "(?:ab)*", count, "(?:x)?(a?b??)*", "u", "ab", 1, "", ("B5",),
+                     f"{count:,} general quantifiers in sequence before (?:x)?(a?b??)*, under u, on \"ab\": the "
+                     f"specification's [\"ab\", undefined], never the .NET translation's [\"ab\", \"\"]")
+        add_repeated("b5-quantifier-sequence", "(?:ab)*", count, "(?<=(\\d+)(\\d+))$", "u", "1053", 1, "", ("B5",),
+                     f"{count:,} general quantifiers in sequence before (?<=(\\d+)(\\d+))$, under u, on \"1053\": "
+                     f"the specification's captures, read right to left")
+    add_repeated("b6-frames-and-trail", "(?:ab)*", 1, "", "", "ab", 1048000, "", ("B6",),
+                 "(?:ab)* over 1,048,000 iterations: the whole input (inside the frame ceiling of decision D10, one "
+                 "frame an iteration; row B6's b6f)")
     add_repeated("b6-frames-and-trail", "(?:(a)(b)(c))*", 1, "", "", "abc", 161000, "", ("B6",),
-                 "(?:(a)(b)(c))* over 161,000 iterations: the whole input")
-    add_repeated("b6-frames-and-trail", "(?:(a)(b)(c))*", 1, "", "", "abc", 162000, "", ("B6",),
-                 "(?:(a)(b)(c))* over 162,000 iterations: the whole input (Broiler.VM's trail ceiling stops it)")
+                 "(?:(a)(b)(c))* over 161,000 iterations: the whole input (inside the trail ceiling of decision D10, 13 "
+                 "cells an iteration; row B6's b6d)")
+    add_repeated("b6-frames-and-trail", "(?:(a)(b)(c))*", 1, "", "", "abc", 100000, "", ("B6",),
+                 "(?:(a)(b)(c))* over 100,000 iterations: the whole input, well inside both ceilings")
     add_repeated("b8-flat-sequence", "(?:a)", 100000, "", "u", "a", 100000, "", ("B8",),
                  "a flat sequence of 100,000 terms under u: the whole input, with no recursion per term")
     add_repeated("b8-flat-sequence", "\\B", 100000, "", "", "", 0, "", ("B8",),
@@ -1375,9 +1389,15 @@ NOT_REACHED = {
 # otherwise.
 PARTLY = {
     "B1": "Broiler.JS's cell (10,000,001 characters past the 10,000,000-step allowance of Broiler.Regex 0.1.0-preview.4) "
-          "needs regexpref to hold ten million pending choice points; the vectors reach the row at 1,049,000 "
-          "characters (Broiler.VM's frame ceiling) and at library level under a budget, and Broiler.JS's part C "
-          "programs (G01 to G03) hold the size",
+          "needs regexpref to hold ten million pending choice points; the vectors reach the row at 1,048,000 "
+          "characters, inside the frame ceiling of decision D10 that Broiler.VM reaches past 2^20, and at library "
+          "level under a budget, and Broiler.JS's part C programs (G01 to G03) hold the size; past the ceiling each "
+          "engine stops by its policy (D10), Broiler.VM's stop an abort no outcome renders (SCHEMA.md section 7)",
+    "B6": "Broiler.VM's cell (its stop past 2^20 frames or 2^21 trail cells) is engine policy that decision D10 keeps "
+          "and sets for both engines, Broiler.JS's a RangeError: the vectors reach the row at the largest sizes the "
+          "row records completing (b6f, b6d) and below them, and the sizes past the ceilings are left to the part C "
+          "programs, since an abort matches no outcome (SCHEMA.md section 7) and the stop is no divergence a plan "
+          "answers",
     "B2": "Broiler.JS's cell (24 a under u) needs about 10^8 Matcher invocations; the vectors reach the row's shape at "
           "16 a and at library level under a budget (W and K shapes); Broiler.JS's part C programs (W01, W02) hold the "
           "size",

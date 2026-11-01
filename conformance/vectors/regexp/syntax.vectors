@@ -1789,7 +1789,7 @@ out: error: SyntaxError
 class: normative
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-groupspecifiersthatmatch ref:regexpref@1
 script: new RegExp("\\k<b>(?<a>x)", "u") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /u: refused (early:undefined-group-name)
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /u: refused (early:undefined-group-name)
 since: 31
 
 id: regexp/syntax/s5-named-references/0002
@@ -1800,7 +1800,7 @@ out: error: SyntaxError
 class: normative
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-groupspecifiersthatmatch ref:regexpref@1
 script: new RegExp("\\k<b>(?<a>x)", "") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /: refused (early:undefined-group-name)
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: refused (early:undefined-group-name)
 since: 31
 
 id: regexp/syntax/s5-named-references/0003
@@ -1811,7 +1811,7 @@ out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("\\k<a>(?<a>x)", "u") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /u: accepted
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /u: accepted
 since: 31
 
 id: regexp/syntax/s5-named-references/0004
@@ -1822,7 +1822,7 @@ out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?<a>x)\\k<a>", "u") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /u: accepted
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /u: accepted
 since: 31
 
 id: regexp/syntax/s5-named-references/0005
@@ -1835,7 +1835,7 @@ per-engine.broiler-js: value: bool:true
 per-engine.broiler-vm: value: bool:true
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb spec:es2026@0248456c#sec-regular-expressions-patterns ref:regexpref@1
 script: new RegExp("\\k<a>", "") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
 since: 31
 
 id: regexp/syntax/s5-named-references/0006
@@ -1846,7 +1846,7 @@ out: error: SyntaxError
 class: normative
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-groupspecifiersthatmatch ref:regexpref@1
 script: new RegExp("\\k<a>", "u") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /u: refused (early:undefined-group-name)
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /u: refused (early:undefined-group-name)
 since: 31
 
 id: regexp/syntax/s5-named-references/0007
@@ -1859,7 +1859,7 @@ per-engine.broiler-js: value: bool:true
 per-engine.broiler-vm: value: bool:true
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb spec:es2026@0248456c#sec-regular-expressions-patterns ref:regexpref@1
 script: new RegExp("\\k", "") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
 since: 31
 
 id: regexp/syntax/s5-named-references/0008
@@ -1870,7 +1870,7 @@ out: error: SyntaxError
 class: normative
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?<a>.)\\k", "") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /: refused (grammar:invalid-group-name)
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: refused (grammar:invalid-group-name)
 since: 31
 
 id: regexp/syntax/s5-named-references/0009
@@ -1881,7 +1881,7 @@ out: error: SyntaxError
 class: normative
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?<a>.)\\k<a", "") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /: refused (grammar:invalid-group-name)
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: refused (grammar:invalid-group-name)
 since: 31
 
 id: regexp/syntax/s5-named-references/0010
@@ -1892,7 +1892,7 @@ out: error: SyntaxError
 class: normative
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("(?<a>.)\\k<>", "") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /: refused (grammar:invalid-group-name)
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: refused (grammar:invalid-group-name)
 since: 31
 
 id: regexp/syntax/s5-named-references/0011
@@ -1903,18 +1903,20 @@ out: error: SyntaxError
 class: normative
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-groupspecifiersthatmatch ref:regexpref@1
 script: new RegExp("\\k<a>(?<b>x)", "") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /: refused (early:undefined-group-name)
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: refused (early:undefined-group-name)
 since: 31
 
 id: regexp/syntax/s5-named-references/0012
 area: regexp
 op: RegExpInitialize
 in: str:"[\\k<a>](?<a>x)" str:""
-out: error: SyntaxError
-class: normative
-prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
+out: value: bool:true
+class: impl-defined
+per-engine.broiler-js: value: bool:true
+per-engine.broiler-vm: value: bool:true
+prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb spec:es2026@0248456c#sec-regular-expressions-patterns ref:regexpref@1
 script: new RegExp("[\\k<a>](?<a>x)", "") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /: refused (grammar:invalid-class-escape)
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
 since: 31
 
 id: regexp/syntax/s5-named-references/0013
@@ -1925,18 +1927,20 @@ out: error: SyntaxError
 class: normative
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
 script: new RegExp("[\\k<a>](?<a>x)", "u") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /u: refused (grammar:invalid-class-escape)
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /u: refused (grammar:invalid-class-escape)
 since: 31
 
 id: regexp/syntax/s5-named-references/0014
 area: regexp
 op: RegExpInitialize
 in: str:"[\\k](?<a>x)" str:""
-out: error: SyntaxError
-class: normative
-prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
+out: value: bool:true
+class: impl-defined
+per-engine.broiler-js: value: bool:true
+per-engine.broiler-vm: value: bool:true
+prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb spec:es2026@0248456c#sec-regular-expressions-patterns ref:regexpref@1
 script: new RegExp("[\\k](?<a>x)", "") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /: refused (grammar:invalid-class-escape)
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
 since: 31
 
 id: regexp/syntax/s5-named-references/0015
@@ -1949,7 +1953,7 @@ per-engine.broiler-js: value: bool:true
 per-engine.broiler-vm: value: bool:true
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb spec:es2026@0248456c#sec-regular-expressions-patterns ref:regexpref@1
 script: new RegExp("[\\k]", "") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
 since: 31
 
 id: regexp/syntax/s5-named-references/0016
@@ -1960,7 +1964,7 @@ out: value: bool:true
 class: normative
 prov: spec:es2026@0248456c#sec-regexpinitialize spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-parsepattern-annexb ref:regexpref@1
 script: new RegExp("(?<a>x)\\k<\\u0061>", "") instanceof RegExp
-note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class (B.1.2's SourceCharacterIdentityEscape[+NamedCaptureGroups] excludes k); /: accepted
+note: correspondence row S5: AtomEscape :: k GroupName, GroupSpecifiersThatMatch, and \k in a class, which no production gives [NamedCaptureGroups] (B.1.2's ClassEscape reads ~NamedCaptureGroups, so SourceCharacterIdentityEscape admits k; the main grammar's IdentityEscape refuses it); /: accepted
 since: 31
 
 id: regexp/syntax/s6-property-names/0001

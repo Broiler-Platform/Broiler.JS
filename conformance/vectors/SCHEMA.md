@@ -66,14 +66,29 @@ JSD-0081 makes library-level. Until then the bullet above, "a library-level stat
 Broiler.JS's, `Broiler.JS/Broiler.JavaScript.Vectors.Tests` (`EngineRunTests`, which runs every record of the corpus),
 and Broiler.VM's, `VectorsCommand` of its conformance composition (at its `83290f9`, which evaluates every record it
 reads), each evaluate the script, compare the outcome with the status, which no outcome matches, and report a
-difference nothing classifies. Each runner is to skip them by its first run on revision 31, before its differences
-are classified; until it does, what it reports for them is no difference of the engine's.)*
+difference nothing classifies. Neither runner skips them yet, and no task of SJL-11's plan changes either: the skip
+is a code change of each runner, with a test that a status vector gives no line, and it comes before that runner runs
+revision 31. Broiler.JS's (`CorpusRun` and `EngineRunTests`) comes before revision 31 merges, or in the same change
+as the classification of its first runs (revision 32), since the `engine vectors` job of `.github/workflows/ci.yml`
+runs `EngineRunTests` on any change to `conformance/vectors/` and fails on a difference nothing classifies, and no
+`divergence.broiler-js` field (section 5) can classify a status; Broiler.VM's (`VectorsCommand`) comes before its pin
+moves to revision 31 (rule N13). Until a runner skips them, what it reports for them is no difference of the
+engine's.)*
 
 **`out` may list alternatives**, separated by ` | `, when the specification admits more than one
 result and enumerates them: the least significant digit of Number::toString, which is "not
 necessarily uniquely determined", and RoundMVResult's two options beyond 20 significant digits are
 the cases in the number area. A result matches the vector when it equals any alternative. A note
 names the recommended alternative where the specification recommends one.
+
+**An `impl-defined` vector that a filed owner decision classes because the specification's text gives no
+well-formed result may list, as `out`'s alternatives, the engines' answers that decision records**, since it has no
+ideal outcome to hold; each `per-engine` field still holds that engine's own, and the note cites the decision. *(Added
+2026-11-01, at corpus revision 31, for row M4's empty match from a lastIndex inside a surrogate pair, which decision
+D41 of Broiler.VM's JSD-0081 classes implementation-defined until the specification is corrected: RegExpBuiltinExec
+builds a Match Record whose start passes its end, which GetMatchString's assertion forbids. Until then the paragraph
+above, alternatives "when the specification admits more than one result and enumerates them", and section 5's
+"`out` holds the ideal outcome" were the whole rule.)*
 
 ## 5. Classes
 

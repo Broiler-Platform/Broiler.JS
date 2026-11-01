@@ -825,11 +825,13 @@ id: regexp/literals/s1-s5-names/0001
 area: regexp
 op: IsValidRegularExpressionLiteral
 in: str:"[\\k<a>](?<a>x)" str:""
-out: error: SyntaxError
-class: normative
-prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-patterns ref:regexpref@1
+out: value: bool:true
+class: impl-defined
+per-engine.broiler-js: value: bool:true
+per-engine.broiler-vm: value: bool:true
+prov: spec:es2026@0248456c#sec-primary-expression-regular-expression-literals-static-semantics-early-errors spec:es2026@0248456c#sec-isvalidregularexpressionliteral spec:es2026@0248456c#sec-parsepattern spec:es2026@0248456c#sec-regular-expressions-patterns ref:regexpref@1
 script: (function () { return /[\k<a>](?<a>x)/; }), true
-note: correspondence rows S1, S2a, S5: group names and references in a literal; /[\k<a>](?<a>x)/ never evaluated: refused (grammar:invalid-class-escape)
+note: correspondence rows S1, S2a, S5: group names and references in a literal; /[\k<a>](?<a>x)/ never evaluated: accepted; the outcome holds with B.1.2 alone (without Annex B: error: SyntaxError); Annex B is required of a web-browser host and optional for any other; both engines answer B.1.2's patterns (Broiler.VM's JSD-0081, requirement R5, Annex B syntax where the specification allows it, and bundle sjl-11-001's correspondence, rows S4 and S7, same in both), so each engine's expectation is B.1.2's outcome
 since: 31
 
 id: regexp/literals/s1-s5-names/0002
