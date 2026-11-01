@@ -21,7 +21,9 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// <remarks>
 /// <b>Sections.</b> Each stage of milestone SJL-9.3 adds the sections of its sub-area; the skeleton's own is D0, the table
 /// decoders (<see cref="DecoderSection"/>), and sub-area (a)'s are L1 to L4, locale identifiers, negotiation, Intl.Locale
-/// and <c>Intl.supportedValuesOf</c> (<see cref="LocaleSection"/>). A section names what it compares, and an answer is rendered as text so that
+/// and <c>Intl.supportedValuesOf</c> (<see cref="LocaleSection"/>), and sub-area (b)'s, from stage SJL-9.3b, are M1 to M3 and
+/// P1 and P2, the Intl mathematical value, the digit options, FormatNumericToString, plural rules and plural ranges
+/// (<see cref="DecimalSection"/>). A section names what it compares, and an answer is rendered as text so that
 /// the comparison is exact: a string as it is, a missing answer as <c>&lt;none&gt;</c>, a record by its fields.
 /// </remarks>
 internal static class DifferentialCheck
@@ -36,9 +38,10 @@ internal static class DifferentialCheck
     /// <remarks>
     /// None for the skeleton's section: the decoders are a port with no correction. A stage that ports a row the
     /// correspondence classes a correction of Broiler.VM (L9, L18, Z8), or whose answer is each engine's own data, adds the
-    /// row here, by the inputs it names, never a new row: sub-area (a)'s are L9, L18 and L22 (<see cref="LocaleSection.Known"/>).
+    /// row here, by the inputs it names, never a new row: sub-area (a)'s are L9, L18 and L22 (<see cref="LocaleSection.Known"/>),
+    /// and sub-area (b)'s is P4, decision D20's compact exponent (<see cref="DecimalSection.Known"/>).
     /// </remarks>
-    internal static IReadOnlyList<KnownDifference> Known { get; } = [.. LocaleSection.Known()];
+    internal static IReadOnlyList<KnownDifference> Known { get; } = [.. LocaleSection.Known(), .. DecimalSection.Known()];
 
     /// <summary>Runs the sections named (all when none is), at a scale, from a seed.</summary>
     internal static IReadOnlyList<Section> Run(ulong seed, int scale, IReadOnlyCollection<string>? only = null)
@@ -52,6 +55,8 @@ internal static class DifferentialCheck
                 sections.AddRange(DecoderSection.Run(embedding, random, scale));
             if (only is null || only.Any(static s => s is "L1" or "L2" or "L3" or "L4"))
                 sections.AddRange(LocaleSection.Run(embedding, random, scale, only));
+            if (only is null || only.Any(static s => s is "M1" or "M2" or "M3" or "P1" or "P2"))
+                sections.AddRange(DecimalSection.Run(embedding, random, scale, only));
         }
 
         return sections;

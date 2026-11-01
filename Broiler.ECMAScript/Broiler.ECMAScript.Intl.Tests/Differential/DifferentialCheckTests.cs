@@ -115,6 +115,59 @@ public sealed class DifferentialCheckTests
         Assert.Contains(section.Examples, static e => e.Contains("maximize \"", StringComparison.Ordinal) && e.Contains("vm \"found en-Latn-US", StringComparison.Ordinal) && e.Contains("library \"found en-Latn-GB", StringComparison.Ordinal));
     }
 
+    /// <summary>
+    /// Sub-area (b) (stage SJL-9.3b): Broiler.VM's mathematical value, digit options, FormatNumericToString and plural rules
+    /// answer as the library does over both embeddings, but row P4's compact exponent (decision D20), which reaches an answer
+    /// in Broiler.JS's embedding alone, whose languages' rules read <c>c</c> and <c>e</c>.
+    /// </summary>
+    [Fact]
+    public void Broiler_VM_s_decimal_and_plural_code_and_the_library_differ_only_by_row_P4()
+    {
+        var sections = DifferentialCheck.Run(DifferentialCheck.DefaultSeed, scale: 1, only: ["M1", "M2", "M3", "P1", "P2"]);
+        var report = DifferentialCheck.Report(sections, DifferentialCheck.DefaultSeed, 1);
+
+        Assert.Equal(10, sections.Count);
+        Assert.True(sections.All(static s => s.Unclassified == 0), report);
+        Assert.All(sections, static s => Assert.True(s.Compared > 200, s.Name + " compared almost nothing"));
+
+        var rows = sections.SelectMany(static s => s.ClassifiedByRow.Keys.Select(row => (Section: s.Name, Row: row))).ToList();
+        Assert.All(rows, static r => Assert.Equal("P4", r.Row));
+        Assert.All(rows, static r => Assert.EndsWith("(broiler-js)", r.Section, StringComparison.Ordinal));
+        Assert.Contains(rows, static r => r.Section.StartsWith("P1", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Row_P4_covers_a_difference_only_when_the_exponent_at_zero_gives_Broiler_VM_s_answer()
+    {
+        var plurals = new Section("P1 plural rules (test)");
+        plurals.Compare("select \"fr\" {notation:\"compact\"} 1000000 (c=e=0: many)", "many | 1000000", "many | 1000000");
+        plurals.Compare("select \"fr\" {notation:\"compact\"} 2000000 (c=e=0: other)", "other | 2000000", "many | 2000000");
+        Assert.Equal(1, plurals.ClassifiedByRow["P4"]);
+
+        // Another answer at zero, another String, or no compact notation: unclassified.
+        plurals.Compare("select \"fr\" {notation:\"compact\"} 2000000 (c=e=0: many)", "other | 2000000", "many | 2000000");
+        plurals.Compare("select \"fr\" {notation:\"compact\"} 2000000 (c=e=0: other)", "other | 2000000", "many | 2000000.0");
+        plurals.Compare("select \"fr\" {} 2000000", "other | 2000000", "many | 2000000");
+        Assert.Equal(3, plurals.Unclassified);
+    }
+
+    [Fact]
+    public void A_difference_in_a_plural_rule_is_found_and_left_unclassified()
+    {
+        // The negative control of sub-area (b): the library reads Broiler.VM's tables with English's "one" rule changed.
+        var vm = Embedding.Both().First();
+        var plurals = Encoding.ASCII.GetString(vm.Text[nameof(IntlTable.Plurals)]);
+        Assert.Contains("en|one|i = 1 and v = 0\n", plurals, StringComparison.Ordinal);
+        var changed = Encoding.ASCII.GetBytes(plurals.Replace("en|one|i = 1 and v = 0\n", "en|one|i = 1\n", StringComparison.Ordinal));
+
+        var control = Embedding.WithLibraryTables("control", new Dictionary<string, byte[]> { [nameof(IntlTable.Plurals)] = changed });
+        var sections = DecimalSection.Run(control, new SeededRandom(DifferentialCheck.DefaultSeed), 1, ["P1"]).ToList();
+
+        var section = Assert.Single(sections);
+        Assert.True(section.Unclassified > 0);
+        Assert.Contains(section.Examples, static e => e.Contains("vm \"other | 1.", StringComparison.Ordinal) && e.Contains("library \"one | 1.", StringComparison.Ordinal));
+    }
+
     [Fact]
     public void The_seeded_random_inputs_are_the_same_on_every_run()
     {
@@ -129,5 +182,7 @@ public sealed class DifferentialCheckTests
     {
         Assert.NotEmpty(Population.IntlVectors("locales.vectors"));
         Assert.Contains(Population.DatasetPrograms(), static p => p.Name == "locales");
+        Assert.Contains(Population.DatasetPrograms(), static p => p.Name == "plurals");
+        Assert.Contains(Population.DatasetPrograms(), static p => p.Name == "numbers");
     }
 }
