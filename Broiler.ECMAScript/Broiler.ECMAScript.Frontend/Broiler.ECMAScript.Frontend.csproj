@@ -6,15 +6,17 @@
     declarations walk in Broiler.ECMAScript.Semantics - built in six stages, a to f, one merge each. It names neither
     engine and reads no culture.
 
-    Stage SJL-13.2a's skeleton holds the contract's types alone: the parse request (source, goal, switches, the
-    inherited context of eval code, proposal flags, the lexer extension, limits and providers), the diagnostics'
-    types, and a parse entry that answers "not implemented" for every source. The tokenizer is stage 4b's, the tree
-    and the parser stage 4c's, the diagnostics' identifiers and the parse-time early errors stage 4d's, the limits'
-    derivation, determinism and fuzzing stage 4e's, and the done-when stage 4f's.
+    Stage SJL-13.2a's skeleton holds the contract's types: the parse request (source, goal, switches, the inherited
+    context of eval code, proposal flags, the lexer extension, limits and providers) and the diagnostics' types.
+    Stage SJL-13.2b adds the tokenizer, internal to the library: the lexical grammar of ECMA-262 clause 12 under the
+    goal its caller names, and a parse entry that refuses a source the lexical grammar refuses and answers "not
+    implemented" for every other. The tree and the parser are stage 4c's, the diagnostics' identifiers and the
+    parse-time early errors stage 4d's, the limits' derivation, determinism and fuzzing stage 4e's, and the done-when
+    stage 4f's.
 
     References (decision D6; rule SL1's row Frontend -> [Algorithms, Broiler.Unicode.Algorithms]):
     Broiler.ECMAScript.Algorithms, whose WorkCharge and DepthLimit the request takes and whose
-    NumericLiterals.Evaluate the tokenizer calls from stage 4b (decision D9: no change to that library at SJL-13), and
+    NumericLiterals.Evaluate the tokenizer calls (decision D9: no change to that library at SJL-13), and
     Broiler.Unicode.Algorithms, whose IUnicodeTables is the request's Unicode provider (decision D8). No
     Broiler.Regex: the regular-expression validator is an interface of this library that each engine supplies
     (decision D7). No engine, and nothing of Broiler.VM.
@@ -26,7 +28,7 @@
     <RootNamespace>Broiler.ECMAScript.Syntax</RootNamespace>
     <AssemblyName>Broiler.ECMAScript.Frontend</AssemblyName>
     <PackageId>Broiler.ECMAScript.Frontend</PackageId>
-    <Description>The shared syntax library of the Broiler JavaScript engines (ECMA-262): an immutable parse request with goals, switches, the inherited context of eval code, proposal flags, a lexer extension, limits and providers (Broiler.Unicode's tables, a regular-expression validator each engine supplies, an optional work meter), and diagnostics with shared codes, message identifiers, phases and spans. The tokenizer, the tree and the parser follow in later stages.</Description>
+    <Description>The shared syntax library of the Broiler JavaScript engines (ECMA-262): an immutable parse request with goals, switches, the inherited context of eval code, proposal flags, a lexer extension, limits and providers (Broiler.Unicode's tables, a regular-expression validator each engine supplies, an optional work meter), and diagnostics with shared codes, message identifiers, phases and spans. The tokenizer reads the lexical grammar; the tree and the parser follow in later stages.</Description>
     <PackageTags>broiler;ecmascript;javascript;shared;frontend;parser;syntax;ecma-262</PackageTags>
     <IsPackable>false</IsPackable>
     <EnablePackageValidation>true</EnablePackageValidation>
@@ -34,5 +36,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
     <PackageReference Include="Broiler.Unicode.Algorithms" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Broiler.ECMAScript.Frontend.Tests" />
   </ItemGroup>
 </Project>
