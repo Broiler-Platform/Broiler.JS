@@ -786,10 +786,14 @@ internal static class DecimalSection
             _ => double.NaN,
         };
 
-        /// <summary>ToString as Broiler.VM's engine stand-in wrote a Number at stage SJL-9.3b: its round-trip form.</summary>
-        /// <remarks><i>(Noted 2026-11-01, at stage SJL-9.3c, when the stand-in came to write a Number by Number::toString, as
-        /// Broiler.VM's engine does: no option this reader converts admits a Number's String, so either form gives the same
-        /// refusal, and sub-area (b)'s answers do not move.)</i></remarks>
+        /// <summary>ToString as Broiler.VM's engine stand-in writes a Number: its round-trip form.</summary>
+        /// <remarks><i>(Noted 2026-11-01, at stage SJL-9.3c: the summary, "ToString as Broiler.VM's engine stand-in writes a
+        /// Number: its round-trip form", now holds of this reader alone, the library arm's, which keeps the round-trip form.
+        /// The stand-in's own <c>JsEngine.ToStringValue</c> (<c>VmEngine.cs</c>) writes a Number by Number::toString since this
+        /// stage, as Broiler.VM's engine does. The two forms differ only for <c>-0</c> and a Number the round-trip form writes
+        /// with an exponent (<c>1E+21</c>, <c>1E-07</c>), and no String of those is in an option's list of values or is a
+        /// well-formed numbering system, currency or unit, so both arms refuse or decline it alike and no answer moves; the
+        /// differential runs at this stage find no unclassified difference in any section.)</i></remarks>
         private static string ToStringValue(object value) => value switch
         {
             string s => s,
