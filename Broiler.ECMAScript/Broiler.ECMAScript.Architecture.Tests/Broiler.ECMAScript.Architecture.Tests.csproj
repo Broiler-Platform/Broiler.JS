@@ -29,6 +29,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <!-- The runner's Unicode provider: the tables the owner's generator writes from this repository's pin (SJL-13.2b). -->
+    <PackageReference Include="Broiler.Unicode.Generation" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
@@ -49,6 +51,7 @@
     <Compile Include="..\runners\AlgorithmsLibrary.Intl.cs" Link="AlgorithmsLibrary.Intl.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.IntlValues.cs" Link="AlgorithmsLibrary.IntlValues.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.Syntax.cs" Link="AlgorithmsLibrary.Syntax.cs" />
+    <Compile Include="..\runners\UnicodeDataHome.cs" Link="UnicodeDataHome.cs" />
     <Compile Include="..\runners\TemporalAdapter.cs" Link="TemporalAdapter.cs" />
     <Compile Include="..\runners\TemporalAdapter.Methods.cs" Link="TemporalAdapter.Methods.cs" />
     <!-- Rule SL7 regenerates the time data home's tables with the generator, which reads no file itself. -->

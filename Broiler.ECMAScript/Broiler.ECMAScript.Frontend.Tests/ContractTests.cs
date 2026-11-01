@@ -5,8 +5,8 @@ using Xunit;
 namespace Broiler.ECMAScript.Syntax.Tests;
 
 /// <summary>
-/// The limits, the providers' shapes, the diagnostics' forms and the parse entry at stage SJL-13.2a (Broiler.VM's JSD-0083,
-/// decisions D7, D11, D14, D15 and D32).
+/// The limits, the providers' shapes, the diagnostics' forms (stage SJL-13.2a) and the parse entry's meter and providers
+/// (stage SJL-13.2b) (Broiler.VM's JSD-0083, decisions D7, D11, D14, D15 and D32).
 /// </summary>
 public sealed class ContractTests
 {
@@ -109,8 +109,10 @@ public sealed class ContractTests
     }
 
     /// <summary>
-    /// Stage 4a's answer: not implemented, with no diagnostic, for every goal; and the parse reads neither provider and
-    /// charges no meter, because it reads none of the source (the providers here throw when read, the meter counts).
+    /// The parse entry at stage 4b (the 4a test it replaces asserted that nothing was read or charged): the meter is
+    /// charged the text's length once, before the parse reads it, and nothing for an empty text; the regular-expression
+    /// provider is never asked, the literal's validity being stage 4d's; and a text the lexical grammar does not refuse is
+    /// answered not implemented, with no diagnostic, for every goal.
     /// </summary>
     [Theory]
     [InlineData(ParseGoal.Script)]
@@ -118,19 +120,32 @@ public sealed class ContractTests
     [InlineData(ParseGoal.Eval)]
     [InlineData(ParseGoal.FormalParameters)]
     [InlineData(ParseGoal.FunctionBody)]
-    public void Every_source_is_answered_not_implemented_with_nothing_read_or_charged(ParseGoal goal)
+    public void A_source_the_tokenizer_does_not_refuse_is_not_implemented_and_the_meter_is_charged_its_length(ParseGoal goal)
     {
-        ulong charged = 0;
         foreach (var text in new[] { string.Empty, "1", "let let = 1;", "/(/", "a\u2028b" })
         {
-            var request = new ParseRequest(new SourceText(text), goal, NoTables.Instance, NoValidator.Instance) { Meter = units => charged += units };
+            var charges = new System.Collections.Generic.List<ulong>();
+            var request = new ParseRequest(new SourceText(text), goal, Runners.UnicodeDataHome.Tables, NoValidator.Instance) { Meter = charges.Add };
             var result = SyntaxParser.Parse(request);
             Assert.Equal(ParseOutcome.NotImplemented, result.Outcome);
             Assert.Empty(result.Diagnostics);
+            Assert.Equal(text.Length == 0 ? [] : [(ulong)text.Length], charges);
         }
 
-        Assert.Equal(0UL, charged);
         Assert.Throws<ArgumentNullException>(() => SyntaxParser.Parse(null!));
         Assert.Equal([("Accepted", 0), ("Refused", 1), ("NotImplemented", 2)], Enum.GetValues<ParseOutcome>().Select(static o => (o.ToString(), (int)o)).ToArray());
+    }
+
+    /// <summary>A meter that throws stops the parse before it reads the source: the Unicode provider is not read either.</summary>
+    [Fact]
+    public void A_meter_that_throws_stops_the_parse_before_any_work()
+    {
+        var request = new ParseRequest(new SourceText("\"x"), ParseGoal.Script, NoTables.Instance, NoValidator.Instance)
+        {
+            Meter = static _ => throw new InvalidOperationException("exhausted"),
+        };
+
+        Assert.Equal("exhausted", Assert.Throws<InvalidOperationException>(() => SyntaxParser.Parse(request)).Message);
+        Assert.Equal("read", Assert.Throws<InvalidOperationException>(() => SyntaxParser.Parse(new ParseRequest(new SourceText("1"), ParseGoal.Script, NoTables.Instance, NoValidator.Instance))).Message);
     }
 }

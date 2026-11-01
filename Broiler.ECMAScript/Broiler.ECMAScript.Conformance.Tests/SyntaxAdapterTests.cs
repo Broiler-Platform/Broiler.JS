@@ -10,20 +10,30 @@ namespace Broiler.ECMAScript.Conformance.Tests;
 /// <summary>
 /// The library-level runner's frontend adapter (milestone SJL-13.2a; Broiler.VM's JSD-0083, decision D25): it reads a
 /// <c>syntax</c> vector's <c>op</c> and <c>in</c>, parses under the library's default request for that goal, and reads
-/// <c>error: SyntaxError</c> as a refusal and any other outcome as an acceptance. With no parser yet, every syntax vector
-/// is not implemented.
+/// <c>error: SyntaxError</c> as a refusal and any other outcome as an acceptance. With no parser yet (stage 4b), a syntax
+/// vector is refused where the tokenizer refuses its source and not implemented elsewhere.
 /// </summary>
 public class SyntaxAdapterTests
 {
     private static IReadOnlyList<VectorRecord> SyntaxVectors { get; } = Home.Corpus.Records.Where(static v => v["area"] == "syntax").ToList();
 
+    /// <summary>
+    /// Stage 4b's answer (the 4a test it replaces asserted that every vector was not implemented): no syntax vector is
+    /// accepted before the parser exists; a vector whose source the tokenizer refuses renders <c>error: SyntaxError</c> and
+    /// agrees at the parse, which shows the refusals are the specification's; and every other is not implemented.
+    /// </summary>
     [Fact]
-    public void Every_syntax_vector_is_not_implemented_until_the_library_parses()
+    public void Before_the_parser_a_syntax_vector_is_refused_where_the_tokenizer_refuses_it_and_not_implemented_elsewhere()
     {
         Assert.NotEmpty(SyntaxVectors);
         var results = LibraryRun.Run(SyntaxVectors, new AlgorithmsLibrary());
-        Assert.All(results, static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
-        Assert.All(results, static r => Assert.False(AlgorithmsLibrary.MatchesAtTheParse(r)));
+        Assert.All(results, static r => Assert.True(r.Rendered is AlgorithmsLibrary.SyntaxRefused or EmptyLibrary.NotImplemented, r.Vector.Id + " rendered " + r.Rendered));
+        Assert.All(results.Where(static r => r.Rendered == AlgorithmsLibrary.SyntaxRefused), static r => Assert.True(AlgorithmsLibrary.MatchesAtTheParse(r), r.Vector.Id + " is refused and expects " + r.Expected));
+        Assert.All(results.Where(static r => r.Rendered == EmptyLibrary.NotImplemented), static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+        Assert.Contains(results, static r => r.Rendered == AlgorithmsLibrary.SyntaxRefused);
+
+        // Each of the tokenizer's refusals is a lexical vector's.
+        Assert.All(results.Where(static r => r.Rendered == AlgorithmsLibrary.SyntaxRefused), static r => Assert.StartsWith("syntax/lexical/", r.Vector.Id, StringComparison.Ordinal));
     }
 
     /// <summary>
@@ -63,7 +73,7 @@ public class SyntaxAdapterTests
         Assert.Null(AlgorithmsLibrary.SyntaxRequest("NumericLiteral", "1"));
     }
 
-    /// <summary>The rendering of each outcome, shown with a parse that answers it, since the library answers none yet.</summary>
+    /// <summary>The rendering of each outcome, shown with a parse that answers it, since the library accepts none yet.</summary>
     [Fact]
     public void A_refusal_an_acceptance_and_a_parse_not_made_are_each_rendered()
     {
@@ -71,7 +81,8 @@ public class SyntaxAdapterTests
         var inputs = LibraryRun.Inputs(script);
         Assert.Equal(AlgorithmsLibrary.SyntaxRefused, AlgorithmsLibrary.SyntaxArea(script["op"]!, inputs, static _ => ParseOutcome.Refused));
         Assert.Equal(AlgorithmsLibrary.SyntaxAccepted, AlgorithmsLibrary.SyntaxArea(script["op"]!, inputs, static _ => ParseOutcome.Accepted));
-        Assert.Equal(EmptyLibrary.NotImplemented, AlgorithmsLibrary.SyntaxArea(script["op"]!, inputs, static request => SyntaxParser.Parse(request).Outcome));
+        Assert.Equal(EmptyLibrary.NotImplemented, AlgorithmsLibrary.SyntaxArea(script["op"]!, [new TypedValue(TypedValueKind.String, "str:\"var a = 1;\"") { Chars = "var a = 1;" }], static request => SyntaxParser.Parse(request).Outcome));
+        Assert.Equal(AlgorithmsLibrary.SyntaxRefused, AlgorithmsLibrary.SyntaxArea(script["op"]!, [new TypedValue(TypedValueKind.String, "str:\"var \\\\u0030a;\"") { Chars = "var \\u0030a;" }], static request => SyntaxParser.Parse(request).Outcome));
         Assert.Equal(EmptyLibrary.NotImplemented, AlgorithmsLibrary.SyntaxArea("NumericLiteral", inputs, static _ => throw new InvalidOperationException("not a syntax operation")));
     }
 
