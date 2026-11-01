@@ -215,12 +215,10 @@ Broiler.ECMAScript.Intl.IntlDecimal struct : System.IEquatable`1<Broiler.ECMAScr
 Broiler.ECMAScript.Intl.IntlDecimal.Abs() method Broiler.ECMAScript.Intl.IntlDecimal
 Broiler.ECMAScript.Intl.IntlDecimal.Equals(Broiler.ECMAScript.Intl.IntlDecimal) method System.Boolean
 Broiler.ECMAScript.Intl.IntlDecimal.Equals(System.Object) method virtual System.Boolean
-Broiler.ECMAScript.Intl.IntlDecimal.Finite(System.Boolean, System.String, System.Int32) method static Broiler.ECMAScript.Intl.IntlDecimal
 Broiler.ECMAScript.Intl.IntlDecimal.FromBigInt(System.Numerics.BigInteger, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.IntlDecimal
 Broiler.ECMAScript.Intl.IntlDecimal.FromNumber(System.Double) method static Broiler.ECMAScript.Intl.IntlDecimal
 Broiler.ECMAScript.Intl.IntlDecimal.FromString(System.String, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.IntlDecimal
 Broiler.ECMAScript.Intl.IntlDecimal.GetHashCode() method virtual System.Int32
-Broiler.ECMAScript.Intl.IntlDecimal.Scale(System.Int32) method Broiler.ECMAScript.Intl.IntlDecimal
 Broiler.ECMAScript.Intl.IntlDecimal.ToString() method virtual System.String
 Broiler.ECMAScript.Intl.IntlDecimal.WithSign(System.Boolean) method Broiler.ECMAScript.Intl.IntlDecimal
 Broiler.ECMAScript.Intl.IntlDecimal.get_Digits() method System.String

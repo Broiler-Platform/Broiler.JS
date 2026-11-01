@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   17
-// Annotated:        17/17
+// Relevant units:   18
+// Annotated:        18/18
 // Exempt:           8
-// Human-reviewed:   0/17
+// Human-reviewed:   0/18
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         2/2
 // Resource impact:  2/10 max
-// Unverified:       17
+// Unverified:       18
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -276,7 +276,7 @@ internal sealed class PluralRule
         return new PluralRule(alternatives);
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Medium; Resources=2; Fingerprint=F45A76
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Medium; Resources=2; Fingerprint=B64CC9
     // Broiler-Human:        PENDING
     private static Relation ParseRelation(string text)
     {
@@ -284,24 +284,29 @@ internal sealed class PluralRule
             .Replace("\u0001", "!=", StringComparison.Ordinal).Replace("%", " % ", StringComparison.Ordinal)
             .Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        if (words.Length < 2)
+        // EVERY WORD IS READ THROUGH Word, which refuses a relation that ends early with the documented
+        // InvalidDataException rather than an index out of range.
+        var at = 0;
+        var name = Word(words, at++, text);
+
+        if (name.Length != 1 || !"nivwftce".Contains(name[0], StringComparison.Ordinal))
         {
             throw new InvalidDataException("a plural rule's relation is not UTS #35's syntax: " + text);
         }
 
-        var at = 0;
-        var operand = words[at++][0];
+        var operand = name[0];
+
         long modulus = 0;
 
-        if (words[at] is "%" or "mod")
+        if (Word(words, at, text) is "%" or "mod")
         {
-            modulus = Integer(words[at + 1], text);
+            modulus = Integer(Word(words, at + 1, text), text);
             at += 2;
         }
 
         var negated = false;
 
-        switch (words[at])
+        switch (Word(words, at, text))
         {
             case "!=":
                 negated = true;
@@ -313,7 +318,7 @@ internal sealed class PluralRule
             case "is":
                 at++;
 
-                if (words[at] == "not")
+                if (Word(words, at, text) == "not")
                 {
                     negated = true;
                     at++;
@@ -321,15 +326,23 @@ internal sealed class PluralRule
 
                 break;
             default:
-                if (words[at] == "not")
+                if (Word(words, at, text) == "not")
                 {
                     negated = true;
                     at++;
                 }
 
+                if (Word(words, at, text) is not ("in" or "within"))
+                {
+                    throw new InvalidDataException("a plural rule's relation is not UTS #35's syntax: " + text);
+                }
+
                 at++;
                 break;
         }
+
+        // THE RANGE LIST: at least one word, so that an empty list is refused by Integer below.
+        _ = Word(words, at, text);
 
         var ranges = new List<(long, long)>();
 
@@ -343,6 +356,14 @@ internal sealed class PluralRule
 
         return new Relation(operand, modulus, negated, [.. ranges]);
     }
+
+    /// <summary>The relation's word at <paramref name="at"/>, or the documented refusal when the relation ends before it.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=DFBBE6
+    // Broiler-Human:        PENDING
+    private static string Word(string[] words, int at, string relation) =>
+        at < words.Length
+            ? words[at]
+            : throw new InvalidDataException("a plural rule's relation is not UTS #35's syntax: " + relation);
 
     // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=B52DC3
     // Broiler-Human:        PENDING

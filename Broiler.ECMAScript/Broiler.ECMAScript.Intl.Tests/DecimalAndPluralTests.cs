@@ -201,6 +201,12 @@ public sealed class DecimalAndPluralTests
         Assert.Equal(IntlStatus.NumberOptionOutOfRange, TryDigits(out _, mxsd: 22));
         Assert.Equal(IntlStatus.NumberOptionOutOfRange, TryDigits(out _, mnfd: double.NaN));
         Assert.Equal(IntlStatus.RoundingIncrementNotAdmitted, TryDigits(out _, increment: 3));
+
+        // The library's own entry point answers the same status for an increment no engine checked at step 8.
+        var unchecked3 = new DigitOptionValues(1, false, null, null, false, null, null, 3, RoundingMode.HalfExpand, RoundingPriority.Auto, TrailingZeroDisplay.Auto);
+        Assert.Equal(IntlStatus.RoundingIncrementNotAdmitted,
+            DigitOptionRules.SetNumberFormatDigitOptions(unchecked3, new FractionDigitDefaults(0, 3), NumberNotation.Standard, out var refusedOptions));
+        Assert.Null(refusedOptions);
         Assert.Equal(IntlStatus.RoundingIncrementNeedsFractionDigits, TryDigits(out _, increment: 5, mxsd: 2));
         Assert.Equal(IntlStatus.RoundingIncrementNeedsFractionDigits, TryDigits(out _, increment: 5, priority: RoundingPriority.MorePrecision));
         Assert.Equal(IntlStatus.RoundingIncrementNeedsEqualFractionDigits, TryDigits(out _, increment: 5, mnfd: 2, mxfd: 3));
@@ -441,5 +447,44 @@ public sealed class DecimalAndPluralTests
         ulong charged = 0;
         _ = xx.Select("12345", 0, units => charged += units);
         Assert.Equal(5UL, charged);
+    }
+
+    /// <summary>
+    /// Every relation that ends early or names what UTS #35 has no word for is refused with the documented
+    /// <see cref="System.IO.InvalidDataException"/>, never an index out of range; the older keywords still read.
+    /// </summary>
+    [Theory]
+    [InlineData("n is")]
+    [InlineData("n is not")]
+    [InlineData("n %")]
+    [InlineData("n % 10")]
+    [InlineData("n mod")]
+    [InlineData("n not")]
+    [InlineData("n not in")]
+    [InlineData("n in")]
+    [InlineData("n")]
+    [InlineData("n =")]
+    [InlineData("n = 1,")]
+    [InlineData("n = 1..")]
+    [InlineData("n = 1 and")]
+    [InlineData("x = 1")]
+    [InlineData("nn = 1")]
+    [InlineData("n foo 1")]
+    public void A_malformed_relation_is_InvalidDataException(string rule)
+    {
+        var data = new TableLocaleData(new TextDataSet(new Dictionary<IntlTable, string> { [IntlTable.Plurals] = "zz|one|" + rule + "\nzz|other|\n" }));
+        Assert.Throws<System.IO.InvalidDataException>(() => PluralEngine.Create(data, "zz", PluralRuleType.Cardinal));
+    }
+
+    [Fact]
+    public void The_older_keywords_read_as_their_relations()
+    {
+        var data = new TableLocaleData(new TextDataSet(new Dictionary<IntlTable, string>
+        {
+            [IntlTable.Plurals] = "ww|zero|n is not 1 and n mod 10 in 2..4\nww|one|n is 1\nww|two|n not within 0..10\nww|other|\n",
+        }));
+
+        var ww = PluralEngine.Create(data, "ww", PluralRuleType.Cardinal);
+        Assert.Equal(["zero", "one", "two", "other"], new[] { "3", "1", "11", "5" }.Select(t => ww.Select(t)));
     }
 }

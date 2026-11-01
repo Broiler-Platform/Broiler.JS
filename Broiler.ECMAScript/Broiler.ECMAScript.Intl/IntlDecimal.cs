@@ -133,15 +133,21 @@ public readonly record struct IntlDecimal
     // Broiler-Human:        PENDING
     public int Magnitude => Point - 1;
 
-    /// <summary>A finite value from ASCII digits that may carry leading and trailing zeros.</summary>
+    /// <summary>
+    /// A finite value from ASCII digits that may carry leading and trailing zeros. Internal, as Broiler.VM's
+    /// <c>JsDecimal.Finite</c> is: its one caller is FormatNumericToString's own rounding. A value's point is then bounded
+    /// by the public sources alone - a Number's and a String's held to the Number range, a BigInt's charged for its
+    /// digits - so that FormatNumericToString's <c>digits / 16 + 1</c> stays in proportion to the String it writes
+    /// (decision D18).
+    /// </summary>
     /// <param name="isNegative">The sign.</param>
     /// <param name="digits">The digits, ASCII <c>0</c> to <c>9</c>.</param>
     /// <param name="point">Where the decimal point falls: the value is <c>0.digits * 10^point</c>.</param>
     /// <returns>The value, its digits without leading or trailing zeros.</returns>
     /// <exception cref="ArgumentException"><paramref name="digits"/> holds a character that is not an ASCII digit.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=2BC228
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=4EFB5D
     // Broiler-Human:        PENDING
-    public static IntlDecimal Finite(bool isNegative, string digits, int point)
+    internal static IntlDecimal Finite(bool isNegative, string digits, int point)
     {
         ArgumentNullException.ThrowIfNull(digits);
 
@@ -175,12 +181,15 @@ public readonly record struct IntlDecimal
             _ => this,
         };
 
-    /// <summary>The value times <c>10^power</c>; zero and the non-finite values are returned as they are.</summary>
+    /// <summary>
+    /// The value times <c>10^power</c>; zero and the non-finite values are returned as they are. Internal, as Broiler.VM's
+    /// <c>JsDecimal.Scale</c> is: its callers pass a compact exponent ComputeExponent bounded by the value's own magnitude.
+    /// </summary>
     /// <param name="power">The power of ten.</param>
     /// <returns>The scaled value.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=D34654
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=ABBB03
     // Broiler-Human:        PENDING
-    public IntlDecimal Scale(int power) => IsZero || !IsFinite ? this : new IntlDecimal(Kind, IsNegative, Digits, Point + power);
+    internal IntlDecimal Scale(int power) => IsZero || !IsFinite ? this : new IntlDecimal(Kind, IsNegative, Digits, Point + power);
 
     /// <summary>
     /// The value a Number is (ECMA-402 ToIntlMathematicalValue, <c>sec-tointlmathematicalvalue</c>, steps 3 to 6): its

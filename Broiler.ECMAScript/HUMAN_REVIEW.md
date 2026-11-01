@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 1693 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 1694 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 124 |
-| Code units | 2300 |
-| Relevant | 1693 |
+| Code units | 2301 |
+| Relevant | 1694 |
 | Exempt | 607 |
-| Assessed | 1693 of 1693 (100%) |
-| Human reviewed | 0 of 1693 (0%) |
-| Unverified | 1693 |
+| Assessed | 1694 of 1694 (100%) |
+| Human reviewed | 0 of 1694 (0%) |
+| Unverified | 1694 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,7 +67,7 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1693 |
+| HUMAN_PENDING | 1694 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
@@ -205,7 +205,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Intl/LocaleRecord.cs` | 25 | 12 | 13 | 12 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/LocaleTag.cs` | 44 | 31 | 13 | 31 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Intl/NumericFormat.cs` | 9 | 9 | 0 | 9 | Low | High | 1/1 |
-| `Broiler.ECMAScript.Intl/PluralEngine.cs` | 25 | 17 | 8 | 17 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/PluralEngine.cs` | 26 | 18 | 8 | 18 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/PluralRulesRecord.cs` | 16 | 8 | 8 | 8 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/SupportedValues.cs` | 6 | 4 | 2 | 4 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/TableLocaleData.cs` | 74 | 61 | 13 | 61 | Low | High | 2/2 |
@@ -519,7 +519,7 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.ResolveValue<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, Spec=JSD-0082 D8 composite order, `E00AAB`, PENDING
   - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
-- `Broiler.ECMAScript.Intl.DigitOptionRules.SetNumberFormatDigitOptions(DigitOptionValues, FractionDigitDefaults, NumberNotation, out DigitOptions?)` in `Broiler.ECMAScript.Intl/DigitOptions.cs` - Security=High, Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat, `09FF26`, PENDING
+- `Broiler.ECMAScript.Intl.DigitOptionRules.SetNumberFormatDigitOptions(DigitOptionValues, FractionDigitDefaults, NumberNotation, out DigitOptions?)` in `Broiler.ECMAScript.Intl/DigitOptions.cs` - Security=High, Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat, `5E6F7D`, PENDING
   - Falsified if: a resolved slot differs from SetNumberFormatDigitOptions' for the same option values, or a refusal is another status or none
 - `Broiler.ECMAScript.Intl.IntlDecimal.FromNumber(double)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal, `07012B`, PENDING
   - Falsified if: a Number's value differs from the decimal its Number::toString digits write
@@ -571,5 +571,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-707 of the 1693 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+708 of the 1694 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

@@ -238,7 +238,13 @@ public static class DigitOptionRules
         return IntlStatus.Completed;
     }
 
-    /// <summary>Whether SetNumberFormatDigitOptions admits <paramref name="increment"/> as <c>roundingIncrement</c>.</summary>
+    /// <summary>
+    /// Whether SetNumberFormatDigitOptions admits <paramref name="increment"/> as <c>roundingIncrement</c>: its step 8, which an
+    /// engine asks right after GetNumberOption reads the increment and before it reads <c>roundingMode</c>, so that the
+    /// <c>RangeError</c> comes before the later reads a script can observe. When it is <see langword="false"/>, the engine
+    /// throws the <c>RangeError</c> <see cref="IntlStatus.RoundingIncrementNotAdmitted"/> names;
+    /// <see cref="SetNumberFormatDigitOptions"/> returns that status too, for an increment no engine checked.
+    /// </summary>
     /// <param name="increment">The increment GetNumberOption read, 1 to 5000.</param>
     /// <returns><see langword="true"/> for 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500 and 5000.</returns>
     // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=1; Fingerprint=D8C802
@@ -310,12 +316,13 @@ public static class DigitOptionRules
     /// <param name="notation">The notation.</param>
     /// <param name="options">The resolved options, or <see langword="null"/>.</param>
     /// <returns>
-    /// <see cref="IntlStatus.Completed"/>; or <see cref="IntlStatus.FractionDigitsOutOfOrder"/> and
-    /// <see cref="IntlStatus.RoundingIncrementNeedsEqualFractionDigits"/>, each a <c>RangeError</c>, or
+    /// <see cref="IntlStatus.Completed"/>; or <see cref="IntlStatus.RoundingIncrementNotAdmitted"/> (step 8, which an engine
+    /// asks first with <see cref="IsAdmittedRoundingIncrement"/>, at its own step), <see cref="IntlStatus.FractionDigitsOutOfOrder"/>
+    /// and <see cref="IntlStatus.RoundingIncrementNeedsEqualFractionDigits"/>, each a <c>RangeError</c>, or
     /// <see cref="IntlStatus.RoundingIncrementNeedsFractionDigits"/>, a <c>TypeError</c>.
     /// </returns>
-    /// <exception cref="ArgumentException">A significant-digit value is missing where the plan converts it, or the increment is not admitted.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=High; Resources=1; Fingerprint=09FF26
+    /// <exception cref="ArgumentException">A significant-digit value is missing where the plan converts it.</exception>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=High; Resources=1; Fingerprint=5E6F7D
     // Broiler-Falsified-If: a resolved slot differs from SetNumberFormatDigitOptions' for the same option values, or a refusal is another status or none
     // Broiler-Human:        PENDING
     public static IntlStatus SetNumberFormatDigitOptions(DigitOptionValues values, FractionDigitDefaults defaults, NumberNotation notation, out DigitOptions? options)
@@ -325,7 +332,7 @@ public static class DigitOptionRules
 
         if (!IsAdmittedRoundingIncrement(values.RoundingIncrement))
         {
-            throw new ArgumentException("the increment is not one SetNumberFormatDigitOptions admits", nameof(values));
+            return IntlStatus.RoundingIncrementNotAdmitted;
         }
 
         var mnfdDefault = defaults.Minimum;
