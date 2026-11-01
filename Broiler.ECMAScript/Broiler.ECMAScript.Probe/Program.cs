@@ -17,7 +17,8 @@ namespace Broiler.ECMAScript.Probe;
 /// runners' <c>AlgorithmsLibrary</c>: every number vector must match, and a vector of any area the
 /// library does not implement yet must be "not implemented". The contract types are exercised
 /// directly as well. From milestone SJL-9.3a it also runs <c>Broiler.ECMAScript.Intl</c>, through the
-/// same runner, on the Intl area's sub-area (a). What the probe proves is that the library, the reader, the validator, the
+/// same runner, on the Intl area's sub-area (a), and from stage SJL-9.3b on the operations of sub-area (b) the runner
+/// answers, whose vectors it reads whole (<c>IVectorRecordLibrary</c>). What the probe proves is that the library, the reader, the validator, the
 /// runner and the report compile into a Native AOT image under Broiler.VM's root settings and give
 /// there, over the whole corpus, the answers they give under the JIT. Until SJL-3 it ran the empty
 /// library, whose every answer was <c>status: not-implemented</c>.
@@ -57,8 +58,9 @@ internal static class Program
         // built-in's length, the properties an engine reads, and the calendar an object lends (milestone SJL-10.3). Of the
         // Intl area, sub-area (a)'s vectors are the Intl library's, over the Intl data home's tables and Broiler.VM's
         // providers, but the engine-level ones AlgorithmsLibrary.IsEngineLevelIntl names; an impl-defined one may give
-        // Broiler.VM's per-engine expectation, the engine whose providers the runner takes; every other Intl vector is not
-        // implemented (milestone SJL-9.3a).
+        // Broiler.VM's per-engine expectation, the engine whose providers the runner takes (milestone SJL-9.3a). So are
+        // sub-area (b)'s of the operations AlgorithmsLibrary.IntlValuesOperations names, read whole with their scripts
+        // (stage SJL-9.3b). Every other Intl vector is not implemented.
         var library = new AlgorithmsLibrary();
         var results = LibraryRun.Run(corpus.Records, library);
         foreach (var result in results)
