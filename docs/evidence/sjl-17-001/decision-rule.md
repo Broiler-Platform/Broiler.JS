@@ -51,7 +51,7 @@ NOT MET otherwise; and if the two runs' host-zone records differ, the part is no
 
 ```rule
 evidence class: conformance parity (not a measurement)
-population: Broiler.VM's src/tests/cldr/orderings/ program with its retained answer, and its divergences file if that commit holds one (Broiler.VM 83290f9 holds none, JSD-0084 finding F3), byte for byte as Broiler.VM's commit that carries its own bundle sjl-17-001 rule holds them, which SJL-17.2 copies into conformance/datasets/intl/ under a new source-commit block of datasets.pin; a copy whose digest differs is not the population
+population: Broiler.VM's src/tests/cldr/orderings/ program with its retained answer, and its divergences file if that commit holds one (none at Broiler.VM 83290f9, whose src/tests/cldr/orderings/ the commit that carries Broiler.VM's own bundle sjl-17-001 rule leaves unchanged; JSD-0084 finding F3), byte for byte as Broiler.VM's commit that carries its own bundle sjl-17-001 rule holds them, which SJL-17.2 copies into conformance/datasets/intl/ under a new source-commit block of datasets.pin; a copy whose digest differs is not the population
 configuration: scripts/conformance/run_reference_datasets.py --bundle sjl-17-001 in the shell built in Release; no LANG and TZ=UTC; at the base commit (retained and read) and at the after commit (judged); the expected answer of each line is Broiler.VM's retained answer with its divergences applied; and once, at the after commit's time, the program run in the reference bundle sjl-9-001's reference.txt names, its output retained
 comparison: per line, the line after against its expected answer, and against the reference's line where it differs
 admitted difference classes:

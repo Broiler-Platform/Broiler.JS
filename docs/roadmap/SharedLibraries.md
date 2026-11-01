@@ -2001,9 +2001,10 @@ This repository's part of it:
     available-locale policy says (JSD-0082's decision D7) and collates by the root or `en` (O14, decision E4).
 - **The data changes** (C5), each listed with its decision: CLDR 48.2.0's root and the tailorings of decision E3's list
   replace the host's ICU for the covered locales (O1, O2, O3, O16), and Thai's default from the data (O5c, E5).
-- **What stays as it is.** The rows that are the same in both engines (O4, O6, O9, O13); the default-locale provider
-  (O15); this engine's `Intl.Collator` objects, its errors and `localeCompare`'s coercion; and its meter, which is none
-  (decision E7, row O17).
+- **What stays as it is.** The rows that are the same in both engines (O4, O6, O9, O13, and O19, whose answer this
+  engine reaches today by the tie-break on the deletion list and the shared collator gives without it); the
+  default-locale provider (O15); this engine's `Intl.Collator` objects, its errors and `localeCompare`'s coercion; and
+  its meter, which is none (decision E7, row O17).
 - **The deletion list** (decision E11): `ResolveCompareInfo` for the covered locales, `StripIgnorablePunctuation`'s
   tie-break (row O19), the `CompareOptions` mapping and the hard-coded Thai default; `NetCollationSuffix` moves into the
   host provider. `JSIntlCollator` keeps every public member (SJL-D-25 (a)), which SJL-17.5 records in

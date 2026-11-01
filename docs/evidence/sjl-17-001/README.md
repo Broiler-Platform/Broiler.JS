@@ -78,7 +78,9 @@ was written require:
   `en` keeps a collation, or that SJL-17's rule names the file (JSD-0084's finding F2).
 - **Part B** reads the `orderings` program "with its retained answer, and its divergences file if that commit holds
   one", where the plan read "with its retained answer and divergences file": the program has none at Broiler.VM
-  `83290f9` (finding F3).
+  `83290f9`, whose `src/tests/cldr/orderings/` the commit that carries Broiler.VM's own bundle `sjl-17-001` rule
+  leaves unchanged (finding F3). The rule's parenthetical names `83290f9` as the commit where that was read, not as
+  the commit whose files are the population.
 - **Part C** cites the available-locale policy as JSD-0082's decision D7, where the plan read "JSD-0081 decision D7",
   which is the regular-expression nesting limit (finding F5).
 
