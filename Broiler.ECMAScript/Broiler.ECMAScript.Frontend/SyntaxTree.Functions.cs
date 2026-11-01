@@ -1,5 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
+//
+// Broiler Code Assurance
+// ----------------------
+// Relevant units:   16
+// Annotated:        16/16
+// Exempt:           26
+// Human-reviewed:   0/16
+// IP risk:          Low
+// Security risk:    Low
+// Criteria:         0/0
+// Resource impact:  1/10 max
+// Unverified:       16
+//
+// GENERATED - DO NOT EDIT MANUALLY
 
 using System.Collections.Generic;
 
@@ -14,8 +28,12 @@ namespace Broiler.ECMAScript.Syntax;
 /// <c>Function.prototype.toString</c> answers, clause 20.2.3.5): for a method it begins at the method's first token after
 /// <c>static</c>, its name included, so it overlaps the name its MethodDefinition or PropertyDefinition holds.
 /// </remarks>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=0; Fingerprint=DEE5CC
+// Broiler-Human:        PENDING
 public sealed class FunctionNode : SyntaxNode
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=1; Fingerprint=271F8F
+    // Broiler-Human:        PENDING
     internal FunctionNode(
         SourceSpan span,
         BindingIdentifier? name,
@@ -62,6 +80,8 @@ public sealed class FunctionNode : SyntaxNode
     /// <summary>Whether it is an arrow function (clauses 15.3 and 15.9).</summary>
     public bool IsArrow { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=1; Fingerprint=5B68DF
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         Add(into, Name);
@@ -72,8 +92,12 @@ public sealed class FunctionNode : SyntaxNode
 }
 
 /// <summary>One class's heritage and body (ECMA-262 clause 15.7), shared by its declaration and expression forms.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=0; Fingerprint=3F02BB
+// Broiler-Human:        PENDING
 public sealed class ClassNode : SyntaxNode
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=1; Fingerprint=17879A
+    // Broiler-Human:        PENDING
     internal ClassNode(SourceSpan span, IReadOnlyList<Decorator> decorators, BindingIdentifier? name, Expression? heritage, IReadOnlyList<SyntaxNode> elements)
         : base(SyntaxKind.Class, span)
     {
@@ -95,6 +119,8 @@ public sealed class ClassNode : SyntaxNode
     /// <summary>The ClassElements in source order: each a <see cref="MethodDefinition"/>, a <see cref="FieldDefinition"/> or a <see cref="StaticBlock"/>; an empty element (<c>;</c>) has no node.</summary>
     public IReadOnlyList<SyntaxNode> Elements { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=1; Fingerprint=A34610
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         AddAll(into, Decorators);
@@ -105,6 +131,8 @@ public sealed class ClassNode : SyntaxNode
 }
 
 /// <summary>What a class element's method defines (ECMA-262 clauses 15.4 and 15.7).</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=0; Fingerprint=EA56BD
+// Broiler-Human:        PENDING
 public enum MethodKind
 {
     /// <summary>A method: <c>m() {}</c>, a generator method or an async method.</summary>
@@ -118,8 +146,12 @@ public enum MethodKind
 }
 
 /// <summary>A class element's MethodDefinition (ECMA-262 clauses 15.4 and 15.7), with <c>static</c> where written.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=0; Fingerprint=F80910
+// Broiler-Human:        PENDING
 public sealed class MethodDefinition : SyntaxNode
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=1; Fingerprint=A7BE3F
+    // Broiler-Human:        PENDING
     internal MethodDefinition(SourceSpan span, IReadOnlyList<Decorator> decorators, bool isStatic, MethodKind methodKind, SyntaxNode key, FunctionNode function)
         : base(SyntaxKind.MethodDefinition, span)
     {
@@ -145,6 +177,8 @@ public sealed class MethodDefinition : SyntaxNode
     /// <summary>The method's function.</summary>
     public FunctionNode Function { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=1; Fingerprint=8DE78D
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         AddAll(into, Decorators);
@@ -154,8 +188,12 @@ public sealed class MethodDefinition : SyntaxNode
 }
 
 /// <summary>A FieldDefinition (ECMA-262 clause 15.7), or an auto-accessor under the decorators proposal's <c>accessor</c> flag (decision D17).</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=0; Fingerprint=C1707A
+// Broiler-Human:        PENDING
 public sealed class FieldDefinition : SyntaxNode
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=1; Fingerprint=1F4349
+    // Broiler-Human:        PENDING
     internal FieldDefinition(SourceSpan span, IReadOnlyList<Decorator> decorators, bool isStatic, bool isAccessor, SyntaxNode key, Expression? value)
         : base(SyntaxKind.FieldDefinition, span)
     {
@@ -181,6 +219,8 @@ public sealed class FieldDefinition : SyntaxNode
     /// <summary>The Initializer's expression, or null where none is written.</summary>
     public Expression? Value { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=1; Fingerprint=458CF4
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         AddAll(into, Decorators);
@@ -190,8 +230,12 @@ public sealed class FieldDefinition : SyntaxNode
 }
 
 /// <summary>A ClassStaticBlock (ECMA-262 clause 15.7): <c>static {</c> statements <c>}</c>.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=0; Fingerprint=EADA59
+// Broiler-Human:        PENDING
 public sealed class StaticBlock : SyntaxNode
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=1; Fingerprint=1E8DB9
+    // Broiler-Human:        PENDING
     internal StaticBlock(SourceSpan span, IReadOnlyList<Statement> body)
         : base(SyntaxKind.StaticBlock, span)
     {
@@ -201,5 +245,7 @@ public sealed class StaticBlock : SyntaxNode
     /// <summary>The ClassStaticBlockStatementList.</summary>
     public IReadOnlyList<Statement> Body { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions and classes tree; IP=Low; Security=Low; Resources=1; Fingerprint=6ECCEA
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into) => AddAll(into, Body);
 }

@@ -1,13 +1,31 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
+//
+// Broiler Code Assurance
+// ----------------------
+// Relevant units:   21
+// Annotated:        21/21
+// Exempt:           25
+// Human-reviewed:   0/21
+// IP risk:          Low
+// Security risk:    Low
+// Criteria:         0/0
+// Resource impact:  1/10 max
+// Unverified:       21
+//
+// GENERATED - DO NOT EDIT MANUALLY
 
 using System.Collections.Generic;
 
 namespace Broiler.ECMAScript.Syntax;
 
 /// <summary>A WithClause's entry (ECMA-262 clause 16.2.2, ImportAttribute): a key and a string value.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=0; Fingerprint=CD1F51
+// Broiler-Human:        PENDING
 public sealed class ImportAttribute : SyntaxNode
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=CA06ED
+    // Broiler-Human:        PENDING
     internal ImportAttribute(SourceSpan span, SyntaxNode key, StringLiteral value)
         : base(SyntaxKind.ImportAttribute, span)
     {
@@ -21,6 +39,8 @@ public sealed class ImportAttribute : SyntaxNode
     /// <summary>The value.</summary>
     public StringLiteral Value { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=37AAC0
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         into.Add(Key);
@@ -29,8 +49,12 @@ public sealed class ImportAttribute : SyntaxNode
 }
 
 /// <summary>An ImportSpecifier (ECMA-262 clause 16.2.2): an imported name and the local binding.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=0; Fingerprint=35AF0D
+// Broiler-Human:        PENDING
 public sealed class ImportSpecifier : SyntaxNode
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=3637BB
+    // Broiler-Human:        PENDING
     internal ImportSpecifier(SourceSpan span, SyntaxNode? imported, BindingIdentifier local)
         : base(SyntaxKind.ImportSpecifier, span)
     {
@@ -44,6 +68,8 @@ public sealed class ImportSpecifier : SyntaxNode
     /// <summary>The ImportedBinding.</summary>
     public BindingIdentifier Local { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=979820
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         Add(into, Imported);
@@ -52,8 +78,12 @@ public sealed class ImportSpecifier : SyntaxNode
 }
 
 /// <summary>An ImportDeclaration (ECMA-262 clause 16.2.2), the import-phase declaration forms under their flags (decision D17).</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=0; Fingerprint=CE20DD
+// Broiler-Human:        PENDING
 public sealed class ImportDeclaration : Statement
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=6385D7
+    // Broiler-Human:        PENDING
     internal ImportDeclaration(
         SourceSpan span,
         ImportPhase phase,
@@ -100,6 +130,8 @@ public sealed class ImportDeclaration : Statement
     /// <summary>Whether a comma closes the WithClause's list, a raw fact.</summary>
     public bool AttributesTrailingComma { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=744508
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         Add(into, DefaultBinding);
@@ -113,8 +145,12 @@ public sealed class ImportDeclaration : Statement
 }
 
 /// <summary>An ExportSpecifier (ECMA-262 clause 16.2.3): a local name and the name it is exported as.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=0; Fingerprint=955512
+// Broiler-Human:        PENDING
 public sealed class ExportSpecifier : SyntaxNode
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=488EC4
+    // Broiler-Human:        PENDING
     internal ExportSpecifier(SourceSpan span, SyntaxNode local, SyntaxNode? exported)
         : base(SyntaxKind.ExportSpecifier, span)
     {
@@ -128,6 +164,8 @@ public sealed class ExportSpecifier : SyntaxNode
     /// <summary>The ModuleExportName after <c>as</c>, or null where none is written.</summary>
     public SyntaxNode? Exported { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=C6A1F3
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         into.Add(Local);
@@ -139,8 +177,12 @@ public sealed class ExportSpecifier : SyntaxNode
 /// An ExportDeclaration that exports names (ECMA-262 clause 16.2.3): <c>export</c> a declaration, or <c>export { … }</c>
 /// with or without a FromClause.
 /// </summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=0; Fingerprint=2FCA4E
+// Broiler-Human:        PENDING
 public sealed class ExportNamedDeclaration : Statement
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=30F0A7
+    // Broiler-Human:        PENDING
     internal ExportNamedDeclaration(
         SourceSpan span,
         Statement? declaration,
@@ -177,6 +219,8 @@ public sealed class ExportNamedDeclaration : Statement
     /// <summary>Whether a comma closes the WithClause's list, a raw fact.</summary>
     public bool AttributesTrailingComma { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=5C5264
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         Add(into, Declaration);
@@ -188,8 +232,12 @@ public sealed class ExportNamedDeclaration : Statement
 }
 
 /// <summary><c>export default</c> (ECMA-262 clause 16.2.3): a function or class declaration, its name optional, or an AssignmentExpression.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=0; Fingerprint=60F7F5
+// Broiler-Human:        PENDING
 public sealed class ExportDefaultDeclaration : Statement
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=3E96F6
+    // Broiler-Human:        PENDING
     internal ExportDefaultDeclaration(SourceSpan span, SyntaxNode declaration)
         : base(SyntaxKind.ExportDefaultDeclaration, span)
     {
@@ -199,12 +247,18 @@ public sealed class ExportDefaultDeclaration : Statement
     /// <summary>A <see cref="FunctionDeclaration"/>, a <see cref="ClassDeclaration"/> or an <see cref="Expression"/>.</summary>
     public SyntaxNode Declaration { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=14832C
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into) => into.Add(Declaration);
 }
 
 /// <summary><c>export * from</c> or <c>export * as name from</c> (ECMA-262 clause 16.2.3).</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=0; Fingerprint=A46FEF
+// Broiler-Human:        PENDING
 public sealed class ExportAllDeclaration : Statement
 {
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=B61FDE
+    // Broiler-Human:        PENDING
     internal ExportAllDeclaration(SourceSpan span, SyntaxNode? exported, StringLiteral source, IReadOnlyList<ImportAttribute>? attributes, bool attributesTrailingComma)
         : base(SyntaxKind.ExportAllDeclaration, span)
     {
@@ -226,6 +280,8 @@ public sealed class ExportAllDeclaration : Statement
     /// <summary>Whether a comma closes the WithClause's list, a raw fact.</summary>
     public bool AttributesTrailingComma { get; }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules tree; IP=Low; Security=Low; Resources=1; Fingerprint=543883
+    // Broiler-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         Add(into, Exported);

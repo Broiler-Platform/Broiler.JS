@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   6
 // Annotated:        6/6
-// Exempt:           6
+// Exempt:           8
 // Human-reviewed:   0/6
 // IP risk:          Low
 // Security risk:    High
@@ -22,6 +22,8 @@ namespace Broiler.ECMAScript.Syntax;
 
 /// <summary>How a parse ended (Broiler.VM's JSD-0083, X3: "a refusal is data").</summary>
 /// <remarks>The numbers are stable; a later stage that withdraws <see cref="NotImplemented"/> reuses no number.</remarks>
+// Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=177077
+// Broiler-Human:        PENDING
 public enum ParseOutcome
 {
     /// <summary>
@@ -57,6 +59,8 @@ public enum ParseOutcome
 /// raw facts the result publishes, for Broiler.VM's tokenizers-agreement row and Broiler.JS's bridged token chain
 /// (decisions D21 and D44), is fixed when a consumer first reads it.
 /// </remarks>
+// Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=54BFD3
+// Broiler-Human:        PENDING
 public sealed class ParseResult
 {
     private ParseResult(ParseOutcome outcome, ProgramNode? tree, IReadOnlyList<Token> tokens, IReadOnlyList<SyntaxDiagnostic> diagnostics)
@@ -83,10 +87,14 @@ public sealed class ParseResult
     internal IReadOnlyList<Token> Tokens { get; }
 
     /// <summary>The answer of a parse that accepts the source.</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=EBE6F7
+    // Broiler-Human:        PENDING
     internal static ParseResult Accepted(ProgramNode tree, List<Token> tokens) =>
         new(ParseOutcome.Accepted, tree, tokens.AsReadOnly(), Array.Empty<SyntaxDiagnostic>());
 
     /// <summary>The answer of a parse that refuses the source with one diagnostic, under the first error (decision D11).</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=96A2E2
+    // Broiler-Human:        PENDING
     internal static ParseResult Refused(SyntaxDiagnostic diagnostic) =>
         new(ParseOutcome.Refused, null, Array.Empty<Token>(), Array.AsReadOnly(new[] { diagnostic }));
 }
@@ -122,6 +130,8 @@ public sealed class ParseResult
 /// which the request's caller makes safe.
 /// </para>
 /// </remarks>
+// Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=85477C
+// Broiler-Human:        PENDING
 public static class SyntaxParser
 {
     /// <summary>
@@ -138,6 +148,9 @@ public static class SyntaxParser
     /// </returns>
     /// <exception cref="ArgumentNullException">The request is null.</exception>
     /// <exception cref="ArgumentException">The request's Unicode provider is not of the library's Unicode version or lacks a table the lexical classes read.</exception>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.1 s16.2 s19.2.1.1 s20.2.1.1.1 goals, JSD-0083 SJL-13.2c parse entry D32; IP=Low; Security=High; Resources=2; Fingerprint=6F6645
+    // Broiler-Falsified-If: a source the grammar refuses is answered Accepted, a source it admits is answered Refused, or the meter is charged after a code unit of the source is read or for other than the text's length
+    // Broiler-Human:        PENDING
     public static ParseResult Parse(ParseRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);

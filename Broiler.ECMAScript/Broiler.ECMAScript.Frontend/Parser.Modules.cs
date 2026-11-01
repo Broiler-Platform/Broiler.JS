@@ -1,14 +1,32 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
+//
+// Broiler Code Assurance
+// ----------------------
+// Relevant units:   10
+// Annotated:        10/10
+// Exempt:           0
+// Human-reviewed:   0/10
+// IP risk:          Low
+// Security risk:    Medium
+// Criteria:         0/0
+// Resource impact:  2/10 max
+// Unverified:       10
+//
+// GENERATED - DO NOT EDIT MANUALLY
 
 using System.Collections.Generic;
 
 namespace Broiler.ECMAScript.Syntax;
 
 /// <summary>Modules (ECMA-262 clause 16.2): ModuleItems, import and export declarations with their WithClauses, and the import phases under their flags.</summary>
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=130766
+// Broiler-Human:        PENDING
 internal sealed partial class Parser
 {
     /// <summary>A ModuleItem (clause 16.2): an ImportDeclaration, an ExportDeclaration or a StatementListItem.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=61C5BE
+    // Broiler-Human:        PENDING
     private Statement ParseModuleItem()
     {
         var token = Ex;
@@ -37,6 +55,8 @@ internal sealed partial class Parser
         return ParseStatementListItem();
     }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=C5D35B
+    // Broiler-Human:        PENDING
     private Statement WithNesting(Token at, System.Func<Statement> parse)
     {
         EnterNesting(at);
@@ -54,6 +74,8 @@ internal sealed partial class Parser
     /// An ImportDeclaration (clause 16.2.2): a module specifier alone, or an ImportClause and a FromClause, and a WithClause;
     /// <c>import source x from</c> and <c>import defer * as ns from</c> under their flags (decision D17).
     /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=3E9C51
+    // Broiler-Human:        PENDING
     private Statement ParseImportDeclaration()
     {
         var start = StartOf(Advance());
@@ -130,6 +152,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether the current <c>source</c> begins a source-phase import: a binding follows that is not <c>from</c>, or <c>from</c> twice (<c>import source from from "m"</c>).</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=FBF717
+    // Broiler-Human:        PENDING
     private bool IsSourcePhase()
     {
         Peek(LexicalGoal.Div);
@@ -143,6 +167,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>NamedImports (clause 16.2.2): ImportSpecifiers, each a binding or a ModuleExportName <c>as</c> a binding.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=CDF17B
+    // Broiler-Human:        PENDING
     private (IReadOnlyList<ImportSpecifier>, bool) ParseNamedImports()
     {
         Expect(TokenKind.LeftBrace);
@@ -181,6 +207,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A ModuleSpecifier (clause 16.2.2): a StringLiteral.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=EA5790
+    // Broiler-Human:        PENDING
     private StringLiteral ParseModuleSpecifier()
     {
         var token = Op;
@@ -191,6 +219,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A WithClause (clause 16.2.2), or none: AttributeKeys, each an IdentifierName or a StringLiteral, with string values.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=3F7C7F
+    // Broiler-Human:        PENDING
     private (IReadOnlyList<ImportAttribute>?, bool) ParseWithClause()
     {
         if (!IsWord(Op, Word.With))
@@ -226,6 +256,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A ModuleExportName (clause 16.2.3): an IdentifierName, any word among them, or a StringLiteral.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=62DDCF
+    // Broiler-Human:        PENDING
     private SyntaxNode ParseModuleExportName()
     {
         var token = Op;
@@ -248,6 +280,8 @@ internal sealed partial class Parser
     /// An ExportDeclaration (clause 16.2.3): <c>export *</c>, NamedExports with or without a FromClause, a declaration, or
     /// <c>export default</c> with a declaration or an AssignmentExpression.
     /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=6FDA81
+    // Broiler-Human:        PENDING
     private Statement ParseExportDeclaration(IReadOnlyList<Decorator> decorators)
     {
         var keyword = Ex;
