@@ -8,7 +8,8 @@ home, `Broiler.ECMAScript/data/intl/`, and generator, in `Broiler.ECMAScript.Gen
 **Status:** design. **Filed:** 2026-10-26, at milestone SJL-9 (work package SJL-9.1), before any of the library's code
 or the home's data exists. **Revised:** 2026-10-27, at stage SJL-9.3a, by dated notes on "Why there is no project yet",
 the library's project now existing, and on sections 1 and 5, the composite's parent walk and its secondary provider, and
-week data keyed by region ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
+week data keyed by region; and on 2026-11-01, at stage SJL-9.3b, by a dated note on section 1's sub-area (b) ("Corrections"
+lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
 both roles (Broiler.VM's exception EX-30), and nothing here has been read by anyone but its author.
 
 **What this document is.** The Intl library's design document in its home, one of the three places SJL-9.1 files the
@@ -104,6 +105,34 @@ provider, inherit them knowingly.)*
 - **d.** `DateTimePatternGenerator`, `DateTimeFormatter`, `DateIntervalFormatter`, day periods, hour cycles and
   `ZoneNamer`, with metazone history, over SJL-8's time zone rules and SJL-10's calendars, and Intl over Temporal;
 - **e.** `DurationFormatCore`, over the number and list formatters.
+
+*(Noted 2026-11-01, at SJL-9.3b: sub-area (b) as built, and five readings its code makes that the item above does not
+state, so that sub-areas (c) and (e), SJL-9.3f's packing and the cut-overs inherit them knowingly. Its names are
+`IntlDecimal`, `DigitOptionRules` with its records `DigitOptionValues`, `DigitOptionsPlan`, `FractionDigitDefaults` and
+`DigitOptions`, `NumericFormat`, `PluralEngine` and `PluralRulesRecord`; the item's "from `Number::toString`'s digits and a
+BigInt's" also covers a String, read by StringIntlMV and held to the Number range, which Broiler.VM's `JsDecimal` holds.)*
+- **SetNumberFormatDigitOptions is split at its conversions.** It reads the four digit options without converting them and
+  converts only the ones its `needSd` and `needFd` select, the minimum before the maximum, so the engine reads, asks
+  `DigitOptionRules.Plan` which to convert, converts each with its own ToNumber, has `DefaultNumberOption` check its range,
+  and hands the values to `SetNumberFormatDigitOptions`, which takes the decisions after them. A `TypeError` of that
+  operation, an increment with a rounding type other than fraction digits, is a status like its `RangeError`s.
+- **The compact exponent comes from the number data** (decision D20). `PluralRulesRecord.ResolvePlural` in compact notation
+  passes `c` and `e` as ComputeExponent's exponent over the language's short or long decimal compact patterns
+  (`decimal.short.decimalFormat.1000-count-other` and the like, sub-area (c)'s data), as Broiler.VM's number formatter
+  computes it for its own plural; in every other notation they are 0. ComputeExponent's second rounding of the same digits
+  charges nothing of its own.
+- **Plural evaluation is charged through FormatNumericToString.** ResolvePlural charges FormatNumericToString's
+  `digits / 16 + 1`, Broiler.VM's one charge there, which covers reading the String those digits make, so Broiler.VM's
+  charges do not move; `PluralEngine.Select`, called alone over a String a caller gives, charges one unit per code unit.
+- **A plural rule is selected by the data locale's language**, as Broiler.VM reads it (`JsLocaleTag.Parse(DataLocale).Language`),
+  not by the locale: the generated tables also carry CLDR's `pt-PT` and `kok-Latn` rules, which no language key reaches.
+  For Broiler.VM's list nothing moves; Broiler.JS's `pt-PT` would select by `pt`'s rules, so SJL-9.5, before it makes `pt-PT`
+  available, either keys the rules by the data locale's parent chain or records the choice.
+- **The vectors give their options in the script.** `intl/values-and-plurals.vectors` gives each vector's options bag and
+  most arguments in `script` alone, so its library-level runner reads the vector whole: the conformance library's
+  `IVectorRecordLibrary`, and the runner's reader of the generator's few script forms. The file's `format` and
+  `formatToParts` vectors are answered by PartitionNumberPattern, sub-area (c)'s, though FormatNumericToString decides their
+  digits; at this stage the library's unit tests and the differential check hold those rows.
 
 Each takes **resolved options as records**, never an options object, and answers strings, parts records or a status
 (conventions 2 and 3). Its code takes no culture call: what Broiler.VM's code does today through `ToUpperInvariant`,
@@ -345,4 +374,9 @@ available locales, which are section 2's.
 dated note that the project now exists and names sub-area (a)'s types; section 1 a dated note on three readings of the
 question layer - the secondary provider asked only at a locale the shared data neither lists nor holds, the parent as the
 tag less its last subtag and what that means for a locale outside the lists, and week and hour-cycle data keyed by
-region; and section 5 a dated note on its first item. Nothing else here is changed.
+region; and section 5 a dated note on its first item. *(Extended 2026-11-01, at SJL-9.3b; the sentence after the list read
+"Nothing else here is changed.")* The header's "Revised" line gains this stage's date, ending where it read "and week data
+keyed by region ("Corrections" lists them)."; and section 1 gains a dated note on sub-area (b): its names, the String's value, and five
+readings - SetNumberFormatDigitOptions split at its conversions, the compact exponent from the number data, plural evaluation
+charged through FormatNumericToString, plural rules selected by language, and the vectors' options in the script. Nothing
+else here is changed.
