@@ -52,6 +52,8 @@ a frame ceiling of `1 << 20`, a trail ceiling of `1 << 21` and a nesting limit o
 
 No other commit is named yet.
 
+*2026-11-01:* the regular-expression vectors this bundle's part D runs are corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`. Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists.
+
 **What the bundle will hold:**
 - `base/`: part A's base run, imported unchanged with the digest of its zip, and parts C and D's base runs;
 - `after/`: the after runs of every part, each comparison's report, and the table of every C1, C3 and C5 row;

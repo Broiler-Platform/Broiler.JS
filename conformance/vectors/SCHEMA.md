@@ -57,6 +57,18 @@ An outcome is one of:
 - `throw: <typed value>`, a thrown value that is not an error object;
 - `status: <word>`, a library-level status (library runners only, for example `not-implemented`).
 
+**An engine-level runner skips a vector whose `out` is a status**: it does not evaluate the vector's script, whose
+text states the computation for a reader, and its report gives the vector no line; a library-level runner gives the
+vector its verdict. *(Added 2026-11-01, at corpus revision 31, when the regular-expression area's `budget.vectors`
+added the corpus's first vectors whose `out` is a status, `status: exhausted`, which decision D25 of Broiler.VM's
+JSD-0081 makes library-level. Until then the bullet above, "a library-level status (library runners only, for example
+`not-implemented`)", was the whole rule, and neither engine-level runner skips such a vector at that revision:
+Broiler.JS's, `Broiler.JS/Broiler.JavaScript.Vectors.Tests` (`EngineRunTests`, which runs every record of the corpus),
+and Broiler.VM's, `VectorsCommand` of its conformance composition (at its `83290f9`, which evaluates every record it
+reads), each evaluate the script, compare the outcome with the status, which no outcome matches, and report a
+difference nothing classifies. Each runner is to skip them by its first run on revision 31, before its differences
+are classified; until it does, what it reports for them is no difference of the engine's.)*
+
 **`out` may list alternatives**, separated by ` | `, when the specification admits more than one
 result and enumerates them: the least significant digit of Number::toString, which is "not
 necessarily uniquely determined", and RoundMVResult's two options beyond 20 significant digits are
