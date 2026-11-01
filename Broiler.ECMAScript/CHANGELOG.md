@@ -173,8 +173,9 @@ Not yet packed under a version of its own: the stream's next version is set when
   answers `ParseOutcome.Refused` for a source the lexical grammar refuses under every reading the parser could give it,
   and `ParseOutcome.NotImplemented` for every other until the parser (stage 4c). The library-level runner's Unicode
   provider is the tables the owner's generator writes from this repository's pin, `data/unicode/pins/`; the probe still
-  records the `syntax` vectors without judging them, a vector the tokenizer refuses now among the matches. No public API
-  changes.
+  records the `syntax` vectors without judging them, a vector the tokenizer refuses now among the matches; since a refusal
+  lost would go back to not implemented, which the probe counts as neither a failure nor a difference, the Conformance
+  tests pin by id the vectors the tokenizer refuses. No public API changes.
 
 ### Changed
 

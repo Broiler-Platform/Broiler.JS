@@ -37,6 +37,49 @@ public class SyntaxAdapterTests
     }
 
     /// <summary>
+    /// The vectors stage 4b's tokenizer refuses, at corpus revision 30, by id: the probe records the syntax area and does
+    /// not judge it, and a refusal lost goes back to not implemented, which is neither a failure nor a difference, so this
+    /// list is what makes a lost refusal, or a new one, fail. A stage that changes what the library refuses (the parser,
+    /// stage 4c), or a corpus revision that adds or retires a lexical vector, rewrites it.
+    /// </summary>
+    private static readonly string[] TokenizerRefusals =
+    [
+        "syntax/lexical/ee0001/0002", "syntax/lexical/ee0002/0002", "syntax/lexical/escapes/0001",
+        "syntax/lexical/escapes/0002", "syntax/lexical/escapes/0003", "syntax/lexical/escapes/0004",
+        "syntax/lexical/escapes/0005", "syntax/lexical/escapes/0006", "syntax/lexical/escapes/0007",
+        "syntax/lexical/ex0001/0002", "syntax/lexical/ex0001/0003", "syntax/lexical/ex0002/0002",
+        "syntax/lexical/ex0002/0003", "syntax/lexical/ex0003/0002", "syntax/lexical/ex0004/0002",
+        "syntax/lexical/ex0005/0002", "syntax/lexical/ex0005/0003", "syntax/lexical/ex0006/0002",
+        "syntax/lexical/ex0007/0002", "syntax/lexical/ex0025/0002", "syntax/lexical/ex0025/0003",
+        "syntax/lexical/hashbang/0003", "syntax/lexical/hashbang/0004", "syntax/lexical/hashbang/0005",
+        "syntax/lexical/identifiers/0009", "syntax/lexical/identifiers/0010", "syntax/lexical/identifiers/0012",
+        "syntax/lexical/identifiers/0016", "syntax/lexical/line-terminators/0009",
+        "syntax/lexical/line-terminators/0010", "syntax/lexical/line-terminators/0015",
+        "syntax/lexical/line-terminators/0016", "syntax/lexical/m-suffix/0001", "syntax/lexical/m-suffix/0002",
+        "syntax/lexical/numeric-literals/0009", "syntax/lexical/numeric-literals/0010",
+        "syntax/lexical/numeric-literals/0011", "syntax/lexical/numeric-literals/0012",
+        "syntax/lexical/numeric-literals/0013", "syntax/lexical/numeric-literals/0014",
+        "syntax/lexical/numeric-literals/0015", "syntax/lexical/numeric-literals/0016",
+        "syntax/lexical/numeric-literals/0017", "syntax/lexical/numeric-literals/0018",
+        "syntax/lexical/numeric-literals/0019", "syntax/lexical/numeric-literals/0024",
+        "syntax/lexical/numeric-literals/0025", "syntax/lexical/numeric-literals/0026",
+        "syntax/lexical/numeric-literals/0027", "syntax/lexical/numeric-literals/0028",
+        "syntax/lexical/numeric-literals/0032", "syntax/lexical/numeric-literals/0033",
+        "syntax/lexical/numeric-literals/0034", "syntax/lexical/numeric-literals/0035", "syntax/lexical/t6/0001",
+    ];
+
+    [Fact]
+    public void The_tokenizer_refuses_exactly_the_vectors_stage_4b_names()
+    {
+        var refused = LibraryRun.Run(SyntaxVectors, new AlgorithmsLibrary())
+            .Where(static r => r.Rendered == AlgorithmsLibrary.SyntaxRefused)
+            .Select(static r => r.Vector.Id)
+            .Order(StringComparer.Ordinal)
+            .ToList();
+        Assert.Equal(TokenizerRefusals.Order(StringComparer.Ordinal).ToList(), refused);
+    }
+
+    /// <summary>
     /// The two operations are the syntax area's alone, over the whole corpus, so that <see cref="IVectorLibrary.Call"/>,
     /// which sees no area, gives no other area's vector to the adapter and no syntax vector to another area's.
     /// </summary>
