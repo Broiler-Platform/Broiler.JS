@@ -47,6 +47,10 @@ internal static class DifferentialCheck
     internal static IReadOnlyList<Section> Run(ulong seed, int scale, IReadOnlyCollection<string>? only = null)
     {
         var random = new SeededRandom(seed);
+
+        // SUB-AREA (B)'S OWN STREAM, from the same seed, so that its draws leave the sequence the earlier stages' sections
+        // take from the seed as it was (stage SJL-9.3b).
+        var decimals = new SeededRandom(seed ^ 0x5D3B_93B0_0000_0000UL);
         var sections = new List<Section>();
 
         foreach (var embedding in Embedding.Both())
@@ -56,7 +60,7 @@ internal static class DifferentialCheck
             if (only is null || only.Any(static s => s is "L1" or "L2" or "L3" or "L4"))
                 sections.AddRange(LocaleSection.Run(embedding, random, scale, only));
             if (only is null || only.Any(static s => s is "M1" or "M2" or "M3" or "P1" or "P2"))
-                sections.AddRange(DecimalSection.Run(embedding, random, scale, only));
+                sections.AddRange(DecimalSection.Run(embedding, decimals, scale, only));
         }
 
         return sections;
