@@ -78,6 +78,63 @@ Not yet packed under a version of its own: the stream's next version is set when
     zones, text direction and week info. A locale whose language the Collator lacks answers DefaultLocale's
     collations, and only `und` answers `emoji` and `eor` (row L18, a correction of Broiler.VM);
   - **`SupportedValues`**: `Intl.supportedValuesOf`'s lists, with `AvailableCalendars` and `SanctionedUnits`.
+- `Broiler.ECMAScript.Intl`, sub-area (b) (stage SJL-9.3b; Broiler.VM's JSD-0082, rows M and P, decisions D18, D19 and
+  D20): the Intl mathematical value, the digit options, FormatNumericToString, and plural rules and ranges, ported from
+  Broiler.VM's JavaScript profile at `4cf9ca44` with `NumberFormatInfo.InvariantInfo` and ASCII casing where it called
+  the invariant culture (decision D19), a status where it threw, and the caller's `WorkCharge` where Broiler.VM charges,
+  in its units (decision D18):
+  - **`IntlDecimal`**, with `IntlDecimalKind`: ToIntlMathematicalValue's value - a Number by its `Number::toString`
+    digits (row M1a), a BigInt by its exact digits (row M3), a String by StringIntlMV held to the Number range as
+    RoundMVResult holds it (rows M2a and M2b), negative zero kept (row M8). A String is charged `length / 8 + 1` and a
+    BigInt through its decimal digits; the BigInt policy a prefixed String is read under is the caller's;
+  - **the digit options**: `DigitOptionRules` - SetNumberFormatDigitOptions' decisions after an engine's reads
+    (`Plan`, `DefaultNumberOption`'s range, `IsAdmittedRoundingIncrement`, `SetNumberFormatDigitOptions`) and the
+    fraction-digit defaults `Intl.NumberFormat` hands it (`NumberFormatDefaults`, row M5) - with `DigitOptionValues`,
+    `DigitOptionsPlan`, `FractionDigitDefaults`, `DigitOptions`, and the option enumerations `NumberStyle`,
+    `NumberNotation`, `CompactDisplay`, `NumberRoundingType`, `RoundingPriority` and `TrailingZeroDisplay`;
+  - **`NumericFormat.FormatNumericToString`**, with `FormattedNumeric`: ToRawFixed and ToRawPrecision over the decimal
+    digits, both rounding priorities, the admitted increments, `stripIfInteger` and the minimum integer digits (rows M6
+    and M7), the rounding modes made unsigned by `ExactRounding`, charged `digits / 16 + 1`;
+  - **`PluralEngine`**: a language's CLDR rules of one type, parsed once, with the operands `c` and `e` (decision D20),
+    PluralRuleSelect over a decimal String (charged one unit per code unit), PluralRuleSelectRange over the language's
+    plural ranges (row P5b, an adoption) and the categories in `resolvedOptions`' order;
+  - **`PluralRulesRecord`**, with `ResolvedPlural`: an `Intl.PluralRules`'s slots and ResolvePlural and
+    ResolvePluralRange over them (rows P1, P2, P5a, P5c, P6 and P8). With compact notation it passes the exponent
+    ComputeExponent gives over the language's compact patterns, where Broiler.VM passed 0 (row P4): none of Broiler.VM's
+    `de` and `en` rules reads `c` or `e`, so none of its answers moves;
+  - **`IntlStatus`** gains `NumberOptionOutOfRange`, `RoundingIncrementNotAdmitted`, `FractionDigitsOutOfOrder`,
+    `RoundingIncrementNeedsFractionDigits` (SetNumberFormatDigitOptions' `TypeError`),
+    `RoundingIncrementNeedsEqualFractionDigits` and `RangeIsNotANumber`.
+- `Broiler.ECMAScript.Conformance` (test-only, not packed): `IVectorRecordLibrary`, a library the library-level runner
+  hands each vector whole, script included, which `LibraryRun.Run` calls in place of the operation and the decoded
+  inputs (stage SJL-9.3b): the Intl area's sub-area (b) vectors give their options and arguments in the script alone.
+- `Broiler.ECMAScript.Frontend`, a new library: the shared syntax library's skeleton (milestone SJL-13.2, stage a;
+  Broiler.VM's JSD-0083, decisions D6 to D11, D14 to D17 and D32; design
+  [`docs/frontend/design.md`](docs/frontend/design.md), section 9). It is **not packed** until stage SJL-13.2f, the
+  done-when, so that no version of the stream carries part of it (decision D6). It references
+  `Broiler.ECMAScript.Algorithms` and `Broiler.Unicode.Algorithms` only, rule SL1's new layering row, and no
+  `Broiler.Regex`. In `Broiler.ECMAScript.Syntax`:
+  - **the request**: `ParseRequest`, immutable once made, over a `SourceText` (text, name, base offset, line and
+    column), one of the five goals of `ParseGoal` (Script, Module, eval code, and the dynamic function's parameters and
+    body, with the `DynamicFunctionKind` that parameterises those two), `ParseSwitches` (forced strictness, top-level
+    `await` for whichever of the Script and Module goals the request sets it, which also governs catalogue row EX0023,
+    Annex B, HTML-like comments by goal), the `InheritedContext` of eval code (the function, method,
+    derived-constructor and field-initialiser flags, and an optional set of visible private names whose absence leaves
+    that check to the engine; the caller's strictness travels as forced strictness, decision D16), `ProposalFlags`
+    (one per form), `LexerExtensions` (the `m` suffix), `ParseLimits` (the nesting depth, the diagnostic cap,
+    `ErrorReporting`'s first error or all errors, and the tree-depth constant), Broiler.Unicode's `IUnicodeTables`,
+    the `IRegularExpressionValidator` provider with its `RegularExpressionVerdict` and `RegularExpressionStatus`,
+    shaped as Broiler.Regex's validate entry answers, and an optional `WorkCharge`. Each request's defaults for its
+    goal are the library's default request; what a goal does not admit is refused when the request is made;
+  - **the diagnostics' types**: `SyntaxDiagnostic` (a shared code of the catalogue, a message identifier of its
+    form, its arguments, a `DiagnosticPhase`, a `SourceSpan` and the source's name);
+  - **the parse entry**: `SyntaxParser.Parse`, with `ParseResult` and `ParseOutcome`, which answers
+    `ParseOutcome.NotImplemented` for every source, reads neither provider and charges no meter: the tokenizer is
+    stage 4b's and the tree and the parser stage 4c's.
+
+  The library-level runner gains its frontend adapter, which parses each `syntax` vector under the library's default
+  request for the goal its `op` names, and the Native AOT probe runs the `syntax` vectors and records their outcome
+  without judging it until the library parses.
 
 ### Changed
 
@@ -85,10 +142,15 @@ None.
 
 ### Observable changes
 
-None: no engine reads the Intl generator, its tables or the Intl library yet. Broiler.VM regenerates its table with
-the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone SJL-9.5, whose
-own records list what each observes; rows L9 and L18's corrections move Broiler.VM's answers when it cuts over to the
-library, at SJL-9.4. *(Revised 2026-10-27, at SJL-9.3a, when the Intl library was added; it read "None: no engine
+None: no engine reads the Intl generator, its tables, the Intl library or the frontend yet. Broiler.VM regenerates
+its table with the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone
+SJL-9.5, whose own records list what each observes; rows L9 and L18's corrections move Broiler.VM's answers when it
+cuts over to the library, at SJL-9.4. The frontend answers no source before stage 4c, and neither engine references
+it before SJL-13.3's step 1 and SJL-14's bridge. *(Revised 2026-11-01, at SJL-13.2a, when the frontend was added; it
+read "None: no engine reads the Intl generator, its tables or the Intl library yet. Broiler.VM regenerates its table
+with the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone SJL-9.5,
+whose own records list what each observes; rows L9 and L18's corrections move Broiler.VM's answers when it cuts over to
+the library, at SJL-9.4.")* *(Revised 2026-10-27, at SJL-9.3a, when the Intl library was added; it read "None: no engine
 reads the Intl generator or its tables yet. Broiler.VM regenerates its table with the generator at its work package
 SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone SJL-9.5, whose own records list what each
 observes.")*

@@ -1409,9 +1409,14 @@ This repository's part of it:
   `SharedUnicodeTests.cs:204-235` is rewritten. `RegExpUnicodeValidator`: **(a)**, a forwarder to the validate
   entry. `JSRegExp.Match`, `Split` and `Replace`: kept, their bodies re-pointed. `CaptureGroupMap`: kept if used,
   else (b).
-- **The version and the pin (decision D12).** Broiler.Regex's SJL-11 surface ships as `0.2.0-preview.1`, and it breaks
-  the `0.1` surface this engine calls today. **This engine moves its pin only at SJL-11.5**, and no release of either
-  engine depends on `0.2` before both cut-overs have merged.
+- **The version and the pin (decision D12).** Broiler.Regex's SJL-11 surface ships in the `0.1.0-preview.N` stream, as
+  `0.1.0-preview.6` or a later version of it, and it breaks the surface this engine calls today. **This engine moves
+  its pin only at SJL-11.5**, and no release of either engine depends on the version that carries the surface before
+  both cut-overs have merged. *(Revised 2026-11-01, by the owner's decision of that day, "Please keep using version
+  0.1.0-x scheme!", which revises decision D12 of Broiler.VM's JSD-0081; the owner published Broiler.Regex
+  `0.1.0-preview.5` on 2026-10-29 from Broiler.Regex `24344b3`, so the next is `0.1.0-preview.6`. The bullet read
+  "Broiler.Regex's SJL-11 surface ships as `0.2.0-preview.1`, and it breaks the `0.1` surface this engine calls today"
+  and "no release of either engine depends on `0.2` before both cut-overs have merged".)*
 - **The component's test262 (decision D14).** Broiler.RegEx's CI runs a host job through this engine's shell, at a
   commit of this repository that its roadmap names by a dated record, with the candidate package from a local feed:
   SJL-11.5's branch until it merges, then the default branch. So that branch exists early (decision D35), and the

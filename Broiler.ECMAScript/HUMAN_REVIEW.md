@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 1612 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 1740 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 119 |
-| Code units | 2168 |
-| Relevant | 1612 |
-| Exempt | 556 |
-| Assessed | 1612 of 1612 (100%) |
-| Human reviewed | 0 of 1612 (0%) |
-| Unverified | 1612 |
+| Files scanned | 134 |
+| Code units | 2425 |
+| Relevant | 1740 |
+| Exempt | 685 |
+| Assessed | 1740 of 1740 (100%) |
+| Human reviewed | 0 of 1740 (0%) |
+| Unverified | 1740 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1612 |
+| HUMAN_PENDING | 1740 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 556 |
+| EXEMPT | 685 |
 
 ## 5. Aliases In The Tree
 
@@ -160,13 +160,23 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` | 39 | 30 | 9 | 30 | Low | High | 5/5 |
 | `Broiler.ECMAScript.Algorithms/WorkCharge.cs` | 1 | 1 | 0 | 1 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Conformance/Ascii.cs` | 15 | 15 | 0 | 15 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Conformance/LibraryRun.cs` | 11 | 9 | 2 | 9 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Conformance/LibraryRun.cs` | 13 | 11 | 2 | 11 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/Outcome.cs` | 11 | 7 | 4 | 7 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/TypedValue.cs` | 24 | 11 | 13 | 11 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorCorpus.cs` | 18 | 12 | 6 | 12 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorFile.cs` | 23 | 18 | 5 | 18 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorRun.cs` | 17 | 12 | 5 | 12 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorValidator.cs` | 25 | 21 | 4 | 21 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Frontend/IRegularExpressionValidator.cs` | 17 | 7 | 10 | 7 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Frontend/InheritedContext.cs` | 9 | 3 | 6 | 3 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Frontend/ParseGoal.cs` | 11 | 2 | 9 | 2 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Frontend/ParseLimits.cs` | 13 | 8 | 5 | 8 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Frontend/ParseRequest.cs` | 19 | 8 | 11 | 8 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Frontend/ParseSwitches.cs` | 6 | 2 | 4 | 2 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Frontend/ProposalFlags.cs` | 11 | 2 | 9 | 2 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Frontend/SourceText.cs` | 7 | 2 | 5 | 2 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Frontend/SyntaxDiagnostic.cs` | 20 | 7 | 13 | 7 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Frontend/SyntaxParser.cs` | 11 | 5 | 6 | 5 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` | 39 | 35 | 4 | 35 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Dates.cs` | 13 | 13 | 0 | 13 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` | 43 | 43 | 0 | 43 | Low | High | 3/3 |
@@ -192,9 +202,11 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` | 19 | 14 | 5 | 14 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Generation/Time/TzdbTableSource.cs` | 2 | 2 | 0 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` | 32 | 26 | 6 | 26 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/DigitOptions.cs` | 37 | 18 | 19 | 18 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/IIntlDataSet.cs` | 33 | 3 | 30 | 3 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/ILocaleData.cs` | 25 | 22 | 3 | 22 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Intl/IntlStatus.cs` | 9 | 1 | 8 | 1 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Intl/IntlDecimal.cs` | 37 | 27 | 10 | 27 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Intl/IntlStatus.cs` | 15 | 1 | 14 | 1 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlTableText.cs` | 6 | 6 | 0 | 6 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/LocaleDataAnswers.cs` | 15 | 8 | 7 | 8 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/LocaleId.cs` | 28 | 22 | 6 | 22 | Low | Medium | 0/0 |
@@ -202,6 +214,9 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` | 15 | 12 | 3 | 12 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/LocaleRecord.cs` | 25 | 12 | 13 | 12 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/LocaleTag.cs` | 44 | 31 | 13 | 31 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Intl/NumericFormat.cs` | 9 | 9 | 0 | 9 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Intl/PluralEngine.cs` | 26 | 18 | 8 | 18 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/PluralRulesRecord.cs` | 16 | 8 | 8 | 8 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/SupportedValues.cs` | 6 | 4 | 2 | 4 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/TableLocaleData.cs` | 74 | 61 | 13 | 61 | Low | High | 2/2 |
 
@@ -426,6 +441,14 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a candidate is kept whose instant does not have the offset it was made from, an offset in force a day before or after the wall time is not sampled, or a candidate outside the range completes
 - `Broiler.ECMAScript.Time.ZonedTime.Disambiguate(ITimeZoneRules, ReadOnlySpan<BigInteger>, IsoDateTime, Disambiguation, out BigInteger)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, Spec=JSD-0076, Temporal DisambiguatePossibleEpochNanoseconds via Broiler.VM JsTemporal.Disambiguate, `0AFBEC`, PENDING
   - Falsified if: the gap's two offsets are not read a day before and a day after the wall time, or the moved time's first instant is not answered under earlier and its last otherwise
+- `Broiler.ECMAScript.Syntax.ParseLimits.MaximumTreeDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, Spec=JSD-0083 D14 tree-depth bound, JSD-0022, `6DB2AB`, PENDING
+  - Falsified if: the constant differs from Broiler.VM's SliceParseOptions.MaximumTreeDepth, or a tree deeper than it is built rather than refused once the parser exists
+- `Broiler.ECMAScript.Syntax.ParseLimits.MaximumSupportedNestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, Spec=JSD-0083 D14 D47 nesting bound, `2C4111`, PENDING
+  - Falsified if: the constant is below Broiler.VM's SliceParseOptions.MaximumSupportedNestingDepth, so a nesting depth Broiler.VM passes today is refused when the request is made
+- `Broiler.ECMAScript.Syntax.ParseLimits.NestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, Spec=JSD-0080 D27, JSD-0083 D14 nesting parameter, `32674F`, PENDING
+  - Falsified if: a nesting depth below 1 or above MaximumSupportedNestingDepth is admitted
+- `Broiler.ECMAScript.Syntax.SyntaxParser.Parse(ParseRequest)` in `Broiler.ECMAScript.Frontend/SyntaxParser.cs` - Security=High, Spec=JSD-0083 SJL-13.2a skeleton parse entry, `A3B55F`, PENDING
+  - Falsified if: a request is answered Accepted or Refused before stage 4c gives the library a parser, or a meter is charged or a provider read before stage 4b gives it a tokenizer
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.RootCollation.Read(string)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator, `33AB30`, PENDING
   - Falsified if: a line that maps nothing, repeats a key or has a weight wider than its encoding is read without an exception
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.RootCollation.Elements(string)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator, `D4DC2B`, PENDING
@@ -514,6 +537,14 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.ResolveValue<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, Spec=JSD-0082 D8 composite order, `E00AAB`, PENDING
   - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
+- `Broiler.ECMAScript.Intl.DigitOptionRules.SetNumberFormatDigitOptions(DigitOptionValues, FractionDigitDefaults, NumberNotation, out DigitOptions?)` in `Broiler.ECMAScript.Intl/DigitOptions.cs` - Security=High, Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat, `5E6F7D`, PENDING
+  - Falsified if: a resolved slot differs from SetNumberFormatDigitOptions' for the same option values, or a refusal is another status or none
+- `Broiler.ECMAScript.Intl.IntlDecimal.FromNumber(double)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal, `07012B`, PENDING
+  - Falsified if: a Number's value differs from the decimal its Number::toString digits write
+- `Broiler.ECMAScript.Intl.IntlDecimal.FromString(string, BigIntPolicy, WorkCharge?)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal, `2EE52F`, PENDING
+  - Falsified if: a text outside StringNumericLiteral answers other than not-a-number, or a value that rounds to an infinity or a zero as a Number is kept as written
+- `Broiler.ECMAScript.Intl.IntlDecimal.RoundToUnits(int, int, UnsignedRoundingMode)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal, `9BA72E`, PENDING
+  - Falsified if: a tie, a value just above or just below a tie, or an exact multiple is rounded otherwise than ApplyUnsignedRoundingMode states, for any admitted increment
 - `Broiler.ECMAScript.Intl.IntlTableText.Unescape(string)` in `Broiler.ECMAScript.Intl/IntlTableText.cs` - Security=High, Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables, `9C6D2C`, PENDING
   - Falsified if: an escape \uXXXX resolves to another code unit than its four hexadecimal digits name, or a value without an escape is changed
 - `Broiler.ECMAScript.Intl.LocaleInfo.Collations(LocaleRecord, ICollatorLocaleData, string, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleInfo.cs` - Security=High, Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale, `284344`, PENDING
@@ -530,6 +561,14 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a canonical tag canonicalizes to anything but itself, or an alias the CLDR data names survives canonicalization
 - `Broiler.ECMAScript.Intl.LocaleTag.CanonicalType(ILocaleData, string, string)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag, `4D5433`, PENDING
   - Falsified if: a subdivision alias whose replacement is a region is written other than as the region in lower case followed by zzzz (row L9), or a type CLDR's BCP 47 data replaces is kept
+- `Broiler.ECMAScript.Intl.NumericFormat.FormatNumericToString(DigitOptions, IntlDecimal, WorkCharge?)` in `Broiler.ECMAScript.Intl/NumericFormat.cs` - Security=High, Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal, `854FCF`, PENDING
+  - Falsified if: the String or the rounded value differs from FormatNumericToString's for a value and digit options, or the charge differs from digits / 16 + 1
+- `Broiler.ECMAScript.Intl.PluralEngine.Select(string, int, WorkCharge?)` in `Broiler.ECMAScript.Intl/PluralEngine.cs` - Security=High, Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule, `F39F1C`, PENDING
+  - Falsified if: a decimal String's category differs from the first CLDR rule that holds for its UTS 35 operands, or c and e read other than the exponent given
+- `Broiler.ECMAScript.Intl.PluralRule.Parse(string)` in `Broiler.ECMAScript.Intl/PluralEngine.cs` - Security=High, Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule, `CC8B9B`, PENDING
+  - Falsified if: a CLDR rule text is read as another condition than UTS 35 section 5.1 states
+- `Broiler.ECMAScript.Intl.PluralRulesRecord.ResolvePlural(IntlDecimal, WorkCharge?)` in `Broiler.ECMAScript.Intl/PluralRulesRecord.cs` - Security=High, Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules, `526DAF`, PENDING
+  - Falsified if: the category is selected over another String than FormatNumericToString's, or compact notation passes another exponent than ComputeExponent's
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadNumbers()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `21E4C4`, PENDING
   - Falsified if: a number, currency, unit, plural, plural-range or numbering-system answer differs from what Broiler.VM's JsIntlTables.ReadNumbers decodes from the same tables
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadDates()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `E8AF35`, PENDING
@@ -550,5 +589,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-685 of the 1612 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+754 of the 1740 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

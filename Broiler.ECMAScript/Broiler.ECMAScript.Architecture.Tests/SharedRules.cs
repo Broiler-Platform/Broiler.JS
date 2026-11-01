@@ -40,6 +40,12 @@ internal static class SharedRules
         // ones Broiler.VM's JSD-0082, decision D9, and architecture section 2 give it: the algorithms library, whose
         // WorkCharge it takes, and Broiler.Unicode's algorithms package. The data generator is not one of them.
         ["Broiler.ECMAScript.Intl"] = ["Broiler.ECMAScript.Algorithms", "Broiler.Unicode.Algorithms"],
+
+        // Runtime-side; the shared syntax library (milestone SJL-13.2). Its edges are the ones Broiler.VM's JSD-0083, decision
+        // D6, gives it: the algorithms library, whose WorkCharge and DepthLimit its request takes and whose NumericLiterals its
+        // tokenizer calls, and Broiler.Unicode's algorithms package, whose IUnicodeTables is its Unicode provider (decision
+        // D8). No Broiler.Regex: the regular-expression validator is an interface each engine supplies (decision D7).
+        ["Broiler.ECMAScript.Frontend"] = ["Broiler.ECMAScript.Algorithms", "Broiler.Unicode.Algorithms"],
     }.ToFrozenDictionary(StringComparer.Ordinal);
 
     /// <summary>The component packages a shared library may reference at all, where the layering lets it.</summary>
