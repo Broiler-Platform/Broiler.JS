@@ -2,9 +2,12 @@
 # The collation vectors (milestone SJL-17.2), options.vectors: the four options: sensitivity, ignorePunctuation, numeric and caseFirst, by option, by keyword and through localeCompare.
 # Expected values: ICU 78.3 with CLDR 48.0 through Node.js v26.12.0, the reference bundle sjl-9-001's reference.txt
 # names (ref:intlref@1), held, where a vector takes two consecutive lines of CLDR 48.2.0's archived CollationTest
-# files, to the order the file gives them (ref:collationtest@1). Each note names rows of bundle sjl-17-001's
-# correspondence (Broiler.VM's docs/evidence/sjl-17-001/correspondence.md). The area field is intl: the schema has
-# no collation area (generate_collation_vectors.py, THE AREA FIELD).
+# files, to the order the file gives them (ref:collationtest@1). The root's scripts and Han vectors are computed again
+# by the UCA over CLDR 48.2.0's allkeys_CLDR.txt with UCA 17's implicit weights (ref:ucaimplicit@1), the other Han
+# order UTS #35 Part 5 (CLDR 48) allows: a Han vector whose answer moves with that order is impl-defined, with that
+# order's answer for both engines. Each note names rows of bundle sjl-17-001's correspondence (Broiler.VM's
+# docs/evidence/sjl-17-001/correspondence.md), the rows its case carries. The area field is intl: the schema has no
+# collation area (generate_collation_vectors.py, THE AREA FIELD).
 schema: 1
 
 id: intl/collation/options/sensitivity/0001
@@ -103,7 +106,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("a","\u24D0"))+1]
-note: a against U+24D0 under en {sensitivity:"base"}: row O6 (same): sensitivity base
+note: a against U+24D0 under en {sensitivity:"base"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity base (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/sensitivity/0010
@@ -114,7 +117,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("a","\uFF41"))+1]
-note: a against U+FF41 under en {sensitivity:"base"}: row O6 (same): sensitivity base
+note: a against U+FF41 under en {sensitivity:"base"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity base (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/sensitivity/0011
@@ -125,7 +128,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("a","\u00AA"))+1]
-note: a against U+00AA under en {sensitivity:"base"}: row O6 (same): sensitivity base
+note: a against U+00AA under en {sensitivity:"base"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity base (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/sensitivity/0012
@@ -279,7 +282,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base",usage:"search"}).compare("a","\u24D0"))+1]
-note: a against U+24D0 under en {sensitivity:"base",usage:"search"}: row O6 (same): sensitivity base, usage search
+note: a against U+24D0 under en {sensitivity:"base",usage:"search"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity base, usage search (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/sensitivity/0026
@@ -290,7 +293,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base",usage:"search"}).compare("a","\uFF41"))+1]
-note: a against U+FF41 under en {sensitivity:"base",usage:"search"}: row O6 (same): sensitivity base, usage search
+note: a against U+FF41 under en {sensitivity:"base",usage:"search"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity base, usage search (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/sensitivity/0027
@@ -301,7 +304,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base",usage:"search"}).compare("a","\u00AA"))+1]
-note: a against U+00AA under en {sensitivity:"base",usage:"search"}: row O6 (same): sensitivity base, usage search
+note: a against U+00AA under en {sensitivity:"base",usage:"search"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity base, usage search (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/sensitivity/0028
@@ -1456,7 +1459,7 @@ out: value: str:" <   < - < a b < a\u00A0b < a_b < a-b < a\u2010b < a.b < a+b < 
 class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{ignorePunctuation:false}),["ab","a b","a-b","a_b","a.b","a\u00A0b","aB","a\u2010b","a$b","a+b","a\u20ACb",""," ","-"])
-note: 14 strings sorted under en {ignorePunctuation:false}, each neighbour's relation written between them: rows O5a and O5b (corrections of Broiler.JS): ignorePunctuation false is UTS #10's shifted alternate up to CLDR's maxVariable, punctuation: spaces and punctuation, not symbols
+note: 14 strings sorted under en {ignorePunctuation:false}, each neighbour's relation written between them: row O5a (a correction of Broiler.JS): ignorePunctuation false is UTS #10's shifted alternate up to CLDR's maxVariable, punctuation: spaces and punctuation, not symbols
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0002
@@ -1698,7 +1701,7 @@ out: value: str:" <   < - < a b = a\u00A0b < a_b < a-b < a\u2010b < a.b < a+b < 
 class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}),["ab","a b","a-b","a_b","a.b","a\u00A0b","aB","a\u2010b","a$b","a+b","a\u20ACb",""," ","-"])
-note: 14 strings sorted under en {ignorePunctuation:false,sensitivity:"base"}, each neighbour's relation written between them: rows O5a and O5b (corrections of Broiler.JS): ignorePunctuation false is UTS #10's shifted alternate up to CLDR's maxVariable, punctuation: spaces and punctuation, not symbols
+note: 14 strings sorted under en {ignorePunctuation:false,sensitivity:"base"}, each neighbour's relation written between them: rows O5a and O5b (O5a a correction of Broiler.JS; O5b a correction of Broiler.JS): ignorePunctuation false is UTS #10's shifted alternate up to CLDR's maxVariable, punctuation: spaces and punctuation, not symbols (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0024
@@ -1709,7 +1712,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("ab","a b"))+1]
-note: ab against aU+0020b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against aU+0020b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0025
@@ -1720,7 +1723,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("ab","a-b"))+1]
-note: ab against a-b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against a-b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0026
@@ -1731,7 +1734,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("ab","a_b"))+1]
-note: ab against a_b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against a_b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0027
@@ -1742,7 +1745,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("ab","a.b"))+1]
-note: ab against a.b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against a.b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0028
@@ -1753,7 +1756,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("ab","a\u00A0b"))+1]
-note: ab against aU+00A0b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against aU+00A0b under en {ignorePunctuation:false,sensitivity:"base"}: rows O5a and O5b (O5a a correction of Broiler.JS; O5b a correction of Broiler.JS): ignorePunctuation false at base (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0029
@@ -1764,7 +1767,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("a b","a\u00A0b"))+1]
-note: aU+0020b against aU+00A0b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: aU+0020b against aU+00A0b under en {ignorePunctuation:false,sensitivity:"base"}: rows O5a and O5b (O5a a correction of Broiler.JS; O5b a correction of Broiler.JS): ignorePunctuation false at base (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0030
@@ -1775,7 +1778,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("ab","a\u2010b"))+1]
-note: ab against aU+2010b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against aU+2010b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0031
@@ -1786,7 +1789,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("ab","a$b"))+1]
-note: ab against a$b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against a$b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0032
@@ -1797,7 +1800,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("ab","a+b"))+1]
-note: ab against a+b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against a+b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0033
@@ -1808,7 +1811,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("ab","a\u20ACb"))+1]
-note: ab against aU+20ACb under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against aU+20ACb under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0034
@@ -1819,7 +1822,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("a$b","a+b"))+1]
-note: a$b against a+b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: a$b against a+b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0035
@@ -1830,7 +1833,7 @@ out: value: str:"<"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("a+b","a\u20ACb"))+1]
-note: a+b against aU+20ACb under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: a+b against aU+20ACb under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0036
@@ -1841,7 +1844,7 @@ out: value: str:"<"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare(""," "))+1]
-note: (empty) against U+0020 under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: (empty) against U+0020 under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0037
@@ -1852,7 +1855,7 @@ out: value: str:"<"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("","-"))+1]
-note: (empty) against - under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: (empty) against - under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0038
@@ -1863,7 +1866,7 @@ out: value: str:"<"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare(" ","-"))+1]
-note: U+0020 against - under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: U+0020 against - under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0039
@@ -1874,7 +1877,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("aB","a b"))+1]
-note: aB against aU+0020b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: aB against aU+0020b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0040
@@ -1885,7 +1888,7 @@ out: value: str:"<"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("a b","a-b"))+1]
-note: aU+0020b against a-b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: aU+0020b against a-b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0041
@@ -1896,7 +1899,7 @@ out: value: str:"<"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("a,b","a;b"))+1]
-note: a,b against a;b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: a,b against a;b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0042
@@ -1907,7 +1910,7 @@ out: value: str:"<"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("a'b","a\"b"))+1]
-note: a'b against a"b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: a'b against a"b under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0043
@@ -1918,7 +1921,7 @@ out: value: str:"<"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("co-op","coop"))+1]
-note: co-op against coop under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: co-op against coop under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0044
@@ -1929,7 +1932,7 @@ out: value: str:"<"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("co op","co_op"))+1]
-note: coU+0020op against co_op under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base; row O5b: base folds NBSP's tertiary difference from a space
+note: coU+0020op against co_op under en {ignorePunctuation:false,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation false at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0045
@@ -1940,7 +1943,7 @@ out: value: str:" =   = - < a+b < a$b < a\u20ACb < ab = a b = a-b = a_b = a.b = 
 class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{ignorePunctuation:true}),["ab","a b","a-b","a_b","a.b","a\u00A0b","aB","a\u2010b","a$b","a+b","a\u20ACb",""," ","-"])
-note: 14 strings sorted under en {ignorePunctuation:true}, each neighbour's relation written between them: rows O5a and O5b (corrections of Broiler.JS): ignorePunctuation true is UTS #10's shifted alternate up to CLDR's maxVariable, punctuation: spaces and punctuation, not symbols
+note: 14 strings sorted under en {ignorePunctuation:true}, each neighbour's relation written between them: row O5a (a correction of Broiler.JS): ignorePunctuation true is UTS #10's shifted alternate up to CLDR's maxVariable, punctuation: spaces and punctuation, not symbols
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0046
@@ -2182,7 +2185,7 @@ out: value: str:" =   = - < a+b < a$b < a\u20ACb < ab = a b = a-b = a_b = a.b = 
 class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}),["ab","a b","a-b","a_b","a.b","a\u00A0b","aB","a\u2010b","a$b","a+b","a\u20ACb",""," ","-"])
-note: 14 strings sorted under en {ignorePunctuation:true,sensitivity:"base"}, each neighbour's relation written between them: rows O5a and O5b (corrections of Broiler.JS): ignorePunctuation true is UTS #10's shifted alternate up to CLDR's maxVariable, punctuation: spaces and punctuation, not symbols
+note: 14 strings sorted under en {ignorePunctuation:true,sensitivity:"base"}, each neighbour's relation written between them: rows O5a and O5b (O5a a correction of Broiler.JS; O5b a correction of Broiler.JS): ignorePunctuation true is UTS #10's shifted alternate up to CLDR's maxVariable, punctuation: spaces and punctuation, not symbols (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0068
@@ -2193,7 +2196,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a b"))+1]
-note: ab against aU+0020b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against aU+0020b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0069
@@ -2204,7 +2207,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a-b"))+1]
-note: ab against a-b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against a-b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0070
@@ -2215,7 +2218,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a_b"))+1]
-note: ab against a_b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against a_b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0071
@@ -2226,7 +2229,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a.b"))+1]
-note: ab against a.b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against a.b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0072
@@ -2237,7 +2240,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a\u00A0b"))+1]
-note: ab against aU+00A0b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against aU+00A0b under en {ignorePunctuation:true,sensitivity:"base"}: rows O5a and O5b (O5a a correction of Broiler.JS; O5b a correction of Broiler.JS): ignorePunctuation true at base (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0073
@@ -2248,7 +2251,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("a b","a\u00A0b"))+1]
-note: aU+0020b against aU+00A0b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: aU+0020b against aU+00A0b under en {ignorePunctuation:true,sensitivity:"base"}: rows O5a and O5b (O5a a correction of Broiler.JS; O5b a correction of Broiler.JS): ignorePunctuation true at base (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0074
@@ -2259,7 +2262,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a\u2010b"))+1]
-note: ab against aU+2010b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against aU+2010b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0075
@@ -2270,7 +2273,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a$b"))+1]
-note: ab against a$b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against a$b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0076
@@ -2281,7 +2284,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a+b"))+1]
-note: ab against a+b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against a+b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0077
@@ -2292,7 +2295,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a\u20ACb"))+1]
-note: ab against aU+20ACb under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: ab against aU+20ACb under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0078
@@ -2303,7 +2306,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("a$b","a+b"))+1]
-note: a$b against a+b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: a$b against a+b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0079
@@ -2314,7 +2317,7 @@ out: value: str:"<"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("a+b","a\u20ACb"))+1]
-note: a+b against aU+20ACb under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: a+b against aU+20ACb under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0080
@@ -2325,7 +2328,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare(""," "))+1]
-note: (empty) against U+0020 under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: (empty) against U+0020 under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0081
@@ -2336,7 +2339,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("","-"))+1]
-note: (empty) against - under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: (empty) against - under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0082
@@ -2347,7 +2350,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare(" ","-"))+1]
-note: U+0020 against - under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: U+0020 against - under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0083
@@ -2358,7 +2361,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("aB","a b"))+1]
-note: aB against aU+0020b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: aB against aU+0020b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0084
@@ -2369,7 +2372,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("a b","a-b"))+1]
-note: aU+0020b against a-b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: aU+0020b against a-b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0085
@@ -2380,7 +2383,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("a,b","a;b"))+1]
-note: a,b against a;b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: a,b against a;b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0086
@@ -2391,7 +2394,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("a'b","a\"b"))+1]
-note: a'b against a"b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: a'b against a"b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0087
@@ -2402,7 +2405,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("co-op","coop"))+1]
-note: co-op against coop under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: co-op against coop under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0088
@@ -2413,7 +2416,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("co op","co_op"))+1]
-note: coU+0020op against co_op under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base; row O5b: base folds NBSP's tertiary difference from a space
+note: coU+0020op against co_op under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
 since: 31
 
 id: intl/collation/options/ignore-punctuation/0089

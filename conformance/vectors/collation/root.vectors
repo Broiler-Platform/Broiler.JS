@@ -2,9 +2,12 @@
 # The collation vectors (milestone SJL-17.2), root.vectors: root order across scripts: the archived CollationTest files, scripts, canonical equivalence and ignorables, compatibility forms, Han across blocks.
 # Expected values: ICU 78.3 with CLDR 48.0 through Node.js v26.12.0, the reference bundle sjl-9-001's reference.txt
 # names (ref:intlref@1), held, where a vector takes two consecutive lines of CLDR 48.2.0's archived CollationTest
-# files, to the order the file gives them (ref:collationtest@1). Each note names rows of bundle sjl-17-001's
-# correspondence (Broiler.VM's docs/evidence/sjl-17-001/correspondence.md). The area field is intl: the schema has
-# no collation area (generate_collation_vectors.py, THE AREA FIELD).
+# files, to the order the file gives them (ref:collationtest@1). The root's scripts and Han vectors are computed again
+# by the UCA over CLDR 48.2.0's allkeys_CLDR.txt with UCA 17's implicit weights (ref:ucaimplicit@1), the other Han
+# order UTS #35 Part 5 (CLDR 48) allows: a Han vector whose answer moves with that order is impl-defined, with that
+# order's answer for both engines. Each note names rows of bundle sjl-17-001's correspondence (Broiler.VM's
+# docs/evidence/sjl-17-001/correspondence.md), the rows its case carries. The area field is intl: the schema has no
+# collation area (generate_collation_vectors.py, THE AREA FIELD).
 schema: 1
 
 id: intl/collation/root/collationtest-non-ignorable/0001
@@ -12618,10 +12621,12 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"z" str:"\u00DF" str:"ss" str:"\u00E6" str:"ae" str:"\u00F8" str:"\u0153" str:"\u00FE" str:"\u00F0" str:"\u0131" str:"\u03B1" str:"\u03C9" str:"\u0430" str:"\u044F" str:"\u10D0" str:"\u0561" str:"\u05D0" str:"\u05EA" str:"\u0627" str:"\u064A" str:"\u0905" str:"\u0939" str:"\u0E01" str:"\u0E2E" str:"\uAC00" str:"\uD7A3" str:"\u3042" str:"\u30A2" str:"\u3093" str:"\u4E00" str:"\u4E01" str:"\u4E2D" str:"\uD840\uDC00" str:"\uD83D\uDE00" str:"1" str:"\u0661" str:"\u0967" str:"\u00BD" str:"\u2460" str:"\u13A0" str:"\u1200" str:"\u0F40" str:"\u1820" str:"\uA000"
 out: value: str:"\uD83D\uDE00 < 1 = \u0661 = \u0967 < \u2460 < \u00BD < a < ae < \u00E6 < \u00F0 < \u0131 < \u00F8 < \u0153 < ss < \u00DF < z < \u00FE < \u03B1 < \u03C9 < \u0430 < \u044F < \u10D0 < \u0561 < \u05D0 < \u05EA < \u0627 < \u064A < \u1200 < \u0905 < \u0939 < \u0E01 < \u0E2E < \u0F40 < \u1820 < \u13A0 < \uAC00 < \uD7A3 < \u3042 < \u30A2 < \u3093 < \uA000 < \u4E00 < \u4E01 < \uD840\uDC00 < \u4E2D"
-class: normative
-prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"\uD83D\uDE00 < 1 = \u0661 = \u0967 < \u2460 < \u00BD < a < ae < \u00E6 < \u00F0 < \u0131 < \u00F8 < \u0153 < ss < \u00DF < z < \u00FE < \u03B1 < \u03C9 < \u0430 < \u044F < \u10D0 < \u0561 < \u05D0 < \u05EA < \u0627 < \u064A < \u1200 < \u0905 < \u0939 < \u0E01 < \u0E2E < \u0F40 < \u1820 < \u13A0 < \uAC00 < \uD7A3 < \u3042 < \u30A2 < \u3093 < \uA000 < \u4E00 < \u4E01 < \u4E2D < \uD840\uDC00"
+per-engine.broiler-vm: value: str:"\uD83D\uDE00 < 1 = \u0661 = \u0967 < \u2460 < \u00BD < a < ae < \u00E6 < \u00F0 < \u0131 < \u00F8 < \u0153 < ss < \u00DF < z < \u00FE < \u03B1 < \u03C9 < \u0430 < \u044F < \u10D0 < \u0561 < \u05D0 < \u05EA < \u0627 < \u064A < \u1200 < \u0905 < \u0939 < \u0E01 < \u0E2E < \u0F40 < \u1820 < \u13A0 < \uAC00 < \uD7A3 < \u3042 < \u30A2 < \u3093 < \uA000 < \u4E00 < \u4E01 < \u4E2D < \uD840\uDC00"
+prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en"),["a","z","\u00DF","ss","\u00E6","ae","\u00F8","\u0153","\u00FE","\u00F0","\u0131","\u03B1","\u03C9","\u0430","\u044F","\u10D0","\u0561","\u05D0","\u05EA","\u0627","\u064A","\u0905","\u0939","\u0E01","\u0E2E","\uAC00","\uD7A3","\u3042","\u30A2","\u3093","\u4E00","\u4E01","\u4E2D","\uD840\uDC00","\uD83D\uDE00","1","\u0661","\u0967","\u00BD","\u2460","\u13A0","\u1200","\u0F40","\u1820","\uA000"])
-note: 45 strings sorted under en, each neighbour's relation written between them: row O1 (data policy, C5): CLDR 48.2.0's root over Latin, Greek, Cyrillic, Georgian, Armenian, Hebrew, Arabic, Devanagari, Thai, Hangul, kana, Cherokee, Ethiopic, Tibetan, Mongolian, Yi, Han across two blocks (row O3), an emoji, digits of three scripts and two compatibility digits
+note: 45 strings sorted under en, each neighbour's relation written between them: rows O1 and O3 (O1 data policy, C5; O3 data policy, C5): CLDR 48.2.0's root over Latin, Greek, Cyrillic, Georgian, Armenian, Hebrew, Arabic, Devanagari, Thai, Hangul, kana, Cherokee, Ethiopic, Tibetan, Mongolian, Yi, Han across two blocks, an emoji, digits of three scripts and two compatibility digits; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/scripts/0002
@@ -12629,10 +12634,12 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"und" str:"a" str:"z" str:"\u00DF" str:"ss" str:"\u00E6" str:"ae" str:"\u00F8" str:"\u0153" str:"\u00FE" str:"\u00F0" str:"\u0131" str:"\u03B1" str:"\u03C9" str:"\u0430" str:"\u044F" str:"\u10D0" str:"\u0561" str:"\u05D0" str:"\u05EA" str:"\u0627" str:"\u064A" str:"\u0905" str:"\u0939" str:"\u0E01" str:"\u0E2E" str:"\uAC00" str:"\uD7A3" str:"\u3042" str:"\u30A2" str:"\u3093" str:"\u4E00" str:"\u4E01" str:"\u4E2D" str:"\uD840\uDC00" str:"\uD83D\uDE00" str:"1" str:"\u0661" str:"\u0967" str:"\u00BD" str:"\u2460" str:"\u13A0" str:"\u1200" str:"\u0F40" str:"\u1820" str:"\uA000"
 out: value: str:"\uD83D\uDE00 < 1 = \u0661 = \u0967 < \u2460 < \u00BD < a < ae < \u00E6 < \u00F0 < \u0131 < \u00F8 < \u0153 < ss < \u00DF < z < \u00FE < \u03B1 < \u03C9 < \u0430 < \u044F < \u10D0 < \u0561 < \u05D0 < \u05EA < \u0627 < \u064A < \u1200 < \u0905 < \u0939 < \u0E01 < \u0E2E < \u0F40 < \u1820 < \u13A0 < \uAC00 < \uD7A3 < \u3042 < \u30A2 < \u3093 < \uA000 < \u4E00 < \u4E01 < \uD840\uDC00 < \u4E2D"
-class: normative
-prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"\uD83D\uDE00 < 1 = \u0661 = \u0967 < \u2460 < \u00BD < a < ae < \u00E6 < \u00F0 < \u0131 < \u00F8 < \u0153 < ss < \u00DF < z < \u00FE < \u03B1 < \u03C9 < \u0430 < \u044F < \u10D0 < \u0561 < \u05D0 < \u05EA < \u0627 < \u064A < \u1200 < \u0905 < \u0939 < \u0E01 < \u0E2E < \u0F40 < \u1820 < \u13A0 < \uAC00 < \uD7A3 < \u3042 < \u30A2 < \u3093 < \uA000 < \u4E00 < \u4E01 < \u4E2D < \uD840\uDC00"
+per-engine.broiler-vm: value: str:"\uD83D\uDE00 < 1 = \u0661 = \u0967 < \u2460 < \u00BD < a < ae < \u00E6 < \u00F0 < \u0131 < \u00F8 < \u0153 < ss < \u00DF < z < \u00FE < \u03B1 < \u03C9 < \u0430 < \u044F < \u10D0 < \u0561 < \u05D0 < \u05EA < \u0627 < \u064A < \u1200 < \u0905 < \u0939 < \u0E01 < \u0E2E < \u0F40 < \u1820 < \u13A0 < \uAC00 < \uD7A3 < \u3042 < \u30A2 < \u3093 < \uA000 < \u4E00 < \u4E01 < \u4E2D < \uD840\uDC00"
+prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("und"),["a","z","\u00DF","ss","\u00E6","ae","\u00F8","\u0153","\u00FE","\u00F0","\u0131","\u03B1","\u03C9","\u0430","\u044F","\u10D0","\u0561","\u05D0","\u05EA","\u0627","\u064A","\u0905","\u0939","\u0E01","\u0E2E","\uAC00","\uD7A3","\u3042","\u30A2","\u3093","\u4E00","\u4E01","\u4E2D","\uD840\uDC00","\uD83D\uDE00","1","\u0661","\u0967","\u00BD","\u2460","\u13A0","\u1200","\u0F40","\u1820","\uA000"])
-note: 45 strings sorted under und, each neighbour's relation written between them: row O1 (data policy, C5): CLDR 48.2.0's root over Latin, Greek, Cyrillic, Georgian, Armenian, Hebrew, Arabic, Devanagari, Thai, Hangul, kana, Cherokee, Ethiopic, Tibetan, Mongolian, Yi, Han across two blocks (row O3), an emoji, digits of three scripts and two compatibility digits; und resolves as each engine's available-locale policy says, and orders by the root
+note: 45 strings sorted under und, each neighbour's relation written between them: rows O1 and O3 (O1 data policy, C5; O3 data policy, C5): CLDR 48.2.0's root over Latin, Greek, Cyrillic, Georgian, Armenian, Hebrew, Arabic, Devanagari, Thai, Hangul, kana, Cherokee, Ethiopic, Tibetan, Mongolian, Yi, Han across two blocks, an emoji, digits of three scripts and two compatibility digits; und resolves as each engine's available-locale policy says, and orders by the root; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/scripts/0003
@@ -12641,7 +12648,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83D\uDE00" str:"1"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD83D\uDE00","1"))+1]
 note: U+D83DU+DE00 against 1 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12652,7 +12659,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"1" str:"\u0661"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("1","\u0661"))+1]
 note: 1 against U+0661 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12663,7 +12670,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0661" str:"\u0967"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0661","\u0967"))+1]
 note: U+0661 against U+0967 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12674,7 +12681,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0967" str:"\u2460"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0967","\u2460"))+1]
 note: U+0967 against U+2460 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12685,7 +12692,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u2460" str:"\u00BD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u2460","\u00BD"))+1]
 note: U+2460 against U+00BD under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12696,7 +12703,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u00BD" str:"a"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00BD","a"))+1]
 note: U+00BD against a under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12707,7 +12714,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"ae"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("a","ae"))+1]
 note: a against ae under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12718,7 +12725,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"ae" str:"\u00E6"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("ae","\u00E6"))+1]
 note: ae against U+00E6 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12729,7 +12736,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u00E6" str:"\u00F0"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00E6","\u00F0"))+1]
 note: U+00E6 against U+00F0 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12740,7 +12747,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u00F0" str:"\u0131"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00F0","\u0131"))+1]
 note: U+00F0 against U+0131 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12751,7 +12758,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0131" str:"\u00F8"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0131","\u00F8"))+1]
 note: U+0131 against U+00F8 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12762,7 +12769,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u00F8" str:"\u0153"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00F8","\u0153"))+1]
 note: U+00F8 against U+0153 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12773,7 +12780,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0153" str:"ss"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0153","ss"))+1]
 note: U+0153 against ss under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12784,7 +12791,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"ss" str:"\u00DF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("ss","\u00DF"))+1]
 note: ss against U+00DF under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12795,7 +12802,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u00DF" str:"z"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00DF","z"))+1]
 note: U+00DF against z under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12806,7 +12813,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"z" str:"\u00FE"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("z","\u00FE"))+1]
 note: z against U+00FE under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12817,7 +12824,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u00FE" str:"\u03B1"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00FE","\u03B1"))+1]
 note: U+00FE against U+03B1 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12828,7 +12835,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u03B1" str:"\u03C9"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u03B1","\u03C9"))+1]
 note: U+03B1 against U+03C9 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12839,7 +12846,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u03C9" str:"\u0430"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u03C9","\u0430"))+1]
 note: U+03C9 against U+0430 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12850,7 +12857,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0430" str:"\u044F"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0430","\u044F"))+1]
 note: U+0430 against U+044F under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12861,7 +12868,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u044F" str:"\u10D0"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u044F","\u10D0"))+1]
 note: U+044F against U+10D0 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12872,7 +12879,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u10D0" str:"\u0561"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u10D0","\u0561"))+1]
 note: U+10D0 against U+0561 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12883,7 +12890,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0561" str:"\u05D0"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0561","\u05D0"))+1]
 note: U+0561 against U+05D0 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12894,7 +12901,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u05D0" str:"\u05EA"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u05D0","\u05EA"))+1]
 note: U+05D0 against U+05EA under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12905,7 +12912,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u05EA" str:"\u0627"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u05EA","\u0627"))+1]
 note: U+05EA against U+0627 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12916,7 +12923,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0627" str:"\u064A"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0627","\u064A"))+1]
 note: U+0627 against U+064A under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12927,7 +12934,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u064A" str:"\u1200"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u064A","\u1200"))+1]
 note: U+064A against U+1200 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12938,7 +12945,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u1200" str:"\u0905"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u1200","\u0905"))+1]
 note: U+1200 against U+0905 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12949,7 +12956,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0905" str:"\u0939"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0905","\u0939"))+1]
 note: U+0905 against U+0939 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12960,7 +12967,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0939" str:"\u0E01"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0939","\u0E01"))+1]
 note: U+0939 against U+0E01 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12971,7 +12978,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0E01" str:"\u0E2E"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0E01","\u0E2E"))+1]
 note: U+0E01 against U+0E2E under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12982,7 +12989,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0E2E" str:"\u0F40"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0E2E","\u0F40"))+1]
 note: U+0E2E against U+0F40 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -12993,7 +13000,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0F40" str:"\u1820"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0F40","\u1820"))+1]
 note: U+0F40 against U+1820 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -13004,7 +13011,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u1820" str:"\u13A0"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u1820","\u13A0"))+1]
 note: U+1820 against U+13A0 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -13015,7 +13022,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u13A0" str:"\uAC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u13A0","\uAC00"))+1]
 note: U+13A0 against U+AC00 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -13026,7 +13033,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uAC00" str:"\uD7A3"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uAC00","\uD7A3"))+1]
 note: U+AC00 against U+D7A3 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -13037,7 +13044,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD7A3" str:"\u3042"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD7A3","\u3042"))+1]
 note: U+D7A3 against U+3042 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -13048,7 +13055,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u3042" str:"\u30A2"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u3042","\u30A2"))+1]
 note: U+3042 against U+30A2 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -13059,7 +13066,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u30A2" str:"\u3093"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u30A2","\u3093"))+1]
 note: U+30A2 against U+3093 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -13070,7 +13077,7 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u3093" str:"\uA000"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u3093","\uA000"))+1]
 note: U+3093 against U+A000 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
 since: 31
@@ -13081,9 +13088,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uA000" str:"\u4E00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uA000","\u4E00"))+1]
-note: U+A000 against U+4E00 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
+note: U+A000 against U+4E00 under en: rows O1 and O3 (O1 data policy, C5; O3 data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/scripts/0044
@@ -13092,9 +13099,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E00" str:"\u4E01"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E00","\u4E01"))+1]
-note: U+4E00 against U+4E01 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
+note: U+4E00 against U+4E01 under en: rows O1 and O3 (O1 data policy, C5; O3 data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/scripts/0045
@@ -13103,9 +13110,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E01" str:"\uD840\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E01","\uD840\uDC00"))+1]
-note: U+4E01 against U+D840U+DC00 under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
+note: U+4E01 against U+D840U+DC00 under en: rows O1 and O3 (O1 data policy, C5; O3 data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/scripts/0046
@@ -13113,10 +13120,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD840\uDC00" str:"\u4E2D"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD840\uDC00","\u4E2D"))+1]
-note: U+D840U+DC00 against U+4E2D under en: row O1 (data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root
+note: U+D840U+DC00 against U+4E2D under en: rows O1 and O3 (O1 data policy, C5; O3 data policy, C5): neighbours in the reference's order of the scripts' sort, CLDR 48.2.0's root; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/punctuation/0001
@@ -14763,10 +14772,12 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E00" str:"\u4E01" str:"\u4E02" str:"\u4E2D" str:"\u4EBA" str:"\u5B50" str:"\u6C34" str:"\u9F9C" str:"\u9FA5" str:"\u9FA6" str:"\u9FCC" str:"\u9FEA" str:"\u9FFF" str:"\uFA0E" str:"\uFA0F" str:"\uFA11" str:"\uFA1F" str:"\uFA29" str:"\u3400" str:"\u3401" str:"\u4DB5" str:"\u4DBF" str:"\uD840\uDC00" str:"\uD840\uDC01" str:"\uD869\uDEDF" str:"\uD869\uDF00" str:"\uD86D\uDF40" str:"\uD86E\uDC20" str:"\uD873\uDEB0" str:"\uD880\uDC00" str:"\uD884\uDF50" str:"\uD87A\uDFF0" str:"\uD888\uDFB0" str:"\uF900" str:"\uD87E\uDC00"
 out: value: str:"\u4E00 < \u4E01 < \u4E02 < \uD840\uDC00 < \uD840\uDC01 < \uD873\uDEB0 < \uD880\uDC00 < \uD869\uDF00 < \uD86D\uDF40 < \uD888\uDFB0 < \uD87A\uDFF0 < \u3400 < \uD884\uDF50 < \u3401 < \uD87E\uDC00 < \u4E2D < \u4EBA < \uFA0E < \uFA0F < \u5B50 < \uFA11 < \uD86E\uDC20 < \u6C34 < \u9FCC < \u9FFF < \u9FA6 < \u9FEA < \uD869\uDEDF < \uFA1F < \uF900 < \uFA29 < \u4DBF < \u9F9C < \u9FA5 < \u4DB5"
-class: normative
-prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"\u4E00 < \u4E01 < \u4E02 < \u4E2D < \uD87E\uDC00 < \u4EBA < \u5B50 < \u6C34 < \uF900 < \u9F9C < \u9FA5 < \u9FA6 < \u9FCC < \u9FEA < \u9FFF < \uFA0E < \uFA0F < \uFA11 < \uFA1F < \uFA29 < \u3400 < \u3401 < \u4DB5 < \u4DBF < \uD840\uDC00 < \uD840\uDC01 < \uD869\uDEDF < \uD869\uDF00 < \uD86D\uDF40 < \uD86E\uDC20 < \uD873\uDEB0 < \uD87A\uDFF0 < \uD880\uDC00 < \uD884\uDF50 < \uD888\uDFB0"
+per-engine.broiler-vm: value: str:"\u4E00 < \u4E01 < \u4E02 < \u4E2D < \uD87E\uDC00 < \u4EBA < \u5B50 < \u6C34 < \uF900 < \u9F9C < \u9FA5 < \u9FA6 < \u9FCC < \u9FEA < \u9FFF < \uFA0E < \uFA0F < \uFA11 < \uFA1F < \uFA29 < \u3400 < \u3401 < \u4DB5 < \u4DBF < \uD840\uDC00 < \uD840\uDC01 < \uD869\uDEDF < \uD869\uDF00 < \uD86D\uDF40 < \uD86E\uDC20 < \uD873\uDEB0 < \uD87A\uDFF0 < \uD880\uDC00 < \uD884\uDF50 < \uD888\uDFB0"
+prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en"),["\u4E00","\u4E01","\u4E02","\u4E2D","\u4EBA","\u5B50","\u6C34","\u9F9C","\u9FA5","\u9FA6","\u9FCC","\u9FEA","\u9FFF","\uFA0E","\uFA0F","\uFA11","\uFA1F","\uFA29","\u3400","\u3401","\u4DB5","\u4DBF","\uD840\uDC00","\uD840\uDC01","\uD869\uDEDF","\uD869\uDF00","\uD86D\uDF40","\uD86E\uDC20","\uD873\uDEB0","\uD880\uDC00","\uD884\uDF50","\uD87A\uDFF0","\uD888\uDFB0","\uF900","\uD87E\uDC00"])
-note: 35 strings sorted under en, each neighbour's relation written between them: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: 35 strings sorted under en, each neighbour's relation written between them: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0002
@@ -14775,9 +14786,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E01" str:"\u4E02"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E01","\u4E02"))+1]
-note: U+4E01 against U+4E02 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E01 against U+4E02 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0003
@@ -14786,9 +14797,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E02" str:"\uD840\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E02","\uD840\uDC00"))+1]
-note: U+4E02 against U+D840U+DC00 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E02 against U+D840U+DC00 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0004
@@ -14797,9 +14808,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD840\uDC00" str:"\uD840\uDC01"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD840\uDC00","\uD840\uDC01"))+1]
-note: U+D840U+DC00 against U+D840U+DC01 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D840U+DC00 against U+D840U+DC01 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0005
@@ -14808,9 +14819,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD840\uDC01" str:"\uD873\uDEB0"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD840\uDC01","\uD873\uDEB0"))+1]
-note: U+D840U+DC01 against U+D873U+DEB0 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D840U+DC01 against U+D873U+DEB0 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0006
@@ -14819,9 +14830,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD873\uDEB0" str:"\uD880\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD873\uDEB0","\uD880\uDC00"))+1]
-note: U+D873U+DEB0 against U+D880U+DC00 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D873U+DEB0 against U+D880U+DC00 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0007
@@ -14829,10 +14840,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD880\uDC00" str:"\uD869\uDF00"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD880\uDC00","\uD869\uDF00"))+1]
-note: U+D880U+DC00 against U+D869U+DF00 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D880U+DC00 against U+D869U+DF00 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0008
@@ -14841,9 +14854,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD869\uDF00" str:"\uD86D\uDF40"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD869\uDF00","\uD86D\uDF40"))+1]
-note: U+D869U+DF00 against U+D86DU+DF40 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D869U+DF00 against U+D86DU+DF40 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0009
@@ -14852,9 +14865,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD86D\uDF40" str:"\uD888\uDFB0"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD86D\uDF40","\uD888\uDFB0"))+1]
-note: U+D86DU+DF40 against U+D888U+DFB0 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D86DU+DF40 against U+D888U+DFB0 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0010
@@ -14862,10 +14875,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD888\uDFB0" str:"\uD87A\uDFF0"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD888\uDFB0","\uD87A\uDFF0"))+1]
-note: U+D888U+DFB0 against U+D87AU+DFF0 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D888U+DFB0 against U+D87AU+DFF0 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0011
@@ -14873,10 +14888,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD87A\uDFF0" str:"\u3400"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD87A\uDFF0","\u3400"))+1]
-note: U+D87AU+DFF0 against U+3400 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D87AU+DFF0 against U+3400 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0012
@@ -14885,9 +14902,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u3400" str:"\uD884\uDF50"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u3400","\uD884\uDF50"))+1]
-note: U+3400 against U+D884U+DF50 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+3400 against U+D884U+DF50 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0013
@@ -14895,10 +14912,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD884\uDF50" str:"\u3401"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD884\uDF50","\u3401"))+1]
-note: U+D884U+DF50 against U+3401 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D884U+DF50 against U+3401 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0014
@@ -14906,10 +14925,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u3401" str:"\uD87E\uDC00"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u3401","\uD87E\uDC00"))+1]
-note: U+3401 against U+D87EU+DC00 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+3401 against U+D87EU+DC00 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0015
@@ -14917,10 +14938,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD87E\uDC00" str:"\u4E2D"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD87E\uDC00","\u4E2D"))+1]
-note: U+D87EU+DC00 against U+4E2D under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D87EU+DC00 against U+4E2D under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0016
@@ -14929,9 +14952,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E2D" str:"\u4EBA"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E2D","\u4EBA"))+1]
-note: U+4E2D against U+4EBA under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E2D against U+4EBA under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0017
@@ -14940,9 +14963,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4EBA" str:"\uFA0E"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4EBA","\uFA0E"))+1]
-note: U+4EBA against U+FA0E under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4EBA against U+FA0E under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0018
@@ -14951,9 +14974,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uFA0E" str:"\uFA0F"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uFA0E","\uFA0F"))+1]
-note: U+FA0E against U+FA0F under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+FA0E against U+FA0F under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0019
@@ -14961,10 +14984,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uFA0F" str:"\u5B50"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uFA0F","\u5B50"))+1]
-note: U+FA0F against U+5B50 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+FA0F against U+5B50 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0020
@@ -14973,9 +14998,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u5B50" str:"\uFA11"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u5B50","\uFA11"))+1]
-note: U+5B50 against U+FA11 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+5B50 against U+FA11 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0021
@@ -14984,9 +15009,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uFA11" str:"\uD86E\uDC20"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uFA11","\uD86E\uDC20"))+1]
-note: U+FA11 against U+D86EU+DC20 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+FA11 against U+D86EU+DC20 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0022
@@ -14994,10 +15019,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD86E\uDC20" str:"\u6C34"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD86E\uDC20","\u6C34"))+1]
-note: U+D86EU+DC20 against U+6C34 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D86EU+DC20 against U+6C34 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0023
@@ -15006,9 +15033,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u6C34" str:"\u9FCC"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u6C34","\u9FCC"))+1]
-note: U+6C34 against U+9FCC under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+6C34 against U+9FCC under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0024
@@ -15017,9 +15044,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u9FCC" str:"\u9FFF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u9FCC","\u9FFF"))+1]
-note: U+9FCC against U+9FFF under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+9FCC against U+9FFF under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0025
@@ -15027,10 +15054,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u9FFF" str:"\u9FA6"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u9FFF","\u9FA6"))+1]
-note: U+9FFF against U+9FA6 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+9FFF against U+9FA6 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0026
@@ -15039,9 +15068,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u9FA6" str:"\u9FEA"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u9FA6","\u9FEA"))+1]
-note: U+9FA6 against U+9FEA under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+9FA6 against U+9FEA under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0027
@@ -15050,9 +15079,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u9FEA" str:"\uD869\uDEDF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u9FEA","\uD869\uDEDF"))+1]
-note: U+9FEA against U+D869U+DEDF under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+9FEA against U+D869U+DEDF under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0028
@@ -15060,10 +15089,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD869\uDEDF" str:"\uFA1F"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD869\uDEDF","\uFA1F"))+1]
-note: U+D869U+DEDF against U+FA1F under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D869U+DEDF against U+FA1F under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0029
@@ -15071,10 +15102,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uFA1F" str:"\uF900"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uFA1F","\uF900"))+1]
-note: U+FA1F against U+F900 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+FA1F against U+F900 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0030
@@ -15083,9 +15116,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uF900" str:"\uFA29"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uF900","\uFA29"))+1]
-note: U+F900 against U+FA29 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+F900 against U+FA29 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0031
@@ -15094,9 +15127,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uFA29" str:"\u4DBF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uFA29","\u4DBF"))+1]
-note: U+FA29 against U+4DBF under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+FA29 against U+4DBF under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0032
@@ -15104,10 +15137,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4DBF" str:"\u9F9C"
 out: value: str:"<"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:">"
+per-engine.broiler-vm: value: str:">"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4DBF","\u9F9C"))+1]
-note: U+4DBF against U+9F9C under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4DBF against U+9F9C under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0033
@@ -15116,9 +15151,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u9F9C" str:"\u9FA5"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u9F9C","\u9FA5"))+1]
-note: U+9F9C against U+9FA5 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+9F9C against U+9FA5 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0034
@@ -15127,9 +15162,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u9FA5" str:"\u4DB5"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u9FA5","\u4DB5"))+1]
-note: U+9FA5 against U+4DB5 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+9FA5 against U+4DB5 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0035
@@ -15137,10 +15172,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E2D" str:"\uD840\uDC00"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E2D","\uD840\uDC00"))+1]
-note: U+4E2D against U+D840U+DC00 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E2D against U+D840U+DC00 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0036
@@ -15148,10 +15185,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E2D" str:"\uD840\uDC00"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4E2D","\uD840\uDC00"))+1]
-note: U+4E2D against U+D840U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E2D against U+D840U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0037
@@ -15160,9 +15199,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E00" str:"\uD840\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E00","\uD840\uDC00"))+1]
-note: U+4E00 against U+D840U+DC00 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E00 against U+D840U+DC00 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0038
@@ -15171,9 +15210,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E00" str:"\uD840\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4E00","\uD840\uDC00"))+1]
-note: U+4E00 against U+D840U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E00 against U+D840U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0039
@@ -15182,9 +15221,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E01" str:"\uD840\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4E01","\uD840\uDC00"))+1]
-note: U+4E01 against U+D840U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E01 against U+D840U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0040
@@ -15193,9 +15232,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E00" str:"\u3400"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E00","\u3400"))+1]
-note: U+4E00 against U+3400 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E00 against U+3400 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0041
@@ -15204,9 +15243,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E00" str:"\u3400"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4E00","\u3400"))+1]
-note: U+4E00 against U+3400 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E00 against U+3400 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0042
@@ -15214,10 +15253,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E2D" str:"\u3400"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E2D","\u3400"))+1]
-note: U+4E2D against U+3400 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E2D against U+3400 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0043
@@ -15225,10 +15266,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E2D" str:"\u3400"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4E2D","\u3400"))+1]
-note: U+4E2D against U+3400 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E2D against U+3400 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0044
@@ -15236,10 +15279,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u9FFF" str:"\u3400"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u9FFF","\u3400"))+1]
-note: U+9FFF against U+3400 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+9FFF against U+3400 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0045
@@ -15247,10 +15292,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u9FFF" str:"\u3400"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u9FFF","\u3400"))+1]
-note: U+9FFF against U+3400 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+9FFF against U+3400 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0046
@@ -15258,10 +15305,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u3400" str:"\uD840\uDC00"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u3400","\uD840\uDC00"))+1]
-note: U+3400 against U+D840U+DC00 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+3400 against U+D840U+DC00 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0047
@@ -15269,10 +15318,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u3400" str:"\uD840\uDC00"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u3400","\uD840\uDC00"))+1]
-note: U+3400 against U+D840U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+3400 against U+D840U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0048
@@ -15280,10 +15331,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4DBF" str:"\uD840\uDC00"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4DBF","\uD840\uDC00"))+1]
-note: U+4DBF against U+D840U+DC00 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4DBF against U+D840U+DC00 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0049
@@ -15291,10 +15344,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4DBF" str:"\uD840\uDC00"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4DBF","\uD840\uDC00"))+1]
-note: U+4DBF against U+D840U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4DBF against U+D840U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0050
@@ -15303,9 +15358,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD840\uDC00" str:"\uD869\uDF00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD840\uDC00","\uD869\uDF00"))+1]
-note: U+D840U+DC00 against U+D869U+DF00 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D840U+DC00 against U+D869U+DF00 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0051
@@ -15314,9 +15369,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD840\uDC00" str:"\uD869\uDF00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD840\uDC00","\uD869\uDF00"))+1]
-note: U+D840U+DC00 against U+D869U+DF00 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D840U+DC00 against U+D869U+DF00 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0052
@@ -15324,10 +15379,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD869\uDF00" str:"\uD880\uDC00"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD869\uDF00","\uD880\uDC00"))+1]
-note: U+D869U+DF00 against U+D880U+DC00 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D869U+DF00 against U+D880U+DC00 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0053
@@ -15335,10 +15392,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD869\uDF00" str:"\uD880\uDC00"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD869\uDF00","\uD880\uDC00"))+1]
-note: U+D869U+DF00 against U+D880U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D869U+DF00 against U+D880U+DC00 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0054
@@ -15347,9 +15406,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E00" str:"\uFA0E"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E00","\uFA0E"))+1]
-note: U+4E00 against U+FA0E under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E00 against U+FA0E under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0055
@@ -15358,9 +15417,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E00" str:"\uFA0E"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4E00","\uFA0E"))+1]
-note: U+4E00 against U+FA0E under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E00 against U+FA0E under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0056
@@ -15368,10 +15427,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u6C34" str:"\uD87A\uDFF0"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u6C34","\uD87A\uDFF0"))+1]
-note: U+6C34 against U+D87AU+DFF0 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+6C34 against U+D87AU+DFF0 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0057
@@ -15379,10 +15440,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u6C34" str:"\uD87A\uDFF0"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u6C34","\uD87A\uDFF0"))+1]
-note: U+6C34 against U+D87AU+DFF0 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+6C34 against U+D87AU+DFF0 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0058
@@ -15390,10 +15453,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E2D" str:"\uD888\uDFB0"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E2D","\uD888\uDFB0"))+1]
-note: U+4E2D against U+D888U+DFB0 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E2D against U+D888U+DFB0 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0059
@@ -15401,10 +15466,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E2D" str:"\uD888\uDFB0"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4E2D","\uD888\uDFB0"))+1]
-note: U+4E2D against U+D888U+DFB0 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E2D against U+D888U+DFB0 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0060
@@ -15412,10 +15479,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4EBA" str:"\uD884\uDF50"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4EBA","\uD884\uDF50"))+1]
-note: U+4EBA against U+D884U+DF50 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4EBA against U+D884U+DF50 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0061
@@ -15423,10 +15492,12 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4EBA" str:"\uD884\uDF50"
 out: value: str:">"
-class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+class: impl-defined
+per-engine.broiler-js: value: str:"<"
+per-engine.broiler-vm: value: str:"<"
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4EBA","\uD884\uDF50"))+1]
-note: U+4EBA against U+D884U+DF50 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4EBA against U+D884U+DF50 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"): out is the reference's, by radical and stroke; both engines take CLDR 48.2.0's root as Broiler.VM reads it, allkeys_CLDR.txt with UCA 17's implicit weights (row O3; Broiler.JS adopts Broiler.VM's collator, decision E2), so each engine's expectation is that order's answer (ref:ucaimplicit@1)
 since: 31
 
 id: intl/collation/root/han/0062
@@ -15435,9 +15506,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uF900" str:"\u8C48"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uF900","\u8C48"))+1]
-note: U+F900 against U+8C48 under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+F900 against U+8C48 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0063
@@ -15446,9 +15517,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uF900" str:"\u8C48"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uF900","\u8C48"))+1]
-note: U+F900 against U+8C48 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+F900 against U+8C48 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0064
@@ -15457,9 +15528,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD87E\uDC00" str:"\u4E3D"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD87E\uDC00","\u4E3D"))+1]
-note: U+D87EU+DC00 against U+4E3D under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D87EU+DC00 against U+4E3D under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0065
@@ -15468,9 +15539,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD87E\uDC00" str:"\u4E3D"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD87E\uDC00","\u4E3D"))+1]
-note: U+D87EU+DC00 against U+4E3D under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+D87EU+DC00 against U+4E3D under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0066
@@ -15479,9 +15550,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E00" str:"\u4E01"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4E00","\u4E01"))+1]
-note: U+4E00 against U+4E01 under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E00 against U+4E01 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0067
@@ -15490,9 +15561,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E01" str:"\u4E2D"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E01","\u4E2D"))+1]
-note: U+4E01 against U+4E2D under en: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E01 against U+4E2D under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/han/0068
@@ -15501,9 +15572,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u4E01" str:"\u4E2D"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4E01","\u4E2D"))+1]
-note: U+4E01 against U+4E2D under en {sensitivity:"base"}: row O3 (data policy, C5, the reading SJL-17.2's vectors check, finding F1): Han across blocks. The reference orders unified ideographs by radical and stroke across blocks, and CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order"; the archived CollationTest files hold no pair across blocks; Broiler.VM's implicit weights put the core ideographs before Extension A and B (the row's reading), so a difference here is the finding the row names
+note: U+4E01 against U+4E2D under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the UCA's implicit weights over CLDR 48.2.0's allkeys_CLDR.txt give the same answer (ref:ucaimplicit@1), so it holds under either Han order UTS #35 Part 5 (CLDR 48) allows
 since: 31
 
 id: intl/collation/root/equivalence/0001
@@ -16130,7 +16201,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uFB01","fi"))+1]
-note: U+FB01 against fi under en {sensitivity:"base"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+FB01 against fi under en {sensitivity:"base"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/root/compatibility/0003
@@ -16163,7 +16234,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u01C6","d\u017E"))+1]
-note: U+01C6 against dU+017E under en {sensitivity:"base"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+01C6 against dU+017E under en {sensitivity:"base"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/root/compatibility/0006
@@ -16196,7 +16267,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u2460","1"))+1]
-note: U+2460 against 1 under en {sensitivity:"base"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+2460 against 1 under en {sensitivity:"base"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/root/compatibility/0009
@@ -16229,7 +16300,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uFF21","A"))+1]
-note: U+FF21 against A under en {sensitivity:"base"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+FF21 against A under en {sensitivity:"base"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/root/compatibility/0012
@@ -16262,7 +16333,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u00AA","a"))+1]
-note: U+00AA against a under en {sensitivity:"base"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+00AA against a under en {sensitivity:"base"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/root/compatibility/0015
@@ -16295,7 +16366,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u00BD","1/2"))+1]
-note: U+00BD against 1/2 under en {sensitivity:"base"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+00BD against 1/2 under en {sensitivity:"base"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/root/compatibility/0018
@@ -16328,7 +16399,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u2163","IV"))+1]
-note: U+2163 against IV under en {sensitivity:"base"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+2163 against IV under en {sensitivity:"base"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/root/compatibility/0021
@@ -16361,7 +16432,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u00B2","2"))+1]
-note: U+00B2 against 2 under en {sensitivity:"base"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+00B2 against 2 under en {sensitivity:"base"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/root/compatibility/0024
@@ -16394,7 +16465,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u3300","\u30A2\u30D1\u30FC\u30C8"))+1]
-note: U+3300 against U+30A2U+30D1U+30FCU+30C8 under en {sensitivity:"base"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+3300 against U+30A2U+30D1U+30FCU+30C8 under en {sensitivity:"base"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/root/compatibility/0027

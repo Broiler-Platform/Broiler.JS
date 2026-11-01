@@ -150,7 +150,8 @@ class CommittedFileTests(unittest.TestCase):
             pins[name] = re.search(r"^revision ([0-9a-f]{40})$", text, re.M).group(1)
         for vector_id, vector in self.vectors.items():
             entries = vector["prov"].split(" ")
-            self.assertTrue(all(e.startswith((generator.ECMA402, generator.ES2026, generator.REF, generator.REF_TEST))
+            self.assertTrue(all(e.startswith((generator.ECMA402, generator.ES2026, generator.REF, generator.REF_TEST,
+                                              generator.REF_IMPLICIT))
                                 for e in entries), vector_id)
             self.assertIn(generator.REF, entries, vector_id)
             if "resolvedOptions" not in vector["op"]:
@@ -166,15 +167,24 @@ class CommittedFileTests(unittest.TestCase):
             divergence = {k for k in vector if k.startswith("divergence.")}
             self.assertIn(vector["class"], ("normative", "impl-defined", "divergence"), vector_id)
             self.assertEqual(vector["class"] == "divergence", bool(divergence) and not per_engine, vector_id)
-            # impl-defined only where the locale moves under Broiler.VM's list (decision E3), and then with both
-            # engines' expectations: Broiler.JS's is out.
+            # impl-defined only where the locale moves under Broiler.VM's list (decision E3), with Broiler.JS's
+            # expectation out; or where the answer moves with the Han order UTS #35 leaves to the implementation,
+            # with both engines' expectation the second reference's. Both expectations are always stated.
             moves = bool(re.search(r'(Collator\(|localeCompare\("(?:[^"\\]|\\.)*",)"(es|sv|th)(-[A-Za-z0-9-]*)?"',
                                    vector["script"]))
-            self.assertEqual(moves, vector["class"] == "impl-defined", vector_id)
+            han_moves = generator.HAN_MOVES in vector["note"]
+            self.assertFalse(moves and han_moves, vector_id)
+            self.assertEqual(moves or han_moves, vector["class"] == "impl-defined", vector_id)
             if vector["class"] == "impl-defined":
                 self.assertEqual({"per-engine.broiler-js", "per-engine.broiler-vm"}, per_engine, vector_id)
+            if moves:
                 self.assertEqual(vector["out"], vector["per-engine.broiler-js"], vector_id)
                 self.assertIn("rule N28", vector["note"], vector_id)
+            if han_moves:
+                self.assertEqual(vector["per-engine.broiler-js"], vector["per-engine.broiler-vm"], vector_id)
+                self.assertNotEqual(vector["out"], vector["per-engine.broiler-vm"], vector_id)
+                self.assertIn(generator.REF_IMPLICIT, vector["prov"].split(" "), vector_id)
+                self.assertRegex(vector_id, r"^intl/collation/root/(han|scripts)/")
 
     def test_every_divergence_field_is_one_collation_divergences_txt_lists(self) -> None:
         listed = generator.read_divergences(generator.DIVERGENCES)
@@ -214,6 +224,52 @@ class CommittedFileTests(unittest.TestCase):
                 self.assertNotEqual('value: str:">"', vector["out"], vector_id)
                 self.assertIn(generator.REF_TEST, vector["prov"].split(" "), vector_id)
         self.assertGreater(seen, 1000)
+        # Only those vectors cite the files: ref:collationtest@1 means a pair of their lines.
+        citing = [k for k, v in self.vectors.items() if generator.REF_TEST in v["prov"].split(" ")]
+        self.assertEqual(seen, len(citing))
+        self.assertTrue(all("/collationtest-" in k for k in citing))
+
+    def test_the_lone_surrogates_cite_the_lines_that_key_a_surrogate(self) -> None:
+        ranges = {}
+        for name, (filename, _) in generator.COLLATION_TEST_FILES.items():
+            lines = generator.collation_test_lines(
+                generator.pinned_bytes(generator.DEFAULT_CLDR, f"{generator.UCA_DIRECTORY}/{filename}"))
+            numbers = [n for n, text in lines if generator.is_surrogate_string(text)]
+            ranges[filename] = (numbers[0], numbers[-1])
+        self.assertEqual((205739, 205768), ranges["CollationTest_CLDR_NON_IGNORABLE_SHORT.txt"])
+        cited = 0
+        for vector_id, vector in self.vectors.items():
+            for first, last, filename in re.findall(r"lines (\d+) to (\d+) of (CollationTest_\w+\.txt)", vector["note"]):
+                cited += 1
+                self.assertEqual(ranges[filename], (int(first), int(last)), vector_id)
+                self.assertTrue(vector_id.startswith("intl/collation/surrogates/"), vector_id)
+        self.assertGreater(cited, 80)
+
+    def test_the_root_s_scripts_and_han_vectors_are_the_second_reference_s(self) -> None:
+        # ref:ucaimplicit@1 needs no Node.js: it is computed here again from each vector's inputs and options.
+        reference = second_reference()
+        computed = 0
+        for vector_id, vector in self.vectors.items():
+            if generator.REF_IMPLICIT not in vector["prov"].split(" "):
+                continue
+            self.assertRegex(vector_id, r"^intl/collation/root/(han|scripts)/")
+            strings = [generator_string(v) for v in vector["in"].split(" ")[1:]]
+            options = {"sensitivity": "base"} if 'sensitivity:"base"' in vector["script"] else None
+            answer = reference.answer(options, strings, vector["op"].startswith("Array.prototype.sort"))
+            expected = vector.get("per-engine.broiler-vm", vector["out"])
+            self.assertEqual(expected, answer, vector_id)
+            self.assertEqual(vector["class"] == "impl-defined", answer != vector["out"], vector_id)
+            has_han = any(reference.has_han(s) for s in strings)
+            self.assertEqual(has_han, generator.HAN_SAME in vector["note"] or generator.HAN_MOVES in vector["note"],
+                             vector_id)
+            computed += 1
+        self.assertEqual(len([k for k in self.vectors if re.match(r"intl/collation/root/(han|scripts)/", k)]),
+                         computed)
+        moved = [k for k, v in self.vectors.items() if generator.HAN_MOVES in v["note"]]
+        # Among them row O3's pair, the one that separates the engines' columns: U+4E2D against U+20000.
+        self.assertIn('str:"en" str:"\\u4E2D" str:"\\uD840\\uDC00"',
+                      [self.vectors[k]["in"] for k in moved])
+        self.assertEqual(34, len(moved))
 
     def test_han_across_blocks_is_vectored(self) -> None:
         han = [v for k, v in self.vectors.items() if "/root/han/" in k]
@@ -226,6 +282,16 @@ class CommittedFileTests(unittest.TestCase):
                            "ext" if code >= 0x20000 else "compat")
         self.assertEqual({"core", "ext-a", "ext", "compat"}, blocks)
         self.assertTrue(all("row O3" in v["note"] and "finding F1" in v["note"] for v in han))
+
+
+_SECOND = None
+
+
+def second_reference() -> "generator.ImplicitReference":
+    global _SECOND
+    if _SECOND is None:
+        _SECOND = generator.ImplicitReference(generator.DEFAULT_CLDR, generator.DEFAULT_UCD)
+    return _SECOND
 
 
 def generator_string(typed: str) -> str:
@@ -264,6 +330,67 @@ class LiteralTests(unittest.TestCase):
         self.assertIn('.localeCompare("b","en-US")', moved)
 
 
+class SecondReferenceTests(unittest.TestCase):
+    """ref:ucaimplicit@1, the UCA over allkeys_CLDR.txt with UCA 17's implicit weights."""
+
+    def test_implicit_weights_put_core_han_before_the_extensions(self) -> None:
+        reference = second_reference()
+        self.assertEqual("<", reference.relation("\u4e2d", "\U00020000", 3))  # row O3's pair
+        self.assertEqual("<", reference.relation("\u9fff", "\u3400", 3))      # Extension A after the core block
+        self.assertEqual("<", reference.relation("\u9fff", "\ufa0e", 3))      # a unified ideograph of the compatibility block
+        self.assertEqual("<", reference.relation("\u3400", "\U00020000", 3))
+        self.assertEqual("=", reference.relation("\uf900", "\u8c48", 3))      # NFD first
+        self.assertEqual("<", reference.relation("\ua000", "\u4e00", 3))      # Yi before Han
+        self.assertEqual("=", reference.relation("a", "A", 1))
+        self.assertEqual("<", reference.relation("a", "A", 3))
+
+    def test_what_it_does_not_weigh_is_refused(self) -> None:
+        reference = second_reference()
+        for text in ("a\u0301", "\ud800", "\u0378"):
+            with self.assertRaises(generator.GeneratorError):
+                reference.key(text, 3)
+        with self.assertRaises(generator.GeneratorError):
+            reference.answer({"ignorePunctuation": True}, ["a", "b"], False)
+
+    def test_a_difference_is_allowed_only_in_the_order_of_han(self) -> None:
+        reference = second_reference()
+        case = generator.Case("root", "han", "op", [], "script", ("O3",), "note", [],
+                              second=(None, ("\u4e2d", "\U00020000"), False))
+        self.assertTrue(generator.han_only_difference(reference, case, 'value: str:">"', 'value: str:"<"'))
+        case.second = (None, ("a", "\u4e2d"), False)
+        self.assertFalse(generator.han_only_difference(reference, case, 'value: str:">"', 'value: str:"<"'))
+        case.second = (None, ("a", "b", "\u4e2d", "\U00020000"), True)
+        self.assertTrue(generator.han_only_difference(
+            reference, case, "value: " + generator.typed("a < b < \U00020000 < \u4e2d"),
+            "value: " + generator.typed("a < b < \u4e2d < \U00020000")))
+        self.assertFalse(generator.han_only_difference(
+            reference, case, "value: " + generator.typed("b < a < \U00020000 < \u4e2d"),
+            "value: " + generator.typed("a < b < \u4e2d < \U00020000")))
+
+    def test_a_width_or_compatibility_form_at_base_takes_row_o5b(self) -> None:
+        saved = generator.SECOND
+        generator.SECOND = second_reference()
+        try:
+            self.assertEqual(("O6", "O5b"), generator.with_compatibility_row({"sensitivity": "base"}, ("a", "\u00aa"), ("O6",)))
+            self.assertEqual(("O5a", "O5b"), generator.with_compatibility_row({"sensitivity": "base"}, ("ab", "a\u00a0b"), ("O5a",)))
+            self.assertEqual(("O6",), generator.with_compatibility_row({"sensitivity": "accent"}, ("a", "\u00aa"), ("O6",)))
+            self.assertEqual(("O5a",), generator.with_compatibility_row({"sensitivity": "base"}, ("ab", "a b"), ("O5a",)))
+        finally:
+            generator.SECOND = saved
+
+
+class NoteTests(unittest.TestCase):
+    def test_a_note_names_exactly_the_rows_of_its_case(self) -> None:
+        case = generator.Case("root", "scripts", "Intl.Collator.prototype.compare", ['str:"a"'], "s", ("O1", "O3"),
+                              "a against b: " + generator.rows_text(("O1", "O3")) + ": neighbours", [generator.REF])
+        self.assertIn("rows O1 and O3", generator.render(case, "intl/collation/root/scripts/0001", 'value: str:"<"',
+                                                         None, {}))
+        case.rows = ("O1",)
+        with self.assertRaises(generator.GeneratorError):
+            generator.render(case, "intl/collation/root/scripts/0001", 'value: str:"<"', None, {})
+        self.assertEqual({"O5a", "O5b", "O16"}, generator.rows_named("row O5a; rows O5b and O16 (O5b ...)"))
+
+
 class PinTests(unittest.TestCase):
     """The archived files are held to the data home's cldr.pin before a byte of them is used."""
 
@@ -293,6 +420,9 @@ class GeneratorTests(unittest.TestCase):
     def test_the_committed_files_are_what_the_generator_writes(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
             self.assertEqual(0, generator.main(["--out", scratch, "--node", str(REFERENCE_NODE)]))
+            # Each case's note names its own rows (render refuses any other; this holds the cases themselves).
+            for case in generator.CASES:
+                self.assertTrue(set(case.rows) >= generator.rows_named(case.note), case.note)
             produced = sorted(p.name for p in Path(scratch).iterdir())
             self.assertEqual(sorted(p.name for p in COMMITTED.glob("*.vectors")), produced)
             for name in produced:

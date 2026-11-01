@@ -2,9 +2,12 @@
 # The collation vectors (milestone SJL-17.2), surrogates.vectors: lone surrogates, alone, in longer strings and through localeCompare.
 # Expected values: ICU 78.3 with CLDR 48.0 through Node.js v26.12.0, the reference bundle sjl-9-001's reference.txt
 # names (ref:intlref@1), held, where a vector takes two consecutive lines of CLDR 48.2.0's archived CollationTest
-# files, to the order the file gives them (ref:collationtest@1). Each note names rows of bundle sjl-17-001's
-# correspondence (Broiler.VM's docs/evidence/sjl-17-001/correspondence.md). The area field is intl: the schema has
-# no collation area (generate_collation_vectors.py, THE AREA FIELD).
+# files, to the order the file gives them (ref:collationtest@1). The root's scripts and Han vectors are computed again
+# by the UCA over CLDR 48.2.0's allkeys_CLDR.txt with UCA 17's implicit weights (ref:ucaimplicit@1), the other Han
+# order UTS #35 Part 5 (CLDR 48) allows: a Han vector whose answer moves with that order is impl-defined, with that
+# order's answer for both engines. Each note names rows of bundle sjl-17-001's correspondence (Broiler.VM's
+# docs/evidence/sjl-17-001/correspondence.md), the rows its case carries. The area field is intl: the schema has no
+# collation area (generate_collation_vectors.py, THE AREA FIELD).
 schema: 1
 
 id: intl/collation/surrogates/lone/0001
@@ -13,9 +16,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800","\uDC00"))+1]
-note: U+D800 against U+DC00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DC00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0002
@@ -24,9 +27,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800","\uFFFD"))+1]
-note: U+D800 against U+FFFD under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+FFFD under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0003
@@ -35,9 +38,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDC00" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uDC00","\uFFFD"))+1]
-note: U+DC00 against U+FFFD under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DC00 against U+FFFD under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0004
@@ -46,9 +49,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"a"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800","a"))+1]
-note: U+D800 against a under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against a under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0005
@@ -57,9 +60,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uD800"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800","\uD800"))+1]
-note: U+D800 against U+D800 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+D800 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0006
@@ -68,9 +71,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDBFF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800","\uDBFF"))+1]
-note: U+D800 against U+DBFF under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DBFF under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0007
@@ -79,9 +82,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\uD800" str:"a"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("a\uD800","a"))+1]
-note: aU+D800 against a under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: aU+D800 against a under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0008
@@ -90,9 +93,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\uD800" str:"a\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("a\uD800","a\uDC00"))+1]
-note: aU+D800 against aU+DC00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: aU+D800 against aU+DC00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0009
@@ -101,9 +104,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800\uDC00" str:"\uD800"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800\uDC00","\uD800"))+1]
-note: U+D800U+DC00 against U+D800 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800U+DC00 against U+D800 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0010
@@ -112,9 +115,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800\uDC00" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800\uDC00","\uFFFD"))+1]
-note: U+D800U+DC00 against U+FFFD under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800U+DC00 against U+FFFD under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0011
@@ -123,9 +126,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800b" str:"\uDC00a"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800b","\uDC00a"))+1]
-note: U+D800b against U+DC00a under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800b against U+DC00a under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0012
@@ -134,9 +137,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uFFFD" str:"\uFFFF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uFFFD","\uFFFF"))+1]
-note: U+FFFD against U+FFFF under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+FFFD against U+FFFF under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0013
@@ -145,9 +148,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83D" str:"\uD83D\uDE00"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD83D","\uD83D\uDE00"))+1]
-note: U+D83D against U+D83DU+DE00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D83D against U+D83DU+DE00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0014
@@ -156,9 +159,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDFFF" str:"\u4E00"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uDFFF","\u4E00"))+1]
-note: U+DFFF against U+4E00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DFFF against U+4E00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0015
@@ -167,9 +170,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\u0378"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800","\u0378"))+1]
-note: U+D800 against U+0378 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+0378 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0016
@@ -178,9 +181,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u00E4\uD800" str:"a\u0308\uD800"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00E4\uD800","a\u0308\uD800"))+1]
-note: U+00E4U+D800 against aU+0308U+D800 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+00E4U+D800 against aU+0308U+D800 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0017
@@ -189,9 +192,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uE000"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800","\uE000"))+1]
-note: U+D800 against U+E000 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+E000 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0018
@@ -200,9 +203,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDFFF" str:"\uE000"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uDFFF","\uE000"))+1]
-note: U+DFFF against U+E000 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DFFF against U+E000 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0019
@@ -211,9 +214,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDBFF" str:"\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uDBFF","\uDC00"))+1]
-note: U+DBFF against U+DC00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DBFF against U+DC00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0020
@@ -222,9 +225,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800\u0301" str:"\uD800"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800\u0301","\uD800"))+1]
-note: U+D800U+0301 against U+D800 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800U+0301 against U+D800 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0021
@@ -233,9 +236,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0301\uD800" str:"\uD800\u0301"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u0301\uD800","\uD800\u0301"))+1]
-note: U+0301U+D800 against U+D800U+0301 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+0301U+D800 against U+D800U+0301 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0022
@@ -244,9 +247,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDC00\uD800" str:"\uD800\uDC00"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uDC00\uD800","\uD800\uDC00"))+1]
-note: U+DC00U+D800 against U+D800U+DC00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DC00U+D800 against U+D800U+DC00 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0023
@@ -255,9 +258,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\uDC00b" str:"a\uD800b"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("a\uDC00b","a\uD800b"))+1]
-note: aU+DC00b against aU+D800b under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: aU+DC00b against aU+D800b under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0024
@@ -266,9 +269,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:""
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800",""))+1]
-note: U+D800 against (empty) under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against (empty) under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0025
@@ -277,9 +280,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:" "
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800"," "))+1]
-note: U+D800 against U+0020 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+0020 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0026
@@ -288,9 +291,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDB40\uDC01"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800","\uDB40\uDC01"))+1]
-note: U+D800 against U+DB40U+DC01 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DB40U+DC01 under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0027
@@ -299,9 +302,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800!" str:"\uD800?"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800!","\uD800?"))+1]
-note: U+D800! against U+D800? under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800! against U+D800? under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0028
@@ -310,9 +313,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800a" str:"\uD800A"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800a","\uD800A"))+1]
-note: U+D800a against U+D800A under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800a against U+D800A under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0029
@@ -321,9 +324,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDBFF\uDFFF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD800","\uDBFF\uDFFF"))+1]
-note: U+D800 against U+DBFFU+DFFF under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DBFFU+DFFF under en: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0030
@@ -332,9 +335,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800","\uDC00"))+1]
-note: U+D800 against U+DC00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DC00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0031
@@ -343,9 +346,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800","\uFFFD"))+1]
-note: U+D800 against U+FFFD under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+FFFD under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0032
@@ -354,9 +357,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDC00" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uDC00","\uFFFD"))+1]
-note: U+DC00 against U+FFFD under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DC00 against U+FFFD under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0033
@@ -365,9 +368,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"a"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800","a"))+1]
-note: U+D800 against a under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against a under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0034
@@ -376,9 +379,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uD800"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800","\uD800"))+1]
-note: U+D800 against U+D800 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+D800 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0035
@@ -387,9 +390,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDBFF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800","\uDBFF"))+1]
-note: U+D800 against U+DBFF under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DBFF under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0036
@@ -398,9 +401,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\uD800" str:"a"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("a\uD800","a"))+1]
-note: aU+D800 against a under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: aU+D800 against a under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0037
@@ -409,9 +412,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\uD800" str:"a\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("a\uD800","a\uDC00"))+1]
-note: aU+D800 against aU+DC00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: aU+D800 against aU+DC00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0038
@@ -420,9 +423,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800\uDC00" str:"\uD800"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800\uDC00","\uD800"))+1]
-note: U+D800U+DC00 against U+D800 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800U+DC00 against U+D800 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0039
@@ -431,9 +434,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800\uDC00" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800\uDC00","\uFFFD"))+1]
-note: U+D800U+DC00 against U+FFFD under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800U+DC00 against U+FFFD under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0040
@@ -442,9 +445,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800b" str:"\uDC00a"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800b","\uDC00a"))+1]
-note: U+D800b against U+DC00a under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800b against U+DC00a under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0041
@@ -453,9 +456,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uFFFD" str:"\uFFFF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uFFFD","\uFFFF"))+1]
-note: U+FFFD against U+FFFF under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+FFFD against U+FFFF under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0042
@@ -464,9 +467,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83D" str:"\uD83D\uDE00"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD83D","\uD83D\uDE00"))+1]
-note: U+D83D against U+D83DU+DE00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D83D against U+D83DU+DE00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0043
@@ -475,9 +478,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDFFF" str:"\u4E00"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uDFFF","\u4E00"))+1]
-note: U+DFFF against U+4E00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DFFF against U+4E00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0044
@@ -486,9 +489,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\u0378"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800","\u0378"))+1]
-note: U+D800 against U+0378 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+0378 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0045
@@ -497,9 +500,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u00E4\uD800" str:"a\u0308\uD800"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u00E4\uD800","a\u0308\uD800"))+1]
-note: U+00E4U+D800 against aU+0308U+D800 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+00E4U+D800 against aU+0308U+D800 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0046
@@ -508,9 +511,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uE000"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800","\uE000"))+1]
-note: U+D800 against U+E000 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+E000 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0047
@@ -519,9 +522,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDFFF" str:"\uE000"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uDFFF","\uE000"))+1]
-note: U+DFFF against U+E000 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DFFF against U+E000 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0048
@@ -530,9 +533,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDBFF" str:"\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uDBFF","\uDC00"))+1]
-note: U+DBFF against U+DC00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DBFF against U+DC00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0049
@@ -541,9 +544,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800\u0301" str:"\uD800"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800\u0301","\uD800"))+1]
-note: U+D800U+0301 against U+D800 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800U+0301 against U+D800 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0050
@@ -552,9 +555,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0301\uD800" str:"\uD800\u0301"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u0301\uD800","\uD800\u0301"))+1]
-note: U+0301U+D800 against U+D800U+0301 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+0301U+D800 against U+D800U+0301 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0051
@@ -563,9 +566,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDC00\uD800" str:"\uD800\uDC00"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uDC00\uD800","\uD800\uDC00"))+1]
-note: U+DC00U+D800 against U+D800U+DC00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DC00U+D800 against U+D800U+DC00 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0052
@@ -574,9 +577,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\uDC00b" str:"a\uD800b"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("a\uDC00b","a\uD800b"))+1]
-note: aU+DC00b against aU+D800b under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: aU+DC00b against aU+D800b under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0053
@@ -585,9 +588,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:""
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800",""))+1]
-note: U+D800 against (empty) under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against (empty) under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0054
@@ -596,9 +599,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:" "
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800"," "))+1]
-note: U+D800 against U+0020 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+0020 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0055
@@ -607,9 +610,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDB40\uDC01"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800","\uDB40\uDC01"))+1]
-note: U+D800 against U+DB40U+DC01 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DB40U+DC01 under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0056
@@ -618,9 +621,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800!" str:"\uD800?"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800!","\uD800?"))+1]
-note: U+D800! against U+D800? under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800! against U+D800? under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0057
@@ -629,9 +632,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800a" str:"\uD800A"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800a","\uD800A"))+1]
-note: U+D800a against U+D800A under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800a against U+D800A under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0058
@@ -640,9 +643,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDBFF\uDFFF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uD800","\uDBFF\uDFFF"))+1]
-note: U+D800 against U+DBFFU+DFFF under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DBFFU+DFFF under en {sensitivity:"base"}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0059
@@ -651,9 +654,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800","\uDC00"))+1]
-note: U+D800 against U+DC00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DC00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0060
@@ -662,9 +665,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800","\uFFFD"))+1]
-note: U+D800 against U+FFFD under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+FFFD under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0061
@@ -673,9 +676,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDC00" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uDC00","\uFFFD"))+1]
-note: U+DC00 against U+FFFD under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DC00 against U+FFFD under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0062
@@ -684,9 +687,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"a"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800","a"))+1]
-note: U+D800 against a under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against a under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0063
@@ -695,9 +698,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uD800"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800","\uD800"))+1]
-note: U+D800 against U+D800 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+D800 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0064
@@ -706,9 +709,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDBFF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800","\uDBFF"))+1]
-note: U+D800 against U+DBFF under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DBFF under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0065
@@ -717,9 +720,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\uD800" str:"a"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("a\uD800","a"))+1]
-note: aU+D800 against a under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: aU+D800 against a under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0066
@@ -728,9 +731,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\uD800" str:"a\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("a\uD800","a\uDC00"))+1]
-note: aU+D800 against aU+DC00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: aU+D800 against aU+DC00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0067
@@ -739,9 +742,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800\uDC00" str:"\uD800"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800\uDC00","\uD800"))+1]
-note: U+D800U+DC00 against U+D800 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800U+DC00 against U+D800 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0068
@@ -750,9 +753,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800\uDC00" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800\uDC00","\uFFFD"))+1]
-note: U+D800U+DC00 against U+FFFD under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800U+DC00 against U+FFFD under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0069
@@ -761,9 +764,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800b" str:"\uDC00a"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800b","\uDC00a"))+1]
-note: U+D800b against U+DC00a under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800b against U+DC00a under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0070
@@ -772,9 +775,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uFFFD" str:"\uFFFF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uFFFD","\uFFFF"))+1]
-note: U+FFFD against U+FFFF under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+FFFD against U+FFFF under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0071
@@ -783,9 +786,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83D" str:"\uD83D\uDE00"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD83D","\uD83D\uDE00"))+1]
-note: U+D83D against U+D83DU+DE00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D83D against U+D83DU+DE00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0072
@@ -794,9 +797,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDFFF" str:"\u4E00"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uDFFF","\u4E00"))+1]
-note: U+DFFF against U+4E00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DFFF against U+4E00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0073
@@ -805,9 +808,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\u0378"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800","\u0378"))+1]
-note: U+D800 against U+0378 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+0378 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0074
@@ -816,9 +819,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u00E4\uD800" str:"a\u0308\uD800"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\u00E4\uD800","a\u0308\uD800"))+1]
-note: U+00E4U+D800 against aU+0308U+D800 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+00E4U+D800 against aU+0308U+D800 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0075
@@ -827,9 +830,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uE000"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800","\uE000"))+1]
-note: U+D800 against U+E000 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+E000 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0076
@@ -838,9 +841,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDFFF" str:"\uE000"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uDFFF","\uE000"))+1]
-note: U+DFFF against U+E000 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DFFF against U+E000 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0077
@@ -849,9 +852,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDBFF" str:"\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uDBFF","\uDC00"))+1]
-note: U+DBFF against U+DC00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DBFF against U+DC00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0078
@@ -860,9 +863,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800\u0301" str:"\uD800"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800\u0301","\uD800"))+1]
-note: U+D800U+0301 against U+D800 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800U+0301 against U+D800 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0079
@@ -871,9 +874,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u0301\uD800" str:"\uD800\u0301"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\u0301\uD800","\uD800\u0301"))+1]
-note: U+0301U+D800 against U+D800U+0301 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+0301U+D800 against U+D800U+0301 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0080
@@ -882,9 +885,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uDC00\uD800" str:"\uD800\uDC00"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uDC00\uD800","\uD800\uDC00"))+1]
-note: U+DC00U+D800 against U+D800U+DC00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+DC00U+D800 against U+D800U+DC00 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0081
@@ -893,9 +896,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\uDC00b" str:"a\uD800b"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("a\uDC00b","a\uD800b"))+1]
-note: aU+DC00b against aU+D800b under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: aU+DC00b against aU+D800b under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0082
@@ -904,9 +907,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:""
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800",""))+1]
-note: U+D800 against (empty) under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against (empty) under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0083
@@ -915,9 +918,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:" "
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800"," "))+1]
-note: U+D800 against U+0020 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+0020 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0084
@@ -926,9 +929,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDB40\uDC01"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800","\uDB40\uDC01"))+1]
-note: U+D800 against U+DB40U+DC01 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DB40U+DC01 under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0085
@@ -937,9 +940,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800!" str:"\uD800?"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800!","\uD800?"))+1]
-note: U+D800! against U+D800? under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800! against U+D800? under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0086
@@ -948,9 +951,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800a" str:"\uD800A"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800a","\uD800A"))+1]
-note: U+D800a against U+D800A under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800a against U+D800A under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0087
@@ -959,9 +962,9 @@ op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD800" str:"\uDBFF\uDFFF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("\uD800","\uDBFF\uDFFF"))+1]
-note: U+D800 against U+DBFFU+DFFF under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205729 to 205758 of the non-ignorable file)
+note: U+D800 against U+DBFFU+DFFF under en {ignorePunctuation:true}: row O9 (same): a lone surrogate is its code point, which UCA 17's CollationTest files key as an unassigned code point's implicit weight (lines 205739 to 205768 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt and 227161 to 227190 of CollationTest_CLDR_SHIFTED_SHORT.txt, the files' reading; this vector is no pair of their lines)
 since: 31
 
 id: intl/collation/surrogates/lone/0088
@@ -970,9 +973,9 @@ op: String.prototype.localeCompare
 in: str:"\uD800" str:"\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\uD800".localeCompare("\uDC00"))+1]
-note: U+D800 against U+DC00 under the default locale: row O9 (same): a lone surrogate through localeCompare with no locale (rows O9 and O13)
+note: U+D800 against U+DC00 under the default locale: rows O9 and O13 (O9 same; O13 same): a lone surrogate through localeCompare with no locale
 since: 31
 
 id: intl/collation/surrogates/lone/0089
@@ -981,9 +984,9 @@ op: String.prototype.localeCompare
 in: str:"\uD800" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\uD800".localeCompare("\uFFFD"))+1]
-note: U+D800 against U+FFFD under the default locale: row O9 (same): a lone surrogate through localeCompare with no locale (rows O9 and O13)
+note: U+D800 against U+FFFD under the default locale: rows O9 and O13 (O9 same; O13 same): a lone surrogate through localeCompare with no locale
 since: 31
 
 id: intl/collation/surrogates/lone/0090
@@ -992,9 +995,9 @@ op: String.prototype.localeCompare
 in: str:"\uDC00" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\uDC00".localeCompare("\uFFFD"))+1]
-note: U+DC00 against U+FFFD under the default locale: row O9 (same): a lone surrogate through localeCompare with no locale (rows O9 and O13)
+note: U+DC00 against U+FFFD under the default locale: rows O9 and O13 (O9 same; O13 same): a lone surrogate through localeCompare with no locale
 since: 31
 
 id: intl/collation/surrogates/lone/0091
@@ -1003,9 +1006,9 @@ op: String.prototype.localeCompare
 in: str:"\uD800" str:"a"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\uD800".localeCompare("a"))+1]
-note: U+D800 against a under the default locale: row O9 (same): a lone surrogate through localeCompare with no locale (rows O9 and O13)
+note: U+D800 against a under the default locale: rows O9 and O13 (O9 same; O13 same): a lone surrogate through localeCompare with no locale
 since: 31
 
 id: intl/collation/surrogates/lone/0092
@@ -1014,9 +1017,9 @@ op: String.prototype.localeCompare
 in: str:"\uD800" str:"\uD800"
 out: value: str:"="
 class: normative
-prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\uD800".localeCompare("\uD800"))+1]
-note: U+D800 against U+D800 under the default locale: row O9 (same): a lone surrogate through localeCompare with no locale (rows O9 and O13)
+note: U+D800 against U+D800 under the default locale: rows O9 and O13 (O9 same; O13 same): a lone surrogate through localeCompare with no locale
 since: 31
 
 id: intl/collation/surrogates/lone/0093
@@ -1025,9 +1028,9 @@ op: String.prototype.localeCompare
 in: str:"\uD800" str:"\uDBFF"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\uD800".localeCompare("\uDBFF"))+1]
-note: U+D800 against U+DBFF under the default locale: row O9 (same): a lone surrogate through localeCompare with no locale (rows O9 and O13)
+note: U+D800 against U+DBFF under the default locale: rows O9 and O13 (O9 same; O13 same): a lone surrogate through localeCompare with no locale
 since: 31
 
 id: intl/collation/surrogates/lone/0094
@@ -1036,9 +1039,9 @@ op: String.prototype.localeCompare
 in: str:"a\uD800" str:"a"
 out: value: str:">"
 class: normative
-prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("a\uD800".localeCompare("a"))+1]
-note: aU+D800 against a under the default locale: row O9 (same): a lone surrogate through localeCompare with no locale (rows O9 and O13)
+note: aU+D800 against a under the default locale: rows O9 and O13 (O9 same; O13 same): a lone surrogate through localeCompare with no locale
 since: 31
 
 id: intl/collation/surrogates/lone/0095
@@ -1047,9 +1050,9 @@ op: String.prototype.localeCompare
 in: str:"a\uD800" str:"a\uDC00"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("a\uD800".localeCompare("a\uDC00"))+1]
-note: aU+D800 against aU+DC00 under the default locale: row O9 (same): a lone surrogate through localeCompare with no locale (rows O9 and O13)
+note: aU+D800 against aU+DC00 under the default locale: rows O9 and O13 (O9 same; O13 same): a lone surrogate through localeCompare with no locale
 since: 31
 
 id: intl/collation/surrogates/lone/0096
@@ -1058,9 +1061,9 @@ op: String.prototype.localeCompare
 in: str:"\uD800\uDC00" str:"\uD800"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\uD800\uDC00".localeCompare("\uD800"))+1]
-note: U+D800U+DC00 against U+D800 under the default locale: row O9 (same): a lone surrogate through localeCompare with no locale (rows O9 and O13)
+note: U+D800U+DC00 against U+D800 under the default locale: rows O9 and O13 (O9 same; O13 same): a lone surrogate through localeCompare with no locale
 since: 31
 
 id: intl/collation/surrogates/lone/0097
@@ -1069,9 +1072,9 @@ op: String.prototype.localeCompare
 in: str:"\uD800\uDC00" str:"\uFFFD"
 out: value: str:"<"
 class: normative
-prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\uD800\uDC00".localeCompare("\uFFFD"))+1]
-note: U+D800U+DC00 against U+FFFD under the default locale: row O9 (same): a lone surrogate through localeCompare with no locale (rows O9 and O13)
+note: U+D800U+DC00 against U+FFFD under the default locale: rows O9 and O13 (O9 same; O13 same): a lone surrogate through localeCompare with no locale
 since: 31
 
 id: intl/collation/surrogates/lone/0098
@@ -1080,7 +1083,7 @@ op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en" str:"" str:" " str:"a" str:"a\u0308\uD800" str:"a\uD800" str:"a\uD800b" str:"a\uDC00" str:"a\uDC00b" str:"\u00E4\uD800" str:"\u0301\uD800" str:"\u0378" str:"\u4E00" str:"\uD800" str:"\uD800!" str:"\uD800?" str:"\uD800A" str:"\uD800a" str:"\uD800b" str:"\uD800\u0301" str:"\uD83D" str:"\uDBFF" str:"\uDC00" str:"\uDC00a" str:"\uDC00\uD800" str:"\uDFFF" str:"\uE000" str:"\uFFFD" str:"\uFFFF" str:"\uD800\uDC00" str:"\uD83D\uDE00" str:"\uDB40\uDC01" str:"\uDBFF\uDFFF"
 out: value: str:" = \uDB40\uDC01 <   < \uD83D\uDE00 < a < a\uD800 < a\u0308\uD800 = \u00E4\uD800 < a\uD800b < a\uDC00 < a\uDC00b < \uD800\uDC00 < \u4E00 < \u0378 < \uD800 < \uD800\u0301 < \u0301\uD800 < \uD800! < \uD800? < \uD800a < \uD800A < \uD800b < \uD83D < \uDBFF < \uDC00 < \uDC00a < \uDC00\uD800 < \uDFFF < \uE000 < \uDBFF\uDFFF < \uFFFD < \uFFFF"
 class: normative
-prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
+prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en"),[""," ","a","a\u0308\uD800","a\uD800","a\uD800b","a\uDC00","a\uDC00b","\u00E4\uD800","\u0301\uD800","\u0378","\u4E00","\uD800","\uD800!","\uD800?","\uD800A","\uD800a","\uD800b","\uD800\u0301","\uD83D","\uDBFF","\uDC00","\uDC00a","\uDC00\uD800","\uDFFF","\uE000","\uFFFD","\uFFFF","\uD800\uDC00","\uD83D\uDE00","\uDB40\uDC01","\uDBFF\uDFFF"])
 note: 32 strings sorted under en, each neighbour's relation written between them: row O9 (same): lone surrogates among the code points around them
 since: 31

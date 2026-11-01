@@ -2,9 +2,12 @@
 # The collation vectors (milestone SJL-17.2), tailorings.vectors: the tailorings of decision E3's list: root, en, de, German phonebook and search, root search, es, sv and th.
 # Expected values: ICU 78.3 with CLDR 48.0 through Node.js v26.12.0, the reference bundle sjl-9-001's reference.txt
 # names (ref:intlref@1), held, where a vector takes two consecutive lines of CLDR 48.2.0's archived CollationTest
-# files, to the order the file gives them (ref:collationtest@1). Each note names rows of bundle sjl-17-001's
-# correspondence (Broiler.VM's docs/evidence/sjl-17-001/correspondence.md). The area field is intl: the schema has
-# no collation area (generate_collation_vectors.py, THE AREA FIELD).
+# files, to the order the file gives them (ref:collationtest@1). The root's scripts and Han vectors are computed again
+# by the UCA over CLDR 48.2.0's allkeys_CLDR.txt with UCA 17's implicit weights (ref:ucaimplicit@1), the other Han
+# order UTS #35 Part 5 (CLDR 48) allows: a Han vector whose answer moves with that order is impl-defined, with that
+# order's answer for both engines. Each note names rows of bundle sjl-17-001's correspondence (Broiler.VM's
+# docs/evidence/sjl-17-001/correspondence.md), the rows its case carries. The area field is intl: the schema has no
+# collation area (generate_collation_vectors.py, THE AREA FIELD).
 schema: 1
 
 id: intl/collation/tailorings/root/0001
@@ -1236,7 +1239,7 @@ out: value: str:"= < \u2260 < a = \u00E4 = \u00C4 < Ab = \u00C4b < Ae = ae = AE 
 class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{usage:"search",sensitivity:"base"}),["Ab","Ae","\u00C4b","Af","Od","\u00D6b","Oe","Ub","\u00DCb","Ue","ss","\u00DF","st","a","\u00E4","ae","b","\u00C4","AE","o","\u00F6","oe","u","\u00FC","ue","\u0627","\u0623","\u0622","\uFE8E","\u2260","="])
-note: 31 strings sorted under en {usage:"search",sensitivity:"base"}, each neighbour's relation written between them: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
+note: 31 strings sorted under en {usage:"search",sensitivity:"base"}, each neighbour's relation written between them: rows O16, O6 and O5b (O16 data policy, C5; O6 same; O5b a correction of Broiler.JS): root search at base (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/tailorings/root-search/0032
@@ -1368,7 +1371,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u0627","\uFE8E"))+1]
-note: U+0627 against U+FE8E under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
+note: U+0627 against U+FE8E under en {usage:"search",sensitivity:"base"}: rows O16, O6 and O5b (O16 data policy, C5; O6 same; O5b a correction of Broiler.JS): root search at base (base folds width and compatibility differences, row O5b)
 since: 31
 
 id: intl/collation/tailorings/root-search/0044
@@ -1936,7 +1939,7 @@ per-engine.broiler-js: value: str:"<"
 per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare(""," "))+1]
-note: (empty) against U+0020 under th {ignorePunctuation:false}: row O19 (same): Thai with ignorePunctuation false, where punctuation and spaces count; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: (empty) against U+0020 under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/th/0018
@@ -1949,7 +1952,7 @@ per-engine.broiler-js: value: str:"="
 per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare(""," "))+1]
-note: (empty) against U+0020 under th {ignorePunctuation:true}: row O19 (same): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: (empty) against U+0020 under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/th/0019
@@ -1962,7 +1965,7 @@ per-engine.broiler-js: value: str:"<"
 per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare("","*"))+1]
-note: (empty) against * under th {ignorePunctuation:false}: row O19 (same): Thai with ignorePunctuation false, where punctuation and spaces count; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: (empty) against * under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/th/0020
@@ -1975,7 +1978,7 @@ per-engine.broiler-js: value: str:"="
 per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare("","*"))+1]
-note: (empty) against * under th {ignorePunctuation:true}: row O19 (same): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: (empty) against * under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/th/0021
@@ -1988,7 +1991,7 @@ per-engine.broiler-js: value: str:"<"
 per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare(" ","*"))+1]
-note: U+0020 against * under th {ignorePunctuation:false}: row O19 (same): Thai with ignorePunctuation false, where punctuation and spaces count; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: U+0020 against * under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/th/0022
@@ -2001,7 +2004,7 @@ per-engine.broiler-js: value: str:"="
 per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare(" ","*"))+1]
-note: U+0020 against * under th {ignorePunctuation:true}: row O19 (same): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: U+0020 against * under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/th/0023
@@ -2014,7 +2017,7 @@ per-engine.broiler-js: value: str:"<"
 per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare("a b","ab"))+1]
-note: aU+0020b against ab under th {ignorePunctuation:false}: row O19 (same): Thai with ignorePunctuation false, where punctuation and spaces count; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: aU+0020b against ab under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/th/0024
@@ -2027,7 +2030,7 @@ per-engine.broiler-js: value: str:"="
 per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare("a b","ab"))+1]
-note: aU+0020b against ab under th {ignorePunctuation:true}: row O19 (same): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: aU+0020b against ab under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/th/0025
@@ -2040,7 +2043,7 @@ per-engine.broiler-js: value: str:"<"
 per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare("a-b","ab"))+1]
-note: a-b against ab under th {ignorePunctuation:false}: row O19 (same): Thai with ignorePunctuation false, where punctuation and spaces count; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: a-b against ab under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/th/0026
@@ -2053,7 +2056,7 @@ per-engine.broiler-js: value: str:"="
 per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare("a-b","ab"))+1]
-note: a-b against ab under th {ignorePunctuation:true}: row O19 (same): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: a-b against ab under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/th/0027
@@ -2066,7 +2069,7 @@ per-engine.broiler-js: value: str:"<"
 per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare("a.b","ab"))+1]
-note: a.b against ab under th {ignorePunctuation:false}: row O19 (same): Thai with ignorePunctuation false, where punctuation and spaces count; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: a.b against ab under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/th/0028
@@ -2079,7 +2082,7 @@ per-engine.broiler-js: value: str:"="
 per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare("a.b","ab"))+1]
-note: a.b against ab under th {ignorePunctuation:true}: row O19 (same): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
+note: a.b against ab under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
 since: 31
 
 id: intl/collation/tailorings/locale-compare/0001
