@@ -13,15 +13,15 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 134 |
+| Files scanned | 139 |
 | Files not covered | 0 |
-| Files carrying an annotation | 134 |
-| Code units | 2425 |
-| Relevant | 1740 |
-| Exempt by predicate | 685 |
-| Annotated | 1740 of 1740 (100%) |
-| Human reviewed | 0 of 1740 (0%) |
-| Unverified | 1740 |
+| Files carrying an annotation | 139 |
+| Code units | 2622 |
+| Relevant | 1821 |
+| Exempt by predicate | 801 |
+| Annotated | 1821 of 1821 (100%) |
+| Human reviewed | 0 of 1821 (0%) |
+| Unverified | 1821 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1740 |
+| HUMAN_PENDING | 1821 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 685 |
+| EXEMPT | 801 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 1738 |
+| Low | 1819 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,9 +51,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 1044 |
-| Medium | 507 |
-| High | 169 |
+| Low | 1110 |
+| Medium | 511 |
+| High | 180 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -62,8 +62,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Metric | Value |
 |---|---:|
 | Maximum | 9 / 10 |
-| Average over annotated units | 1.2 / 10 |
-| Units scored | 1740 |
+| Average over annotated units | 1.1 / 10 |
+| Units scored | 1821 |
 
 ## High-security review areas
 
@@ -219,10 +219,13 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.Resolve<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.ResolveValue<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.DigitOptionRules.SetNumberFormatDigitOptions(DigitOptionValues, FractionDigitDefaults, NumberNotation, out DigitOptions?)` in `Broiler.ECMAScript.Intl/DigitOptions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DisplayNamesCore.CanonicalCode(string, out string, WorkCharge?)` in `Broiler.ECMAScript.Intl/DisplayNamesCore.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DisplayNamesCore.LanguageName(string, Func<string, string, string?>)` in `Broiler.ECMAScript.Intl/DisplayNamesCore.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.IntlDecimal.FromNumber(double)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.IntlDecimal.FromString(string, BigIntPolicy, WorkCharge?)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.IntlDecimal.RoundToUnits(int, int, UnsignedRoundingMode)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.IntlTableText.Unescape(string)` in `Broiler.ECMAScript.Intl/IntlTableText.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.ListFormatter.FormatToParts(IReadOnlyList<string>, WorkCharge?)` in `Broiler.ECMAScript.Intl/ListFormatter.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.LocaleInfo.Collations(LocaleRecord, ICollatorLocaleData, string, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleInfo.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.LocaleNegotiation.ResolveLocale(LocaleMatch, IReadOnlyList<RelevantKey>, ILocaleData)` in `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.LocaleNegotiation.ResolveLocale(IReadOnlyList<string>, IReadOnlyList<string>, string, IReadOnlyList<RelevantKey>, ILocaleData, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` - Security=High, human line PENDING
@@ -230,10 +233,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Intl.LocaleTag.Parse(string)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.LocaleTag.Canonicalize(ILocaleData, WorkCharge?)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.LocaleTag.CanonicalType(ILocaleData, string, string)` in `Broiler.ECMAScript.Intl/LocaleTag.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.NumberFormatter.RangeParts(IntlDecimal, IntlDecimal, WorkCharge?)` in `Broiler.ECMAScript.Intl/NumberFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.NumberFormatter.Build(IntlDecimal, bool, WorkCharge?)` in `Broiler.ECMAScript.Intl/NumberFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.NumberFormatter.UnitPattern(string, UnitDisplay, string)` in `Broiler.ECMAScript.Intl/NumberFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.NumberFormatter.ComputeExponent(IntlDecimal, WorkCharge?)` in `Broiler.ECMAScript.Intl/NumberFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.NumberFormatter.AddDigits(Built, string)` in `Broiler.ECMAScript.Intl/NumberFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.NumberFormatter.Symbol(string, string)` in `Broiler.ECMAScript.Intl/NumberFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.NumberPattern.ParseSubpattern(string)` in `Broiler.ECMAScript.Intl/NumberFormatter.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.NumericFormat.FormatNumericToString(DigitOptions, IntlDecimal, WorkCharge?)` in `Broiler.ECMAScript.Intl/NumericFormat.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.PluralEngine.Select(string, int, WorkCharge?)` in `Broiler.ECMAScript.Intl/PluralEngine.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.PluralRule.Parse(string)` in `Broiler.ECMAScript.Intl/PluralEngine.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.PluralRulesRecord.ResolvePlural(IntlDecimal, WorkCharge?)` in `Broiler.ECMAScript.Intl/PluralRulesRecord.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.RelativeTimeFormatter.FormatToParts(double, string, out IReadOnlyList<RelativeTimePart>, WorkCharge?)` in `Broiler.ECMAScript.Intl/RelativeTimeFormatter.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadNumbers()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadDates()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, human line PENDING
 
@@ -241,8 +252,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 169 |
-| Units required to carry one | 169 |
+| Units carrying a criterion | 180 |
+| Units required to carry one | 180 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -263,14 +274,14 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 162 |
-| ParameterAssigningConstructor | 18 |
+| TrivialPropertyOrAccessor | 211 |
+| ParameterAssigningConstructor | 21 |
 | TrivialExpressionBodiedMember | 33 |
-| CompilerSuppliedRecordOrEnumMember | 67 |
+| CompilerSuppliedRecordOrEnumMember | 78 |
 | DelegatingOverrideOrOperator | 4 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 96 |
-| EnumMemberOfADeclaredVocabulary | 305 |
+| FieldDeclaringStorage | 104 |
+| EnumMemberOfADeclaredVocabulary | 350 |
 | DeclaredInSource | 0 |
 
 ## Per-unit exemptions
@@ -294,14 +305,14 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 5 covered assemblies -
-2425 of them, exempt and relevant alike - with the fingerprint of its declaration.
+2622 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
 trivial is no longer invisible: a semantic change to one moves a value in a generated file
 the check compares byte for byte. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` holds the manifest to the tree.
 
-Beside the units it lists **every covered file** - 134 of them - with a
+Beside the units it lists **every covered file** - 139 of them - with a
 fingerprint over the complete token stream of its compilation unit. A unit entry exists only
 for a declaration kind the scanner enumerates, and an enumeration is a whitelist: an
 `[assembly: ...]` attribute is a member of nothing and can be in no unit at all.

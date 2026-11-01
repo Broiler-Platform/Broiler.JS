@@ -105,6 +105,39 @@ Not yet packed under a version of its own: the stream's next version is set when
   - **`IntlStatus`** gains `NumberOptionOutOfRange`, `RoundingIncrementNotAdmitted`, `FractionDigitsOutOfOrder`,
     `RoundingIncrementNeedsFractionDigits` (SetNumberFormatDigitOptions' `TypeError`),
     `RoundingIncrementNeedsEqualFractionDigits` and `RangeIsNotANumber`.
+- `Broiler.ECMAScript.Intl`, sub-area (c) (stage SJL-9.3c; Broiler.VM's JSD-0082, rows N and S, decisions D13, D18, D19,
+  D21 and D33): number formatting and the list, relative-time and display-name formatters, ported from Broiler.VM's
+  JavaScript profile at `4cf9ca44` with `NumberFormatInfo.InvariantInfo` and ASCII casing where it made a culture call
+  and its `Trim()`'s white space written out (decision D19), a status where its realm threw, and the caller's `WorkCharge`
+  where Broiler.VM charges, in its units (decision D18). Each formatter reads the locale data at ResolveLocale's data
+  locale through the `ILocaleData` it is handed, ordinarily a `CompositeLocaleData`, where Broiler.VM read the data
+  locale's language; for Broiler.VM's tables the two are the same lines:
+  - **`NumberFormatter`**, with `NumberFormatOptions`, `NumberPart` and the enumerations `CurrencyDisplay`,
+    `CurrencySign`, `UnitDisplay`, `NumberGrouping` and `SignDisplay`: PartitionNumberPattern in three layers - the
+    patterns and signs (rows N1, N2 and N7), compact notation with its exponent taken after rounding over the exact value
+    (row N6), currencies with CLDR's currency spacing and names by the number's plural (rows N3 and N4), units, a compound
+    with no CLDR pattern composed from its two units and the percent unit's percent pattern (rows N5 and N2c, decision
+    D35) - PartitionNumberRangePattern with ICU's collapse, the separator's spacing and the collapsed name's plural range
+    (row N9), and the parts. A numbering system's digits replace the ASCII ones (rows N8 and N17), and a system other than
+    `latn` writes its own symbols where the data carries them, at the data locale then at root, and the `latn` symbols
+    otherwise (decision D21); `NumberingSystemKeyValues` gives the `nu` values with the locale's default numbering system
+    first (decision D13), `latn` for every locale of Broiler.VM's list. `IsWellFormedCurrencyCode` and
+    `IsWellFormedUnitIdentifier` are the checks an engine makes at their steps. FormatNumericToString's
+    `digits / 16 + 1` is charged at every rounding, ComputeExponent's and both of a range's ends' included;
+  - **`ListFormatter`**, with `ListFormatType`, `FormatStyle` and `ListPart`: CreatePartsFromList over CLDR's list
+    patterns, one template per type and style (rows S1 to S3), one unit charged per template step;
+  - **`RelativeTimeFormatter`**, with `RelativeTimeNumeric` and `RelativeTimePart`: PartitionRelativeTimePattern with its
+    own number format in the resolved numbering system (row S5) and plural rules (row S6), the magnitude written in the
+    tense's pattern (row S7, decision D33 (a)), and SingularRelativeTimeUnit;
+  - **`DisplayNamesCore`**, with `DisplayNamesType`, `DisplayNamesFallback` and `LanguageDisplay`:
+    CanonicalCodeForDisplayNames by ASCII casing (row S9) and CLDR's names, a language's composed as ICU composes it (row
+    S8, an adoption);
+  - **`IntlStatus`** gains `RelativeTimeValueNotFinite`, `InvalidRelativeTimeUnit` and `InvalidDisplayNamesCode`.
+
+  The library-level runner answers sub-area (c)'s vectors, `intl/numbers-and-text.vectors`' and the `format` and
+  `formatToParts` vectors of `intl/values-and-plurals.vectors`, through `IVectorRecordLibrary`, and the Native AOT probe
+  holds them; the bound `format`, the legacy constructor, the option reads after construction and StringListFromIterable
+  stay the engines'.
 - `Broiler.ECMAScript.Conformance` (test-only, not packed): `IVectorRecordLibrary`, a library the library-level runner
   hands each vector whole, script included, which `LibraryRun.Run` calls in place of the operation and the decoded
   inputs (stage SJL-9.3b): the Intl area's sub-area (b) vectors give their options and arguments in the script alone.

@@ -243,12 +243,19 @@ internal sealed class JsEngine
 
     internal VmError Error(string kind, string message) => new(kind, message);
 
-    /// <summary>ToString of the values the harness gives: Strings, Booleans and Numbers.</summary>
+    /// <summary>ToString of the values the harness gives: Strings, Booleans and Numbers, a Number by Number::toString.</summary>
+    /// <remarks>
+    /// <i>(Revised 2026-11-01, at stage SJL-9.3c, whose relative-time copy writes a value with it, as Broiler.VM's engine does,
+    /// to look up CLDR's literal for <c>-0</c> and the like: a Number is now written by the shared Number::toString,
+    /// <c>NumberText.ToString</c>, which Broiler.VM's engine calls. It read <c>value.AsNumber().ToString("R",
+    /// CultureInfo.InvariantCulture)</c>, which writes <c>-0</c> and exponents otherwise; no earlier section's option names a
+    /// Number a list admits, so none of their answers moves.)</i>
+    /// </remarks>
     internal string ToStringValue(JsValue value) => value.Type switch
     {
         JsType.String => value.AsString(),
         JsType.Boolean => value.AsBoolean() ? "true" : "false",
-        JsType.Number => value.AsNumber().ToString("R", CultureInfo.InvariantCulture),
+        JsType.Number => Numbers.NumberText.ToString(value.AsNumber()),
         JsType.Undefined => "undefined",
         JsType.Null => "null",
         _ => value.AsObjectOrNull() is JsLocaleObject locale ? locale.Locale : throw new NotSupportedException("the harness gives no object to ToString"),
@@ -370,4 +377,34 @@ internal sealed partial class JsRealm
     internal static string VmResolvePluralRange(JsEngine engine, JsPluralRulesObject rules, JsDecimal x, JsDecimal y) => ResolvePluralRange(engine, rules, x, y);
 
     internal static List<string> VmPluralCategoriesOf(JsEngine engine, JsPluralRulesObject rules) => PluralCategoriesOf(engine, rules);
+
+    // ---- stage SJL-9.3c's entry points and stand-ins ----------------------------------------------------------------
+
+    /// <summary>
+    /// GetOptionsObject, as Broiler.VM's <c>JsRealm.Base64Options</c> (<c>JsRealm.Base64.cs</c>, not copied) answers it:
+    /// <c>undefined</c> an object of no prototype, an object itself, anything else a <c>TypeError</c>.
+    /// </summary>
+    private static JsObject Base64Options(JsEngine engine, JsValue options)
+    {
+        if (options.Type == JsType.Undefined)
+        {
+            return new JsObject(null);
+        }
+
+        if (options.IsObject)
+        {
+            return options.AsObject();
+        }
+
+        throw engine.Error("TypeError", "the options argument is not an object");
+    }
+
+    internal static List<(string Type, string Value)> VmCreatePartsFromList(JsEngine engine, JsListFormatObject format, List<string> list) => CreatePartsFromList(engine, format, list);
+
+    internal static List<(string Type, string Value, string? Unit)> VmPartitionRelativeTimePattern(JsEngine engine, JsRelativeTimeFormatObject format, double value, string unit) =>
+        PartitionRelativeTimePattern(engine, format, value, unit);
+
+    internal static string VmCanonicalCodeForDisplayNames(JsEngine engine, string type, string code) => CanonicalCodeForDisplayNames(engine, type, code);
+
+    internal static string? VmDisplayName(JsEngine engine, JsDisplayNamesObject names, string code) => DisplayName(engine, names, code);
 }
