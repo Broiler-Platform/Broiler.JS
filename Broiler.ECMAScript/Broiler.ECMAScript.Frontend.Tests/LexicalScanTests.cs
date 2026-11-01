@@ -55,6 +55,38 @@ public sealed class LexicalScanTests
         Assert.Empty(result.Diagnostics);
     }
 
+    /// <summary>
+    /// In a module, a string literal followed by a line terminator may end an import or export declaration, after which
+    /// automatic semicolon insertion lets the next item begin with a regular-expression literal: the scan stops at the
+    /// <c>/</c>, since reading it as division would refuse a module the specification accepts. In a script, and in a module
+    /// without the line terminator, the <c>/</c> after a string is division, and the refusal after it is reached.
+    /// </summary>
+    [Theory]
+    [InlineData("import \"m\"\n/\"/;")]
+    [InlineData("import \"m\"\n/`/.test(\"\");")]
+    [InlineData("export * from \"m\"\n/\"/;")]
+    [InlineData("import x from \"m\" /*\n*/ /\"/;")]
+    [InlineData("x = \"a\"\n/ '\\x'")]
+    public void A_slash_after_a_module_specifier_s_line_is_not_judged(string text)
+    {
+        var result = Parse(text, ParseGoal.Module);
+        Assert.Equal(ParseOutcome.NotImplemented, result.Outcome);
+        Assert.Empty(result.Diagnostics);
+    }
+
+    [Theory]
+    [InlineData("import \"m\" /\"/;", ParseGoal.Module, "JSE9104", 12)]
+    [InlineData("x = \"a\" / '\\x'", ParseGoal.Module, "JSE9105", 10)]
+    [InlineData("'a'\n/ '\\x'", ParseGoal.Script, "JSE9105", 6)]
+    [InlineData("import \"m\"\n/\"/;", ParseGoal.Script, "JSE9104", 12)]
+    public void A_slash_after_a_string_is_division_where_no_module_item_can_follow(string text, ParseGoal goal, string code, int offset)
+    {
+        var result = Parse(text, goal);
+        Assert.Equal(ParseOutcome.Refused, result.Outcome);
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal((code, offset), (diagnostic.Code, diagnostic.Span.Offset));
+    }
+
     [Theory]
     [InlineData("var a = 1;")]
     [InlineData("x = /a/g.test('b');")]

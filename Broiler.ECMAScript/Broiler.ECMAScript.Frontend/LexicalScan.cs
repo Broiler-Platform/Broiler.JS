@@ -33,8 +33,10 @@ namespace Broiler.ECMAScript.Syntax;
 /// holds in every text the syntactic grammar admits, since braces nest there; a <c>/</c> begins a regular-expression literal
 /// where no division can stand (at the start, after a punctuator after which only an expression or a statement begins,
 /// and after a template head or middle), and is division where no literal can stand (after a numeric, string, template or
-/// regular-expression literal), and anywhere else the scan stops: after a name, a keyword, <c>)</c>, <c>]</c>,
-/// <c>}</c>, <c>++</c> or <c>--</c>. Every other code unit begins the same input element under every goal. So where the
+/// regular-expression literal, but for one place in a module: a string literal followed by a line terminator may be an
+/// import or export declaration's <c>ModuleSpecifier</c>, after which automatic semicolon insertion lets the next item
+/// begin with a regular-expression literal), and anywhere else the scan stops: after a name, a keyword, <c>)</c>,
+/// <c>]</c>, <c>}</c>, <c>++</c> or <c>--</c>, and at that place in a module. Every other code unit begins the same input element under every goal. So where the
 /// scan meets a lexical refusal, either the parse reads the text as the scan did and meets the same refusal, or the text
 /// was refused by the syntactic grammar before it: the outcome is a refusal either way. Only the diagnostic may differ
 /// from the one the parser will report first (stage 4c onwards), which is why the result is recorded and not judged.
@@ -51,7 +53,7 @@ internal static class LexicalScan
 {
     /// <summary>Tokenizes <paramref name="request"/>'s text as far as the lexical grammar decides it alone.</summary>
     /// <returns>A refusal with the tokenizer's diagnostic, or <see cref="ParseOutcome.NotImplemented"/>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 goal symbols, JSD-0083 SJL-13.2b lexical answer; IP=Low; Security=High; Resources=2; Fingerprint=18F011
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 goal symbols, JSD-0083 SJL-13.2b lexical answer; IP=Low; Security=High; Resources=2; Fingerprint=E408D5
     // Broiler-Falsified-If: a source the specification accepts under the request is answered Refused, or a goal is named from the scan's reading where the parser could name another one that tokenizes the text
     // Broiler-Human:        PENDING
     internal static ParseResult Run(ParseRequest request)
@@ -90,7 +92,7 @@ internal static class LexicalScan
             {
                 if (first || OnlyAnExpressionFollows(previous))
                     lexicalGoal = LexicalGoal.RegExp;
-                else if (OnlyAnOperatorFollows(previous))
+                else if (OnlyAnOperatorFollows(previous, goal, tokenizer.NewLinePending))
                     lexicalGoal = LexicalGoal.Div;
                 else
                     return ParseResult.NotImplemented();
@@ -143,11 +145,22 @@ internal static class LexicalScan
         _ => true,
     };
 
-    /// <summary>Whether no regular-expression literal can follow <paramref name="kind"/>: a literal, after which only an operator can.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 InputElementDiv contexts; IP=Low; Security=High; Resources=2; Fingerprint=93D6C8
-    // Broiler-Falsified-If: a token after which a regular-expression literal can stand in a text the syntactic grammar admits is answered true
+    /// <summary>
+    /// Whether no regular-expression literal can follow <paramref name="kind"/> under <paramref name="goal"/>, with
+    /// <paramref name="newLine"/> saying whether a line terminator stands before the next token: a literal, after which
+    /// only an operator can. In a module, a string literal followed by a line terminator is not one: it may end an
+    /// <c>ImportDeclaration</c> or an <c>ExportDeclaration</c> as its <c>ModuleSpecifier</c> (ECMA-262 clauses 16.2.2 and
+    /// 16.2.3), where a <c>/</c> is no operator, so automatic semicolon insertion (clause 12.10) ends the declaration and
+    /// the next <c>ModuleItem</c> may begin with a regular-expression literal. Without the line terminator no semicolon is
+    /// inserted, and a <c>/</c> after a module specifier is refused by the syntactic grammar under either reading.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 InputElementDiv contexts, s12.10 ASI, s16.2 ModuleSpecifier; IP=Low; Security=High; Resources=2; Fingerprint=87CAFF
+    // Broiler-Falsified-If: a token after which a regular-expression literal can stand in a text the syntactic grammar admits under the goal is answered true
     // Broiler-Human:        PENDING
-    private static bool OnlyAnOperatorFollows(TokenKind kind) =>
-        kind is TokenKind.NumericLiteral or TokenKind.StringLiteral or TokenKind.NoSubstitutionTemplate or TokenKind.TemplateTail
-            or TokenKind.RegularExpressionLiteral;
+    private static bool OnlyAnOperatorFollows(TokenKind kind, ParseGoal goal, bool newLine) => kind switch
+    {
+        TokenKind.StringLiteral => goal != ParseGoal.Module || !newLine,
+        TokenKind.NumericLiteral or TokenKind.NoSubstitutionTemplate or TokenKind.TemplateTail or TokenKind.RegularExpressionLiteral => true,
+        _ => false,
+    };
 }

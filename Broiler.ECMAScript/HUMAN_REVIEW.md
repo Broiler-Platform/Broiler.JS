@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 1812 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 1813 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 138 |
-| Code units | 2676 |
-| Relevant | 1812 |
+| Code units | 2677 |
+| Relevant | 1813 |
 | Exempt | 864 |
-| Assessed | 1812 of 1812 (100%) |
-| Human reviewed | 0 of 1812 (0%) |
-| Unverified | 1812 |
+| Assessed | 1813 of 1813 (100%) |
+| Human reviewed | 0 of 1813 (0%) |
+| Unverified | 1813 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,7 +67,7 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1812 |
+| HUMAN_PENDING | 1813 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
@@ -180,7 +180,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Frontend/SyntaxParser.cs` | 12 | 6 | 6 | 6 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Frontend/Token.cs` | 82 | 8 | 74 | 8 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/TokenKind.cs` | 88 | 3 | 85 | 3 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Frontend/Tokenizer.cs` | 76 | 56 | 20 | 56 | Low | High | 14/14 |
+| `Broiler.ECMAScript.Frontend/Tokenizer.cs` | 77 | 57 | 20 | 57 | Low | High | 15/15 |
 | `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` | 39 | 35 | 4 | 35 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Dates.cs` | 13 | 13 | 0 | 13 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` | 43 | 43 | 0 | 43 | Low | High | 3/3 |
@@ -445,12 +445,12 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a candidate is kept whose instant does not have the offset it was made from, an offset in force a day before or after the wall time is not sampled, or a candidate outside the range completes
 - `Broiler.ECMAScript.Time.ZonedTime.Disambiguate(ITimeZoneRules, ReadOnlySpan<BigInteger>, IsoDateTime, Disambiguation, out BigInteger)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, Spec=JSD-0076, Temporal DisambiguatePossibleEpochNanoseconds via Broiler.VM JsTemporal.Disambiguate, `0AFBEC`, PENDING
   - Falsified if: the gap's two offsets are not read a day before and a day after the wall time, or the moved time's first instant is not answered under earlier and its last otherwise
-- `Broiler.ECMAScript.Syntax.LexicalScan.Run(ParseRequest)` in `Broiler.ECMAScript.Frontend/LexicalScan.cs` - Security=High, Spec=ECMA-262 s12 goal symbols, JSD-0083 SJL-13.2b lexical answer, `18F011`, PENDING
+- `Broiler.ECMAScript.Syntax.LexicalScan.Run(ParseRequest)` in `Broiler.ECMAScript.Frontend/LexicalScan.cs` - Security=High, Spec=ECMA-262 s12 goal symbols, JSD-0083 SJL-13.2b lexical answer, `E408D5`, PENDING
   - Falsified if: a source the specification accepts under the request is answered Refused, or a goal is named from the scan's reading where the parser could name another one that tokenizes the text
 - `Broiler.ECMAScript.Syntax.LexicalScan.OnlyAnExpressionFollows(TokenKind)` in `Broiler.ECMAScript.Frontend/LexicalScan.cs` - Security=High, Spec=ECMA-262 s12 InputElementRegExp contexts, `60BE3D`, PENDING
   - Falsified if: a token after which a division can stand in a text the syntactic grammar admits is answered true
-- `Broiler.ECMAScript.Syntax.LexicalScan.OnlyAnOperatorFollows(TokenKind)` in `Broiler.ECMAScript.Frontend/LexicalScan.cs` - Security=High, Spec=ECMA-262 s12 InputElementDiv contexts, `93D6C8`, PENDING
-  - Falsified if: a token after which a regular-expression literal can stand in a text the syntactic grammar admits is answered true
+- `Broiler.ECMAScript.Syntax.LexicalScan.OnlyAnOperatorFollows(TokenKind, ParseGoal, bool)` in `Broiler.ECMAScript.Frontend/LexicalScan.cs` - Security=High, Spec=ECMA-262 s12 InputElementDiv contexts, s12.10 ASI, s16.2 ModuleSpecifier, `87CAFF`, PENDING
+  - Falsified if: a token after which a regular-expression literal can stand in a text the syntactic grammar admits under the goal is answered true
 - `Broiler.ECMAScript.Syntax.ParseLimits.MaximumTreeDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, Spec=JSD-0083 D14 tree-depth bound, JSD-0022, `6DB2AB`, PENDING
   - Falsified if: the constant differs from Broiler.VM's SliceParseOptions.MaximumTreeDepth, or a tree deeper than it is built rather than refused once the parser exists
 - `Broiler.ECMAScript.Syntax.ParseLimits.MaximumSupportedNestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, Spec=JSD-0083 D14 D47 nesting bound, `2C4111`, PENDING
@@ -459,6 +459,8 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a nesting depth below 1 or above MaximumSupportedNestingDepth is admitted
 - `Broiler.ECMAScript.Syntax.SyntaxParser.Parse(ParseRequest)` in `Broiler.ECMAScript.Frontend/SyntaxParser.cs` - Security=High, Spec=ECMA-262 s12 lexical grammar, JSD-0083 SJL-13.2b parse entry D32, `8A4BA8`, PENDING
   - Falsified if: a request is answered Accepted before stage 4c gives the library a parser, a source the specification accepts is answered Refused, or the meter is charged after a code unit of the source is read or for other than the text's length
+- `Broiler.ECMAScript.Syntax.Tokenizer.NewLinePending` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, Spec=ECMA-262 s12.10 automatic semicolon insertion line terminator, `941A34`, PENDING
+  - Falsified if: it answers otherwise than the next token's NewLineBefore after PeekTokenStart
 - `Broiler.ECMAScript.Syntax.Tokenizer.Next(LexicalGoal)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, Spec=ECMA-262 s12 lexical grammar goal symbols, `994D5A`, PENDING
   - Falsified if: a token is read under another goal than the caller names, or a token is answered after a refusal
 - `Broiler.ECMAScript.Syntax.Tokenizer.SkipTrivia()` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, Spec=ECMA-262 s12.2-s12.5 trivia, B.1.1 HTML-like comments, `AA07AE`, PENDING
@@ -627,5 +629,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-826 of the 1812 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+827 of the 1813 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

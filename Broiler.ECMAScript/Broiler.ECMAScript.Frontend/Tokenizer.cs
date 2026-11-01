@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   56
-// Annotated:        56/56
+// Relevant units:   57
+// Annotated:        57/57
 // Exempt:           20
-// Human-reviewed:   0/56
+// Human-reviewed:   0/57
 // IP risk:          Low
 // Security risk:    High
-// Criteria:         14/14
+// Criteria:         15/15
 // Resource impact:  2/10 max
-// Unverified:       56
+// Unverified:       57
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -103,6 +103,15 @@ internal sealed class Tokenizer
 
     /// <summary>The offset the next token's trivia starts at.</summary>
     internal int Position => position;
+
+    /// <summary>
+    /// Whether a line terminator, or a comment holding one, stands between the last token read and the offset
+    /// <see cref="PeekTokenStart"/> stopped at: the next token's <see cref="Token.NewLineBefore"/>, known before it is read.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.10 automatic semicolon insertion line terminator; IP=Low; Security=High; Resources=1; Fingerprint=941A34
+    // Broiler-Falsified-If: it answers otherwise than the next token's NewLineBefore after PeekTokenStart
+    // Broiler-Human:        PENDING
+    internal bool NewLinePending => newLine;
 
     /// <summary>The tokenizer's state, for <see cref="Restore"/>.</summary>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goal lookahead; IP=Low; Security=Medium; Resources=1; Fingerprint=16808E
