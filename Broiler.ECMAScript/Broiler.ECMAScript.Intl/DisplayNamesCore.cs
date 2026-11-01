@@ -326,7 +326,7 @@ public sealed class DisplayNamesCore
     /// pattern. An unnamed part is its code under the code fallback, as ICU writes "xyz (Germany)", and makes the whole name
     /// nothing otherwise.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames; IP=Low; Security=High; Resources=2; Fingerprint=BA3AA8
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames; IP=Low; Security=High; Resources=2; Fingerprint=434C83
     // Broiler-Falsified-If: a language code's name is composed otherwise than its dialect name or its parts in CLDR's locale pattern
     // Broiler-Human:        PENDING
     private string? LanguageName(string code, Func<string, string, string?> named)
