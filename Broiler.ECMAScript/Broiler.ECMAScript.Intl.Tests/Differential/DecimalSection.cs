@@ -398,16 +398,16 @@ internal static class DecimalSection
 
     private static JsNumberFormatter VmNumberFormat(Arms arms, string locale, OptionsBag bag)
     {
-        var made = JsRealm.NewNumberFormat(arms.Engine, JsValue.Undefined, [JsValue.String(locale), VmBag(arms, bag)], JsValue.Undefined, called: false);
+        var made = JsRealm.NewNumberFormat(arms.Engine, JsValue.Undefined, [JsValue.String(locale), VmBag(arms.Engine, bag)], JsValue.Undefined, called: false);
         return ((JsNumberFormatObject)made.AsObjectOrNull()!).Formatter;
     }
 
     private static JsPluralRulesObject VmPluralRules(Arms arms, string locale, OptionsBag bag) =>
-        (JsPluralRulesObject)JsRealm.NewPluralRules(arms.Engine, JsValue.Undefined, [JsValue.String(locale), VmBag(arms, bag)]).AsObjectOrNull()!;
+        (JsPluralRulesObject)JsRealm.NewPluralRules(arms.Engine, JsValue.Undefined, [JsValue.String(locale), VmBag(arms.Engine, bag)]).AsObjectOrNull()!;
 
-    private static JsValue VmBag(Arms arms, OptionsBag bag)
+    internal static JsValue VmBag(JsEngine engine, OptionsBag bag)
     {
-        var o = new JsObject(arms.Engine.Realm.ObjectPrototype);
+        var o = new JsObject(engine.Realm.ObjectPrototype);
         foreach (var (key, value) in bag.Entries)
         {
             o.DefineOrdinary(key, value switch
@@ -688,7 +688,7 @@ internal static class DecimalSection
     }
 
     /// <summary>An options bag read as an engine reads one: GetOption, GetNumberOption and ToNumber, each at its step.</summary>
-    private sealed class BagReader(OptionsBag bag)
+    internal sealed class BagReader(OptionsBag bag)
     {
         private static readonly string[] Modes = ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"];
 

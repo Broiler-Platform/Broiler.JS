@@ -338,7 +338,7 @@ internal sealed class DecimalPopulation
         }
     }
 
-    private static DecimalInput? Input(object? value) => value switch
+    internal static DecimalInput? Input(object? value) => value switch
     {
         double d => DecimalInput.Of(d),
         string s => DecimalInput.Of(s),
@@ -347,7 +347,7 @@ internal sealed class DecimalPopulation
     };
 
     /// <summary>The elements of the array a program's <c>var name = [...]</c> writes.</summary>
-    private static List<object?> Array(string program, string name)
+    internal static List<object?> Array(string program, string name)
     {
         var at = program.IndexOf("var " + name + " = [", StringComparison.Ordinal);
         if (at < 0)
@@ -356,7 +356,7 @@ internal sealed class DecimalPopulation
         return reader.Value() as List<object?> ?? [];
     }
 
-    private static DecimalInput RandomValue(SeededRandom random)
+    internal static DecimalInput RandomValue(SeededRandom random)
     {
         switch (random.Next(10))
         {
@@ -475,7 +475,7 @@ internal sealed class DecimalPopulation
     /// <c>NaN</c> and the infinities, the prelude's <c>$f64(hi, lo)</c>), BigInts and their <c>**</c>, Strings in either quote,
     /// <c>undefined</c>, Booleans, arrays and object literals of those. Anything else ends the read with <see langword="null"/>.
     /// </summary>
-    private sealed class LiteralReader(string text, int at)
+    internal sealed class LiteralReader(string text, int at)
     {
         private int at = at;
 
