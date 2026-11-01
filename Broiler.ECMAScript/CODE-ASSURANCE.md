@@ -13,15 +13,15 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 134 |
+| Files scanned | 138 |
 | Files not covered | 0 |
-| Files carrying an annotation | 134 |
-| Code units | 2425 |
-| Relevant | 1740 |
-| Exempt by predicate | 685 |
-| Annotated | 1740 of 1740 (100%) |
-| Human reviewed | 0 of 1740 (0%) |
-| Unverified | 1740 |
+| Files carrying an annotation | 138 |
+| Code units | 2676 |
+| Relevant | 1812 |
+| Exempt by predicate | 864 |
+| Annotated | 1812 of 1812 (100%) |
+| Human reviewed | 0 of 1812 (0%) |
+| Unverified | 1812 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1740 |
+| HUMAN_PENDING | 1812 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 685 |
+| EXEMPT | 864 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 1738 |
+| Low | 1810 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,9 +51,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 1044 |
-| Medium | 507 |
-| High | 169 |
+| Low | 1068 |
+| Medium | 538 |
+| High | 186 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.2 / 10 |
-| Units scored | 1740 |
+| Units scored | 1812 |
 
 ## High-security review areas
 
@@ -170,10 +170,27 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Time.ZonedTime.GetStartOfDay(ITimeZoneRules, IsoDate, out BigInteger)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Time.ZonedTime.Possible(ITimeZoneRules, IsoDateTime, Span<BigInteger>, out int)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Time.ZonedTime.Disambiguate(ITimeZoneRules, ReadOnlySpan<BigInteger>, IsoDateTime, Disambiguation, out BigInteger)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.LexicalScan.Run(ParseRequest)` in `Broiler.ECMAScript.Frontend/LexicalScan.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.LexicalScan.OnlyAnExpressionFollows(TokenKind)` in `Broiler.ECMAScript.Frontend/LexicalScan.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.LexicalScan.OnlyAnOperatorFollows(TokenKind)` in `Broiler.ECMAScript.Frontend/LexicalScan.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.ParseLimits.MaximumTreeDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.ParseLimits.MaximumSupportedNestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.ParseLimits.NestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.SyntaxParser.Parse(ParseRequest)` in `Broiler.ECMAScript.Frontend/SyntaxParser.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.Next(LexicalGoal)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.SkipTrivia()` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.SkipMultiLineComment()` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.ReadToken(LexicalGoal)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.ReadIdentifierName(int, TokenKind)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.ReadUnicodeEscape(out int)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.ReadNumericLiteral(int)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.ScanDigits(int, bool)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.ReadStringLiteral(int)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.ReadTemplate(int, bool)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.TemplateHex(StringBuilder, int, out int)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.TemplateUnicode(StringBuilder, out int)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.ReadRegularExpression(int)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Tokenizer.CodePointAt(int, out int)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.RootCollation.Read(string)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.RootCollation.Elements(string)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Tailoring.Apply(RootCollation, CldrUcd, string, IReadOnlyDictionary<string, string>)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, human line PENDING
@@ -241,8 +258,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 169 |
-| Units required to carry one | 169 |
+| Units carrying a criterion | 186 |
+| Units required to carry one | 186 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -263,14 +280,14 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 162 |
-| ParameterAssigningConstructor | 18 |
+| TrivialPropertyOrAccessor | 179 |
+| ParameterAssigningConstructor | 19 |
 | TrivialExpressionBodiedMember | 33 |
 | CompilerSuppliedRecordOrEnumMember | 67 |
 | DelegatingOverrideOrOperator | 4 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 96 |
-| EnumMemberOfADeclaredVocabulary | 305 |
+| FieldDeclaringStorage | 110 |
+| EnumMemberOfADeclaredVocabulary | 452 |
 | DeclaredInSource | 0 |
 
 ## Per-unit exemptions
@@ -294,14 +311,14 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 5 covered assemblies -
-2425 of them, exempt and relevant alike - with the fingerprint of its declaration.
+2676 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
 trivial is no longer invisible: a semantic change to one moves a value in a generated file
 the check compares byte for byte. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` holds the manifest to the tree.
 
-Beside the units it lists **every covered file** - 134 of them - with a
+Beside the units it lists **every covered file** - 138 of them - with a
 fingerprint over the complete token stream of its compilation unit. A unit entry exists only
 for a declaration kind the scanner enumerates, and an enumeration is a whitelist: an
 `[assembly: ...]` attribute is a member of nothing and can be in no unit at all.

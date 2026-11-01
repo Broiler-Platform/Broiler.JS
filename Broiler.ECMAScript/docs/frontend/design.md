@@ -40,7 +40,11 @@ is still no project" no longer holds. Stage 4a created
 [`Broiler.ECMAScript.Frontend/`](../../Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj) and
 `Broiler.ECMAScript.Frontend.Tests/` with SL1's row, after the `syntax` vectors' corpus revision 30: the request, the
 diagnostics' types and a parse entry that answers "not implemented" for every source, under the conventions, the API
-baseline and assurance from its first commit; its `PublicAPI.txt` fixes the names section 9 records.)*
+baseline and assurance from its first commit; its `PublicAPI.txt` fixes the names section 9 records.)* *(Noted
+2026-11-01, at SJL-13.2b: "a parse entry that answers "not implemented" for every source" no longer holds. Stage 4b
+added the tokenizer, internal to the library, and the parse entry now refuses a source the lexical grammar refuses, with
+the tokenizer's diagnostic, and answers not implemented for every other until the parser of stage 4c; section 9.3's note
+says what the tokenizer gives.)*
 
 ## 1. The contract
 
@@ -341,7 +345,10 @@ types follow it.)*
   maximum, the least it may be; stage 4e's measurement confirms or raises it.
 - **Meter**, "its units and block size documented": one unit per UTF-16 code unit of the source text, the whole text in
   one block, charged before the parse reads it (`ParseRequest.Meter`); at stage 4a the parse reads nothing and charges
-  nothing.
+  nothing. *(Noted 2026-11-01, at SJL-13.2b: "at stage 4a the parse reads nothing and charges nothing" no longer
+  describes the parse. From stage 4b it charges the meter the text's length, in one block, before it reads the first
+  code unit, and the tokenizer charges nothing of its own: its work is linear in the text, a BigInt literal being checked
+  for its form and its value left to the engine.)*
 - **Switches**, "Top-level `await`, which applies to whichever goal the request sets it for" (section 1's switches row
   reads "for whichever goal the request sets it"): the request admits the switch for the Script and Module goals
   alone, the two goals decision D10 names an engine setting it for, and refuses it for eval code and the dynamic
@@ -364,6 +371,18 @@ types follow it.)*
 | Tokens | The token stream the parse produced, each token with its raw facts: Broiler.VM's step 1 compares it with its slice tokenizer's (a field map, not the library taking that tokenizer's conventions), and Broiler.JS's bridge builds its token chain from it at SJL-14 | D21 |
 | Side tables | From the declarations walk, ordered by source position: each scope's kind and its declarations; each block-level function declaration, with whether it is an `if` clause's; each function's parameter names; each program's and each function's strictness. Neither engine computes them again | D10 |
 | Diagnostics | Section 3: a shared code, a phase, a span, the source name, a message identifier with its arguments. Under first error, the first refusal in the library's order; a scope's declared-name conflicts are checked when the scope closes | D11, D15 |
+
+*(Noted 2026-11-01, at SJL-13.2b, on the table's "Tokens" row, "The token stream the parse produced, each token with its
+raw facts".)* The tokenizer exists from stage 4b, internal to the library, and the result carries no token stream yet:
+which input element a `/` or a `}` begins is the syntactic grammar's goal (ECMA-262 clause 12), which the tokenizer takes
+from its caller and never from the tokens it has read, so a whole stream exists only where the parser names each goal,
+from stage 4c. Each token carries its kind (an identifier name with the reserved or contextual word its cooked name
+spells, never decided a keyword), its offsets, line and column, its cooked value (an identifier's name, a string's SV, a
+template piece's TV) with a template piece's TRV, a numeric literal's Number value from `NumericLiterals.Evaluate`, a
+regular-expression literal's split between body and flags, and the facts a parser reads: a line terminator before it,
+an escape in a name, the legacy octal and non-octal decimal literals and escapes, a template's `NotEscapeSequence`, the
+BigInt and `m` suffixes, and an escape or line continuation in a string. A lexical refusal is a diagnostic of phase
+tokenizer with the catalogue's shared code (EX0001 to EX0007, EX0025, EE0001, EE0002), at the construct's start.
 
 ### 9.4 What the syntax half reports (decision D10, the union)
 
@@ -391,6 +410,10 @@ The stage table [`stages.tsv`](stages.tsv) records the assignment for every cata
 - sections 3, 4 and 5 gain notes; section 7 gains SJL-13's records; section 8's first, second and last items are
   revised;
 - section 9 is new.
+
+*(Added 2026-11-01, at SJL-13.2b.)* "Why there is no project yet" gains the note that the parse entry no longer answers
+not implemented for every source, section 9.2's meter note a note that the parse charges from stage 4b, and section 9.3
+a note on the token stream the result does not carry yet and what each token gives.
 
 *(Added 2026-11-01, at SJL-13.2a.)* "Why there is no project yet" gains the note that the project exists, and
 section 9.2 a note on the six places the library's types differ from its table, each quoting its words, and section
