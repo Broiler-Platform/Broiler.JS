@@ -35,7 +35,12 @@ JSD-0080 is named "JSD-0080's decision Dn".)*
 creates it. The early-error catalogue of SJL-12.3 sits beside this document (decision D31). *(Noted 2026-10-26, at
 SJL-13.1: there is still no project. SJL-13.2's stage 4a creates `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` and
 `Broiler.ECMAScript.Frontend.Tests/` with SL1's row (decision D6), after the `syntax` vectors' corpus revision, and
-the stage table [`stages.tsv`](stages.tsv) now sits beside the catalogue.)*
+the stage table [`stages.tsv`](stages.tsv) now sits beside the catalogue.)* *(Noted 2026-11-01, at SJL-13.2a: "there
+is still no project" no longer holds. Stage 4a created
+[`Broiler.ECMAScript.Frontend/`](../../Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj) and
+`Broiler.ECMAScript.Frontend.Tests/` with SL1's row, after the `syntax` vectors' corpus revision 30: the request, the
+diagnostics' types and a parse entry that answers "not implemented" for every source, under the conventions, the API
+baseline and assurance from its first commit; its `PublicAPI.txt` fixes the names section 9 records.)*
 
 ## 1. The contract
 
@@ -318,6 +323,26 @@ correspondence's findings changed it.
 | Regular-expression provider | A validator interface, with no package edge; each engine supplies its own (Broiler.VM's over the validator its binder calls today; Broiler.JS's at SJL-14). Its answer is valid, or invalid with the failing condition's message identifier where the validator can tell it and EE0019's `regexp.literal.invalid` where it cannot, with the validator's message as its argument. The library reports it at the literal's span | D7 |
 | Meter | An optional `WorkCharge`: nullable, charged before the work, its units and block size documented. Both engines pass none at SJL-13, and the library polls for no cancellation, its work being linear in the source | D32 |
 
+*(Noted 2026-11-01, at SJL-13.2a, where the library's types differ from this table's words; JSD-0083 wins, and the
+types follow it.)*
+- **Inherited context**, "Strictness; the function, method, derived-constructor and field-initialiser flags": the
+  caller's strictness travels as the request's forced-strictness switch, as JSD-0083's decision D16 maps Broiler.VM's
+  `Strict` evaluation flag ("The six eval flags map to forced strictness and the function context"), so
+  `InheritedContext` carries the four flags and the optional private names, and no strictness of its own. Broiler.VM's
+  sixth flag, `InClassBody`, has no field: its meaning, "an enclosing class declares private names the scope map does
+  not describe", is the private-name set's absence, which Broiler.VM passes at SJL-13 whatever the flag (decision D16).
+- **Goal**, "the dynamic function's parameters and its body": the request also carries the dynamic function's kind
+  (`DynamicFunctionKind`: normal, generator, async, async generator), which CreateDynamicFunction's `kind` makes the
+  `[Yield]` and `[Await]` parameters of both goals, and which every other goal refuses but its default.
+- **Limits**, "the tree depth, a constant of the library derived at stage 4e": the constant is set at stage 4a to
+  Broiler.VM's bound, `ParseLimits.MaximumTreeDepth`, since decision D14 holds the two equal and forbids a lower one;
+  stage 4e derives the stack it requires and states it beside it. The library's supported maximum nesting,
+  `ParseLimits.MaximumSupportedNestingDepth`, which Broiler.JS passes (decision D47), is set to Broiler.VM's supported
+  maximum, the least it may be; stage 4e's measurement confirms or raises it.
+- **Meter**, "its units and block size documented": one unit per UTF-16 code unit of the source text, the whole text in
+  one block, charged before the parse reads it (`ParseRequest.Meter`); at stage 4a the parse reads nothing and charges
+  nothing.
+
 ### 9.3 The result
 
 | Part | What it carries | Decisions |
@@ -353,3 +378,6 @@ The stage table [`stages.tsv`](stages.tsv) records the assignment for every cata
 - sections 3, 4 and 5 gain notes; section 7 gains SJL-13's records; section 8's first, second and last items are
   revised;
 - section 9 is new.
+
+*(Added 2026-11-01, at SJL-13.2a.)* "Why there is no project yet" gains the note that the project exists, and
+section 9.2 a note on the four places the library's types say more than its table, each quoting its words.
