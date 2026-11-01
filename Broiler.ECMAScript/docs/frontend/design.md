@@ -52,7 +52,7 @@ From the area design's section 4, with decision D41's specifics.
 |---|---|
 | Source | Text, source name, base offset, base line and column (for sub-parses). A leading byte-order mark is the host's to drop *(added 2026-10-26, at SJL-13.1, decision D15)* |
 | Goal | `Script` or `Module`. `Eval`, `FormalParameters` and `FunctionBody` are reserved in both engines (decision D41); the last two let `CreateDynamicFunction` parse its pieces as the specification requires, which neither engine does today. *(Noted 2026-10-26, at SJL-13.1: the library carries all five goals from SJL-13.2's stage 4a. No planned Broiler.VM change routes its dynamic function through the last two yet, which the correspondence hands on as H18, and Broiler.JS's bridge passes them at SJL-14.)* |
-| Switches | Forced strictness; top-level `await` allowed, **for whichever goal the request sets it**: Broiler.VM sets it for the Module goal only, Broiler.JS for a module and for a script whose top level may await (its `ScriptWithTopLevelAwait` preset, `JSContext.EvalWithTopLevelAwaitAsync` and the shell's retry); with it off, the library reads a top level as a non-async function's body of the same goal (decision D10); Annex B on or off, on for scripts; HTML-like comments on or off (script goal only) *(revised 2026-10-26, at SJL-13.1, decisions D10 and D17; read "Forced strictness; top-level `await` allowed; Annex B on or off; HTML-like comments on or off (script goal only)")* |
+| Switches | Forced strictness; top-level `await` allowed, **for whichever goal the request sets it**: Broiler.VM sets it for the Module goal only, Broiler.JS for a module and for a script whose top level may await (its `ScriptWithTopLevelAwait` preset, `JSContext.EvalWithTopLevelAwaitAsync` and the shell's retry); with it off, the library reads a top level as a non-async function's body of the same goal (decision D10); Annex B on or off, on for scripts; HTML-like comments on or off (script goal only) *(revised 2026-10-26, at SJL-13.1, decisions D10 and D17; read "Forced strictness; top-level `await` allowed; Annex B on or off; HTML-like comments on or off (script goal only)")* *(Noted 2026-11-01, at SJL-13.2a: "for whichever goal the request sets it" is, in the library's types, for whichever of the Script and Module goals the request sets it, and "on for scripts" is on by default for every goal; section 9.2's note says why.)* |
 | Inherited evaluation context | Broiler.VM's evaluation flags (`JsFormat.EvalRequestFlags`): `Strict`, `InFunction`, `InMethod`, `InDerivedConstructor`, `InClassFieldInitializer` and `InClassBody`; an optional set of the visible private names, whose absence leaves the check to the engine, and which Broiler.VM does not pass at SJL-13, since its executor checks an eval program's private names at run time; **no caller's lexical names at SJL-13 or SJL-14**: the conflict they serve is EvalDeclarationInstantiation's, a run-time `SyntaxError` each engine raises today, until SJL-15's model *(revised 2026-10-26, at SJL-13.1, decision D16; read "Broiler.VM's evaluation flags (`JsFormat.EvalRequestFlags`): `Strict`, `InFunction`, `InMethod`, `InDerivedConstructor`, `InClassFieldInitializer` and `InClassBody`; the visible private names; the caller's lexical names, which Broiler.JS needs for direct `eval`")* |
 | Proposal flags | Off by default, **one flag per form**, each its own catalogue row: decorators; `accessor`; the import phases' declaration forms `import source x from` and `import defer * as ns from` and their call forms `import.source(…)` and `import.defer(…)`. An engine admits what its own manifest admits: Broiler.VM none (a decorator is refused where the parse reaches it); Broiler.JS what it parses today, decorators, `accessor` and the two call forms *(revised 2026-10-26, at SJL-13.1, decision D17, which refines JSD-0080's single "import phases" parameter; read "Decorators, `accessor`, import phases. Off by default; an engine admits what its own manifest admits")* |
 | Lexer extensions | A narrow parameter for non-standard literal suffixes. Broiler.JS's `m` is the only one, and decision SJL-D-17 keeps its `Decimal` meaning in Broiler.JS |
@@ -342,6 +342,19 @@ types follow it.)*
 - **Meter**, "its units and block size documented": one unit per UTF-16 code unit of the source text, the whole text in
   one block, charged before the parse reads it (`ParseRequest.Meter`); at stage 4a the parse reads nothing and charges
   nothing.
+- **Switches**, "Top-level `await`, which applies to whichever goal the request sets it for" (section 1's switches row
+  reads "for whichever goal the request sets it"): the request admits the switch for the Script and Module goals
+  alone, the two goals decision D10 names an engine setting it for, and refuses it for eval code and the dynamic
+  function's parameters and body when the request is made (`ParseRequest.Switches`). ECMA-262 parses eval code as a
+  Script without the `[Await]` parameter, and a dynamic function's two goals take theirs from its kind. Neither engine
+  sets it for those goals: Broiler.VM sets it for the Module goal only, and Broiler.JS's
+  `JSContext.EvalWithTopLevelAwaitAsync` sets it for its program, a Script, and compiles the eval code and the dynamic
+  functions that program reaches without it.
+- **Switches**, "Annex B, on for scripts" (section 1's switches row reads "Annex B on or off, on for scripts"): the
+  switch is on for scripts, as decision D17 says, and `ParseSwitches.For` sets it on by default for every other goal
+  too, the Module goal included, which is the library's own choice beyond D17's words. ECMA-262 applies Annex B's
+  regular-expression grammar (B.1.2) in every goal, and the strict-only exclusions (the sloppy-code relaxations, which
+  a module's code, being strict, does not take) follow from strictness, whatever the switch.
 
 ### 9.3 The result
 
@@ -380,4 +393,5 @@ The stage table [`stages.tsv`](stages.tsv) records the assignment for every cata
 - section 9 is new.
 
 *(Added 2026-11-01, at SJL-13.2a.)* "Why there is no project yet" gains the note that the project exists, and
-section 9.2 a note on the four places the library's types say more than its table, each quoting its words.
+section 9.2 a note on the six places the library's types differ from its table, each quoting its words, and section
+1's switches row a note on the two of them that are in that row too.

@@ -59,7 +59,9 @@ public readonly record struct ParseSwitches
     /// Whether the grammar of ECMA-262 Annex B (Additional ECMAScript Features for Web Browsers) and its relaxations of
     /// sloppy code apply: legacy octal literals and escapes, the regular-expression extensions, labelled function
     /// declarations, function declarations in <c>if</c> clauses and the block-level function semantics' early errors.
-    /// On by default for every goal (decision D17, "Annex B on for scripts"); the strict-only exclusions follow from
+    /// On for scripts, as decision D17 says ("Annex B on for scripts"), and on by default for every other goal too, the
+    /// <see cref="ParseGoal.Module"/> goal included, which is the library's own choice beyond D17's words: ECMA-262
+    /// applies Annex B's regular-expression grammar (B.1.2) in every goal, and the strict-only exclusions follow from
     /// strictness, whatever the switch.
     /// </summary>
     public bool AnnexB { get; init; }
