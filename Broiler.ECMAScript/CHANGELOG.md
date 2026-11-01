@@ -78,6 +78,36 @@ Not yet packed under a version of its own: the stream's next version is set when
     zones, text direction and week info. A locale whose language the Collator lacks answers DefaultLocale's
     collations, and only `und` answers `emoji` and `eor` (row L18, a correction of Broiler.VM);
   - **`SupportedValues`**: `Intl.supportedValuesOf`'s lists, with `AvailableCalendars` and `SanctionedUnits`.
+- `Broiler.ECMAScript.Intl`, sub-area (b) (stage SJL-9.3b; Broiler.VM's JSD-0082, rows M and P, decisions D18, D19 and
+  D20): the Intl mathematical value, the digit options, FormatNumericToString, and plural rules and ranges, ported from
+  Broiler.VM's JavaScript profile at `4cf9ca44` with `NumberFormatInfo.InvariantInfo` and ASCII casing where it called
+  the invariant culture (decision D19), a status where it threw, and the caller's `WorkCharge` where Broiler.VM charges,
+  in its units (decision D18):
+  - **`IntlDecimal`**, with `IntlDecimalKind`: ToIntlMathematicalValue's value - a Number by its `Number::toString`
+    digits (row M1a), a BigInt by its exact digits (row M3), a String by StringIntlMV held to the Number range as
+    RoundMVResult holds it (rows M2a and M2b), negative zero kept (row M8). A String is charged `length / 8 + 1` and a
+    BigInt through its decimal digits; the BigInt policy a prefixed String is read under is the caller's;
+  - **the digit options**: `DigitOptionRules` - SetNumberFormatDigitOptions' decisions after an engine's reads
+    (`Plan`, `DefaultNumberOption`'s range, `IsAdmittedRoundingIncrement`, `SetNumberFormatDigitOptions`) and the
+    fraction-digit defaults `Intl.NumberFormat` hands it (`NumberFormatDefaults`, row M5) - with `DigitOptionValues`,
+    `DigitOptionsPlan`, `FractionDigitDefaults`, `DigitOptions`, and the option enumerations `NumberStyle`,
+    `NumberNotation`, `CompactDisplay`, `NumberRoundingType`, `RoundingPriority` and `TrailingZeroDisplay`;
+  - **`NumericFormat.FormatNumericToString`**, with `FormattedNumeric`: ToRawFixed and ToRawPrecision over the decimal
+    digits, both rounding priorities, the admitted increments, `stripIfInteger` and the minimum integer digits (rows M6
+    and M7), the rounding modes made unsigned by `ExactRounding`, charged `digits / 16 + 1`;
+  - **`PluralEngine`**: a language's CLDR rules of one type, parsed once, with the operands `c` and `e` (decision D20),
+    PluralRuleSelect over a decimal String (charged one unit per code unit), PluralRuleSelectRange over the language's
+    plural ranges (row P5b, an adoption) and the categories in `resolvedOptions`' order;
+  - **`PluralRulesRecord`**, with `ResolvedPlural`: an `Intl.PluralRules`'s slots and ResolvePlural and
+    ResolvePluralRange over them (rows P1, P2, P5a, P5c, P6 and P8). With compact notation it passes the exponent
+    ComputeExponent gives over the language's compact patterns, where Broiler.VM passed 0 (row P4): none of Broiler.VM's
+    `de` and `en` rules reads `c` or `e`, so none of its answers moves;
+  - **`IntlStatus`** gains `NumberOptionOutOfRange`, `RoundingIncrementNotAdmitted`, `FractionDigitsOutOfOrder`,
+    `RoundingIncrementNeedsFractionDigits` (SetNumberFormatDigitOptions' `TypeError`),
+    `RoundingIncrementNeedsEqualFractionDigits` and `RangeIsNotANumber`.
+- `Broiler.ECMAScript.Conformance` (test-only, not packed): `IVectorRecordLibrary`, a library the library-level runner
+  hands each vector whole, script included, which `LibraryRun.Run` calls in place of the operation and the decoded
+  inputs (stage SJL-9.3b): the Intl area's sub-area (b) vectors give their options and arguments in the script alone.
 
 ### Changed
 

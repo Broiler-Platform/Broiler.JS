@@ -108,9 +108,13 @@ internal sealed partial class AlgorithmsLibrary
         return text.ToString();
     }
 
-    /// <summary>Whether a vector is the Intl area's that this runner answers: sub-area (a)'s, but the engine-level ones.</summary>
+    /// <summary>
+    /// Whether a vector is the Intl area's that this runner answers: sub-area (a)'s, but the engine-level ones, and sub-area (b)'s
+    /// operations of <c>AlgorithmsLibrary.IntlValues.cs</c> (from stage SJL-9.3b).
+    /// </summary>
     internal static bool IsLibraryIntl(VectorRecord vector) =>
-        vector.Id.StartsWith(IntlLocalesPrefix, StringComparison.Ordinal) && !IsEngineLevelIntl(vector["op"] ?? string.Empty, vector["in"] ?? string.Empty);
+        (vector.Id.StartsWith(IntlLocalesPrefix, StringComparison.Ordinal) && !IsEngineLevelIntl(vector["op"] ?? string.Empty, vector["in"] ?? string.Empty))
+        || IsLibraryIntlValues(vector);
 
     /// <summary>
     /// Whether a difference is the answer Broiler.VM's plan commits it to, the engine whose parameters this runner takes: an

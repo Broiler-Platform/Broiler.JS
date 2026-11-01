@@ -7,7 +7,8 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential.Vm;
 
 // THE STAND-INS FOR BROILER.VM'S ENGINE that the pinned copies of its realm code name (Differential/Vm/JsRealm.*.cs): the
 // smallest object model in which JsRealm's Intl.Locale part, its locale-list operations and Intl.supportedValuesOf run
-// unchanged. None of it is a copy and none of it decides an answer of the area: it carries the harness's Strings,
+// unchanged, and from stage SJL-9.3b the Intl.NumberFormat and Intl.PluralRules constructors' reads with their digit
+// options, FormatNumericToString's charge and ToNumber of an option. None of it is a copy and none of it decides an answer of the area: it carries the harness's Strings,
 // Booleans and option bags to the copied code and its answers back, as Broiler.VM's engine carries a script's. A value
 // the population never gives (a Symbol, a getter on an options bag, a Number tag) is refused, so that the stand-ins
 // never answer for the engine. This file lives outside Vm/, which VmCopiesTests holds to the copies alone.
@@ -52,7 +53,11 @@ internal readonly struct JsValue
 
     internal static JsValue Number(double value) => new(JsType.Number, value);
 
+    internal static JsValue Symbol(JsSymbol value) => new(JsType.Object, value);
+
     internal JsObject? AsObjectOrNull() => payload as JsObject;
+
+    internal JsObject AsObject() => (JsObject)payload!;
 
     internal string AsString() => (string)payload!;
 
@@ -218,6 +223,24 @@ internal sealed class JsEngine
 
     internal void Charge(long units) => Charged += units;
 
+    internal void Charge(ulong units) => Charged += (long)units;
+
+    /// <summary>ECMA-262 ToNumber of what an options bag of the harness holds: a Number, a String, a Boolean or undefined.</summary>
+    internal double ToNumber(JsValue value) => value.Type switch
+    {
+        JsType.Number => value.AsNumber(),
+        JsType.String => Numbers.NumberParsing.StringToNumber(value.AsString(), null),
+        JsType.Boolean => value.AsBoolean() ? 1 : 0,
+        JsType.Undefined => double.NaN,
+        JsType.Null => 0,
+        _ => throw new NotSupportedException("the harness gives no object to ToNumber"),
+    };
+
+    internal JsValue ThrowRangeError(string message) => throw Error("RangeError", message);
+
+    /// <summary>The legacy constructor path's test, which the harness never takes: it constructs, never calls.</summary>
+    internal bool OrdinaryHasInstance(JsValue constructor, JsValue value) => throw new NotSupportedException("the harness takes no legacy constructor path");
+
     internal VmError Error(string kind, string message) => new(kind, message);
 
     /// <summary>ToString of the values the harness gives: Strings, Booleans and Numbers.</summary>
@@ -257,6 +280,26 @@ internal sealed class JsEngine
 
     /// <summary>HasProperty.</summary>
     internal static bool HasProperty(JsObject o, string key) => o.Find(key) is not null;
+}
+
+/// <summary>A property descriptor's fields, which only the legacy constructor path the harness never takes builds.</summary>
+internal sealed class ObjectDescriptorFields
+{
+    internal bool HasValue { get; init; }
+
+    internal JsValue Value { get; init; }
+
+    internal bool HasWritable { get; init; }
+
+    internal bool Writable { get; init; }
+
+    internal bool HasEnumerable { get; init; }
+
+    internal bool Enumerable { get; init; }
+
+    internal bool HasConfigurable { get; init; }
+
+    internal bool Configurable { get; init; }
 }
 
 /// <summary>The parts of Broiler.VM's realm the copied <c>JsRealm</c> files call and do not declare, and the harness's entry points to them.</summary>
@@ -315,4 +358,16 @@ internal sealed partial class JsRealm
     internal static string VmNullOption => NullOption;
 
     internal static JsValue VmSupportedValuesOf(JsEngine engine, JsValue key) => SupportedValuesOf(engine, key);
+
+    /// <summary>The legacy constructor path's descriptor write, which the harness never reaches.</summary>
+    private static void ObjectApplyDescriptorAt(JsEngine engine, JsObject target, JsValue key, ObjectDescriptorFields fields) =>
+        throw new NotSupportedException("the harness takes no legacy constructor path");
+
+    // ---- stage SJL-9.3b's entry points ------------------------------------------------------------------------------
+
+    internal static (string Category, string Formatted) VmResolvePlural(JsEngine engine, JsPluralRulesObject rules, JsDecimal n) => ResolvePlural(engine, rules, n);
+
+    internal static string VmResolvePluralRange(JsEngine engine, JsPluralRulesObject rules, JsDecimal x, JsDecimal y) => ResolvePluralRange(engine, rules, x, y);
+
+    internal static List<string> VmPluralCategoriesOf(JsEngine engine, JsPluralRulesObject rules) => PluralCategoriesOf(engine, rules);
 }

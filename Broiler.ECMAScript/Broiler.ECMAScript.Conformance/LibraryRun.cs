@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   9
-// Annotated:        9/9
+// Relevant units:   11
+// Annotated:        11/11
 // Exempt:           2
-// Human-reviewed:   0/9
+// Human-reviewed:   0/11
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  2/10 max
-// Unverified:       9
+// Unverified:       11
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -41,6 +41,25 @@ public interface IVectorLibrary
 }
 
 /// <summary>
+/// A library that is handed each vector whole, its <c>script</c> among its fields, where its
+/// operation's arguments are in the script and not in <c>in</c>: the Intl area's sub-area (b), whose
+/// vectors give the options bag and the arguments in the script alone. <see cref="LibraryRun.Run"/>
+/// calls <see cref="Call(VectorRecord)"/> on such a library instead of <see cref="IVectorLibrary.Call"/>.
+/// <i>(Added 2026-11-01, at stage SJL-9.3b of milestone SJL-9.)</i>
+/// </summary>
+// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=61D17E
+// Broiler-Human:        PENDING
+public interface IVectorRecordLibrary : IVectorLibrary
+{
+    /// <summary>Calls the vector's operation, reading what it needs of the vector, its <c>script</c> included.</summary>
+    /// <param name="vector">The vector, already validated.</param>
+    /// <returns>The rendered outcome, or <see cref="EmptyLibrary.NotImplemented"/> for an operation the library does not have.</returns>
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=71E95D
+    // Broiler-Human:        PENDING
+    string Call(VectorRecord vector);
+}
+
+/// <summary>
 /// The library the runner calls until milestone SJL-3 gives it one: it has no operation at all.
 /// </summary>
 // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=76A1DC
@@ -67,7 +86,10 @@ public sealed class EmptyLibrary : IVectorLibrary
 /// per-engine fields agree on (<see cref="Expected"/>). A library is not an engine, so one engine's
 /// expectation alone does not apply to it. <i>(Revised 2026-10-13, at milestone SJL-4.3. The summary
 /// ended: "compares the outcome with the vector's <c>out</c>. A library is not an engine, so a
-/// vector's per-engine fields do not apply to it.")</i>
+/// vector's per-engine fields do not apply to it.")</i> A library that reads the vector whole, an
+/// <see cref="IVectorRecordLibrary"/>, is handed the vector instead of its decoded inputs. <i>(Added
+/// 2026-11-01, at stage SJL-9.3b, when the Intl area's sub-area (b) gave vectors whose options are in
+/// the script alone.)</i>
 /// </summary>
 // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=959A3D
 // Broiler-Human:        PENDING
@@ -77,7 +99,7 @@ public static class LibraryRun
     /// <param name="vectors">The vectors, already validated.</param>
     /// <param name="library">The library.</param>
     /// <returns>One result per vector, in order.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=6B2B33
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=2C6D13
     // Broiler-Human:        PENDING
     public static IReadOnlyList<VectorResult> Run(IEnumerable<VectorRecord> vectors, IVectorLibrary library)
     {
@@ -87,7 +109,9 @@ public static class LibraryRun
         foreach (var vector in vectors)
         {
             var expected = Expected(vector);
-            var rendered = library.Call(vector["op"] ?? string.Empty, Inputs(vector));
+            var rendered = library is IVectorRecordLibrary whole
+                ? whole.Call(vector)
+                : library.Call(vector["op"] ?? string.Empty, Inputs(vector));
             var verdict = rendered == EmptyLibrary.NotImplemented
                 ? Verdict.NotImplemented
                 : Outcome.TryParseAlternatives(expected, out var alternatives, out _, out _) && Outcome.AnyIs(alternatives, rendered)
