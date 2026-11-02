@@ -41,6 +41,13 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// the library reads from the tailorings the data carries; over Broiler.JS's tables, <c>es</c> and <c>sv</c> name <c>trad</c> too,
 /// row O16 again.
 /// </para>
+/// <para>
+/// <b>By cause, not by condition</b> (2026-11-02, at the review of SJL-17.3). A C1 difference under a tailoring that states
+/// <c>[reorder]</c> is row O16's only when the library, compared again over the same tables with the settings table's
+/// <c>reorder</c> lines removed, gives Broiler.VM's answer, order and charge alike: the reordering is then the whole difference.
+/// A C2 difference is row O16's only when the library's values are Broiler.VM's with values added, each a type whose tailoring
+/// (<c>language-type</c>) the embedding's tables carry and Broiler.VM's do not. Any other difference stays unclassified.
+/// </para>
 /// </remarks>
 internal static class CollationSection
 {
@@ -50,6 +57,10 @@ internal static class CollationSection
     private const string ReorderMark = " [th-standard reorders Thai]";
 
     private const string ListMark = " [Broiler.JS's list]";
+
+    /// <summary>The names of the tailorings Broiler.VM's own tables carry, which its <c>CollatorKeyData</c> was written for.</summary>
+    private static readonly Lazy<HashSet<string>> VmTailorings = new(static () =>
+        new HashSet<string>(new UcaCollationData(Embedding.Both().First().Library).TailoringNames, StringComparer.Ordinal));
 
     private static readonly (int Strength, bool CaseLevel)[] Sensitivities = [(1, false), (2, false), (1, true), (3, false)];
 
@@ -128,7 +139,17 @@ internal static class CollationSection
             : status.ToString();
 
         if (!string.Equals(vmAnswer, libraryAnswer, StringComparison.Ordinal) && tailoring is not null && arms.Library.Decoded.TailoringNamed(tailoring)?.Reorder is not null)
-            input += ReorderMark;
+        {
+            // BY CAUSE: the same comparison over the same tables with the reordering removed must give Broiler.VM's answer.
+            ulong unreordered = 0;
+            var withoutReorder = new UcaCollator(arms.LibraryWithoutReorder, options, JsUnicode.Normalization);
+            var again = withoutReorder.Compare(x, y, JsRealm.StringLengthCeiling, units => unreordered += units, out var againOrder);
+            var againAnswer = again == IntlStatus.Completed
+                ? againOrder.ToString(CultureInfo.InvariantCulture) + ", charged " + unreordered.ToString(CultureInfo.InvariantCulture)
+                : again.ToString();
+            if (string.Equals(vmAnswer, againAnswer, StringComparison.Ordinal))
+                input += ReorderMark;
+        }
 
         section.Compare(input, vmAnswer, libraryAnswer);
     }
@@ -149,9 +170,11 @@ internal static class CollationSection
                 foreach (var key in new[] { "co", "kn", "kf", "nu" })
                 {
                     var input = "CollatorKeyData(" + language + ", " + key + ", " + usage + ")";
-                    var vm = Render(JsRealm.CollatorKeyDataForTheHarness(language, key, usage));
-                    var library = Render(arms.Library.KeyValues(language, key, usage));
-                    if (!string.Equals(vm, library, StringComparison.Ordinal) && arms.Embedding.Name == "broiler-js" && key == "co")
+                    var vmValues = JsRealm.CollatorKeyDataForTheHarness(language, key, usage);
+                    var libraryValues = arms.Library.KeyValues(language, key, usage);
+                    var vm = Render(vmValues);
+                    var library = Render(libraryValues);
+                    if (!string.Equals(vm, library, StringComparison.Ordinal) && key == "co" && OnlyAddedTailorings(arms, language, vmValues, libraryValues))
                         input += ListMark;
                     section.Compare(input, vm, library);
                 }
@@ -159,6 +182,29 @@ internal static class CollationSection
         }
 
         return section;
+    }
+
+    /// <summary>
+    /// Whether the library's values are Broiler.VM's, in order, with values added, each the type of a tailoring
+    /// (<c>language-type</c>) the embedding's tables carry and Broiler.VM's tables do not.
+    /// </summary>
+    private static bool OnlyAddedTailorings(Arms arms, string language, IReadOnlyList<string?> vm, IReadOnlyList<string?> library)
+    {
+        var kept = new List<string?>();
+        foreach (var value in library)
+        {
+            if (value is not null && !vm.Contains(value))
+            {
+                var name = language + "-" + value;
+                if (!arms.Library.HasTailoring(name) || VmTailorings.Value.Contains(name))
+                    return false;
+                continue;
+            }
+
+            kept.Add(value);
+        }
+
+        return kept.SequenceEqual(vm);
     }
 
     private static string Render(IReadOnlyList<string?> values) => "[" + string.Join(", ", values.Select(static v => v ?? "null")) + "]";
@@ -286,6 +332,7 @@ internal static class CollationSection
             Embedding = embedding;
             Vm = new JsCollationData(embedding.Text["CollationRoot"], embedding.Text.TryGetValue("CollationTailorings", out var tailored) ? tailored : []);
             Library = new UcaCollationData(embedding.Library);
+            LibraryWithoutReorder = new UcaCollationData(new WithoutReorder(embedding.Library));
             Engine = new JsEngine(new VmIntl(new JsIntlTables(embedding.Vm), HomeTimeZones.Current));
         }
 
@@ -295,6 +342,22 @@ internal static class CollationSection
 
         internal UcaCollationData Library { get; }
 
+        /// <summary>The library's data over the same tables with the settings table's <c>reorder</c> lines removed.</summary>
+        internal UcaCollationData LibraryWithoutReorder { get; }
+
         internal JsEngine Engine { get; }
+    }
+
+    /// <summary>A data set whose <c>CollationSettings</c> table has its <c>reorder</c> lines removed, the rest as given.</summary>
+    private sealed class WithoutReorder(IIntlDataSet data) : IIntlDataSet
+    {
+        private readonly byte[] settings = Encoding.ASCII.GetBytes(string.Concat(
+            Encoding.ASCII.GetString(data.Table(IntlTable.CollationSettings)).Split('\n')
+                .Where(static line => line.Length != 0 && !line.Contains("|reorder|", StringComparison.Ordinal))
+                .Select(static line => line + "\n")));
+
+        public string CldrVersion => data.CldrVersion;
+
+        public ReadOnlySpan<byte> Table(IntlTable table) => table == IntlTable.CollationSettings ? settings : data.Table(table);
     }
 }

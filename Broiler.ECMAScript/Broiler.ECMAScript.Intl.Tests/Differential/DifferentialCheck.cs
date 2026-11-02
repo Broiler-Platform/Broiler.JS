@@ -298,6 +298,13 @@ internal sealed class Embedding
         return new Embedding(name, tables, overrides);
     }
 
+    /// <summary>Broiler.JS's tables, with some of the library's replaced: a negative control's input over Broiler.JS's list.</summary>
+    internal static Embedding WithBroilerJsLibraryTables(string name, IReadOnlyDictionary<string, byte[]> overrides)
+    {
+        var tables = IntlDataHome.GenerateBroilerJs(IntlDataHome.Current);
+        return new Embedding(name, tables, overrides);
+    }
+
     private sealed class VmData(string cldrVersion, Dictionary<string, byte[]> tables) : Vm.IJsIntlData
     {
         public string CldrVersion { get; } = cldrVersion;

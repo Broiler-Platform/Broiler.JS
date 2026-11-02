@@ -452,6 +452,44 @@ public sealed class DifferentialCheckTests
         Assert.Contains(section.Examples, static e => e.Contains("xe-phonebk", StringComparison.Ordinal));
     }
 
+    /// <summary>
+    /// The negative control of row O16's reordering (2026-11-02, at the review of SJL-17.3): the library reads Broiler.JS's tables
+    /// with Thai's tailoring's weights broken, every primary of its mappings set to zero, and its name and settings kept. The
+    /// differences under it are found and left unclassified, though the tailoring still states <c>[reorder Thai]</c>, since the
+    /// library without the reordering no longer gives Broiler.VM's answer; no other difference is left unclassified.
+    /// </summary>
+    [Fact]
+    public void A_difference_in_a_reordering_tailoring_s_weights_is_left_unclassified()
+    {
+        var js = Embedding.Both().Last();
+        var tailorings = (byte[])js.Text[nameof(IntlTable.CollationTailorings)].Clone();
+        var name = Encoding.ASCII.GetBytes("th-standard");
+        var at = tailorings.AsSpan().IndexOf(name);
+        Assert.True(at > 0);
+        Assert.Equal(name.Length, tailorings[at - 1]);
+        at += name.Length;
+        var mappings = BitConverter.ToInt32(tailorings, at);
+        Assert.True(mappings > 0);
+        at += 4;
+        for (var mapping = 0; mapping < mappings; mapping++)
+        {
+            at += 1 + (3 * tailorings[at]);
+            var elements = tailorings[at++];
+            for (var element = 0; element < elements; element++, at += 8)
+            {
+                tailorings[at + 5] = 0;
+                tailorings[at + 6] = 0;
+                tailorings[at + 7] = 0;
+            }
+        }
+
+        var control = Embedding.WithBroilerJsLibraryTables("control", new Dictionary<string, byte[]> { [nameof(IntlTable.CollationTailorings)] = tailorings });
+        var section = Assert.Single(CollationSection.Run(control, new SeededRandom(DifferentialCheck.DefaultSeed), 1, ["C1"]));
+        Assert.True(section.Unclassified > 0);
+        Assert.NotEmpty(section.Examples);
+        Assert.All(section.Examples, static e => Assert.Contains(" under th-standard,", e, StringComparison.Ordinal));
+    }
+
     [Fact]
     public void The_seeded_random_inputs_are_the_same_on_every_run()
     {
