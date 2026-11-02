@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   6
 // Annotated:        6/6
-// Exempt:           8
+// Exempt:           9
 // Human-reviewed:   0/6
 // IP risk:          Low
 // Security risk:    High
@@ -27,10 +27,13 @@ namespace Broiler.ECMAScript.Syntax;
 public enum ParseOutcome
 {
     /// <summary>
-    /// The source parses under the request: the result carries its tree and no diagnostic. From stage 4c the grammar alone
-    /// decides it; the static-semantic early errors join at stage 4d, so a source only such an error refuses is accepted
-    /// until then. <i>(Revised 2026-11-01, at stage SJL-13.2c, when the parser was added; it read "The source parses under the
-    /// request: no diagnostic.")</i>
+    /// The source parses under the request: the result carries its tree, the declarations walk's side tables and no
+    /// diagnostic. The grammar admits it, no static-semantic early error of a row the stage table assigns <c>syntax</c>
+    /// refuses it, and the request's regular-expression provider admits each of its literals. <i>(Revised 2026-11-02, at
+    /// stage SJL-13.2d, when the declarations walk was added; it read "The source parses under the request: the result
+    /// carries its tree and no diagnostic. From stage 4c the grammar alone decides it; the static-semantic early errors
+    /// join at stage 4d, so a source only such an error refuses is accepted until then.")</i> <i>(Revised 2026-11-01, at
+    /// stage SJL-13.2c, when the parser was added; it read "The source parses under the request: no diagnostic.")</i>
     /// </summary>
     Accepted = 0,
 
@@ -49,13 +52,15 @@ public enum ParseOutcome
 }
 
 /// <summary>
-/// What a parse answers (Broiler.VM's JSD-0080, "Output"; JSD-0083, X3 and decision D11): its outcome, its tree and its
-/// diagnostics. The side tables join it at stage 4d. <i>(Revised 2026-11-01, at stage SJL-13.2c, when the tree joined it;
-/// it read "its outcome and its diagnostics. The tree and the token stream join it at stage 4c, whose parser names each
-/// token's lexical goal, and the side tables at stage 4d.")</i>
+/// What a parse answers (Broiler.VM's JSD-0080, "Output"; JSD-0083, X3 and decision D11): its outcome, its tree, the
+/// declarations walk's side tables and its diagnostics. <i>(Revised 2026-11-02, at stage SJL-13.2d, when the side tables
+/// joined it; it read "its outcome, its tree and its diagnostics. The side tables join it at stage 4d.")</i>
+/// <i>(Revised 2026-11-01, at stage SJL-13.2c, when the tree joined it; it read "its outcome and its diagnostics. The tree
+/// and the token stream join it at stage 4c, whose parser names each token's lexical goal, and the side tables at stage
+/// 4d.")</i>
 /// </summary>
 /// <remarks>
-/// The token stream the parse read is kept beside the tree inside the library and is not public at stage 4c: which of its
+/// The token stream the parse read is kept beside the tree inside the library and is not public at stage 4c or 4d: which of its
 /// raw facts the result publishes, for Broiler.VM's tokenizers-agreement row and Broiler.JS's bridged token chain
 /// (decisions D21 and D44), is fixed when a consumer first reads it.
 /// </remarks>
@@ -63,12 +68,13 @@ public enum ParseOutcome
 // Broiler-Human:        PENDING
 public sealed class ParseResult
 {
-    private ParseResult(ParseOutcome outcome, ProgramNode? tree, IReadOnlyList<Token> tokens, IReadOnlyList<SyntaxDiagnostic> diagnostics)
+    private ParseResult(ParseOutcome outcome, ProgramNode? tree, IReadOnlyList<Token> tokens, IReadOnlyList<SyntaxDiagnostic> diagnostics, Semantics.DeclarationTables? declarations)
     {
         Outcome = outcome;
         Tree = tree;
         Tokens = tokens;
         Diagnostics = diagnostics;
+        Declarations = declarations;
     }
 
     /// <summary>How the parse ended.</summary>
@@ -80,23 +86,30 @@ public sealed class ParseResult
     /// </summary>
     public ProgramNode? Tree { get; }
 
-    /// <summary>The refusals, in the library's order (decision D11): empty for an accepted source; under <see cref="ErrorReporting.FirstError"/>, one for a refused source.</summary>
+    /// <summary>The refusals, in the library's order (decision D11): empty for an accepted source; for a refused source, one under <see cref="ErrorReporting.FirstError"/>, and up to <see cref="ParseLimits.DiagnosticCap"/> under <see cref="ErrorReporting.AllErrors"/>.</summary>
     public IReadOnlyList<SyntaxDiagnostic> Diagnostics { get; }
 
     /// <summary>The tokens the parse consumed, in source order, each read under the goal the parser named; empty for a refused source.</summary>
     internal IReadOnlyList<Token> Tokens { get; }
 
-    /// <summary>The answer of a parse that accepts the source.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=EBE6F7
-    // Broiler-Human:        PENDING
-    internal static ParseResult Accepted(ProgramNode tree, List<Token> tokens) =>
-        new(ParseOutcome.Accepted, tree, tokens.AsReadOnly(), Array.Empty<SyntaxDiagnostic>());
+    /// <summary>
+    /// The declarations walk's side tables (stage SJL-13.2d; Broiler.VM's JSD-0083, decision D10), ordered by source position:
+    /// every scope's kind and declarations, and the program's and every function's strictness and parameter names; null for a
+    /// refused source.
+    /// </summary>
+    public Semantics.DeclarationTables? Declarations { get; }
 
-    /// <summary>The answer of a parse that refuses the source with one diagnostic, under the first error (decision D11).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=96A2E2
+    /// <summary>The answer of a parse that accepts the source.</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=F137FE
     // Broiler-Human:        PENDING
-    internal static ParseResult Refused(SyntaxDiagnostic diagnostic) =>
-        new(ParseOutcome.Refused, null, Array.Empty<Token>(), Array.AsReadOnly(new[] { diagnostic }));
+    internal static ParseResult Accepted(ProgramNode tree, List<Token> tokens, Semantics.DeclarationTables declarations) =>
+        new(ParseOutcome.Accepted, tree, tokens.AsReadOnly(), Array.Empty<SyntaxDiagnostic>(), declarations);
+
+    /// <summary>The answer of a parse that refuses the source, with the diagnostics the request asks for, in the library's order (decision D11).</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2d parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=398E8C
+    // Broiler-Human:        PENDING
+    internal static ParseResult Refused(List<SyntaxDiagnostic> diagnostics) =>
+        new(ParseOutcome.Refused, null, Array.Empty<Token>(), diagnostics.AsReadOnly(), null);
 }
 
 /// <summary>
@@ -105,13 +118,22 @@ public sealed class ParseResult
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>At stage SJL-13.2c it parses the syntactic grammar</b> of the request's goal (clauses 13 to 16) and answers
-/// <see cref="ParseOutcome.Accepted"/> with the tree, or <see cref="ParseOutcome.Refused"/> with the first refusal: a
-/// lexical refusal with the tokenizer's diagnostic, a grammar refusal with a provisional code stage 4d replaces by the
-/// catalogue's, or one of the contract's two limits. The static-semantic early errors and the regular-expression
-/// provider's answer are stage 4d's, so a source only they refuse is accepted here. It charges the request's meter for the
-/// whole text before it reads the first code unit (<see cref="ParseRequest.Meter"/>), and reads the Unicode provider; it
-/// asks the regular-expression provider nothing. <i>(Revised 2026-11-01, at stage SJL-13.2c, when the parser was added; it
+/// <b>From stage SJL-13.2d it parses the syntactic grammar</b> of the request's goal (clauses 13 to 16), then walks the
+/// tree it admitted for the static-semantic early errors of every row the stage table assigns <c>syntax</c>, asking the
+/// request's regular-expression provider about each literal (decisions D7 and D10). It answers
+/// <see cref="ParseOutcome.Accepted"/> with the tree and the side tables, or <see cref="ParseOutcome.Refused"/> with its
+/// refusals in the library's order (decision D11), each with its catalogue row's code: a lexical refusal with the
+/// tokenizer's diagnostic, a grammar refusal, one of the contract's two limits, an early error, or the provider's verdict.
+/// The result carries one diagnostic under <see cref="ErrorReporting.FirstError"/>, and up to
+/// <see cref="ParseLimits.DiagnosticCap"/> under <see cref="ErrorReporting.AllErrors"/>. It charges the request's meter for
+/// the whole text before it reads the first code unit (<see cref="ParseRequest.Meter"/>), and reads the Unicode provider.
+/// <i>(Revised 2026-11-02, at stage SJL-13.2d, when the declarations walk was added; it read "At stage SJL-13.2c it parses
+/// the syntactic grammar of the request's goal (clauses 13 to 16) and answers Accepted with the tree, or Refused with the
+/// first refusal: a lexical refusal with the tokenizer's diagnostic, a grammar refusal with a provisional code stage 4d
+/// replaces by the catalogue's, or one of the contract's two limits. The static-semantic early errors and the
+/// regular-expression provider's answer are stage 4d's, so a source only they refuse is accepted here. It charges the
+/// request's meter for the whole text before it reads the first code unit, and reads the Unicode provider; it asks the
+/// regular-expression provider nothing.")</i> <i>(Revised 2026-11-01, at stage SJL-13.2c, when the parser was added; it
 /// read "At stage SJL-13.2b it answers <see cref="ParseOutcome.Refused"/> for a source the lexical grammar refuses, and
 /// <see cref="ParseOutcome.NotImplemented"/> for every other: the tree and the parser are stage 4c's, so the parse tokenizes
 /// the text as far as the lexical grammar decides it without the parser and refuses only what no reading of the text can
@@ -140,8 +162,12 @@ public static class SyntaxParser
     /// </summary>
     /// <param name="request">The request.</param>
     /// <returns>
-    /// The result: <see cref="ParseOutcome.Accepted"/> with the tree where the grammar admits the source, and
-    /// <see cref="ParseOutcome.Refused"/> with the first refusal where it does not. <i>(Revised 2026-11-01, at stage
+    /// The result: <see cref="ParseOutcome.Accepted"/> with the tree and the side tables where the grammar admits the source
+    /// and no early error or provider's verdict refuses it, and <see cref="ParseOutcome.Refused"/> otherwise, with the first
+    /// refusal under <see cref="ErrorReporting.FirstError"/> and every one up to the request's cap under
+    /// <see cref="ErrorReporting.AllErrors"/>. <i>(Revised 2026-11-02, at stage SJL-13.2d; it read "The result: Accepted
+    /// with the tree where the grammar admits the source, and Refused with the first refusal where it does not.")</i>
+    /// <i>(Revised 2026-11-01, at stage
     /// SJL-13.2c; it read "The result: at this stage, <see cref="ParseOutcome.Refused"/> with the tokenizer's one diagnostic
     /// for a source the lexical grammar refuses, and <see cref="ParseOutcome.NotImplemented"/> with none for every
     /// other.")</i>
@@ -149,7 +175,7 @@ public static class SyntaxParser
     /// <exception cref="ArgumentNullException">The request is null.</exception>
     /// <exception cref="ArgumentException">The request's Unicode provider is not of the library's Unicode version or lacks a table the lexical classes read.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.1 s16.2 s19.2.1.1 s20.2.1.1.1 goals, JSD-0083 SJL-13.2c parse entry D32; IP=Low; Security=High; Resources=2; Fingerprint=6F6645
-    // Broiler-Falsified-If: a source the grammar refuses is answered Accepted, a source it admits is answered Refused, or the meter is charged after a code unit of the source is read or for other than the text's length
+    // Broiler-Falsified-If: a source the grammar or a syntax row's early error refuses is answered Accepted, a source neither refuses is answered Refused, or the meter is charged after a code unit of the source is read or for other than the text's length
     // Broiler-Human:        PENDING
     public static ParseResult Parse(ParseRequest request)
     {

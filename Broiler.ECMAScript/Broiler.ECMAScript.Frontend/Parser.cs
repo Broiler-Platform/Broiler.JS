@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   35
-// Annotated:        35/35
-// Exempt:           29
-// Human-reviewed:   0/35
+// Relevant units:   38
+// Annotated:        38/38
+// Exempt:           32
+// Human-reviewed:   0/38
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         5/5
 // Resource impact:  2/10 max
-// Unverified:       35
+// Unverified:       38
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -41,11 +41,17 @@ namespace Broiler.ECMAScript.Syntax;
 /// read into parameters or a pattern (clauses 13.2.10, 13.3.6, 13.15.5 and 15.3), refusing what the cover does not cover.
 /// </para>
 /// <para>
-/// <b>Only the grammar is the parser's</b>: the static-semantic early errors are stage 4d's, so a source the grammar admits
-/// is accepted here even where an early error refuses it. A refusal is a <see cref="SyntaxDiagnostic"/> of phase
-/// <see cref="DiagnosticPhase.Parser"/> with one of two <b>provisional</b> codes, <see cref="UnexpectedToken"/> and
-/// <see cref="MissingToken"/>, which stage 4d replaces by the catalogue row each site serves; the contract's two limits
-/// carry their catalogue rows' codes (EX0011 and EX0012), and a lexical refusal the tokenizer's.
+/// <b>The grammar is the parser's</b>, with the early errors it checks as it reads (a cover's conversion, an operand that
+/// is no assignment target, a proposal's form its flag does not admit); the declarations walk
+/// (<see cref="Semantics.DeclarationsWalk"/>) reports the other static-semantic early errors over the tree the parser
+/// admits. A parser's refusal is a <see cref="SyntaxDiagnostic"/> of phase <see cref="DiagnosticPhase.Parser"/> with the
+/// code of the catalogue row its site serves: <see cref="UnexpectedToken"/> (EX0008) and <see cref="MissingToken"/>
+/// (EX0009) where no other row explains it; the contract's two limits carry their catalogue rows' codes (EX0011 and
+/// EX0012), and a lexical refusal the tokenizer's. <i>(Revised 2026-11-02, at stage SJL-13.2d; it read "Only the grammar is
+/// the parser's: the static-semantic early errors are stage 4d's, so a source the grammar admits is accepted here even
+/// where an early error refuses it. A refusal is a SyntaxDiagnostic of phase Parser with one of two provisional codes,
+/// UnexpectedToken and MissingToken, which stage 4d replaces by the catalogue row each site serves; the contract's two
+/// limits carry their catalogue rows' codes (EX0011 and EX0012), and a lexical refusal the tokenizer's.")</i>
 /// </para>
 /// <para>
 /// <b>Limits before the stack</b> (decision D14; JSD-0080's decision D27): the nesting depth is charged once for each
@@ -60,25 +66,25 @@ namespace Broiler.ECMAScript.Syntax;
 // Broiler-Human:        PENDING
 internal sealed partial class Parser
 {
-    /// <summary>The provisional code of a token no production admits where it stands (catalogue row EX0008's code, until stage 4d assigns each site its row).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=F2C872
+    /// <summary>The row of a token no production admits where it stands, where no other row explains the site (catalogue row EX0008; stage 4c's provisional code, which stage 4d kept for these sites).</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=DE2D19
     // Broiler-Human:        PENDING
-    internal static readonly LexicalRefusal UnexpectedToken = new("JSE9108", "syntax.token.unexpected");
+    internal static readonly LexicalRefusal UnexpectedToken = Rows.EX0008;
 
-    /// <summary>The provisional code of a token a production requires and does not find (catalogue row EX0009's code, until stage 4d assigns each site its row).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=C30546
+    /// <summary>The row of a token a production requires and does not find (catalogue row EX0009; stage 4c's provisional code, which stage 4d kept for these sites).</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=21A3FD
     // Broiler-Human:        PENDING
-    internal static readonly LexicalRefusal MissingToken = new("JSE9109", "syntax.token.missing");
+    internal static readonly LexicalRefusal MissingToken = Rows.EX0009;
 
     /// <summary>The contract's nesting diagnostic (catalogue row EX0011).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=44E3B0
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=1EC0E4
     // Broiler-Human:        PENDING
-    internal static readonly LexicalRefusal NestingTooDeep = new("JSE9201", "limit.nesting.too-deep");
+    internal static readonly LexicalRefusal NestingTooDeep = Rows.EX0011;
 
     /// <summary>The contract's tree-depth diagnostic (catalogue row EX0012).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=10FE10
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=991416
     // Broiler-Human:        PENDING
-    internal static readonly LexicalRefusal TreeTooDeep = new("JSE9202", "limit.tree.too-deep");
+    internal static readonly LexicalRefusal TreeTooDeep = Rows.EX0012;
 
     private readonly ParseRequest request;
     private readonly SourceText source;
@@ -112,11 +118,23 @@ internal sealed partial class Parser
     private int nesting;
     private int treeDepth;
 
+    // The row a conversion of a cover refuses by when what was read covers nothing the conversion admits (stage 4d: EE0087 or
+    // EE0155 at an arrow's head, EE0032 or EE0053 at an assignment's or a for head's pattern, EE0038 inside one), or null
+    // where no cover is being converted and the refusal is the grammar's generic one (EX0008).
+    private LexicalRefusal? coverRule;
+
+    // Whether the parse stands in a class static block's statements and inside no function nested in it (EX0033's place).
+    private bool inStaticBlock;
+
+    // The top level's statements, read so far: when the grammar refuses, the early errors of those completed before the
+    // refusal come first (decision D11, the library's order).
+    private List<Statement>? topLevel;
+
     // The object literals holding a CoverInitializedName that no conversion has taken yet, in source order.
     private readonly List<ObjectLiteral> coverInitialized = new();
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=F78A94
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=B90EB2
     // Broiler-Human:        PENDING
-    private readonly Dictionary<ObjectLiteral, Token> coverInitializedAt = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<ObjectLiteral, (Token At, string Name)> coverInitializedAt = new(ReferenceEqualityComparer.Instance);
 
     // The cover the primary expression just read, which an arrow's => may convert: a parenthesised list, or an async call.
     private Expression? arrowCover;
@@ -156,21 +174,44 @@ internal sealed partial class Parser
 
     /// <summary>Parses <paramref name="request"/>'s source under its goal.</summary>
     /// <returns>The accepted tree with the token stream the parse read, or the first refusal (decision D11).</returns>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D11 first refusal; IP=Low; Security=High; Resources=2; Fingerprint=817D9B
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D11 first refusal; IP=Low; Security=High; Resources=2; Fingerprint=17C381
     // Broiler-Falsified-If: a refusal escapes as an exception other than the parse's own, or a refused parse answers a tree
     // Broiler-Human:        PENDING
     internal static ParseResult Run(ParseRequest request)
     {
         var parser = new Parser(request);
+        ProgramNode program;
         try
         {
-            var program = parser.ParseProgram();
-            return ParseResult.Accepted(program, parser.tokens);
+            program = parser.ParseProgram();
         }
         catch (ParseAbort abort)
         {
-            return ParseResult.Refused(abort.Diagnostic);
+            // The early errors of the top-level statements the parse completed before the grammar's refusal come first, in
+            // their order; the refusal follows them (decision D11).
+            var earlier = Semantics.DeclarationsWalk.RunPartial(request, parser.topLevel ?? new List<Statement>(), abort.Diagnostic.Span.Offset);
+            earlier.Add(abort.Diagnostic);
+            return ParseResult.Refused(Limit(request, earlier));
         }
+
+        var walk = Semantics.DeclarationsWalk.Run(request, program);
+        if (walk.Diagnostics.Count > 0)
+            return ParseResult.Refused(Limit(request, walk.Diagnostics));
+        return ParseResult.Accepted(program, parser.tokens, walk.Tables);
+    }
+
+    /// <summary>
+    /// The diagnostics a request asks for, of those found in the library's order (decision D11): the first under
+    /// <see cref="ErrorReporting.FirstError"/>; all, up to the request's cap, under <see cref="ErrorReporting.AllErrors"/>.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=F710F0
+    // Broiler-Human:        PENDING
+    private static List<SyntaxDiagnostic> Limit(ParseRequest request, List<SyntaxDiagnostic> found)
+    {
+        var count = request.Limits.Reporting == ErrorReporting.FirstError ? 1 : Math.Min(found.Count, request.Limits.DiagnosticCap);
+        if (found.Count > count)
+            found.RemoveRange(count, found.Count - count);
+        return found;
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -351,17 +392,28 @@ internal sealed partial class Parser
     // ---------------------------------------------------------------------------------------------------------------
     // Refusals.
 
-    /// <summary>A refusal of <paramref name="token"/>, which no production admits where it stands (provisional code).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=A71712
+    /// <summary>A refusal of <paramref name="token"/>, which no production admits where it stands (EX0008, or the row an <c>@</c> or an HTML-like comment serves).</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=AFC5A1
     // Broiler-Human:        PENDING
     private ParseAbort Unexpected(Token token)
     {
         if (token.Kind == TokenKind.Invalid)
             return new ParseAbort(tokenizer.Diagnostic!);
+
+        // An `@` no production admits where it stands begins a decorator, whose proposal the request does not admit there
+        // (catalogue row EP0009, decision D17). With the proposal admitted, an `@` where no decorator may stand is the
+        // grammar's plain refusal.
+        if (token.Kind == TokenKind.At && (proposals & ProposalFlags.Decorators) == 0)
+            return Refuse(Rows.EP0009, SpanOf(token), "@");
+
+        // An HTML-like comment, which the Module goal does not admit (catalogue row EG0001): `<!--` anywhere, or `-->` where
+        // a line begins.
+        if (isModule && IsHtmlLikeComment(token))
+            return Refuse(Rows.EG0001, SpanOf(token), Spelling(token));
         return Refuse(UnexpectedToken, SpanOf(token), Spelling(token));
     }
 
-    /// <summary>A refusal where <paramref name="expected"/> is required and <paramref name="found"/> stands (provisional code).</summary>
+    /// <summary>A refusal where <paramref name="expected"/> is required and <paramref name="found"/> stands (EX0009).</summary>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=88A297
     // Broiler-Human:        PENDING
     private ParseAbort Missing(Token found, string expected)
@@ -371,17 +423,56 @@ internal sealed partial class Parser
         return Refuse(MissingToken, SpanOf(found), expected);
     }
 
-    /// <summary>A refusal of a node the grammar does not admit where it stands, at its span (provisional code).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=043A64
+    /// <summary>Whether the token begins an HTML-like comment: <c>&lt;!--</c> anywhere, or <c>--&gt;</c> where a line begins (clause B.1.1).</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=B7AC3E
     // Broiler-Human:        PENDING
-    private ParseAbort UnexpectedAt(SourceSpan span) => Refuse(UnexpectedToken, span, string.Empty);
+    private bool IsHtmlLikeComment(Token token)
+    {
+        var at = token.Start;
+        if (string.CompareOrdinal(text, at, "<!--", 0, 4) == 0)
+            return true;
+        for (var start = Math.Max(0, at - 2); start <= at; start++)
+        {
+            if (string.CompareOrdinal(text, start, "-->", 0, 3) != 0)
+                continue;
+            var i = start - 1;
+            while (i >= 0 && text[i] is ' ' or '\t')
+                i--;
+            if (i < 0 || text[i] is '\n' or '\r' or '\u2028' or '\u2029')
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>A refusal of a node the grammar does not admit where it stands, at its span: by the row of the cover being converted, or EX0008.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=CF64FB
+    // Broiler-Human:        PENDING
+    private ParseAbort UnexpectedAt(SourceSpan span) => Refuse(coverRule ?? UnexpectedToken, span, string.Empty);
+
+    /// <summary>Runs a cover's conversion under the row its refusals are made by (stage 4d; Broiler.VM's JSD-0083, decision D12).</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=383E3E
+    // Broiler-Human:        PENDING
+    private T Converting<T>(LexicalRefusal rule, Func<T> convert)
+    {
+        var saved = coverRule;
+        coverRule = rule;
+        try
+        {
+            return convert();
+        }
+        finally
+        {
+            coverRule = saved;
+        }
+    }
 
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=917DA8
     // Broiler-Human:        PENDING
     private ParseAbort Refuse(LexicalRefusal rule, SourceSpan span, string argument) =>
         new(new SyntaxDiagnostic(rule.Code, rule.MessageId, argument.Length == 0 ? Array.Empty<string>() : new[] { argument }, DiagnosticPhase.Parser, span, source.Name));
 
-    /// <summary>A token's spelling, for a provisional diagnostic's argument: its text, empty at the end of the input.</summary>
+    /// <summary>A token's spelling, for a diagnostic's argument: its text, at most 64 code units, empty at the end of the input.</summary>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=CDF76F
     // Broiler-Human:        PENDING
     private string Spelling(Token token) =>
