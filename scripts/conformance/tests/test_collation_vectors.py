@@ -374,7 +374,10 @@ class SecondReferenceTests(unittest.TestCase):
         try:
             self.assertEqual(("O6", "O5b"), generator.with_compatibility_row({"sensitivity": "base"}, ("a", "\u00aa"), ("O6",)))
             self.assertEqual(("O5a", "O5b"), generator.with_compatibility_row({"sensitivity": "base"}, ("ab", "a\u00a0b"), ("O5a",)))
-            self.assertEqual(("O6",), generator.with_compatibility_row({"sensitivity": "accent"}, ("a", "\u00aa"), ("O6",)))
+            self.assertEqual(("O6", "O5b"), generator.with_compatibility_row({"sensitivity": "accent"}, ("a", "\u00aa"), ("O6",)))
+            self.assertEqual(("O6", "O5b"), generator.with_compatibility_row({"sensitivity": "case"}, ("a", "\uff41"), ("O6",)))
+            self.assertEqual(("O6",), generator.with_compatibility_row({"sensitivity": "variant"}, ("a", "\uff41"), ("O6",)))
+            self.assertEqual(("O6",), generator.with_compatibility_row(None, ("a", "\uff41"), ("O6",)))
             self.assertEqual(("O5a",), generator.with_compatibility_row({"sensitivity": "base"}, ("ab", "a b"), ("O5a",)))
         finally:
             generator.SECOND = saved

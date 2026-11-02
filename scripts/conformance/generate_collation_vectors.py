@@ -16,8 +16,10 @@ Intl.Collator resolves, sensitivity, ignorePunctuation, numeric and caseFirst (o
 (Broiler.VM's docs/evidence/sjl-17-001/correspondence.md, rows O1 to O19) whose inputs it takes, so that each engine's
 first run can be classified by those rows (``ROWS``; every row with a behavioural difference is reached,
 ``check_rows``). The note's rows are written from the case's own (``rows_text``), and the generator refuses a vector
-whose note names any other set (``render``). A pair or sort at `sensitivity: "base"` that holds a width or compatibility
-form (a string whose NFKD is not its NFD) takes row O5b as well, whose correction is that base folds those differences.
+whose note names any other set (``render``). A pair or sort at `sensitivity` base, accent or case that holds a width or
+compatibility form (a string whose NFKD is not its NFD) takes row O5b as well, whose correction is that a strength below
+the tertiary folds those differences (at base since revision 33; at accent and case since revision 34, by the dated
+note of 2026-11-02 on row O5b, when Broiler.JS's first run found its answer there too).
 
 THE AREA FIELD. The schema's areas (SCHEMA.md section 2) have no `collation`, and the validator that holds them is the
 shared Conformance library's code, which this work package does not change: collation is a service of ECMA-402, so
@@ -80,7 +82,8 @@ stays data policy (C5). The first run of each engine shows whether its data give
 is classified at the next revision. No expected value is read from either engine's run.
 
 Each engine's first run on the revision that adds the area is classified in the next revision, in
-scripts/conformance/collation-divergences.txt, which this generator reads (absent until then).
+scripts/conformance/collation-divergences.txt, which this generator reads: revision 34 classifies the first runs on
+revision 33, each difference under a row of the correspondence (the file's header).
 
 The generator is deterministic: the same reference and inputs write the same bytes (its tests regenerate the area
 where the reference is present).
@@ -120,7 +123,7 @@ DIVERGENCES = SCRIPTS / "collation-divergences.txt"
 # revision after origin/main's when the change merges (revision 30 there on 2026-11-01), and moves with it if another
 # area's revisions merge first. The revision that classifies the first runs is the one after it.
 SINCE = 33
-CORPUS_REVISION = SINCE  # the corpus revision this generator writes: REVISIONS.md's last row
+CORPUS_REVISION = SINCE + 1  # the corpus revision this generator writes: REVISIONS.md's last row (the classification)
 
 ECMA402 = "spec:ecma402@3d4c558#"
 ES2026 = "spec:es2026@0248456c#"
@@ -345,17 +348,26 @@ def add(file: str, group: str, op: str, inputs: Sequence[str], script: str, rows
                       forbid, second=second))
 
 
+# The sensitivities below the tertiary strength, at which row O5b's correction folds width and compatibility
+# differences: base since revision 33; accent and case since revision 34, by the dated note of 2026-11-02 on row O5b
+# (Broiler.JS's first run found its answer at those two as well).
+O5B_SENSITIVITIES = ("base", "accent", "case")
+
+
 def with_compatibility_row(options: dict | None, strings: Sequence[str], rows: Sequence[str]) -> tuple[str, ...]:
-    """Row O5b joins a case at `sensitivity: "base"` that holds a width or compatibility form (a string whose NFKD is
-    not its NFD): the correction that base folds those differences (the correspondence's row O5b, Broiler.JS's
-    SharedLibraries.md "Collation (SJL-17.1)")."""
+    """Row O5b joins a case at `sensitivity` base, accent or case that holds a width or compatibility form (a string
+    whose NFKD is not its NFD): the correction that a strength below the tertiary folds those differences (the
+    correspondence's row O5b with its dated note of 2026-11-02, Broiler.JS's SharedLibraries.md "Collation
+    (SJL-17.1)")."""
     out = tuple(rows)
-    if (options or {}).get("sensitivity") == "base" and any(SECOND.compatibility_form(s) for s in strings):
+    if (options or {}).get("sensitivity") in O5B_SENSITIVITIES and any(SECOND.compatibility_form(s) for s in strings):
         out = tuple(dict.fromkeys(out + ("O5b",)))
     return out
 
 
-COMPATIBILITY_NOTE = "base folds width and compatibility differences"
+def compatibility_note(options: dict | None) -> str:
+    """The words a case that row O5b joins adds to its note."""
+    return f"{(options or {}).get('sensitivity')} folds width and compatibility differences"
 
 
 def pair(file: str, group: str, locale: str | None, options: dict | None, x: str, y: str, rows: Sequence[str],
@@ -372,8 +384,8 @@ def pair(file: str, group: str, locale: str | None, options: dict | None, x: str
         op = "Intl.Collator.prototype.compare"
         base = [COMPARE_GETTER, COMPARE]
     rows = with_compatibility_row(options, (x, y), rows)
-    if "O5b" in rows and COMPATIBILITY_NOTE not in note:
-        note += f" ({COMPATIBILITY_NOTE}, row O5b)"
+    if "O5b" in rows and compatibility_note(options) not in note:
+        note += f" ({compatibility_note(options)}, row O5b)"
     where = (f"{locale}" if locale is not None else "the default locale") + (f" {options_js(options)}" if options else "")
     add(file, group, op, inputs, script, rows, f"{show(x)} against {show(y)} under {where}: {rows_text(rows)}: {note}",
         base + list(prov) + [REF], expect, forbid, second=(options, (x, y), False) if second else None)
@@ -384,8 +396,8 @@ def sort(file: str, group: str, locale: str | None, options: dict | None, words:
     """A sort: its note is written `<n> strings sorted under <where>, ...: <rows>: <note>`."""
     inputs = ([] if locale is None else [locale]) + list(words)
     rows = with_compatibility_row(options, words, rows)
-    if "O5b" in rows and COMPATIBILITY_NOTE not in note:
-        note += f" ({COMPATIBILITY_NOTE}, row O5b)"
+    if "O5b" in rows and compatibility_note(options) not in note:
+        note += f" ({compatibility_note(options)}, row O5b)"
     where = (f"{locale}" if locale is not None else "the default locale") + (f" {options_js(options)}" if options else "")
     add(file, group, "Array.prototype.sort with Intl.Collator.prototype.compare", inputs,
         sort_script(locale, options, words), rows,

@@ -1,0 +1,250 @@
+# The collation vectors' classified differences, read by generate_collation_vectors.py.
+#
+# A line `reason <key>: <text>` defines a reason. A line `<engine> <key> <id>` classifies the vector <id> as a
+# divergence of <engine> for that reason: the generator writes the field divergence.<engine>: <text>. A normative
+# vector becomes a divergence. An impl-defined one stays impl-defined: its per-engine.<engine> field is the
+# expectation that engine's own data gives, which the vector's case states, and the divergence field says the engine
+# does not meet it (SCHEMA.md section 5). The generator refuses an impl-defined vector classified for an engine its
+# case states no expectation for. The vector's expected value never changes.
+#
+# A line is added in a new corpus revision, with a dated row in conformance/vectors/REVISIONS.md, and is removed only
+# the same way, when the engine's cut-over corrects the difference and lists the correction. Every reason names the
+# row of bundle sjl-17-001's correspondence from code (Broiler.VM's docs/evidence/sjl-17-001/correspondence.md) whose
+# answer the engine gives in the difference, which is one of the rows the vector's note names, the engine's answer as
+# that row records it, the class JSD-0084 gives the row, and the work package that answers it: SJL-17.5, Broiler.JS's
+# cut-over to the shared collator, or SJL-17.3's data decision. A reason quotes the row's cells shortened (" ..."
+# marks a cut) and in ASCII (U+XXXX for any other character).
+#
+# Revision 34, 2026-11-02: every difference of Broiler.JS's first engine-level run on the collation vectors, at
+# revision 33 (d85da200), under TZ=UTC with the invariant culture, on one host, Ubuntu 24.04.5 with ICU 74.2
+# (libicu74 74.2-1ubuntu3.1), the host's ICU whose CompareInfo this engine's Intl.Collator reads, so that the
+# classification is of that host and a host with another ICU is not read. Broiler.VM's first run, taken at b43d0bb
+# from a scratch archive of revision 33, has no difference on the area, so no line names it. The runs are retained in
+# docs/evidence/sjl-17-001/engine/.
+#
+# How a CollationTest pair was assigned, between rows O2 and O5a, which its note names both: the host's ICU 74.2 was
+# asked the pair directly, through its C API (ucol_strcoll over the root collator, normalization on, tertiary
+# strength, non-ignorable for the non-ignorable file and, for the shifted file, UTS #10's shifted alternate with
+# maxVariable punctuation, the settings the file's own test takes). Where it answers as Broiler.JS does, the
+# difference is the host's data, row O2; where it answers as the reference does, and Broiler.JS does not, the
+# difference is Broiler.JS's mapping of ignorePunctuation onto IgnoreSymbols, row O5a. Every pair was one or the
+# other. An ignorePunctuation vector is row O5b's where the option is false (a space against NBSP at base) and row
+# O5a's where it is true (symbols ignored).
+#
+# The two rows read past their probes are read by dated notes of 2026-11-02 in the correspondence, each the owner's
+# decision of that day under the direction of 2026-10-18: row O5b at accent and case as well as at base, and row
+# O3's Broiler.JS column for CJK Extension J (U+323B0 to U+33479, Unicode 17.0), which the host's ICU 74.2 does not
+# know. Row O5b's vectors at accent and case name it since this revision.
+
+reason js-o2: row O2 (data policy, C5): a pair of consecutive lines of CLDR 48.2.0's archived CollationTest files out of the file's order: Broiler.JS compares through "the host's ICU 74 root (:6121, :6231)", and "the host's ICU 74 carries UCA 15.1's weights", so a code point UCA 16 or 17 weighs anew or adds sorts otherwise; the host's ICU 74.2, asked the pair through its C API under the file's settings, answers as Broiler.JS does; answered at SJL-17.5, where CLDR 48.2.0's root replaces the host's ICU for the covered locales (JSD-0084 decision E3)
+reason js-o3: row O3 (data policy, C5): Han across blocks, CJK Extension J (U+323B0 to U+33479, added in Unicode 17.0): Broiler.JS orders unified ideographs "as the host's ICU orders" them, by radical and stroke, its expectation here, but the host's ICU 74.2 (Unicode 15.1) has no data for Extension J and weighs it as an unassigned code point, after every ideograph it knows (the dated note of 2026-11-02 on row O3); a host whose ICU carries Unicode 17 orders it as out; the Han order is SJL-17.3's to decide (finding F1), and SJL-17.5's cut-over takes Broiler.JS's root from the shared data
+reason js-o5a: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+reason js-o5b: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width and compatibility differences ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated note of 2026-11-02 on row O5b, at accent and case too: a fullwidth letter, a squared katakana word or NBSP against its decomposition; the reference and Broiler.VM fold them, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
+reason js-o7: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+reason js-o8: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+
+broiler-js js-o5b intl/collation/options/sensitivity/0010
+broiler-js js-o5b intl/collation/options/sensitivity/0026
+broiler-js js-o5b intl/collation/options/sensitivity/0041
+broiler-js js-o5b intl/collation/options/sensitivity/0057
+broiler-js js-o5b intl/collation/options/sensitivity/0073
+broiler-js js-o5b intl/collation/options/sensitivity/0089
+broiler-js js-o5b intl/collation/options/ignore-punctuation/0023
+broiler-js js-o5b intl/collation/options/ignore-punctuation/0029
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0045
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0053
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0054
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0055
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0056
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0057
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0067
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0075
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0076
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0077
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0078
+broiler-js js-o5a intl/collation/options/ignore-punctuation/0079
+broiler-js js-o7 intl/collation/options/numeric/0001
+broiler-js js-o7 intl/collation/options/numeric/0003
+broiler-js js-o7 intl/collation/options/numeric/0004
+broiler-js js-o7 intl/collation/options/numeric/0005
+broiler-js js-o7 intl/collation/options/numeric/0006
+broiler-js js-o7 intl/collation/options/numeric/0007
+broiler-js js-o7 intl/collation/options/numeric/0008
+broiler-js js-o7 intl/collation/options/numeric/0009
+broiler-js js-o7 intl/collation/options/numeric/0010
+broiler-js js-o7 intl/collation/options/numeric/0011
+broiler-js js-o7 intl/collation/options/numeric/0012
+broiler-js js-o7 intl/collation/options/numeric/0017
+broiler-js js-o7 intl/collation/options/numeric/0018
+broiler-js js-o7 intl/collation/options/numeric/0058
+broiler-js js-o7 intl/collation/options/numeric/0060
+broiler-js js-o7 intl/collation/options/numeric/0061
+broiler-js js-o7 intl/collation/options/numeric/0062
+broiler-js js-o7 intl/collation/options/numeric/0063
+broiler-js js-o7 intl/collation/options/numeric/0064
+broiler-js js-o7 intl/collation/options/numeric/0065
+broiler-js js-o7 intl/collation/options/numeric/0066
+broiler-js js-o7 intl/collation/options/numeric/0067
+broiler-js js-o7 intl/collation/options/numeric/0068
+broiler-js js-o7 intl/collation/options/numeric/0069
+broiler-js js-o7 intl/collation/options/numeric/0074
+broiler-js js-o7 intl/collation/options/numeric/0075
+broiler-js js-o7 intl/collation/options/numeric/0077
+broiler-js js-o7 intl/collation/options/numeric/0079
+broiler-js js-o7 intl/collation/options/numeric/0080
+broiler-js js-o7 intl/collation/options/numeric/0081
+broiler-js js-o7 intl/collation/options/numeric/0082
+broiler-js js-o7 intl/collation/options/numeric/0083
+broiler-js js-o7 intl/collation/options/numeric/0084
+broiler-js js-o7 intl/collation/options/numeric/0085
+broiler-js js-o7 intl/collation/options/numeric/0086
+broiler-js js-o7 intl/collation/options/numeric/0087
+broiler-js js-o7 intl/collation/options/numeric/0088
+broiler-js js-o7 intl/collation/options/numeric/0093
+broiler-js js-o7 intl/collation/options/numeric/0094
+broiler-js js-o7 intl/collation/options/numeric/0134
+broiler-js js-o7 intl/collation/options/numeric/0136
+broiler-js js-o7 intl/collation/options/numeric/0137
+broiler-js js-o7 intl/collation/options/numeric/0138
+broiler-js js-o7 intl/collation/options/numeric/0139
+broiler-js js-o7 intl/collation/options/numeric/0140
+broiler-js js-o7 intl/collation/options/numeric/0141
+broiler-js js-o7 intl/collation/options/numeric/0142
+broiler-js js-o7 intl/collation/options/numeric/0143
+broiler-js js-o7 intl/collation/options/numeric/0144
+broiler-js js-o7 intl/collation/options/numeric/0145
+broiler-js js-o7 intl/collation/options/numeric/0150
+broiler-js js-o7 intl/collation/options/numeric/0151
+broiler-js js-o7 intl/collation/options/numeric/0153
+broiler-js js-o7 intl/collation/options/numeric/0155
+broiler-js js-o7 intl/collation/options/numeric/0156
+broiler-js js-o7 intl/collation/options/numeric/0157
+broiler-js js-o7 intl/collation/options/numeric/0158
+broiler-js js-o7 intl/collation/options/numeric/0159
+broiler-js js-o7 intl/collation/options/numeric/0160
+broiler-js js-o7 intl/collation/options/numeric/0161
+broiler-js js-o7 intl/collation/options/numeric/0162
+broiler-js js-o7 intl/collation/options/numeric/0163
+broiler-js js-o7 intl/collation/options/numeric/0164
+broiler-js js-o7 intl/collation/options/numeric/0169
+broiler-js js-o7 intl/collation/options/numeric/0170
+broiler-js js-o7 intl/collation/options/numeric/0172
+broiler-js js-o7 intl/collation/options/numeric/0174
+broiler-js js-o7 intl/collation/options/numeric/0175
+broiler-js js-o7 intl/collation/options/numeric/0176
+broiler-js js-o7 intl/collation/options/numeric/0177
+broiler-js js-o7 intl/collation/options/numeric/0178
+broiler-js js-o7 intl/collation/options/numeric/0179
+broiler-js js-o7 intl/collation/options/numeric/0180
+broiler-js js-o7 intl/collation/options/numeric/0181
+broiler-js js-o7 intl/collation/options/numeric/0182
+broiler-js js-o7 intl/collation/options/numeric/0183
+broiler-js js-o7 intl/collation/options/numeric/0188
+broiler-js js-o7 intl/collation/options/numeric/0189
+broiler-js js-o7 intl/collation/options/numeric/0192
+broiler-js js-o7 intl/collation/options/numeric/0193
+broiler-js js-o7 intl/collation/options/numeric/0194
+broiler-js js-o7 intl/collation/options/numeric/0195
+broiler-js js-o7 intl/collation/options/numeric/0196
+broiler-js js-o7 intl/collation/options/numeric/0197
+broiler-js js-o7 intl/collation/options/numeric/0198
+broiler-js js-o8 intl/collation/options/case-first/0001
+broiler-js js-o8 intl/collation/options/case-first/0002
+broiler-js js-o8 intl/collation/options/case-first/0003
+broiler-js js-o8 intl/collation/options/case-first/0004
+broiler-js js-o8 intl/collation/options/case-first/0005
+broiler-js js-o8 intl/collation/options/case-first/0006
+broiler-js js-o8 intl/collation/options/case-first/0007
+broiler-js js-o8 intl/collation/options/case-first/0010
+broiler-js js-o8 intl/collation/options/case-first/0011
+broiler-js js-o8 intl/collation/options/case-first/0034
+broiler-js js-o8 intl/collation/options/case-first/0035
+broiler-js js-o8 intl/collation/options/case-first/0036
+broiler-js js-o8 intl/collation/options/case-first/0037
+broiler-js js-o8 intl/collation/options/case-first/0038
+broiler-js js-o8 intl/collation/options/case-first/0039
+broiler-js js-o8 intl/collation/options/case-first/0040
+broiler-js js-o8 intl/collation/options/case-first/0043
+broiler-js js-o8 intl/collation/options/case-first/0044
+broiler-js js-o8 intl/collation/options/case-first/0078
+broiler-js js-o8 intl/collation/options/case-first/0079
+broiler-js js-o8 intl/collation/options/case-first/0080
+broiler-js js-o8 intl/collation/options/case-first/0081
+broiler-js js-o8 intl/collation/options/case-first/0082
+broiler-js js-o8 intl/collation/options/case-first/0083
+broiler-js js-o8 intl/collation/options/case-first/0084
+broiler-js js-o8 intl/collation/options/case-first/0087
+broiler-js js-o8 intl/collation/options/case-first/0088
+broiler-js js-o8 intl/collation/options/case-first/0122
+broiler-js js-o8 intl/collation/options/case-first/0123
+broiler-js js-o8 intl/collation/options/case-first/0124
+broiler-js js-o8 intl/collation/options/case-first/0125
+broiler-js js-o8 intl/collation/options/case-first/0126
+broiler-js js-o8 intl/collation/options/case-first/0127
+broiler-js js-o8 intl/collation/options/case-first/0128
+broiler-js js-o8 intl/collation/options/case-first/0131
+broiler-js js-o8 intl/collation/options/case-first/0132
+broiler-js js-o8 intl/collation/options/case-first/0133
+broiler-js js-o8 intl/collation/options/case-first/0134
+broiler-js js-o8 intl/collation/options/case-first/0135
+broiler-js js-o8 intl/collation/options/case-first/0136
+broiler-js js-o8 intl/collation/options/case-first/0137
+broiler-js js-o8 intl/collation/options/case-first/0138
+broiler-js js-o8 intl/collation/options/case-first/0139
+broiler-js js-o8 intl/collation/options/case-first/0142
+broiler-js js-o8 intl/collation/options/case-first/0143
+broiler-js js-o8 intl/collation/options/case-first/0144
+broiler-js js-o8 intl/collation/options/case-first/0145
+broiler-js js-o8 intl/collation/options/case-first/0146
+broiler-js js-o8 intl/collation/options/case-first/0147
+broiler-js js-o8 intl/collation/options/case-first/0148
+broiler-js js-o8 intl/collation/options/case-first/0149
+broiler-js js-o8 intl/collation/options/case-first/0150
+broiler-js js-o8 intl/collation/options/case-first/0153
+broiler-js js-o8 intl/collation/options/case-first/0154
+broiler-js js-o8 intl/collation/options/case-first/0155
+broiler-js js-o8 intl/collation/options/case-first/0156
+broiler-js js-o8 intl/collation/options/case-first/0157
+broiler-js js-o8 intl/collation/options/case-first/0158
+broiler-js js-o8 intl/collation/options/case-first/0159
+broiler-js js-o2 intl/collation/root/collationtest-non-ignorable/0009
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0021
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0028
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0029
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0032
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0048
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0056
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0061
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0063
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0068
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0071
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0074
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0078
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0081
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0083
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0085
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0089
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0091
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0095
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0097
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0101
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0103
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0107
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0109
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0113
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0119
+broiler-js js-o5a intl/collation/root/collationtest-shifted/0121
+broiler-js js-o2 intl/collation/root/collationtest-shifted/0136
+broiler-js js-o2 intl/collation/root/collationtest-shifted/0137
+broiler-js js-o2 intl/collation/root/collationtest-shifted/0140
+broiler-js js-o2 intl/collation/root/collationtest-shifted/0141
+broiler-js js-o2 intl/collation/root/collationtest-shifted/0143
+broiler-js js-o2 intl/collation/root/collationtest-shifted/0373
+broiler-js js-o3 intl/collation/root/han/0001
+broiler-js js-o3 intl/collation/root/han/0010
+broiler-js js-o3 intl/collation/root/han/0058
+broiler-js js-o3 intl/collation/root/han/0059
+broiler-js js-o5b intl/collation/root/compatibility/0011
+broiler-js js-o5b intl/collation/root/compatibility/0012
+broiler-js js-o5b intl/collation/root/compatibility/0026
+broiler-js js-o5b intl/collation/root/compatibility/0027

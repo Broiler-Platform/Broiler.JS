@@ -103,7 +103,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u1AE4!" str:"\u1AE5!"
 out: value: str:"="
-class: normative
+class: divergence
+divergence.broiler-js: row O2 (data policy, C5): a pair of consecutive lines of CLDR 48.2.0's archived CollationTest files out of the file's order: Broiler.JS compares through "the host's ICU 74 root (:6121, :6231)", and "the host's ICU 74 carries UCA 15.1's weights", so a code point UCA 16 or 17 weighs anew or adds sorts otherwise; the host's ICU 74.2, asked the pair through its C API under the file's settings, answers as Broiler.JS does; answered at SJL-17.5, where CLDR 48.2.0's root replaces the host's ICU for the covered locales (JSD-0084 decision E3)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant"}).compare("\u1AE4!","\u1AE5!"))+1]
 note: U+1AE4! against U+1AE5! under en {sensitivity:"variant"}: row O2 (data policy, C5): lines 3219 and 3220 of CollationTest_CLDR_NON_IGNORABLE_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6241,7 +6242,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uA789b" str:"\uA78A!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uA789b","\uA78A!"))+1]
 note: U+A789b against U+A78A! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 8031 and 8032 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6318,7 +6320,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u2271b" str:"\u2266!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\u2271b","\u2266!"))+1]
 note: U+2271b against U+2266! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 10838 and 10839 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6329,7 +6332,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u22AFb" str:"\u22B0!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\u22AFb","\u22B0!"))+1]
 note: U+22AFb against U+22B0! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 11239 and 11240 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6362,7 +6366,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u23A7b" str:"\u23A8!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\u23A7b","\u23A8!"))+1]
 note: U+23A7b against U+23A8! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 12442 and 12443 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6538,7 +6543,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83E\uDF2Ab" str:"\uD83E\uDF2B!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD83E\uDF2Ab","\uD83E\uDF2B!"))+1]
 note: U+D83EU+DF2Ab against U+D83EU+DF2B! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 18858 and 18859 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6626,7 +6632,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u27B0b" str:"\u27B1!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\u27B0b","\u27B1!"))+1]
 note: U+27B0b against U+27B1! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 22066 and 22067 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6681,7 +6688,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u2A6Ab" str:"\u2A6B!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\u2A6Ab","\u2A6B!"))+1]
 note: U+2A6Ab against U+2A6B! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 24071 and 24072 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6703,7 +6711,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u2B0Db" str:"\u2B0E!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\u2B0Db","\u2B0E!"))+1]
 note: U+2B0Db against U+2B0E! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 24873 and 24874 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6758,7 +6767,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u289Ab" str:"\u289B!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\u289Ab","\u289B!"))+1]
 note: U+289Ab against U+289B! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 26878 and 26879 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6791,7 +6801,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD834\uDF33?" str:"\uD834\uDF33\u0334"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD834\uDF33?","\uD834\uDF33\u0334"))+1]
 note: U+D834U+DF33? against U+D834U+DF33U+0334 under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 28081 and 28082 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6824,7 +6835,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD833\uDF66b" str:"\uD833\uDF67!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD833\uDF66b","\uD833\uDF67!"))+1]
 note: U+D833U+DF66b against U+D833U+DF67! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 29284 and 29285 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6868,7 +6880,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD834\uDCAE?" str:"\uD834\uDCAE\u0334"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD834\uDCAE?","\uD834\uDCAE\u0334"))+1]
 note: U+D834U+DCAE? against U+D834U+DCAEU+0334 under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 30888 and 30889 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6901,7 +6914,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD834\uDD9Eb" str:"\uD834\uDD9F!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD834\uDD9Eb","\uD834\uDD9F!"))+1]
 note: U+D834U+DD9Eb against U+D834U+DD9F! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 32091 and 32092 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6923,7 +6937,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD834\uDE3A?" str:"\uD834\uDE3A\u0334"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD834\uDE3A?","\uD834\uDE3A\u0334"))+1]
 note: U+D834U+DE3A? against U+D834U+DE3AU+0334 under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 32893 and 32894 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6945,7 +6960,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83C\uDC7Db" str:"\uD83C\uDC7E!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD83C\uDC7Db","\uD83C\uDC7E!"))+1]
 note: U+D83CU+DC7Db against U+D83CU+DC7E! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 33695 and 33696 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -6989,7 +7005,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83C\uDF31?" str:"\uD83C\uDF31\u0334"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD83C\uDF31?","\uD83C\uDF31\u0334"))+1]
 note: U+D83CU+DF31? against U+D83CU+DF31U+0334 under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 35299 and 35300 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7011,7 +7028,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83C\uDFB6b" str:"\uD83C\uDFB7!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD83C\uDFB6b","\uD83C\uDFB7!"))+1]
 note: U+D83CU+DFB6b against U+D83CU+DFB7! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 36101 and 36102 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7055,7 +7073,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83D\uDCC2?" str:"\uD83D\uDCC2\u0334"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD83D\uDCC2?","\uD83D\uDCC2\u0334"))+1]
 note: U+D83DU+DCC2? against U+D83DU+DCC2U+0334 under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 37705 and 37706 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7077,7 +7096,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83D\uDD47b" str:"\uD83D\uDD48!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD83D\uDD47b","\uD83D\uDD48!"))+1]
 note: U+D83DU+DD47b against U+D83DU+DD48! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 38507 and 38508 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7121,7 +7141,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83E\uDD53?" str:"\uD83E\uDD53\u0334"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD83E\uDD53?","\uD83E\uDD53\u0334"))+1]
 note: U+D83EU+DD53? against U+D83EU+DD53U+0334 under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 40111 and 40112 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7143,7 +7164,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83E\uDDD8b" str:"\uD83E\uDDD9!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD83E\uDDD8b","\uD83E\uDDD9!"))+1]
 note: U+D83EU+DDD8b against U+D83EU+DDD9! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 40913 and 40914 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7187,7 +7209,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83D\uDE6C?" str:"\uD83D\uDE6C\u0334"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD83D\uDE6C?","\uD83D\uDE6C\u0334"))+1]
 note: U+D83DU+DE6C? against U+D83DU+DE6CU+0334 under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 42517 and 42518 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7209,7 +7232,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83D\uDEF7b" str:"\uD83D\uDEF8!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD83D\uDEF7b","\uD83D\uDEF8!"))+1]
 note: U+D83DU+DEF7b against U+D83DU+DEF8! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 43319 and 43320 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7253,7 +7277,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD83E\uDC23?" str:"\uD83E\uDC23\u0334"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD83E\uDC23?","\uD83E\uDC23\u0334"))+1]
 note: U+D83EU+DC23? against U+D83EU+DC23U+0334 under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 44923 and 44924 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7319,7 +7344,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD836\uDD05?" str:"\uD836\uDD05\u0334"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD836\uDD05?","\uD836\uDD05\u0334"))+1]
 note: U+D836U+DD05? against U+D836U+DD05U+0334 under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 47329 and 47330 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7341,7 +7367,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD836\uDD8Ab" str:"\uD836\uDD8B!"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD836\uDD8Ab","\uD836\uDD8B!"))+1]
 note: U+D836U+DD8Ab against U+D836U+DD8B! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 48131 and 48132 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7506,7 +7533,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD807\uDDE4b" str:"\uD807\uDF54b"
 out: value: str:"="
-class: normative
+class: divergence
+divergence.broiler-js: row O2 (data policy, C5): a pair of consecutive lines of CLDR 48.2.0's archived CollationTest files out of the file's order: Broiler.JS compares through "the host's ICU 74 root (:6121, :6231)", and "the host's ICU 74 carries UCA 15.1's weights", so a code point UCA 16 or 17 weighs anew or adds sorts otherwise; the host's ICU 74.2, asked the pair through its C API under the file's settings, answers as Broiler.JS does; answered at SJL-17.5, where CLDR 48.2.0's root replaces the host's ICU for the covered locales (JSD-0084 decision E3)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD807\uDDE4b","\uD807\uDF54b"))+1]
 note: U+D807U+DDE4b against U+D807U+DF54b under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 54146 and 54147 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7517,7 +7545,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD81B\uDD75\u0334" str:"\uD81B\uDE85\u0334"
 out: value: str:"="
-class: normative
+class: divergence
+divergence.broiler-js: row O2 (data policy, C5): a pair of consecutive lines of CLDR 48.2.0's archived CollationTest files out of the file's order: Broiler.JS compares through "the host's ICU 74 root (:6121, :6231)", and "the host's ICU 74 carries UCA 15.1's weights", so a code point UCA 16 or 17 weighs anew or adds sorts otherwise; the host's ICU 74.2, asked the pair through its C API under the file's settings, answers as Broiler.JS does; answered at SJL-17.5, where CLDR 48.2.0's root replaces the host's ICU for the covered locales (JSD-0084 decision E3)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD81B\uDD75\u0334","\uD81B\uDE85\u0334"))+1]
 note: U+D81BU+DD75U+0334 against U+D81BU+DE85U+0334 under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 54547 and 54548 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7550,7 +7579,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD807\uDDA7!" str:"\uD807\uDDE7!"
 out: value: str:"="
-class: normative
+class: divergence
+divergence.broiler-js: row O2 (data policy, C5): a pair of consecutive lines of CLDR 48.2.0's archived CollationTest files out of the file's order: Broiler.JS compares through "the host's ICU 74 root (:6121, :6231)", and "the host's ICU 74 carries UCA 15.1's weights", so a code point UCA 16 or 17 weighs anew or adds sorts otherwise; the host's ICU 74.2, asked the pair through its C API under the file's settings, answers as Broiler.JS does; answered at SJL-17.5, where CLDR 48.2.0's root replaces the host's ICU for the covered locales (JSD-0084 decision E3)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD807\uDDA7!","\uD807\uDDE7!"))+1]
 note: U+D807U+DDA7! against U+D807U+DDE7! under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 55750 and 55751 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7561,7 +7591,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD805\uDED7A" str:"\uD805\uDEE1A"
 out: value: str:"="
-class: normative
+class: divergence
+divergence.broiler-js: row O2 (data policy, C5): a pair of consecutive lines of CLDR 48.2.0's archived CollationTest files out of the file's order: Broiler.JS compares through "the host's ICU 74 root (:6121, :6231)", and "the host's ICU 74 carries UCA 15.1's weights", so a code point UCA 16 or 17 weighs anew or adds sorts otherwise; the host's ICU 74.2, asked the pair through its C API under the file's settings, answers as Broiler.JS does; answered at SJL-17.5, where CLDR 48.2.0's root replaces the host's ICU for the covered locales (JSD-0084 decision E3)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD805\uDED7A","\uD805\uDEE1A"))+1]
 note: U+D805U+DED7A against U+D805U+DEE1A under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 56151 and 56152 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -7583,7 +7614,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD806\uDFF8b" str:"\uD807\uDC58b"
 out: value: str:"="
-class: normative
+class: divergence
+divergence.broiler-js: row O2 (data policy, C5): a pair of consecutive lines of CLDR 48.2.0's archived CollationTest files out of the file's order: Broiler.JS compares through "the host's ICU 74 root (:6121, :6231)", and "the host's ICU 74 carries UCA 15.1's weights", so a code point UCA 16 or 17 weighs anew or adds sorts otherwise; the host's ICU 74.2, asked the pair through its C API under the file's settings, answers as Broiler.JS does; answered at SJL-17.5, where CLDR 48.2.0's root replaces the host's ICU for the covered locales (JSD-0084 decision E3)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD806\uDFF8b","\uD807\uDC58b"))+1]
 note: U+D806U+DFF8b against U+D807U+DC58b under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 56953 and 56954 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -10113,7 +10145,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uD803\uDD7AA" str:"\uD803\uDD5Aa"
 out: value: str:"<"
-class: normative
+class: divergence
+divergence.broiler-js: row O2 (data policy, C5): a pair of consecutive lines of CLDR 48.2.0's archived CollationTest files out of the file's order: Broiler.JS compares through "the host's ICU 74 root (:6121, :6231)", and "the host's ICU 74 carries UCA 15.1's weights", so a code point UCA 16 or 17 weighs anew or adds sorts otherwise; the host's ICU 74.2, asked the pair through its C API under the file's settings, answers as Broiler.JS does; answered at SJL-17.5, where CLDR 48.2.0's root replaces the host's ICU for the covered locales (JSD-0084 decision E3)
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:collationtest@1 ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"variant",ignorePunctuation:true}).compare("\uD803\uDD7AA","\uD803\uDD5Aa"))+1]
 note: U+D803U+DD7AA against U+D803U+DD5Aa under en {sensitivity:"variant",ignorePunctuation:true}: rows O2 and O5a (O2 data policy, C5; O5a a correction of Broiler.JS): lines 149183 and 149184 of CollationTest_CLDR_SHIFTED_SHORT.txt (CLDR 48.2.0, UCA 17), which order the first at or before the second; the relation at the tertiary strength is the reference's
@@ -14775,6 +14808,7 @@ out: value: str:"\u4E00 < \u4E01 < \u4E02 < \uD840\uDC00 < \uD840\uDC01 < \uD873
 class: impl-defined
 per-engine.broiler-js: value: str:"\u4E00 < \u4E01 < \u4E02 < \uD840\uDC00 < \uD840\uDC01 < \uD873\uDEB0 < \uD880\uDC00 < \uD869\uDF00 < \uD86D\uDF40 < \uD888\uDFB0 < \uD87A\uDFF0 < \u3400 < \uD884\uDF50 < \u3401 < \uD87E\uDC00 < \u4E2D < \u4EBA < \uFA0E < \uFA0F < \u5B50 < \uFA11 < \uD86E\uDC20 < \u6C34 < \u9FCC < \u9FFF < \u9FA6 < \u9FEA < \uD869\uDEDF < \uFA1F < \uF900 < \uFA29 < \u4DBF < \u9F9C < \u9FA5 < \u4DB5"
 per-engine.broiler-vm: value: str:"\u4E00 < \u4E01 < \u4E02 < \u4E2D < \uD87E\uDC00 < \u4EBA < \u5B50 < \u6C34 < \uF900 < \u9F9C < \u9FA5 < \u9FA6 < \u9FCC < \u9FEA < \u9FFF < \uFA0E < \uFA0F < \uFA11 < \uFA1F < \uFA29 < \u3400 < \u3401 < \u4DB5 < \u4DBF < \uD840\uDC00 < \uD840\uDC01 < \uD869\uDEDF < \uD869\uDF00 < \uD86D\uDF40 < \uD86E\uDC20 < \uD873\uDEB0 < \uD87A\uDFF0 < \uD880\uDC00 < \uD884\uDF50 < \uD888\uDFB0"
+divergence.broiler-js: row O3 (data policy, C5): Han across blocks, CJK Extension J (U+323B0 to U+33479, added in Unicode 17.0): Broiler.JS orders unified ideographs "as the host's ICU orders" them, by radical and stroke, its expectation here, but the host's ICU 74.2 (Unicode 15.1) has no data for Extension J and weighs it as an unassigned code point, after every ideograph it knows (the dated note of 2026-11-02 on row O3); a host whose ICU carries Unicode 17 orders it as out; the Han order is SJL-17.3's to decide (finding F1), and SJL-17.5's cut-over takes Broiler.JS's root from the shared data
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en"),["\u4E00","\u4E01","\u4E02","\u4E2D","\u4EBA","\u5B50","\u6C34","\u9F9C","\u9FA5","\u9FA6","\u9FCC","\u9FEA","\u9FFF","\uFA0E","\uFA0F","\uFA11","\uFA1F","\uFA29","\u3400","\u3401","\u4DB5","\u4DBF","\uD840\uDC00","\uD840\uDC01","\uD869\uDEDF","\uD869\uDF00","\uD86D\uDF40","\uD86E\uDC20","\uD873\uDEB0","\uD880\uDC00","\uD884\uDF50","\uD87A\uDFF0","\uD888\uDFB0","\uF900","\uD87E\uDC00"])
 note: 35 strings sorted under en, each neighbour's relation written between them: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"), and which ECMA-402 does not fix: out is the reference's, by radical and stroke; each engine's expectation is its own collation data's answer (the owner's decision of 2026-11-02, JSD-0084): Broiler.VM's, its tables' UCA 17 implicit weights over allkeys_CLDR.txt (ref:ucaimplicit@1), and Broiler.JS's, its host's ICU by radical and stroke, which is out; neither is a correction, and finding F1 stays open for SJL-17.3 (row O3, data policy, C5)
@@ -14878,6 +14912,7 @@ out: value: str:"<"
 class: impl-defined
 per-engine.broiler-js: value: str:"<"
 per-engine.broiler-vm: value: str:">"
+divergence.broiler-js: row O3 (data policy, C5): Han across blocks, CJK Extension J (U+323B0 to U+33479, added in Unicode 17.0): Broiler.JS orders unified ideographs "as the host's ICU orders" them, by radical and stroke, its expectation here, but the host's ICU 74.2 (Unicode 15.1) has no data for Extension J and weighs it as an unassigned code point, after every ideograph it knows (the dated note of 2026-11-02 on row O3); a host whose ICU carries Unicode 17 orders it as out; the Han order is SJL-17.3's to decide (finding F1), and SJL-17.5's cut-over takes Broiler.JS's root from the shared data
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\uD888\uDFB0","\uD87A\uDFF0"))+1]
 note: U+D888U+DFB0 against U+D87AU+DFF0 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"), and which ECMA-402 does not fix: out is the reference's, by radical and stroke; each engine's expectation is its own collation data's answer (the owner's decision of 2026-11-02, JSD-0084): Broiler.VM's, its tables' UCA 17 implicit weights over allkeys_CLDR.txt (ref:ucaimplicit@1), and Broiler.JS's, its host's ICU by radical and stroke, which is out; neither is a correction, and finding F1 stays open for SJL-17.3 (row O3, data policy, C5)
@@ -15456,6 +15491,7 @@ out: value: str:">"
 class: impl-defined
 per-engine.broiler-js: value: str:">"
 per-engine.broiler-vm: value: str:"<"
+divergence.broiler-js: row O3 (data policy, C5): Han across blocks, CJK Extension J (U+323B0 to U+33479, added in Unicode 17.0): Broiler.JS orders unified ideographs "as the host's ICU orders" them, by radical and stroke, its expectation here, but the host's ICU 74.2 (Unicode 15.1) has no data for Extension J and weighs it as an unassigned code point, after every ideograph it knows (the dated note of 2026-11-02 on row O3); a host whose ICU carries Unicode 17 orders it as out; the Han order is SJL-17.3's to decide (finding F1), and SJL-17.5's cut-over takes Broiler.JS's root from the shared data
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u4E2D","\uD888\uDFB0"))+1]
 note: U+4E2D against U+D888U+DFB0 under en: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"), and which ECMA-402 does not fix: out is the reference's, by radical and stroke; each engine's expectation is its own collation data's answer (the owner's decision of 2026-11-02, JSD-0084): Broiler.VM's, its tables' UCA 17 implicit weights over allkeys_CLDR.txt (ref:ucaimplicit@1), and Broiler.JS's, its host's ICU by radical and stroke, which is out; neither is a correction, and finding F1 stays open for SJL-17.3 (row O3, data policy, C5)
@@ -15469,6 +15505,7 @@ out: value: str:">"
 class: impl-defined
 per-engine.broiler-js: value: str:">"
 per-engine.broiler-vm: value: str:"<"
+divergence.broiler-js: row O3 (data policy, C5): Han across blocks, CJK Extension J (U+323B0 to U+33479, added in Unicode 17.0): Broiler.JS orders unified ideographs "as the host's ICU orders" them, by radical and stroke, its expectation here, but the host's ICU 74.2 (Unicode 15.1) has no data for Extension J and weighs it as an unassigned code point, after every ideograph it knows (the dated note of 2026-11-02 on row O3); a host whose ICU carries Unicode 17 orders it as out; the Han order is SJL-17.3's to decide (finding F1), and SJL-17.5's cut-over takes Broiler.JS's root from the shared data
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1 ref:ucaimplicit@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u4E2D","\uD888\uDFB0"))+1]
 note: U+4E2D against U+D888U+DFB0 under en {sensitivity:"base"}: row O3 (data policy, C5): Han across blocks (finding F1): the reference orders them by radical and stroke, which CLDR 48.2.0's root.xml (collation private-unihan) names "the CLDR collation root table's radical-stroke order", and the archived CollationTest files hold only Han characters that order alike by that order and by the UCA's implicit weights; the answer moves with the order of Han characters, which UTS #35 Part 5 (CLDR 48) leaves to the implementation ("an implementation may choose either to implement the order defined in the UCA and the [Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines"), and which ECMA-402 does not fix: out is the reference's, by radical and stroke; each engine's expectation is its own collation data's answer (the owner's decision of 2026-11-02, JSD-0084): Broiler.VM's, its tables' UCA 17 implicit weights over allkeys_CLDR.txt (ref:ucaimplicit@1), and Broiler.JS's, its host's ICU by radical and stroke, which is out; neither is a correction, and finding F1 stays open for SJL-17.3 (row O3, data policy, C5)
@@ -16212,7 +16249,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"accent"}).compare("\uFB01","fi"))+1]
-note: U+FB01 against fi under en {sensitivity:"accent"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+FB01 against fi under en {sensitivity:"accent"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (accent folds width and compatibility differences, row O5b)
 since: 33
 
 id: intl/collation/root/compatibility/0004
@@ -16245,7 +16282,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"accent"}).compare("\u01C6","d\u017E"))+1]
-note: U+01C6 against dU+017E under en {sensitivity:"accent"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+01C6 against dU+017E under en {sensitivity:"accent"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (accent folds width and compatibility differences, row O5b)
 since: 33
 
 id: intl/collation/root/compatibility/0007
@@ -16278,7 +16315,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"accent"}).compare("\u2460","1"))+1]
-note: U+2460 against 1 under en {sensitivity:"accent"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+2460 against 1 under en {sensitivity:"accent"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (accent folds width and compatibility differences, row O5b)
 since: 33
 
 id: intl/collation/root/compatibility/0010
@@ -16297,7 +16334,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uFF21" str:"A"
 out: value: str:"="
-class: normative
+class: divergence
+divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width and compatibility differences ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated note of 2026-11-02 on row O5b, at accent and case too: a fullwidth letter, a squared katakana word or NBSP against its decomposition; the reference and Broiler.VM fold them, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\uFF21","A"))+1]
 note: U+FF21 against A under en {sensitivity:"base"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (base folds width and compatibility differences, row O5b)
@@ -16308,10 +16346,11 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\uFF21" str:"A"
 out: value: str:"="
-class: normative
+class: divergence
+divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width and compatibility differences ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated note of 2026-11-02 on row O5b, at accent and case too: a fullwidth letter, a squared katakana word or NBSP against its decomposition; the reference and Broiler.VM fold them, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"accent"}).compare("\uFF21","A"))+1]
-note: U+FF21 against A under en {sensitivity:"accent"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+FF21 against A under en {sensitivity:"accent"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (accent folds width and compatibility differences, row O5b)
 since: 33
 
 id: intl/collation/root/compatibility/0013
@@ -16344,7 +16383,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"accent"}).compare("\u00AA","a"))+1]
-note: U+00AA against a under en {sensitivity:"accent"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+00AA against a under en {sensitivity:"accent"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (accent folds width and compatibility differences, row O5b)
 since: 33
 
 id: intl/collation/root/compatibility/0016
@@ -16377,7 +16416,7 @@ out: value: str:">"
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"accent"}).compare("\u00BD","1/2"))+1]
-note: U+00BD against 1/2 under en {sensitivity:"accent"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+00BD against 1/2 under en {sensitivity:"accent"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (accent folds width and compatibility differences, row O5b)
 since: 33
 
 id: intl/collation/root/compatibility/0019
@@ -16410,7 +16449,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"accent"}).compare("\u2163","IV"))+1]
-note: U+2163 against IV under en {sensitivity:"accent"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+2163 against IV under en {sensitivity:"accent"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (accent folds width and compatibility differences, row O5b)
 since: 33
 
 id: intl/collation/root/compatibility/0022
@@ -16443,7 +16482,7 @@ out: value: str:"="
 class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"accent"}).compare("\u00B2","2"))+1]
-note: U+00B2 against 2 under en {sensitivity:"accent"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+00B2 against 2 under en {sensitivity:"accent"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (accent folds width and compatibility differences, row O5b)
 since: 33
 
 id: intl/collation/root/compatibility/0025
@@ -16462,7 +16501,8 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u3300" str:"\u30A2\u30D1\u30FC\u30C8"
 out: value: str:"="
-class: normative
+class: divergence
+divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width and compatibility differences ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated note of 2026-11-02 on row O5b, at accent and case too: a fullwidth letter, a squared katakana word or NBSP against its decomposition; the reference and Broiler.VM fold them, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("\u3300","\u30A2\u30D1\u30FC\u30C8"))+1]
 note: U+3300 against U+30A2U+30D1U+30FCU+30C8 under en {sensitivity:"base"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (base folds width and compatibility differences, row O5b)
@@ -16473,10 +16513,11 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u3300" str:"\u30A2\u30D1\u30FC\u30C8"
 out: value: str:"="
-class: normative
+class: divergence
+divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width and compatibility differences ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated note of 2026-11-02 on row O5b, at accent and case too: a fullwidth letter, a squared katakana word or NBSP against its decomposition; the reference and Broiler.VM fold them, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"accent"}).compare("\u3300","\u30A2\u30D1\u30FC\u30C8"))+1]
-note: U+3300 against U+30A2U+30D1U+30FCU+30C8 under en {sensitivity:"accent"}: row O4 (same): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives
+note: U+3300 against U+30A2U+30D1U+30FCU+30C8 under en {sensitivity:"accent"}: rows O4 and O5b (O4 same; O5b a correction of Broiler.JS): a compatibility or Thai prevowel form against its decomposition, or a space, a hyphen or an accent, at the strength the sensitivity gives (accent folds width and compatibility differences, row O5b)
 since: 33
 
 id: intl/collation/root/compatibility/0028
