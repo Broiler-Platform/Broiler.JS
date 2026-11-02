@@ -95,6 +95,45 @@ public sealed class DateTimeTests
     }
 
     [Fact]
+    public void T9_h11_writes_0_to_11_and_h23_writes_00_to_23()
+    {
+        var components = new DateTimeComponents { Hour = "numeric", Minute = "2-digit" };
+        var h11 = Format("en", components, hourCycle: "h11");
+        Assert.Equal("h11", h11.HourCycle);
+        Assert.Contains('K', h11.Formatter.Pattern);
+        Assert.Equal("0:05\u202FAM", Write(h11, Utc(2024, 1, 5, 0, 5)));
+        Assert.Equal("0:05\u202FPM", Write(h11, Utc(2024, 1, 5, 12, 5)));
+        Assert.Equal("11:05\u202FPM", Write(h11, Utc(2024, 1, 5, 23, 5)));
+
+        var h12 = Format("en", components, hourCycle: "h12");
+        Assert.Equal("12:05\u202FAM", Write(h12, Utc(2024, 1, 5, 0, 5)));
+        Assert.Equal("12:05\u202FPM", Write(h12, Utc(2024, 1, 5, 12, 5)));
+
+        var h23 = Format("en", new DateTimeComponents { Hour = "2-digit", Minute = "2-digit" }, hourCycle: "h23");
+        Assert.Equal("h23", h23.HourCycle);
+        Assert.Equal("00:05", Write(h23, Utc(2024, 1, 5, 0, 5)));
+        Assert.Equal("23:05", Write(h23, Utc(2024, 1, 5, 23, 5)));
+    }
+
+    [Fact]
+    public void T10_each_locale_s_default_twelve_and_twenty_four_hour_cycles()
+    {
+        // CLDR's preferred hour of the data locale's region gives the default; hour12 takes the default where it is of its kind,
+        // and otherwise h12 or h23, as Broiler.VM's CreateDateTimeFormat does.
+        string? Cycle(string locale, bool? hour12 = null) => Format(locale, new DateTimeComponents { Hour = "numeric" }, hour12: hour12).HourCycle;
+
+        Assert.Equal("h12", Cycle("en"));
+        Assert.Equal("h23", Cycle("de"));
+        Assert.Equal("h23", Cycle("fr"));
+        Assert.Equal("h23", Cycle("ja"));
+        Assert.Equal("h12", Cycle("de", hour12: true));
+        Assert.Equal("h12", Cycle("en", hour12: true));
+        Assert.Equal("h23", Cycle("en", hour12: false));
+        Assert.Equal("h23", Cycle("ja", hour12: false));
+        Assert.Equal("h23", Cycle("de-u-hc-h11", hour12: false));
+    }
+
+    [Fact]
     public void T12_CLDR_s_patterns_write_U_202F_and_the_atTime_join()
     {
         Assert.Equal("3:07 PM", Write(Format("en", timeStyle: "short"), Instant));
@@ -115,6 +154,18 @@ public sealed class DateTimeTests
         Assert.Equal("Januar", Write(Format("de", new DateTimeComponents { Month = "long" }), Instant));
         Assert.Equal("Freitag", Write(Format("de", new DateTimeComponents { Weekday = "long" }), Instant));
         Assert.Equal("5.1.2024", Write(Format("de"), Instant));
+    }
+
+    [Fact]
+    public void T15_and_T16_layouts_and_locales_are_CLDR_s()
+    {
+        Assert.Equal("5. Januar 2024", Write(Format("de", dateStyle: "long"), Instant));
+        Assert.Equal("05.01.24", Write(Format("de", dateStyle: "short"), Instant));
+        Assert.Equal("Fr., 5. Jan.", Write(Format("de", new DateTimeComponents { Weekday = "short", Day = "numeric", Month = "short" }), Instant));
+        Assert.Equal("5. Januar 2024 um 15:07", Write(Format("de", dateStyle: "long", timeStyle: "short"), Instant));
+        Assert.Equal("15:07:09,123", Write(Format("de", new DateTimeComponents { Hour = "numeric", Minute = "numeric", Second = "numeric", FractionalSecondDigits = 3 }), Instant));
+        Assert.Equal("05/01/2024", Write(Format("fr"), Instant));
+        Assert.Equal("2024/1/5", Write(Format("ja"), Instant));
     }
 
     // ---- T17 to T20: day periods ----------------------------------------------------------------------------------------
@@ -212,6 +263,63 @@ public sealed class DateTimeTests
         Assert.All(same, static p => Assert.Equal("shared", p.Source));
     }
 
+    [Fact]
+    public void T28_parts_eras_and_TimeClip()
+    {
+        var full = Format("en", dateStyle: "full", timeStyle: "long");
+        Assert.Equal(["weekday", "literal", "month", "literal", "day", "literal", "year", "literal", "hour", "literal", "minute", "literal", "second", "literal", "dayPeriod", "literal", "timeZoneName"],
+            full.Formatter.FormatToParts(Instant).Select(static p => p.Type));
+        Assert.All(full.Formatter.FormatToParts(Instant), static p => Assert.Null(p.Source));
+
+        var era = Format("en", new DateTimeComponents { Era = "short", Year = "numeric" });
+        Assert.Equal("2024 AD", Write(era, Instant));
+        Assert.Equal("1 BC", Write(era, Utc(0, 6, 1)));
+        Assert.Equal("2 BC", Write(era, Utc(-1, 6, 1)));
+        Assert.Equal([("year", "1"), ("literal", " "), ("era", "BC")], era.Formatter.FormatToParts(Utc(0, 6, 1)).Select(static p => (p.Type, p.Value)));
+        Assert.Equal("24", Write(Format("en", new DateTimeComponents { Year = "2-digit" }), Instant));
+
+        var format = Format("en");
+        Assert.Equal(IntlStatus.Completed, format.HandleDateTimeValue(DateTimeValue.Number(8.64e15), out var formatter, out var time));
+        Assert.Equal("9/13/275760", formatter!.Format(time));
+        Assert.Equal(IntlStatus.Completed, format.HandleDateTimeValue(DateTimeValue.Number(-0.5), out _, out time));
+        Assert.Equal(0, time);
+        Assert.Equal("1/1/1970", format.Formatter.Format(time));
+    }
+
+    [Fact]
+    public void T30_and_T31_interval_patterns_and_the_range_separator()
+    {
+        Assert.Equal("January 5\u2009\u2013\u2009February 7",
+            Format("en", new DateTimeComponents { Month = "long", Day = "numeric" }).Formatter.FormatRange(Utc(2024, 1, 5), Utc(2024, 2, 7)));
+        Assert.Equal("05.\u201307.01.2024",
+            Format("de", new DateTimeComponents { Year = "numeric", Month = "2-digit", Day = "2-digit" }).Formatter.FormatRange(Utc(2024, 1, 5), Utc(2024, 1, 7)));
+        Assert.Equal("4 BC\u2009\u2013\u20092024 AD",
+            Format("en", new DateTimeComponents { Year = "numeric" }).Formatter.FormatRange(Utc(-3, 6, 1), Instant));
+
+        // THE FALLBACK: CLDR's intervalFormatFallback joins two full dates where no interval pattern applies.
+        var separator = Format("en", dateStyle: "short", timeStyle: "short").Formatter.FormatRangeToParts(Instant, Instant + 400 * 86_400_000.0)
+            .Single(static p => p.Source == "shared");
+        Assert.Equal(("literal", "\u2009\u2013\u2009"), (separator.Type, separator.Value));
+    }
+
+    [Fact]
+    public void T32_formatRange_s_checks_and_order()
+    {
+        var format = Format("en");
+        Assert.Equal(IntlStatus.TimeValueOutOfRange, format.HandleDateTimeRange(DateTimeValue.Number(double.NaN), DateTimeValue.Number(0), out var formatter, out _, out _));
+        Assert.Null(formatter);
+        Assert.Equal(IntlStatus.TimeValueOutOfRange, format.HandleDateTimeRange(DateTimeValue.Number(0), DateTimeValue.Number(8.64e15 + 1), out _, out _, out _));
+        Assert.Equal(IntlStatus.RangeOfDifferentTypes, format.HandleDateTimeRange(
+            DateTimeValue.PlainDate(new IsoDate(2024, 1, 5), "iso8601"),
+            DateTimeValue.PlainDateTime(new IsoDateTime(new IsoDate(2024, 1, 7), new IsoTime(0, 0, 0, 0, 0, 0)), "iso8601"), out _, out _, out _));
+        Assert.Equal(IntlStatus.RangeOfDifferentTypes,
+            format.HandleDateTimeRange(DateTimeValue.Number(0), DateTimeValue.PlainDate(new IsoDate(2024, 1, 5), "iso8601"), out _, out _, out _));
+
+        // X AFTER Y: the range is written from x to y, as given.
+        Assert.Equal(IntlStatus.Completed, format.HandleDateTimeRange(DateTimeValue.Number(Utc(2024, 1, 7)), DateTimeValue.Number(Utc(2024, 1, 5)), out formatter, out var x, out var y));
+        Assert.Equal("1/7/2024\u2009\u2013\u20091/5/2024", formatter!.FormatRange(x, y));
+    }
+
     // ---- T33 to T37: calendars and numbering systems ---------------------------------------------------------------------
 
     [Fact]
@@ -228,6 +336,19 @@ public sealed class DateTimeTests
     {
         Assert.Equal("Friday", Write(Format("en", new DateTimeComponents { Weekday = "long" }, calendar: "coptic"), Instant));
         Assert.StartsWith("Kiahk 26, 1740", Write(Format("en", new DateTimeComponents { Year = "numeric", Month = "long", Day = "numeric" }, calendar: "coptic"), Instant), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void T36_the_japanese_calendar_writes_its_era()
+    {
+        var japanese = Format("en-u-ca-japanese");
+        Assert.Equal("japanese", japanese.Calendar);
+        Assert.Equal("1/5/6 R", Write(japanese, Instant));
+        Assert.Equal("January 5, 6 Reiwa", Write(Format("en-u-ca-japanese", dateStyle: "long"), Instant));
+        Assert.Equal([("year", "6"), ("literal", " "), ("era", "Reiwa")],
+            Format("en", new DateTimeComponents { Era = "long", Year = "numeric" }, calendar: "japanese").Formatter.FormatToParts(Instant).Select(static p => (p.Type, p.Value)));
+        Assert.Equal("1/5/31 H", Write(japanese, Utc(2019, 1, 5)));
+        Assert.Equal("2024-01-05", Write(Format("en", dateStyle: "short", calendar: "iso8601"), Instant));
     }
 
     [Fact]
