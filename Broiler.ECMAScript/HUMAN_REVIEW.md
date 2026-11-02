@@ -501,7 +501,7 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a cover element that covers no binding is converted, or one that does is refused
 - `Broiler.ECMAScript.Syntax.Parser.ToAssignmentPattern(Expression)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, Spec=ECMA-262 s13.15.5 AssignmentPattern by conversion, `BCA81B`, PENDING
   - Falsified if: a literal that covers no AssignmentPattern is converted, or one that does is refused
-- `Broiler.ECMAScript.Syntax.Parser.ParseClassTail(SourceSpan, IReadOnlyList<Decorator>, BindingIdentifier?)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, Spec=ECMA-262 s15.7 ClassHeritage, JSD-0083 D14 nesting bound, `735E95`, PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseClassTail(SourceSpan, IReadOnlyList<Decorator>, BindingIdentifier?)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, Spec=ECMA-262 s15.7 ClassHeritage, JSD-0083 D14 nesting bound, `20ED93`, PENDING
   - Falsified if: a chain of class heritages nested past the request's bound reaches the stack rather than being refused with the nesting diagnostic
 - `Broiler.ECMAScript.Syntax.Parser.ParseFor()` in `Broiler.ECMAScript.Frontend/Parser.Statements.cs` - Security=High, Spec=ECMA-262 s14.7.4 s14.7.5 for heads, row P16b, `0BE270`, PENDING
   - Falsified if: a semicolon is inserted in a for head, or a head the lookahead restrictions exclude is admitted

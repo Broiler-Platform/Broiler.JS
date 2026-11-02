@@ -492,6 +492,39 @@ public sealed class EarlyErrorTests
         Assert.Equal(CodeOf(row), result.Diagnostics[0].Code);
     }
 
+    /// <summary>
+    /// A literal's refusal that waits for the cover around it is made where no cover takes the literal: a class heritage,
+    /// which no assignment encloses at a statement's level, makes it after the heritage is read (EE0032 for an assignment's
+    /// literal target, EE0017 for a CoverInitializedName); and a literal assignment inside a literal that the parse converts to
+    /// an assignment pattern (an assignment's target or a for-in/of head) is refused by EE0038, the DestructuringAssignmentTarget's
+    /// row, when the conversion reaches it (stage SJL-13.2f, 2026-11-02, after review).
+    /// </summary>
+    public static TheoryData<string, string, string> DeferredLiteralRefusals => new()
+    {
+        { "", "class C extends [[...x, y] = 1] {}", "EE0032" },
+        { "m", "export default class extends { a: [...x, y] = 1 } {}", "EE0032" },
+        { "", "(class extends [[...x, y] = 1] {});", "EE0032" },
+        { "", "class C extends {a = 1} {}", "EE0017" },
+        { "", "class C extends [{a = 1}] {}", "EE0017" },
+        { "m", "export default class extends {a = 1} {}", "EE0017" },
+        { "", "class C extends ({a = 1}) {}", "EE0017" },
+        { "", "[[...x, y] = 1] = 2;", "EE0038" },
+        { "", "for ([[...x, y] = 1] of []);", "EE0038" },
+        { "", "({ a: [...x, y] = 1 } = 2);", "EE0038" },
+        { "", "([[...x, y] = 1] = 2);", "EE0038" },
+        { "", "x = { a: [...x, y] = 1 } = 2;", "EE0038" },
+        { "", "({ a: [...x, y] = 1 });", "EE0032" },
+    };
+
+    [Theory]
+    [MemberData(nameof(DeferredLiteralRefusals))]
+    public void A_deferred_literal_refusal_is_made_where_no_cover_takes_the_literal(string options, string text, string row)
+    {
+        var result = Parse(options, text);
+        Assert.Equal(ParseOutcome.Refused, result.Outcome);
+        Assert.Equal(CodeOf(row), result.Diagnostics[0].Code);
+    }
+
     // ---------------------------------------------------------------------------------------------------------------
     // The library's order, the cap, first error and all errors (decision D11).
 

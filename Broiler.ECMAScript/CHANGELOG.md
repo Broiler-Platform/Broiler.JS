@@ -465,6 +465,25 @@ Not yet packed under a version of its own: the stream's next version is set when
   In the parse corpus 112 refusals change their first code and none its outcome: 40 from JSE1573 to JSE1305 and 72 from
   JSE1328 to JSE1520 (both configurations).
 
+  *(Added 2026-11-02, at SJL-13.2f, after review of the change above.)* The second item said that the deferred literal
+  refusal "is EE0032's where no arrow's head takes it (`([...[x], y] = [1]);`)". That held only where a cover around the
+  literal resolves, and two other cases now report the row whose condition holds:
+  - **a deferred literal in a class heritage** (`class C extends [[...x, y] = 1] {}`,
+    `export default class extends { a: [...x, y] = 1 } {}`) is refused by EE0032 (JSE1328) when the heritage has been read.
+    No assignment encloses a heritage at a statement's level, so the deferred refusal was never made, and the walk
+    refused the literal target by EE0033 (JSE1329), whose condition ("neither an ObjectLiteral nor an ArrayLiteral") does
+    not hold of it. The same check closes an older gap: a CoverInitializedName in a heritage (`class C extends {a = 1} {}`,
+    `class C extends [{a = 1}] {}`) was accepted, and is now refused by EE0017 (JSE1313);
+  - **a literal assignment nested in a literal that the parse converts to an assignment pattern** (an assignment's target or
+    a for-in/of head: `[[...x, y] = 1] = 2;`, `for ([[...x, y] = 1] of []);`, `({ a: [...x, y] = 1 } = 2);`) is refused
+    by EE0038 (JSE1334), the DestructuringAssignmentTarget's row. Before the change above it was refused by EE0032
+    (JSE1328) when the inner assignment was read; after it, by EE0038 unparenthesised and still by EE0032 within
+    parentheses. In the pattern the inner literal is no AssignmentExpression's target, so EE0032 does not hold of it,
+    and the outer literal does cover an AssignmentPattern; the conversion now takes the deferred literal and drops its
+    EE0032 refusal. EE0032 stays the row where nothing converts the outer literal (`({ a: [...x, y] = 1 });`).
+
+  No source of the parse corpus changes its outcome or its first code.
+
 - `Broiler.ECMAScript.Intl`: **collation** (milestone SJL-17.3; Broiler.VM's JSD-0084, the area verdict "Collation (SJL-17.1)"
   of this repository's plan), in `Broiler.ECMAScript.Intl/Collation/`. `UcaCollator`, ECMA-402's CompareStrings over the
   Unicode Collation Algorithm, CLDR 48.2.0's root collation and a tailoring, under the resolved options as a record,

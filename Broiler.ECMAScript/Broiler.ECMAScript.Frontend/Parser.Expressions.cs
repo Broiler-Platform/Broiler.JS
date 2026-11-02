@@ -185,7 +185,9 @@ internal sealed partial class Parser
     /// An assignment's array or object literal target converted to an AssignmentPattern; where the assignment stands inside
     /// a cover an arrow's head may yet convert (<paramref name="defer"/>), a literal that covers none is kept as read and its
     /// refusal deferred: the head converts it into ArrowFormalParameters and refuses it by its own row (EE0087 or EE0155),
-    /// since an arrow's parameters are no AssignmentExpression, and otherwise the refusal is made when the cover resolves.
+    /// since an arrow's parameters are no AssignmentExpression; an enclosing literal converted to an AssignmentPattern takes
+    /// it as a DestructuringAssignmentTarget, which EE0038 refuses; and otherwise the refusal is made when the cover, or a
+    /// class heritage, resolves.
     /// </summary>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.1 EE0032, s15.3.1 ArrowParameters cover early errors; IP=Low; Security=High; Resources=2; Fingerprint=722F78
     // Broiler-Falsified-If: a literal that covers no AssignmentPattern is admitted outside an arrow's head, or an arrow's head that covers it is refused by EE0032

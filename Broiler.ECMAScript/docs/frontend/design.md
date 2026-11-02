@@ -566,6 +566,16 @@ cover row, EE0087, or EE0155 at an async head: the literal's refusal waits for t
 CoverInitializedName's does (EE0017), and is EE0032's where no arrow's head takes it. The parser refused it by EE0032
 when the assignment was read, before `=>` was seen, though an arrow's parameters are no AssignmentExpression.
 
+*(Noted 2026-11-02, at SJL-13.2f, after review of the note above, which quotes as it stands: "and is EE0032's where no
+arrow's head takes it".)* That held only where a cover around the literal resolves. A class heritage, which no assignment
+encloses at a statement's level, now makes its literals' deferred refusals when it has been read: EE0032 for a literal
+target (`class C extends [[...x, y] = 1] {}`, which the walk refused by EE0033, whose condition does not hold of a
+literal) and EE0017 for a CoverInitializedName (`class C extends {a = 1} {}`, which was accepted). And an enclosing
+literal that the parse converts to an assignment pattern takes a deferred literal as a DestructuringAssignmentTarget,
+whose row is EE0038 (`[[...x, y] = 1] = 2;`, `for ([[...x, y] = 1] of []);`, `({ a: [...x, y] = 1 } = 2);`): the inner
+literal is no AssignmentExpression's target in the pattern, so EE0032 does not hold of it. EE0032 stays the row where
+nothing converts the outer literal.
+
 ## Corrections
 
 *(Revised 2026-10-26, at SJL-13.1; it read "None.")* Each revision of 2026-10-26 above quotes what it replaced:
@@ -583,6 +593,9 @@ when the assignment was read, before `=>` was seen, though an arrow's parameters
 *(Added 2026-11-02, at SJL-13.2f, after part A's first codes were triaged.)* Section 9.4 gains the note on the rows of an
 `await` binding in a static block (EE0009, EE0011, EE0013 for EE0140) and of an arrow head's literal that covers no
 AssignmentPattern (EE0087 or EE0155 for EE0032).
+
+*(Added 2026-11-02, at SJL-13.2f, after review.)* Section 9.4 gains a second note: a class heritage's deferred literal
+refusals (EE0032, EE0017) and a deferred literal an assignment pattern takes (EE0038).
 
 *(Added 2026-11-02, at SJL-13.2f.)* Section 9.1's packing row gains the note that the library is packable; section 9.2
 gains the note on the owner's decision of 2026-11-02 on decision D14's residual shapes, each chain node charged its whole

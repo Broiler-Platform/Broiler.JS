@@ -141,7 +141,9 @@ internal sealed partial class Parser
     private readonly List<Expression> coverInitialized = new();
 
     // The refusal of each deferred assignment target in coverInitialized: EE0032's, or a nested literal's row, made when
-    // no arrow's head takes the literal (stage SJL-13.2f).
+    // no conversion takes the literal: an arrow's head refuses it by its own row, and an enclosing literal converted to an
+    // assignment pattern takes it as a DestructuringAssignmentTarget, EE0038's (stage SJL-13.2f; revised 2026-11-02, after
+    // review, from "made when no arrow's head takes the literal").
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.1 EE0032, s15.3.1 ArrowParameters cover early errors; IP=Low; Security=Low; Resources=0; Fingerprint=4E23F0
     // Broiler-Human:        PENDING
     private readonly Dictionary<Expression, ParseAbort> deferredPatterns = new(ReferenceEqualityComparer.Instance);

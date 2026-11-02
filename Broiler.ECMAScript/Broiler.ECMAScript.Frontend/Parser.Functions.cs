@@ -687,7 +687,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>An AssignmentElement: a DestructuringAssignmentTarget with its Initializer where one is written.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=BD3C1B
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=89BED0
     // Broiler-Human:        PENDING
     private Pattern ToAssignmentElement(Expression expression)
     {
@@ -695,6 +695,13 @@ internal sealed partial class Parser
         {
             if (assignment.Operator != AssignmentOperator.Assign)
                 throw UnexpectedAt(assignment.Span);
+            // A literal target whose refusal was deferred (ToAssignmentTargetOrDeferred) is taken here as the element's
+            // DestructuringAssignmentTarget: the deferred EE0032 is dropped, since the literal is no AssignmentExpression's
+            // target in the pattern, and its conversion's own refusal is EE0038's. (Revised 2026-11-02, at stage SJL-13.2f,
+            // after review; the deferred refusal stayed recorded, so that a parenthesised `({ a: [...x, y] = 1 } = 2)`
+            // was refused by it, EE0032, and the same assignment unparenthesised by EE0038.)
+            if (assignment.Target is Expression literal && deferredPatterns.Remove(literal))
+                coverInitialized.Remove(literal);
             var target = assignment.Target is Pattern pattern ? pattern : ToTargetPattern((Expression)assignment.Target);
             return new AssignmentPattern(assignment.Span, target, assignment.Value);
         }
@@ -771,7 +778,7 @@ internal sealed partial class Parser
     /// nesting (decision D14): a class expression there recurses through it with no statement or assignment between, so
     /// <c>class extends class extends …</c> would otherwise reach the stack uncharged, a gap Broiler.VM's parser has too.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.7 ClassHeritage, JSD-0083 D14 nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=735E95
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.7 ClassHeritage, JSD-0083 D14 nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=20ED93
     // Broiler-Falsified-If: a chain of class heritages nested past the request's bound reaches the stack rather than being refused with the nesting diagnostic
     // Broiler-Human:        PENDING
     private ClassNode ParseClassTail(SourceSpan start, IReadOnlyList<Decorator> decorators, BindingIdentifier? name)
@@ -780,6 +787,7 @@ internal sealed partial class Parser
         if (IsWord(Op, Word.Extends))
         {
             var keyword = Advance();
+            var mark = coverInitialized.Count;
             EnterNesting(keyword);
             try
             {
@@ -792,6 +800,12 @@ internal sealed partial class Parser
 
             if (ReferenceEquals(heritage, arrowCover) || ReferenceEquals(heritage, primaryArrow))
                 throw UnexpectedAt(heritage.Span);
+
+            // No conversion takes the heritage's literals, and at a statement's level no assignment encloses it: a
+            // CoverInitializedName (EE0017) or a deferred literal target (EE0032) in it is refused here. (Added 2026-11-02, at
+            // stage SJL-13.2f, after review: `class C extends {a = 1} {}` was accepted, and `class C extends [[...x, y] = 1] {}`
+            // refused by the walk's EE0033.)
+            CheckCoverInitialized(mark);
         }
 
         Expect(TokenKind.LeftBrace);
