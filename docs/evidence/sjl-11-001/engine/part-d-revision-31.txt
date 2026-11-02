@@ -1,0 +1,40 @@
+Part D's three cultures on corpus revision 31: the regexp/ lines of each report (an engine-level run gives no status vector a line).
+Read, not judged: these runs are at no commit bundle sjl-11-001's rule names.
+
+invariant  run-revision-31-utc.tsv: 1402 regexp/ lines, sha256 4fb6200ff2822002119a197fe5e8ea662085c48b73628b73a17c7624ac012bf4
+tr-TR      run-revision-31-utc-tr-TR.tsv: 1402 regexp/ lines, sha256 e76327b841f14c07629d5a35553655c6e21f65944e036f6b108aeec5234ee2ea
+lt-LT      run-revision-31-utc-lt-LT.tsv: 1402 regexp/ lines, sha256 b19d1ccb01fe6b068fefb1735ec06c68a4202f9c0e28be7615f4de06a1f7aef0
+
+== tr-TR against the invariant culture: 17 lines differ
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0001	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0002	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0005	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0008	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0009	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0011	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0012	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0022	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0025	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0026	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0027	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0033	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0035	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0037	invariant: value: bool:false (match)	tr-TR: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0039	invariant: value: bool:true (match)	tr-TR: value: bool:false (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0040	invariant: value: bool:true (match)	tr-TR: value: bool:false (difference)
+regexp/case-insensitive/m2a-back-references/0002	invariant: value: str:"lastIndex=0;null" (match)	tr-TR: value: str:"lastIndex=0;index=0;length=2;0=2:\u0130i;1=1:\u0130;groups=1;<n>=1:\u0130;indices=u" (difference)
+
+== lt-LT against the invariant culture: 13 lines differ
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0001	invariant: value: bool:false (match)	lt-LT: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0004	invariant: value: bool:false (match)	lt-LT: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0005	invariant: value: bool:false (match)	lt-LT: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0006	invariant: value: bool:false (match)	lt-LT: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0009	invariant: value: bool:false (match)	lt-LT: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0011	invariant: value: bool:false (match)	lt-LT: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0022	invariant: value: bool:false (match)	lt-LT: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0026	invariant: value: bool:false (match)	lt-LT: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0033	invariant: value: bool:false (match)	lt-LT: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0035	invariant: value: bool:false (match)	lt-LT: value: bool:true (difference)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0039	invariant: value: bool:true (match)	lt-LT: value: bool:false (difference)
+regexp/case-insensitive/m2a-back-references/0001	invariant: value: str:"lastIndex=0;null" (match)	lt-LT: value: str:"lastIndex=0;index=0;length=2;0=2:I\u0130;1=1:I;groups=u;indices=u" (difference)
+regexp/case-insensitive/m2a-back-references/0002	invariant: value: str:"lastIndex=0;null" (match)	lt-LT: value: str:"lastIndex=0;index=0;length=2;0=2:\u0130i;1=1:\u0130;groups=1;<n>=1:\u0130;indices=u" (difference)
