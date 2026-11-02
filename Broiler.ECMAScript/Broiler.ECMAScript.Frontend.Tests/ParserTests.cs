@@ -562,6 +562,18 @@ public sealed class ParserTests
     [InlineData("class C { async\nm() {} }", ParseGoal.Script, 1)]
     [InlineData("x\n++\ny", ParseGoal.Script, 2)]
     [InlineData("a = b\n++c", ParseGoal.Script, 2)]
+    // An AsyncArrowFunction is only an AssignmentExpression: no operator extends it, so a line break before one inserts a semicolon.
+    [InlineData("async x => {}\n+1", ParseGoal.Script, 2)]
+    [InlineData("async x => {}\n-1", ParseGoal.Script, 2)]
+    [InlineData("async x => {}\n/a/g.test(s)", ParseGoal.Script, 2)]
+    [InlineData("async x => {}\n++y", ParseGoal.Script, 2)]
+    [InlineData("async x => {}\n(1)", ParseGoal.Script, 2)]
+    [InlineData("x = async y => {}\n* 2", ParseGoal.Script, -1)]
+    [InlineData("async x => {}\n? a : b", ParseGoal.Script, -1)]
+    [InlineData("async x => {} + 1", ParseGoal.Script, -1)]
+    [InlineData("async x => {} / 1", ParseGoal.Script, -1)]
+    [InlineData("x => {}\n+1", ParseGoal.Script, 2)]
+    [InlineData("async (x) => {}\n+1", ParseGoal.Script, 2)]
     public void A_semicolon_is_inserted_where_clause_12_10_says_and_nowhere_else(string text, ParseGoal goal, int statements)
     {
         if (statements < 0)

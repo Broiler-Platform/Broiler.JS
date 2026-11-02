@@ -222,13 +222,16 @@ internal sealed partial class Parser
         _ => false,
     };
 
-    /// <summary>A ConditionalExpression (clause 13.14).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=988048
+    /// <summary>
+    /// A ConditionalExpression (clause 13.14). An async arrow read whole as a primary is no ShortCircuitExpression, so it
+    /// is never a condition's test: it is returned to the AssignmentExpression that may be it.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=D158A3
     // Broiler-Human:        PENDING
     private Expression ParseConditional(bool noIn)
     {
         var test = ParseBinary(1, noIn);
-        if (Op.Kind != TokenKind.Question)
+        if (ReferenceEquals(test, primaryArrow) || Op.Kind != TokenKind.Question)
             return test;
 
         Advance();
@@ -269,13 +272,18 @@ internal sealed partial class Parser
 
     /// <summary>
     /// Extends a left operand with every binary operator of at least <paramref name="minimum"/> precedence, charging one level
-    /// of tree depth for each node from the left operand's spine (decision D14).
+    /// of tree depth for each node from the left operand's spine (decision D14). An async arrow read whole as a primary is
+    /// no operand (clause 15.9: an AsyncArrowFunction is only an AssignmentExpression), so nothing extends it: the operator
+    /// after it is left to the statement's end, where a line terminator before it inserts a semicolon (clause 12.10).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge; IP=Low; Security=High; Resources=2; Fingerprint=2D1E75
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge; IP=Low; Security=High; Resources=2; Fingerprint=EB11AA
     // Broiler-Falsified-If: an operator binds with another precedence or associativity than the grammar's, or a chain is charged without its left operand's spine
     // Broiler-Human:        PENDING
     private Expression ParseBinaryRest(Expression left, int minimum, bool noIn)
     {
+        if (ReferenceEquals(left, primaryArrow))
+            return left;
+
         var saved = treeDepth;
         treeDepth += left.Spine;
         try
@@ -447,12 +455,14 @@ internal sealed partial class Parser
         }
     }
 
-    /// <summary>A postfix UpdateExpression (clause 13.4): <c>++</c> or <c>--</c> on the same line.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=742887
+    /// <summary>A postfix UpdateExpression (clause 13.4): <c>++</c> or <c>--</c> on the same line, after anything but an async arrow read whole as a primary.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=506C97
     // Broiler-Human:        PENDING
     private Expression ParsePostfix()
     {
         var expression = ParseLeftHandSide();
+        if (ReferenceEquals(expression, primaryArrow))
+            return expression;
         var token = Op;
         if (token.Kind is TokenKind.PlusPlus or TokenKind.MinusMinus && !token.NewLineBefore)
         {
