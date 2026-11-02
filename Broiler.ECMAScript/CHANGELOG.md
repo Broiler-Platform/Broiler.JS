@@ -179,6 +179,39 @@ Not yet packed under a version of its own: the stream's next version is set when
   script forms, and the Native AOT probe holds them; the option reads and their spies, the bound `format`, the legacy
   constructor, ToDateTimeFormattable's ToNumber, a Temporal object's slots, the parts arrays and the default zone stay the
   engines'.
+- `Broiler.ECMAScript.Intl`, sub-area (e) (stage SJL-9.3e; Broiler.VM's JSD-0082, rows U1 to U22, decisions D18, D19, D21, D24
+  and D34): duration formatting, ported from Broiler.VM's JavaScript profile at `4cf9ca44` (`JsRealm.DurationFormat`) over the
+  library's number and list formatters, with ASCII digits written by `BigIntText` where it wrote a fraction's integer with the
+  invariant culture (decision D19, row U20), a status where its realm threw, and the caller's `WorkCharge` where Broiler.VM charges,
+  in its units (decision D18, row U19): one per unit visited, and for each number and list format it makes the unit its
+  constructor charges for the locale, each FormatNumericToString, a fraction's String read as a decimal (`length / 8 + 1`) and each
+  step of the list's template. The data is read at ResolveLocale's data locale through the `ILocaleData` it is handed, where
+  Broiler.VM read the data locale's language; for Broiler.VM's tables the two are the same lines:
+  - **`DurationFormatCore`**, with `DurationUnit`, `DurationFormatStyle`, `DurationUnitStyle`, `DurationUnitDisplay`,
+    `DurationUnitOptions`, `DurationDigitalFormat` and `DurationPart`: GetDurationUnitOptions with ValidateDurationUnitStyle after
+    an engine has read a unit's two options - the display default `always` kept for minutes and seconds after a numeric unit (row
+    U1, a correction of Broiler.JS), a sub-second `numeric` made `fractional` with the display default `auto` (row U2), the
+    refusals (row U3) and the other option results (row U4); [[DigitalFormat]] from CLDR's `symbols.timeSeparator` and
+    `duration.hms` at the data locale (rows U13 and U14, decision D34); and PartitionDurationFormatPattern over a valid duration
+    record, Temporal's `DurationFields` - the clock (row U5), the sign on the first unit written (row U6), exact fractions
+    truncated to `fractionalDigits` or nine digits (rows U11, U20 and U21), the parts with their units (row U12), each number
+    in the format's numbering system with its own symbols where the data carries them (rows U15 and U16, decision D21), and the
+    whole joined by a unit list format;
+  - **`IntlStatus`** gains `FractionalDurationUnitAlwaysDisplayed`, `DurationUnitAfterFractional` and `DurationUnitAfterNumeric`.
+
+  The library-level runner answers sub-area (e)'s vectors, `intl/durations.vectors`' eight operations but the engine-level
+  script forms, and the Native AOT probe holds them; the reads of the argument (ToTemporalDuration, a String through Temporal's
+  grammar, or ECMA-402's ToDurationRecord, rows U7 to U10 and U22), the option reads, `supportedLocalesOf`, the parts arrays and
+  `resolvedOptions`' object stay the engines'.
+
+  Decision D34's reading moves more than the `digital` answers it names. [[TwoDigitHours]] is true for `af` and `lt` in
+  Broiler.JS's data, and GetDurationUnitOptions makes the hours `2-digit` whatever style they resolved (ECMA-402's step,
+  as Broiler.VM ports it), the minutes and seconds after them too; so in those two locales a duration with hours is written
+  as a clock in the `long`, `short` and `narrow` styles as well, and the hours resolve `2-digit`:
+  `new Intl.DurationFormat("lt").format({hours: 1, minutes: 2})` is `"01:02:00"`, where Node 22 writes `"1 val. 2 min."`.
+  Broiler.VM's tables carry no such locale. Vectors `intl/durations/families/0003` and `intl/durations/families/0048` (`af`
+  and `lt`, `long`) keep the words as Broiler.JS's expectation, so SJL-9.5 lists the move under decision D34, or the owner
+  restricts the step to `numeric` hours by a dated decision made in both engines.
 - `Broiler.ECMAScript.Conformance` (test-only, not packed): `IVectorRecordLibrary`, a library the library-level runner
   hands each vector whole, script included, which `LibraryRun.Run` calls in place of the operation and the decoded
   inputs (stage SJL-9.3b): the Intl area's sub-area (b) vectors give their options and arguments in the script alone.

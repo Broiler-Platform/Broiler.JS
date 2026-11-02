@@ -89,7 +89,8 @@ contain three pieces of third-party code and one set of public-domain formulas, 
   and display-name formatters are ported the same way, from `JsNumberFormatter`, `JsNumberData`'s `JsNumberPattern` and
   the engine-free steps of `JsRealm.ListFormat`, `JsRealm.RelativeTimeFormat` and `JsRealm.DisplayNames`. At stage
   SJL-9.3d its date-time formatting is ported the same way, from `JsDatePatternGenerator`, `JsDateIntervalFormat`,
-  `JsDateTimeFormatter`, `JsZoneNames`, `JsDateData` and the engine-free steps of `JsRealm.DateTimeFormat`.
+  `JsDateTimeFormatter`, `JsZoneNames`, `JsDateData` and the engine-free steps of `JsRealm.DateTimeFormat`. At stage
+  SJL-9.3e its duration formatting is ported the same way, from the engine-free steps of `JsRealm.DurationFormat`.
   `Broiler.ECMAScript.Intl.Tests` (not packed) holds, under `Differential/Vm/`, test-only copies of Broiler.VM's code at
   `4cf9ca44` for the differential check of Broiler.VM's JSD-0082, decision D22, compiled into that project alone.
 - `Broiler.ECMAScript.Generation` holds the time data home's generator (milestone SJL-8.2): the tz pin

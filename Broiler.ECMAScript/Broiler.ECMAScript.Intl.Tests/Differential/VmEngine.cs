@@ -241,6 +241,9 @@ internal sealed class JsEngine
 
     internal void Charge(ulong units) => Charged += (long)units;
 
+    /// <summary>The engine's meter as the library's <see cref="Broiler.ECMAScript.WorkCharge"/>, which Broiler.VM's duration format hands <c>JsDecimal.FromString</c> (stage SJL-9.3e).</summary>
+    internal WorkCharge WorkCharge => Charge;
+
     /// <summary>ECMA-262 ToNumber of what an options bag of the harness holds: a Number, a String, a Boolean or undefined.</summary>
     internal double ToNumber(JsValue value) => value.Type switch
     {
@@ -438,6 +441,11 @@ internal sealed partial class JsRealm
     internal static Dictionary<string, string> VmComponentsOf(string pattern) => ComponentsOf(pattern);
 
     internal static (string Identifier, int Offset, JsZoneKind Kind, ITimeZoneRules? Zone) VmResolveTimeZone(JsEngine engine, JsValue value) => ResolveTimeZone(engine, value);
+
+    // ---- stage SJL-9.3e's entry points ------------------------------------------------------------------------------
+
+    internal static List<(string Type, string Value, string? Unit)> VmPartitionDurationFormatPattern(JsEngine engine, JsDurationFormatObject format, double[] record) =>
+        PartitionDurationFormatPattern(engine, format, record);
 }
 
 /// <summary>

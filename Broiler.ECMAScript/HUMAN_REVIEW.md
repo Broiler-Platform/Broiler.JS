@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2557 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2590 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 161 |
-| Code units | 4055 |
-| Relevant | 2557 |
-| Exempt | 1498 |
-| Assessed | 2557 of 2557 (100%) |
-| Human reviewed | 0 of 2557 (0%) |
-| Unverified | 2557 |
+| Files scanned | 162 |
+| Code units | 4123 |
+| Relevant | 2590 |
+| Exempt | 1533 |
+| Assessed | 2590 of 2590 (100%) |
+| Human reviewed | 0 of 2590 (0%) |
+| Unverified | 2590 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2557 |
+| HUMAN_PENDING | 2590 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1498 |
+| EXEMPT | 1533 |
 
 ## 5. Aliases In The Tree
 
@@ -224,10 +224,11 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Intl/DateTimePatternGenerator.cs` | 83 | 68 | 15 | 68 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Intl/DigitOptions.cs` | 37 | 18 | 19 | 18 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/DisplayNamesCore.cs` | 29 | 11 | 18 | 11 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/DurationFormatCore.cs` | 65 | 33 | 32 | 33 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Intl/IIntlDataSet.cs` | 33 | 3 | 30 | 3 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/ILocaleData.cs` | 28 | 25 | 3 | 25 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlDecimal.cs` | 37 | 27 | 10 | 27 | Low | High | 3/3 |
-| `Broiler.ECMAScript.Intl/IntlStatus.cs` | 28 | 1 | 27 | 1 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Intl/IntlStatus.cs` | 31 | 1 | 30 | 1 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlTableText.cs` | 6 | 6 | 0 | 6 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/ListFormatter.cs` | 19 | 8 | 11 | 8 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/LocaleDataAnswers.cs` | 16 | 9 | 7 | 9 | Low | Low | 0/0 |
@@ -658,6 +659,12 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a code is accepted that CanonicalCodeForDisplayNames refuses, or regularized by other than ASCII casing
 - `Broiler.ECMAScript.Intl.DisplayNamesCore.LanguageName(string, Func<string, string, string?>)` in `Broiler.ECMAScript.Intl/DisplayNamesCore.cs` - Security=High, Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames, `434C83`, PENDING
   - Falsified if: a language code's name is composed otherwise than its dialect name or its parts in CLDR's locale pattern
+- `Broiler.ECMAScript.Intl.DurationFormatCore.GetDurationUnitOptions(DurationUnit, DurationUnitStyle?, DurationUnitDisplay?, DurationFormatStyle, DurationUnitStyle?, bool, out DurationUnitOptions)` in `Broiler.ECMAScript.Intl/DurationFormatCore.cs` - Security=High, Spec=ECMA-402 sec-getdurationunitoptions sec-validatedurationunitstyle via Broiler.VM JsRealm.DurationFormat, `6C5263`, PENDING
+  - Falsified if: a unit's resolved style or display differs from GetDurationUnitOptions' for the options and the unit before, or a refusal is another status
+- `Broiler.ECMAScript.Intl.DurationFormatCore.FormatToParts(DurationFields, WorkCharge?)` in `Broiler.ECMAScript.Intl/DurationFormatCore.cs` - Security=High, Spec=ECMA-402 sec-partitiondurationformatpattern sec-listformatparts via Broiler.VM JsRealm.DurationFormat, `654A9B`, PENDING
+  - Falsified if: the parts differ from PartitionDurationFormatPattern's for the record, or the charge from Broiler.VM's for the same duration and format
+- `Broiler.ECMAScript.Intl.DurationFormatCore.WithFractions(double[], int, WorkCharge?)` in `Broiler.ECMAScript.Intl/DurationFormatCore.cs` - Security=High, Spec=ECMA-402 sec-computefractionaldigits sec-nextunitfractional via Broiler.VM JsRealm.DurationFormat, `63FACA`, PENDING
+  - Falsified if: a unit with its fractional units differs from the exact sum ComputeFractionalDigits makes, in digits or sign
 - `Broiler.ECMAScript.Intl.IntlDecimal.FromNumber(double)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal, `07012B`, PENDING
   - Falsified if: a Number's value differs from the decimal its Number::toString digits write
 - `Broiler.ECMAScript.Intl.IntlDecimal.FromString(string, BigIntPolicy, WorkCharge?)` in `Broiler.ECMAScript.Intl/IntlDecimal.cs` - Security=High, Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal, `2EE52F`, PENDING
@@ -734,5 +741,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1315 of the 2557 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1333 of the 2590 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

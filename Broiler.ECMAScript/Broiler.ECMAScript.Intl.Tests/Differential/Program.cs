@@ -12,7 +12,7 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// </summary>
 /// <remarks>
 /// <code>
-/// dotnet Broiler.ECMAScript.Intl.Tests.dll differential [--seed N] [--scale N] [--sections D0,L1,...,M1,P1,...,N1,S1,...,T1,...] [--classified-examples N] [--out FILE]
+/// dotnet Broiler.ECMAScript.Intl.Tests.dll differential [--seed N] [--scale N] [--sections D0,L1,...,M1,P1,...,N1,S1,...,T1,...,U1,U2] [--classified-examples N] [--out FILE]
 /// </code>
 /// It prints the report and writes it to <c>--out</c> when given, and exits 1 when a difference is unclassified.
 /// <c>--classified-examples</c> lists up to that many classified differences of each row and section, three by default, so
