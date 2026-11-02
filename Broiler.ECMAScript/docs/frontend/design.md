@@ -47,7 +47,10 @@ the tokenizer's diagnostic, and answers not implemented for every other until th
 says what the tokenizer gives.)* *(Noted 2026-11-01, at SJL-13.2c: "and answers not implemented for every other until the
 parser of stage 4c" no longer holds. Stage 4c added the tree, public, and the parser, internal: the parse entry answers
 accepted, with the tree, or refused, with the first refusal, for every source; section 9.3's note of 2026-11-01 at
-SJL-13.2c says what the tree and the refusals carry.)*
+SJL-13.2c says what the tree and the refusals carry.)* *(Noted 2026-11-02, at SJL-13.2d: "or refused, with the first refusal" now holds of the
+static-semantic early errors too. Stage 4d added the declarations walk, in `Broiler.ECMAScript.Semantics`: the parse
+entry refuses a source any `syntax` row of the stage table refuses, with the row's catalogue code, and answers an accepted
+source with the walk's side tables; section 9.3's note of 2026-11-02 says what they carry.)*
 
 ## 1. The contract
 
@@ -411,6 +414,43 @@ whole stream exists only where the parser names each goal, from stage 4c".)*
   test262 read it (`x = await;` inside an async function names `await`, and `x = await 1` is refused), where ES2026's
   production is `Initializer[+In, ?Yield, ?Await]`; the parse corpus's classification expects the engines' reading.
 
+*(Noted 2026-11-02, at SJL-13.2d, on the table's "Side tables" and "Diagnostics" rows, and on the note above's "A grammar
+refusal's code is provisional at stage 4c" and "The static-semantic early errors and the regular-expression provider's
+answer are stage 4d's".)*
+- **Diagnostics.** Every refusal carries its catalogue row's shared code and message identifier: the provisional JSE9108
+  and JSE9109 are EX0008's and EX0009's, kept where no other row explains the site, and each site that serves a row of its
+  own reports that row (the changelog's entry of this stage names them). The arguments each identifier takes are defined
+  in the catalogue's section 6 (`early-errors.md`, its note of 2026-11-02). The phase is the pass that finds the refusal:
+  `Parser` for a grammar refusal, a limit's, and the early errors the parser checks as it reads (a cover that covers
+  nothing, EE0017, EE0025, EE0032, EE0037, EE0038, EE0053, EE0087 and EE0155; an optional chain's template, EE0026; an
+  operand that is no LeftHandSideExpression, EE0033 to EE0035; and the rows the changelog's entry names with them);
+  `Semantics` for every early error the declarations walk reports, and the provider's refusal. A row two passes check
+  carries the phase of the one that reports it: EE0033 to EE0035 are `Parser`'s where the operand is no
+  LeftHandSideExpression (`a + b = 1`) and `Semantics`' where it is one whose AssignmentTargetType is invalid (`1 = 2`). The library renders no text:
+  each engine renders its own from the identifier and its arguments (section 3), Broiler.JS's texts that hosts and tests
+  read, "Unexpected await" among them, kept by its bridge at SJL-14 and every other text class M there (JSD-0083's
+  decision D46, which binds SJL-14).
+- **The library's order** (decision D11): a construct's refusal is placed at the construct, a scope's declared-name
+  conflicts at the scope's close, in the source order of the second declaration; the first in that order is reported
+  under the first error, and all of them, up to the request's cap, under all errors. The walk runs over a tree the grammar
+  admitted. When the grammar refuses, the walk runs over the top-level statements completed before the refusal, whose
+  early errors come first; an early error inside the statement the grammar refuses is not reported, that statement
+  having no tree.
+- **Side tables.** "From the declarations walk, ordered by source position" holds from stage 4d, public in
+  `Broiler.ECMAScript.Semantics`: `ParseResult.Declarations` is a `DeclarationTables` whose `Scopes` give each scope's
+  `ScopeKind`, its node and its `Declaration`s (name, `BindingKind`, binding node, whether lexical, whether a block-level
+  function and whether an `if` clause's), and whose `Functions` give the program's and every function's strictness and
+  parameter names (`FunctionFacts`); null for a refused source.
+- **The regular-expression provider** is asked about every literal of a tree the grammar admitted, once each, in source
+  order, and a refusal is reported at the literal's span by the row whose message identifier the verdict names (the
+  first in catalogue order where rows share it, so that twelve rows are reported by another's code; the changelog's entry
+  of this stage lists them), or by
+  EE0019 (`regexp.literal.invalid`, with the verdict's identifier as its argument) where no row has it. A verdict of the
+  validator's own nesting bound is reported the same way, as EE0019's: its catalogue row, EX0026, is an `engine` row,
+  which the library never reports.
+- **The `request` row** (EX0023) is the top level's [Await] parameter, as the parser reads it from stage 4c; the walk
+  reads it the same way and reports nothing of its own for it.
+
 ### 9.4 What the syntax half reports (decision D10, the union)
 
 - **The grammar, and every early error either engine's parser reports at parse time today**: Broiler.VM's `JsParser`
@@ -437,6 +477,10 @@ The stage table [`stages.tsv`](stages.tsv) records the assignment for every cata
 - sections 3, 4 and 5 gain notes; section 7 gains SJL-13's records; section 8's first, second and last items are
   revised;
 - section 9 is new.
+
+*(Added 2026-11-02, at SJL-13.2d.)* "Why there is no project yet" gains the note that the parse entry reports the early
+errors, and section 9.3 a note on the diagnostics' codes, identifiers and phases, the library's order, the side tables,
+the regular-expression provider and the `request` row.
 
 *(Added 2026-11-01, at SJL-13.2c.)* "Why there is no project yet" gains the note that the parse entry no longer answers
 not implemented, and section 9.3 a note on the tree, the token stream the result still does not publish, the provisional

@@ -74,7 +74,7 @@ internal sealed partial class Parser
     /// An ImportDeclaration (clause 16.2.2): a module specifier alone, or an ImportClause and a FromClause, and a WithClause;
     /// <c>import source x from</c> and <c>import defer * as ns from</c> under their flags (decision D17).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=3E9C51
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.2 modules grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=91D9B3
     // Broiler-Human:        PENDING
     private Statement ParseImportDeclaration()
     {
@@ -89,6 +89,19 @@ internal sealed partial class Parser
         }
 
         var phase = ImportPhase.Evaluation;
+
+        // An import phase's declaration form whose proposal the request does not admit, or `import defer` in any form
+        // but the namespace's (catalogue rows EP0011 and EP0013).
+        if (IsWord(token, Word.Source) && (proposals & ProposalFlags.ImportSourceDeclarations) == 0 && IsSourcePhase())
+            throw Refuse(Rows.EP0011, SpanOf(token), "source");
+        if (IsWord(token, Word.Defer))
+        {
+            var after = PeekAfter(LexicalGoal.Div, LexicalGoal.Div);
+            var declares = after.Kind is TokenKind.Star or TokenKind.LeftBrace || (CanBind(after) && !IsWord(after, Word.From));
+            if (declares && ((proposals & ProposalFlags.ImportDeferDeclarations) == 0 || after.Kind != TokenKind.Star))
+                throw Refuse(Rows.EP0013, SpanOf(token), "defer");
+        }
+
         if (IsWord(token, Word.Source) && (proposals & ProposalFlags.ImportSourceDeclarations) != 0 && IsSourcePhase())
             phase = ImportPhase.Source;
         else if (IsWord(token, Word.Defer) && (proposals & ProposalFlags.ImportDeferDeclarations) != 0 && PeekAfter(LexicalGoal.Div, LexicalGoal.Div).Kind == TokenKind.Star)

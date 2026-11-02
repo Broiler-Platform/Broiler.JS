@@ -363,6 +363,25 @@ the committer checked that none of the 134 names either condition; 136 in all:
 They are two conditions under rule 1, not one stated for two productions: a static block's `return` may stand
 inside a function, so "outside a function" would tell its author something false.
 
+**Arguments** *(added 2026-11-02, at SJL-13.2d, which defines them, as rule 5 leaves to SJL-13)*. The shared front end
+gives each identifier these arguments, in order; none is part of the identifier, and none is a rendered text:
+- `scope.*`, `declaration.let.bound-name`, `strict.binding.eval-or-arguments`, `strict.reserved-word`, `identifier.*`,
+  `jump.label.duplicate`, `class.*` and `module.import-attribute.duplicate-key`: the name (its StringValue; a private
+  name with its `#`, an attribute's key);
+- `syntax.token.unexpected`: the spelling of the token no production admits, at most 64 code units, none at the end of
+  the source; `syntax.token.missing`: the spelling of the token expected; the other `syntax.*`: the offending token's
+  spelling where there is one, the keyword for `syntax.return.*`;
+- `limit.nesting.too-deep` and `limit.tree.too-deep`: the bound, in decimal digits;
+- `strict.legacy-octal-literal`: the literal's text; `strict.with`, `strict.delete.unqualified-or-private`,
+  `strict.labelled-function`, `statement.labelled-function`, `function.use-strict.non-simple-parameters`,
+  `annexb.*`, `using.declaration.no-disposal-scope`, `decorator.*`, `import-phase.*`, `meta.*` and
+  `declaration.const.missing-initializer`: the keyword or the construct's spelling;
+- `regexp.*`: the provider's argument; `regexp.literal.invalid`, where the provider names no row's identifier: that
+  identifier;
+- every other identifier (`assignment.*`, `cover.*`, `expression.*`, `template.escape.invalid`,
+  `function.parameters.*`, `strict.legacy-octal-escape`, `object.method.private-name`, `module.export-name.ill-formed`):
+  the name where the refusal is of one, and otherwise none.
+
 ## 7. The fill
 
 Nine groups, one agent each, every row in exactly one group (tasks 3.2 to 3.10):
