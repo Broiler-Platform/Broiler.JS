@@ -84,9 +84,45 @@ was written require:
 - **Part C** cites the available-locale policy as JSD-0082's decision D7, where the plan read "JSD-0081 decision D7",
   which is the regular-expression nesting limit (finding F5).
 
+## SJL-17.2: the collation vectors, both engines' first runs and the `orderings` copy
+
+*(Added 2026-11-02, at SJL-17.2. Nothing here is a run of the rule, and nothing here is a verdict.)*
+
+- **2026-11-02: corpus revision 33 adds the collation vectors**, `conformance/vectors/collation/`, written by
+  `scripts/conformance/generate_collation_vectors.py`, with every `out` from the Intl area's reference, ICU 78.3 with
+  CLDR 48.0 through Node.js v26.12.0. It was written on 2026-11-01 as revision 31 and renumbered 33 when the
+  regular-expression area's revisions 31 and 32 merged first. The Han vectors whose answer moves with the order of Han
+  characters are `impl-defined`, each engine's expectation its own data's, by the owner's decision E-han of 2026-11-02
+  (Broiler.VM's JSD-0084): this engine's is its host's radical-stroke order, which is `out`. So the sentence above,
+  "The collation data is CLDR 48.2.0's root collation, with UCA 17's implicit weights", reads for Han across blocks
+  as that decision says until SJL-17.3 decides row O3's reading.
+- **2026-11-02: corpus revision 34 classifies both engines' first runs on revision 33**, in
+  `scripts/conformance/collation-divergences.txt`, under rows of Broiler.VM's correspondence: this engine's
+  differences under rows O2, O3, O5a, O5b, O7 and O8, two of them read past their probes by the owner's decisions
+  E-o5b and E-o3j of 2026-11-02; Broiler.VM's run has no difference on the area.
+- **The runs retained under [`engine/`](engine/)**, as [`engine/commands.txt`](engine/commands.txt) says how each was
+  taken: this engine's runs at `d85da200` (revision 33) and `60fc3a5b` (revision 34), under `TZ=UTC` with the
+  invariant culture, each with its negative control
+  ([`run-revision-33-utc.log`](engine/run-revision-33-utc.log), [`run-revision-34-utc.log`](engine/run-revision-34-utc.log)
+  and their reports); Broiler.VM's runs at its `b43d0bb` from scratch archives of the same two commits, with their
+  negative controls and scratch pins ([`broiler-vm-run-revision-33.log`](engine/broiler-vm-run-revision-33.log),
+  [`broiler-vm-run-revision-34.log`](engine/broiler-vm-run-revision-34.log)); and the host's ICU 74.2, asked the pairs
+  the reasons assign between rows through its C API ([`host_icu_pairs.py`](engine/host_icu_pairs.py),
+  [`host-icu-pairs-revision-33.txt`](engine/host-icu-pairs-revision-33.txt)), a witness of the host's data and never an
+  expected value. On revision 34 neither engine has an unclassified difference.
+- **2026-11-02: the `orderings` copy and the harness's bundle.** `conformance/datasets/intl/` holds Broiler.VM's
+  `orderings` program and its retained answer from Broiler.VM `4e6a41e9`, under the second `source-commit` block of
+  its `datasets.pin`, and `scripts/conformance/run_reference_datasets.py --bundle sjl-17-001` runs part B's
+  population. Its first run, at revision 34's tree before any cut-over, is retained in
+  [`datasets/sjl-17-2/`](datasets/sjl-17-2/): the shell built in Release by the harness, `TZ=UTC`, no `LANG`. The
+  program completes, its lines differ from the retained answer exactly on the lines the correspondence's row O18 names
+  (those that ask for `numeric` or `caseFirst`, rows O7 and O8), and the harness's negative control shows. It is not
+  part B's base run, which the rule takes at the first parent of SJL-17.5's merge; its `identity.txt` names no commit,
+  since the tree was written by `git archive` of `60fc3a5b`.
+
 ## State
 
-Rule and data only, 2026-11-01, at SJL-17.1. **Nothing here is a verdict, and no run of the rule has been taken.** The
+Rule and data only, 2026-11-01, at SJL-17.1. **Nothing here is a verdict, and no run of the rule has been taken.** *(2026-11-02, at SJL-17.2: the vector runs and the datasets run above are retained; none is a run of the rule.)* The
 base commit is the first parent of the merge that lands SJL-17.5's cut-over, and the after commit is that merge; this
 README names each, by all forty digits, when it lands. The rule commit is named here when the change that carries it
 has merged.

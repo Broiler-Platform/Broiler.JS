@@ -1,0 +1,75 @@
+How the engine-level runs in this directory were taken (SJL-17.2, the collation vectors, 2026-11-02 UTC).
+
+They are each engine's first run on the collation vectors, at corpus revision 33, which revision 34 classifies, and
+both engines' runs on revision 34. They are no part of bundle sjl-17-001's rule, whose parts are taken at the commits
+the rule names, and nothing here is a verdict.
+
+Host, for every run here: Ubuntu 24.04.5 LTS; Linux 6.18.44 x86_64; 4 logical CPUs; ICU 74.2 (the package libicu74
+74.2-1ubuntu3.1, the only ICU installed), which .NET's globalization loads and whose CompareInfo Broiler.JS's
+Intl.Collator reads; dotnet SDK 10.0.401, runtime Microsoft.NETCore.App 10.0.12. Other work shared the machine
+throughout, so no run here is a timing.
+
+Every Broiler.JS run reads a scratch tree written by git archive of the commit it names, built once beforehand with
+  dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers
+(no warning), and is
+  env -u LANG -u LANGUAGE -u LC_ALL BROILER_VECTORS_WORKERS=4 TZ=UTC BROILER_VECTORS_REPORT=<report>
+    dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --logger "console;verbosity=normal"
+with four evaluating processes, as CI's engine vectors job runs the corpus, the invariant culture (no LANG, LC_ALL or
+LANGUAGE) and TZ=UTC only: bundle sjl-17-001's rule takes no zone (JSD-0084 decision E10). Its negative control
+changes numbers/to-fixed/0001 in a copy of the corpus and is written beside its report. Each Broiler.VM run is, at
+b43d0bb2ab2e827c754c97bce8024cb717e7ceef (its default branch, Broiler-Platform/Broiler.VM#180), built once beforehand
+in a scratch tree written by git archive with
+  dotnet build src/compositions/Broiler.VM.Composition.JavaScript.Conformance -c Release --disable-build-servers -warnaserror
+  env -u LANG -u LANGUAGE -u LC_ALL TZ=UTC dotnet
+    src/compositions/Broiler.VM.Composition.JavaScript.Conformance/bin/Release/net10.0/Broiler.VM.Composition.JavaScript.Conformance.dll
+    --vectors <archive> --expect <pin> --report <report> [--mutate intl/collation/options/sensitivity/0001]
+on a scratch archive written twice by
+  git archive --format=tar.gz <commit> -- conformance/vectors ':(exclude)conformance/vectors/controls'
+byte for byte the same, the second hashed for the scratch pin kept here (never committed to Broiler.VM). The archive
+is corpus-r33.tar.gz or corpus-r34.tar.gz in the logs' headers. Each log was written whole by the run's script: a
+header naming the commit, the build, the corpus, the host and the command, then the runner's output, then the exit
+code and the end time. Every run's summary line names the 18 status vectors it skipped.
+
+== Revision 33, corpus d85da2008e2e82a8dc57eea787e19d65b7449a5b (the area; Broiler.JS/ is d1e8f5be's but for the
+   regular-expression branch's runner change, de8d7b54's, and b2c2e224's, which changes no file under Broiler.JS/)
+
+Broiler.JS, TZ=UTC.
+  times    2026-11-02T05:45:34Z to 06:13:26Z, as the log says
+  exit     1: 205 unclassified differences, every one of the collation vectors; every other area's verdicts as in
+           revision 32's UTC run (its classified divergences, and the same 32 fields reported as no longer holding,
+           row M2a's under the invariant culture and row B8's, whose re-check alone completed). The negative control's
+           report holds the one difference, the mutated vector.
+  files    run-revision-33-utc.log and .tsv.gz; negative-control-revision-33-utc.tsv
+
+Broiler.VM, TZ=UTC, from broiler-vm-revision-33.pin's archive.
+  times    the run started 2026-11-02T05:48:57Z and ended 06:07:56Z; its negative control ended 06:17:15Z
+  exit     0 for the run: no difference in the collation vectors and no unclassified difference anywhere, the other
+           areas' classified divergences as at revision 32; 1 for the negative control, its one difference the mutated
+           vector
+  files    broiler-vm-run-revision-33.log, broiler-vm-negative-control-revision-33.log and their .tsv.gz reports
+
+The host's ICU 74.2, asked directly. host_icu_pairs.py asks libicui18n.so.74, through its C API, the pairs of Broiler.JS's
+revision-33 run that collation-divergences.txt assigns between rows: the CollationTest pairs (row O2 against O5a),
+the width pairs (row O5b at base, accent and case) and the Han pairs (row O3, Extension J). Its output is
+host-icu-pairs-revision-33.txt, from
+  python3 -I host_icu_pairs.py <revision 33's conformance/vectors> run-revision-33-utc.tsv
+It is a witness of the host's data, never of Broiler.JS's code and never an expected value.
+
+== Revision 34, corpus 60fc3a5b14098e53181a8422d62c159b1e6fb701 (the classification)
+
+Broiler.JS, TZ=UTC.
+  times    2026-11-02T06:29:24Z to 07:08:33Z, as the log says
+  exit     0: no unclassified difference, and the run's tests pass. The 205 collation vectors above are reported as
+           classified divergences, none as no longer holding; every other area as at revision 33, but
+           regexp/matching/b8-flat-sequence/0001 (row B8), which reached the 5 s limit in its re-check alone here
+           and so reports as a classified divergence, where the revision-33 run's re-check completed and reported its
+           field as no longer holding, as its reason in regexp-divergences.txt says a loaded run may. The negative
+           control's report holds the one difference, the mutated vector.
+  files    run-revision-34-utc.log and .tsv.gz; negative-control-revision-34-utc.tsv
+
+Broiler.VM, TZ=UTC, from broiler-vm-revision-34.pin's archive.
+  times    the run started 2026-11-02T06:29:28Z and ended 06:48:29Z; its negative control ended 07:07:42Z
+  exit     0 for the run: no unclassified difference, the collation vectors all matching and no field written for
+           this engine; 1 for the negative control, its one
+           difference the mutated vector
+  files    broiler-vm-run-revision-34.log, broiler-vm-negative-control-revision-34.log and their .tsv.gz reports

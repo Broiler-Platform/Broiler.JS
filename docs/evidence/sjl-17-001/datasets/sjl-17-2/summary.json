@@ -1,0 +1,51 @@
+{
+  "format": 3,
+  "bundle": "sjl-17-001",
+  "rule": "docs/evidence/sjl-17-001/decision-rule.md, part B",
+  "label": "sjl-17-2",
+  "started": "2026-11-02T06:32:05+00:00",
+  "invariantGlobalization": false,
+  "shellCommit": "unknown",
+  "shellSha256": "cb0fdfea109ea667c3b3ce98c23285bc731e66ebaac454a054a900aac6bdd68f",
+  "collections": {
+    "orderings": "intl"
+  },
+  "datasetsSourceCommits": {
+    "orderings.js": "4e6a41e9d3860b8ca79d5d3ea6de215c1592b0c0",
+    "orderings.icu-77.1.txt": "4e6a41e9d3860b8ca79d5d3ea6de215c1592b0c0"
+  },
+  "copies": {
+    "orderings.js": "d3c968d64f7809eb90219d1452db27ad6a022715bc96c0c4922634f371c6cab8",
+    "orderings.icu-77.1.txt": "c21e6ef4292a2b2308d7a8c99e558a41a8ee00bfddbe4b9c2e3fc3b33adbed1e"
+  },
+  "programs": {
+    "orderings": {
+      "completed": true,
+      "completionType": "string",
+      "uncaught": null,
+      "problems": [],
+      "extraOutput": [],
+      "exitCode": 0,
+      "seconds": 1.864,
+      "stdoutSha256": "671e32b3d5e9aa9958b11e92fae144380d26dbe26d5ad16328c9f54cee021d94",
+      "stdoutBytes": 26832,
+      "stderrBytes": 0,
+      "answerSha256": "aef31410ec185943b91ed38047bd0aed0b77679e2b9f78142afc7ed100567db7",
+      "retainedLines": 27,
+      "answeredLines": 27,
+      "comparedLines": 27,
+      "equal": 19,
+      "differing": 8,
+      "divergenceEntries": 0,
+      "divergencesUsed": 0,
+      "vmLeast": 19,
+      "negativeControl": {
+        "line": 1,
+        "wasEqual": true,
+        "expectedChangedTo": "1 en {} \"\" < \" \" < \"-\" < \"!\" < \"#hash\" < \"1\" < \"10\" < \"100\" < \"2\" < \"a\" < \"A\" < \"\\u00e4\" < \"\\u00c4\" < \"a1\" < \"a10\" < \"a2\" < \"ae\" < \"Ae\" < \"AE\" < \"Aepfel\" < \"af\" < \"Af\" < \"Affe\" < \"Angstrom\" < \"\\u00c5ngstr\\u00f6m\" < \"Apfel\" < \"\\u00c4pfel\" < \"b\" < \"B\" < \"co op\" < \"co_op\" < \"co-op\" < \"coop\" < \"Coop\" < \"cote\" < \"cot\\u00e9\" < \"c\\u00f4te\" < \"c\\u00f4t\\u00e9\" < \"eclair\" < \"Eclair\" < \"\\u00e9clair\" = \"e\\u0301clair\" < \"file\" < \"\\ufb01le\" < \"file 3\" < \"file-2\" < \"file10\" < \"hash\" < \"iv\" < \"IV\" < \"\\u2163\" < \"naive\" < \"na\\u00efve\" < \"o\" < \"\\u00f6\" < \"oe\" < \"Oel\" < \"Ofen\" < \"offen\" < \"\\u00f6ffnen\" < \"\\u00d6l\" < \"resume\" < \"Resume\" < \"r\\u00e9sum\\u00e9\" < \"R\\u00e9sum\\u00e9\" < \"ss\" < \"\\u00df\" < \"st\" < \"Strasse\" < \"stra\\u00dfe\" < \"Stra\\u00dfe\" < \"Strasze\" < \"u\" < \"\\u00fc\" < \"\\u00dcbel\" < \"ue\" < \"Uebel\" < \"Ufer\" < \"zebra\" < \"Zebra\" < \"zooX",
+        "shownAsDifference": true,
+        "otherLinesUnchanged": true
+      }
+    }
+  }
+}
