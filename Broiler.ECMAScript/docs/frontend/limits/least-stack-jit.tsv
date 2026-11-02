@@ -1,0 +1,25 @@
+# bundle sjl-13-001, part G's corpus: the least thread stack (KiB, to 16 KiB) at which each source still ends as expected
+id	file	kind	nesting-parameter	charge	expect	least-stack-kib	line
+G001	brackets-62.js	nesting	64	64	accepted	256	accepted - - -
+G013	functions-64.js	nesting	64	64	accepted	128	accepted - - -
+G019	brackets-510.js	nesting	512	512	accepted	1744	accepted - - -
+G020	brackets-511.js	nesting	512	513	refused	1744	refused JSE9201 512 1:520
+G021	brackets-100000.js	nesting	512	100002	refused	1744	refused JSE9201 512 1:520
+G022	parentheses-510.js	nesting	512	512	accepted	1856	accepted - - -
+G023	parentheses-511.js	nesting	512	513	refused	1872	refused JSE9201 512 1:520
+G025	templates-510.js	nesting	512	512	accepted	1840	accepted - - -
+G026	templates-511.js	nesting	512	513	refused	1840	refused JSE9201 512 1:1542
+G028	blocks-512.js	nesting	512	512	accepted	592	accepted - - -
+G029	blocks-513.js	nesting	512	513	refused	608	refused JSE9201 512 1:513
+G031	functions-512.js	nesting	512	512	accepted	816	accepted - - -
+G032	functions-513.js	nesting	512	513	refused	832	refused JSE9201 512 1:6657
+G034	substitutions-255-254.js	nesting	512	512	accepted	1856	accepted - - -
+G035	substitutions-255-255.js	nesting	512	513	refused	1872	refused JSE9201 512 1:522
+G036	substitutions-50000-50000.js	nesting	512	100003	refused	1872	refused JSE9201 512 1:520
+G037	binary-chain-10000.js	tree-depth	64	10000	accepted	64	accepted - - -
+G039	binary-chain-100000.js	tree-depth	64	100000	refused	64	refused JSE9202 10000 1:9
+G040	member-chain-10000.js	tree-depth	64	10000	accepted	64	accepted - - -
+G043	left-parenthesised-chain-5000-5000.js	tree-depth	64	10000	accepted	64	accepted - - -
+G046	left-template-chain-5000-5000.js	tree-depth	64	10000	accepted	64	accepted - - -
+G049	left-member-chain-5000-5000.js	tree-depth	64	10000	accepted	64	accepted - - -
+G052	object-parenthesised-chain-5000-5000.js	tree-depth	64	10000	accepted	64	accepted - - -

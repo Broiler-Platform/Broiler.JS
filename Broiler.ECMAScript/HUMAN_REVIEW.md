@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2899 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2900 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 165 |
-| Code units | 4514 |
-| Relevant | 2899 |
+| Code units | 4515 |
+| Relevant | 2900 |
 | Exempt | 1615 |
-| Assessed | 2899 of 2899 (100%) |
-| Human reviewed | 0 of 2899 (0%) |
-| Unverified | 2899 |
+| Assessed | 2900 of 2900 (100%) |
+| Human reviewed | 0 of 2900 (0%) |
+| Unverified | 2900 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,7 +67,7 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2899 |
+| HUMAN_PENDING | 2900 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
@@ -172,7 +172,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Frontend/IRegularExpressionValidator.cs` | 17 | 7 | 10 | 7 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/InheritedContext.cs` | 9 | 3 | 6 | 3 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/ParseGoal.cs` | 11 | 2 | 9 | 2 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Frontend/ParseLimits.cs` | 13 | 8 | 5 | 8 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Frontend/ParseLimits.cs` | 14 | 9 | 5 | 9 | Low | High | 4/4 |
 | `Broiler.ECMAScript.Frontend/ParseRequest.cs` | 19 | 8 | 11 | 8 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/ParseSwitches.cs` | 6 | 2 | 4 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` | 55 | 47 | 8 | 47 | Low | High | 5/5 |
@@ -476,6 +476,8 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: the constant differs from Broiler.VM's SliceParseOptions.MaximumTreeDepth, or a tree deeper than it is built rather than refused once the parser exists
 - `Broiler.ECMAScript.Syntax.ParseLimits.MaximumSupportedNestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, Spec=JSD-0083 D14 D47 nesting bound, `2C4111`, PENDING
   - Falsified if: the constant is below Broiler.VM's SliceParseOptions.MaximumSupportedNestingDepth, so a nesting depth Broiler.VM passes today is refused when the request is made
+- `Broiler.ECMAScript.Syntax.ParseLimits.StackBytes` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, Spec=JSD-0083 D14 the stack the tree-depth constant requires, JSD-0022, `2F9878`, PENDING
+  - Falsified if: a source within the limits, parsed on a thread of this stack, ends the process rather than answering
 - `Broiler.ECMAScript.Syntax.ParseLimits.NestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, Spec=JSD-0080 D27, JSD-0083 D14 nesting parameter, `32674F`, PENDING
   - Falsified if: a nesting depth below 1 or above MaximumSupportedNestingDepth is admitted
 - `Broiler.ECMAScript.Syntax.Parser.ParseAssignment(bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.15 s15.3 arrows by conversion, `5AC280`, PENDING
@@ -744,5 +746,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1642 of the 2899 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1643 of the 2900 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

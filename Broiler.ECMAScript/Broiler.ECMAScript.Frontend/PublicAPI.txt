@@ -344,6 +344,7 @@ Broiler.ECMAScript.Syntax.ParseLimits sealed class
 Broiler.ECMAScript.Syntax.ParseLimits..ctor() method System.Void
 Broiler.ECMAScript.Syntax.ParseLimits.MaximumSupportedNestingDepth field static const System.Int32 = 512
 Broiler.ECMAScript.Syntax.ParseLimits.MaximumTreeDepth field static const System.Int32 = 10000
+Broiler.ECMAScript.Syntax.ParseLimits.StackBytes field static const System.Int32 = 16777216
 Broiler.ECMAScript.Syntax.ParseLimits.get_Default() method static Broiler.ECMAScript.Syntax.ParseLimits
 Broiler.ECMAScript.Syntax.ParseLimits.get_DiagnosticCap() method System.Int32
 Broiler.ECMAScript.Syntax.ParseLimits.get_NestingDepth() method Broiler.ECMAScript.DepthLimit

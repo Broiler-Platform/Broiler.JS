@@ -16,12 +16,12 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Files scanned | 165 |
 | Files not covered | 0 |
 | Files carrying an annotation | 165 |
-| Code units | 4514 |
-| Relevant | 2899 |
+| Code units | 4515 |
+| Relevant | 2900 |
 | Exempt by predicate | 1615 |
-| Annotated | 2899 of 2899 (100%) |
-| Human reviewed | 0 of 2899 (0%) |
-| Unverified | 2899 |
+| Annotated | 2900 of 2900 (100%) |
+| Human reviewed | 0 of 2900 (0%) |
+| Unverified | 2900 |
 
 ## Review states
 
@@ -29,7 +29,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2899 |
+| HUMAN_PENDING | 2900 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
@@ -40,7 +40,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 2896 |
+| Low | 2897 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -53,7 +53,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 | None | 77 |
 | Low | 1825 |
 | Medium | 822 |
-| High | 231 |
+| High | 232 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.0 / 10 |
-| Units scored | 2899 |
+| Units scored | 2900 |
 
 ## High-security review areas
 
@@ -172,6 +172,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Time.ZonedTime.Disambiguate(ITimeZoneRules, ReadOnlySpan<BigInteger>, IsoDateTime, Disambiguation, out BigInteger)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.ParseLimits.MaximumTreeDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.ParseLimits.MaximumSupportedNestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.ParseLimits.StackBytes` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.ParseLimits.NestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ParseAssignment(bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.CheckCoverInitialized(int)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
@@ -303,8 +304,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 231 |
-| Units required to carry one | 231 |
+| Units carrying a criterion | 232 |
+| Units required to carry one | 232 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -356,7 +357,7 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 5 covered assemblies -
-4514 of them, exempt and relevant alike - with the fingerprint of its declaration.
+4515 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as

@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   8
-// Annotated:        8/8
+// Relevant units:   9
+// Annotated:        9/9
 // Exempt:           5
-// Human-reviewed:   0/8
+// Human-reviewed:   0/9
 // IP risk:          Low
 // Security risk:    High
-// Criteria:         3/3
+// Criteria:         4/4
 // Resource impact:  1/10 max
-// Unverified:       8
+// Unverified:       9
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -38,7 +38,10 @@ namespace Broiler.ECMAScript.Syntax;
 /// (decision D14). <i>(Revised 2026-11-01, at stage SJL-13.2c, when the parser was added; it read "<b>The parse charges no
 /// limit at this stage</b>: the tokenizer and the parser that check them are stages 4b and 4c's, and stage 4e derives the
 /// stack the tree-depth bound requires, as Broiler.VM's JSD-0022 derived Broiler.VM's, and states it beside the constant
-/// (decision D14).")</i>
+/// (decision D14).")</i> <i>(Noted 2026-11-02, at stage SJL-13.2e: "Stage 4e derives the stack the tree-depth bound
+/// requires ... and states it beside the constant" is done. The derivation, retained in
+/// <c>docs/frontend/limits/derivation.md</c>, finds that the parse spends no stack per level of tree depth, and that the
+/// nesting bound is what the stack pays for; <see cref="StackBytes"/> states the stack beside the constants.)</i>
 /// </para>
 /// </remarks>
 // Broiler-AI:           Origin=AI; Spec=JSD-0080 D27, JSD-0083 D11 D14 limits; IP=Low; Security=Medium; Resources=0; Fingerprint=8281B1
@@ -53,8 +56,23 @@ public sealed class ParseLimits
     /// a left operand's spine adding its own length to the chain it begins.
     /// </summary>
     /// <remarks>
-    /// The derivation must admit this bound on the stack Broiler.VM's <c>CompilationStack</c> declares; if it cannot, the
-    /// library is reworked with explicit stacks, and the bound is not lowered (decision D14). Stage 4e states the stack.
+    /// <para>
+    /// <b>Derived at stage SJL-13.2e as Broiler.VM's JSD-0022 derived Broiler.VM's</b> (<c>docs/frontend/limits/derivation.md</c>):
+    /// the measured failure point on a stack, scaled to the declared stack, divided by a margin. The library has no failure
+    /// point in tree depth: it builds a binary chain and a member or call chain in a loop, and its declarations walk keeps a
+    /// stack of its own, so a level of tree depth costs it no frame. At the tree-depth refusal the parse holds the same
+    /// frames whether the chain is 10,001 nodes long or 100,000, and however a left operand's spine and its chain divide
+    /// them (19 for a binary chain under Native AOT and the JIT's first tier, 16 when the JIT has optimised it); and a tree
+    /// at this bound is parsed and walked on a thread of 64 KiB. So nothing in the library bounds the constant, and it is Broiler.VM's bound, which decision D14
+    /// holds equal to this one, admitted on <see cref="StackBytes"/>, the stack Broiler.VM's <c>CompilationStack</c>
+    /// declares. A walk of the tree that recursed once per level, as Broiler.VM's lowering does, is the consumer's to
+    /// derive against its own stack, as JSD-0022 did.
+    /// </para>
+    /// <para>
+    /// <i>(Revised 2026-11-02, at stage SJL-13.2e, when the derivation was made; it read "The derivation must admit this
+    /// bound on the stack Broiler.VM's <c>CompilationStack</c> declares; if it cannot, the library is reworked with explicit
+    /// stacks, and the bound is not lowered (decision D14). Stage 4e states the stack.")</i>
+    /// </para>
     /// </remarks>
     // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth bound, JSD-0022; IP=Low; Security=High; Resources=0; Fingerprint=6DB2AB
     // Broiler-Falsified-If: the constant differs from Broiler.VM's SliceParseOptions.MaximumTreeDepth, or a tree deeper than it is built rather than refused once the parser exists
@@ -69,12 +87,45 @@ public sealed class ParseLimits
     /// <remarks>
     /// <b>At least Broiler.VM's supported maximum</b>, which its options admit and pass, so that no request Broiler.VM
     /// makes today is refused when it is made. Stage 4e's measurement on the stack the library documents confirms it, or
-    /// raises it; it is never set below Broiler.VM's.
+    /// raises it; it is never set below Broiler.VM's. <i>(Noted 2026-11-02, at stage SJL-13.2e: the measurement confirms it
+    /// and does not raise it. A source nested to this bound through the costliest construct measured needs at most
+    /// 3,082,864 bytes of stack under the JIT and 1,846,192 under Native AOT, a margin of about 5.4 and 9.1 on
+    /// <see cref="StackBytes"/>; twice the bound would leave the JIT less than three.)</i>
     /// </remarks>
     // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 D47 nesting bound; IP=Low; Security=High; Resources=0; Fingerprint=2C4111
     // Broiler-Falsified-If: the constant is below Broiler.VM's SliceParseOptions.MaximumSupportedNestingDepth, so a nesting depth Broiler.VM passes today is refused when the request is made
     // Broiler-Human:        PENDING
     public const int MaximumSupportedNestingDepth = 512;
+
+    /// <summary>
+    /// The stack the library documents for a parse (decision D14, "with the stack it requires stated beside it"): a caller
+    /// parses on a thread of at least this many bytes, on which every source within the limits is parsed and every source
+    /// past them refused, never a lost process. It is the stack Broiler.VM's <c>CompilationStack</c> declares, sixteen
+    /// mebibytes, so that Broiler.VM's bound is admitted on Broiler.VM's stack.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>What the stack pays for is the nesting bound, not the tree depth</b> (<c>docs/frontend/limits/derivation.md</c>,
+    /// stage SJL-13.2e). The parser recurses once per level of nesting through each construct, each level charged before
+    /// the recursion, and refuses at the request's bound; it recurses not at all per level of tree depth. Measured at the
+    /// refusal, the deepest point of the recursion, a level of nesting costs from 1 to 10 frames and from 288 to 6,032
+    /// bytes, by construct and runtime; the costliest construct measured, an object literal's computed key
+    /// (<c>{[{[...]}]}</c>), costs at the supported maximum, 512 levels, 3,082,864 bytes under the JIT and 1,846,192 under
+    /// Native AOT. Each source of the home rule's deep-nesting corpus, parsed alone in its process, ends as its row expects
+    /// on a thread of 1,872 KiB under the JIT and of 1,072 KiB under Native AOT, and every tree at the tree-depth bound on
+    /// 64 KiB.
+    /// </para>
+    /// <para>
+    /// <b>The margin</b> is the declared stack over the most the parse was measured to need: about 5.4 under the JIT and
+    /// 9.1 under Native AOT, about the six JSD-0022 took for Broiler.VM's tree depth and more than the three Broiler.VM's
+    /// <c>MaximumSupportedNestingDepth</c> keeps. A construct that grew a frame per level would move these figures, and the
+    /// derivation is to be measured again with it (<c>Broiler.ECMAScript.Probe --measure-frames</c>).
+    /// </para>
+    /// </remarks>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 the stack the tree-depth constant requires, JSD-0022; IP=Low; Security=High; Resources=0; Fingerprint=2F9878
+    // Broiler-Falsified-If: a source within the limits, parsed on a thread of this stack, ends the process rather than answering
+    // Broiler-Human:        PENDING
+    public const int StackBytes = 16 * 1024 * 1024;
 
     // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 nesting default; IP=Low; Security=Low; Resources=0; Fingerprint=2961CA
     // Broiler-Human:        PENDING
