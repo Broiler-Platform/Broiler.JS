@@ -158,7 +158,7 @@ public class LibraryRunTests
         var engineLevel = locales.Where(static r => r.Verdict == Verdict.NotImplemented).Select(static r => r.Vector).ToList();
         Assert.All(engineLevel, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntl(v), v.Id + " is not answered by the library"));
         Assert.Equal(
-            ["intl/locales/negotiation/0021", "intl/locales/providers/0012", "intl/locales/providers/0013", "intl/locales/providers/0014"],
+            ["intl/locales/negotiation/0021", "intl/locales/providers/0013"],
             engineLevel.Select(static v => v.Id).Order(System.StringComparer.Ordinal));
 
         Assert.All(results.Except(locales).Where(static r => !AlgorithmsLibrary.IsLibraryIntlValues(r.Vector) && !AlgorithmsLibrary.IsLibraryIntlNumbers(r.Vector)
@@ -166,10 +166,15 @@ public class LibraryRunTests
             static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
 
         // Intl.NumberFormat.supportedLocalesOf: providers/0007 is the library's FilterLocales, held to Broiler.VM's per-engine
-        // expectation; providers/0014, whose inputs lack the default locale its script prepends, is not answered.
+        // expectation. From stage SJL-9.3f the two vectors whose scripts read the default locale are answered, read whole:
+        // providers/0014, whose inputs lack the default locale its script prepends, and providers/0012, toLocaleString with none.
         var filtered = Assert.Single(locales, static r => r.Vector.Id == "intl/locales/providers/0007");
         Assert.True(AlgorithmsLibrary.MatchesBroilerVmExpectation(filtered), filtered.Rendered);
         Assert.Equal("value: str:\"de-CH,en-US-u-ca-gregory,de-DE-x-foo,en-GB,de-1996\"", filtered.Rendered);
+        var defaults = locales.Where(static r => AlgorithmsLibrary.IsLibraryIntlDefaultLocaleScript(r.Vector)).ToList();
+        Assert.Equal(["intl/locales/providers/0012", "intl/locales/providers/0014"], defaults.Select(static r => r.Vector.Id).Order(System.StringComparer.Ordinal));
+        Assert.All(defaults, static r => Assert.Equal(Verdict.Match, r.Verdict));
+        Assert.Equal("value: str:\"en-US,en\"", defaults.Single(static r => r.Vector.Id == "intl/locales/providers/0014").Rendered);
 
         var unicode = LibraryRun.Run(Home.Corpus.Records.Where(static v => v["op"] == "String.prototype.toLocaleLowerCase").ToList(), new AlgorithmsLibrary());
         Assert.Contains(unicode, static r => r.Vector["area"] == "unicode");
@@ -380,6 +385,56 @@ public class LibraryRunTests
             ["intl/durations/argument/0001", "intl/durations/argument/0002", "intl/durations/argument/0003", "intl/durations/argument/0004",
              "intl/durations/argument/0015", "intl/durations/styles/0040"],
             notAnswered.Select(static r => r.Vector.Id).Order(System.StringComparer.Ordinal));
+    }
+
+    /// <summary>
+    /// The integration of stage SJL-9.3f (the plan's task 5.f): the library-level runner answers every Intl vector, its five files'
+    /// routes combined, and each passes against the Intl library or gives Broiler.VM's <c>per-engine</c> expectation, but the
+    /// vectors whose outcome needs an engine, listed here by identifier with the reason each needs one: an object's reads or
+    /// coercions observed through a Proxy, a getter or <c>valueOf</c> (rows T1, T2, N10, M1b, M4, P7, U7 and U9), an options
+    /// object the script mutates after construction, which the engine reads once and snapshots there (row N10), the bound
+    /// <c>format</c>'s identity, name and length (rows T4 and N11), the normative-optional legacy constructor (rows T5 and N12),
+    /// the host's zone through <c>Temporal.Now</c> (row T11), a constructor called without <c>new</c> (rows S2 and U18),
+    /// StringListFromIterable's iteration of a list (row S2), whether the engine defines a built-in (row L37), and casing, which is
+    /// Broiler.Unicode's, with the engine's default locale (row L35). No Intl operation is left unrouted. The collation vectors,
+    /// of the area <c>intl</c> under <c>intl/collation/</c> since corpus revision 33, are milestone SJL-17's, whose library
+    /// stage adds their route: this library has no collation, and each of them is not implemented.
+    /// </summary>
+    [Fact]
+    public void Every_Intl_vector_is_answered_at_library_level_but_those_that_need_an_engine()
+    {
+        var all = Home.Corpus.Records.Where(static v => v["area"] == "intl").ToList();
+        var collation = all.Where(static v => v.Id.StartsWith("intl/collation/", System.StringComparison.Ordinal)).ToList();
+        Assert.NotEmpty(collation);
+        Assert.All(LibraryRun.Run(collation, new AlgorithmsLibrary()), static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+        Assert.All(collation, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntl(v), v.Id));
+
+        var vectors = all.Except(collation).ToList();
+        var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
+
+        Assert.NotEmpty(vectors);
+        var answered = results.Where(static r => AlgorithmsLibrary.IsLibraryIntl(r.Vector)).ToList();
+        var failing = answered.Where(static r => r.Verdict != Verdict.Match && !AlgorithmsLibrary.MatchesBroilerVmExpectation(r))
+            .Select(static r => r.Vector.Id + " expected: " + r.Expected + " got: " + r.Rendered)
+            .ToList();
+        Assert.True(failing.Count == 0, failing.Count + " fail:\n" + string.Join("\n", failing.Take(80)));
+
+        var engine = results.Except(answered).ToList();
+        Assert.All(engine, static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+        Assert.Equal(
+            [
+                "intl/date-times/options/0001", "intl/date-times/options/0002", "intl/date-times/options/0003", "intl/date-times/options/0004",
+                "intl/date-times/options/0012", "intl/date-times/options/0013", "intl/date-times/options/0014", "intl/date-times/zones/0001",
+                "intl/durations/argument/0001", "intl/durations/argument/0002", "intl/durations/argument/0003", "intl/durations/argument/0004",
+                "intl/durations/argument/0015", "intl/durations/styles/0040",
+                "intl/locales/negotiation/0021", "intl/locales/providers/0013",
+                "intl/numbers-and-text/list/0030", "intl/numbers-and-text/list/0031", "intl/numbers-and-text/list/0033",
+                "intl/numbers-and-text/options/0001", "intl/numbers-and-text/options/0002", "intl/numbers-and-text/options/0003",
+                "intl/numbers-and-text/options/0004", "intl/numbers-and-text/options/0005", "intl/numbers-and-text/options/0006",
+                "intl/values-and-plurals/digit-options/0001", "intl/values-and-plurals/digit-options/0002",
+                "intl/values-and-plurals/digit-options/0003", "intl/values-and-plurals/math-value/0027", "intl/values-and-plurals/plurals/0081",
+            ],
+            engine.Select(static r => r.Vector.Id).Order(System.StringComparer.Ordinal));
     }
 
     /// <summary>

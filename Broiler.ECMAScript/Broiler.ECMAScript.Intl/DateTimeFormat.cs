@@ -160,7 +160,7 @@ public sealed class DateTimeFormat
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
     /// <exception cref="ArgumentException">A component, style or key value outside the values ECMA-402 admits: the engine's
     /// GetOption and ResolveLocale, which come first, would not give it.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=High; Resources=2; Fingerprint=E3C420
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat, hourCycle12 and hourCycle24 by CLDR's allowed formats (JSD-0082 row T10); IP=Low; Security=High; Resources=2; Fingerprint=1C7E53
     // Broiler-Falsified-If: a resolved option differs from CreateDateTimeFormat's as amended by proposal-temporal e8cc03fc, or a refusal is another status
     // Broiler-Human:        PENDING
     public static IntlStatus Create(DateTimeData data, ResolvedLocale resolved, DateTimeFormatOptions options, out DateTimeFormat? format)
@@ -187,10 +187,13 @@ public sealed class DateTimeFormat
         var preferred = dates.PreferredHourChar(region);
         var defaultCycle = HourCycleOfChar(preferred);
 
+        // [[hourCycle12]] AND [[hourCycle24]] are the region's preferred cycle where it is of the kind asked for, and otherwise
+        // the first of that kind CLDR's time data allows for the region (row T10): Japan allows "H K h", so ja's is h11, as
+        // test262's hourCycle-default.js asks. Broiler.VM read "h12" and "h23" there, the same answers for its de and en.
         var hc = options.Hour12 switch
         {
-            true => defaultCycle is "h11" or "h12" ? defaultCycle : "h12",
-            false => defaultCycle is "h23" or "h24" ? defaultCycle : "h23",
+            true => defaultCycle is "h11" or "h12" ? defaultCycle : HourCycleOfChar(dates.AllowedHourChar(region, twelveHour: true)),
+            false => defaultCycle is "h23" or "h24" ? defaultCycle : HourCycleOfChar(dates.AllowedHourChar(region, twelveHour: false)),
             null => Key("hc") ?? defaultCycle,
         };
 

@@ -119,7 +119,7 @@ public sealed class DateTimeTests
     public void T10_each_locale_s_default_twelve_and_twenty_four_hour_cycles()
     {
         // CLDR's preferred hour of the data locale's region gives the default; hour12 takes the default where it is of its kind,
-        // and otherwise h12 or h23, as Broiler.VM's CreateDateTimeFormat does.
+        // and otherwise the first cycle of its kind the region allows, h12 or h23 for every region here but Japan (the next test).
         string? Cycle(string locale, bool? hour12 = null) => Format(locale, new DateTimeComponents { Hour = "numeric" }, hour12: hour12).HourCycle;
 
         Assert.Equal("h12", Cycle("en"));
@@ -131,6 +131,41 @@ public sealed class DateTimeTests
         Assert.Equal("h23", Cycle("en", hour12: false));
         Assert.Equal("h23", Cycle("ja", hour12: false));
         Assert.Equal("h23", Cycle("de-u-hc-h11", hour12: false));
+    }
+
+    /// <summary>
+    /// Row T10, settled at stage SJL-9.3f: where the region prefers a cycle of the other kind, <c>hour12</c> takes the first
+    /// cycle of its kind CLDR's time data allows for the region. Japan's allowed formats are <c>H K h</c>, so <c>ja</c>'s 12-hour
+    /// cycle is <c>h11</c>, as test262's <c>intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js</c> asks and
+    /// CLDR's own <c>ja</c> patterns write (<c>available.hm</c> is <c>aK:mm</c>); Germany's and France's (<c>H hB</c>) allow
+    /// no 12-hour cycle but the day period's <c>h</c>, so theirs stays <c>h12</c>.
+    /// </summary>
+    [Fact]
+    public void T10_hour12_takes_the_first_cycle_of_its_kind_the_region_allows()
+    {
+        string? Cycle(string locale, bool? hour12 = null) => Format(locale, new DateTimeComponents { Hour = "numeric" }, hour12: hour12).HourCycle;
+
+        Assert.Equal("h11", Cycle("ja", hour12: true));
+        Assert.Equal("h11", Cycle("ja-JP", hour12: true));
+        Assert.Equal("h11", Cycle("ja-u-hc-h23", hour12: true));
+        Assert.Equal("h12", Cycle("de", hour12: true));
+        Assert.Equal("h12", Cycle("fr", hour12: true));
+        Assert.Equal("h12", Cycle("en", hour12: true));
+        Assert.Equal("h23", Cycle("ja", hour12: false));
+        Assert.Equal("h23", Cycle("en", hour12: false));
+
+        // The pattern writes the cycle it reports: midnight and noon are hour 0 of their halves.
+        var ja = Format("ja", new DateTimeComponents { Hour = "numeric", Minute = "2-digit" }, hour12: true);
+        Assert.Contains('K', ja.Formatter.Pattern);
+        Assert.Equal("午前0:05", Write(ja, Utc(2024, 1, 5, 0, 5)));
+        Assert.Equal("午後0:05", Write(ja, Utc(2024, 1, 5, 12, 5)));
+        Assert.Equal("午後11:05", Write(ja, Utc(2024, 1, 5, 23, 5)));
+
+        // A region without time data reads the world's, H h: h12 and h23, as before.
+        Assert.Equal('h', Dates.Dates.AllowedHourChar("ZZ", twelveHour: true));
+        Assert.Equal('H', Dates.Dates.AllowedHourChar("ZZ", twelveHour: false));
+        Assert.Equal('K', Dates.Dates.AllowedHourChar("JP", twelveHour: true));
+        Assert.Equal('H', Dates.Dates.AllowedHourChar("US", twelveHour: false));
     }
 
     [Fact]

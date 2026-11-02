@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2898 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2899 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 165 |
-| Code units | 4513 |
-| Relevant | 2898 |
+| Code units | 4514 |
+| Relevant | 2899 |
 | Exempt | 1615 |
-| Assessed | 2898 of 2898 (100%) |
-| Human reviewed | 0 of 2898 (0%) |
-| Unverified | 2898 |
+| Assessed | 2899 of 2899 (100%) |
+| Human reviewed | 0 of 2899 (0%) |
+| Unverified | 2899 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,7 +67,7 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2898 |
+| HUMAN_PENDING | 2899 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
@@ -220,7 +220,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Generation/Time/TzdbTableSource.cs` | 2 | 2 | 0 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` | 35 | 29 | 6 | 29 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/DateIntervalFormatter.cs` | 43 | 33 | 10 | 33 | Low | High | 2/2 |
-| `Broiler.ECMAScript.Intl/DateTimeData.cs` | 21 | 13 | 8 | 13 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Intl/DateTimeData.cs` | 22 | 14 | 8 | 14 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/DateTimeFormat.cs` | 38 | 21 | 17 | 21 | Low | High | 5/5 |
 | `Broiler.ECMAScript.Intl/DateTimeFormatOptions.cs` | 60 | 18 | 42 | 18 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` | 55 | 40 | 15 | 40 | Low | High | 5/5 |
@@ -630,7 +630,7 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a range's String differs from PartitionDateTimeRangePattern's over CLDR intervalFormats and the fallback pattern
 - `Broiler.ECMAScript.Intl.DateIntervalFormatter.Largest(LocalDateTime, LocalDateTime)` in `Broiler.ECMAScript.Intl/DateIntervalFormatter.cs` - Security=High, Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat), `6854FD`, PENDING
   - Falsified if: the largest differing field differs from ICU's for the two local times, so another interval pattern is chosen
-- `Broiler.ECMAScript.Intl.DateTimeFormat.Create(DateTimeData, ResolvedLocale, DateTimeFormatOptions, out DateTimeFormat?)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat, `E3C420`, PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormat.Create(DateTimeData, ResolvedLocale, DateTimeFormatOptions, out DateTimeFormat?)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat, hourCycle12 and hourCycle24 by CLDR's allowed formats (JSD-0082 row T10), `1C7E53`, PENDING
   - Falsified if: a resolved option differs from CreateDateTimeFormat's as amended by proposal-temporal e8cc03fc, or a refusal is another status
 - `Broiler.ECMAScript.Intl.DateTimeFormat.HandleDateTimeValue(DateTimeValue, out DateTimeFormatter?, out double)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, Spec=proposal-temporal e8cc03fc sec-temporal-handledatetimevalue sec-temporal-getdatetimeformat sec-temporal-adjustdatetimestyleformat via Broiler.VM JsRealm.DateTimeFormat, `D0B2D8`, PENDING
   - Falsified if: a value is formatted with another format than HandleDateTimeValue selects, or one it refuses is formatted
@@ -744,5 +744,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1641 of the 2898 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1642 of the 2899 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

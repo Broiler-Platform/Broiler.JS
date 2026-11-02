@@ -20,7 +20,9 @@ namespace Broiler.ECMAScript.Probe;
 /// same runner, on the Intl area's sub-area (a), and from stage SJL-9.3b on the operations of sub-area (b) the runner
 /// answers, whose vectors it reads whole (<c>IVectorRecordLibrary</c>), and from stage SJL-9.3c on those of sub-area (c), read
 /// whole the same way, and from stage SJL-9.3d on those of sub-area (d), read whole too, and from stage SJL-9.3e on those of
-/// sub-area (e), read whole the same way. From milestone SJL-13.2a it also runs
+/// sub-area (e), read whole the same way; and from stage SJL-9.3f, the library's integration, on every Intl vector but those
+/// that need an engine, over Broiler.JS's generated tables compiled into the image, under invariant globalization (the
+/// project's <c>InvariantGlobalization</c>). From milestone SJL-13.2a it also runs
 /// <c>Broiler.ECMAScript.Frontend</c>, through the runner's frontend adapter, on the <c>syntax</c> area, whose outcomes it
 /// recorded and did not judge until stage SJL-13.2d, and judges from there (<see cref="IsParseJudgedArea"/>): from stage SJL-13.2c the parser answers
 /// every vector, a refusal counted among the matches where the vector expects one and an acceptance among them where it
@@ -97,7 +99,10 @@ internal static class Program
         // (d)'s, date-times' operations AlgorithmsLibrary.IntlDateTimesOperations names, but the engine-level script forms
         // AlgorithmsLibrary.IsEngineLevelDateTimesScript names (stage SJL-9.3d). So are sub-area (e)'s,
         // durations' operations AlgorithmsLibrary.IntlDurationsOperations names, but the engine-level script forms
-        // AlgorithmsLibrary.IsEngineLevelDurationsScript names (stage SJL-9.3e). Every other Intl vector is not implemented.
+        // AlgorithmsLibrary.IsEngineLevelDurationsScript names (stage SJL-9.3e). From stage SJL-9.3f, the integration, so are
+        // sub-area (a)'s two scripts of the default locale (AlgorithmsLibrary.IsLibraryIntlDefaultLocaleScript), and every Intl
+        // vector reads Broiler.JS's tables compiled into this image (the project's IntlTables.g.cs), never the disk's; every other
+        // Intl vector, each of which needs an engine or is a collation vector (intl/collation/, SJL-17's), is not implemented.
         // The syntax area's vectors are the frontend's, through the runner's frontend adapter, judged at the parse from stage
         // 4d, which reports the static-semantic early errors (IsParseJudgedArea; recorded, not judged, from milestone SJL-13.2a
         // to stage 4c).
@@ -138,6 +143,10 @@ internal static class Program
             failures.Add("the report of a second run differs from the first");
 
         failures.AddRange(ContractTypes.Check());
+
+        // The Intl tables were read from the image, the one place this executable holds them (stage SJL-9.3f).
+        if (!AlgorithmsLibrary.IntlTablesEmbedded)
+            failures.Add("the Intl tables were not compiled into the image");
         var recordedCount = recorded[0] + recorded[1] + recorded[2] + recorded[3];
         if (recordedCount == 0)
             failures.Add("corpus: no vector of the areas judged at the parse (" + ParseJudgedAreas + ") was read");

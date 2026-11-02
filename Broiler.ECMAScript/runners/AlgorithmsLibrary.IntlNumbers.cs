@@ -531,6 +531,7 @@ internal sealed partial class AlgorithmsLibrary
             (string s, "length") => (double)s.Length,
             (List<object?> list, "length") => (double)list.Count,
             (ScriptObject o, _) => o.Get(name),
+            (Global { Name: "Intl" }, "NumberFormat") => new Global("Intl.NumberFormat"),
             _ => throw Unsupported(),
         };
 
@@ -562,6 +563,8 @@ internal sealed partial class AlgorithmsLibrary
                     return repeated.ToString();
                 case (double or BigInteger, "toLocaleString"):
                     return NewNumberFormat(Argument(0), Argument(1)).Format(ToIntlMathematicalValue(receiver));
+                case (Global { Name: "Intl.NumberFormat" }, "supportedLocalesOf"):
+                    return SupportedLocalesOf(Argument(0));
                 case (NumberFormatObject nf, _):
                     return CallNumberFormat(nf.Formatter, name, Argument(0), Argument(1), arguments.Count);
                 case (ListFormatObject lf, "format"):
@@ -794,6 +797,22 @@ internal sealed partial class AlgorithmsLibrary
                 throw new ScriptError("RangeError");
             var match = LocaleNegotiation.MatchLocale(IntlAvailable, requested, IntlDefaultLocale);
             return LocaleNegotiation.ResolveLocale(match, keys(match.Locale), IntlFormatData);
+        }
+
+        /// <summary>
+        /// <c>Intl.NumberFormat.supportedLocalesOf(locales)</c> (<c>sec-intl.numberformat.supportedlocalesof</c>): CanonicalizeLocaleList
+        /// over a list of Strings, then FilterLocales over Broiler.VM's available locales (decision D7), as sub-area (a)'s route of the
+        /// operation does; the list of the locales file's one script form, whose first element is a NumberFormat's resolved locale.
+        /// </summary>
+        private static List<object?> SupportedLocalesOf(object? locales)
+        {
+            var tags = new List<string>();
+            foreach (var element in locales as List<object?> ?? throw new NotSupportedException("no vector gives supportedLocalesOf a " + Describe(locales)))
+                tags.Add(element as string ?? throw new NotSupportedException("no vector gives supportedLocalesOf an element that is a " + Describe(element)));
+
+            if (LocaleNegotiation.CanonicalizeLocaleList(tags, IntlData, out var requested, out _) != IntlStatus.Completed)
+                throw new ScriptError("RangeError");
+            return LocaleNegotiation.FilterLocales(IntlAvailable, requested).ToList().ConvertAll(static locale => (object?)locale);
         }
 
         /// <summary>CoerceOptionsToObject: <c>undefined</c> is an empty bag; every bag of the files is an object of literals.</summary>
