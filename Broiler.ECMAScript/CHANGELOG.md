@@ -228,12 +228,12 @@ Not yet packed under a version of its own: the stream's next version is set when
   patterns write; the library read the preferred format alone, as Broiler.VM does, and answered `h12`. Every other region of
   CLDR 48.2.0's time data allows `h` before any `K` and no `k`, so no other answer moves, Broiler.VM's `de` and `en` none.
 
-  The library-level runner answers every vector of the Intl area's five files under `intl/`, the routes of stages SJL-9.3a to
-  SJL-9.3e combined, and two more of
+  The library-level runner answers every vector of the Intl area's five files under `intl/` but thirty that need an engine,
+  listed by identifier in the Conformance tests: the routes of stages SJL-9.3a to SJL-9.3e combined, and two more of
   sub-area (a), read whole: `(1234.5).toLocaleString()` with the default locale and `supportedLocalesOf` of the default
-  locale a NumberFormat resolves and `en` (rows L33 and L44); thirty vectors, listed by identifier in the Conformance tests,
-  need an engine, and the collation vectors under `intl/collation/` (corpus revision 33) are SJL-17's, not answered. The
-  Native AOT probe runs them over Broiler.JS's generated tables compiled into its image, which its build
+  locale a NumberFormat resolves and `en` (rows L33 and L44). The collation vectors under `intl/collation/` (corpus
+  revision 33) are SJL-17's, not answered. The
+  Native AOT probe runs the Intl vectors over Broiler.JS's generated tables compiled into its image, which its build
   writes from `data/intl/generated/` into a C# source it does not commit, under invariant globalization as before.
 - `Broiler.ECMAScript.Conformance` (test-only, not packed): `IVectorRecordLibrary`, a library the library-level runner
   hands each vector whole, script included, which `LibraryRun.Run` calls in place of the operation and the decoded

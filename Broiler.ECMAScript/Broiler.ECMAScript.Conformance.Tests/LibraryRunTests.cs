@@ -391,7 +391,8 @@ public class LibraryRunTests
     /// The integration of stage SJL-9.3f (the plan's task 5.f): the library-level runner answers every Intl vector, its five files'
     /// routes combined, and each passes against the Intl library or gives Broiler.VM's <c>per-engine</c> expectation, but the
     /// vectors whose outcome needs an engine, listed here by identifier with the reason each needs one: an object's reads or
-    /// coercions observed through a Proxy, a getter or <c>valueOf</c> (rows T1, T2, N10, M1b, M4, P7, U7 and U9), the bound
+    /// coercions observed through a Proxy, a getter or <c>valueOf</c> (rows T1, T2, N10, M1b, M4, P7, U7 and U9), an options
+    /// object the script mutates after construction, which the engine reads once and snapshots there (row N10), the bound
     /// <c>format</c>'s identity, name and length (rows T4 and N11), the normative-optional legacy constructor (rows T5 and N12),
     /// the host's zone through <c>Temporal.Now</c> (row T11), a constructor called without <c>new</c> (rows S2 and U18),
     /// StringListFromIterable's iteration of a list (row S2), whether the engine defines a built-in (row L37), and casing, which is

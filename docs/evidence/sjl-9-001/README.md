@@ -373,10 +373,12 @@ call, and seeded random tags, numbers, dates and durations, with both embeddings
 own code, committed with the library, so this bundle keeps no copy of it. SJL-9.3f, the integration, retains its summary
 here, as the plan's task 5.f asks: [`algorithms/differential-summary.txt`](algorithms/differential-summary.txt), the
 report at scales 1 and 5 of the stage's head, with the command, the seed and the machine. **No difference is
-unclassified at either scale.** Each classified difference is listed by row in the report, with its first examples;
-against SJL-9.3e's reports, only the two date-time sections of Broiler.JS's embedding move, by the `ja` and `ja-JP`
-formats with `hour12: true` that row T10's settlement at this stage answers `h11`, classified under that row's data
-policy. *(Added 2026-11-02, at SJL-9.3f.)*
+unclassified at either scale.** Each classified difference is listed by row in the report, with its first examples.
+Against the same check at `origin/main` `b4e74409` (SJL-9.3e as merged), only the two date-time sections of Broiler.JS's
+embedding move, by the `ja` and `ja-JP` formats with `hour12: true` that row T10's settlement at this stage answers `h11`,
+classified under that row's data policy. Against SJL-9.3e's own reports, the sections L1 to L3 of both embeddings move
+as well, because corpus revision 33, merged from `origin/main`, adds the collation vectors' String inputs to their
+population; they equal `origin/main`'s. *(Added 2026-11-02, at SJL-9.3f.)*
 
 ## State
 

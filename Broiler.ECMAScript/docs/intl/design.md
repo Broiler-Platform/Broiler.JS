@@ -265,8 +265,8 @@ publication and the cut-overs inherit them knowingly.)*
   API is unchanged by the stage.
 - **Every Intl vector is answered at library level** by the runner, the collation vectors under `intl/collation/` (corpus
   revision 33, SJL-17's) aside, but thirty whose outcome needs an engine, which the
-  Conformance tests list by identifier (an object's reads and coercions observed by a Proxy, a getter or `valueOf`, the
-  bound `format`, the legacy constructor, the host's zone, a constructor called without `new`, StringListFromIterable's
+  Conformance tests list by identifier (an object's reads and coercions observed by a Proxy, a getter or `valueOf`, an
+  options object mutated after construction, which the engine reads once and snapshots there (row N10), the bound `format`, the legacy constructor, the host's zone, a constructor called without `new`, StringListFromIterable's
   iteration, whether a built-in exists, and casing with the default locale). The Native AOT probe runs them over
   Broiler.JS's tables compiled into its image, which its build writes from `data/intl/generated/` into a source it does not
   commit, under invariant globalization: no answer reads the host's culture data.

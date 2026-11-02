@@ -18,7 +18,9 @@ namespace Broiler.ECMAScript.Runners;
 /// <remarks>
 /// <para>
 /// <b>The tables are the data home's</b>, <c>Broiler.ECMAScript/data/intl/generated/</c>, Broiler.JS's embedding, read from
-/// disk as committed and held to the lengths and SHA-256 their manifest records, as the time tables are. Their global
+/// the image where a build compiles them into it (<see cref="EmbeddedIntlTable"/>, the Native AOT probe's
+/// <c>IntlTables.g.cs</c>, from stage SJL-9.3f) and from disk as committed otherwise, and held either way to the lengths and
+/// SHA-256 their manifest records, as the time tables are. Their global
 /// tables - likely subtags, aliases, the BCP 47 data, time, week and script data - are Broiler.VM's (Broiler.VM's JSD-0082,
 /// decision D5), and no answer of the sub-area reads a locale's main data but the matched locale's default numbering system.
 /// </para>
