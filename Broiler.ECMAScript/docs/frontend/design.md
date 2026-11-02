@@ -420,8 +420,13 @@ answer are stage 4d's".)*
 - **Diagnostics.** Every refusal carries its catalogue row's shared code and message identifier: the provisional JSE9108
   and JSE9109 are EX0008's and EX0009's, kept where no other row explains the site, and each site that serves a row of its
   own reports that row (the changelog's entry of this stage names them). The arguments each identifier takes are defined
-  in the catalogue's section 6 (`early-errors.md`, its note of 2026-11-02). A grammar refusal or a limit's has phase
-  `Parser`; a static-semantic early error, and the provider's refusal, phase `Semantics`. The library renders no text:
+  in the catalogue's section 6 (`early-errors.md`, its note of 2026-11-02). The phase is the pass that finds the refusal:
+  `Parser` for a grammar refusal, a limit's, and the early errors the parser checks as it reads (a cover that covers
+  nothing, EE0017, EE0025, EE0032, EE0037, EE0038, EE0053, EE0087 and EE0155; an optional chain's template, EE0026; an
+  operand that is no LeftHandSideExpression, EE0033 to EE0035; and the rows the changelog's entry names with them);
+  `Semantics` for every early error the declarations walk reports, and the provider's refusal. A row two passes check
+  carries the phase of the one that reports it: EE0033 to EE0035 are `Parser`'s where the operand is no
+  LeftHandSideExpression (`a + b = 1`) and `Semantics`' where it is one whose AssignmentTargetType is invalid (`1 = 2`). The library renders no text:
   each engine renders its own from the identifier and its arguments (section 3), Broiler.JS's texts that hosts and tests
   read, "Unexpected await" among them, kept by its bridge at SJL-14 and every other text class M there (JSD-0083's
   decision D46, which binds SJL-14).
@@ -437,7 +442,9 @@ answer are stage 4d's".)*
   function and whether an `if` clause's), and whose `Functions` give the program's and every function's strictness and
   parameter names (`FunctionFacts`); null for a refused source.
 - **The regular-expression provider** is asked about every literal of a tree the grammar admitted, once each, in source
-  order, and a refusal is reported at the literal's span by the row whose message identifier the verdict names, or by
+  order, and a refusal is reported at the literal's span by the row whose message identifier the verdict names (the
+  first in catalogue order where rows share it, so that twelve rows are reported by another's code; the changelog's entry
+  of this stage lists them), or by
   EE0019 (`regexp.literal.invalid`, with the verdict's identifier as its argument) where no row has it. A verdict of the
   validator's own nesting bound is reported the same way, as EE0019's: its catalogue row, EX0026, is an `engine` row,
   which the library never reports.

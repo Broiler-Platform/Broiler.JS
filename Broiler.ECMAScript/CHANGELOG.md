@@ -302,7 +302,9 @@ Not yet packed under a version of its own: the stream's next version is set when
     under the Script goal (EX0010), `return` outside a function or in a static block (EX0032, EX0033), Annex B's
     sloppy-only forms in strict code (EG0005, EG0007), an HTML-like comment in a module (EG0001), and a proposal's form
     its flag does not admit (EP0009 to EP0014). The limits' JSE9201 and JSE9202 were already EX0011's and EX0012's. The
-    arguments each identifier takes are the catalogue's section 6 note of this stage;
+    arguments each identifier takes are the catalogue's section 6 note of this stage. A refusal's phase is the pass that
+    finds it: `Parser` for the grammar's, a limit's and those sites', `Semantics` for the declarations walk's and the
+    provider's (design section 9.3's note says which rows each pass reports);
   - **the declarations walk**, in `Broiler.ECMAScript.Semantics`, over the tree the grammar admits, with a stack of its
     own: the static-semantic early errors of every `syntax` row, the union decision D10 took (names under strictness
     and the [Yield] and [Await] parameters, legacy octal literals and escapes, templates' escapes, assignment targets,
@@ -311,7 +313,11 @@ Not yet packed under a version of its own: the stream's next version is set when
     module's export names and import attributes), with Annex B's relaxations under the switch; the top-level-`await`
     switch, the one `request` row (EX0023), read as the top level's [Await] parameter with no diagnostic of its own; and
     every regular-expression literal's validity asked of the request's provider, once per literal in source order,
-    reported at the literal by the row its verdict's identifier names, or EE0019's;
+    reported at the literal by the row its verdict's identifier names, or EE0019's. A verdict carries an identifier and
+    no row, so of the provider's rows that share an identifier the first in catalogue order reports for all: EE0188 and
+    EE0189 are reported as EE0186; EE0195, EE0210 and EE0212 as EE0193; EE0196, EE0208, EE0211 and EE0213 as EE0194;
+    EE0198 as EE0197; EE0200 as EE0199; and EE0207 as EE0206. These twelve rows have no code of their own in a
+    diagnostic until the verdict can name the row;
   - **the side tables**, public: `ParseResult.Declarations`, a `DeclarationTables` of every scope (`Scope`, its
     `ScopeKind` and its `Declaration`s, each with its `BindingKind`, whether lexical, and whether a block-level or an
     `if` clause's function) and of the program's and every function's strictness and parameter names
