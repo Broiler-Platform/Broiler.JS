@@ -177,9 +177,14 @@ was written require:
   `out` or, for the Han vectors whose answer moves with the order across blocks, Broiler.VM's expectation, the implicit
   weights the owner's decision of 2026-11-02 on row O3 keeps (the Intl design's dated note); the archived CollationTest
   files order at library level; the differential check's sections C1 and C2 find no unclassified difference. The sizes of
-  the tables are stated with the stage's report, not here: JSD-0084's decision E13 reads "Broiler.JS: the collation size
-  stated in its bundle", and that statement stays open in this bundle until a later dated line makes it. No engine reads the collator before its cut-over, SJL-17.4 or
-  SJL-17.5, so no run of this rule moves.
+  the tables, measured with `stat` on the committed files, are 160,603 bytes for `collation-root.bin`, 7,850 bytes for
+  `collation-tailorings.bin` and 64 bytes for `collation-settings.txt`, 168,517 bytes in all. JSD-0084's decision E13 reads
+  "Broiler.JS: the collation size stated in its bundle", and the owner's decision of 2026-11-02, taken under the owner's
+  direction of 2026-10-18 ("Please do all recommended decisions and skip waiting for review"), is that E13 is met by
+  stating them here: rule H5 forbids a bundle README only test262 suite totals. *(Revised 2026-11-02, later, at SJL-17.3;
+  the sentences read "The sizes of the tables are stated with the stage's report, not here: JSD-0084's decision E13 reads
+  "Broiler.JS: the collation size stated in its bundle", and that statement stays open in this bundle until a later dated
+  line makes it.")* No engine reads the collator before its cut-over, SJL-17.4 or SJL-17.5, so no run of this rule moves.
 
 ## State
 
