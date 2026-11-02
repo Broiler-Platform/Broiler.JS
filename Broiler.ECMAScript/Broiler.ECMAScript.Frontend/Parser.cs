@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   38
-// Annotated:        38/38
-// Exempt:           32
-// Human-reviewed:   0/38
+// Relevant units:   41
+// Annotated:        41/41
+// Exempt:           36
+// Human-reviewed:   0/41
 // IP risk:          Low
 // Security risk:    High
-// Criteria:         5/5
+// Criteria:         6/6
 // Resource impact:  2/10 max
-// Unverified:       38
+// Unverified:       41
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -58,8 +58,12 @@ namespace Broiler.ECMAScript.Syntax;
 /// statement, assignment expression, binding pattern, recursing prefix operator and nested <c>new</c>, as Broiler.VM's
 /// <c>JsParser</c> charges it, and for each right operand of <c>**</c>, the one right-recursive binary operator, and for
 /// each class heritage, through which a class expression recurses, both of which Broiler.VM's parser leaves uncharged;
-/// the tree depth is charged once for each node a binary chain or a member or call chain adds, from the spine of the
-/// chain's first operand, which closes the left-operand gap in all four of its shapes.
+/// the tree depth is charged once for each node a binary chain or a member or call chain adds, from the height of the
+/// chain's first operand, and each chain node is charged its whole height, the most chain nodes on any path below it,
+/// so that a tree deeper than <see cref="ParseLimits.MaximumTreeDepth"/> is refused wherever it is built. <i>(Revised
+/// 2026-11-02, at stage SJL-13.2f, by the owner's decision of that day on decision D14's residual left-operand shapes;
+/// it read "the tree depth is charged once for each node a binary chain or a member or call chain adds, from the spine of
+/// the chain's first operand, which closes the left-operand gap in all four of its shapes.")</i>
 /// </para>
 /// </remarks>
 // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=130766
@@ -516,16 +520,103 @@ internal sealed partial class Parser
     // Broiler-Human:        PENDING
     private void ExitNesting() => nesting--;
 
-    /// <summary>Charges one level of tree depth for a chain node, refusing the source past the library's constant (catalogue row EX0012).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant; IP=Low; Security=High; Resources=2; Fingerprint=190E1C
-    // Broiler-Falsified-If: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused
+    /// <summary>
+    /// Charges a chain node: its height is one more than its highest child's (<see cref="HeightOf"/>), and the tree depth
+    /// where it stands is <paramref name="saved"/>, the depth its chain began at, and that height; past the library's
+    /// constant the source is refused (catalogue row EX0012) before the node is used.
+    /// </summary>
+    /// <remarks>
+    /// Every child counts, not the left operand's spine alone (decision D14, as the owner decided on 2026-11-02): a right
+    /// operand, a call's argument, a computed key, a template's substitution, and through a prefix operator, an array or
+    /// object literal, a sequence, a conditional or a function the chains inside them, so that a tree deeper than the
+    /// constant is refused wherever it is built. <i>(Revised 2026-11-02, at stage SJL-13.2f; it was <c>Deepen</c>, "Charges
+    /// one level of tree depth for a chain node, refusing the source past the library's constant (catalogue row EX0012).",
+    /// which added one to the depth whatever the node's right operand or arguments held.)</i>
+    /// </remarks>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=High; Resources=2; Fingerprint=24CCD2
+    // Broiler-Falsified-If: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused, or a node's height misses a child's
     // Broiler-Human:        PENDING
-    private void Deepen(SourceSpan at)
+    private void Charge(SyntaxNode node, int saved, SourceSpan at)
     {
-        treeDepth++;
+        var height = ChildrenHeight(node) + 1;
+        node.Height = height;
+        treeDepth = saved + height;
         if (treeDepth > ParseLimits.MaximumTreeDepth)
             throw Refuse(TreeTooDeep, at, ParseLimits.MaximumTreeDepth.ToString(NumberFormatInfo.InvariantInfo));
     }
+
+    // The scratch lists of the height computation, which keeps its own stack (no recursion per level of the tree).
+    private readonly List<SyntaxNode> heightChildren = new();
+    private readonly List<SyntaxNode> heightOrder = new();
+    private readonly List<SyntaxNode> heightStack = new();
+    private readonly List<SyntaxNode> chainChildren = new();
+
+    /// <summary>The highest of a node's children's heights (<see cref="HeightOf"/>), 0 for a node with no child.</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=Medium; Resources=1; Fingerprint=BD6764
+    // Broiler-Human:        PENDING
+    private int ChildrenHeight(SyntaxNode node)
+    {
+        chainChildren.Clear();
+        node.AddChildren(chainChildren);
+        var height = 0;
+        for (var i = 0; i < chainChildren.Count; i++)
+            height = Math.Max(height, HeightOf(chainChildren[i]));
+        chainChildren.Clear();
+        return height;
+    }
+
+    /// <summary>
+    /// A node's height in tree depth (<see cref="SyntaxNode.Height"/>): set already for a chain node the parser charged;
+    /// otherwise computed once, from its children's, with an explicit stack, and kept on the node, so that the whole parse
+    /// computes each node's height at most once and adds no frame per level of the tree.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=High; Resources=2; Fingerprint=DD2A62
+    // Broiler-Falsified-If: a node's height differs from the most chain nodes on a path below it, or its computation recurses per level of the tree
+    // Broiler-Human:        PENDING
+    private int HeightOf(SyntaxNode node)
+    {
+        if (node.Height >= 0)
+            return node.Height;
+
+        // The nodes whose height is not known, parents before their children; then each from its children's, in reverse.
+        heightOrder.Clear();
+        heightStack.Clear();
+        heightStack.Add(node);
+        while (heightStack.Count > 0)
+        {
+            var next = heightStack[^1];
+            heightStack.RemoveAt(heightStack.Count - 1);
+            heightOrder.Add(next);
+            heightChildren.Clear();
+            next.AddChildren(heightChildren);
+            foreach (var child in heightChildren)
+            {
+                if (child.Height < 0)
+                    heightStack.Add(child);
+            }
+        }
+
+        for (var i = heightOrder.Count - 1; i >= 0; i--)
+        {
+            var current = heightOrder[i];
+            heightChildren.Clear();
+            current.AddChildren(heightChildren);
+            var height = 0;
+            foreach (var child in heightChildren)
+                height = Math.Max(height, child.Height);
+            current.Height = IsChainNode(current) ? height + 1 : height;
+        }
+
+        heightChildren.Clear();
+        heightOrder.Clear();
+        return node.Height;
+    }
+
+    /// <summary>Whether a node is one a chain adds, which the tree depth counts: a binary or logical operator's, a member's, a call's or a tagged template's.</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant; IP=Low; Security=Low; Resources=0; Fingerprint=83F3D4
+    // Broiler-Human:        PENDING
+    private static bool IsChainNode(SyntaxNode node) => node.Kind is SyntaxKind.BinaryExpression or SyntaxKind.LogicalExpression
+        or SyntaxKind.MemberExpression or SyntaxKind.CallExpression or SyntaxKind.TaggedTemplateExpression;
 
     /// <summary>A refusal the parse unwinds with: the first in the library's order (decision D11).</summary>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=E526A5

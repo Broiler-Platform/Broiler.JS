@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   128
 // Annotated:        128/128
-// Exempt:           144
+// Exempt:           143
 // Human-reviewed:   0/128
 // IP risk:          Low
 // Security risk:    Low
@@ -31,12 +31,6 @@ public abstract class Expression : SyntaxNode
     {
     }
 
-    /// <summary>
-    /// The tree depth the expression's left spine is charged (decision D14): one for each node a binary chain or a member or
-    /// call chain adds, none for a parenthesis, a template or a substitution. A chain that begins with this expression is
-    /// charged from it, which closes the left-operand gap.
-    /// </summary>
-    internal int Spine { get; set; }
 }
 
 /// <summary>An IdentifierReference (ECMA-262 clause 13.1): a name read or written.</summary>

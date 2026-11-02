@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   11
 // Annotated:        11/11
-// Exempt:           91
+// Exempt:           92
 // Human-reviewed:   0/11
 // IP risk:          Low
 // Security risk:    Low
@@ -310,6 +310,17 @@ public abstract class SyntaxNode
 
     /// <summary>Where the node stands in the source: its full span (decision D15).</summary>
     public SourceSpan Span { get; }
+
+    /// <summary>
+    /// The node's height in tree depth (decision D14, as the owner decided on 2026-11-02): the most nodes of binary chains
+    /// and of member or call chains on any path from this node down to a leaf, through every child it has; a parenthesis, a
+    /// template, a substitution and every other node add none. The parser sets it for each chain node it charges, and
+    /// computes it once for any other node when a chain is charged with it; -1 until then. <i>(Revised 2026-11-02, at
+    /// stage SJL-13.2f; it was <c>Expression.Spine</c>, "The tree depth the expression's left spine is charged (decision
+    /// D14): one for each node a binary chain or a member or call chain adds, none for a parenthesis, a template or a
+    /// substitution. A chain that begins with this expression is charged from it, which closes the left-operand gap.")</i>
+    /// </summary>
+    internal int Height { get; set; } = -1;
 
     /// <summary>The node's children in source order, for a walk that needs no type test.</summary>
     // Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=9EBE30

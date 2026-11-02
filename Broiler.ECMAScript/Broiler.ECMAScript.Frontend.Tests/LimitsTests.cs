@@ -163,6 +163,84 @@ public sealed class LimitsTests
     }
 
     /// <summary>
+    /// The shapes of decision D14's charge as the owner decided it on 2026-11-02 (the derivation's section 5 and its note of
+    /// that day): a chain whose left operand, or one of whose operands, holds a chain anywhere below it, not along the left
+    /// spine alone. Each shape is a source whose tree depth is <c>inner + outer + extra</c>: a chain of <c>inner</c> nodes in
+    /// the place the shape names, under or beside a chain of <c>outer</c> nodes, with <c>extra</c> the chain nodes the shape
+    /// adds itself (the call, the member or the operator the inner chain hangs under).
+    /// </summary>
+    public static TheoryData<string, string, string, string, string, int> ResidualShapes => new()
+    {
+        // A right operand of a chain's early node, by precedence and parenthesised.
+        { "right operand by precedence", "x = 1 + 2", "*2", "", "+3", 1 },
+        { "right operand parenthesised", "x = a + (b", "+b", ")", "+c", 1 },
+        // A chain beginning with an expression whose spine stage 4c did not name.
+        { "prefix operator's operand", "x = -(a", "+a", ")", "+b", 0 },
+        { "await's operand", "async function f() { x = await (a", "+a", ")", "+b", 0 },
+        { "array literal's element", "x = [a", "+a", "]", ".b", 0 },
+        { "object literal's value", "x = ({p: a", "+a", "})", ".b", 0 },
+        { "object literal's computed key", "x = ({[a", "+a", "]: 1})", ".b", 0 },
+        { "spread element", "x = [...(a", "+a", ")]", ".b", 0 },
+        { "call's argument", "x = f(a", "+a", ")", "+b", 1 },
+        { "call's spread argument", "x = f(...(a", "+a", "))", "+b", 1 },
+        { "new's argument", "x = new C(a", "+a", ")", "+b", 0 },
+        { "import call's argument", "x = import(a", "+a", ")", ".b", 0 },
+        { "computed member's key", "x = o[a", "+a", "]", "+b", 1 },
+        { "optional chain's computed key", "x = o?.[a", "+a", "]", ".b", 1 },
+        { "tagged template's substitution", "x = t`${a", "+a", "}`", "+b", 1 },
+        // A parenthesised expression that is not a chain, holding one.
+        { "sequence", "x = (0, a", "+a", ")", "+b", 0 },
+        { "conditional", "x = (c ? 0 : a", "+a", ")", "+b", 0 },
+        { "assignment", "x = (y = a", "+a", ")", "+b", 0 },
+        { "arrow function's body", "x = (() => a", "+a", ")", "+b", 0 },
+        { "function expression's body", "x = (function () { return a", "+a", "; })", "+b", 0 },
+        { "class heritage", "x = (class extends (a", "+a", ") {})", "+b", 0 },
+        { "class field's initialiser", "x = (class { p = a", "+a", "; })", "+b", 0 },
+        { "private in's right operand", "x = class { #x; m() { return #x in a", "<<a", "", "||b", 0 },
+    };
+
+    /// <summary>
+    /// Every residual shape is charged its whole tree depth (decision D14, the owner's decision of 2026-11-02): at the
+    /// bound accepted, one node past it refused with the tree-depth diagnostic, and far past it refused, on the documented
+    /// stack. Stage 4e's charge, along a chain's left spine alone, accepted every one of these sources past the bound.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(ResidualShapes))]
+    public void Every_shape_of_the_tree_is_charged_its_depth(string shape, string prefix, string innerLink, string close, string outerLink, int extra)
+    {
+        const int inner = 5_000;
+        var suffix = shape == "private in's right operand" ? "; } };" : shape == "await's operand" ? "; }" : ";";
+        string Text(int outer) => prefix + string.Concat(Enumerable.Repeat(innerLink, inner)) + close
+            + string.Concat(Enumerable.Repeat(outerLink, outer)) + suffix;
+        var atBound = ParseLimits.MaximumTreeDepth - inner - extra;
+
+        var accepted = ParseV(Text(atBound), 64);
+        Assert.True(accepted.Outcome == ParseOutcome.Accepted, shape + " at the bound: " + (accepted.Diagnostics.Count > 0 ? accepted.Diagnostics[0].Code : "-"));
+        foreach (var outer in new[] { atBound + 1, 100_000 })
+        {
+            var refused = ParseV(Text(outer), 64);
+            Assert.True(refused.Outcome == ParseOutcome.Refused, shape + " with " + outer.ToString(CultureInfo.InvariantCulture) + " outer nodes was accepted");
+            Assert.Equal(("JSE9202", "limit.tree.too-deep", "10000"), (refused.Diagnostics[0].Code, refused.Diagnostics[0].MessageId, refused.Diagnostics[0].Arguments[0]));
+        }
+    }
+
+    /// <summary>
+    /// The charge counts the tree's depth, not the source's length: chains side by side, in a call's arguments, an array's
+    /// elements or a sequence, each within the bound, are accepted however many there are, since none hangs under another.
+    /// </summary>
+    [Fact]
+    public void Chains_side_by_side_are_charged_their_deepest_not_their_sum()
+    {
+        var chain = "a" + string.Concat(Enumerable.Repeat("+a", 9_998));
+        foreach (var text in new[] { "x = f(" + chain + ", " + chain + ", " + chain + ");", "x = [" + chain + ", " + chain + "];",
+            "x = (" + chain + ", " + chain + ");", chain + "; " + chain + ";" })
+        {
+            var result = ParseV(text, 64);
+            Assert.True(result.Outcome == ParseOutcome.Accepted, text[..20] + " was refused: " + (result.Diagnostics.Count > 0 ? result.Diagnostics[0].Code : "-"));
+        }
+    }
+
+    /// <summary>
     /// One operator of each binary precedence from <c>||</c> to <c>*</c>: a source that climbs the whole precedence ladder
     /// before each level of a construct, which the parser reads with an explicit stack and does not charge (the
     /// derivation's section 3).

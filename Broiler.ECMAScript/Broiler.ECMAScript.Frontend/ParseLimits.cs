@@ -42,6 +42,12 @@ namespace Broiler.ECMAScript.Syntax;
 /// requires ... and states it beside the constant" is done. The derivation, retained in
 /// <c>docs/frontend/limits/derivation.md</c>, finds that the parse spends no stack per level of tree depth, and that the
 /// nesting bound is what the stack pays for; <see cref="StackBytes"/> states the stack beside the constants.)</i>
+/// <i>(Noted 2026-11-02, at stage SJL-13.2f, by the owner's decision of that day on decision D14's residual left-operand
+/// shapes: "the tree depth for each node a binary chain or a member or call chain adds, from the spine of the chain's
+/// first operand" no longer holds. Each chain node is charged its height, one more than the highest of all its children,
+/// and a chain begins at its first operand's height, so that a tree deeper than <see cref="MaximumTreeDepth"/> is refused
+/// wherever it is built: under a right operand, a call's argument, a computed key, a prefix operator's operand, an array
+/// or object literal's element, a sequence, a conditional or a function body, as along a chain's left spine.)</i>
 /// </para>
 /// </remarks>
 // Broiler-AI:           Origin=AI; Spec=JSD-0080 D27, JSD-0083 D11 D14 limits; IP=Low; Security=Medium; Resources=0; Fingerprint=8281B1
@@ -53,7 +59,9 @@ public sealed class ParseLimits
     /// D14): Broiler.VM's bound, <c>SliceParseOptions.MaximumTreeDepth</c>, which a test of Broiler.VM holds equal to this
     /// one so that its rule N19's text checks stand. Tree depth is charged as Broiler.VM's parser charges it, one level for
     /// each node a binary chain or a member or call chain adds, and none for a parenthesis, a template or a substitution,
-    /// a left operand's spine adding its own length to the chain it begins.
+    /// a left operand's spine adding its own length to the chain it begins. <i>(Noted 2026-11-02, at stage SJL-13.2f, by
+    /// the owner's decision of that day: the depth counted is the tree's, the most chain nodes on any path from the root to
+    /// a leaf, through every child, not a left operand's spine alone; every tree deeper than this constant is refused.)</i>
     /// </summary>
     /// <remarks>
     /// <para>

@@ -996,7 +996,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>Decorators, under the decorators proposal's flag (decision D17): <c>@</c> and a member chain, its call, or a parenthesised expression.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=87125F
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=A0D4B0
     // Broiler-Human:        PENDING
     private IReadOnlyList<Decorator> ParseDecorators()
     {
@@ -1030,22 +1030,16 @@ internal sealed partial class Parser
                         Advance();
                         var member = ParseMemberName();
                         var span = SpanFrom(expression.Span);
-                        Deepen(span);
-                        expression = new MemberExpression(span, expression, member, isComputed: false, isOptional: false)
-                        {
-                            Spine = treeDepth - saved,
-                        };
+                        expression = new MemberExpression(span, expression, member, isComputed: false, isOptional: false);
+                        Charge(expression, saved, span);
                     }
 
                     if (Op.Kind == TokenKind.LeftParen)
                     {
                         var (arguments, trailing) = ParseArguments(defer: false);
                         var span = SpanFrom(expression.Span);
-                        Deepen(span);
-                        expression = new CallExpression(span, expression, arguments, trailing, isOptional: false)
-                        {
-                            Spine = treeDepth - saved,
-                        };
+                        expression = new CallExpression(span, expression, arguments, trailing, isOptional: false);
+                        Charge(expression, saved, span);
                     }
                 }
                 finally

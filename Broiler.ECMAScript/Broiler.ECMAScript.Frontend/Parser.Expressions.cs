@@ -274,7 +274,9 @@ internal sealed partial class Parser
     /// <c>#x in o</c> where a RelationalExpression may begin: a precedence climb whose right operands of a higher precedence
     /// are read with an explicit stack (<see cref="pendingOperators"/>), not by recursion, so that a source climbing the
     /// grammar's ten precedences between two levels of nesting adds no frame (decision D14; the derivation's section 3).
-    /// Each chain of one precedence is charged one level of tree depth for each node from its left operand's spine. An
+    /// Each chain of one precedence is charged from its left operand's height, and each node its own height (decision D14,
+    /// as the owner decided on 2026-11-02; it read "Each chain of one precedence is charged one level of tree depth for each
+    /// node from its left operand's spine."). An
     /// async arrow read whole as a primary is no operand (clause 15.9: an AsyncArrowFunction is only an
     /// AssignmentExpression), so nothing extends it: the operator after it is left to the statement's end, where a line
     /// terminator before it inserts a semicolon (clause 12.10).
@@ -286,8 +288,8 @@ internal sealed partial class Parser
     /// right operand of <c>#x in</c> is read by one recursion, which cannot repeat. The method holds no token: what reads
     /// one is a method of its own, out of line, so that the frame each level of nesting leaves here stays small.
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge and nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=75D4D2
-    // Broiler-Falsified-If: an operator binds with another precedence or associativity than the grammar's, a chain is charged without its left operand's spine, or a right operand of a higher precedence adds a frame to the parser's stack
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge and nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=D2774C
+    // Broiler-Falsified-If: an operator binds with another precedence or associativity than the grammar's, a chain is charged without its left operand's height or a node without its right operand's, or a right operand of a higher precedence adds a frame to the parser's stack
     // Broiler-Human:        PENDING
     private Expression ParseBinary(int minimum, bool noIn)
     {
@@ -303,14 +305,14 @@ internal sealed partial class Parser
             {
                 if (operand)
                 {
-                    // An operand, a UnaryExpression or #x in o; then a chain begins with it, charged from its spine, unless
+                    // An operand, a UnaryExpression or #x in o; then a chain begins with it, charged from its height, unless
                     // it is an async arrow, which nothing extends (the chain is then not open, and nothing was charged).
                     left = AtPrivateIdentifier() ? ParsePrivateIn(minimum, noIn) : ParseUnary();
                     operand = false;
                     saved = treeDepth;
                     open = !ReferenceEquals(left, primaryArrow);
                     if (open)
-                        treeDepth += left.Spine;
+                        treeDepth += HeightOf(left);
                 }
 
                 if (open)
@@ -438,7 +440,7 @@ internal sealed partial class Parser
     /// The node of a binary or logical operator over two operands, charged one level of tree depth from the tree depth
     /// <paramref name="saved"/> its chain began at (decision D14).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, s13.13 coalesce, JSD-0083 D14 left-operand charge; IP=Low; Security=High; Resources=2; Fingerprint=537C99
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, s13.13 coalesce, JSD-0083 D14 left-operand charge; IP=Low; Security=High; Resources=2; Fingerprint=47D7D7
     // Broiler-Falsified-If: a CoalesceExpression mixed with a LogicalOR or LogicalAND operand is built, or a chain node is built without its charge
     // Broiler-Human:        PENDING
     private Expression CombineBinary(Expression left, Token token, Expression right, int saved)
@@ -457,8 +459,7 @@ internal sealed partial class Parser
             node = new BinaryExpression(span, BinaryOperatorOf(token), left, right);
         }
 
-        Deepen(span);
-        node.Spine = treeDepth - saved;
+        Charge(node, saved, span);
         return node;
     }
 
@@ -612,18 +613,20 @@ internal sealed partial class Parser
 
     /// <summary>
     /// The links of a member, call or optional chain after its first expression (clauses 13.3.2 to 13.3.9 and 13.3.11),
-    /// each charged one level of tree depth from the first expression's spine (decision D14). Without
+    /// each charged its height from the first expression's height (decision D14, as the owner decided on 2026-11-02, so that
+    /// a call's arguments and a computed key count; it read "each charged one level of tree depth from the first
+    /// expression's spine (decision D14)."). Without
     /// <paramref name="allowCalls"/> the chain is a MemberExpression, a <c>new</c> expression's constructor. With
     /// <paramref name="asyncHead"/>, a first argument list on the same line as <c>async</c> is read as the
     /// CoverCallExpressionAndAsyncArrowHead, which a following <c>=&gt;</c> converts.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=6FF1E5
-    // Broiler-Falsified-If: a link the grammar refuses is admitted, or a chain is charged without its first expression's spine
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=9E07DE
+    // Broiler-Falsified-If: a link the grammar refuses is admitted, or a chain is charged without its first expression's height or a link without its arguments' or key's
     // Broiler-Human:        PENDING
     private Expression ParseChainLinks(Expression current, bool allowCalls, bool asyncHead = false)
     {
         var saved = treeDepth;
-        treeDepth += current.Spine;
+        treeDepth += HeightOf(current);
         var start = current.Span;
         var optional = false;
         try
@@ -730,9 +733,7 @@ internal sealed partial class Parser
                     default:
                         if (optional)
                         {
-                            var chain = new ChainExpression(current.Span, current);
-                            chain.Spine = current.Spine;
-                            return chain;
+                            return new ChainExpression(current.Span, current);
                         }
 
                         return current;
@@ -748,8 +749,7 @@ internal sealed partial class Parser
 
         Expression Fix(Expression link, SourceSpan at)
         {
-            Deepen(at);
-            link.Spine = treeDepth - saved;
+            Charge(link, saved, at);
             return link;
         }
     }
@@ -812,7 +812,7 @@ internal sealed partial class Parser
     /// A <c>new</c> expression or <c>new.target</c> (clauses 13.3.5 and 13.3.12), each <c>new</c> charged one level of nesting
     /// as Broiler.VM's parser charges it: the constructor is a MemberExpression, with no call and no optional link.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=3CA657
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=6920F7
     // Broiler-Human:        PENDING
     private Expression ParseNew()
     {
@@ -856,9 +856,7 @@ internal sealed partial class Parser
                 (arguments, trailing) = ParseArguments(defer: false);
             }
 
-            var node = new NewExpression(SpanFrom(start), callee, arguments, hasArguments, trailing);
-            node.Spine = callee.Spine;
-            return node;
+            return new NewExpression(SpanFrom(start), callee, arguments, hasArguments, trailing);
         }
         finally
         {
@@ -1122,9 +1120,11 @@ internal sealed partial class Parser
 
     /// <summary>
     /// A TemplateLiteral (clause 13.2.8), read in place: the tokenizer's head, middles and tail, each substitution's end read
-    /// under the template goal. Its spine is its substitutions' deepest, so a chain it begins is charged through them.
+    /// under the template goal. Its height is its substitutions' highest (<see cref="HeightOf"/>), so a chain it begins is
+    /// charged through them. <i>(Revised 2026-11-02, at stage SJL-13.2f; it read "Its spine is its substitutions' deepest,
+    /// so a chain it begins is charged through them.")</i>
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=7A485B
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=082B23
     // Broiler-Human:        PENDING
     private TemplateLiteral ParseTemplate()
     {
@@ -1134,13 +1134,11 @@ internal sealed partial class Parser
         var expressions = new List<Expression>();
         Advance();
         quasis.Add(new TemplateElement(SpanOf(first), first.Value, first.Raw!));
-        var spine = 0;
         if (first.Kind == TokenKind.TemplateHead)
         {
             while (true)
             {
                 var substitution = ParseExpression(noIn: false);
-                spine = Math.Max(spine, substitution.Spine);
                 expressions.Add(substitution);
                 var piece = Peek(LexicalGoal.TemplateTail);
                 if (piece.Kind is not (TokenKind.TemplateMiddle or TokenKind.TemplateTail))
@@ -1152,9 +1150,7 @@ internal sealed partial class Parser
             }
         }
 
-        var node = new TemplateLiteral(SpanFrom(start), Lists.Freeze(quasis), Lists.Freeze(expressions));
-        node.Spine = spine;
-        return node;
+        return new TemplateLiteral(SpanFrom(start), Lists.Freeze(quasis), Lists.Freeze(expressions));
     }
 
     /// <summary>
@@ -1162,7 +1158,7 @@ internal sealed partial class Parser
     /// <c>=&gt;</c> follows on the same line, the cover an AssignmentExpression converts into ArrowFormalParameters. The
     /// forms only parameters have (<c>()</c>, a trailing comma, a rest element) are refused without the arrow.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList; IP=Low; Security=High; Resources=2; Fingerprint=D8DAB8
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList; IP=Low; Security=High; Resources=2; Fingerprint=4D6B21
     // Broiler-Falsified-If: a form only parameters have is admitted without the arrow, or an arrow head is read again rather than converted
     // Broiler-Human:        PENDING
     private Expression ParseParenthesized()
@@ -1214,9 +1210,7 @@ internal sealed partial class Parser
             throw Refuse(Rows.EE0025, SpanOf(next), string.Empty);
         CheckCoverInitialized(mark);
         var inner = items.Count == 1 ? items[0] : new SequenceExpression(SpanFromTo(items[0].Span, items[^1].Span), Lists.Freeze(items));
-        var node = new ParenthesizedExpression(SpanFrom(start), inner);
-        node.Spine = inner.Spine;
-        return node;
+        return new ParenthesizedExpression(SpanFrom(start), inner);
     }
 
     /// <summary>The span from <paramref name="first"/>'s start to <paramref name="last"/>'s end.</summary>
