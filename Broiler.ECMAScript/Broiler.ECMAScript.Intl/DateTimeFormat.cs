@@ -160,7 +160,7 @@ public sealed class DateTimeFormat
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
     /// <exception cref="ArgumentException">A component, style or key value outside the values ECMA-402 admits: the engine's
     /// GetOption and ResolveLocale, which come first, would not give it.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=High; Resources=2; Fingerprint=E3C420
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat, hourCycle12 and hourCycle24 by CLDR's allowed formats (JSD-0082 row T10); IP=Low; Security=High; Resources=2; Fingerprint=1C7E53
     // Broiler-Falsified-If: a resolved option differs from CreateDateTimeFormat's as amended by proposal-temporal e8cc03fc, or a refusal is another status
     // Broiler-Human:        PENDING
     public static IntlStatus Create(DateTimeData data, ResolvedLocale resolved, DateTimeFormatOptions options, out DateTimeFormat? format)

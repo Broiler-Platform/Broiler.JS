@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   13
-// Annotated:        13/13
+// Relevant units:   14
+// Annotated:        14/14
 // Exempt:           8
-// Human-reviewed:   0/13
+// Human-reviewed:   0/14
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  2/10 max
-// Unverified:       13
+// Unverified:       14
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -200,6 +200,8 @@ internal sealed class DateData
     /// </summary>
     /// <param name="region">The region whose time data applies.</param>
     /// <param name="twelveHour">Whether the 12-hour cycle is asked for, else the 24-hour one.</param>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots hourCycle12 and hourCycle24 over UTS #35 Time Data allowed formats, JSD-0082 row T10 (C5); IP=Low; Security=Low; Resources=1; Fingerprint=41C730
+    // Broiler-Human:        PENDING
     internal char AllowedHourChar(string region, bool twelveHour)
     {
         if ((data.HourCycles(region) ?? data.HourCycles("001")) is { } cycles)
