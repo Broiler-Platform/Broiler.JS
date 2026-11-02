@@ -109,7 +109,11 @@ was written require:
   [`broiler-vm-run-revision-34.log`](engine/broiler-vm-run-revision-34.log)); and the host's ICU 74.2, asked the pairs
   the reasons assign between rows through its C API ([`host_icu_pairs.py`](engine/host_icu_pairs.py),
   [`host-icu-pairs-revision-33.txt`](engine/host-icu-pairs-revision-33.txt)), a witness of the host's data and never an
-  expected value. On revision 34 neither engine has an unclassified difference.
+  expected value. On revision 34 neither engine has an unclassified difference. *(2026-11-02, at the change's
+  review: after these runs, the texts of reasons `js-o2` and `js-o5b` were corrected in revision 34 (`f3bb5588`),
+  which rewrote those reasons' 19 `divergence.broiler-js` fields and nothing else. A runner's verdict reads whether
+  a vector has the field, not its text (`VectorRun.Compare`), so the runs at `60fc3a5b` give revision 34's verdicts
+  as it stands. They were not taken again.)*
 - **2026-11-02: what revision 34 does not read.** Its classification is of the host above, ICU 74.2, and of no other.
   CI's `engine vectors (windows-latest)` job runs this engine over the operating system's `icu.dll`, of a version
   neither the job's log nor the image's software list states (revision 28's `-ci-windows` reasons), and its report on
