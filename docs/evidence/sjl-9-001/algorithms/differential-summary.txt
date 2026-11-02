@@ -1,0 +1,426 @@
+SJL-9.3 DIFFERENTIAL CHECK - summary, retained at stage SJL-9.3f
+==================================================================
+
+What is compared (Broiler.VM's JSD-0082, decision D22)
+- Reference: Broiler.VM's code at its SJL-9 rule commit 4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f, as the pinned copies of
+  Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/ (each copy's source and every edit in its header and in
+  that folder's README.md), compiled into the test project alone, under the JIT.
+- Candidate: Broiler.ECMAScript.Intl at branch sjl-9-3f-integration, commit 2a818e8c5936c364c349925fc00c2e4cc18380b1 (the
+  stage's head before this file; origin/main b4e74409 merged in at 53c760e7).
+- Population: every Intl vector, every dataset input as a library call, and seeded random tags, numbers, dates and
+  durations, over both embeddings' tables, Broiler.VM's (broiler-vm) and Broiler.JS's (broiler-js), as the data home's
+  generator writes them. Each section's classifier admits a difference only by the rows of the correspondence it names.
+- Harness: Broiler.ECMAScript.Intl.Tests/Differential/, committed with the library; this bundle keeps no copy of it.
+
+Command, at the repository root, after `dotnet build Broiler.ECMAScript.slnf -c Release`:
+  dotnet Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/bin/Release/net10.0/Broiler.ECMAScript.Intl.Tests.dll differential --scale 1 --out <file>
+  dotnet Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/bin/Release/net10.0/Broiler.ECMAScript.Intl.Tests.dll differential --scale 5 --out <file>
+Seed 20261027, the default. Each run exited 0: no difference is unclassified.
+Machine: 4 processors, .NET SDK 10.0.401, Ubuntu 24.04.5 LTS (kernel 6.18.44); 2026-11-02; other work ran on the machine.
+
+Against the same check at origin/main b4e74409 (SJL-9.3e merged), run the same day on the same machine, at both scales only
+the sections T1 and T2 of Broiler.JS's embedding move: the formats "ja" and "ja-JP" with hour12: true, which the library
+answers h11 from stage SJL-9.3f (row T10, CLDR's allowed hour formats) and Broiler.VM's code h12, each classified under
+"C5 data (D5, D13)", the row's data policy, by Broiler.VM's reading of the data (a region's preferred hour format alone).
+The sections L1 to L3 differ from SJL-9.3e's own reports because corpus revision 33, merged from origin/main, adds the
+collation vectors' String inputs to their population; they equal origin/main's.
+
+---------------------------------------------------------------- scale 1
+SJL-9.3 differential check: Broiler.VM's code at 4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f (the pinned copies of Broiler.ECMAScript.Intl.Tests/Differential/Vm/) against Broiler.ECMAScript.Intl
+seed 20261027, scale 1
+
+Section                                                                      Compared   Classified Unclassified
+D0.1 likely subtags, aliases, extensions and locales (broiler-vm)              18,758            0            0
+D0.2 numbers, currencies, units, plural rules and ranges (broiler-vm)           2,632            0            0
+D0.3 date data in every calendar, hour cycles and day periods (broiler-vm)       32,550            0            0
+D0.4 weeks, scripts, lists, relative times and display names (broiler-vm)        3,523            0            0
+L1 identifiers: parse, canonicalise, aliases, likely subtags (broiler-vm)       93,170          375            0
+L2 negotiation: locale lists, lookup, filter, ResolveLocale (broiler-vm)       18,370           53            0
+L3 Intl.Locale: constructor, parts, likely subtags, Locale info (broiler-vm)      305,046       10,236            0
+L4 Intl.supportedValuesOf (broiler-vm)                                             39            0            0
+M1 Intl mathematical value: Number, String, BigInt (broiler-vm)                   993            0            0
+M2 digit options: SetNumberFormatDigitOptions in both constructors (broiler-vm)          556            0            0
+M3 FormatNumericToString (broiler-vm)                                          14,087            0            0
+P1 plural rules: select, categories (broiler-vm)                               14,495            0            0
+P2 plural ranges: selectRange (broiler-vm)                                      1,634            0            0
+N1 number formatting: format and formatToParts, with the charge (broiler-vm)        8,147            0            0
+N2 number ranges: formatRange and formatRangeToParts, with the charge (broiler-vm)          791            0            0
+N3 the number format's construction and resolved options (broiler-vm)             875            0            0
+S1 list formatting: CreatePartsFromList, with the charge (broiler-vm)           9,234            0            0
+S2 relative time: PartitionRelativeTimePattern, with the charge (broiler-vm)        3,449            0            0
+S3 display names: CanonicalCodeForDisplayNames and of (broiler-vm)             24,350            0            0
+T1 the date-time format's construction and resolved options (broiler-vm)        5,068           32            0
+T2 date-time formatting: format and formatToParts, with the charge (broiler-vm)       33,094            0            0
+T3 date-time ranges: formatRange and formatRangeToParts, with the charge (broiler-vm)        1,889            0            0
+T4 Intl over Temporal: the formats of Temporal's types, with the charge (broiler-vm)        8,968            0            0
+T5 the time zone's resolution (broiler-vm)                                      1,269          333            0
+U1 the duration format's construction: GetDurationUnitOptions and the digital format (broiler-vm)          300            0            0
+U2 duration formatting: PartitionDurationFormatPattern, with the charge (broiler-vm)        2,466            0            0
+D0.1 likely subtags, aliases, extensions and locales (broiler-js)              18,758            0            0
+D0.2 numbers, currencies, units, plural rules and ranges (broiler-js)          79,349            0            0
+D0.3 date data in every calendar, hour cycles and day periods (broiler-js)    1,119,943            0            0
+D0.4 weeks, scripts, lists, relative times and display names (broiler-js)       80,472            0            0
+L1 identifiers: parse, canonicalise, aliases, likely subtags (broiler-js)       93,453          350            0
+L2 negotiation: locale lists, lookup, filter, ResolveLocale (broiler-js)       18,370           58            0
+L3 Intl.Locale: constructor, parts, likely subtags, Locale info (broiler-js)      305,977        9,927            0
+L4 Intl.supportedValuesOf (broiler-js)                                             39            0            0
+M1 Intl mathematical value: Number, String, BigInt (broiler-js)                   979            0            0
+M2 digit options: SetNumberFormatDigitOptions in both constructors (broiler-js)          555            0            0
+M3 FormatNumericToString (broiler-js)                                          13,898            0            0
+P1 plural rules: select, categories (broiler-js)                               14,432           79            0
+P2 plural ranges: selectRange (broiler-js)                                      1,634            0            0
+N1 number formatting: format and formatToParts, with the charge (broiler-js)        8,147          774            0
+N2 number ranges: formatRange and formatRangeToParts, with the charge (broiler-js)          791           58            0
+N3 the number format's construction and resolved options (broiler-js)             874           30            0
+S1 list formatting: CreatePartsFromList, with the charge (broiler-js)           9,177          542            0
+S2 relative time: PartitionRelativeTimePattern, with the charge (broiler-js)        3,488          120            0
+S3 display names: CanonicalCodeForDisplayNames and of (broiler-js)             24,748          986            0
+T1 the date-time format's construction and resolved options (broiler-js)        5,068          122            0
+T2 date-time formatting: format and formatToParts, with the charge (broiler-js)       33,094          427            0
+T3 date-time ranges: formatRange and formatRangeToParts, with the charge (broiler-js)        1,889           51            0
+T4 Intl over Temporal: the formats of Temporal's types, with the charge (broiler-js)        8,968            0            0
+T5 the time zone's resolution (broiler-js)                                      1,269          328            0
+U1 the duration format's construction: GetDurationUnitOptions and the digital format (broiler-js)          301            8            0
+U2 duration formatting: PartitionDurationFormatPattern, with the charge (broiler-js)        2,466          222            0
+
+L1 identifiers: parse, canonicalise, aliases, likely subtags (broiler-vm): classified differences by row
+  L9 375, the first of them:
+    canonical "en-u-sd-fi01" => vm "en-u-sd-AX", library "en-u-sd-axzzzz"
+    canonical twice "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    parts "en-u-sd-fi01" => vm "en | en | undefined | undefined |  | sd=;ax=", library "en | en | undefined | undefined |  | sd=axzzzz"
+
+L2 negotiation: locale lists, lookup, filter, ResolveLocale (broiler-vm): classified differences by row
+  L9 53, the first of them:
+    canonicalize-locale-list ["en-u-sd-fi01"] => vm "[en-u-sd-AX]", library "[en-u-sd-axzzzz]"
+    lookup ["en-u-sd-fi01"] => vm "en sd=;ax=", library "en sd=axzzzz"
+    filter ["en-u-sd-fi01"] => vm "[en-u-sd-AX]", library "[en-u-sd-axzzzz]"
+
+L3 Intl.Locale: constructor, parts, likely subtags, Locale info (broiler-vm): classified differences by row
+  L18 9835, the first of them:
+    getCollations fr of "fr" => vm "[emoji,eor]", library "[]"
+    getCollations fr-CA of "fr-CA" => vm "[emoji,eor]", library "[]"
+    getCollations es-419 of "es-419" => vm "[emoji,eor]", library "[]"
+  L9 401, the first of them:
+    new Intl.Locale "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    toString en-u-sd-axzzzz of "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    maximize en-u-sd-axzzzz of "en-u-sd-fi01" => vm "en-Latn-US-u-ax-sd", library "en-Latn-US-u-sd-axzzzz"
+
+T1 the date-time format's construction and resolved options (broiler-vm): classified differences by row
+  Z8 (D15) 32, the first of them:
+    format "en" {timeZone:"Etc/GMT",timeZoneName:"long"} (Z8's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz") (Broiler.VM's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz") => vm "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz", library "en|gregory|latn|Etc/GMT|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz"
+    format "en" {timeZone:"Etc/GMT",timeZoneName:"short"} (Z8's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z") (Broiler.VM's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z") => vm "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z", library "en|gregory|latn|Etc/GMT|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z"
+    format "en" {timeZone:"Asia/Calcutta"} (Z8's reading: "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y") (Broiler.VM's reading: "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y") => vm "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y", library "en|gregory|latn|Asia/Calcutta|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y"
+
+T5 the time zone's resolution (broiler-vm): classified differences by row
+  Z8 (D15) 333, the first of them:
+    zone "Africa/Asmera" (Z8's reading: "Africa/Asmara 0 Named rules") (Broiler.VM's reading: "Africa/Asmara 0 Named rules") => vm "Africa/Asmara 0 Named rules", library "Africa/Asmera 0 Named rules"
+    zone "africa/asmera" (Z8's reading: "Africa/Asmara 0 Named rules") (Broiler.VM's reading: "Africa/Asmara 0 Named rules") => vm "Africa/Asmara 0 Named rules", library "Africa/Asmera 0 Named rules"
+    zone "Africa/Timbuktu" (Z8's reading: "Africa/Bamako 0 Named rules") (Broiler.VM's reading: "Africa/Bamako 0 Named rules") => vm "Africa/Bamako 0 Named rules", library "Africa/Timbuktu 0 Named rules"
+
+L1 identifiers: parse, canonicalise, aliases, likely subtags (broiler-js): classified differences by row
+  L9 350, the first of them:
+    canonical "en-u-sd-fi01" => vm "en-u-sd-AX", library "en-u-sd-axzzzz"
+    canonical twice "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    parts "en-u-sd-fi01" => vm "en | en | undefined | undefined |  | sd=;ax=", library "en | en | undefined | undefined |  | sd=axzzzz"
+
+L2 negotiation: locale lists, lookup, filter, ResolveLocale (broiler-js): classified differences by row
+  L9 58, the first of them:
+    canonicalize-locale-list ["en-u-sd-fi01"] => vm "[en-u-sd-AX]", library "[en-u-sd-axzzzz]"
+    lookup ["en-u-sd-fi01"] => vm "en sd=;ax=", library "en sd=axzzzz"
+    filter ["en-u-sd-fi01"] => vm "[en-u-sd-AX]", library "[en-u-sd-axzzzz]"
+
+L3 Intl.Locale: constructor, parts, likely subtags, Locale info (broiler-js): classified differences by row
+  L18 9516, the first of them:
+    getCollations hak of "zh-hakka" => vm "[emoji,eor]", library "[]"
+    getCollations english of "english" => vm "[emoji,eor]", library "[]"
+    getCollations jrb of "aju" => vm "[emoji,eor]", library "[]"
+  L22 27, the first of them:
+    getNumberingSystems ar-EG of "ar-EG" => vm "[latn]", library "[arab]"
+    getNumberingSystems fa-IR of "fa-IR" => vm "[latn]", library "[arabext]"
+    getNumberingSystems fa-AF of "drw" => vm "[latn]", library "[arabext]"
+  L9 384, the first of them:
+    new Intl.Locale "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    toString en-u-sd-axzzzz of "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    maximize en-u-sd-axzzzz of "en-u-sd-fi01" => vm "en-Latn-US-u-ax-sd", library "en-Latn-US-u-sd-axzzzz"
+
+P1 plural rules: select, categories (broiler-js): classified differences by row
+  P4 79, the first of them:
+    select "fr" {notation:"compact"} -13676449248191n (c=e=0: other) => vm "other | 13676449248191", library "many | 13676449248191"
+    select "fr" {notation:"compact"} "-789312828897.584041555" (String) (c=e=0: other) => vm "other | 789312828898", library "many | 789312828898"
+    select "fr" {notation:"compact"} -9928594414181331923108937402302850776286332091837n (c=e=0: other) => vm "other | 9928594414181331923108937402302850776286332091837", library "many | 9928594414181331923108937402302850776286332091837"
+
+N1 number formatting: format and formatToParts, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 774, the first of them:
+    format "de-AT" {} -1234.5 (Broiler.VM's reading: "minusSign:-|integer:1|group:.|integer:234|decimal:,|fraction:5 charge 1") => vm "minusSign:-|integer:1|group:.|integer:234|decimal:,|fraction:5 charge 1", library "minusSign:-|integer:1|group:\u00A0|integer:234|decimal:,|fraction:5 charge 1"
+    format "de-AT" {} 10000000 (Broiler.VM's reading: "integer:10|group:.|integer:000|group:.|integer:000 charge 1") => vm "integer:10|group:.|integer:000|group:.|integer:000 charge 1", library "integer:10|group:\u00A0|integer:000|group:\u00A0|integer:000 charge 1"
+    format "de-AT" {} 1234 (Broiler.VM's reading: "integer:1|group:.|integer:234 charge 1") => vm "integer:1|group:.|integer:234 charge 1", library "integer:1|group:\u00A0|integer:234 charge 1"
+
+N2 number ranges: formatRange and formatRangeToParts, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 58, the first of them:
+    range "pt-PT" {style:"currency",currency:"EUR"} 3 .. 5 (Broiler.VM's reading: "currency:\u20AC:shared|literal:\u00A0:shared|integer:3:startRange|decimal:,:startRange|fraction:00:startRange|literal:\u2013:shared|integer:5:endRange|decimal:,:endRange|fraction:00:endRange charge 4") => vm "currency:\u20AC:shared|literal:\u00A0:shared|integer:3:startRange|decimal:,:startRange|fraction:00:startRange|literal:\u2013:shared|integer:5:endRange|decimal:,:endRange|fraction:00:endRange charge 4", library "integer:3:startRange|decimal:,:startRange|fraction:00:startRange|literal: - :shared|integer:5:endRange|decimal:,:endRange|fraction:00:endRange|literal:\u00A0:shared|currency:\u20AC:shared charge 4"
+    range "sa" {style:"currency",currency:"USD",currencyDisplay:"name"} 3 .. 5 (Broiler.VM's reading: "integer:3:startRange|decimal:.:startRange|fraction:00:startRange|literal:\u2013:shared|integer:5:endRange|decimal:.:endRange|fraction:00:endRange|literal: :shared|currency:\u0905\u092E\u0947\u0930\u093F\u0915\u093E\u0926\u0947\u0936\u0903 \u0921\u0949\u0932\u0930:shared charge 4") => vm "integer:3:startRange|decimal:.:startRange|fraction:00:startRange|literal:\u2013:shared|integer:5:endRange|decimal:.:endRange|fraction:00:endRange|literal: :shared|currency:\u0905\u092E\u0947\u0930\u093F\u0915\u093E\u0926\u0947\u0936\u0903 \u0921\u0949\u0932\u0930:shared charge 4", library "integer:\u0969:startRange|decimal:.:startRange|fraction:\u0966\u0966:startRange|literal:\u2013:shared|integer:\u096B:endRange|decimal:.:endRange|fraction:\u0966\u0966:endRange|literal: :shared|currency:\u0905\u092E\u0947\u0930\u093F\u0915\u093E\u0926\u0947\u0936\u0903 \u0921\u0949\u0932\u0930:shared charge 4"
+    range "fr-CA" {style:"unit",unit:"kilometer-per-hour",unitDisplay:"long"} 1000 .. 5000 (Broiler.VM's reading: "integer:1:startRange|group:\u202F:startRange|integer:000:startRange|literal:\u2013:shared|integer:5:endRange|group:\u202F:endRange|integer:000:endRange|literal:\u00A0:shared|unit:kilom\u00E8tres par heure:shared charge 4") => vm "integer:1:startRange|group:\u202F:startRange|integer:000:startRange|literal:\u2013:shared|integer:5:endRange|group:\u202F:endRange|integer:000:endRange|literal:\u00A0:shared|unit:kilom\u00E8tres par heure:shared charge 4", library "integer:1:startRange|group:\u00A0:startRange|integer:000:startRange|literal:\u2013:shared|integer:5:endRange|group:\u00A0:endRange|integer:000:endRange|literal: :shared|unit:kilom\u00E8tres par heure:shared charge 4"
+
+N3 the number format's construction and resolved options (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 30, the first of them:
+    NumberFormat "fa" {notation:"scientific"} (Broiler.VM's reading: "fa nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=scientific compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits") => vm "fa nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=scientific compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits", library "fa nu=arabext style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=scientific compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits"
+    NumberFormat "ar-EG" {} (Broiler.VM's reading: "ar-EG nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits") => vm "ar-EG nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits", library "ar-EG nu=arab style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits"
+    NumberFormat "fa" {} (Broiler.VM's reading: "fa nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits") => vm "fa nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits", library "fa nu=arabext style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits"
+
+S1 list formatting: CreatePartsFromList, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 542, the first of them:
+    list "en-150" {} ["A","B","C","D"] (Broiler.VM's reading: "en-150 element:A|literal:, |element:B|literal:, |element:C|literal:, and |element:D charge 3") => vm "en-150 element:A|literal:, |element:B|literal:, |element:C|literal:, and |element:D charge 3", library "en-150 element:A|literal:, |element:B|literal:, |element:C|literal: and |element:D charge 3"
+    list "en-150" {} ["A","B","C"] (Broiler.VM's reading: "en-150 element:A|literal:, |element:B|literal:, and |element:C charge 2") => vm "en-150 element:A|literal:, |element:B|literal:, and |element:C charge 2", library "en-150 element:A|literal:, |element:B|literal: and |element:C charge 2"
+    list "en-150" {} ["Anna","","Carl","Dora","Emil"] (Broiler.VM's reading: "en-150 element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, and |element:Emil charge 4") => vm "en-150 element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, and |element:Emil charge 4", library "en-150 element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: and |element:Emil charge 4"
+
+S2 relative time: PartitionRelativeTimePattern, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 120, the first of them:
+    relative "ar-EG" {} -3 "day" (Broiler.VM's reading: "ar-EG latn literal:\u0642\u0628\u0644 :-|integer:3:day|literal: \u0623\u064A\u0627\u0645:- charge 2") => vm "ar-EG latn literal:\u0642\u0628\u0644 :-|integer:3:day|literal: \u0623\u064A\u0627\u0645:- charge 2", library "ar-EG arab literal:\u0642\u0628\u0644 :-|integer:\u0663:day|literal: \u0623\u064A\u0627\u0645:- charge 2"
+    relative "en-Shaw" {} -3 "day" (Broiler.VM's reading: "en-Shaw latn integer:3:day|literal: days ago:- charge 2") => vm "en-Shaw latn integer:3:day|literal: days ago:- charge 2", library "en-Shaw latn literal:-:-|integer:3:day|literal: d:- charge 2"
+    relative "en-Shaw-GB" {} -3 "day" (Broiler.VM's reading: "en-Shaw-GB latn integer:3:day|literal: days ago:- charge 2") => vm "en-Shaw-GB latn integer:3:day|literal: days ago:- charge 2", library "en-Shaw-GB latn literal:-:-|integer:3:day|literal: d:- charge 2"
+
+S3 display names: CanonicalCodeForDisplayNames and of (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 986, the first of them:
+    of "zh-Hant" {type:"language"} "en-GB" (Broiler.VM's reading: "zh-Hant \u82F1\u56FD\u82F1\u8BED") => vm "zh-Hant \u82F1\u56FD\u82F1\u8BED", library "zh-Hant \u82F1\u6587\uFF08\u82F1\u570B\uFF09"
+    of "zh-Hant" {type:"language"} "de-AT" (Broiler.VM's reading: "zh-Hant \u5965\u5730\u5229\u5FB7\u8BED") => vm "zh-Hant \u5965\u5730\u5229\u5FB7\u8BED", library "zh-Hant \u5FB7\u6587\uFF08\u5967\u5730\u5229\uFF09"
+    of "zh-Hant" {type:"language"} "de" (Broiler.VM's reading: "zh-Hant \u5FB7\u8BED") => vm "zh-Hant \u5FB7\u8BED", library "zh-Hant \u5FB7\u6587"
+
+T1 the date-time format's construction and resolved options (broiler-js): classified differences by row
+  C5 data (D5, D13) 89, the first of them:
+    format "ja" {hour:"numeric",hour12:true} (Z8's reading: "ja|gregory|latn|UTC|h11|hour=numeric,|-|-|aK\u6642") (Broiler.VM's reading: "ja|gregory|latn|UTC|h12|hour=numeric,|-|-|ah\u6642") => vm "ja|gregory|latn|UTC|h12|hour=numeric,|-|-|ah\u6642", library "ja|gregory|latn|UTC|h11|hour=numeric,|-|-|aK\u6642"
+    format "ja-JP" {hour:"numeric",hour12:true} (Z8's reading: "ja-JP|gregory|latn|UTC|h11|hour=numeric,|-|-|aK\u6642") (Broiler.VM's reading: "ja-JP|gregory|latn|UTC|h12|hour=numeric,|-|-|ah\u6642") => vm "ja-JP|gregory|latn|UTC|h12|hour=numeric,|-|-|ah\u6642", library "ja-JP|gregory|latn|UTC|h11|hour=numeric,|-|-|aK\u6642"
+    format "ar-EG" {dateStyle:"short",timeZone:"UTC"} (Z8's reading: "ar-EG|gregory|arab|UTC|-||short|-|d\u200F/M\u200F/y") (Broiler.VM's reading: "ar-EG|gregory|latn|UTC|-||short|-|d\u200F/M\u200F/y") => vm "ar-EG|gregory|latn|UTC|-||short|-|d\u200F/M\u200F/y", library "ar-EG|gregory|arab|UTC|-||short|-|d\u200F/M\u200F/y"
+  Z8 (D15) 33, the first of them:
+    format "en" {timeZone:"Etc/GMT",timeZoneName:"long"} (Z8's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz") (Broiler.VM's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz") => vm "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz", library "en|gregory|latn|Etc/GMT|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz"
+    format "en" {timeZone:"Etc/GMT",timeZoneName:"short"} (Z8's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z") (Broiler.VM's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z") => vm "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z", library "en|gregory|latn|Etc/GMT|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z"
+    format "en" {timeZone:"Asia/Calcutta"} (Z8's reading: "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y") (Broiler.VM's reading: "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y") => vm "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y", library "en|gregory|latn|Asia/Calcutta|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y"
+
+T2 date-time formatting: format and formatToParts, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13) 427, the first of them:
+    format "de-AT" {month:"long",timeZone:"UTC"} 1704467229123 (Z8's reading: "month:J\u00E4nner| charge 6") (Broiler.VM's reading: "month:Januar| charge 6") => vm "month:Januar| charge 6", library "month:J\u00E4nner| charge 6"
+    format "de-AT" {month:"short",timeZone:"UTC"} 1704467229123 (Z8's reading: "month:J\u00E4n| charge 3") (Broiler.VM's reading: "month:Jan| charge 3") => vm "month:Jan| charge 3", library "month:J\u00E4n| charge 3"
+    format "de-AT" {month:"long",day:"numeric",timeZone:"UTC"} 1704467229123 (Z8's reading: "day:5|literal:. |month:J\u00E4nner| charge 9") (Broiler.VM's reading: "day:5|literal:. |month:Januar| charge 9") => vm "day:5|literal:. |month:Januar| charge 9", library "day:5|literal:. |month:J\u00E4nner| charge 9"
+
+T3 date-time ranges: formatRange and formatRangeToParts, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13) 51, the first of them:
+    range "ar-EG" {dateStyle:"medium",timeZone:"UTC"} 1704412800000 .. 1704585600000 (Z8's reading: "day@startRange:\u0665|literal@startRange:\u200F/|month@startRange:\u0661|literal@startRange:\u200F/|year@startRange:\u0662\u0660\u0662\u0664|literal@shared: \u2013 |day@endRange:\u0667|literal@endRange:\u200F/|month@endRange:\u0661|literal@endRange:\u200F/|year@endRange:\u0662\u0660\u0662\u0664| charge 23") (Broiler.VM's reading: "day@startRange:5|literal@startRange:\u200F/|month@startRange:1|literal@startRange:\u200F/|year@startRange:2024|literal@shared: \u2013 |day@endRange:7|literal@endRange:\u200F/|month@endRange:1|literal@endRange:\u200F/|year@endRange:2024| charge 23") => vm "day@startRange:5|literal@startRange:\u200F/|month@startRange:1|literal@startRange:\u200F/|year@startRange:2024|literal@shared: \u2013 |day@endRange:7|literal@endRange:\u200F/|month@endRange:1|literal@endRange:\u200F/|year@endRange:2024| charge 23", library "day@startRange:\u0665|literal@startRange:\u200F/|month@startRange:\u0661|literal@startRange:\u200F/|year@startRange:\u0662\u0660\u0662\u0664|literal@shared: \u2013 |day@endRange:\u0667|literal@endRange:\u200F/|month@endRange:\u0661|literal@endRange:\u200F/|year@endRange:\u0662\u0660\u0662\u0664| charge 23"
+    range "en-150" {dateStyle:"medium",timeZone:"UTC"} 1704412800000 .. 1704585600000 (Z8's reading: "day@startRange:5|literal@shared:\u2013|day@endRange:7|literal@shared: |month@shared:Jan|literal@shared: |year@shared:2024| charge 12") (Broiler.VM's reading: "month@shared:Jan|literal@shared: |day@startRange:5|literal@shared:\u2009\u2013\u2009|day@endRange:7|literal@shared:, |year@shared:2024| charge 15") => vm "month@shared:Jan|literal@shared: |day@startRange:5|literal@shared:\u2009\u2013\u2009|day@endRange:7|literal@shared:, |year@shared:2024| charge 15", library "day@startRange:5|literal@shared:\u2013|day@endRange:7|literal@shared: |month@shared:Jan|literal@shared: |year@shared:2024| charge 12"
+    range "en-AU" {dateStyle:"medium",timeZone:"UTC"} 1704412800000 .. 1704585600000 (Z8's reading: "day@startRange:5|literal@shared:\u2013|day@endRange:7|literal@shared: |month@shared:Jan|literal@shared: |year@shared:2024| charge 12") (Broiler.VM's reading: "month@shared:Jan|literal@shared: |day@startRange:5|literal@shared:\u2009\u2013\u2009|day@endRange:7|literal@shared:, |year@shared:2024| charge 15") => vm "month@shared:Jan|literal@shared: |day@startRange:5|literal@shared:\u2009\u2013\u2009|day@endRange:7|literal@shared:, |year@shared:2024| charge 15", library "day@startRange:5|literal@shared:\u2013|day@endRange:7|literal@shared: |month@shared:Jan|literal@shared: |year@shared:2024| charge 12"
+
+T5 the time zone's resolution (broiler-js): classified differences by row
+  Z8 (D15) 328, the first of them:
+    zone "Africa/Asmera" (Z8's reading: "Africa/Asmara 0 Named rules") (Broiler.VM's reading: "Africa/Asmara 0 Named rules") => vm "Africa/Asmara 0 Named rules", library "Africa/Asmera 0 Named rules"
+    zone "africa/asmera" (Z8's reading: "Africa/Asmara 0 Named rules") (Broiler.VM's reading: "Africa/Asmara 0 Named rules") => vm "Africa/Asmara 0 Named rules", library "Africa/Asmera 0 Named rules"
+    zone "Africa/Timbuktu" (Z8's reading: "Africa/Bamako 0 Named rules") (Broiler.VM's reading: "Africa/Bamako 0 Named rules") => vm "Africa/Bamako 0 Named rules", library "Africa/Timbuktu 0 Named rules"
+
+U1 the duration format's construction: GetDurationUnitOptions and the digital format (broiler-js): classified differences by row
+  C5 data (D5, D13, D21, D34) 8, the first of them:
+    construct "ar-EG" {} (Broiler.VM's reading: "ar-EG nu=latn style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::") => vm "ar-EG nu=latn style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::", library "ar-EG nu=arab style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::"
+    construct "fa" {} (Broiler.VM's reading: "fa nu=latn style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::") => vm "fa nu=latn style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::", library "fa nu=arabext style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::"
+    construct "en-DK" {style:"digital"} (Broiler.VM's reading: "en-DK nu=latn style=digital short/auto,short/auto,short/auto,short/auto,numeric/always,2-digit/always,2-digit/always,fractional/auto,fractional/auto,fractional/auto fd=- sep=::") => vm "en-DK nu=latn style=digital short/auto,short/auto,short/auto,short/auto,numeric/always,2-digit/always,2-digit/always,fractional/auto,fractional/auto,fractional/auto fd=- sep=::", library "en-DK nu=latn style=digital short/auto,short/auto,short/auto,short/auto,numeric/always,2-digit/always,2-digit/always,fractional/auto,fractional/auto,fractional/auto fd=- sep=.."
+
+U2 duration formatting: PartitionDurationFormatPattern, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13, D21, D34) 222, the first of them:
+    format "en" {style:"short",numberingSystem:"arab"} {milliseconds:1500} (Broiler.VM's reading: "integer:\u0661:millisecond|group:,:millisecond|integer:\u0665\u0660\u0660:millisecond|literal: :millisecond|unit:ms:millisecond charge 13") => vm "integer:\u0661:millisecond|group:,:millisecond|integer:\u0665\u0660\u0660:millisecond|literal: :millisecond|unit:ms:millisecond charge 13", library "integer:\u0661:millisecond|group:\u066C:millisecond|integer:\u0665\u0660\u0660:millisecond|literal: :millisecond|unit:ms:millisecond charge 13"
+    format "en" {style:"short",numberingSystem:"arab"} {years:-1,months:-2} (Broiler.VM's reading: "minusSign:-:year|integer:\u0661:year|literal: :year|unit:yr:year|literal:, :-|integer:\u0662:month|literal: :month|unit:mths:month charge 15") => vm "minusSign:-:year|integer:\u0661:year|literal: :year|unit:yr:year|literal:, :-|integer:\u0662:month|literal: :month|unit:mths:month charge 15", library "literal:\u061C:year|minusSign:-:year|integer:\u0661:year|literal: :year|unit:yr:year|literal:, :-|integer:\u0662:month|literal: :month|unit:mths:month charge 15"
+    format "en" {style:"short",numberingSystem:"arab"} {hours:-1,minutes:-2,seconds:-3} (Broiler.VM's reading: "minusSign:-:hour|integer:\u0661:hour|literal: :hour|unit:hr:hour|literal:, :-|integer:\u0662:minute|literal: :minute|unit:min:minute|literal:, :-|integer:\u0663:second|literal: :second|unit:sec:second charge 19") => vm "minusSign:-:hour|integer:\u0661:hour|literal: :hour|unit:hr:hour|literal:, :-|integer:\u0662:minute|literal: :minute|unit:min:minute|literal:, :-|integer:\u0663:second|literal: :second|unit:sec:second charge 19", library "literal:\u061C:hour|minusSign:-:hour|integer:\u0661:hour|literal: :hour|unit:hr:hour|literal:, :-|integer:\u0662:minute|literal: :minute|unit:min:minute|literal:, :-|integer:\u0663:second|literal: :second|unit:sec:second charge 19"
+
+---------------------------------------------------------------- scale 5
+SJL-9.3 differential check: Broiler.VM's code at 4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f (the pinned copies of Broiler.ECMAScript.Intl.Tests/Differential/Vm/) against Broiler.ECMAScript.Intl
+seed 20261027, scale 5
+
+Section                                                                      Compared   Classified Unclassified
+D0.1 likely subtags, aliases, extensions and locales (broiler-vm)              27,558            0            0
+D0.2 numbers, currencies, units, plural rules and ranges (broiler-vm)           4,472            0            0
+D0.3 date data in every calendar, hour cycles and day periods (broiler-vm)       33,332            0            0
+D0.4 weeks, scripts, lists, relative times and display names (broiler-vm)        4,723            0            0
+L1 identifiers: parse, canonicalise, aliases, likely subtags (broiler-vm)      131,141          525            0
+L2 negotiation: locale lists, lookup, filter, ResolveLocale (broiler-vm)       38,497           83            0
+L3 Intl.Locale: constructor, parts, likely subtags, Locale info (broiler-vm)      456,399       15,883            0
+L4 Intl.supportedValuesOf (broiler-vm)                                            119            0            0
+M1 Intl mathematical value: Number, String, BigInt (broiler-vm)                 3,944            0            0
+M2 digit options: SetNumberFormatDigitOptions in both constructors (broiler-vm)        1,380            0            0
+M3 FormatNumericToString (broiler-vm)                                          33,359            0            0
+P1 plural rules: select, categories (broiler-vm)                               21,761            0            0
+P2 plural ranges: selectRange (broiler-vm)                                      5,634            0            0
+N1 number formatting: format and formatToParts, with the charge (broiler-vm)       12,473            0            0
+N2 number ranges: formatRange and formatRangeToParts, with the charge (broiler-vm)        1,991            0            0
+N3 the number format's construction and resolved options (broiler-vm)           1,331            0            0
+S1 list formatting: CreatePartsFromList, with the charge (broiler-vm)          75,852            0            0
+S2 relative time: PartitionRelativeTimePattern, with the charge (broiler-vm)        5,204            0            0
+S3 display names: CanonicalCodeForDisplayNames and of (broiler-vm)             91,495            0            0
+T1 the date-time format's construction and resolved options (broiler-vm)        5,308           74            0
+T2 date-time formatting: format and formatToParts, with the charge (broiler-vm)       33,974            0            0
+T3 date-time ranges: formatRange and formatRangeToParts, with the charge (broiler-vm)        2,209            0            0
+T4 Intl over Temporal: the formats of Temporal's types, with the charge (broiler-vm)       27,208            0            0
+T5 the time zone's resolution (broiler-vm)                                      1,429          377            0
+U1 the duration format's construction: GetDurationUnitOptions and the digital format (broiler-vm)          894            0            0
+U2 duration formatting: PartitionDurationFormatPattern, with the charge (broiler-vm)        9,266            0            0
+D0.1 likely subtags, aliases, extensions and locales (broiler-js)              27,558            0            0
+D0.2 numbers, currencies, units, plural rules and ranges (broiler-js)         133,669            0            0
+D0.3 date data in every calendar, hour cycles and day periods (broiler-js)    1,120,732            0            0
+D0.4 weeks, scripts, lists, relative times and display names (broiler-js)       81,672            0            0
+L1 identifiers: parse, canonicalise, aliases, likely subtags (broiler-js)      131,752          575            0
+L2 negotiation: locale lists, lookup, filter, ResolveLocale (broiler-js)       38,569           96            0
+L3 Intl.Locale: constructor, parts, likely subtags, Locale info (broiler-js)      459,405       15,521            0
+L4 Intl.supportedValuesOf (broiler-js)                                            119            0            0
+M1 Intl mathematical value: Number, String, BigInt (broiler-js)                 3,902            0            0
+M2 digit options: SetNumberFormatDigitOptions in both constructors (broiler-js)        1,380            0            0
+M3 FormatNumericToString (broiler-js)                                          33,113            0            0
+P1 plural rules: select, categories (broiler-js)                               23,084           90            0
+P2 plural ranges: selectRange (broiler-js)                                      5,634            0            0
+N1 number formatting: format and formatToParts, with the charge (broiler-js)       12,451        1,413            0
+N2 number ranges: formatRange and formatRangeToParts, with the charge (broiler-js)        1,991          241            0
+N3 the number format's construction and resolved options (broiler-js)           1,324           46            0
+S1 list formatting: CreatePartsFromList, with the charge (broiler-js)          75,815        5,556            0
+S2 relative time: PartitionRelativeTimePattern, with the charge (broiler-js)        5,255          380            0
+S3 display names: CanonicalCodeForDisplayNames and of (broiler-js)             96,714        2,915            0
+T1 the date-time format's construction and resolved options (broiler-js)        5,308          184            0
+T2 date-time formatting: format and formatToParts, with the charge (broiler-js)       33,974          587            0
+T3 date-time ranges: formatRange and formatRangeToParts, with the charge (broiler-js)        2,209           76            0
+T4 Intl over Temporal: the formats of Temporal's types, with the charge (broiler-js)       27,208            0            0
+T5 the time zone's resolution (broiler-js)                                      1,429          375            0
+U1 the duration format's construction: GetDurationUnitOptions and the digital format (broiler-js)          893           36            0
+U2 duration formatting: PartitionDurationFormatPattern, with the charge (broiler-js)        9,266        1,230            0
+
+L1 identifiers: parse, canonicalise, aliases, likely subtags (broiler-vm): classified differences by row
+  L9 525, the first of them:
+    canonical "en-u-sd-fi01" => vm "en-u-sd-AX", library "en-u-sd-axzzzz"
+    canonical twice "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    parts "en-u-sd-fi01" => vm "en | en | undefined | undefined |  | sd=;ax=", library "en | en | undefined | undefined |  | sd=axzzzz"
+
+L2 negotiation: locale lists, lookup, filter, ResolveLocale (broiler-vm): classified differences by row
+  L9 83, the first of them:
+    canonicalize-locale-list ["en-u-sd-fi01"] => vm "[en-u-sd-AX]", library "[en-u-sd-axzzzz]"
+    lookup ["en-u-sd-fi01"] => vm "en sd=;ax=", library "en sd=axzzzz"
+    filter ["en-u-sd-fi01"] => vm "[en-u-sd-AX]", library "[en-u-sd-axzzzz]"
+
+L3 Intl.Locale: constructor, parts, likely subtags, Locale info (broiler-vm): classified differences by row
+  L18 15300, the first of them:
+    getCollations fr of "fr" => vm "[emoji,eor]", library "[]"
+    getCollations fr-CA of "fr-CA" => vm "[emoji,eor]", library "[]"
+    getCollations es-419 of "es-419" => vm "[emoji,eor]", library "[]"
+  L9 583, the first of them:
+    new Intl.Locale "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    toString en-u-sd-axzzzz of "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    maximize en-u-sd-axzzzz of "en-u-sd-fi01" => vm "en-Latn-US-u-ax-sd", library "en-Latn-US-u-sd-axzzzz"
+
+T1 the date-time format's construction and resolved options (broiler-vm): classified differences by row
+  Z8 (D15) 74, the first of them:
+    format "en" {timeZone:"Etc/GMT",timeZoneName:"long"} (Z8's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz") (Broiler.VM's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz") => vm "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz", library "en|gregory|latn|Etc/GMT|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz"
+    format "en" {timeZone:"Etc/GMT",timeZoneName:"short"} (Z8's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z") (Broiler.VM's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z") => vm "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z", library "en|gregory|latn|Etc/GMT|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z"
+    format "en" {timeZone:"Asia/Calcutta"} (Z8's reading: "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y") (Broiler.VM's reading: "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y") => vm "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y", library "en|gregory|latn|Asia/Calcutta|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y"
+
+T5 the time zone's resolution (broiler-vm): classified differences by row
+  Z8 (D15) 377, the first of them:
+    zone "Africa/Asmera" (Z8's reading: "Africa/Asmara 0 Named rules") (Broiler.VM's reading: "Africa/Asmara 0 Named rules") => vm "Africa/Asmara 0 Named rules", library "Africa/Asmera 0 Named rules"
+    zone "africa/asmera" (Z8's reading: "Africa/Asmara 0 Named rules") (Broiler.VM's reading: "Africa/Asmara 0 Named rules") => vm "Africa/Asmara 0 Named rules", library "Africa/Asmera 0 Named rules"
+    zone "Africa/Timbuktu" (Z8's reading: "Africa/Bamako 0 Named rules") (Broiler.VM's reading: "Africa/Bamako 0 Named rules") => vm "Africa/Bamako 0 Named rules", library "Africa/Timbuktu 0 Named rules"
+
+L1 identifiers: parse, canonicalise, aliases, likely subtags (broiler-js): classified differences by row
+  L9 575, the first of them:
+    canonical "en-u-sd-fi01" => vm "en-u-sd-AX", library "en-u-sd-axzzzz"
+    canonical twice "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    parts "en-u-sd-fi01" => vm "en | en | undefined | undefined |  | sd=;ax=", library "en | en | undefined | undefined |  | sd=axzzzz"
+
+L2 negotiation: locale lists, lookup, filter, ResolveLocale (broiler-js): classified differences by row
+  L9 96, the first of them:
+    canonicalize-locale-list ["en-u-sd-fi01"] => vm "[en-u-sd-AX]", library "[en-u-sd-axzzzz]"
+    lookup ["en-u-sd-fi01"] => vm "en sd=;ax=", library "en sd=axzzzz"
+    filter ["en-u-sd-fi01"] => vm "[en-u-sd-AX]", library "[en-u-sd-axzzzz]"
+
+L3 Intl.Locale: constructor, parts, likely subtags, Locale info (broiler-js): classified differences by row
+  L18 14845, the first of them:
+    getCollations hak of "zh-hakka" => vm "[emoji,eor]", library "[]"
+    getCollations english of "english" => vm "[emoji,eor]", library "[]"
+    getCollations jrb of "aju" => vm "[emoji,eor]", library "[]"
+  L22 42, the first of them:
+    getNumberingSystems ar-EG of "ar-EG" => vm "[latn]", library "[arab]"
+    getNumberingSystems fa-IR of "fa-IR" => vm "[latn]", library "[arabext]"
+    getNumberingSystems fa-AF of "drw" => vm "[latn]", library "[arabext]"
+  L9 634, the first of them:
+    new Intl.Locale "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    toString en-u-sd-axzzzz of "en-u-sd-fi01" => vm "en-u-ax-sd", library "en-u-sd-axzzzz"
+    maximize en-u-sd-axzzzz of "en-u-sd-fi01" => vm "en-Latn-US-u-ax-sd", library "en-Latn-US-u-sd-axzzzz"
+
+P1 plural rules: select, categories (broiler-js): classified differences by row
+  P4 90, the first of them:
+    select "fr" {notation:"compact"} 6359144366259131036822n (c=e=0: other) => vm "other | 6359144366259131036822", library "many | 6359144366259131036822"
+    select "fr" {notation:"compact"} -507659327991398674536887998405n (c=e=0: other) => vm "other | 507659327991398674536887998405", library "many | 507659327991398674536887998405"
+    select "fr" {notation:"compact",compactDisplay:"long"} -52424097n (c=e=0: other) => vm "other | 52424097", library "many | 52424097"
+
+N1 number formatting: format and formatToParts, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 1413, the first of them:
+    format "de-AT" {} -1234.5 (Broiler.VM's reading: "minusSign:-|integer:1|group:.|integer:234|decimal:,|fraction:5 charge 1") => vm "minusSign:-|integer:1|group:.|integer:234|decimal:,|fraction:5 charge 1", library "minusSign:-|integer:1|group:\u00A0|integer:234|decimal:,|fraction:5 charge 1"
+    format "de-AT" {} 10000000 (Broiler.VM's reading: "integer:10|group:.|integer:000|group:.|integer:000 charge 1") => vm "integer:10|group:.|integer:000|group:.|integer:000 charge 1", library "integer:10|group:\u00A0|integer:000|group:\u00A0|integer:000 charge 1"
+    format "de-AT" {} 1234 (Broiler.VM's reading: "integer:1|group:.|integer:234 charge 1") => vm "integer:1|group:.|integer:234 charge 1", library "integer:1|group:\u00A0|integer:234 charge 1"
+
+N2 number ranges: formatRange and formatRangeToParts, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 241, the first of them:
+    range "pt-PT" {style:"currency",currency:"EUR"} 3 .. 5 (Broiler.VM's reading: "currency:\u20AC:shared|literal:\u00A0:shared|integer:3:startRange|decimal:,:startRange|fraction:00:startRange|literal:\u2013:shared|integer:5:endRange|decimal:,:endRange|fraction:00:endRange charge 4") => vm "currency:\u20AC:shared|literal:\u00A0:shared|integer:3:startRange|decimal:,:startRange|fraction:00:startRange|literal:\u2013:shared|integer:5:endRange|decimal:,:endRange|fraction:00:endRange charge 4", library "integer:3:startRange|decimal:,:startRange|fraction:00:startRange|literal: - :shared|integer:5:endRange|decimal:,:endRange|fraction:00:endRange|literal:\u00A0:shared|currency:\u20AC:shared charge 4"
+    range "en-u-nu-arab" {style:"unit",unit:"liter-per-kilometer",unitDisplay:"long",notation:"standard"} -1 .. 1 (Broiler.VM's reading: "minusSign:-:startRange|integer:\u0661:startRange|literal: \u2013 :shared|integer:\u0661:endRange|literal: :shared|unit:liters per kilometer:shared charge 4") => vm "minusSign:-:startRange|integer:\u0661:startRange|literal: \u2013 :shared|integer:\u0661:endRange|literal: :shared|unit:liters per kilometer:shared charge 4", library "literal:\u061C:startRange|minusSign:-:startRange|integer:\u0661:startRange|literal: \u2013 :shared|integer:\u0661:endRange|literal: :shared|unit:liters per kilometer:shared charge 4"
+    range "zh-Hant" {style:"unit",unit:"byte-per-second",notation:"engineering",compactDisplay:"long",useGrouping:"auto",signDisplay:"never"} 3 .. 5 (Broiler.VM's reading: "integer:3:startRange|exponentSeparator:E:startRange|exponentInteger:0:startRange|literal: - :shared|integer:5:endRange|exponentSeparator:E:endRange|exponentInteger:0:endRange|literal: :shared|unit:B/\u79D2:shared charge 8") => vm "integer:3:startRange|exponentSeparator:E:startRange|exponentInteger:0:startRange|literal: - :shared|integer:5:endRange|exponentSeparator:E:endRange|exponentInteger:0:endRange|literal: :shared|unit:B/\u79D2:shared charge 8", library "integer:3:startRange|exponentSeparator:E:startRange|exponentInteger:0:startRange|literal: - :shared|integer:5:endRange|exponentSeparator:E:endRange|exponentInteger:0:endRange|literal: :shared|unit:byte/\u79D2:shared charge 8"
+
+N3 the number format's construction and resolved options (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 46, the first of them:
+    NumberFormat "fa" {notation:"scientific"} (Broiler.VM's reading: "fa nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=scientific compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits") => vm "fa nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=scientific compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits", library "fa nu=arabext style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=scientific compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits"
+    NumberFormat "ar-EG" {} (Broiler.VM's reading: "ar-EG nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits") => vm "ar-EG nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits", library "ar-EG nu=arab style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits"
+    NumberFormat "fa" {} (Broiler.VM's reading: "fa nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits") => vm "fa nu=latn style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits", library "fa nu=arabext style=decimal currency=- currencyDisplay=- currencySign=- unit=- unitDisplay=- notation=standard compactDisplay=- useGrouping=auto signDisplay=auto mnid=1 mnfd=0 mxfd=3 mnsd=- mxsd=- type=fractionDigits"
+
+S1 list formatting: CreatePartsFromList, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 5556, the first of them:
+    list "en-150" {} ["A","B","C","D"] (Broiler.VM's reading: "en-150 element:A|literal:, |element:B|literal:, |element:C|literal:, and |element:D charge 3") => vm "en-150 element:A|literal:, |element:B|literal:, |element:C|literal:, and |element:D charge 3", library "en-150 element:A|literal:, |element:B|literal:, |element:C|literal: and |element:D charge 3"
+    list "en-150" {} ["A","B","C"] (Broiler.VM's reading: "en-150 element:A|literal:, |element:B|literal:, and |element:C charge 2") => vm "en-150 element:A|literal:, |element:B|literal:, and |element:C charge 2", library "en-150 element:A|literal:, |element:B|literal: and |element:C charge 2"
+    list "en-150" {} ["Anna","","Carl","Dora","Emil"] (Broiler.VM's reading: "en-150 element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, and |element:Emil charge 4") => vm "en-150 element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal:, and |element:Emil charge 4", library "en-150 element:Anna|literal:, |element:|literal:, |element:Carl|literal:, |element:Dora|literal: and |element:Emil charge 4"
+
+S2 relative time: PartitionRelativeTimePattern, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 380, the first of them:
+    relative "ar-EG" {} -3 "day" (Broiler.VM's reading: "ar-EG latn literal:\u0642\u0628\u0644 :-|integer:3:day|literal: \u0623\u064A\u0627\u0645:- charge 2") => vm "ar-EG latn literal:\u0642\u0628\u0644 :-|integer:3:day|literal: \u0623\u064A\u0627\u0645:- charge 2", library "ar-EG arab literal:\u0642\u0628\u0644 :-|integer:\u0663:day|literal: \u0623\u064A\u0627\u0645:- charge 2"
+    relative "en-Shaw" {} -3 "day" (Broiler.VM's reading: "en-Shaw latn integer:3:day|literal: days ago:- charge 2") => vm "en-Shaw latn integer:3:day|literal: days ago:- charge 2", library "en-Shaw latn literal:-:-|integer:3:day|literal: d:- charge 2"
+    relative "en-Shaw-GB" {} -3 "day" (Broiler.VM's reading: "en-Shaw-GB latn integer:3:day|literal: days ago:- charge 2") => vm "en-Shaw-GB latn integer:3:day|literal: days ago:- charge 2", library "en-Shaw-GB latn literal:-:-|integer:3:day|literal: d:- charge 2"
+
+S3 display names: CanonicalCodeForDisplayNames and of (broiler-js): classified differences by row
+  C5 data (D5, D13, D21) 2915, the first of them:
+    of "zh-Hant" {type:"language"} "en-GB" (Broiler.VM's reading: "zh-Hant \u82F1\u56FD\u82F1\u8BED") => vm "zh-Hant \u82F1\u56FD\u82F1\u8BED", library "zh-Hant \u82F1\u6587\uFF08\u82F1\u570B\uFF09"
+    of "zh-Hant" {type:"language"} "de-AT" (Broiler.VM's reading: "zh-Hant \u5965\u5730\u5229\u5FB7\u8BED") => vm "zh-Hant \u5965\u5730\u5229\u5FB7\u8BED", library "zh-Hant \u5FB7\u6587\uFF08\u5967\u5730\u5229\uFF09"
+    of "zh-Hant" {type:"language"} "de" (Broiler.VM's reading: "zh-Hant \u5FB7\u8BED") => vm "zh-Hant \u5FB7\u8BED", library "zh-Hant \u5FB7\u6587"
+
+T1 the date-time format's construction and resolved options (broiler-js): classified differences by row
+  C5 data (D5, D13) 127, the first of them:
+    format "ja" {hour:"numeric",hour12:true} (Z8's reading: "ja|gregory|latn|UTC|h11|hour=numeric,|-|-|aK\u6642") (Broiler.VM's reading: "ja|gregory|latn|UTC|h12|hour=numeric,|-|-|ah\u6642") => vm "ja|gregory|latn|UTC|h12|hour=numeric,|-|-|ah\u6642", library "ja|gregory|latn|UTC|h11|hour=numeric,|-|-|aK\u6642"
+    format "ja-JP" {hour:"numeric",hour12:true} (Z8's reading: "ja-JP|gregory|latn|UTC|h11|hour=numeric,|-|-|aK\u6642") (Broiler.VM's reading: "ja-JP|gregory|latn|UTC|h12|hour=numeric,|-|-|ah\u6642") => vm "ja-JP|gregory|latn|UTC|h12|hour=numeric,|-|-|ah\u6642", library "ja-JP|gregory|latn|UTC|h11|hour=numeric,|-|-|aK\u6642"
+    format "ar-EG" {dateStyle:"short",timeZone:"UTC"} (Z8's reading: "ar-EG|gregory|arab|UTC|-||short|-|d\u200F/M\u200F/y") (Broiler.VM's reading: "ar-EG|gregory|latn|UTC|-||short|-|d\u200F/M\u200F/y") => vm "ar-EG|gregory|latn|UTC|-||short|-|d\u200F/M\u200F/y", library "ar-EG|gregory|arab|UTC|-||short|-|d\u200F/M\u200F/y"
+  Z8 (D15) 57, the first of them:
+    format "en" {timeZone:"Etc/GMT",timeZoneName:"long"} (Z8's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz") (Broiler.VM's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz") => vm "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz", library "en|gregory|latn|Etc/GMT|-|year=numeric,month=numeric,day=numeric,timeZoneName=long,|-|-|M/d/y, zzzz"
+    format "en" {timeZone:"Etc/GMT",timeZoneName:"short"} (Z8's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z") (Broiler.VM's reading: "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z") => vm "en|gregory|latn|UTC|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z", library "en|gregory|latn|Etc/GMT|-|year=numeric,month=numeric,day=numeric,timeZoneName=short,|-|-|M/d/y, z"
+    format "en" {timeZone:"Asia/Calcutta"} (Z8's reading: "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y") (Broiler.VM's reading: "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y") => vm "en|gregory|latn|Asia/Kolkata|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y", library "en|gregory|latn|Asia/Calcutta|-|year=numeric,month=numeric,day=numeric,|-|-|M/d/y"
+
+T2 date-time formatting: format and formatToParts, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13) 587, the first of them:
+    format "de-AT" {month:"long",timeZone:"UTC"} 1704467229123 (Z8's reading: "month:J\u00E4nner| charge 6") (Broiler.VM's reading: "month:Januar| charge 6") => vm "month:Januar| charge 6", library "month:J\u00E4nner| charge 6"
+    format "de-AT" {month:"short",timeZone:"UTC"} 1704467229123 (Z8's reading: "month:J\u00E4n| charge 3") (Broiler.VM's reading: "month:Jan| charge 3") => vm "month:Jan| charge 3", library "month:J\u00E4n| charge 3"
+    format "de-AT" {month:"long",day:"numeric",timeZone:"UTC"} 1704467229123 (Z8's reading: "day:5|literal:. |month:J\u00E4nner| charge 9") (Broiler.VM's reading: "day:5|literal:. |month:Januar| charge 9") => vm "day:5|literal:. |month:Januar| charge 9", library "day:5|literal:. |month:J\u00E4nner| charge 9"
+
+T3 date-time ranges: formatRange and formatRangeToParts, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13) 76, the first of them:
+    range "ar-EG" {dateStyle:"medium",timeZone:"UTC"} 1704412800000 .. 1704585600000 (Z8's reading: "day@startRange:\u0665|literal@startRange:\u200F/|month@startRange:\u0661|literal@startRange:\u200F/|year@startRange:\u0662\u0660\u0662\u0664|literal@shared: \u2013 |day@endRange:\u0667|literal@endRange:\u200F/|month@endRange:\u0661|literal@endRange:\u200F/|year@endRange:\u0662\u0660\u0662\u0664| charge 23") (Broiler.VM's reading: "day@startRange:5|literal@startRange:\u200F/|month@startRange:1|literal@startRange:\u200F/|year@startRange:2024|literal@shared: \u2013 |day@endRange:7|literal@endRange:\u200F/|month@endRange:1|literal@endRange:\u200F/|year@endRange:2024| charge 23") => vm "day@startRange:5|literal@startRange:\u200F/|month@startRange:1|literal@startRange:\u200F/|year@startRange:2024|literal@shared: \u2013 |day@endRange:7|literal@endRange:\u200F/|month@endRange:1|literal@endRange:\u200F/|year@endRange:2024| charge 23", library "day@startRange:\u0665|literal@startRange:\u200F/|month@startRange:\u0661|literal@startRange:\u200F/|year@startRange:\u0662\u0660\u0662\u0664|literal@shared: \u2013 |day@endRange:\u0667|literal@endRange:\u200F/|month@endRange:\u0661|literal@endRange:\u200F/|year@endRange:\u0662\u0660\u0662\u0664| charge 23"
+    range "en-150" {dateStyle:"medium",timeZone:"UTC"} 1704412800000 .. 1704585600000 (Z8's reading: "day@startRange:5|literal@shared:\u2013|day@endRange:7|literal@shared: |month@shared:Jan|literal@shared: |year@shared:2024| charge 12") (Broiler.VM's reading: "month@shared:Jan|literal@shared: |day@startRange:5|literal@shared:\u2009\u2013\u2009|day@endRange:7|literal@shared:, |year@shared:2024| charge 15") => vm "month@shared:Jan|literal@shared: |day@startRange:5|literal@shared:\u2009\u2013\u2009|day@endRange:7|literal@shared:, |year@shared:2024| charge 15", library "day@startRange:5|literal@shared:\u2013|day@endRange:7|literal@shared: |month@shared:Jan|literal@shared: |year@shared:2024| charge 12"
+    range "en-AU" {dateStyle:"medium",timeZone:"UTC"} 1704412800000 .. 1704585600000 (Z8's reading: "day@startRange:5|literal@shared:\u2013|day@endRange:7|literal@shared: |month@shared:Jan|literal@shared: |year@shared:2024| charge 12") (Broiler.VM's reading: "month@shared:Jan|literal@shared: |day@startRange:5|literal@shared:\u2009\u2013\u2009|day@endRange:7|literal@shared:, |year@shared:2024| charge 15") => vm "month@shared:Jan|literal@shared: |day@startRange:5|literal@shared:\u2009\u2013\u2009|day@endRange:7|literal@shared:, |year@shared:2024| charge 15", library "day@startRange:5|literal@shared:\u2013|day@endRange:7|literal@shared: |month@shared:Jan|literal@shared: |year@shared:2024| charge 12"
+
+T5 the time zone's resolution (broiler-js): classified differences by row
+  Z8 (D15) 375, the first of them:
+    zone "Africa/Asmera" (Z8's reading: "Africa/Asmara 0 Named rules") (Broiler.VM's reading: "Africa/Asmara 0 Named rules") => vm "Africa/Asmara 0 Named rules", library "Africa/Asmera 0 Named rules"
+    zone "africa/asmera" (Z8's reading: "Africa/Asmara 0 Named rules") (Broiler.VM's reading: "Africa/Asmara 0 Named rules") => vm "Africa/Asmara 0 Named rules", library "Africa/Asmera 0 Named rules"
+    zone "Africa/Timbuktu" (Z8's reading: "Africa/Bamako 0 Named rules") (Broiler.VM's reading: "Africa/Bamako 0 Named rules") => vm "Africa/Bamako 0 Named rules", library "Africa/Timbuktu 0 Named rules"
+
+U1 the duration format's construction: GetDurationUnitOptions and the digital format (broiler-js): classified differences by row
+  C5 data (D5, D13, D21, D34) 36, the first of them:
+    construct "ar-EG" {} (Broiler.VM's reading: "ar-EG nu=latn style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::") => vm "ar-EG nu=latn style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::", library "ar-EG nu=arab style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::"
+    construct "fa" {} (Broiler.VM's reading: "fa nu=latn style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::") => vm "fa nu=latn style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::", library "fa nu=arabext style=short short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto,short/auto fd=- sep=::"
+    construct "en-DK" {style:"digital"} (Broiler.VM's reading: "en-DK nu=latn style=digital short/auto,short/auto,short/auto,short/auto,numeric/always,2-digit/always,2-digit/always,fractional/auto,fractional/auto,fractional/auto fd=- sep=::") => vm "en-DK nu=latn style=digital short/auto,short/auto,short/auto,short/auto,numeric/always,2-digit/always,2-digit/always,fractional/auto,fractional/auto,fractional/auto fd=- sep=::", library "en-DK nu=latn style=digital short/auto,short/auto,short/auto,short/auto,numeric/always,2-digit/always,2-digit/always,fractional/auto,fractional/auto,fractional/auto fd=- sep=.."
+
+U2 duration formatting: PartitionDurationFormatPattern, with the charge (broiler-js): classified differences by row
+  C5 data (D5, D13, D21, D34) 1230, the first of them:
+    format "en" {style:"short",numberingSystem:"arab"} {milliseconds:1500} (Broiler.VM's reading: "integer:\u0661:millisecond|group:,:millisecond|integer:\u0665\u0660\u0660:millisecond|literal: :millisecond|unit:ms:millisecond charge 13") => vm "integer:\u0661:millisecond|group:,:millisecond|integer:\u0665\u0660\u0660:millisecond|literal: :millisecond|unit:ms:millisecond charge 13", library "integer:\u0661:millisecond|group:\u066C:millisecond|integer:\u0665\u0660\u0660:millisecond|literal: :millisecond|unit:ms:millisecond charge 13"
+    format "en" {style:"short",numberingSystem:"arab"} {years:-1,months:-2} (Broiler.VM's reading: "minusSign:-:year|integer:\u0661:year|literal: :year|unit:yr:year|literal:, :-|integer:\u0662:month|literal: :month|unit:mths:month charge 15") => vm "minusSign:-:year|integer:\u0661:year|literal: :year|unit:yr:year|literal:, :-|integer:\u0662:month|literal: :month|unit:mths:month charge 15", library "literal:\u061C:year|minusSign:-:year|integer:\u0661:year|literal: :year|unit:yr:year|literal:, :-|integer:\u0662:month|literal: :month|unit:mths:month charge 15"
+    format "en" {style:"short",numberingSystem:"arab"} {hours:-1,minutes:-2,seconds:-3} (Broiler.VM's reading: "minusSign:-:hour|integer:\u0661:hour|literal: :hour|unit:hr:hour|literal:, :-|integer:\u0662:minute|literal: :minute|unit:min:minute|literal:, :-|integer:\u0663:second|literal: :second|unit:sec:second charge 19") => vm "minusSign:-:hour|integer:\u0661:hour|literal: :hour|unit:hr:hour|literal:, :-|integer:\u0662:minute|literal: :minute|unit:min:minute|literal:, :-|integer:\u0663:second|literal: :second|unit:sec:second charge 19", library "literal:\u061C:hour|minusSign:-:hour|integer:\u0661:hour|literal: :hour|unit:hr:hour|literal:, :-|integer:\u0662:minute|literal: :minute|unit:min:minute|literal:, :-|integer:\u0663:second|literal: :second|unit:sec:second charge 19"
