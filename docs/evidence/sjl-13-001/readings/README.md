@@ -15,3 +15,27 @@ classification ([`../classification/`](../classification/README.md)), whose dige
       --stages Broiler.ECMAScript/docs/frontend/stages.tsv --catalogue Broiler.ECMAScript/docs/frontend/early-errors.tsv \
       --js-baseline docs/evidence/sjl-12-001/after/parse-corpus-c.tsv.gz \
       --out docs/evidence/sjl-13-001/readings/provider-readings.tsv
+
+*(Added 2026-11-02, at SJL-13.2f, with the rule's second revision of that day,
+[`../decision-rule-revised-2026-11-02-second.md`](../decision-rule-revised-2026-11-02-second.md), before any run it
+judges.)* Two lists are added, each written by a committed script whose `check` mode rebuilds it byte for byte:
+
+| File | What | Decision |
+|---|---|---|
+| `limit-readings.tsv` | Each input, variant and configuration the classification expects accepted whose source [`../tools/limit_readings.py`](../tools/limit_readings.py) measures past a limit's bound (bracket nesting past the configuration's nesting parameter; a run of one left-associative binary operator past the tree-depth constant), with its measure: 6 parses (J000243, J000799 nesting; J000451 tree; strict and sloppy, in J). Part A admits a refusal at a limit reported at its bound only for a listed line | (f'), replacing (f) |
+| `grammar-readings.tsv` | Each input, variant and configuration the classification expects refused naming exactly one of EX0008 and EX0009 first, which the run the triage read (`../corpus/report.tsv.gz`, `920f18f4`) refused with the other's code first, reading G, with the row admitted: 442 parses. Written by [`../tools/grammar_readings.py`](../tools/grammar_readings.py) | (e'), replacing (e) |
+
+    python3 -I docs/evidence/sjl-13-001/tools/limit_readings.py check --manifest conformance/parse/corpus.manifest \
+      --corpus conformance/parse --test262 <test262 at ccaac100> \
+      --classification docs/evidence/sjl-13-001/classification/classification.tsv.gz \
+      --nesting V=64,J=512 --tree-depth 10000 --out docs/evidence/sjl-13-001/readings/limit-readings.tsv
+    python3 -I docs/evidence/sjl-13-001/tools/grammar_readings.py check --report docs/evidence/sjl-13-001/corpus/report.tsv.gz \
+      --classification docs/evidence/sjl-13-001/classification/classification.tsv.gz \
+      --catalogue Broiler.ECMAScript/docs/frontend/early-errors.tsv \
+      --out docs/evidence/sjl-13-001/readings/grammar-readings.tsv
+
+*(Noted 2026-11-02, at SJL-13.2f, after review; `triage.tsv` is not edited.)* Three of `triage.tsv`'s outcome labels
+are corrected here: "e: limit at the bound" is the first revision's decision (f), not (e), and is now read by (f'); "a:
+provider reading P2" is decision (a)'s outcome, and "P2" is defined nowhere (read "a: provider reading"); "iii: grammar
+pair EX0008/EX0009" is now read by (e'), the list `grammar-readings.tsv`. This README's first table names (e) and (f)
+as the first revision has them.
