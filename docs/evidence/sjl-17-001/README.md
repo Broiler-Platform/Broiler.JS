@@ -110,6 +110,16 @@ was written require:
   the reasons assign between rows through its C API ([`host_icu_pairs.py`](engine/host_icu_pairs.py),
   [`host-icu-pairs-revision-33.txt`](engine/host-icu-pairs-revision-33.txt)), a witness of the host's data and never an
   expected value. On revision 34 neither engine has an unclassified difference.
+- **2026-11-02: what revision 34 does not read.** Its classification is of the host above, ICU 74.2, and of no other.
+  CI's `engine vectors (windows-latest)` job runs this engine over the operating system's `icu.dll`, of a version
+  neither the job's log nor the image's software list states (revision 28's `-ci-windows` reasons), and its report on
+  this change has not been read. If that ICU
+  is older than 74 (Unicode 15.1), it weighs CJK Extension I as unassigned, as ICU 74.2 weighs Extension J, and the
+  `impl-defined` vectors `intl/collation/root/han/0011`, `0056` and `0057`, which hold Extension I and carry no
+  divergence field, would differ there, as might CollationTest pairs whose weights changed after its Unicode
+  version. The job's report is read before this change merges, and any collation difference it shows is classified
+  at the next revision under a `-ci-windows` reason, as revision 28 classified that host's Intl differences;
+  revision 34 is not edited once CI has read it.
 - **2026-11-02: the `orderings` copy and the harness's bundle.** `conformance/datasets/intl/` holds Broiler.VM's
   `orderings` program and its retained answer from Broiler.VM `4e6a41e9`, under the second `source-commit` block of
   its `datasets.pin`, and `scripts/conformance/run_reference_datasets.py --bundle sjl-17-001` runs part B's
