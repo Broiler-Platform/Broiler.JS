@@ -376,6 +376,35 @@ None of (ii), (iii), the provider's reading or the limits is a library defect, a
 classification: [`decision-rule-revised-2026-11-02.md`](decision-rule-revised-2026-11-02.md) decides how each is read,
 its decisions (b), (e), (a) and (f). Of the 1,180 first codes no row allowed, 112 are (i), 626 (ii) and 442 (iii).
 
+### Parts A and C taken again under the revised rule, 2026-11-02
+
+*(Added 2026-11-02, at SJL-13.2f.)* After the library change of `9d4c7ef3`, the rule's revision
+([`decision-rule-revised-2026-11-02.md`](decision-rule-revised-2026-11-02.md), commit `803371021cb75ea219127f0a0ae744f10f9a4fdd`)
+and the runner's and comparison's revision under it (commit `a321cd7eed4652d72d931bd7cef41abd52ba35d7`, before any run it
+judges), parts A and C were taken again at `a321cd7e`, from a clean tree written by `git archive` of that commit, built
+in Release with `--disable-build-servers`, no `LANG`, `TZ=UTC`, on the same host, as part A's and part C's configurations
+read under the revision. **These runs are void under the rule, as every run before the library commit is: they are not
+at the library commit, and they show only what the parts would read there if nothing moves.** Files in
+[`revised-runs/`](revised-runs/commands.txt), with its `commands.txt`.
+
+| Part | What the runs give at `a321cd7e` | As the revised rule reads it |
+|---|---|---|
+| A | 402,758 parses, none crashed or absent; the manifest's and the classification's digests equal the rule commit's, and the report read the provider list the comparison reads (`provider-readings-agree yes`); **no failure**. Admitted beyond the classification's rows: 710 by the provider reading (decision (a)), 626 by a classification reading and 26 read as semantics-only (decision (b)), 442 by the grammar pair (decision (e)), 6 limits at their bound (decision (f)). The control (one outcome flipped, one first code changed to JSE0000) is reported as two failures (`corpus/control/`) | would be **met** |
+| C | Rule SL9 passes (`determinism/sl2-sl9.log`); runs 1, 2 (reversed) and 3 (two threads, each parse twice at once) give the same SHA-256 for every parse, `5b8cd282…`, and the three files are the same bytes. K1 (a process-wide counter in a numeric literal's raw text): run 2 differs from run 1 in 194,361 lines and rule SL2 refuses the patched library; reverted, the tree equals the run tree's and run 1 is the run's bytes. K2 (a side table in string-hash order): run 2 differs from run 1 in 127,806 lines, so the comparison of the runs' hashes reports the difference, as decision (c) restates K2; rule SL9 passes under it, which the revised K2 no longer asks to fail; reverted, the tree and run 1 are the run's | would be **met** |
+
+Run 1's dump differs from the one taken at `920f18f4` in 80 lines, each a parse in configuration V of an input the
+library change of `9d4c7ef3` moves (`determinism/moved-from-920f18f4.txt`): its first diagnostic is EE0009's where it was
+EE0140's, or EE0087's where it was EE0032's. The dumps of run 1, of runs 2 and 3, and of the controls' runs are not kept,
+only their SHA-256 and the first lines where a control's runs differ, as at `920f18f4`; at the library commit each is
+retained whole, gzipped (the departure the section above records stands for these runs too).
+
+Taken with them, in the same tree: the solution filter builds with no warning, and every test project passes, the
+Frontend's 969 tests among them (`checks/`); the probe over the vector corpus, under the JIT and as the Native AOT image
+(published with no warning), gives byte-identical reports, the same bytes as at `origin/main` and `920f18f4`
+(`86166c99…`): the library change moves no probe line, the probe judging a vector at the parse by its outcome. Not taken
+again: parts B, D, E, F, G and H, whose runs at `920f18f4` and `25678837` stand as they were taken, none a verdict. Part D
+needs the shared workflow's run at the library commit, which is the merge's.
+
 ## State
 
 **2026-10-26, at SJL-13.1: rules only. Nothing here is a verdict, and nothing has been taken.**
@@ -453,6 +482,9 @@ commit is named when it lands.)*
 - `tools/`: the scripts parts A and H name, and part A's corpus runner if it is kept here;
 - `engine/`: both engines' engine-level runs on the `syntax` vectors, the basis of revision 30's fields, which no part
   reads *(added 2026-10-27, at the `syntax` vectors; the item before ended with a full stop)*.
+- `readings/`: the lists the rule's revision of 2026-11-02 reads for part A, and the triage behind them; `revised-runs/`:
+  parts A and C taken again under that revision at `a321cd7e`, void as every run before the library commit is *(added
+  2026-11-02, at SJL-13.2f)*.
 
 **It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them. *(Noted 2026-11-02, at SJL-13.2f: the runs at the branch's head are taken, and the folders above hold them; the
 section "The rule's parts at stage SJL-13.2f's head" reads them.)*
