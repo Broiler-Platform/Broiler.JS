@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   38
-// Annotated:        38/38
+// Relevant units:   40
+// Annotated:        40/40
 // Exempt:           15
-// Human-reviewed:   0/38
+// Human-reviewed:   0/40
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         5/5
 // Resource impact:  2/10 max
-// Unverified:       38
+// Unverified:       40
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -273,12 +273,16 @@ public sealed class DateTimeFormatter
     /// limits' PlainDateTime and <c>PlainYearMonth(-271821, 4)</c> lie below TimeClip's -8.64e15 and are written as Broiler.VM
     /// writes them; a Number below -8.64e15 is HandleDateTimeValue's <see cref="IntlStatus.TimeValueOutOfRange"/> first.
     /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=proposal-temporal e8cc03fc ISOYearMonthWithinLimits and HandleDateTimeValue, JSD-0082 row T38; IP=Low; Security=Medium; Resources=0; Fingerprint=550714
+    // Broiler-Human:        PENDING
     public const double MinTime = -8_640_001_641_600_000;
 
     /// <summary>
     /// The greatest time value the formatter writes: +275760-09-30T23:59:59.999Z, the last of the latest month a Temporal value
     /// holds; as <see cref="MinTime"/>, above TimeClip's 8.64e15 for the limits' Temporal values only.
     /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=proposal-temporal e8cc03fc ISOYearMonthWithinLimits and HandleDateTimeValue, JSD-0082 row T38; IP=Low; Security=Medium; Resources=0; Fingerprint=203E8A
+    // Broiler-Human:        PENDING
     public const double MaxTime = 8_640_001_555_199_999;
 
     /// <summary>The pattern a single time value is written in, in CLDR's pattern syntax (UTS #35 Part 4, Date Format Patterns).</summary>
@@ -354,7 +358,7 @@ public sealed class DateTimeFormatter
         return text.ToString();
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatdatetimepattern sec-partitiondatetimepattern UTS35 Part 4 section 8 via Broiler.VM JsDateTimeFormatter; IP=Low; Security=Medium; Resources=1; Fingerprint=F10561
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatdatetimepattern sec-partitiondatetimepattern UTS35 Part 4 section 8 via Broiler.VM JsDateTimeFormatter; IP=Low; Security=Medium; Resources=1; Fingerprint=7CFB43
     // Broiler-Human:        PENDING
     private static void CheckTime(double time, string name)
     {
