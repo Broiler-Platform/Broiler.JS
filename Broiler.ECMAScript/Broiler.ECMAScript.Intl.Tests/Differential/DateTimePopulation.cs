@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Runners;
 using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
 
@@ -42,9 +44,9 @@ internal sealed record TemporalInput(string Kind, IsoDate Date, IsoTime Time, Bi
 /// The population of sub-area (d)'s sections (Broiler.VM's JSD-0082, decision D22): every date-time format a vector of
 /// <c>intl/date-times.vectors</c> constructs, with the times and ranges its script writes; every dataset input of the
 /// <c>dates</c>, <c>calendar-formats</c>, <c>temporal-intl</c> and <c>zone-names</c> programs as library calls - each case's
-/// format with the program's instants, ranges, dates and Temporal values - and the <c>timezones</c> names the time data home's
-/// database lists; Temporal's limits, which HandleDateTimeValue does not clip; and seeded random formats, times, ranges, Temporal
-/// values and zone names over the embedding's locales, so many per unit of scale.
+/// format with the program's instants, ranges, dates and Temporal values - and every name of the time data's <c>timezones</c>
+/// dataset, the database's Zone and Link names alike; Temporal's limits, which HandleDateTimeValue does not clip; and seeded
+/// random formats, times, ranges, Temporal values and zone names over the embedding's locales, so many per unit of scale.
 /// </summary>
 internal sealed class DateTimePopulation
 {
@@ -69,7 +71,10 @@ internal sealed class DateTimePopulation
 
     internal List<(double Start, double End)> Ranges { get; } = [];
 
-    /// <summary>The <c>timeZone</c> option's Strings: every name of the database, offsets, case variants and refusals.</summary>
+    /// <summary>
+    /// The <c>timeZone</c> option's Strings: every name the timezones dataset lists (the database's Zone and Link names), each
+    /// also lowered, offsets, case variants and refusals.
+    /// </summary>
     internal List<string> Zones { get; } = [];
 
     private static readonly string[] StyleValues = ["full", "long", "medium", "short"];
@@ -155,10 +160,17 @@ internal sealed class DateTimePopulation
             }
         }
 
-        // THE ZONES: every name of the database (the timezones dataset's names are its), in its case and lowered, the offsets
-        // and the refusals of row T21.
-        foreach (var zone in timeZones.PrimaryIdentifiers)
+        // THE ZONES: every name the timezones dataset lists, the database's Zone and Link names alike, in its case and lowered;
+        // then the offsets and the refusals of row T21.
+        var datasetZones = TimeZoneDatasetNames();
+        foreach (var zone in datasetZones)
+        {
+            if (!timeZones.TryFind(zone, out _))
+                throw new InvalidDataException("the timezones dataset's " + zone + " is not a name of the database");
             population.Zones.Add(zone);
+            population.Zones.Add(zone.ToLowerInvariant());
+        }
+
         population.Zones.AddRange([
             "Asia/Calcutta", "asia/calcutta", "US/Eastern", "Europe/Kiev", "America/Buenos_Aires", "Etc/UTC", "Etc/GMT", "GMT", "Etc/UCT",
             "Universal", "Zulu", "Etc/GMT0", "EST", "CET", "Atlantic/Jan_Mayen", "Antarctica/South_Pole", "Pacific/Enderbury", "America/Godthab",
@@ -167,7 +179,7 @@ internal sealed class DateTimePopulation
         ]);
         for (var i = 0; i < 40 * scale; i++)
         {
-            var zone = random.Pick(timeZones.PrimaryIdentifiers);
+            var zone = random.Pick(datasetZones);
             population.Zones.Add(random.Next(2) == 0 ? zone.ToLowerInvariant() : zone.ToUpperInvariant());
         }
 
@@ -176,7 +188,7 @@ internal sealed class DateTimePopulation
         population.Formats.AddRange(population.VectorCases.Select(static c => c.Format));
         population.Formats.AddRange(population.TemporalFormats);
         for (var i = 0; i < 60 * scale; i++)
-            population.Formats.Add(RandomFormat(random, locales, timeZones));
+            population.Formats.Add(RandomFormat(random, locales, datasetZones));
 
         // THE TIMES AND RANGES: the datasets', the vectors', then seeded random ones.
         foreach (var (_, times, ranges) in population.DatasetCases.Concat(population.VectorCases))
@@ -227,6 +239,16 @@ internal sealed class DateTimePopulation
         return population;
     }
 
+    /// <summary>The <c>identifiers</c> of the time data's timezones dataset, <c>conformance/datasets/time/timezones.js</c>, in its order.</summary>
+    internal static IReadOnlyList<string> TimeZoneDatasetNames()
+    {
+        var home = Path.Combine(Path.GetDirectoryName(CorpusDirectory.Home(AppContext.BaseDirectory))!, "datasets", "time", "timezones.js");
+        var names = Strings(WithoutComments(File.ReadAllText(home)), "identifiers").ToList();
+        if (names.Count == 0)
+            throw new InvalidDataException(home + ": no identifiers");
+        return names;
+    }
+
     private static readonly double[] RangeSteps = [0, 1, 999, 60_000, 3_600_000, 86_400_000, 2_592_000_000, 31_536_000_000, 3_153_600_000_000];
 
     private static double RandomTime(SeededRandom random) => random.Next(10) switch
@@ -237,7 +259,7 @@ internal sealed class DateTimePopulation
 
     private static readonly string[] Components = ["weekday", "era", "year", "month", "day", "dayPeriod", "hour", "minute", "second", "fractionalSecondDigits", "timeZoneName"];
 
-    private static FormatInput RandomFormat(SeededRandom random, IReadOnlyList<string> locales, ITimeZoneDatabase timeZones)
+    private static FormatInput RandomFormat(SeededRandom random, IReadOnlyList<string> locales, IReadOnlyList<string> zones)
     {
         var locale = random.Pick(locales);
         locale += random.Next(6) switch
@@ -284,7 +306,7 @@ internal sealed class DateTimePopulation
         {
             0 => "UTC",
             1 => random.Pick(new[] { "+05:30", "-08:00", "+00:00", "Etc/GMT+5", "Asia/Calcutta" }),
-            _ => random.Pick(timeZones.PrimaryIdentifiers),
+            _ => random.Pick(zones),
         }));
         return new FormatInput(locale, Bag([.. entries]));
     }

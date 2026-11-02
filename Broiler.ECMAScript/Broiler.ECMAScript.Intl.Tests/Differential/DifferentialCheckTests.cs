@@ -284,6 +284,11 @@ public sealed class DifferentialCheckTests
         Assert.Equal(72, population.TemporalFormats.Count);
         Assert.Contains(population.TemporalValues, static v => v.Kind == "zoned" && v.Zone == "Europe/Berlin");
         Assert.Contains("Asia/Calcutta", population.Zones);
+        var datasetZones = DateTimePopulation.TimeZoneDatasetNames();
+        Assert.Equal(597, datasetZones.Count);
+        Assert.Contains("Africa/Asmera", datasetZones);
+        Assert.Contains("America/Knox_IN", datasetZones);
+        Assert.All(datasetZones, z => Assert.Contains(z, population.Zones));
         Assert.All(HomeTimeZones.Current.PrimaryIdentifiers, z => Assert.Contains(z, population.Zones));
         Assert.Contains(population.TemporalValues, static v => v.Kind == "date" && v.Date == new IsoDate(-271821, 4, 19));
         Assert.Contains(population.TemporalValues, static v => v.Kind == "year-month" && v.Date == new IsoDate(-271821, 4, 1));
