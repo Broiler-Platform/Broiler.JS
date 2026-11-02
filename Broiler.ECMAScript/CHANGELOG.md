@@ -393,11 +393,18 @@ Not yet packed under a version of its own: the stream's next version is set when
     bytes each level of the parser's recursion costs, under the JIT and under Native AOT, and the least stack each source
     of the home rule's deep-nesting corpus needs. A level of tree depth costs the library no frame (its chain builders
     are loops and its declarations walk keeps its own stack), so `ParseLimits.MaximumTreeDepth` stays Broiler.VM's bound,
-    10,000, now derived and not provisional; a level of nesting costs from 1 to 10 frames and from 288 to 6,032 bytes, and
-    `ParseLimits.MaximumSupportedNestingDepth` is confirmed at 512;
+    10,000, now derived and not provisional; a level of nesting costs from 1 to 10 frames and from 303 to 5,168 bytes at
+    the JIT's first tier, its optimised tier and under Native AOT, and `ParseLimits.MaximumSupportedNestingDepth` is
+    confirmed at 512;
+  - **the precedence climb on an explicit stack**: the parser read each right operand of a higher precedence by a
+    recursion the nesting bound did not charge, up to ten frame pairs between two levels of nesting, which at the
+    supported maximum took the JIT's stack to 10,328,704 bytes; it now keeps the operators that wait on a stack of its
+    own, and the canonical dump of every parse of the parse corpus is unchanged;
+  - **a decorator's member chain charged**: under the decorators proposal's flag, `@a.b. ... .z()` is charged one level of
+    tree depth per link, as any member chain, and refused past `ParseLimits.MaximumTreeDepth` (it was built);
   - **`ParseLimits.StackBytes`**, new: the stack the library documents for a parse, 16 MiB, the stack Broiler.VM's
     `CompilationStack` declares, on which the costliest construct measured needs at the supported maximum nesting
-    3,082,864 bytes under the JIT and 1,846,192 under Native AOT;
+    3,416,352 bytes under the JIT and 1,682,944 under Native AOT;
   - **the left-operand charge** of stage 4c tested on the documented stack: a chain whose left operand is a
     parenthesised chain, however the two divide the bound and at every level of parentheses, and the four shapes of the
     home rule's deep-nesting corpus;
@@ -412,7 +419,8 @@ Not yet packed under a version of its own: the stream's next version is set when
     commits) and `--digest-corpus` (the canonical dump's SHA-256 for every parse of the parse corpus, compared between the
     JIT and the Native AOT image). The library grants the probe its internals for the dump, as it grants its tests.
 
-  No parse changes its answer.
+  No parse within the limits changes its answer; a decorator's member chain past the tree-depth constant, under the
+  decorators proposal's flag, is refused where it was built.
 
 ### Changed
 

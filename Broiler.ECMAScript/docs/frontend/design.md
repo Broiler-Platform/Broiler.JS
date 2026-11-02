@@ -89,7 +89,8 @@ From the area design's section 4, with decision D41's specifics.
 - **Limits are checked before the stack is.** No unbounded recursion: explicit stacks, or depth checks with the large
   thread the caller supplies (`CompilationStack` in Broiler.VM). *(Noted 2026-11-02, at SJL-13.2e: the library takes
   both: depth checks for the parser's recursion, which the nesting bound charges, and loops and an explicit stack where
-  the tree is deep, the chain builders and the declarations walk. The thread the caller supplies is of
+  the tree is deep or the grammar would recurse between two charged levels, the chain builders, the precedence climb
+  and the declarations walk. The thread the caller supplies is of
   `ParseLimits.StackBytes`, `CompilationStack`'s sixteen mebibytes.)*
 - **Native AOT compatible** and trimmable; no reflection, no dynamic code.
 - **Never a source-to-verified-artifact path.** The frontend produces trees, never artifacts; Broiler.VM's ADR 0010
@@ -384,21 +385,30 @@ stage 4e, with the stack it requires stated beside it, which admits Broiler.VM's
 - **The derivation** is [`limits/derivation.md`](limits/derivation.md), with its measurements beside it, taken as
   JSD-0022 took Broiler.VM's: the frames and the bytes each level of the parser's recursion costs, under the JIT and
   under Native AOT, observed at the refusal that ends it, and the least stack each source of the home rule's
-  deep-nesting corpus needs, each parsed alone in its own process. A level of tree depth costs the library no frame:
-  the chain builders are loops, charging each node before it is built, and the declarations walk keeps its own stack,
-  so a tree at the bound is parsed and walked on 64 KiB. A level of nesting costs from 1 to 10 frames and from 288 to
-  6,032 bytes, by construct and runtime.
+  deep-nesting corpus needs, each of its 54 sources parsed alone in its own process. A level of tree depth costs the
+  library no frame: the chain builders (binary, member and call, and a decorator's member chain) are loops, charging
+  each node before it is built, and the declarations walk keeps its own stack, so every tree of the corpus is parsed and
+  walked on 64 KiB. A level of nesting costs from 1 to 10 frames and from 303 to 5,168 bytes, by construct, at the JIT's
+  first tier, its optimised tier and under Native AOT. The precedence climb, which read each right operand of a higher
+  precedence by an uncharged recursion, up to ten frame pairs between two levels of nesting, reads them with an explicit
+  stack since this stage's review, which measured it (the derivation's section 3).
 - **The tree-depth constant**, `ParseLimits.MaximumTreeDepth`, stays **10,000**, Broiler.VM's bound, now derived and not
   provisional: nothing in the library bounds it, and decision D14 holds it equal to Broiler.VM's, a test Broiler.VM
   writes when it references the library.
 - **The stack the library documents** is a new constant beside it, `ParseLimits.StackBytes`, **16 MiB**, the stack
-  `CompilationStack` declares: at the supported maximum nesting the costliest construct measured needs 3,082,864 bytes
-  under the JIT and 1,846,192 under Native AOT, a margin of about 5.4 and 9.1. Every engine parses on a thread of it,
+  `CompilationStack` declares: at the supported maximum nesting the costliest construct measured, alone or after the
+  grammar's ten binary precedences, needs 3,416,352 bytes under the JIT (every method at its optimised tier with
+  profile-guided optimisation; 2,638,720 at its first tier and in its default runs) and 1,682,944 under Native AOT, a
+  margin of about 4.9 and 10.0. Every engine parses on a thread of it,
   as decision D47 has Broiler.JS do at SJL-14.
 - **The supported maximum nesting**, `ParseLimits.MaximumSupportedNestingDepth`, is confirmed at **512** and not raised.
 - **The left-operand charge** is stage 4c's, in decision D14's four shapes, now tested on the documented stack. The
-  derivation's section 5 records what it does not reach: a chain that begins with a prefix operator's operand, an
-  array literal's element or a call's argument, which Broiler.VM's base does not charge either.
+  derivation's section 5 records what it does not reach: the charge counts the depth along a chain and its left
+  operands' spines, not the depth at which a right operand's subtree hangs, so a chain read as the right operand of a
+  chain's early nodes (`1 + 2*...*2 + 3+...+3`, or parenthesised, which multiplies with nesting), a chain that begins with
+  a prefix operator's operand, an array literal's element or a call's argument, and a parenthesised sequence or
+  conditional as a left operand each reach past the constant; Broiler.VM's base does not charge them either, and the
+  decision is D14's.
 
 ### 9.3 The result
 

@@ -27,7 +27,7 @@ JIT and under Native AOT; then what stack the library needs at its bounds, and w
 
 Two measurements, both with the probe of this repository (`Broiler.ECMAScript/Broiler.ECMAScript.Probe`, Release),
 under the JIT (.NET 10.0.12) and as its Native AOT image (linux-x64), on one host (Linux 6.18.44, x86_64, 4 logical
-CPUs), on 2026-11-02, with the frontend's code as stage SJL-13.2e commits it:
+CPUs), on 2026-11-02, with the frontend's code as stage SJL-13.2e commits it (after its review: section 3's last part):
 
 - **Frames and bytes per level** (`--measure-frames`). For each recursive construct, a source nested past the request's
   nesting parameter is parsed on a thread of `ParseLimits.StackBytes`, and observed at the moment the library throws its
@@ -35,18 +35,26 @@ CPUs), on 2026-11-02, with the frontend's code as stage SJL-13.2e commits it:
   stack left below that point (a recursion of fixed frames, calibrated on two threads of known stacks, run until
   `RuntimeHelpers.TryEnsureSufficientExecutionStack` answers false). At parameters 64, 128, 256 and 512, the
   differences give the frames and the bytes per level of nesting, and the stack left at 512 against a baseline (a throw
-  at the thread's start) gives the stack the parse used. For the tree depth, the same is observed at the tree-depth
-  refusal of chains of each of the corpus's shapes, of 10,001 and of 100,000 nodes, and of left operands dividing the
-  bound in three ways. The JIT is measured three ways, because its tiers give one method frames of different sizes:
-  with every method at its first tier (`DOTNET_TC_CallCounting=0`), as it runs by default (methods replaced by their
-  optimised tier during the run), and with every method optimised from the start (`DOTNET_TieredCompilation=0`).
-  Files: [`frames-jit-first-tier.tsv`](frames-jit-first-tier.tsv), [`frames-jit-tiered.tsv`](frames-jit-tiered.tsv),
-  [`frames-jit-optimised.tsv`](frames-jit-optimised.tsv) and [`frames-native-aot.tsv`](frames-native-aot.tsv).
-- **The least stack, whole process** (`docs/evidence/sjl-13-001/tools/deep_nesting.py stack`). For the deep-nesting
-  corpus's sources at, one past and far past each bound, each parsed alone in a fresh process (`--parse-one`, the JIT at
-  its default tiers), the least thread stack at which the process still ends with the source's expected outcome, by
-  bisection to 16 KiB between 64 KiB and the documented stack. Files: [`least-stack-jit.tsv`](least-stack-jit.tsv) and
-  [`least-stack-native-aot.tsv`](least-stack-native-aot.tsv).
+  at the thread's start) gives the stack the parse used. The constructs are each production the parser recurses
+  through, and the costliest of them again after the **precedence ladder** (`a || a && a | a ^ a & a == a < a << a + a
+  * `, one operator of each of the grammar's ten binary precedences, before each level), and once with `#x in` in the
+  ladder. For the tree depth, the same is observed at the tree-depth refusal of chains of each of the corpus's shapes,
+  of 10,001 and of 100,000 nodes, and of left operands dividing the bound in three ways. The JIT is measured four ways,
+  because its tiers give one method frames of different sizes: with every method at its first tier
+  (`DOTNET_TC_CallCounting=0`); as it runs by default, **twenty times**, since which methods the JIT has replaced by
+  their optimised tier when the parse runs differs from run to run; with every method promoted to its optimised tier,
+  with dynamic profile-guided optimisation, after its first thirty calls (`DOTNET_TC_CallCountingDelayMs=0`, called
+  "promoted" here), which is the tier the default reaches and its largest frames; and with every method optimised from
+  the start, without profile-guided optimisation (`DOTNET_TieredCompilation=0`). Files:
+  [`frames-jit-first-tier.tsv`](frames-jit-first-tier.tsv), [`frames-jit-tiered.tsv`](frames-jit-tiered.tsv) (the
+  first default run) with [`frames-jit-tiered-runs.tsv`](frames-jit-tiered-runs.tsv) (all twenty),
+  [`frames-jit-promoted.tsv`](frames-jit-promoted.tsv), [`frames-jit-optimised.tsv`](frames-jit-optimised.tsv) and
+  [`frames-native-aot.tsv`](frames-native-aot.tsv).
+- **The least stack, whole process** (`docs/evidence/sjl-13-001/tools/deep_nesting.py stack`). For **every one of the
+  deep-nesting corpus's 54 sources** (G001 to G054: at, one past and far past each bound), each parsed alone in a fresh
+  process (`--parse-one`, the JIT at its default tiers), the least thread stack at which the process still ends with the
+  source's expected outcome, by bisection to 16 KiB between 64 KiB and the documented stack. Files:
+  [`least-stack-jit.tsv`](least-stack-jit.tsv) and [`least-stack-native-aot.tsv`](least-stack-native-aot.tsv).
 
 A level here is one unit of the nesting parameter the parser charges (each statement and each assignment expression,
 each binding pattern, each prefix operator and `new`, each right operand of `**`, each class heritage): a construct that
@@ -54,51 +62,78 @@ charges two units per level of source shows half its source level's cost.
 
 ## 3. What one level costs
 
-**Tree depth: nothing.** The parser builds a binary chain and a member or call chain in a loop
-(`ParseBinaryRest`, `ParseChainLinks`), charging each node before it is built, and the declarations walk keeps a stack
-of its own. At the tree-depth refusal the stack holds the same frames however long the chain is and however a left
-operand and its chain share it:
+**Tree depth: nothing.** The parser builds a binary chain, a member or call chain and a decorator's member chain in a
+loop (`ParseBinary`, `ParseChainLinks`, `ParseDecorators`), charging each node before it is built, and the declarations
+walk keeps a stack of its own. At the tree-depth refusal the stack holds the same frames however long the chain is and
+however a left operand and its chain share it (frames, then bytes used at the refusal):
 
-| Shape at the refusal | JIT first tier | JIT optimised | Native AOT |
-|---|---|---|---|
-| binary chain of 10,001 nodes, and of 100,000 | 19 frames, 5,168 bytes | 16 frames, 3,333 bytes | 19 frames, 2,432 bytes |
-| member chain of 10,001 nodes | 22, 6,992 | 18, 5,151 | 22, 3,952 |
-| a parenthesised chain of 1, 5,000 and 10,000 nodes beginning a chain of 10,000, 5,001 and 1 | 19, at most 5,168 | 16, 3,333 | 19, 2,432 |
-| a template's substitution holding a chain of 5,000, beginning one of 5,001 | 28, 8,512 | 23, 6,363 | 26, 4,560 |
-| a member chain of 5,000 beginning a binary chain of 5,001 | 19, 5,168 | 16, 3,333 | 19, 2,432 |
-| a parenthesised chain of 5,000 as the object of a member chain of 5,001 | 22, 6,992 | 18, 5,151 | 22, 3,952 |
+| Shape at the refusal | JIT first tier | JIT promoted | JIT optimised | Native AOT |
+|---|---|---|---|---|
+| binary chain of 10,001 nodes, and of 100,000 | 20, 3,952 | 16, 5,776 | 18, 3,333 | 21, 2,736 |
+| member chain of 10,001 nodes | 22, 6,688 | 17, 7,600 | 18, 4,545 | 22, 3,648 |
+| a parenthesised chain of 1, 5,000 and 10,000 nodes beginning a chain of 10,000, 5,001 and 1 | 20, 3,952 | 15, 5,776 | 18, 3,333 | 21, 2,736 |
+| a template's substitution holding a chain of 5,000, beginning one of 5,001 | 29, 7,296 | 19, 10,032 | 25, 5,757 | 28, 4,256 |
+| a member chain of 5,000 beginning a binary chain of 5,001 | 20, 3,952 | 15, 5,776 | 18, 3,333 | 21, 2,736 |
+| a parenthesised chain of 5,000 as the object of a member chain of 5,001 | 22, 6,688 | 17, 7,600 | 18, 4,545 | 22, 3,648 |
 
-Every tree at the bound in the deep-nesting corpus (rows G037 to G052: the binary and member chains of 10,000 nodes and
-the four left-operand shapes at 5,000 and 5,000) is parsed and walked, and every one far past it refused, on a thread
+Every source of the deep-nesting corpus's tree rows (G037 to G054: the binary and member chains and the four
+left-operand shapes, at the bound, one past it and far past it) ends as its row expects, parsed and walked, on a thread
 of 64 KiB, the bisection's floor, under both runtimes.
 
-**Nesting: from 1 to 10 frames and from 288 to 6,032 bytes per level**, by construct and runtime; the stack used at the
-library's supported maximum, 512 levels, is the last column of each (the full table is in the `.tsv` files):
+**Nesting: from 1 to 10 frames and from 303 to 5,168 bytes per level** at the JIT's first tier, its optimised tier and
+under Native AOT, by construct; the stack used at the library's supported maximum, 512 levels, is the last figure of
+each cell (the full tables are in the `.tsv` files):
 
-| Construct (one level of source) | JIT first tier: frames, bytes per level, used at 512 | JIT tiered | JIT optimised | Native AOT |
-|---|---|---|---|---|
-| object literal's computed key `{[` ... `]: 1}` | 10, 5,424, 2,769,440 | 6, 6,032, **3,082,864** | 8, 5,327, 2,719,122 | 8, 3,616, **1,846,192** |
-| object literal's property `{a: ` ... `}` | 9, 4,784, 2,442,944 | 9, 4,784, 2,442,944 | 7, 4,625, 2,361,279 | 7, 3,056, 1,560,432 |
-| class method's return `class { m() { return ` | 8.5, 3,872, 1,977,824 | 7, 4,871, 2,491,280 | 7, 3,955, 2,019,495 | 7, 2,672, 1,364,656 |
-| call's argument `f(` ... `)` | 8, 4,000, 2,043,184 | 8, 4,000, 2,043,184 | 6, 4,561, 2,328,555 | 6, 2,880, 1,470,752 |
-| `import(` ... `)` | 7, 3,168, 1,618,800 | 4, 4,320, 2,209,776 | 6, 3,779, 1,930,110 | 6, 2,592, 1,323,920 |
-| parentheses | 8, 3,632, 1,855,312 | 8, 3,632, 1,855,312 | 6, 3,062, 1,564,086 | 6, 2,112, 1,079,200 |
-| templates and their substitutions | 9, 3,584, 1,830,992 | 9, 3,584, 1,830,992 | 7, 3,062, 1,564,086 | 7, 2,064, 1,054,576 |
-| brackets, and spread elements | 8, 3,392, 1,733,104 | 8 and 4, 3,392 and 4,000, up to 2,046,832 | 6, 2,903, 1,482,882 | 6, 2,032, 1,038,464 |
-| class heritage | 5, 2,528, 1,293,824 | 5, 2,960, 1,517,264 | 4, 1,786, 914,757 | 4, 1,440, 737,200 |
-| binding patterns, array and object | 3, 1,760, 902,880 | 3, 1,760, 902,880 | 2, 2,424, 1,243,209 | 2, 1,984, 1,016,880 |
-| function declarations | 4, 1,552, 795,872 | 4, 1,552, 795,872 | 4, 1,946, 997,173 | 4, 1,424, 729,904 |
-| blocks | 3, 1,104, 566,352 | 3, 1,104, 566,352 | 2, 893, 458,136 | 2, 560, 287,584 |
-| the rest (assignments, conditionals, arrows and async arrows, arrow bodies, prefix operators, `new`, `**`, `yield`, `if` and `while` statements) | 1 to 4, at most 1,592, at most 815,024 | 1 to 4, at most 3,008, at most 1,540,672 | 1 to 3.5, at most 1,419, at most 726,291 | 1 to 3.5, at most 1,032, at most 528,352 |
+| Construct (one level of source) | JIT first tier: frames, bytes per level, used at 512 | JIT default, most of 20 runs: used at 512 | JIT promoted: used at 512 | JIT optimised | Native AOT |
+|---|---|---|---|---|---|
+| object literal's computed key `{[` ... `]: 1}` | 10, 5,168, **2,638,720** | **2,638,720** | **3,416,048** | 8, 4,688, **2,393,700** | 8, 3,295, **1,682,944** |
+| object literal's property `{a: ` ... `}` | 9, 4,528, 2,312,528 | 2,312,528 | 2,934,512 | 7, 3,986, 2,035,857 | 7, 2,736, 1,397,488 |
+| class method's return `class { m() { return ` | 8.5, 3,744, 1,912,464 | 1,912,464 | 3,049,120 | 7, 3,636, 1,856,784 | 7, 2,513, 1,283,184 |
+| call's argument `f(` ... `)` | 8, 3,744, 1,912,464 | 1,912,464 | 2,958,832 | 6, 3,924, 2,003,436 | 6, 2,559, 1,307,504 |
+| `import(` ... `)` | 7, 2,913, 1,488,384 | 1,488,384 | 2,886,176 | 6, 3,141, 1,604,688 | 6, 2,272, 1,160,672 |
+| parentheses | 8, 3,376, 1,724,896 | 1,724,896 | 1,767,152 | 6, 2,424, 1,238,664 | 6, 1,792, 915,952 |
+| templates and their substitutions | 9, 3,327, 1,700,272 | 1,700,272 | up to 2,208,256 | 7, 2,424, 1,238,664 | 7, 1,743, 891,328 |
+| brackets, and spread elements | 8, 3,136, 1,602,384 | 1,602,384 | up to 2,437,168 | 6, 2,264, 1,157,460 | 6, 1,712, 875,216 |
+| class heritage | 5, 2,528, 1,293,520 | 1,293,520 | 1,066,736 | 4, 1,786, 914,151 | 4, 1,440, 736,896 |
+| binding patterns, array and object | 3, 1,760, 902,880 | 902,880 | up to 2,868,544 | 2, 2,424, 1,243,209 | 2, 1,984, 1,016,880 |
+| function declarations | 4, 1,552, 795,872 | 795,872 | 1,934,656 | 4, 1,946, 997,173 | 4, 1,424, 729,904 |
+| blocks | 3, 1,103, 566,352 | 566,352 | 943,616 | 2, 892, 458,136 | 2, 560, 287,584 |
+| the rest (assignments, conditionals, arrows and async arrows, arrow bodies, prefix operators, `new`, `**`, `yield`, `if` and `while` statements) | 1 to 4, at most 1,592, at most 815,024 | at most 815,024 | at most 1,461,936 | 1 to 3.5, at most 1,419, at most 726,291 | 1 to 3.5, at most 1,032, at most 528,352 |
+| any of the first eight after the precedence ladder | the same as without it | at most 2,638,720 | at most 3,416,352 | the same as without it | the same as without it |
+| parentheses after the ladder with `#x in` | 10, 3,952, 2,018,256 | 2,181,504 | 2,992,272 | 8, 3,206, 1,638,321 | 8, 2,272, 1,161,280 |
 
-The tiered JIT's figures mix tiers: a method replaced during the run leaves frames of both sizes on the stack, so its
-worst case (the computed key, 6,032 bytes a level) is above both the first tier's and the optimised tier's.
+The ladder costs nothing at the first tier, the optimised tier and under Native AOT: the precedence climb holds no
+frame per precedence (below). `#x in` reads its right operand by one recursion of its own (`ParsePrivateIn` and a
+`ParseBinary`), which cannot repeat without a level of nesting between, so it adds two frames to a level at most. In
+the default runs, a frame of the climb replaced by its optimised tier while the parse runs leaves frames of both tiers
+on the stack, so a construct after the ladder can use more than at either tier alone, up to 2,509,824 bytes in the
+twenty runs, below the computed key's 2,638,720. Promoted, every method of the parse is at the optimised tier with
+profile-guided optimisation, whose frames are the largest measured: the computed key needs 3,416,352 bytes at 512.
 
-**The whole process**, each source parsed alone and judged by its exit (the bisection), needs at most 1,872 KiB under
-the JIT and 1,072 KiB under Native AOT for the corpus's sources at, one past and far past the supported maximum (the
-parentheses and the substitutions under the JIT, the parentheses and the substitutions under Native AOT), and 64 KiB for
-its trees. The declarations walk adds little to the parser's recursion: blocks at 512 levels need 592 KiB accepted
-(parsed and walked) and 608 KiB refused one level past (parsed to the refusal) under the JIT.
+**The whole process**, each source parsed alone and judged by its exit (the bisection), needs at most **1,744 KiB under
+the JIT and 912 KiB under Native AOT**, for the corpus's sources at, one past and far past the supported maximum
+through parentheses and substitutions (G023, G024, G035 and G036 under the JIT; G022 to G024 and G034 to G036 under
+Native AOT), and 64 KiB for every one of its trees. Below the
+supported maximum, the sources at 64 levels need at most 272 KiB and 128 KiB. The declarations walk adds little to the
+parser's recursion: blocks at 512 levels need 592 KiB accepted (parsed and walked) and 608 KiB refused one level past
+(parsed to the refusal) under the JIT.
+
+**What the first measurement missed, and the change it led to.** The derivation as first written at this stage measured
+each construct alone and stated that each level is charged before the recursion. One recursion was not charged: the
+precedence climb read each right operand of a higher precedence as `ParseBinary(precedence + 1)`, a ParseBinary and
+ParseBinaryRest pair per precedence, grammar-bounded at ten pairs, between two levels of nesting. Measured with the
+ladder before the computed key, at that code, a level cost 30 frames and 13,744 bytes at the JIT's first tier, 7,012,672
+bytes at 512 (a margin of 2.4); 18 frames and 6,497 bytes under Native AOT, 3,315,120 bytes (5.1); and in the default
+runs, where frames of both tiers mixed, up to 10,328,704 bytes in twenty runs (`import(` after the ladder; a margin of
+1.6), against the 3,082,864 bytes (5.4) first stated. Every source still ended as expected on 16 MiB, but the margin was
+below the three Broiler.VM's supported maximum nesting keeps. So the climb was reworked, as decision D14 says a path is
+when its recursion will not do: `ParseBinary` reads the right operands of a higher precedence with an explicit stack of
+the operators that wait (`pendingOperators`), and the right operand of `**`, which it still reads by recursion, is
+charged as nesting as before. The tree, the token stream and the diagnostics are the same: the canonical dump of every
+one of the parse corpus's 295,795 parses (`--digest-corpus`) has the same SHA-256 before and after the change, under
+the JIT and from the Native AOT image. The rework keeps the operator handling out of the climb's frame, so a level
+through it costs less than before: the computed key's 5,424 bytes at the first tier, 5,327 optimised and 3,616 under
+Native AOT are 5,168, 4,688 and 3,295 now.
 
 ## 4. What follows
 
@@ -111,31 +146,53 @@ its trees. The declarations walk adds little to the parser's recursion: blocks a
   the consumer's stack, as JSD-0022 did; the library's parse and walk need 64 KiB at the bound.
 - **The stack the library documents, `ParseLimits.StackBytes`: 16 MiB, the stack `CompilationStack` declares**
   (Broiler.VM `013e385`, `CompilationStack.CompileStackBytes`). What it pays for is the nesting bound: at the supported
-  maximum, 512, the costliest construct measured needs 3,082,864 bytes under the JIT and 1,846,192 under Native AOT.
-- **The margin**: 16 MiB over those, **about 5.4 under the JIT and 9.1 under Native AOT**; over the corpus's sources,
-  whole process, 8.75 and 15.3. JSD-0022 took about six for Broiler.VM's tree depth, and Broiler.VM's supported maximum
-  nesting keeps three. The JIT's 5.4 is the tiered JIT's mixed frames at the costliest construct; its first tier alone
-  gives 6.1.
+  maximum, 512, the costliest construct measured, the computed key, alone or after the precedence ladder, needs
+  2,638,720 bytes at the JIT's first tier and in its default runs, 3,416,352 with every method promoted, 2,393,700
+  optimised and 1,682,944 under Native AOT.
+- **The margin**: 16 MiB over those, **about 6.4 at the JIT's first tier and in its default runs, 4.9 promoted, 7.0
+  optimised and 10.0 under Native AOT**; over the corpus's sources, whole process, 9.4 under the JIT and 18.0 under
+  Native AOT. JSD-0022 took about six for Broiler.VM's tree depth, and Broiler.VM's supported maximum nesting keeps
+  three. The least, 4.9, is the JIT's optimised tier with profile-guided optimisation, which the default reaches for a
+  method the process has called often: below JSD-0022's six, above Broiler.VM's three.
 - **Broiler.VM's bound is admitted on the stack `CompilationStack` declares**: every tree at 10,000 and every source at
-  512 levels of nesting through every construct measured, with the margins above. **No hot path needed reworking to an
-  explicit stack**: the two recursions the tree depth could have reached, the chain builders and the declarations walk,
-  were loops and an explicit stack from stages 4c and 4d.
+  512 levels of nesting through every construct measured, with the margins above. **One hot path was reworked to an
+  explicit stack**, the precedence climb in `ParseBinary` (section 3's last part); the other two recursions the tree
+  depth could have reached, the chain builders and the declarations walk, were loops and an explicit stack from stages
+  4c and 4d.
 - **The supported maximum nesting, `ParseLimits.MaximumSupportedNestingDepth`, 512**, is confirmed and not raised:
-  twice it would leave the JIT a margin under three.
+  twice it would leave the JIT promoted a margin under three.
 
 ## 5. What the tree-depth charge does not reach
 
 Decision D14 charges a chain's nodes and a **left operand's spine**: a parenthesised chain, a template's substitution, a
 member or call chain, and a parenthesised chain as a member chain's object, each beginning a chain, are charged
-together, and the deep-nesting corpus holds all four. A chain that begins with an expression whose spine D14 does not
-name - a prefix operator's operand, an array literal's element, a call's argument - is charged from that expression's
-own start: `x = -(a+a+...+a) + b+...+b`, `x = [a+...+a].b...b` and `x = f(a+...+a) + b+...+b`, with 9,999 nodes on each
-side, are accepted, their trees about 20,000 deep, where the parenthesised control is refused (probed on 2026-11-02 with
-`--parse-one`). The library is not reached by them, since a level of tree depth costs it nothing (section 3), and
-Broiler.VM's base charges them the same way, so step 1 moves no answer for them. A consumer whose walks recurse per node
-and lean on the constant, as JSD-0022's do, meets trees deeper than it there: each such operand, which costs the nesting
-bound a level or two, can hold another chain of up to the constant. Whether the charge should reach them is decision D14's to revise, not this stage's: JSD-0083 names
-the four shapes, and a wider charge would move refusals no record lists.
+together, and the deep-nesting corpus holds all four. What the charge counts is the depth **along a chain and the spines
+of its left operands**; it does not count the depth at which a **right operand's** subtree hangs. A chain is charged
+from the tree depth its parse began at, and a chain's nodes are charged as they are built, so a right operand read
+before its chain's first node is built is charged from the chain's start, and its own subtree, whatever its depth,
+leaves the chain's count where it was. Four shapes follow, each probed on 2026-11-02 with `--parse-one` (configuration
+V, nesting parameter 512), each with 9,999 nodes on each side:
+
+- **A right operand of a chain's early nodes**, with no parentheses: `x = 1 + 2*2*...*2 + 3+...+3` is accepted. The `*`
+  chain is the first `+` node's right operand, read before that node is built, so it is charged from 0 to 9,999 and
+  released; the `+` chain then reaches 10,000. The `*` chain hangs under the deepest `+` node, so the tree is about
+  20,000 deep. `x = a + (b+...+b) + c+...+c` is accepted in the same way. Since each level of parentheses costs the
+  nesting bound one or two units, and each can begin such a right operand again, the depth **multiplies with nesting**:
+  bounded by about the nesting bound's levels times the constant, not by the constant.
+- **A chain that begins with an expression whose spine D14 does not name**: a prefix operator's operand, an array
+  literal's element, a call's argument: `x = -(a+a+...+a) + b+...+b`, `x = [a+...+a].b...b` and `x = f(a+...+a) +
+  b+...+b` are accepted, their trees about 20,000 deep.
+- **A parenthesised sequence or conditional as the left operand**: `x = (0, a+...+a) + b+...+b` and
+  `x = (c ? 0 : a+...+a) + b+...+b` are accepted. A SequenceExpression and a ConditionalExpression carry a spine of 0,
+  so the chain inside them is not charged to the chain they begin.
+- **The control**: `x = (a+...+a) + b+...+b`, D14's first shape, is refused with JSE9202 at 10,000.
+
+The library is not reached by any of them, since a level of tree depth costs it no frame (section 3), and Broiler.VM's
+base charges them the same way (its `JsParser.Continue` restores the depth it saved for each call and reads a right
+operand through `ParseBinary`), so step 1 moves no answer for them. A consumer whose walks recurse per node and lean on
+the constant, as JSD-0022's do, meets trees deeper than the constant there. Whether the charge should reach them is
+decision D14's to revise, not this stage's: JSD-0083 names the four shapes, and a wider charge would move refusals no
+record lists.
 
 ## 6. Measuring it again
 
@@ -144,9 +201,9 @@ the repository root, after building the probe in Release:
 
     dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll --measure-frames
     DOTNET_TC_CallCounting=0 dotnet .../Broiler.ECMAScript.Probe.dll --measure-frames
+    DOTNET_TC_CallCountingDelayMs=0 dotnet .../Broiler.ECMAScript.Probe.dll --measure-frames
     DOTNET_TieredCompilation=0 dotnet .../Broiler.ECMAScript.Probe.dll --measure-frames
     Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/Broiler.ECMAScript.Probe --measure-frames
-    python3 -I docs/evidence/sjl-13-001/tools/deep_nesting.py stack --probe "<the probe's command>" --rows <ids>
+    python3 -I docs/evidence/sjl-13-001/tools/deep_nesting.py stack --probe "<the probe's command>"
 
-The rows measured here were G001, G013, G019 to G023, G025, G026, G028, G029, G031, G032, G034 to G037, G039, G040, G043,
-G046, G049 and G052.
+The first was run twenty times. The least-stack files hold every row of the corpus, G001 to G054, under each runtime.
