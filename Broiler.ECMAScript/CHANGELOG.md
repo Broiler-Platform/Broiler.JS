@@ -138,6 +138,45 @@ Not yet packed under a version of its own: the stream's next version is set when
   `formatToParts` vectors of `intl/values-and-plurals.vectors`, through `IVectorRecordLibrary`, and the Native AOT probe
   holds them; the bound `format`, the legacy constructor, the option reads after construction and StringListFromIterable
   stay the engines'.
+- `Broiler.ECMAScript.Intl`, sub-area (d) (stage SJL-9.3d; Broiler.VM's JSD-0082, rows T and Z8, decisions D13, D15, D18, D19
+  and D33): date-time formatting, intervals, day periods, hour cycles and zone names with metazone history, and Intl over
+  Temporal, ported from Broiler.VM's JavaScript profile at `4cf9ca44` with `NumberFormatInfo.InvariantInfo` where it formatted
+  an integer with the invariant culture (decision D19, row T41), a status where its realm threw, and the caller's `WorkCharge`
+  where Broiler.VM charges, the formatted output's length (decision D18, row T40). Each format reads the locale data at
+  ResolveLocale's data locale through the `ILocaleData` it is handed, where Broiler.VM read the data locale's language; for
+  Broiler.VM's tables the two are the same lines:
+  - **`DateTimeFormat`**, with `DateTimeFormatOptions`, `DateTimeComponents`, `DateTimeRequired` and `DateTimeDefaults`:
+    CreateDateTimeFormat's steps after an engine's reads and ResolveLocale over `CalendarKeyValues`, `HourCycleKeyValues`
+    and `NumberingSystemKeyValues` (the locale's default numbering system first, decision D13) - the hour cycle by `hour12`,
+    the `hc` keyword and the region's time data (rows T9 and T10), the deprecated Hijri calendars' fallback to
+    `islamic-tbla` (row T33), a calendar's layer of the date data, the style patterns with CLDR's `atTime` joins (row T12)
+    and the components' best pattern through the pattern generator (row T13) - and `resolvedOptions`' components from the
+    selected pattern (row T7), with no hour cycle for a pattern without an hour (row T8, decision D33 (b)). The formats of
+    Temporal's types (the proposal's GetDateTimeFormat and AdjustDateTimeStyleFormat), and HandleDateTimeValue and the
+    range's checks over a `DateTimeValue` of `DateTimeValueKind`, a Number or a Temporal object's slots: a plain value
+    written at UTC (`377fb80e`, row T38), the calendar checked before the type's fields (row T39);
+  - **`DateTimeFormatter`**, with `DateTimePart`: FormatDateTimePattern as ICU's SimpleDateFormat writes a pattern - names in
+    the data locale and calendar (rows T14 and T35), a calendar's fields and the day's weekday (row T34), a numbering
+    system's digits (row T37), flexible day periods with noon (rows T17 to T20) - and PartitionDateTimeRangePattern as ICU's
+    DateIntervalFormat writes a range over every field of the two dates (rows T29 to T31), each charged its output's length;
+    behind them `DateTimePatternGenerator`, `DateIntervalFormatter` and `ZoneNamer` (specific, generic, partial-location and
+    location names over CLDR's metazone history, and the localized GMT format with seconds, rows T22 to T26);
+  - **`ResolvedTimeZone`**, with `TimeZoneKind`: a `timeZone` option's String resolved to an offset or an available named
+    time zone, answering both the identifier as given in the database's case, which [[TimeZone]] reports, and its primary,
+    by which the zone is named (decision D15; row Z8, a correction of Broiler.VM, and row T26, which keeps Broiler.VM's
+    names); one unit charged per code unit of the option;
+  - **`DateTimeData`**: the locale data, zones and calendars an engine hands every format, with the pattern generators and
+    the zone names made once;
+  - **`ILocaleData`** gains the metazone questions `MetazonePeriods` (with `MetazonePeriod`), `GoldenZone` and `PrimaryZone`,
+    which `TableLocaleData` decodes from the `MetaZones` table and `CompositeLocaleData` asks as world data;
+  - **`IntlStatus`** gains `TimeZoneOffsetHasSeconds`, `InvalidTimeZone`, `StyleWithComponents`, `DateFormatWithTimeStyle`,
+    `TimeFormatWithDateStyle`, `TimeValueOutOfRange`, `TemporalTypeNotFormatted`, `TemporalCalendarMismatch`,
+    `ZonedDateTimeNotFormatted` and `RangeOfDifferentTypes`.
+
+  The library-level runner answers sub-area (d)'s vectors, `intl/date-times.vectors`' fourteen operations but the engine-level
+  script forms, and the Native AOT probe holds them; the option reads and their spies, the bound `format`, the legacy
+  constructor, ToDateTimeFormattable's ToNumber, a Temporal object's slots, the parts arrays and the default zone stay the
+  engines'.
 - `Broiler.ECMAScript.Conformance` (test-only, not packed): `IVectorRecordLibrary`, a library the library-level runner
   hands each vector whole, script included, which `LibraryRun.Run` calls in place of the operation and the decoded
   inputs (stage SJL-9.3b): the Intl area's sub-area (b) vectors give their options and arguments in the script alone.
@@ -218,9 +257,11 @@ None.
 
 None: no engine reads the Intl generator, its tables, the Intl library or the frontend yet. Broiler.VM regenerates
 its table with the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone
-SJL-9.5, whose own records list what each observes; rows L9 and L18's corrections move Broiler.VM's answers when it
+SJL-9.5, whose own records list what each observes; rows L9, L18 and Z8's corrections move Broiler.VM's answers when it
 cuts over to the library, at SJL-9.4. The frontend accepts no source before stage 4c, refusing from stage 4b only a
 source the lexical grammar refuses, and neither engine references it before SJL-13.3's step 1 and SJL-14's bridge.
+*(Revised 2026-11-02, at SJL-9.3d, when the date-time format's zone resolution was added; the clause read "rows L9 and
+L18's corrections move Broiler.VM's answers".)*
 *(Revised 2026-11-01, at SJL-13.2b, when the tokenizer was added; the sentence read "The frontend answers no source
 before stage 4c, and neither engine references it before SJL-13.3's step 1 and SJL-14's bridge.")* *(Revised
 2026-11-01, at SJL-13.2a, when the frontend was added; it

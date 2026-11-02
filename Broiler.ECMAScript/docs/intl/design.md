@@ -9,7 +9,7 @@ home, `Broiler.ECMAScript/data/intl/`, and generator, in `Broiler.ECMAScript.Gen
 or the home's data exists. **Revised:** 2026-10-27, at stage SJL-9.3a, by dated notes on "Why there is no project yet",
 the library's project now existing, and on sections 1 and 5, the composite's parent walk and its secondary provider, and
 week data keyed by region; and on 2026-11-01, at stage SJL-9.3b, by a dated note on section 1's sub-area (b), and the same
-day, at stage SJL-9.3c, by a dated note on its sub-area (c) ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
+day, at stage SJL-9.3c, by a dated note on its sub-area (c), and on 2026-11-02, at stage SJL-9.3d, by a dated note on its sub-area (d) ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
 both roles (Broiler.VM's exception EX-30), and nothing here has been read by anyone but its author.
 
 **What this document is.** The Intl library's design document in its home, one of the three places SJL-9.1 files the
@@ -171,6 +171,45 @@ state, so that sub-areas (d) and (e), SJL-9.3f's packing and the cut-overs inher
 - **Three Unicode classifications are written out**, as Broiler.VM's formatter writes them: ICU's default-ignorable set,
   which a field's ends are trimmed of, Pattern_White_Space, which a range's separator is tested against, and the White_Space
   that Broiler.VM's `string.Trim()` read, so that no platform table is read (rule SL4).
+
+*(Noted 2026-11-02, at SJL-9.3d: sub-area (d) as built, and the readings its code makes that the item above does not
+state, so that sub-area (e), SJL-9.3f's packing and the cut-overs inherit them knowingly. Its public names are
+`DateTimeFormat` with its records `DateTimeFormatOptions`, `DateTimeComponents`, `DateTimeValue` and the enumerations
+`DateTimeRequired`, `DateTimeDefaults` and `DateTimeValueKind`; `DateTimeFormatter` with `DateTimePart`; `ResolvedTimeZone`
+with `TimeZoneKind`; and `DateTimeData`. The item's `DateTimePatternGenerator`, `DateIntervalFormatter` and `ZoneNamer` are
+the library's internal types behind `DateTimeFormatter`, and its day periods and hour cycles are steps of
+`DateTimeFormatter` and `DateTimeFormat`, not types.)*
+- **The formats read at the data locale**, as sub-area (c)'s do: a calendar's layer of the date data, the decimal symbol a
+  fractional second's generator takes and a region's name in a zone's location name at ResolveLocale's [[DataLocale]], where
+  Broiler.VM read the data locale's language; the day period rules by the data locale's chain, which the composite walks to
+  its language. For Broiler.VM's tables the two read the same lines; for Broiler.JS's, `de-AT`, `en-GB` or `fr-CA` read their
+  own (rows T10, T15, T16 and T22, data policy). The region whose hour cycle and golden zones apply is the data locale's region,
+  or its language's likely region, as Broiler.VM reads it.
+- **The metazone data is three questions of `ILocaleData`**: a zone's metazone periods, a metazone's golden zone in a region,
+  and a country's primary zone, world data that `TableLocaleData` decodes from the `MetaZones` table and `CompositeLocaleData`
+  asks of the shared data and then the secondary provider, so that no table is read outside the provider. A period's bounds
+  are decoded as Broiler.VM's `JsZoneNames` decoded them, 1970 and 9999 where CLDR states none.
+- **The `nu` values put the locale's default numbering system first**, the values `NumberFormatter.NumberingSystemKeyValues`
+  gives (decision D13), where Broiler.VM's date-time format put `latn` first; its tables' locales' default is `latn`, so for
+  them the lists are the same, and Broiler.JS's `ar-EG` resolves `arab` (row T37, data policy).
+- **The zone is named by its primary identifier** (decision D15): `ResolvedTimeZone` answers the identifier as given in the
+  database's case and its primary; `DateTimeFormat.TimeZone` is the identifier, and every name the formatter writes - the
+  specific, generic, partial-location and location names, and the identifier a `VV` field would write - is the primary's.
+  `ResolvedTimeZone.Resolve` charges one unit per code unit of the option, where Broiler.VM charges nothing, so Broiler.VM's
+  adapter passes a meter that charges nothing there (row L43's reading); the formatter charges Broiler.VM's unit, the output's
+  length, once per String or range, `FormatToParts` and `Format` alike. The pattern search charges nothing, as in Broiler.VM:
+  its work is bounded by the skeleton, whose fields Table 16 bounds, and by the data, not by the caller's input.
+- **What stays the engine's**: the option reads in CreateDateTimeFormat's order, the `calendar` and `numberingSystem` options'
+  type checks (`LocaleId.IsUnicodeType`) and GetNumberOption's range; ResolveLocale's matching; the default zone, UTC in
+  Broiler.VM and the host's in Broiler.JS (row T11); `Temporal.ZonedDateTime.prototype.toLocaleString`'s refusal of a
+  `timeZone` option; ToDateTimeFormattable's ToNumber and the reading of a Temporal object's slots into a `DateTimeValue`;
+  `formatRange`'s refusal of an `undefined` end; `Date.prototype.toLocale*String`'s "Invalid Date"; the bound `format`, the
+  legacy constructor (row T5) and the parts arrays with their per-part charge. A time value the formatter is handed is one
+  TimeClip keeps; any other is a precondition broken (`ArgumentOutOfRangeException`), the engine's `RangeError` having come
+  first through `HandleDateTimeValue`.
+- **One comparison keeps .NET's ordinal casing**: `ZoneNamer` compares a zone's standard name with its generic name ignoring
+  case by `StringComparison.OrdinalIgnoreCase`, as Broiler.VM does, which no culture reaches (decision D19 names the
+  culture-sensitive calls; this is not one), so that no answer moves.
 
 Each takes **resolved options as records**, never an options object, and answers strings, parts records or a status
 (conventions 2 and 3). Its code takes no culture call: what Broiler.VM's code does today through `ToUpperInvariant`,
@@ -421,4 +460,8 @@ charged through FormatNumericToString, plural rules selected by language, and th
 "Revised" line gains that stage's note, ending where it read "a dated note on section 1's sub-area (b) ("Corrections" lists
 them)."; and section 1 gains a dated note on sub-area (c): its names, and seven readings - the data locale, a numbering
 system's own symbols, the `nu` values' default, the charges, what stays the engine's, a missing relative-time pattern, and
-the Unicode classifications written out. Nothing else here is changed.
+the Unicode classifications written out. *(Extended 2026-11-02, at SJL-9.3d; the sentence after the list read "Nothing else
+here is changed.")* The header's "Revised" line gains that stage's note, ending where it read "a dated note on its sub-area (c)
+("Corrections" lists them)."; and section 1 gains a dated note on sub-area (d): its names, and six readings - the data
+locale, the metazone questions, the `nu` values' default, the zone named by its primary with the charges, what stays the
+engine's, and the one ordinal comparison kept. Nothing else here is changed.
