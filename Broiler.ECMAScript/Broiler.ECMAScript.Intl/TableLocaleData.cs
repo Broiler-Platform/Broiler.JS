@@ -21,6 +21,7 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using Broiler.ECMAScript.Time;
 
 namespace Broiler.ECMAScript.Intl;
 
@@ -79,6 +80,8 @@ public sealed class TableLocaleData : ILocaleData
 
     private readonly Lazy<LocaleInfoTables> localeInfo;
 
+    private readonly Lazy<MetazoneTables> metazones;
+
     /// <summary>Creates the decoder over a data set; nothing is decoded until a question needs it.</summary>
     /// <param name="data">The tables, which answer the same bytes for the life of the process.</param>
     /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
@@ -95,6 +98,7 @@ public sealed class TableLocaleData : ILocaleData
         numbers = new(ReadNumbers);
         dates = new(ReadDates);
         localeInfo = new(ReadLocaleInfo);
+        metazones = new(ReadMetazones);
     }
 
     /// <summary>The CLDR release the tables were generated from, as the data set states it (convention 13).</summary>
@@ -340,6 +344,28 @@ public sealed class TableLocaleData : ILocaleData
     {
         ArgumentNullException.ThrowIfNull(language);
         return dates.Value.DayPeriods.TryGetValue(language, out var rules) ? rules.AsReadOnly() : null;
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone)
+    {
+        ArgumentNullException.ThrowIfNull(zone);
+        return metazones.Value.Periods.TryGetValue(zone, out var periods) ? periods.AsReadOnly() : null;
+    }
+
+    /// <inheritdoc/>
+    public string? GoldenZone(string metazone, string region)
+    {
+        ArgumentNullException.ThrowIfNull(metazone);
+        ArgumentNullException.ThrowIfNull(region);
+        return metazones.Value.Golden.TryGetValue(metazone + "|" + region, out var zone) ? zone : null;
+    }
+
+    /// <inheritdoc/>
+    public string? PrimaryZone(string region)
+    {
+        ArgumentNullException.ThrowIfNull(region);
+        return metazones.Value.PrimaryZones.TryGetValue(region, out var zone) ? zone : null;
     }
 
     /// <summary>
@@ -646,6 +672,58 @@ public sealed class TableLocaleData : ILocaleData
 
     // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=2; Fingerprint=B27D7D
     // Broiler-Human:        PENDING
+    /// <summary>
+    /// Decodes the metazone table, as Broiler.VM's <c>JsZoneNames</c> reads it: a zone's periods (<c>z</c>), a metazone's golden
+    /// zone in a region (<c>g</c>) and a country's primary zone (<c>p</c>); a period's bound is <c>yyyy-MM-dd HH:mm</c> UTC, and
+    /// an empty one the start of 1970 or the end of 9999, as ICU reads CLDR's.
+    /// </summary>
+    private MetazoneTables ReadMetazones()
+    {
+        var tables = new MetazoneTables();
+
+        foreach (var line in IntlTableText.Lines(data.Table(IntlTable.MetaZones)))
+        {
+            var fields = line.Split('|');
+
+            switch (fields[0])
+            {
+                case "z" when fields.Length == 5:
+                    if (!tables.Periods.TryGetValue(fields[1], out var list))
+                    {
+                        tables.Periods[fields[1]] = list = [];
+                    }
+
+                    list.Add(new MetazonePeriod(fields[2].Length == 0 ? 0 : MetazoneTime(fields[2]), fields[3].Length == 0 ? MetazoneTables.NoEnd : MetazoneTime(fields[3]), fields[4]));
+                    break;
+                case "g" when fields.Length == 4:
+                    tables.Golden[fields[1] + "|" + fields[2]] = fields[3];
+                    break;
+                case "p" when fields.Length == 3:
+                    tables.PrimaryZones[fields[1]] = fields[2];
+                    break;
+                default:
+                    throw new InvalidDataException("The MetaZones table holds a line of another form: " + line);
+            }
+        }
+
+        return tables;
+    }
+
+    /// <summary>A metazone period's bound, <c>yyyy-MM-dd HH:mm</c> UTC, in milliseconds since the epoch.</summary>
+    private static long MetazoneTime(string text)
+    {
+        static int Number(string text, int at, int length) =>
+            int.Parse(text.AsSpan(at, length), NumberStyles.None, NumberFormatInfo.InvariantInfo);
+
+        if (text.Length != 16)
+        {
+            throw new InvalidDataException("A metazone period's bound is not yyyy-MM-dd HH:mm: " + text);
+        }
+
+        var days = IsoCalendarMath.EpochDays(Number(text, 0, 4), Number(text, 5, 2), Number(text, 8, 2));
+        return ((days * 1440) + (Number(text, 11, 2) * 60) + Number(text, 14, 2)) * 60_000;
+    }
+
     private LocaleInfoTables ReadLocaleInfo()
     {
         var info = new LocaleInfoTables();
@@ -825,5 +903,18 @@ public sealed class TableLocaleData : ILocaleData
         // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=540785
         // Broiler-Human:        PENDING
         internal HashSet<string> DisplayNameLocales { get; } = new(StringComparer.Ordinal);
+    }
+
+    /// <summary>The metazone table, decoded.</summary>
+    private sealed class MetazoneTables
+    {
+        /// <summary>The end of a period CLDR states without one: 9999-12-31 23:59 UTC.</summary>
+        internal const long NoEnd = 253_402_300_740_000L;
+
+        internal Dictionary<string, List<MetazonePeriod>> Periods { get; } = new(StringComparer.Ordinal);
+
+        internal Dictionary<string, string> Golden { get; } = new(StringComparer.Ordinal);
+
+        internal Dictionary<string, string> PrimaryZones { get; } = new(StringComparer.Ordinal);
     }
 }

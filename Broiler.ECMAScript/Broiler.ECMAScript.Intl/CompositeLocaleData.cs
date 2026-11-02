@@ -38,7 +38,8 @@ namespace Broiler.ECMAScript.Intl;
 /// </para>
 /// <para>
 /// <b>A question about the world's data</b> - likely subtags, aliases, extensions, a region's hour cycles and week, a
-/// script's direction, currency digits and numbering systems - asks the shared data and then the secondary provider. The
+/// script's direction, currency digits and numbering systems, and from stage SJL-9.3d a zone's metazones, a metazone's golden
+/// zones and a country's primary zone - asks the shared data and then the secondary provider. The
 /// lists the shared data names (<see cref="Locales"/>, <see cref="CurrencyCodes"/>, <see cref="NumberingSystems"/>) are
 /// the shared data's alone: the available locales are an engine's provider's (decision D7), not a data provider's.
 /// </para>
@@ -255,6 +256,15 @@ public sealed class CompositeLocaleData : ILocaleData
     // Broiler-Human:        PENDING
     public IReadOnlyList<DayPeriodRule>? DayPeriods(string language) =>
         Resolve(IntlTable.DayPeriods, language, (data, tag) => data.DayPeriods(tag));
+
+    /// <inheritdoc/>
+    public IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone) => shared.MetazonePeriods(zone) ?? secondary?.MetazonePeriods(zone);
+
+    /// <inheritdoc/>
+    public string? GoldenZone(string metazone, string region) => shared.GoldenZone(metazone, region) ?? secondary?.GoldenZone(metazone, region);
+
+    /// <inheritdoc/>
+    public string? PrimaryZone(string region) => shared.PrimaryZone(region) ?? secondary?.PrimaryZone(region);
 
     /// <summary>A question about a locale whose answer is a reference, asked along the chain.</summary>
     // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=High; Resources=1; Fingerprint=2867DD

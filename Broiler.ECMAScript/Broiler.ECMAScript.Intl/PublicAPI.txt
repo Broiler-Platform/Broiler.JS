@@ -15,16 +15,19 @@ Broiler.ECMAScript.Intl.CompositeLocaleData.DateValue(System.String, System.Stri
 Broiler.ECMAScript.Intl.CompositeLocaleData.DateValues(System.String, System.String) method System.Collections.Generic.IReadOnlyDictionary`2<System.String,System.String>
 Broiler.ECMAScript.Intl.CompositeLocaleData.DayPeriods(System.String) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.DayPeriodRule>
 Broiler.ECMAScript.Intl.CompositeLocaleData.DisplayName(System.String, System.String, System.String) method System.String
+Broiler.ECMAScript.Intl.CompositeLocaleData.GoldenZone(System.String, System.String) method System.String
 Broiler.ECMAScript.Intl.CompositeLocaleData.HoldsLocale(Broiler.ECMAScript.Intl.IntlTable, System.String) method System.Boolean
 Broiler.ECMAScript.Intl.CompositeLocaleData.HourCycles(System.String) method System.Nullable`1<Broiler.ECMAScript.Intl.RegionHourCycles>
 Broiler.ECMAScript.Intl.CompositeLocaleData.IsExtensionKey(System.Char, System.String) method System.Boolean
 Broiler.ECMAScript.Intl.CompositeLocaleData.IsRightToLeft(System.String) method System.Nullable`1<System.Boolean>
 Broiler.ECMAScript.Intl.CompositeLocaleData.LikelySubtags(System.String) method System.String
 Broiler.ECMAScript.Intl.CompositeLocaleData.ListPattern(System.String, System.String) method System.Nullable`1<Broiler.ECMAScript.Intl.ListPatterns>
+Broiler.ECMAScript.Intl.CompositeLocaleData.MetazonePeriods(System.String) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.MetazonePeriod>
 Broiler.ECMAScript.Intl.CompositeLocaleData.NumberValue(System.String, System.String) method System.String
 Broiler.ECMAScript.Intl.CompositeLocaleData.NumberingSystemDigits(System.String) method System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Intl.CompositeLocaleData.PluralRange(System.String, System.String, System.String) method System.String
 Broiler.ECMAScript.Intl.CompositeLocaleData.PluralRules(System.String, Broiler.ECMAScript.Intl.PluralRuleType) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.PluralRuleText>
+Broiler.ECMAScript.Intl.CompositeLocaleData.PrimaryZone(System.String) method System.String
 Broiler.ECMAScript.Intl.CompositeLocaleData.RelativeTime(System.String, System.String, System.String) method System.String
 Broiler.ECMAScript.Intl.CompositeLocaleData.TryExtensionType(System.Char, System.String, System.String, System.String&) method System.Boolean
 Broiler.ECMAScript.Intl.CompositeLocaleData.UnitPattern(System.String, System.String, System.String, System.String) method System.String
@@ -65,6 +68,153 @@ Broiler.ECMAScript.Intl.CurrencySign enum
 Broiler.ECMAScript.Intl.CurrencySign.Accounting = 1
 Broiler.ECMAScript.Intl.CurrencySign.Standard = 0
 Broiler.ECMAScript.Intl.CurrencySign.value__ field System.Int32
+Broiler.ECMAScript.Intl.DateTimeComponents sealed class : System.IEquatable`1<Broiler.ECMAScript.Intl.DateTimeComponents>
+Broiler.ECMAScript.Intl.DateTimeComponents..ctor() method System.Void
+Broiler.ECMAScript.Intl.DateTimeComponents.<Clone>$() method Broiler.ECMAScript.Intl.DateTimeComponents
+Broiler.ECMAScript.Intl.DateTimeComponents.Equals(Broiler.ECMAScript.Intl.DateTimeComponents) method System.Boolean
+Broiler.ECMAScript.Intl.DateTimeComponents.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Intl.DateTimeComponents.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Intl.DateTimeComponents.ToString() method virtual System.String
+Broiler.ECMAScript.Intl.DateTimeComponents.get_Day() method System.String
+Broiler.ECMAScript.Intl.DateTimeComponents.get_DayPeriod() method System.String
+Broiler.ECMAScript.Intl.DateTimeComponents.get_Era() method System.String
+Broiler.ECMAScript.Intl.DateTimeComponents.get_FractionalSecondDigits() method System.Nullable`1<System.Int32>
+Broiler.ECMAScript.Intl.DateTimeComponents.get_Hour() method System.String
+Broiler.ECMAScript.Intl.DateTimeComponents.get_Minute() method System.String
+Broiler.ECMAScript.Intl.DateTimeComponents.get_Month() method System.String
+Broiler.ECMAScript.Intl.DateTimeComponents.get_Names() method static System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Intl.DateTimeComponents.get_None() method static Broiler.ECMAScript.Intl.DateTimeComponents
+Broiler.ECMAScript.Intl.DateTimeComponents.get_Second() method System.String
+Broiler.ECMAScript.Intl.DateTimeComponents.get_TimeZoneName() method System.String
+Broiler.ECMAScript.Intl.DateTimeComponents.get_Weekday() method System.String
+Broiler.ECMAScript.Intl.DateTimeComponents.get_Year() method System.String
+Broiler.ECMAScript.Intl.DateTimeComponents.op_Equality(Broiler.ECMAScript.Intl.DateTimeComponents, Broiler.ECMAScript.Intl.DateTimeComponents) method static System.Boolean
+Broiler.ECMAScript.Intl.DateTimeComponents.op_Inequality(Broiler.ECMAScript.Intl.DateTimeComponents, Broiler.ECMAScript.Intl.DateTimeComponents) method static System.Boolean
+Broiler.ECMAScript.Intl.DateTimeComponents.set_Day(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeComponents.set_DayPeriod(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeComponents.set_Era(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeComponents.set_FractionalSecondDigits(System.Nullable`1<System.Int32>) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeComponents.set_Hour(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeComponents.set_Minute(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeComponents.set_Month(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeComponents.set_Second(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeComponents.set_TimeZoneName(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeComponents.set_Weekday(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeComponents.set_Year(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeData sealed class
+Broiler.ECMAScript.Intl.DateTimeData..ctor(Broiler.ECMAScript.Intl.ILocaleData, Broiler.ECMAScript.Time.ITimeZoneDatabase, Broiler.ECMAScript.Temporal.TemporalCalendars) method System.Void
+Broiler.ECMAScript.Intl.DateTimeData.get_Calendars() method Broiler.ECMAScript.Temporal.TemporalCalendars
+Broiler.ECMAScript.Intl.DateTimeData.get_Data() method Broiler.ECMAScript.Intl.ILocaleData
+Broiler.ECMAScript.Intl.DateTimeData.get_TimeZones() method Broiler.ECMAScript.Time.ITimeZoneDatabase
+Broiler.ECMAScript.Intl.DateTimeDefaults enum
+Broiler.ECMAScript.Intl.DateTimeDefaults.All = 2
+Broiler.ECMAScript.Intl.DateTimeDefaults.Date = 0
+Broiler.ECMAScript.Intl.DateTimeDefaults.Time = 1
+Broiler.ECMAScript.Intl.DateTimeDefaults.value__ field System.Int32
+Broiler.ECMAScript.Intl.DateTimeFormat sealed class
+Broiler.ECMAScript.Intl.DateTimeFormat.Create(Broiler.ECMAScript.Intl.DateTimeData, Broiler.ECMAScript.Intl.ResolvedLocale, Broiler.ECMAScript.Intl.DateTimeFormatOptions, Broiler.ECMAScript.Intl.DateTimeFormat&) method static Broiler.ECMAScript.Intl.IntlStatus
+Broiler.ECMAScript.Intl.DateTimeFormat.HandleDateTimeRange(Broiler.ECMAScript.Intl.DateTimeValue, Broiler.ECMAScript.Intl.DateTimeValue, Broiler.ECMAScript.Intl.DateTimeFormatter&, System.Double&, System.Double&) method Broiler.ECMAScript.Intl.IntlStatus
+Broiler.ECMAScript.Intl.DateTimeFormat.HandleDateTimeValue(Broiler.ECMAScript.Intl.DateTimeValue, Broiler.ECMAScript.Intl.DateTimeFormatter&, System.Double&) method Broiler.ECMAScript.Intl.IntlStatus
+Broiler.ECMAScript.Intl.DateTimeFormat.NumberingSystemKeyValues(Broiler.ECMAScript.Intl.ILocaleData, System.String) method static System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Intl.DateTimeFormat.get_Calendar() method System.String
+Broiler.ECMAScript.Intl.DateTimeFormat.get_CalendarKeyValues() method static System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Intl.DateTimeFormat.get_DateStyle() method System.String
+Broiler.ECMAScript.Intl.DateTimeFormat.get_ForZonedDateTime() method System.Boolean
+Broiler.ECMAScript.Intl.DateTimeFormat.get_Formatter() method Broiler.ECMAScript.Intl.DateTimeFormatter
+Broiler.ECMAScript.Intl.DateTimeFormat.get_Hour12() method System.Nullable`1<System.Boolean>
+Broiler.ECMAScript.Intl.DateTimeFormat.get_HourCycle() method System.String
+Broiler.ECMAScript.Intl.DateTimeFormat.get_HourCycleKeyValues() method static System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Intl.DateTimeFormat.get_Locale() method System.String
+Broiler.ECMAScript.Intl.DateTimeFormat.get_NumberingSystem() method System.String
+Broiler.ECMAScript.Intl.DateTimeFormat.get_ResolvedComponents() method System.Collections.Generic.IReadOnlyList`1<System.Collections.Generic.KeyValuePair`2<System.String,System.String>>
+Broiler.ECMAScript.Intl.DateTimeFormat.get_TimeStyle() method System.String
+Broiler.ECMAScript.Intl.DateTimeFormat.get_TimeZone() method System.String
+Broiler.ECMAScript.Intl.DateTimeFormatOptions sealed class : System.IEquatable`1<Broiler.ECMAScript.Intl.DateTimeFormatOptions>
+Broiler.ECMAScript.Intl.DateTimeFormatOptions..ctor() method System.Void
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.<Clone>$() method Broiler.ECMAScript.Intl.DateTimeFormatOptions
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.Equals(Broiler.ECMAScript.Intl.DateTimeFormatOptions) method System.Boolean
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.ToString() method virtual System.String
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.get_Components() method Broiler.ECMAScript.Intl.DateTimeComponents
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.get_DateStyle() method System.String
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.get_Defaults() method Broiler.ECMAScript.Intl.DateTimeDefaults
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.get_ForZonedDateTime() method System.Boolean
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.get_Hour12() method System.Nullable`1<System.Boolean>
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.get_Required() method Broiler.ECMAScript.Intl.DateTimeRequired
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.get_TimeStyle() method System.String
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.get_TimeZone() method Broiler.ECMAScript.Intl.ResolvedTimeZone
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.op_Equality(Broiler.ECMAScript.Intl.DateTimeFormatOptions, Broiler.ECMAScript.Intl.DateTimeFormatOptions) method static System.Boolean
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.op_Inequality(Broiler.ECMAScript.Intl.DateTimeFormatOptions, Broiler.ECMAScript.Intl.DateTimeFormatOptions) method static System.Boolean
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.set_Components(Broiler.ECMAScript.Intl.DateTimeComponents) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.set_DateStyle(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.set_Defaults(Broiler.ECMAScript.Intl.DateTimeDefaults) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.set_ForZonedDateTime(System.Boolean) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.set_Hour12(System.Nullable`1<System.Boolean>) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.set_Required(Broiler.ECMAScript.Intl.DateTimeRequired) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.set_TimeStyle(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeFormatOptions.set_TimeZone(Broiler.ECMAScript.Intl.ResolvedTimeZone) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeFormatter sealed class
+Broiler.ECMAScript.Intl.DateTimeFormatter.Format(System.Double, Broiler.ECMAScript.WorkCharge) method System.String
+Broiler.ECMAScript.Intl.DateTimeFormatter.FormatRange(System.Double, System.Double, Broiler.ECMAScript.WorkCharge) method System.String
+Broiler.ECMAScript.Intl.DateTimeFormatter.FormatRangeToParts(System.Double, System.Double, Broiler.ECMAScript.WorkCharge) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.DateTimePart>
+Broiler.ECMAScript.Intl.DateTimeFormatter.FormatToParts(System.Double, Broiler.ECMAScript.WorkCharge) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.DateTimePart>
+Broiler.ECMAScript.Intl.DateTimeFormatter.get_Pattern() method System.String
+Broiler.ECMAScript.Intl.DateTimeFormatter.get_ResolvedTimeZone() method Broiler.ECMAScript.Intl.ResolvedTimeZone
+Broiler.ECMAScript.Intl.DateTimeFormatter.get_TimeZone() method System.String
+Broiler.ECMAScript.Intl.DateTimePart sealed class : System.IEquatable`1<Broiler.ECMAScript.Intl.DateTimePart>
+Broiler.ECMAScript.Intl.DateTimePart..ctor(System.String, System.String, System.String) method System.Void
+Broiler.ECMAScript.Intl.DateTimePart.<Clone>$() method Broiler.ECMAScript.Intl.DateTimePart
+Broiler.ECMAScript.Intl.DateTimePart.Deconstruct(System.String&, System.String&, System.String&) method System.Void
+Broiler.ECMAScript.Intl.DateTimePart.Equals(Broiler.ECMAScript.Intl.DateTimePart) method System.Boolean
+Broiler.ECMAScript.Intl.DateTimePart.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Intl.DateTimePart.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Intl.DateTimePart.ToString() method virtual System.String
+Broiler.ECMAScript.Intl.DateTimePart.get_Source() method System.String
+Broiler.ECMAScript.Intl.DateTimePart.get_Type() method System.String
+Broiler.ECMAScript.Intl.DateTimePart.get_Value() method System.String
+Broiler.ECMAScript.Intl.DateTimePart.op_Equality(Broiler.ECMAScript.Intl.DateTimePart, Broiler.ECMAScript.Intl.DateTimePart) method static System.Boolean
+Broiler.ECMAScript.Intl.DateTimePart.op_Inequality(Broiler.ECMAScript.Intl.DateTimePart, Broiler.ECMAScript.Intl.DateTimePart) method static System.Boolean
+Broiler.ECMAScript.Intl.DateTimePart.set_Source(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimePart.set_Type(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimePart.set_Value(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DateTimeRequired enum
+Broiler.ECMAScript.Intl.DateTimeRequired.Any = 0
+Broiler.ECMAScript.Intl.DateTimeRequired.Date = 1
+Broiler.ECMAScript.Intl.DateTimeRequired.Time = 2
+Broiler.ECMAScript.Intl.DateTimeRequired.value__ field System.Int32
+Broiler.ECMAScript.Intl.DateTimeValue struct : System.IEquatable`1<Broiler.ECMAScript.Intl.DateTimeValue>
+Broiler.ECMAScript.Intl.DateTimeValue.Equals(Broiler.ECMAScript.Intl.DateTimeValue) method System.Boolean
+Broiler.ECMAScript.Intl.DateTimeValue.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Intl.DateTimeValue.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Intl.DateTimeValue.Instant(System.Numerics.BigInteger) method static Broiler.ECMAScript.Intl.DateTimeValue
+Broiler.ECMAScript.Intl.DateTimeValue.Number(System.Double) method static Broiler.ECMAScript.Intl.DateTimeValue
+Broiler.ECMAScript.Intl.DateTimeValue.PlainDate(Broiler.ECMAScript.Time.IsoDate, System.String) method static Broiler.ECMAScript.Intl.DateTimeValue
+Broiler.ECMAScript.Intl.DateTimeValue.PlainDateTime(Broiler.ECMAScript.Time.IsoDateTime, System.String) method static Broiler.ECMAScript.Intl.DateTimeValue
+Broiler.ECMAScript.Intl.DateTimeValue.PlainMonthDay(Broiler.ECMAScript.Time.IsoDate, System.String) method static Broiler.ECMAScript.Intl.DateTimeValue
+Broiler.ECMAScript.Intl.DateTimeValue.PlainTime(Broiler.ECMAScript.Time.IsoTime) method static Broiler.ECMAScript.Intl.DateTimeValue
+Broiler.ECMAScript.Intl.DateTimeValue.PlainYearMonth(Broiler.ECMAScript.Time.IsoDate, System.String) method static Broiler.ECMAScript.Intl.DateTimeValue
+Broiler.ECMAScript.Intl.DateTimeValue.ToString() method virtual System.String
+Broiler.ECMAScript.Intl.DateTimeValue.ZonedDateTime(System.Numerics.BigInteger, System.String) method static Broiler.ECMAScript.Intl.DateTimeValue
+Broiler.ECMAScript.Intl.DateTimeValue.get_Calendar() method System.String
+Broiler.ECMAScript.Intl.DateTimeValue.get_Date() method Broiler.ECMAScript.Time.IsoDate
+Broiler.ECMAScript.Intl.DateTimeValue.get_EpochNanoseconds() method System.Numerics.BigInteger
+Broiler.ECMAScript.Intl.DateTimeValue.get_IsTemporal() method System.Boolean
+Broiler.ECMAScript.Intl.DateTimeValue.get_Kind() method Broiler.ECMAScript.Intl.DateTimeValueKind
+Broiler.ECMAScript.Intl.DateTimeValue.get_Time() method System.Double
+Broiler.ECMAScript.Intl.DateTimeValue.get_TimeOfDay() method Broiler.ECMAScript.Time.IsoTime
+Broiler.ECMAScript.Intl.DateTimeValue.op_Equality(Broiler.ECMAScript.Intl.DateTimeValue, Broiler.ECMAScript.Intl.DateTimeValue) method static System.Boolean
+Broiler.ECMAScript.Intl.DateTimeValue.op_Inequality(Broiler.ECMAScript.Intl.DateTimeValue, Broiler.ECMAScript.Intl.DateTimeValue) method static System.Boolean
+Broiler.ECMAScript.Intl.DateTimeValueKind enum
+Broiler.ECMAScript.Intl.DateTimeValueKind.Instant = 6
+Broiler.ECMAScript.Intl.DateTimeValueKind.PlainDate = 1
+Broiler.ECMAScript.Intl.DateTimeValueKind.PlainDateTime = 5
+Broiler.ECMAScript.Intl.DateTimeValueKind.PlainMonthDay = 3
+Broiler.ECMAScript.Intl.DateTimeValueKind.PlainTime = 4
+Broiler.ECMAScript.Intl.DateTimeValueKind.PlainYearMonth = 2
+Broiler.ECMAScript.Intl.DateTimeValueKind.Time = 0
+Broiler.ECMAScript.Intl.DateTimeValueKind.ZonedDateTime = 7
+Broiler.ECMAScript.Intl.DateTimeValueKind.value__ field System.Int32
 Broiler.ECMAScript.Intl.DayPeriodRule struct : System.IEquatable`1<Broiler.ECMAScript.Intl.DayPeriodRule>
 Broiler.ECMAScript.Intl.DayPeriodRule..ctor(System.String, System.Int32, System.Int32, System.Boolean) method System.Void
 Broiler.ECMAScript.Intl.DayPeriodRule.Deconstruct(System.String&, System.Int32&, System.Int32&, System.Boolean&) method System.Void
@@ -231,16 +381,19 @@ Broiler.ECMAScript.Intl.ILocaleData.DateValue(System.String, System.String, Syst
 Broiler.ECMAScript.Intl.ILocaleData.DateValues(System.String, System.String) method abstract System.Collections.Generic.IReadOnlyDictionary`2<System.String,System.String>
 Broiler.ECMAScript.Intl.ILocaleData.DayPeriods(System.String) method abstract System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.DayPeriodRule>
 Broiler.ECMAScript.Intl.ILocaleData.DisplayName(System.String, System.String, System.String) method abstract System.String
+Broiler.ECMAScript.Intl.ILocaleData.GoldenZone(System.String, System.String) method abstract System.String
 Broiler.ECMAScript.Intl.ILocaleData.HoldsLocale(Broiler.ECMAScript.Intl.IntlTable, System.String) method abstract System.Boolean
 Broiler.ECMAScript.Intl.ILocaleData.HourCycles(System.String) method abstract System.Nullable`1<Broiler.ECMAScript.Intl.RegionHourCycles>
 Broiler.ECMAScript.Intl.ILocaleData.IsExtensionKey(System.Char, System.String) method abstract System.Boolean
 Broiler.ECMAScript.Intl.ILocaleData.IsRightToLeft(System.String) method abstract System.Nullable`1<System.Boolean>
 Broiler.ECMAScript.Intl.ILocaleData.LikelySubtags(System.String) method abstract System.String
 Broiler.ECMAScript.Intl.ILocaleData.ListPattern(System.String, System.String) method abstract System.Nullable`1<Broiler.ECMAScript.Intl.ListPatterns>
+Broiler.ECMAScript.Intl.ILocaleData.MetazonePeriods(System.String) method abstract System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.MetazonePeriod>
 Broiler.ECMAScript.Intl.ILocaleData.NumberValue(System.String, System.String) method abstract System.String
 Broiler.ECMAScript.Intl.ILocaleData.NumberingSystemDigits(System.String) method abstract System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Intl.ILocaleData.PluralRange(System.String, System.String, System.String) method abstract System.String
 Broiler.ECMAScript.Intl.ILocaleData.PluralRules(System.String, Broiler.ECMAScript.Intl.PluralRuleType) method abstract System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.PluralRuleText>
+Broiler.ECMAScript.Intl.ILocaleData.PrimaryZone(System.String) method abstract System.String
 Broiler.ECMAScript.Intl.ILocaleData.RelativeTime(System.String, System.String, System.String) method abstract System.String
 Broiler.ECMAScript.Intl.ILocaleData.TryExtensionType(System.Char, System.String, System.String, System.String&) method abstract System.Boolean
 Broiler.ECMAScript.Intl.ILocaleData.UnitPattern(System.String, System.String, System.String, System.String) method abstract System.String
@@ -280,6 +433,7 @@ Broiler.ECMAScript.Intl.IntlDecimalKind.PositiveInfinity = 2
 Broiler.ECMAScript.Intl.IntlDecimalKind.value__ field System.Int32
 Broiler.ECMAScript.Intl.IntlStatus enum
 Broiler.ECMAScript.Intl.IntlStatus.Completed = 0
+Broiler.ECMAScript.Intl.IntlStatus.DateFormatWithTimeStyle = 20
 Broiler.ECMAScript.Intl.IntlStatus.FractionDigitsOutOfOrder = 10
 Broiler.ECMAScript.Intl.IntlStatus.InvalidDisplayNamesCode = 16
 Broiler.ECMAScript.Intl.IntlStatus.InvalidKey = 7
@@ -288,14 +442,23 @@ Broiler.ECMAScript.Intl.IntlStatus.InvalidLanguageTag = 1
 Broiler.ECMAScript.Intl.IntlStatus.InvalidRegionSubtag = 4
 Broiler.ECMAScript.Intl.IntlStatus.InvalidRelativeTimeUnit = 15
 Broiler.ECMAScript.Intl.IntlStatus.InvalidScriptSubtag = 3
+Broiler.ECMAScript.Intl.IntlStatus.InvalidTimeZone = 18
 Broiler.ECMAScript.Intl.IntlStatus.InvalidType = 6
 Broiler.ECMAScript.Intl.IntlStatus.InvalidVariants = 5
 Broiler.ECMAScript.Intl.IntlStatus.NumberOptionOutOfRange = 8
 Broiler.ECMAScript.Intl.IntlStatus.RangeIsNotANumber = 13
+Broiler.ECMAScript.Intl.IntlStatus.RangeOfDifferentTypes = 26
 Broiler.ECMAScript.Intl.IntlStatus.RelativeTimeValueNotFinite = 14
 Broiler.ECMAScript.Intl.IntlStatus.RoundingIncrementNeedsEqualFractionDigits = 12
 Broiler.ECMAScript.Intl.IntlStatus.RoundingIncrementNeedsFractionDigits = 11
 Broiler.ECMAScript.Intl.IntlStatus.RoundingIncrementNotAdmitted = 9
+Broiler.ECMAScript.Intl.IntlStatus.StyleWithComponents = 19
+Broiler.ECMAScript.Intl.IntlStatus.TemporalCalendarMismatch = 24
+Broiler.ECMAScript.Intl.IntlStatus.TemporalTypeNotFormatted = 23
+Broiler.ECMAScript.Intl.IntlStatus.TimeFormatWithDateStyle = 21
+Broiler.ECMAScript.Intl.IntlStatus.TimeValueOutOfRange = 22
+Broiler.ECMAScript.Intl.IntlStatus.TimeZoneOffsetHasSeconds = 17
+Broiler.ECMAScript.Intl.IntlStatus.ZonedDateTimeNotFormatted = 25
 Broiler.ECMAScript.Intl.IntlStatus.value__ field System.Int32
 Broiler.ECMAScript.Intl.IntlTable enum
 Broiler.ECMAScript.Intl.IntlTable.Aliases = 2
@@ -544,6 +707,21 @@ Broiler.ECMAScript.Intl.LocaleWeekInfo.op_Equality(Broiler.ECMAScript.Intl.Local
 Broiler.ECMAScript.Intl.LocaleWeekInfo.op_Inequality(Broiler.ECMAScript.Intl.LocaleWeekInfo, Broiler.ECMAScript.Intl.LocaleWeekInfo) method static System.Boolean
 Broiler.ECMAScript.Intl.LocaleWeekInfo.set_FirstDay(System.Int32) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Intl.LocaleWeekInfo.set_Weekend(System.Collections.Generic.IReadOnlyList`1<System.Int32>) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.MetazonePeriod struct : System.IEquatable`1<Broiler.ECMAScript.Intl.MetazonePeriod>
+Broiler.ECMAScript.Intl.MetazonePeriod..ctor(System.Int64, System.Int64, System.String) method System.Void
+Broiler.ECMAScript.Intl.MetazonePeriod.Deconstruct(System.Int64&, System.Int64&, System.String&) method System.Void
+Broiler.ECMAScript.Intl.MetazonePeriod.Equals(Broiler.ECMAScript.Intl.MetazonePeriod) method System.Boolean
+Broiler.ECMAScript.Intl.MetazonePeriod.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Intl.MetazonePeriod.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Intl.MetazonePeriod.ToString() method virtual System.String
+Broiler.ECMAScript.Intl.MetazonePeriod.get_From() method System.Int64
+Broiler.ECMAScript.Intl.MetazonePeriod.get_Metazone() method System.String
+Broiler.ECMAScript.Intl.MetazonePeriod.get_To() method System.Int64
+Broiler.ECMAScript.Intl.MetazonePeriod.op_Equality(Broiler.ECMAScript.Intl.MetazonePeriod, Broiler.ECMAScript.Intl.MetazonePeriod) method static System.Boolean
+Broiler.ECMAScript.Intl.MetazonePeriod.op_Inequality(Broiler.ECMAScript.Intl.MetazonePeriod, Broiler.ECMAScript.Intl.MetazonePeriod) method static System.Boolean
+Broiler.ECMAScript.Intl.MetazonePeriod.set_From(System.Int64) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.MetazonePeriod.set_Metazone(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.MetazonePeriod.set_To(System.Int64) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Intl.NumberFormatOptions sealed class : System.IEquatable`1<Broiler.ECMAScript.Intl.NumberFormatOptions>
 Broiler.ECMAScript.Intl.NumberFormatOptions..ctor() method System.Void
 Broiler.ECMAScript.Intl.NumberFormatOptions.<Clone>$() method Broiler.ECMAScript.Intl.NumberFormatOptions
@@ -781,6 +959,14 @@ Broiler.ECMAScript.Intl.ResolvedPlural.op_Equality(Broiler.ECMAScript.Intl.Resol
 Broiler.ECMAScript.Intl.ResolvedPlural.op_Inequality(Broiler.ECMAScript.Intl.ResolvedPlural, Broiler.ECMAScript.Intl.ResolvedPlural) method static System.Boolean
 Broiler.ECMAScript.Intl.ResolvedPlural.set_FormattedString(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Intl.ResolvedPlural.set_PluralCategory(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.ResolvedTimeZone sealed class
+Broiler.ECMAScript.Intl.ResolvedTimeZone.Resolve(System.String, Broiler.ECMAScript.Time.ITimeZoneDatabase, Broiler.ECMAScript.Intl.ResolvedTimeZone&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Intl.IntlStatus
+Broiler.ECMAScript.Intl.ResolvedTimeZone.get_Identifier() method System.String
+Broiler.ECMAScript.Intl.ResolvedTimeZone.get_Kind() method Broiler.ECMAScript.Intl.TimeZoneKind
+Broiler.ECMAScript.Intl.ResolvedTimeZone.get_OffsetMinutes() method System.Int32
+Broiler.ECMAScript.Intl.ResolvedTimeZone.get_PrimaryIdentifier() method System.String
+Broiler.ECMAScript.Intl.ResolvedTimeZone.get_Rules() method Broiler.ECMAScript.Time.ITimeZoneRules
+Broiler.ECMAScript.Intl.ResolvedTimeZone.get_Utc() method static Broiler.ECMAScript.Intl.ResolvedTimeZone
 Broiler.ECMAScript.Intl.RoundingPriority enum
 Broiler.ECMAScript.Intl.RoundingPriority.Auto = 0
 Broiler.ECMAScript.Intl.RoundingPriority.LessPrecision = 2
@@ -806,16 +992,19 @@ Broiler.ECMAScript.Intl.TableLocaleData.DateValue(System.String, System.String, 
 Broiler.ECMAScript.Intl.TableLocaleData.DateValues(System.String, System.String) method System.Collections.Generic.IReadOnlyDictionary`2<System.String,System.String>
 Broiler.ECMAScript.Intl.TableLocaleData.DayPeriods(System.String) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.DayPeriodRule>
 Broiler.ECMAScript.Intl.TableLocaleData.DisplayName(System.String, System.String, System.String) method System.String
+Broiler.ECMAScript.Intl.TableLocaleData.GoldenZone(System.String, System.String) method System.String
 Broiler.ECMAScript.Intl.TableLocaleData.HoldsLocale(Broiler.ECMAScript.Intl.IntlTable, System.String) method System.Boolean
 Broiler.ECMAScript.Intl.TableLocaleData.HourCycles(System.String) method System.Nullable`1<Broiler.ECMAScript.Intl.RegionHourCycles>
 Broiler.ECMAScript.Intl.TableLocaleData.IsExtensionKey(System.Char, System.String) method System.Boolean
 Broiler.ECMAScript.Intl.TableLocaleData.IsRightToLeft(System.String) method System.Nullable`1<System.Boolean>
 Broiler.ECMAScript.Intl.TableLocaleData.LikelySubtags(System.String) method System.String
 Broiler.ECMAScript.Intl.TableLocaleData.ListPattern(System.String, System.String) method System.Nullable`1<Broiler.ECMAScript.Intl.ListPatterns>
+Broiler.ECMAScript.Intl.TableLocaleData.MetazonePeriods(System.String) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.MetazonePeriod>
 Broiler.ECMAScript.Intl.TableLocaleData.NumberValue(System.String, System.String) method System.String
 Broiler.ECMAScript.Intl.TableLocaleData.NumberingSystemDigits(System.String) method System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Intl.TableLocaleData.PluralRange(System.String, System.String, System.String) method System.String
 Broiler.ECMAScript.Intl.TableLocaleData.PluralRules(System.String, Broiler.ECMAScript.Intl.PluralRuleType) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.PluralRuleText>
+Broiler.ECMAScript.Intl.TableLocaleData.PrimaryZone(System.String) method System.String
 Broiler.ECMAScript.Intl.TableLocaleData.RelativeTime(System.String, System.String, System.String) method System.String
 Broiler.ECMAScript.Intl.TableLocaleData.TryExtensionType(System.Char, System.String, System.String, System.String&) method System.Boolean
 Broiler.ECMAScript.Intl.TableLocaleData.UnitPattern(System.String, System.String, System.String, System.String) method System.String
@@ -824,6 +1013,12 @@ Broiler.ECMAScript.Intl.TableLocaleData.get_CldrVersion() method System.String
 Broiler.ECMAScript.Intl.TableLocaleData.get_CurrencyCodes() method System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Intl.TableLocaleData.get_Locales() method System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Intl.TableLocaleData.get_NumberingSystems() method System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Intl.TimeZoneKind enum
+Broiler.ECMAScript.Intl.TimeZoneKind.Gmt = 1
+Broiler.ECMAScript.Intl.TimeZoneKind.Named = 3
+Broiler.ECMAScript.Intl.TimeZoneKind.Offset = 2
+Broiler.ECMAScript.Intl.TimeZoneKind.Utc = 0
+Broiler.ECMAScript.Intl.TimeZoneKind.value__ field System.Int32
 Broiler.ECMAScript.Intl.TrailingZeroDisplay enum
 Broiler.ECMAScript.Intl.TrailingZeroDisplay.Auto = 0
 Broiler.ECMAScript.Intl.TrailingZeroDisplay.StripIfInteger = 1
