@@ -110,7 +110,13 @@ internal static class IntlDataHome
 
     /// <summary>Broiler.JS's options: its list, and every numbering system's symbols (decision D21).</summary>
     internal static IntlGeneratorOptions BroilerJsOptions(string home) =>
-        new(ReadList(home, BroilerJsList)) { NumberingSymbols = IntlNumberingSymbols.EveryNumberingSystem };
+        new(ReadList(home, BroilerJsList))
+        {
+            NumberingSymbols = IntlNumberingSymbols.EveryNumberingSystem,
+
+            // BROILER.JS'S COLLATION TAILORINGS (milestone SJL-17.3; Broiler.VM's JSD-0084, decision E3).
+            Tailorings = IntlGeneratorOptions.BroilerJsTailorings,
+        };
 
     /// <summary>Broiler.VM's options: its list, and every other parameter at its default.</summary>
     internal static IntlGeneratorOptions BroilerVmOptions(string home) => new(ReadList(home, BroilerVmList));

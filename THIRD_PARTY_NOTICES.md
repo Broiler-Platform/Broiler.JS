@@ -91,6 +91,8 @@ contain three pieces of third-party code and one set of public-domain formulas, 
   SJL-9.3d its date-time formatting is ported the same way, from `JsDatePatternGenerator`, `JsDateIntervalFormat`,
   `JsDateTimeFormatter`, `JsZoneNames`, `JsDateData` and the engine-free steps of `JsRealm.DateTimeFormat`. At stage
   SJL-9.3e its duration formatting is ported the same way, from the engine-free steps of `JsRealm.DurationFormat`.
+  At milestone SJL-17.3 its collator is ported the same way, from `JsCollator`, `JsCollationData` and the engine-free
+  steps of `JsRealm.Intl`'s Collator at Broiler.VM's `4e6a41e9`.
   `Broiler.ECMAScript.Intl.Tests` (not packed) holds, under `Differential/Vm/`, test-only copies of Broiler.VM's code at
   `4cf9ca44` for the differential check of Broiler.VM's JSD-0082, decision D22, compiled into that project alone.
 - `Broiler.ECMAScript.Generation` holds the time data home's generator (milestone SJL-8.2): the tz pin
@@ -251,11 +253,17 @@ them into its own image; the probe is test code, never packed or shipped.
   combining classes and Unified_Ideograph from them.
 - **The generator's collation code** follows the Unicode Collation Algorithm's implicit weights and ICU's
   `CollationBuilder::setCaseBits` as Broiler.VM's generator described them; it reproduces no ICU code.
+  From milestone SJL-17.3 it also reads the reset `[before 1]`, extensions and the settings `[alternate shifted]` and
+  `[reorder]` as UTS #35 Part 5 (LDML collation) states them; it reproduces no ICU code. The archive's collation files
+  then include CLDR's `common/collation/es.xml`, `sv.xml` and `th.xml`, from the same tag, under the same licence, and
+  Broiler.JS's `collation-tailorings.bin` and `collation-settings.txt` are derived from them.
 
 *Added 2026-10-26, at milestone SJL-9.2b, when the data home's inputs and generator were added. Broiler.VM's
 `THIRD_PARTY_NOTICES.md` carries the CLDR and UCD entries for its own copies. Revised 2026-11-02, at stage SJL-9.3f,
 when the probe began to compile the tables into its image: the first paragraph's last sentence read "Until then nothing
-in this engine reads them."*
+in this engine reads them."* *Revised again 2026-11-02, at milestone SJL-17.3, when Broiler.JS's tailorings were added: the
+generator's collation bullet ended at "it reproduces no ICU code.", before the sentences on the rule syntax and the three
+collation files.*
 
 ## The reference datasets (`conformance/datasets/time/`)
 

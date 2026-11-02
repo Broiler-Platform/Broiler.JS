@@ -1,0 +1,2 @@
+th-standard|alternate|shifted
+th-standard|reorder|373B|377A|23EC

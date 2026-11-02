@@ -139,7 +139,7 @@ public class LibraryRunTests
     /// expectation, the engine whose providers the runner takes; but the engine-level ones, whose outcome is an engine's or
     /// another sub-area's. Every other Intl vector is not implemented yet, but sub-area (b)'s (from stage SJL-9.3b, the next
     /// test), sub-area (c)'s (from stage SJL-9.3c), sub-area (d)'s (from stage SJL-9.3d) and sub-area (e)'s (from stage SJL-9.3e),
-    /// and no other area's verdict moves: the Unicode
+    /// and the collation vectors (from milestone SJL-17.3), and no other area's verdict moves: the Unicode
     /// area's <c>String.prototype.toLocaleLowerCase</c>, the one operation name the two areas share, stays unanswered.
     /// </summary>
     [Fact]
@@ -162,7 +162,8 @@ public class LibraryRunTests
             engineLevel.Select(static v => v.Id).Order(System.StringComparer.Ordinal));
 
         Assert.All(results.Except(locales).Where(static r => !AlgorithmsLibrary.IsLibraryIntlValues(r.Vector) && !AlgorithmsLibrary.IsLibraryIntlNumbers(r.Vector)
-                && !AlgorithmsLibrary.IsLibraryIntlDateTimes(r.Vector) && !AlgorithmsLibrary.IsLibraryIntlDurations(r.Vector)),
+                && !AlgorithmsLibrary.IsLibraryIntlDateTimes(r.Vector) && !AlgorithmsLibrary.IsLibraryIntlDurations(r.Vector)
+                && !AlgorithmsLibrary.IsLibraryIntlCollation(r.Vector)),
             static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
 
         // Intl.NumberFormat.supportedLocalesOf: providers/0007 is the library's FilterLocales, held to Broiler.VM's per-engine
@@ -397,19 +398,15 @@ public class LibraryRunTests
     /// the host's zone through <c>Temporal.Now</c> (row T11), a constructor called without <c>new</c> (rows S2 and U18),
     /// StringListFromIterable's iteration of a list (row S2), whether the engine defines a built-in (row L37), and casing, which is
     /// Broiler.Unicode's, with the engine's default locale (row L35). No Intl operation is left unrouted. The collation vectors,
-    /// of the area <c>intl</c> under <c>intl/collation/</c> since corpus revision 33, are milestone SJL-17's, whose library
-    /// stage adds their route: this library has no collation, and each of them is not implemented.
+    /// of the area <c>intl</c> under <c>intl/collation/</c> since corpus revision 33, are answered too from milestone SJL-17.3,
+    /// which adds their route (<see cref="Every_collation_vector_gives_its_out_or_Broiler_VM_s_expectation"/>). <i>(Revised
+    /// 2026-11-02, at milestone SJL-17.3; the sentence read "are milestone SJL-17's, whose library stage adds their route: this
+    /// library has no collation, and each of them is not implemented", and the test set them aside.)</i>
     /// </summary>
     [Fact]
     public void Every_Intl_vector_is_answered_at_library_level_but_those_that_need_an_engine()
     {
-        var all = Home.Corpus.Records.Where(static v => v["area"] == "intl").ToList();
-        var collation = all.Where(static v => v.Id.StartsWith("intl/collation/", System.StringComparison.Ordinal)).ToList();
-        Assert.NotEmpty(collation);
-        Assert.All(LibraryRun.Run(collation, new AlgorithmsLibrary()), static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
-        Assert.All(collation, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntl(v), v.Id));
-
-        var vectors = all.Except(collation).ToList();
+        var vectors = Home.Corpus.Records.Where(static v => v["area"] == "intl").ToList();
         var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
 
         Assert.NotEmpty(vectors);
@@ -435,6 +432,34 @@ public class LibraryRunTests
                 "intl/values-and-plurals/digit-options/0003", "intl/values-and-plurals/math-value/0027", "intl/values-and-plurals/plurals/0081",
             ],
             engine.Select(static r => r.Vector.Id).Order(System.StringComparer.Ordinal));
+    }
+
+    /// <summary>
+    /// The collation vectors at library level (milestone SJL-17.3): every one is answered by the shared collator over Broiler.JS's
+    /// tables, and gives its <c>out</c>, or - the Han vectors whose answer moves with the order of unified ideographs across
+    /// blocks, <c>impl-defined</c> - Broiler.VM's <c>per-engine</c> expectation, UCA 17's implicit weights by block, the order the
+    /// owner's decision of 2026-11-02 on row O3 keeps for the library. No collation vector needs an engine. A tailoring vector
+    /// whose Broiler.VM expectation is its narrower locale list's gives its <c>out</c>, Broiler.JS's expectation, since the tables
+    /// carry JSD-0084's decision E3's tailorings.
+    /// </summary>
+    [Fact]
+    public void Every_collation_vector_gives_its_out_or_Broiler_VM_s_expectation()
+    {
+        var vectors = Home.Corpus.Records.Where(static v => v.Id.StartsWith(AlgorithmsLibrary.IntlCollationPrefix, System.StringComparison.Ordinal)).ToList();
+        Assert.Equal(2398, vectors.Count);
+        Assert.All(vectors, static v => Assert.True(AlgorithmsLibrary.IsLibraryIntl(v), v.Id));
+
+        var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
+        var failing = results.Where(static r => r.Verdict != Verdict.Match && !AlgorithmsLibrary.MatchesBroilerVmExpectation(r))
+            .Select(static r => r.Vector.Id + " expected: " + r.Expected + " got: " + r.Rendered)
+            .ToList();
+        Assert.True(failing.Count == 0, failing.Count + " fail:\n" + string.Join("\n", failing.Take(80)));
+
+        var vm = results.Where(static r => r.Verdict != Verdict.Match).ToList();
+        Assert.All(vm, static r => Assert.Equal("impl-defined", r.Vector.Class));
+        Assert.All(vm, static r => Assert.StartsWith("intl/collation/root/", r.Vector.Id, System.StringComparison.Ordinal));
+        Assert.All(vm, static r => Assert.Contains("O3", r.Vector["note"], System.StringComparison.Ordinal));
+        Assert.Equal(34, vm.Count);
     }
 
     /// <summary>

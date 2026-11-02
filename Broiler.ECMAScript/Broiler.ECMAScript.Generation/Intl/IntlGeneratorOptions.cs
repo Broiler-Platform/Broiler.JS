@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   5
-// Annotated:        5/5
+// Relevant units:   6
+// Annotated:        6/6
 // Exempt:           6
-// Human-reviewed:   0/5
+// Human-reviewed:   0/6
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       5
+// Unverified:       6
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -79,6 +79,17 @@ public sealed record IntlGeneratorOptions
     // Broiler-Human:        PENDING
     public static ImmutableArray<string> BroilerVmTailorings { get; } = ImmutableArray.Create("und-search", "de-phonebk", "de-search");
 
+    /// <summary>
+    /// Broiler.JS's collation tailorings (milestone SJL-17.3; Broiler.VM's JSD-0084, decision E3): Broiler.VM's three, then every
+    /// collation CLDR 48.2.0 gives for <c>es</c>, <c>sv</c> and <c>th</c>, each named <c>language-type</c> by its BCP 47 type
+    /// (<c>standard</c>, <c>search</c>, <c>trad</c>). <c>en</c> and <c>de</c>'s standard order are the root's, and CLDR gives them no
+    /// tailoring.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0084 E3 tailorings; IP=Low; Security=Low; Resources=0; Fingerprint=3A957F
+    // Broiler-Human:        PENDING
+    public static ImmutableArray<string> BroilerJsTailorings { get; } = ImmutableArray.Create(
+        "und-search", "de-phonebk", "de-search", "es-standard", "es-search", "es-trad", "sv-standard", "sv-search", "sv-trad", "th-standard");
+
     /// <summary>The embedding's locale list.</summary>
     public IntlLocaleList Locales { get; }
 
@@ -88,6 +99,10 @@ public sealed record IntlGeneratorOptions
     /// <summary>The calendars the date table carries a layer for, a subset of <see cref="BroilerVmCalendars"/> in its order; all of them by default.</summary>
     public ImmutableArray<string> Calendars { get; init; } = BroilerVmCalendars;
 
-    /// <summary>The collation tailorings, a subset of <see cref="BroilerVmTailorings"/> in its order; all of them by default.</summary>
+    /// <summary>
+    /// The collation tailorings, a subset of <see cref="BroilerJsTailorings"/> in its order; Broiler.VM's, <see cref="BroilerVmTailorings"/>,
+    /// by default. <i>(Revised 2026-11-02, at milestone SJL-17.3, which adds Broiler.JS's list; it read "a subset of
+    /// <see cref="BroilerVmTailorings"/> in its order; all of them by default".)</i>
+    /// </summary>
     public ImmutableArray<string> Tailorings { get; init; } = BroilerVmTailorings;
 }

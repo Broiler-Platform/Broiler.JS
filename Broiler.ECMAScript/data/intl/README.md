@@ -42,7 +42,12 @@ parent chain below root, the first up the chain, at the `contributed` level `cld
 `arabext` symbols from `common/main/root.xml`, under `und`. A formatter reads the locale's own line, then `und`'s, then
 the locale's `latn` symbol, which is what root's aliases say for a system root states no symbols for.
 Both carry the same global tables (likely subtags, aliases, extensions, currency digits, numbering systems,
-metazones, hour cycles, weeks, scripts and collation).
+metazones, hour cycles, weeks, scripts and collation). *(Revised 2026-11-02, at milestone SJL-17.3: both carry the same
+root collation, and Broiler.JS's tailorings are its own list, Broiler.VM's JSD-0084's decision E3 - Broiler.VM's three, root
+search and German phonebook and search, then every collation CLDR 48.2.0 gives for `es`, `sv` and `th`, with Thai's
+settings in `collation-settings.txt` - where Broiler.VM's stay its three (rule N28). The sentence read "Both carry the same
+global tables (likely subtags, aliases, extensions, currency digits, numbering systems, metazones, hour cycles, weeks,
+scripts and collation).")*
 
 ## The generated tables
 

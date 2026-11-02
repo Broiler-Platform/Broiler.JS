@@ -127,7 +127,7 @@ public static partial class CldrTableGenerator
     /// <param name="ucd">The UCD subset, read from files the caller verified against a pin.</param>
     /// <param name="options">The locale list and the other parameters.</param>
     /// <exception cref="InvalidDataException">The archive is not the one the pin describes, a file a table reads is not pinned, or a value is not one the table can carry.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=8; Fingerprint=E3BEF1
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=8; Fingerprint=92E567
     // Broiler-Falsified-If: tables are written from an archive the pin does not describe, or with Broiler.VM's options they differ from Broiler.VM's generator's
     // Broiler-Human:        PENDING
     public static IntlTables Generate(IntlCldrPin pin, IReadOnlyDictionary<string, byte[]> cldr, CldrUcd ucd, IntlGeneratorOptions options)
@@ -184,6 +184,15 @@ public static partial class CldrTableGenerator
                 false,
                 Tailoring.Encode(tailorings)),
         };
+
+        // A TAILORING'S SETTINGS (milestone SJL-17.3): a table Broiler.VM's data never carries, written only where a tailoring
+        // states one, so that Broiler.VM's three tailorings, which state none, write its tables as before (rule N28).
+        var settings = Tailoring.Settings(tailorings);
+
+        if (settings.Count > 0)
+        {
+            tables.Add(Text("CollationSettings", "The settings each tailoring states: tailoring, setting, values.", settings));
+        }
 
         return new IntlTables(pin.Version, pin.Values.TryGetValue("uca-version", out var uca) ? uca : string.Empty, tables.AsReadOnly(), archive.Absent());
     }
@@ -272,39 +281,58 @@ public static partial class CldrTableGenerator
         return new IntlGeneratedTable(name, summary, true, Encoding.ASCII.GetBytes(text.ToString()));
     }
 
-    /// <summary>The tailorings the options name, each built from its collation rules over the root.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=2AF9D9
+    /// <summary>
+    /// The tailorings the options name, each built from its collation rules over the root: a name is <c>language-type</c>, the
+    /// language's <c>common/collation</c> file (<c>und</c> is <c>root.xml</c>) and the collation's BCP 47 type, which names
+    /// CLDR's type (<c>phonebk</c> is <c>phonebook</c>, <c>trad</c> is <c>traditional</c>). An <c>[import]</c> names a
+    /// collation the same way, <c>language-u-co-type</c>.
+    /// </summary>
+    /// <remarks>
+    /// <i>(Revised 2026-11-02, at milestone SJL-17.3, which reads the names of Broiler.JS's list; the method built Broiler.VM's
+    /// three by name and refused a list that was not a subset of theirs in their order. The rules it hands the builder for those
+    /// three, and their imports, are the same text.)</i>
+    /// </remarks>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0084 E3 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=02DD79
     // Broiler-Human:        PENDING
     private static List<(string Name, Tailoring Tailoring)> Tailorings(RootCollation root, CldrUcd ucd, Archive archive, ImmutableArray<string> names)
     {
-        var rootXml = ArchiveReading.Decode(archive.Bytes(Root + "common/collation/root.xml"));
-        var deXml = ArchiveReading.Decode(archive.Bytes(Root + "common/collation/de.xml"));
-        var noImports = FrozenDictionary<string, string>.Empty;
-
-        if (names.Any(name => !IntlGeneratorOptions.BroilerVmTailorings.Contains(name, StringComparer.Ordinal)) ||
-            !names.SequenceEqual(IntlGeneratorOptions.BroilerVmTailorings.Where(names.Contains), StringComparer.Ordinal))
+        if (names.Any(name => !IntlGeneratorOptions.BroilerJsTailorings.Contains(name, StringComparer.Ordinal)) ||
+            !names.SequenceEqual(IntlGeneratorOptions.BroilerJsTailorings.Where(names.Contains), StringComparer.Ordinal))
         {
-            throw new InvalidDataException("the tailorings `" + string.Join(", ", names) + "` are not a subset of `" + string.Join(", ", IntlGeneratorOptions.BroilerVmTailorings) + "` in its order");
+            throw new InvalidDataException("the tailorings `" + string.Join(", ", names) + "` are not a subset of `" + string.Join(", ", IntlGeneratorOptions.BroilerJsTailorings) + "` in its order");
+        }
+
+        var files = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        string Rules(string language, string type)
+        {
+            if (!files.TryGetValue(language, out var xml))
+            {
+                xml = ArchiveReading.Decode(archive.Bytes(Root + "common/collation/" + (language == "und" ? "root" : language) + ".xml"));
+                files[language] = xml;
+            }
+
+            return CollationRules(xml, type switch
+            {
+                "phonebk" => "phonebook",
+                "trad" => "traditional",
+                _ => type,
+            });
+        }
+
+        // AN [import] NAMES A COLLATION language-u-co-type: und-u-co-search, de-u-co-phonebk and sv-u-co-standard.
+        string? Imported(string name)
+        {
+            var marker = name.IndexOf("-u-co-", StringComparison.Ordinal);
+            return marker <= 0 ? null : Rules(name[..marker], name[(marker + "-u-co-".Length)..]);
         }
 
         var built = new List<(string Name, Tailoring Tailoring)>();
 
         foreach (var name in names)
         {
-            built.Add((name, name switch
-            {
-                "und-search" => Tailoring.Build(root, ucd, CollationRules(rootXml, "search"), imports: noImports),
-                "de-phonebk" => Tailoring.Build(root, ucd, CollationRules(deXml, "phonebook"), imports: noImports),
-                _ => Tailoring.Build(
-                    root,
-                    ucd,
-                    CollationRules(deXml, "search"),
-                    imports: new Dictionary<string, string>(StringComparer.Ordinal)
-                    {
-                        ["und-u-co-search"] = CollationRules(rootXml, "search"),
-                        ["de-u-co-phonebk"] = CollationRules(deXml, "phonebook"),
-                    }),
-            }));
+            var dash = name.IndexOf('-', StringComparison.Ordinal);
+            built.Add((name, Tailoring.Build(root, ucd, Rules(name[..dash], name[(dash + 1)..]), Imported)));
         }
 
         return built;
