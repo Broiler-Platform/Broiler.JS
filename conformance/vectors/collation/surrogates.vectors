@@ -5,9 +5,9 @@
 # files, to the order the file gives them (ref:collationtest@1). The root's scripts and Han vectors are computed again
 # by the UCA over CLDR 48.2.0's allkeys_CLDR.txt with UCA 17's implicit weights (ref:ucaimplicit@1), the other Han
 # order UTS #35 Part 5 (CLDR 48) allows: a Han vector whose answer moves with that order is impl-defined, with that
-# order's answer for both engines. Each note names rows of bundle sjl-17-001's correspondence (Broiler.VM's
-# docs/evidence/sjl-17-001/correspondence.md), the rows its case carries. The area field is intl: the schema has no
-# collation area (generate_collation_vectors.py, THE AREA FIELD).
+# order's answer for Broiler.VM and out for Broiler.JS, each engine's own data's. Each note names rows of bundle
+# sjl-17-001's correspondence (Broiler.VM's docs/evidence/sjl-17-001/correspondence.md), the rows its case carries.
+# The area field is intl: the schema has no collation area (generate_collation_vectors.py, THE AREA FIELD).
 schema: 1
 
 id: intl/collation/surrogates/lone/0001

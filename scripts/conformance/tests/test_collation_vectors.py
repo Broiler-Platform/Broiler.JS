@@ -169,7 +169,8 @@ class CommittedFileTests(unittest.TestCase):
             self.assertEqual(vector["class"] == "divergence", bool(divergence) and not per_engine, vector_id)
             # impl-defined only where the locale moves under Broiler.VM's list (decision E3), with Broiler.JS's
             # expectation out; or where the answer moves with the Han order UTS #35 leaves to the implementation,
-            # with both engines' expectation the second reference's. Both expectations are always stated.
+            # with Broiler.VM's expectation the second reference's and Broiler.JS's out, each engine's own data's (the
+            # owner's decision of 2026-11-02). Both expectations are always stated.
             moves = bool(re.search(r'(Collator\(|localeCompare\("(?:[^"\\]|\\.)*",)"(es|sv|th)(-[A-Za-z0-9-]*)?"',
                                    vector["script"]))
             han_moves = generator.HAN_MOVES in vector["note"]
@@ -181,7 +182,7 @@ class CommittedFileTests(unittest.TestCase):
                 self.assertEqual(vector["out"], vector["per-engine.broiler-js"], vector_id)
                 self.assertIn("rule N28", vector["note"], vector_id)
             if han_moves:
-                self.assertEqual(vector["per-engine.broiler-js"], vector["per-engine.broiler-vm"], vector_id)
+                self.assertEqual(vector["out"], vector["per-engine.broiler-js"], vector_id)
                 self.assertNotEqual(vector["out"], vector["per-engine.broiler-vm"], vector_id)
                 self.assertIn(generator.REF_IMPLICIT, vector["prov"].split(" "), vector_id)
                 self.assertRegex(vector_id, r"^intl/collation/root/(han|scripts)/")

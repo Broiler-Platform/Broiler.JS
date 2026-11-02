@@ -207,8 +207,9 @@ Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release".)*
   root's `scripts` and `han` vectors are computed a second time by the UCA over the pinned `allkeys_CLDR.txt` with UCA
   17's implicit weights (`ref:ucaimplicit@1`, in the generator), held to the reference wherever the Han order does not
   enter, and a vector whose answer moves with that order is `impl-defined`, with `out` the reference's radical-stroke
-  answer and both engines' expectation the implicit-weight answer, which both take from CLDR 48.2.0's root as
-  Broiler.VM reads it (row O3 of bundle sjl-17-001's correspondence). The corpus copies no CLDR file.
+  answer and each engine's expectation its own data's (the owner's decision of 2026-11-02, revision 33): Broiler.VM's
+  the implicit-weight answer of its tables, Broiler.JS's its host's ICU's radical-stroke order, which is `out` (row O3
+  of bundle sjl-17-001's correspondence, whose reading F1 stays open for SJL-17.3). The corpus copies no CLDR file.
 - **test262.** No vector of revision 1 is derived from a test262 test. A vector that is will cite the
   test with `test262:<path>`, and the corpus will then carry test262's licence notice.
   *(2026-10-27, at corpus revision 29:)* the syntax area cites test262 tests as sources that assert an
