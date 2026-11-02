@@ -1,0 +1,40 @@
+Part D's three cultures on corpus revision 32: the regexp/ lines of each report (an engine-level run gives no status vector a line).
+Read, not judged: these runs are at no commit bundle sjl-11-001's rule names.
+
+invariant  run-revision-32-utc.tsv: 1402 regexp/ lines, sha256 39853d18ebe2d6c8342158513a33da9c6cf5ebc2e825c86060c8af04b8e89d39
+tr-TR      run-revision-32-utc-tr-TR.tsv: 1402 regexp/ lines, sha256 725ad7aa2977b0a2c0366134e5b412fd100d2a3877211a9f16085649752ce21a
+lt-LT      run-revision-32-utc-lt-LT.tsv: 1402 regexp/ lines, sha256 087e55499e5f68ba36ab3bb2dffcea11f3e3a95b88c6ba655a8079682e61c33d
+
+== tr-TR against the invariant culture: 17 lines differ
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0001	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0002	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0005	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0008	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0009	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0011	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0012	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0022	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0025	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0026	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0027	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0033	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0035	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0037	invariant: value: bool:false (match (divergence no longer holds))	tr-TR: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0039	invariant: value: bool:true (match (divergence no longer holds))	tr-TR: value: bool:false (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0040	invariant: value: bool:true (match (divergence no longer holds))	tr-TR: value: bool:false (classified-divergence)
+regexp/case-insensitive/m2a-back-references/0002	invariant: value: str:"lastIndex=0;null" (match (divergence no longer holds))	tr-TR: value: str:"lastIndex=0;index=0;length=2;0=2:\u0130i;1=1:\u0130;groups=1;<n>=1:\u0130;indices=u" (classified-divergence)
+
+== lt-LT against the invariant culture: 13 lines differ
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0001	invariant: value: bool:false (match (divergence no longer holds))	lt-LT: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0004	invariant: value: bool:false (match (divergence no longer holds))	lt-LT: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0005	invariant: value: bool:false (match (divergence no longer holds))	lt-LT: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0006	invariant: value: bool:false (match (divergence no longer holds))	lt-LT: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0009	invariant: value: bool:false (match (divergence no longer holds))	lt-LT: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0011	invariant: value: bool:false (match (divergence no longer holds))	lt-LT: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0022	invariant: value: bool:false (match (divergence no longer holds))	lt-LT: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0026	invariant: value: bool:false (match (divergence no longer holds))	lt-LT: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0033	invariant: value: bool:false (match (divergence no longer holds))	lt-LT: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0035	invariant: value: bool:false (match (divergence no longer holds))	lt-LT: value: bool:true (classified-divergence)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0039	invariant: value: bool:true (match (divergence no longer holds))	lt-LT: value: bool:false (classified-divergence)
+regexp/case-insensitive/m2a-back-references/0001	invariant: value: str:"lastIndex=0;null" (match (divergence no longer holds))	lt-LT: value: str:"lastIndex=0;index=0;length=2;0=2:I\u0130;1=1:I;groups=u;indices=u" (classified-divergence)
+regexp/case-insensitive/m2a-back-references/0002	invariant: value: str:"lastIndex=0;null" (match (divergence no longer holds))	lt-LT: value: str:"lastIndex=0;index=0;length=2;0=2:\u0130i;1=1:\u0130;groups=1;<n>=1:\u0130;indices=u" (classified-divergence)

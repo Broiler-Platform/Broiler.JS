@@ -44,7 +44,10 @@ baseline and assurance from its first commit; its `PublicAPI.txt` fixes the name
 2026-11-01, at SJL-13.2b: "a parse entry that answers "not implemented" for every source" no longer holds. Stage 4b
 added the tokenizer, internal to the library, and the parse entry now refuses a source the lexical grammar refuses, with
 the tokenizer's diagnostic, and answers not implemented for every other until the parser of stage 4c; section 9.3's note
-says what the tokenizer gives.)*
+says what the tokenizer gives.)* *(Noted 2026-11-01, at SJL-13.2c: "and answers not implemented for every other until the
+parser of stage 4c" no longer holds. Stage 4c added the tree, public, and the parser, internal: the parse entry answers
+accepted, with the tree, or refused, with the first refusal, for every source; section 9.3's note of 2026-11-01 at
+SJL-13.2c says what the tree and the refusals carry.)*
 
 ## 1. The contract
 
@@ -384,6 +387,30 @@ an escape in a name, the legacy octal and non-octal decimal literals and escapes
 BigInt and `m` suffixes, and an escape or line continuation in a string. A lexical refusal is a diagnostic of phase
 tokenizer with the catalogue's shared code (EX0001 to EX0007, EX0025, EE0001, EE0002), at the construct's start.
 
+*(Noted 2026-11-01, at SJL-13.2c, on the table's "Tree", "Tokens" and "Diagnostics" rows, and on the note above's "a
+whole stream exists only where the parser names each goal, from stage 4c".)*
+- **Tree.** The tree is public from stage 4c, in `Broiler.ECMAScript.Syntax`: `SyntaxNode`, with its `SyntaxKind` and its
+  full `SourceSpan`, the source's base applied as a diagnostic's is; `ProgramNode` for every goal, which carries a
+  module's top-level-`await` fact as ParseModule's [[HasTLA]] reads it (an `await`, `for await` or `await using` outside
+  every function, arrow, field initialiser and static block), and the same fact for a script whose request sets the
+  switch; and one sealed class per production the tree keeps, in the `Expression`, `Statement` and `Pattern` families,
+  with `FunctionNode` and `ClassNode` shared by their forms. A parenthesis is a `ParenthesizedExpression` node, a raw
+  fact that charges no tree depth; an assignment pattern's expression target is a `TargetPattern`, as Broiler.VM's
+  `JsTargetPattern`; a method's `FunctionNode` spans the method's source text from its first token after `static`, the
+  text `Function.prototype.toString` answers. Its constructors are the library's; its lists are read-only.
+- **Tokens.** "From stage 4c" holds of the stream, which the parser reads whole, each token under the goal the grammar
+  stands at, and keeps beside the tree inside the library; it is not public at stage 4c: which of its raw facts the
+  result publishes, for Broiler.VM's tokenizers-agreement row and Broiler.JS's bridged token chain (decisions D21 and
+  D44), is fixed when the first consumer reads it.
+- **Diagnostics.** A grammar refusal's code is provisional at stage 4c: JSE9108 `syntax.token.unexpected` or JSE9109
+  `syntax.token.missing`, catalogue rows EX0008's and EX0009's, with the offending token's spelling or the expected one
+  as a provisional argument, until stage 4d gives each site the row it serves; a limit's refusal has its row's code,
+  EX0011's or EX0012's, with its bound as its argument. The static-semantic early errors and the regular-expression
+  provider's answer are stage 4d's, so a source only they refuse is accepted at stage 4c.
+- **One reading beyond ES2026's words.** A class field's Initializer is read under [~Yield, ~Await], as both engines and
+  test262 read it (`x = await;` inside an async function names `await`, and `x = await 1` is refused), where ES2026's
+  production is `Initializer[+In, ?Yield, ?Await]`; the parse corpus's classification expects the engines' reading.
+
 ### 9.4 What the syntax half reports (decision D10, the union)
 
 - **The grammar, and every early error either engine's parser reports at parse time today**: Broiler.VM's `JsParser`
@@ -410,6 +437,10 @@ The stage table [`stages.tsv`](stages.tsv) records the assignment for every cata
 - sections 3, 4 and 5 gain notes; section 7 gains SJL-13's records; section 8's first, second and last items are
   revised;
 - section 9 is new.
+
+*(Added 2026-11-01, at SJL-13.2c.)* "Why there is no project yet" gains the note that the parse entry no longer answers
+not implemented, and section 9.3 a note on the tree, the token stream the result still does not publish, the provisional
+codes of the grammar's refusals, and the class field initialiser's reading.
 
 *(Added 2026-11-01, at SJL-13.2b.)* "Why there is no project yet" gains the note that the parse entry no longer answers
 not implemented for every source, section 9.2's meter note a note that the parse charges from stage 4b, and section 9.3

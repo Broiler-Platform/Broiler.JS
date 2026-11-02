@@ -1,0 +1,101 @@
+# Broiler.JS engine-level run: run-revision-31-utc-lt-LT
+# tree: a scratch tree written by git archive d8cb840637e5ba698e600747d9a0dfa0ece701ea (Broiler.JS), built once beforehand:
+#   dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers
+# corpus: conformance/vectors/ of that tree, revision 31
+# host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v185 x86_64; 4 logical CPUs; dotnet SDK 10.0.401
+# zone: TZ=UTC; culture: lt-LT (LANG=lt_LT.UTF-8 LC_ALL=lt_LT.UTF-8)
+# command: env -u LANG -u LANGUAGE -u LC_ALL -u BROILER_VECTORS_WORKERS LANG=lt_LT.UTF-8 LC_ALL=lt_LT.UTF-8 TZ=UTC BROILER_VECTORS_REPORT=<report> dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --logger "console;verbosity=normal"
+# started: 2026-11-01T21:59:43Z
+Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl11-w33/js-tree-r31/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.34]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.73]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:01.26]   Starting:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [46 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [6 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [178 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [30 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 3) [70 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 1) [1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [1 s]
+108759 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 56 min 11.6 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 5.004 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+[xUnit.net 00:57:39.20]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+[xUnit.net 00:57:39.20]       210 of 108759 vectors differ and nothing classifies them:
+[xUnit.net 00:57:39.20]       intl/date-times/families/0009: expected value: str:"h12", rendered value: str:"h23"
+[xUnit.net 00:57:39.20]       intl/date-times/families/0012: expected value: str:"Eastern Standard Time", rendered value: str:"GMT-05:00"
+[xUnit.net 00:57:39.20]       intl/date-times/families/0256: expected value: str:"h12", rendered value: str:"h23"
+[xUnit.net 00:57:39.20]       intl/date-times/families/0259: expected value: str:"Eastern Standard Time", rendered value: str:"GMT-05:00"
+[xUnit.net 00:57:39.20]       intl/locales/providers/0008: expected value: str:"en-US", rendered value: str:"lt-LT"
+[xUnit.net 00:57:39.20]       intl/locales/providers/0009: expected value: str:"en-US", rendered value: str:"lt-LT"
+[xUnit.net 00:57:39.20]       intl/locales/providers/0010: expected value: str:"en-US", rendered value: str:"lt-LT"
+[xUnit.net 00:57:39.20]       intl/locales/providers/0011: expected value: str:"en-US", rendered value: str:"lt-LT"
+[xUnit.net 00:57:39.20]       intl/locales/providers/0012: expected value: str:"1,234.5", rendered value: str:"1\u00A0234,5"
+[xUnit.net 00:57:39.20]       intl/locales/providers/0014: expected value: str:"en-US,en", rendered value: str:"lt-LT,en"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/relative/0007: expected value: str:"yesterday", rendered value: str:"1 day ago"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/relative/0019: expected value: str:"gestern", rendered value: str:"vor 1 Tag"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/families/0001: expected value: str:"-1,234,567.891", rendered value: str:"-1\u00A0234\u00A0567,891"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/families/0003: expected value: str:"-\u20AC1,234.50", rendered value: str:"-\u20AC1\u00A0234,50"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/families/0011: expected value: str:"-1,234,567.891", rendered value: str:"-1\u00A0234\u00A0567,891"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/families/0013: expected value: str:"-\u20AC1,234.50", rendered value: str:"-\u20AC1\u00A0234,50"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/families/0015: expected value: str:"1.2M", rendered value: str:"1\u00A0234\u00A0567"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/families/0420: expected value: str:"-1,234,567.891", rendered value: str:"-1\u00A0234\u00A0567,891"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/families/0422: expected value: str:"-\u20AC1,234.50", rendered value: str:"-\u20AC1\u00A0234,50"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/families/0424: expected value: str:"1.2M", rendered value: str:"1\u00A0234\u00A0567"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/families/0507: expected value: str:"-1,234,567.891", rendered value: str:"-1\u00A0234\u00A0567,891"
+[xUnit.net 00:57:39.20]       intl/numbers-and-text/families/0509: expected value: str:"-\u20AC1,234.50", rendered value: str:"-\u20AC1\u00A0234,50"
+[xUnit.net 00:57:39.20]       intl/values-and-plurals/families/0005: expected value: str:"[\"one\",\"other\"]", rendered value: str:"[\"one\",\"few\",\"many\",\"other\"]"
+[xUnit.net 00:57:39.20]       intl/values-and-plurals/families/0006: expected value: str:"[\"one\",\"two\",\"few\",\"other\"]", rendered value: str:"[\"other\"]"
+[xUnit.net 00:57:39.20]       intl/values-and-plurals/families/0007: expected value: str:"[\"other\",\"one\",\"other\",\"other\",\"other\",\"other\",\"other\",\"other\"]", rendered value: str:"[\"other\",\"one\",\"few\",\"few\",\"few\",\"other\",\"one\",\"one\"]"
+[xUnit.net 00:57:39.20]       Stack Trace:
+[xUnit.net 00:57:39.20]         /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl11-w33/js-tree-r31/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(58,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
+[xUnit.net 00:57:39.20]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:57:39.20]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:57:39.21]       Output:
+[xUnit.net 00:57:39.21]         108759 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 56 min 11.6 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 5.004 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+[xUnit.net 00:57:39.27]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = '003dc09f26fda88a38ab4f7d5bd8e9fa6b6b673b0a9c0fc64ffe41f321bf82bf')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [56 m 11 s]
+  Error Message:
+   210 of 108759 vectors differ and nothing classifies them:
+intl/date-times/families/0009: expected value: str:"h12", rendered value: str:"h23"
+intl/date-times/families/0012: expected value: str:"Eastern Standard Time", rendered value: str:"GMT-05:00"
+intl/date-times/families/0256: expected value: str:"h12", rendered value: str:"h23"
+intl/date-times/families/0259: expected value: str:"Eastern Standard Time", rendered value: str:"GMT-05:00"
+intl/locales/providers/0008: expected value: str:"en-US", rendered value: str:"lt-LT"
+intl/locales/providers/0009: expected value: str:"en-US", rendered value: str:"lt-LT"
+intl/locales/providers/0010: expected value: str:"en-US", rendered value: str:"lt-LT"
+intl/locales/providers/0011: expected value: str:"en-US", rendered value: str:"lt-LT"
+intl/locales/providers/0012: expected value: str:"1,234.5", rendered value: str:"1\u00A0234,5"
+intl/locales/providers/0014: expected value: str:"en-US,en", rendered value: str:"lt-LT,en"
+intl/numbers-and-text/relative/0007: expected value: str:"yesterday", rendered value: str:"1 day ago"
+intl/numbers-and-text/relative/0019: expected value: str:"gestern", rendered value: str:"vor 1 Tag"
+intl/numbers-and-text/families/0001: expected value: str:"-1,234,567.891", rendered value: str:"-1\u00A0234\u00A0567,891"
+intl/numbers-and-text/families/0003: expected value: str:"-\u20AC1,234.50", rendered value: str:"-\u20AC1\u00A0234,50"
+intl/numbers-and-text/families/0011: expected value: str:"-1,234,567.891", rendered value: str:"-1\u00A0234\u00A0567,891"
+intl/numbers-and-text/families/0013: expected value: str:"-\u20AC1,234.50", rendered value: str:"-\u20AC1\u00A0234,50"
+intl/numbers-and-text/families/0015: expected value: str:"1.2M", rendered value: str:"1\u00A0234\u00A0567"
+intl/numbers-and-text/families/0420: expected value: str:"-1,234,567.891", rendered value: str:"-1\u00A0234\u00A0567,891"
+intl/numbers-and-text/families/0422: expected value: str:"-\u20AC1,234.50", rendered value: str:"-\u20AC1\u00A0234,50"
+intl/numbers-and-text/families/0424: expected value: str:"1.2M", rendered value: str:"1\u00A0234\u00A0567"
+intl/numbers-and-text/families/0507: expected value: str:"-1,234,567.891", rendered value: str:"-1\u00A0234\u00A0567,891"
+intl/numbers-and-text/families/0509: expected value: str:"-\u20AC1,234.50", rendered value: str:"-\u20AC1\u00A0234,50"
+intl/values-and-plurals/families/0005: expected value: str:"[\"one\",\"other\"]", rendered value: str:"[\"one\",\"few\",\"many\",\"other\"]"
+intl/values-and-plurals/families/0006: expected value: str:"[\"one\",\"two\",\"few\",\"other\"]", rendered value: str:"[\"other\"]"
+intl/values-and-plurals/families/0007: expected value: str:"[\"other\",\"one\",\"other\",\"other\",\"other\",\"other\",\"other\",\"other\"]", rendered value: str:"[\"other\",\"one\",\"few\",\"few\",\"few\",\"other\",\"one\",\"one\"]"
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl11-w33/js-tree-r31/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 58
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 108759 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 56 min 11.6 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 5.004 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+
+
+
+Test Run Failed.
+Total tests: 8
+     Passed: 7
+     Failed: 1
+ Total time: 57,6720 Minutes
+# exit: 1
+# ended: 2026-11-01T22:57:25Z

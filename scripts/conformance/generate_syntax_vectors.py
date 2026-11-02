@@ -79,7 +79,8 @@ STAGES = REPOSITORY / "Broiler.ECMAScript" / "docs" / "frontend" / "stages.tsv"
 DIVERGENCES = SCRIPTS / "syntax-divergences.txt"
 CHECKER = SCRIPTS / "syntaxcheck.mjs"
 SINCE = 29              # the corpus revision that added the area
-CORPUS_REVISION = 30    # the corpus revision this generator writes: REVISIONS.md's last row
+REVIEWED = 30           # the corpus revision that added the delimiting vectors review asked for
+CORPUS_REVISION = 32    # the corpus revision this generator writes: REVISIONS.md's last row
 GENERATOR = "generate_syntax_vectors.py"
 REFERENCE_VERSION = "v26.12.0"
 
@@ -251,8 +252,8 @@ def add(file: str, group: str, source: str, out: str, *, rows: Sequence[str] = (
     text = f"{verdict}, {note}" if note else verdict
     if head:
         text = f"{head}: {text}"
-    if since not in (SINCE, CORPUS_REVISION):
-        raise GeneratorError(f"{group}: a vector is added at revision {SINCE} or {CORPUS_REVISION}, not {since}")
+    if since not in (SINCE, REVIEWED):
+        raise GeneratorError(f"{group}: a vector is added at revision {SINCE} or {REVIEWED}, not {since}")
     case = Case(file, group, op, source, script, out, tuple(rows), tuple(corr), tuple(clauses), tuple(tests), text,
                 since=since)
     if impl is not None:
@@ -758,8 +759,8 @@ def lexical_regexp() -> None:
         ("var a = 6, g = 1; a /=2/g; a", 3, "after an identifier /= is a division assignment"),
     ]
     for text, value, note in added:
-        add(f, g, text, V(value), clauses=rx, note=note, since=CORPUS_REVISION)
-    add(f, g, "--/x/.lastIndex", V(-1), corr=("T24e",), clauses=rx, since=CORPUS_REVISION,
+        add(f, g, text, V(value), clauses=rx, note=note, since=REVIEWED)
+    add(f, g, "--/x/.lastIndex", V(-1), corr=("T24e",), clauses=rx, since=REVIEWED,
         note="after a prefix -- a / begins a regular expression (a correction of both engines; Broiler.VM's at "
              "step 1)")
 

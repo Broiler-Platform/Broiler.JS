@@ -250,6 +250,46 @@ Not yet packed under a version of its own: the stream's next version is set when
   records the `syntax` vectors without judging them, a vector the tokenizer refuses now among the matches; since a refusal
   lost would go back to not implemented, which the probe counts as neither a failure nor a difference, the Conformance
   tests pin by id the vectors the tokenizer refuses. No public API changes.
+- `Broiler.ECMAScript.Frontend`, stage SJL-13.2c: **the tree and the parser** (Broiler.VM's JSD-0083, sub-areas P and N,
+  decisions D10, D11, D14, D15 and D17; design [`docs/frontend/design.md`](docs/frontend/design.md), section 9.3's note
+  of this stage). In `Broiler.ECMAScript.Syntax`:
+  - **the tree**, public and immutable, seeded from Broiler.VM's `JsSyntax`: `SyntaxNode` with its `SyntaxKind` and full
+    `SourceSpan`; `ProgramNode` for every goal, with ParseModule's top-level-`await` fact; the `Expression`, `Statement`
+    and `Pattern` families, one sealed class per production the tree keeps; `FunctionNode` and `ClassNode` shared by the
+    declaration, expression, arrow and method forms; and the raw facts JSD-0080's output table lists: a directive's raw
+    text, a numeric literal's text and its legacy-octal, non-octal-decimal, BigInt and `m` flags, a string literal's
+    escape flags, each template piece's cooked and raw text, a regular-expression literal's body and flags, every
+    parenthesis as a `ParenthesizedExpression`, and every trailing comma. Nothing is desugared: a function declaration
+    that is an `if` clause under Annex B stays one, an arrow keeps its expression body, a `for` head keeps its
+    declaration;
+  - **the parser**, internal: the syntactic grammar of ECMA-262 clauses 13 to 16 for the Script and Module goals, eval
+    code, and the dynamic function's parameters and body by its kind, each token read under the lexical goal the grammar
+    stands at; cover grammars converted, never parsed again (parenthesised lists and async calls into
+    ArrowFormalParameters, an async call's `await` references that its parameters do not bind refused, as the
+    AsyncArrowHead's [+Await] reads them; array and object literals into assignment patterns; CoverInitializedNames
+    refused where no conversion takes them); arrow functions without rewinding, an async arrow read as a primary
+    extended by no operator, so that a line break before one inserts a semicolon; automatic semicolon insertion with the
+    restricted productions, none in a for statement's head (rows P16 and P16b); modules with import attributes; classes
+    with fields, private names, static blocks and accessors; templates read in place; Annex B's function in an `if`
+    clause and `for`-`in` initialiser in sloppy code with the switch on; the decorators, `accessor` and import-phase
+    proposals each under its own flag; the request's top-level-`await` switch (decision D10); and the contract's two
+    limits checked before the stack is: the nesting depth charged as Broiler.VM's `JsParser` charges it, and also for
+    the right operand of `**` and for each class heritage, two recursions Broiler.VM's parser leaves uncharged, and the
+    tree depth charged for each node a binary or a member or call chain adds, from the spine of the chain's first
+    operand, which closes the left-operand gap in its four shapes (decision D14).
+
+  `SyntaxParser.Parse` now answers `ParseOutcome.Accepted` with the tree in `ParseResult.Tree`, or
+  `ParseOutcome.Refused` with the first refusal (decision D11); `ParseOutcome.NotImplemented` stays and is no longer
+  answered. A grammar refusal is a `SyntaxDiagnostic` of phase `Parser` with one of two **provisional** codes, JSE9108
+  `syntax.token.unexpected` and JSE9109 `syntax.token.missing` (catalogue rows EX0008's and EX0009's), which stage 4d
+  replaces by the row each site serves, and a provisional argument, the token's spelling or the one expected; a limit's
+  refusal has its row's code, JSE9201 `limit.nesting.too-deep` (EX0011) or JSE9202 `limit.tree.too-deep` (EX0012), and
+  its bound as its argument. The tree-depth constant stays `ParseLimits.MaximumTreeDepth`, Broiler.VM's bound, a
+  provisional value until stage 4e derives it and the stack it requires. The static-semantic early errors and the
+  regular-expression provider's answer are stage 4d's, so a source only they refuse is accepted until then. The token
+  stream the parse reads is kept inside the library and is not public. The probe still records the `syntax` vectors
+  without judging them, which stage 4d's check judges, and the Conformance tests pin by id every vector the library
+  refuses and every one it accepts against an expected refusal.
 
 ### Changed
 
@@ -260,10 +300,11 @@ None.
 None: no engine reads the Intl generator, its tables, the Intl library or the frontend yet. Broiler.VM regenerates
 its table with the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone
 SJL-9.5, whose own records list what each observes; rows L9, L18 and Z8's corrections move Broiler.VM's answers when it
-cuts over to the library, at SJL-9.4. The frontend accepts no source before stage 4c, refusing from stage 4b only a
-source the lexical grammar refuses, and neither engine references it before SJL-13.3's step 1 and SJL-14's bridge.
-*(Revised 2026-11-02, at SJL-9.3d, when the date-time format's zone resolution was added; the clause read "rows L9 and
-L18's corrections move Broiler.VM's answers".)*
+cuts over to the library, at SJL-9.4. The frontend parses from stage 4c, and neither engine references it before
+SJL-13.3's step 1 and SJL-14's bridge. *(Revised 2026-11-02, at SJL-9.3d, when the date-time format's zone resolution was
+added; the clause read "rows L9 and L18's corrections move Broiler.VM's answers".)* *(Revised 2026-11-01, at SJL-13.2c,
+when the parser was added; the sentence read "The frontend accepts no source before stage 4c, refusing from stage 4b only
+a source the lexical grammar refuses, and neither engine references it before SJL-13.3's step 1 and SJL-14's bridge.")*
 *(Revised 2026-11-01, at SJL-13.2b, when the tokenizer was added; the sentence read "The frontend answers no source
 before stage 4c, and neither engine references it before SJL-13.3's step 1 and SJL-14's bridge.")* *(Revised
 2026-11-01, at SJL-13.2a, when the frontend was added; it

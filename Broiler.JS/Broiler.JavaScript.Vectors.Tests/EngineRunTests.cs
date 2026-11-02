@@ -31,8 +31,8 @@ public class EngineRunTests
     public EngineRunTests(ITestOutputHelper output) => this.output = output;
 
     /// <summary>
-    /// Every vector has a result, and every difference is classified. A difference nothing
-    /// classifies fails the run: an engine defect becomes a <c>divergence.broiler-js</c> field in
+    /// Every vector but a status vector, which the run skips and names (SCHEMA.md section 4), has a
+    /// result, and every difference is classified. A difference nothing classifies fails the run: an engine defect becomes a <c>divergence.broiler-js</c> field in
     /// a new corpus revision, a vector defect is fixed in one, and nothing is ever deleted.
     /// </summary>
     [Fact]
@@ -51,7 +51,9 @@ public class EngineRunTests
         var results = run.Results;
         WriteReport(results, corpus);
 
-        Assert.Equal(vectors.Count, results.Count);
+        // A status vector is library-level and gets no line (SCHEMA.md section 4); every other vector gets one.
+        Assert.Equal(vectors.Where(CorpusRun.IsStatusVector).Select(v => v.Id), run.Skipped);
+        Assert.Equal(vectors.Count - run.Skipped.Count, results.Count);
         var unclassified = results.Where(r => r.Verdict == Verdict.Difference).ToList();
         Assert.True(
             unclassified.Count == 0,
@@ -187,6 +189,36 @@ public class EngineRunTests
 
         Assert.Equal(vectors[late].Id, Assert.Single(run.Rechecked));
         Assert.Equal(4, created);
+    }
+
+    /// <summary>
+    /// A vector whose <c>out</c> is a library-level status is skipped, as SCHEMA.md section 4 has an
+    /// engine-level runner do: its script is never evaluated, the run gives it no result and so the
+    /// report no line, and the summary counts and names it, in one process and in several. A stand-in
+    /// engine fails the test if it is ever asked a status vector's script.
+    /// </summary>
+    [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    public void A_status_vector_is_skipped_counted_and_named_in_the_summary(int workers)
+    {
+        var records = Home.Corpus.Files.Single(f => f.Path == "numbers/to-fixed.vectors").Records.Take(12).ToList();
+        int[] status = [2, 9];
+        var vectors = records.Select((record, i) => status.Contains(i)
+            ? record.With("out", "status: exhausted").With("script", "status vector " + i.ToString(CultureInfo.InvariantCulture))
+            : record.With("script", "vector " + i.ToString(CultureInfo.InvariantCulture))).ToList();
+        var answers = vectors.Where((_, i) => !status.Contains(i)).ToDictionary(v => v.Script, v => v.Out);
+        var asked = new ConcurrentDictionary<string, int>();
+
+        var run = CorpusRun.Run(vectors, Home.Prelude, workers, new StandInEngine(answers, string.Empty, asked), () => new StandInEngine(answers, string.Empty, asked), blockSize: 4);
+
+        Assert.DoesNotContain(asked.Keys, script => script.StartsWith("status vector ", StringComparison.Ordinal));
+        Assert.Equal(vectors.Where((_, i) => !status.Contains(i)).Select(v => v.Id), run.Results.Select(r => r.Vector.Id));
+        Assert.All(run.Results, r => Assert.Equal(Verdict.Match, r.Verdict));
+        var summary = run.Summary();
+        Assert.Contains("2 vectors whose out is a status were skipped", summary, StringComparison.Ordinal);
+        foreach (var i in status)
+            Assert.Contains(vectors[i].Id, summary, StringComparison.Ordinal);
     }
 
     /// <summary>A different expected value of the same kind: the last bit of a double, or a character of a string.</summary>

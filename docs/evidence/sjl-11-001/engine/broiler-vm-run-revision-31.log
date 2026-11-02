@@ -1,0 +1,11 @@
+# Broiler.VM engine-level run: broiler-vm-run-revision-31
+# Broiler.VM: 897603890da4aa6d1421c01d23c87009da495d6f (branch sjl-11-3-vm), built once beforehand:
+#   dotnet build src/compositions/Broiler.VM.Composition.JavaScript.Conformance -c Release --disable-build-servers -warnaserror
+# corpus: archive-2.tar.gz, sha256 11144bbb66cecb1455b93fb88ceaeeb09bde67f2592f98f9142b527308dc3e4e, pinned by broiler-vm-revision-31.pin
+# host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v185 x86_64; 4 logical CPUs; dotnet SDK 10.0.401
+# command: env -u LANG -u LANGUAGE -u LC_ALL TZ=UTC dotnet src/compositions/Broiler.VM.Composition.JavaScript.Conformance/bin/Release/net10.0/Broiler.VM.Composition.JavaScript.Conformance.dll --vectors <archive> --expect <pin> --report <report>
+# started: 2026-11-01T22:03:41Z
+broiler-js-conformance: vectors broiler-js-vectors Broiler-Platform/broiler.js@d8cb840637e5ba698e600747d9a0dfa0ece701ea content sha256 0d45ab95b9f81a2ff6cff0fa8a66cdc6c8cb54a2c86400202921628a763d4f6d over 77 files - retrieved and hashed, NOT archived
+broiler-js-conformance: 108759 vectors: 108633 match, 63 classified divergences, 63 unclassified differences; 18 vectors whose out is a status skipped, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003
+# exit: 1
+# ended: 2026-11-01T22:21:01Z

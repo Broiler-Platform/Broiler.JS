@@ -1,0 +1,310 @@
+# The regular-expression area's classified differences, read by generate_regexp_vectors.py.
+#
+# A line `reason <key>: <text>` defines a reason. A line `<engine> <key> <id>` classifies the vector <id> as a
+# divergence of <engine> for that reason: the generator writes the field divergence.<engine>: <text>. A normative
+# vector becomes a divergence. An impl-defined one stays impl-defined: its per-engine.<engine> field is the
+# expectation that engine's records commit it to, and the divergence field says the engine does not meet it yet
+# (SCHEMA.md section 5). The vector's expected value never changes, and no status vector is classified: it is
+# library-level, and engine-level runners skip it (SCHEMA.md section 4).
+#
+# A line is added in a new corpus revision, with a dated row in conformance/vectors/REVISIONS.md, and is removed only
+# the same way, when the engine's cut-over corrects the difference. Every reason names the row of bundle sjl-11-001's
+# correspondence from code (Broiler.VM's docs/evidence/sjl-11-001/correspondence.md) whose answer the engine gives in
+# the difference, which is a row the vector's note names; the engine's answer as that row records it; the class
+# Broiler.VM's JSD-0081 gives the row; and the record that answers it: for Broiler.VM, SJL-11.4, its cut-over to
+# Broiler.Regex (or, for row S9b, the shared front end's, which JSD-0081 leaves to SJL-12 and SJL-13); for Broiler.JS,
+# SJL-11.5, its cut-over, whose CHANGELOG lists each correction by its row (decision D23). A reason quotes the row's
+# cells shortened and in ASCII.
+#
+# Revision 32, 2026-11-01: every difference of both engines' first engine-level runs on the regular-expression area,
+# at revision 31 (corpus commit d8cb8406, revision 31 with SCHEMA.md's note that the runners skip status vectors):
+# Broiler.JS's, under TZ=UTC and under TZ=America/New_York, whose reports are byte for byte the same, and under
+# tr-TR and lt-LT, the cultures of its bundle sjl-11-001's part D, whose regexp/ lines differ from the invariant
+# culture's only in row M2a's vectors; and Broiler.VM's, taken at its 89760389 (branch sjl-11-3-vm, which carries the
+# skip) from a scratch archive of revision 31. One difference is answered by correcting the vector instead:
+# regexp/last-index/m4-empty-match-d41/0001, whose per-engine.broiler-js field held Broiler.JS's answer as decision
+# D41 recorded it at 1f91b8f1, which the engine no longer gives since its u patterns went to Broiler.Regex
+# 0.1.0-preview.5 (a58d31d1); D41's dated note of 2026-11-01 records its answer now (owner's decision D-p5). The rows
+# revised or widened by a dated note of 2026-11-01 are each the owner's decision of that day, taken as recommended
+# under the owner's direction of 2026-10-18, "Please do all recommended decisions and skip waiting for review", and
+# recorded in Broiler.VM's JSD-0081, "The owner's decisions of 2026-11-01": D-s5 (row S5's class case, the reading
+# regexpref checks), D-p5 (rows M4, S3b and B8, whose Broiler.JS cells were read through Broiler.Regex
+# 0.1.0-preview.4) and D-widen (rows M2, S7, S8 and F3, whose Broiler.JS cells the vectors reach beyond the inputs
+# the rows' probes ran, by the same mechanism). The runs are retained in docs/evidence/sjl-11-001/engine/.
+
+reason js-b8: row B8 as revised 2026-11-01 (owner's decision D-p5): a flat sequence of 100,000 (?:a) under u on 100,000 a; Broiler.JS answers, since its u patterns went to Broiler.Regex 0.1.0-preview.5 (a58d31d1), the whole input after about 4 s evaluated alone on the runs' host, a time that grows about as the square of the length, so a run beside other runs renders the runner's abort at its 5 s limit (each of the four first runs did), where the row recorded a process abort, a stack overflow in Matcher.ReadAt, under preview.4; the difference this field classifies is the runner's 5 s limit, not the row's class (a correction of Broiler.JS and of Broiler.Regex's preview.4, JSD-0081's R4, no CLR recursion in the matcher), which preview.5 already meets, since the process no longer aborts; the time is not attributed here, nothing yet shows that SJL-11.5, Broiler.JS's cut-over to Broiler.Regex, removes it, and its classification stays open for the owner; the vector so breaks SCHEMA.md section 7's premise that a runner's limit is far above any vector's time, which a later revision may restore by a smaller input
+reason js-f3: row F3 as widened 2026-11-01 (owner's decision D-widen): the invalid modifier (?x:a), through the constructor; Broiler.JS answers accepted: ValidateInlineModifiers (BuiltIns/RegExp/JSRegExp.cs) passes x through as .NET's inline option, where every other invalid modifier the row ran is refused by the constructor; a correction of Broiler.JS (JSD-0081, by D-widen); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+reason js-m2: row M2 (as widened 2026-11-01, owner's decision D-widen): Kelvin U+212A against [a-z] or k without u, by the i flag or by (?i:), and the Ohm sign U+2126 against [U+03C9] or [U+03A9] under i without u; Broiler.JS answers true: .NET's casing under RegexOptions.IgnoreCase (BuiltIns/RegExp/JSRegExp.cs, ParseFlags), where Canonicalize's toUppercase leaves each sign itself; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex, when the translator retires
+reason js-m2a: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+reason js-m2b: row M2b: U+1F80 against U+1F88 under i without u, as a character and in a class; Broiler.JS answers true: .NET's simple case mapping under IgnoreCase, where U+1F80's upper case is two code points and Canonicalize leaves each itself; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+reason js-m3: row M3: line terminators without u: ^ and $ under m on U+2028 and U+2029 (exec, %Symbol.match% and %Symbol.split%), and $ without m before a final LF; Broiler.JS answers .NET's: under m only \r is added to .NET's \n (BuiltIns/RegExp/JSRegExp.cs:931-983 at 1f91b8f1), and $ without m matches before a final LF; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+reason js-m6: row M6: String.prototype.search with RegExp.prototype[%Symbol.search%] deleted, and with an own %Symbol.search% of undefined or null; Broiler.JS answers 1, the index of its direct value.Match (BuiltIns/String/JSStringPrototype.Search.cs), where the specification throws a TypeError or answers -1; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the specification's path (decision D20)
+reason js-s11: row S11: a literal never evaluated whose pattern is an invalid modifier ((?ii:a) and the row's 24 others) or, under v, [a&&&b], [a--b&&c], [a-\d] or \q{a}; Broiler.JS answers admitted when the program is parsed, refused only when the literal is evaluated: the literal's check ends in new Regex (Parser/RegExpValidator.cs), which accepts these inline options, and under v checks structure only; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
+reason js-s2a: row S2a: the same name spelled once with an escape in one alternative, (?<\u0061>x)(?<a>y) without and with u, (?<\u{61}>x)(?<a>y) under v and (?<a>x)(?<\u0061>y), by the constructor and by a literal; Broiler.JS answers accepted: its duplicate test compares names as written (RegExpGroupNames.FirstDuplicate), and so does the library's; a correction of Broiler.JS and of Broiler.Regex's preview.4 (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex, whose duplicate test follows decoding (decision D36)
+reason js-s2b: row S2b: a reference spelled with an escape in a literal, (?<A>x)\k<\u0041> without and with u, and (?<a>x)\k<\u{61}>; Broiler.JS answers refused, early, by the literal path (Parser/RegExpValidator.cs, FastScanner's IsValid), where its constructor accepts the same pattern; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, the scanner's check re-pointed to Broiler.Regex's validate entry (decision D22)
+reason js-s3: row S3: 512 and 1,000 nested (?:, (, (?= and v-mode [, by the constructor, a literal and an exec; Broiler.JS answers accepted at every depth: it sets no nesting limit; engine policy that becomes a parameter (JSD-0081 decision D7: a nesting limit of 512 in both engines, the SyntaxError this vector's per-engine field holds); answered by SJL-11.5, which passes Broiler.Regex that limit
+reason js-s3b: row S3b as revised 2026-11-01 (owner's decision D-p5): 20,000 nested (?: without and with u, and 200,000 under u; Broiler.JS answers accepted at 20,000, the specification's answer, and since its u patterns went to Broiler.Regex 0.1.0-preview.5 (a58d31d1) at 200,000 too, where the row recorded a process abort in RegexParser.ParseAtom under preview.4; engine policy under JSD-0081 decision D7, the nesting limit's SyntaxError this vector's per-engine field holds; answered by SJL-11.5, which passes Broiler.Regex a nesting limit of 512
+reason js-s5: row S5 as revised 2026-11-01 (owner's decision D-s5): \k in a class beside a named group without u or v, [\k<a>](?<a>x) and [\k](?<a>x), by the constructor, a literal never evaluated and an exec; Broiler.JS answers refused, a SyntaxError "invalid named reference": RegExpGroupNames refuses a \k inside a class whenever the pattern holds a group name, where B.1.2's ClassEscape reads ~NamedCaptureGroups and admits k as an identity escape, the outcome this vector's per-engine field holds (regexpref's reading, which revision 31 took); a correction of Broiler.JS (JSD-0081, by D-s5); answered by SJL-11.5, which deletes RegExpGroupNames' regular-expression prechecks (decision D20)
+reason js-s7: row S7 (as widened 2026-11-01, owner's decision D-widen): without u, a quantified look-behind, (?<=a)*, (?<=a)?, (?<!a)*, (?<!a){1}, (?<!a){2}, (?<=a){1,2}, and a quantified ^, $ or \b, ^*, $+, \b*, by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library's parse refuses each and the refusal is caught (BuiltIns/RegExp/JSRegExp.Broiler.cs), and .NET's Regex accepts the translation; the literal's check is the same new Regex; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+reason js-s8: row S8 (as widened 2026-11-01, owner's decision D-widen): the v flag's reserved syntax: test262's breaking-change patterns but [[]; [a|] and [a!!b]; and [&&a], [--a], [a-], [-a] and [\q{(}]; by the constructor and by a literal never evaluated; Broiler.JS answers accepted: the library refuses each, the constructor catches that and its v translation and .NET admit it, and the literal's v check is structural only (Parser/RegExpValidator.cs); a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+reason js-t1: row T1: source of a literal with a braced escape and of its constructor twin with the same pattern and flags, \u{61}, \u{1F600}, \u{D83D} under u and [\u{61}-\u{7A}] under v; Broiler.JS answers two different texts: the literal's source is rewritten by the scanner (FastScanner's DecodeBracedUnicodeEscapes), the constructor's is the pattern as written, where EscapeRegExpPattern gives one S for one P and F; a correction of Broiler.JS (JSD-0081); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+reason js-u3: row U3: U+A7CE against U+A7CF under i without u, as a character and in a class; Broiler.JS answers false: .NET's casing data under IgnoreCase predates U+A7CE, where Unicode 17.0.0's toUppercase makes both U+A7CE; a correction of Broiler.JS by data decision (JSD-0081; class C5, SJL-D-6 (c)); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+reason vm-m4: row M4: lastIndex inside a surrogate pair under u or v, a non-empty match (/./gu, /./gv, /./yu, a class, with d indices); Broiler.VM answers the pair's start as index and the whole pair as the substring: RegExpMatchOne steps a mid-pair lastIndex back to the pair (VM/JsRealm.RegExp.cs:1926-1932 at aaa39fb), where index is lastIndex and the match starts there; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
+reason vm-m7: row M7: a back-reference under u or v across a surrogate pair, foo(.+)bar\1, \k<x>, (\ud834)\1 and the look-behind (?<=\1(.))b; Broiler.VM answers a match of half the pair: the back-reference compares code units (F/JsRegExpMatcher.cs:4642 at aaa39fb) with no check that it ends on a code point, and backwards starts the capture's length in code units before the position; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
+reason vm-s1: row S1: duplicate named groups across alternatives (ES2025), under none, d, u and v, with \k and three alternatives, by the constructor, a literal never evaluated and every exec form, and the escaped name of row S2a across alternatives; Broiler.VM answers a SyntaxError, early: the pre-scan refuses any repeated name, decoding escapes first (F/JsRegExpMatcher.cs:1592-1617 at aaa39fb); a correction of Broiler.VM (kind D, SJL-D-14 (i); JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
+reason vm-s10: row S10: under u or v, a four-digit lead-surrogate escape before a braced escape, \uD83D\u{DC38}, \uD83D\u{3042}, [\uD83D\u{3042}], [\uD83D\u{DC38}]; Broiler.VM answers a SyntaxError ("Invalid escape"), early: after a four-digit lead escape a following \u commits to four hexadecimal digits (F/JsRegExpMatcher.cs:3440-3458 at aaa39fb), which throws on {; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
+reason vm-s9b: row S9b: a literal ending in a backslash at the end of eval code, /a[bc\, by direct and indirect eval; Broiler.VM answers an EvalError ("the artifact provider did not supply a program"): the scan moves past the end of the source (CP/SliceTokenizer.cs:2227 at aaa39fb); a correction of Broiler.VM outside SJL-11 (JSD-0081: the scanner is the front end's, SJL-12's and SJL-13's); answered by the front end's cut-over to the shared syntax library (SJL-13), not by SJL-11.4
+reason vm-t3: row T3: a backslash before a line terminator in the pattern, new RegExp("\\\n") and new RegExp("\\\u2028"), its source read back as a literal; Broiler.VM answers a source holding the raw LF or U+2028 (VM/JsRealm.RegExp.cs:1826-1831 at aaa39fb), so /S/F is no literal that behaves as the pattern; a correction of Broiler.VM (kind R, JSD-0081); answered by SJL-11.4, Broiler.VM's cut-over to Broiler.Regex
+
+broiler-js js-b8 regexp/matching/b8-flat-sequence/0001
+broiler-js js-f3 regexp/syntax/modifiers/0037
+broiler-js js-m2 regexp/case-insensitive/m2-kelvin-and-long-s/0001
+broiler-js js-m2 regexp/case-insensitive/m2c-other-folding/0021
+broiler-js js-m2 regexp/case-insensitive/m2c-other-folding/0022
+broiler-js js-m2 regexp/matching/modifiers/0009
+broiler-js js-m2a regexp/case-insensitive/m2a-back-references/0001
+broiler-js js-m2a regexp/case-insensitive/m2a-back-references/0002
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0001
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0002
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0004
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0005
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0006
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0008
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0009
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0011
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0012
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0022
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0025
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0026
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0027
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0033
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0035
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0037
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0039
+broiler-js js-m2a regexp/case-insensitive/m2a-dotted-and-dotless-i/0040
+broiler-js js-m2b regexp/case-insensitive/m2b-multi-code-point-uppercase/0001
+broiler-js js-m2b regexp/case-insensitive/m2b-multi-code-point-uppercase/0002
+broiler-js js-m2b regexp/case-insensitive/m2b-multi-code-point-uppercase/0004
+broiler-js js-m3 regexp/last-index/match-global/0007
+broiler-js js-m3 regexp/last-index/match-global/0008
+broiler-js js-m3 regexp/last-index/split/0006
+broiler-js js-m3 regexp/matching/m3-end-of-input/0001
+broiler-js js-m3 regexp/matching/m3-end-of-input/0004
+broiler-js js-m3 regexp/matching/m3-end-of-input/0007
+broiler-js js-m3 regexp/matching/m3-end-of-input/0008
+broiler-js js-m3 regexp/matching/m3-line-terminators/0025
+broiler-js js-m3 regexp/matching/m3-line-terminators/0026
+broiler-js js-m3 regexp/matching/m3-line-terminators/0027
+broiler-js js-m3 regexp/matching/m3-line-terminators/0028
+broiler-js js-m3 regexp/matching/m3-line-terminators/0037
+broiler-js js-m3 regexp/matching/m3-line-terminators/0038
+broiler-js js-m3 regexp/matching/m3-line-terminators/0039
+broiler-js js-m3 regexp/matching/m3-line-terminators/0040
+broiler-js js-m6 regexp/text/m6-string-search/0001
+broiler-js js-m6 regexp/text/m6-string-search/0002
+broiler-js js-m6 regexp/text/m6-string-search/0004
+broiler-js js-m6 regexp/text/m6-string-search/0005
+broiler-js js-s11 regexp/literals/s11-modifiers/0001
+broiler-js js-s11 regexp/literals/s11-modifiers/0002
+broiler-js js-s11 regexp/literals/s11-modifiers/0003
+broiler-js js-s11 regexp/literals/s11-modifiers/0004
+broiler-js js-s11 regexp/literals/s11-modifiers/0005
+broiler-js js-s11 regexp/literals/s11-modifiers/0006
+broiler-js js-s11 regexp/literals/s11-modifiers/0007
+broiler-js js-s11 regexp/literals/s11-modifiers/0008
+broiler-js js-s11 regexp/literals/s11-modifiers/0009
+broiler-js js-s11 regexp/literals/s11-modifiers/0010
+broiler-js js-s11 regexp/literals/s11-modifiers/0011
+broiler-js js-s11 regexp/literals/s11-modifiers/0012
+broiler-js js-s11 regexp/literals/s11-modifiers/0013
+broiler-js js-s11 regexp/literals/s11-modifiers/0014
+broiler-js js-s11 regexp/literals/s11-modifiers/0015
+broiler-js js-s11 regexp/literals/s11-modifiers/0016
+broiler-js js-s11 regexp/literals/s11-modifiers/0017
+broiler-js js-s11 regexp/literals/s11-modifiers/0018
+broiler-js js-s11 regexp/literals/s11-modifiers/0019
+broiler-js js-s11 regexp/literals/s11-modifiers/0020
+broiler-js js-s11 regexp/literals/s11-modifiers/0021
+broiler-js js-s11 regexp/literals/s11-modifiers/0022
+broiler-js js-s11 regexp/literals/s11-modifiers/0023
+broiler-js js-s11 regexp/literals/s11-modifiers/0024
+broiler-js js-s11 regexp/literals/s11-modifiers/0025
+broiler-js js-s11 regexp/literals/s11-unicode-sets/0001
+broiler-js js-s11 regexp/literals/s11-unicode-sets/0002
+broiler-js js-s11 regexp/literals/s11-unicode-sets/0003
+broiler-js js-s11 regexp/literals/s11-unicode-sets/0004
+broiler-js js-s2a regexp/literals/s1-s5-names/0003
+broiler-js js-s2a regexp/syntax/s2a-escaped-duplicates/0001
+broiler-js js-s2a regexp/syntax/s2a-escaped-duplicates/0002
+broiler-js js-s2a regexp/syntax/s2a-escaped-duplicates/0004
+broiler-js js-s2a regexp/syntax/s2a-escaped-duplicates/0005
+broiler-js js-s2b regexp/literals/s2b-escaped-reference/0001
+broiler-js js-s2b regexp/literals/s2b-escaped-reference/0002
+broiler-js js-s2b regexp/literals/s2b-escaped-reference/0003
+broiler-js js-s3 regexp/literals/s3-nesting/0002
+broiler-js js-s3 regexp/matching/s3-nesting/0004
+broiler-js js-s3 regexp/matching/s3-nesting/0005
+broiler-js js-s3 regexp/matching/s3-nesting/0006
+broiler-js js-s3 regexp/syntax/s3-nesting/0011
+broiler-js js-s3 regexp/syntax/s3-nesting/0012
+broiler-js js-s3 regexp/syntax/s3-nesting/0013
+broiler-js js-s3 regexp/syntax/s3-nesting/0014
+broiler-js js-s3 regexp/syntax/s3-nesting/0015
+broiler-js js-s3 regexp/syntax/s3-nesting/0016
+broiler-js js-s3 regexp/syntax/s3-nesting/0017
+broiler-js js-s3 regexp/syntax/s3-nesting/0018
+broiler-js js-s3 regexp/syntax/s3-nesting/0019
+broiler-js js-s3 regexp/syntax/s3-nesting/0020
+broiler-js js-s3b regexp/syntax/s3b-deep-nesting/0001
+broiler-js js-s3b regexp/syntax/s3b-deep-nesting/0002
+broiler-js js-s3b regexp/syntax/s3b-deep-nesting/0003
+broiler-js js-s5 regexp/literals/s1-s5-names/0001
+broiler-js js-s5 regexp/matching/s4-escapes/0031
+broiler-js js-s5 regexp/syntax/s5-named-references/0012
+broiler-js js-s5 regexp/syntax/s5-named-references/0014
+broiler-js js-s7 regexp/literals/s7-quantified-lookbehind/0001
+broiler-js js-s7 regexp/literals/s7-quantified-lookbehind/0002
+broiler-js js-s7 regexp/literals/s7-quantified-lookbehind/0003
+broiler-js js-s7 regexp/literals/s7-quantified-lookbehind/0004
+broiler-js js-s7 regexp/literals/s7-quantified-lookbehind/0005
+broiler-js js-s7 regexp/syntax/s7-grammar-and-annex-b/0003
+broiler-js js-s7 regexp/syntax/s7-grammar-and-annex-b/0005
+broiler-js js-s7 regexp/syntax/s7-grammar-and-annex-b/0006
+broiler-js js-s7 regexp/syntax/s7-grammar-and-annex-b/0024
+broiler-js js-s7 regexp/syntax/s7-grammar-and-annex-b/0025
+broiler-js js-s7 regexp/syntax/s7-grammar-and-annex-b/0026
+broiler-js js-s8 regexp/literals/s8-breaking-change/0001
+broiler-js js-s8 regexp/literals/s8-breaking-change/0002
+broiler-js js-s8 regexp/literals/s8-breaking-change/0004
+broiler-js js-s8 regexp/literals/s8-breaking-change/0005
+broiler-js js-s8 regexp/literals/s8-breaking-change/0006
+broiler-js js-s8 regexp/literals/s8-breaking-change/0007
+broiler-js js-s8 regexp/literals/s8-breaking-change/0008
+broiler-js js-s8 regexp/literals/s8-breaking-change/0009
+broiler-js js-s8 regexp/literals/s8-breaking-change/0010
+broiler-js js-s8 regexp/literals/s8-breaking-change/0011
+broiler-js js-s8 regexp/literals/s8-breaking-change/0012
+broiler-js js-s8 regexp/literals/s8-breaking-change/0013
+broiler-js js-s8 regexp/literals/s8-breaking-change/0014
+broiler-js js-s8 regexp/literals/s8-breaking-change/0015
+broiler-js js-s8 regexp/literals/s8-breaking-change/0016
+broiler-js js-s8 regexp/literals/s8-breaking-change/0017
+broiler-js js-s8 regexp/literals/s8-breaking-change/0018
+broiler-js js-s8 regexp/literals/s8-breaking-change/0019
+broiler-js js-s8 regexp/literals/s8-breaking-change/0020
+broiler-js js-s8 regexp/literals/s8-breaking-change/0021
+broiler-js js-s8 regexp/literals/s8-breaking-change/0022
+broiler-js js-s8 regexp/literals/s8-breaking-change/0023
+broiler-js js-s8 regexp/literals/s8-breaking-change/0024
+broiler-js js-s8 regexp/literals/s8-breaking-change/0025
+broiler-js js-s8 regexp/literals/s8-breaking-change/0026
+broiler-js js-s8 regexp/literals/s8-breaking-change/0027
+broiler-js js-s8 regexp/literals/s8-breaking-change/0028
+broiler-js js-s8 regexp/literals/s8-breaking-change/0029
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0001
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0002
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0004
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0005
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0006
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0007
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0008
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0009
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0010
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0011
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0012
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0013
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0014
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0015
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0016
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0017
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0018
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0019
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0020
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0021
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0022
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0023
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0024
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0025
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0026
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0027
+broiler-js js-s8 regexp/syntax/s8-breaking-change/0028
+broiler-js js-s8 regexp/syntax/s8-unicode-sets/0003
+broiler-js js-s8 regexp/syntax/s8-unicode-sets/0016
+broiler-js js-s8 regexp/syntax/s8-unicode-sets/0017
+broiler-js js-s8 regexp/syntax/s8-unicode-sets/0019
+broiler-js js-s8 regexp/syntax/s8-unicode-sets/0020
+broiler-js js-s8 regexp/syntax/s8-unicode-sets/0025
+broiler-js js-s8 regexp/syntax/s8-unicode-sets/0028
+broiler-js js-s8 regexp/syntax/s8-unicode-sets/0029
+broiler-js js-s8 regexp/syntax/s8-unicode-sets/0030
+broiler-js js-s8 regexp/syntax/s8-unicode-sets/0041
+broiler-js js-t1 regexp/text/t1-source-literal-and-constructor/0001
+broiler-js js-t1 regexp/text/t1-source-literal-and-constructor/0002
+broiler-js js-t1 regexp/text/t1-source-literal-and-constructor/0003
+broiler-js js-t1 regexp/text/t1-source-literal-and-constructor/0004
+broiler-js js-u3 regexp/case-insensitive/u3-unicode-17-casing/0001
+broiler-js js-u3 regexp/case-insensitive/u3-unicode-17-casing/0003
+broiler-js js-u3 regexp/case-insensitive/u3-unicode-17-casing/0005
+broiler-vm vm-m4 regexp/last-index/m4-surrogate-pairs/0001
+broiler-vm vm-m4 regexp/last-index/m4-surrogate-pairs/0002
+broiler-vm vm-m4 regexp/last-index/m4-surrogate-pairs/0007
+broiler-vm vm-m4 regexp/last-index/m4-surrogate-pairs/0010
+broiler-vm vm-m4 regexp/last-index/m4-surrogate-pairs/0012
+broiler-vm vm-m4 regexp/last-index/m4-surrogate-pairs/0013
+broiler-vm vm-m4 regexp/last-index/m4-surrogate-pairs/0015
+broiler-vm vm-m7 regexp/matching/m7-backreference-surrogates/0001
+broiler-vm vm-m7 regexp/matching/m7-backreference-surrogates/0008
+broiler-vm vm-m7 regexp/matching/m7-backreference-surrogates/0009
+broiler-vm vm-m7 regexp/matching/m7-backreference-surrogates/0011
+broiler-vm vm-m7 regexp/matching/m7-backreference-surrogates/0016
+broiler-vm vm-s1 regexp/budget/o-ordinary/0004
+broiler-vm vm-s1 regexp/literals/s1-s5-names/0006
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0001
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0002
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0003
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0004
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0005
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0006
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0007
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0008
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0009
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0010
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0011
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0012
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0013
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0014
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0015
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0016
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0017
+broiler-vm vm-s1 regexp/matching/s1-duplicate-names/0018
+broiler-vm vm-s1 regexp/syntax/early-errors/0002
+broiler-vm vm-s1 regexp/syntax/s1-duplicate-names/0001
+broiler-vm vm-s1 regexp/syntax/s1-duplicate-names/0002
+broiler-vm vm-s1 regexp/syntax/s1-duplicate-names/0003
+broiler-vm vm-s1 regexp/syntax/s1-duplicate-names/0004
+broiler-vm vm-s1 regexp/syntax/s1-duplicate-names/0005
+broiler-vm vm-s1 regexp/syntax/s1-duplicate-names/0006
+broiler-vm vm-s1 regexp/syntax/s1-duplicate-names/0009
+broiler-vm vm-s1 regexp/syntax/s1-duplicate-names/0012
+broiler-vm vm-s1 regexp/syntax/s1-duplicate-names/0013
+broiler-vm vm-s1 regexp/syntax/s1-duplicate-names/0016
+broiler-vm vm-s1 regexp/syntax/s1-duplicate-names/0017
+broiler-vm vm-s1 regexp/syntax/s2a-escaped-duplicates/0003
+broiler-vm vm-s10 regexp/matching/s10-lead-surrogate-escapes/0001
+broiler-vm vm-s10 regexp/matching/s10-lead-surrogate-escapes/0005
+broiler-vm vm-s10 regexp/matching/s10-lead-surrogate-escapes/0006
+broiler-vm vm-s10 regexp/matching/s10-lead-surrogate-escapes/0007
+broiler-vm vm-s10 regexp/matching/s10-lead-surrogate-escapes/0008
+broiler-vm vm-s10 regexp/matching/s10-lead-surrogate-escapes/0009
+broiler-vm vm-s10 regexp/matching/s10-lead-surrogate-escapes/0010
+broiler-vm vm-s10 regexp/matching/s10-lead-surrogate-escapes/0011
+broiler-vm vm-s10 regexp/matching/s10-lead-surrogate-escapes/0012
+broiler-vm vm-s10 regexp/syntax/s10-lead-surrogate-escapes/0001
+broiler-vm vm-s10 regexp/syntax/s10-lead-surrogate-escapes/0005
+broiler-vm vm-s10 regexp/syntax/s10-lead-surrogate-escapes/0006
+broiler-vm vm-s10 regexp/syntax/s10-lead-surrogate-escapes/0007
+broiler-vm vm-s10 regexp/syntax/s10-lead-surrogate-escapes/0008
+broiler-vm vm-s9b regexp/literals/s9b-literal-grammar/0001
+broiler-vm vm-s9b regexp/literals/s9b-literal-grammar/0002
+broiler-vm vm-t3 regexp/text/t2-t3-source-escapes/0005
+broiler-vm vm-t3 regexp/text/t2-t3-source-escapes/0006
