@@ -996,7 +996,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>Decorators, under the decorators proposal's flag (decision D17): <c>@</c> and a member chain, its call, or a parenthesised expression.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=9FC66F
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=87125F
     // Broiler-Human:        PENDING
     private IReadOnlyList<Decorator> ParseDecorators()
     {
@@ -1019,17 +1019,38 @@ internal sealed partial class Parser
                     throw Unexpected(token);
                 Advance();
                 expression = NoteAwaitReference(new Identifier(SpanOf(token), token.Value!, token.IsEscaped));
-                while (Op.Kind == TokenKind.Dot)
-                {
-                    Advance();
-                    var member = ParseMemberName();
-                    expression = new MemberExpression(SpanFrom(expression.Span), expression, member, isComputed: false, isOptional: false);
-                }
 
-                if (Op.Kind == TokenKind.LeftParen)
+                // The member chain and its call are a chain like ParseChainLinks's: each link charged one level of tree
+                // depth before it is built (decision D14), so a chain past ParseLimits.MaximumTreeDepth is refused.
+                var saved = treeDepth;
+                try
                 {
-                    var (arguments, trailing) = ParseArguments(defer: false);
-                    expression = new CallExpression(SpanFrom(expression.Span), expression, arguments, trailing, isOptional: false);
+                    while (Op.Kind == TokenKind.Dot)
+                    {
+                        Advance();
+                        var member = ParseMemberName();
+                        var span = SpanFrom(expression.Span);
+                        Deepen(span);
+                        expression = new MemberExpression(span, expression, member, isComputed: false, isOptional: false)
+                        {
+                            Spine = treeDepth - saved,
+                        };
+                    }
+
+                    if (Op.Kind == TokenKind.LeftParen)
+                    {
+                        var (arguments, trailing) = ParseArguments(defer: false);
+                        var span = SpanFrom(expression.Span);
+                        Deepen(span);
+                        expression = new CallExpression(span, expression, arguments, trailing, isOptional: false)
+                        {
+                            Spine = treeDepth - saved,
+                        };
+                    }
+                }
+                finally
+                {
+                    treeDepth = saved;
                 }
             }
 

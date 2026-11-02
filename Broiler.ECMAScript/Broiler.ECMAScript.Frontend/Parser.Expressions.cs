@@ -3,20 +3,21 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   47
-// Annotated:        47/47
-// Exempt:           8
-// Human-reviewed:   0/47
+// Relevant units:   54
+// Annotated:        54/54
+// Exempt:           9
+// Human-reviewed:   0/54
 // IP risk:          Low
 // Security risk:    High
-// Criteria:         5/5
+// Criteria:         6/6
 // Resource impact:  2/10 max
-// Unverified:       47
+// Unverified:       54
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Broiler.ECMAScript.Syntax;
 
@@ -257,108 +258,208 @@ internal sealed partial class Parser
     }
 
     /// <summary>
-    /// The binary operators of clauses 13.6 to 13.13 at or above <paramref name="minimum"/> precedence, with
-    /// <c>#x in o</c> where a RelationalExpression may begin.
+    /// An operator the precedence climb has read and whose right operand it is reading: the left operand, the operator, and
+    /// the chain the operator extends - the tree depth before the chain began and the chain's least precedence.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=735058
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=0; Fingerprint=80E5F0
+    // Broiler-Human:        PENDING
+    private readonly record struct PendingOperator(Expression Left, Token Operator, int Saved, int Minimum);
+
+    // The precedence climb's explicit stack, shared by every ParseBinary on the parser's stack: each uses the entries above
+    // the count it found, and leaves the list at that count.
+    private readonly List<PendingOperator> pendingOperators = new();
+
+    /// <summary>
+    /// The binary operators of clauses 13.6 to 13.13 at or above <paramref name="minimum"/> precedence, with
+    /// <c>#x in o</c> where a RelationalExpression may begin: a precedence climb whose right operands of a higher precedence
+    /// are read with an explicit stack (<see cref="pendingOperators"/>), not by recursion, so that a source climbing the
+    /// grammar's ten precedences between two levels of nesting adds no frame (decision D14; the derivation's section 3).
+    /// Each chain of one precedence is charged one level of tree depth for each node from its left operand's spine. An
+    /// async arrow read whole as a primary is no operand (clause 15.9: an AsyncArrowFunction is only an
+    /// AssignmentExpression), so nothing extends it: the operator after it is left to the statement's end, where a line
+    /// terminator before it inserts a semicolon (clause 12.10).
+    /// </summary>
+    /// <remarks>
+    /// The recursion it replaces (stage SJL-13.2e) read each right operand as <c>ParseBinary(precedence + 1)</c>, which the
+    /// nesting bound does not charge; it built the same tree, charged the same tree depth and refused at the same token. The
+    /// right operand of <c>**</c>, right-associative at one precedence, is still read by recursion, charged as nesting; the
+    /// right operand of <c>#x in</c> is read by one recursion, which cannot repeat. The method holds no token: what reads
+    /// one is a method of its own, out of line, so that the frame each level of nesting leaves here stays small.
+    /// </remarks>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge and nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=75D4D2
+    // Broiler-Falsified-If: an operator binds with another precedence or associativity than the grammar's, a chain is charged without its left operand's spine, or a right operand of a higher precedence adds a frame to the parser's stack
     // Broiler-Human:        PENDING
     private Expression ParseBinary(int minimum, bool noIn)
     {
-        var token = Ex;
-        Expression left;
-        if (token.Kind == TokenKind.PrivateIdentifier)
-        {
-            var next = PeekAfter(LexicalGoal.RegExp, LexicalGoal.Div);
-            if (!IsWord(next, Word.In) || noIn || minimum > Relational)
-                throw Unexpected(token);
-            Advance();
-            var name = new PrivateIdentifier(SpanOf(token), token.Value!, token.IsEscaped);
-            Advance();
-            var right = ParseBinary(Relational + 1, noIn);
-            left = new PrivateInExpression(SpanFrom(name.Span), name, right);
-        }
-        else
-        {
-            left = ParseUnary();
-        }
-
-        return ParseBinaryRest(left, minimum, noIn);
-    }
-
-    /// <summary>
-    /// Extends a left operand with every binary operator of at least <paramref name="minimum"/> precedence, charging one level
-    /// of tree depth for each node from the left operand's spine (decision D14). An async arrow read whole as a primary is
-    /// no operand (clause 15.9: an AsyncArrowFunction is only an AssignmentExpression), so nothing extends it: the operator
-    /// after it is left to the statement's end, where a line terminator before it inserts a semicolon (clause 12.10).
-    /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge; IP=Low; Security=High; Resources=2; Fingerprint=EB11AA
-    // Broiler-Falsified-If: an operator binds with another precedence or associativity than the grammar's, or a chain is charged without its left operand's spine
-    // Broiler-Human:        PENDING
-    private Expression ParseBinaryRest(Expression left, int minimum, bool noIn)
-    {
-        if (ReferenceEquals(left, primaryArrow))
-            return left;
-
-        var saved = treeDepth;
-        treeDepth += left.Spine;
+        var bottom = pendingOperators.Count;
+        var entry = treeDepth;
         try
         {
+            Expression? left = null;
+            var saved = 0;
+            var open = false;
+            var operand = true;
             while (true)
             {
-                var token = Op;
-                if (noIn && IsWord(token, Word.In))
-                    return left;
-                var precedence = Precedence(token);
-                if (precedence == 0 || precedence < minimum)
-                    return left;
-
-                // ExponentiationExpression: its left operand is an UpdateExpression, never a bare UnaryExpression (clause 13.6).
-                if (precedence == Exponent && left.Kind is SyntaxKind.UnaryExpression or SyntaxKind.AwaitExpression)
-                    throw Unexpected(token);
-
-                Advance();
-                Expression right;
-                if (precedence == Exponent)
+                if (operand)
                 {
-                    // The right operand of ** recurses at the same precedence: charged as nesting, which bounds the recursion.
-                    EnterNesting(token);
-                    try
+                    // An operand, a UnaryExpression or #x in o; then a chain begins with it, charged from its spine, unless
+                    // it is an async arrow, which nothing extends (the chain is then not open, and nothing was charged).
+                    left = AtPrivateIdentifier() ? ParsePrivateIn(minimum, noIn) : ParseUnary();
+                    operand = false;
+                    saved = treeDepth;
+                    open = !ReferenceEquals(left, primaryArrow);
+                    if (open)
+                        treeDepth += left.Spine;
+                }
+
+                if (open)
+                {
+                    var precedence = BinaryPrecedence(noIn);
+                    if (precedence != 0 && precedence >= minimum)
                     {
-                        right = ParseBinary(Exponent, noIn);
+                        if (precedence == Exponent)
+                        {
+                            left = ParseExponentOperand(left!, saved, noIn);
+                            continue;
+                        }
+
+                        // A right operand of a higher precedence: the chain waits on the explicit stack while a chain of
+                        // the next precedence begins with the operand.
+                        PushOperator(left!, saved, minimum);
+                        minimum = precedence + 1;
+                        operand = true;
+                        continue;
                     }
-                    finally
-                    {
-                        ExitNesting();
-                    }
-                }
-                else
-                {
-                    right = ParseBinary(precedence + 1, noIn);
+
+                    // The chain ends: its charge is released.
+                    treeDepth = saved;
                 }
 
-                Expression node;
-                var span = SpanFrom(left.Span);
-                if (LogicalOperatorOf(token) is { } logical)
-                {
-                    // A CoalesceExpression has no LogicalOR or LogicalAND operand, nor the other way round (clause 13.13).
-                    if (MixesCoalesce(logical, left) || MixesCoalesce(logical, right))
-                        throw Unexpected(token);
-                    node = new LogicalExpression(span, logical, left, right);
-                }
-                else
-                {
-                    node = new BinaryExpression(span, BinaryOperatorOf(token), left, right);
-                }
+                if (pendingOperators.Count == bottom)
+                    return left!;
 
-                Deepen(span);
-                node.Spine = treeDepth - saved;
-                left = node;
+                // The chain that ended is the right operand of the operator that waits.
+                left = PopOperator(left!, out saved, out minimum);
+                open = true;
             }
         }
         finally
         {
-            treeDepth = saved;
+            treeDepth = entry;
+            pendingOperators.RemoveRange(bottom, pendingOperators.Count - bottom);
         }
+    }
+
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.10 relational private in; IP=Low; Security=Low; Resources=0; Fingerprint=82C9E5
+    // Broiler-Human:        PENDING
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private bool AtPrivateIdentifier() => Ex.Kind == TokenKind.PrivateIdentifier;
+
+    /// <summary><c>#x in o</c> where a RelationalExpression may begin (clause 13.10): its right operand a ShiftExpression.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.10 relational private in; IP=Low; Security=Medium; Resources=2; Fingerprint=D0F633
+    // Broiler-Human:        PENDING
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private Expression ParsePrivateIn(int minimum, bool noIn)
+    {
+        var token = Ex;
+        var next = PeekAfter(LexicalGoal.RegExp, LexicalGoal.Div);
+        if (!IsWord(next, Word.In) || noIn || minimum > Relational)
+            throw Unexpected(token);
+        Advance();
+        var name = new PrivateIdentifier(SpanOf(token), token.Value!, token.IsEscaped);
+        Advance();
+        var right = ParseBinary(Relational + 1, noIn);
+        return new PrivateInExpression(SpanFrom(name.Span), name, right);
+    }
+
+    /// <summary>The precedence of the binary operator ahead, or 0 where none is: <c>in</c> is none where the [In] parameter is off.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, s13.7 for-in [In]; IP=Low; Security=Low; Resources=0; Fingerprint=C1BDE8
+    // Broiler-Human:        PENDING
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private int BinaryPrecedence(bool noIn)
+    {
+        var token = Op;
+        return noIn && IsWord(token, Word.In) ? 0 : Precedence(token);
+    }
+
+    /// <summary>Reads the operator ahead onto the precedence climb's stack, its left operand and its chain's state with it.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=0; Fingerprint=44645B
+    // Broiler-Human:        PENDING
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void PushOperator(Expression left, int saved, int minimum)
+    {
+        var token = Op;
+        Advance();
+        pendingOperators.Add(new PendingOperator(left, token, saved, minimum));
+    }
+
+    /// <summary>Takes the operator that waits off the precedence climb's stack and builds its node over <paramref name="right"/>.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge; IP=Low; Security=Medium; Resources=0; Fingerprint=65B78A
+    // Broiler-Human:        PENDING
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private Expression PopOperator(Expression right, out int saved, out int minimum)
+    {
+        var pending = pendingOperators[^1];
+        pendingOperators.RemoveAt(pendingOperators.Count - 1);
+        (saved, minimum) = (pending.Saved, pending.Minimum);
+        return CombineBinary(pending.Left, pending.Operator, right, saved);
+    }
+
+    /// <summary>
+    /// The operator <c>**</c> ahead and its right operand, which recurses at the same precedence: charged as nesting, which
+    /// bounds the recursion. Its left operand is an UpdateExpression, never a bare UnaryExpression (clause 13.6).
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6 exponentiation, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=2; Fingerprint=71A753
+    // Broiler-Human:        PENDING
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private Expression ParseExponentOperand(Expression left, int saved, bool noIn)
+    {
+        var token = Op;
+        if (left.Kind is SyntaxKind.UnaryExpression or SyntaxKind.AwaitExpression)
+            throw Unexpected(token);
+
+        Advance();
+        Expression power;
+        EnterNesting(token);
+        try
+        {
+            power = ParseBinary(Exponent, noIn);
+        }
+        finally
+        {
+            ExitNesting();
+        }
+
+        return CombineBinary(left, token, power, saved);
+    }
+
+    /// <summary>
+    /// The node of a binary or logical operator over two operands, charged one level of tree depth from the tree depth
+    /// <paramref name="saved"/> its chain began at (decision D14).
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, s13.13 coalesce, JSD-0083 D14 left-operand charge; IP=Low; Security=High; Resources=2; Fingerprint=537C99
+    // Broiler-Falsified-If: a CoalesceExpression mixed with a LogicalOR or LogicalAND operand is built, or a chain node is built without its charge
+    // Broiler-Human:        PENDING
+    private Expression CombineBinary(Expression left, Token token, Expression right, int saved)
+    {
+        Expression node;
+        var span = SpanFrom(left.Span);
+        if (LogicalOperatorOf(token) is { } logical)
+        {
+            // A CoalesceExpression has no LogicalOR or LogicalAND operand, nor the other way round (clause 13.13).
+            if (MixesCoalesce(logical, left) || MixesCoalesce(logical, right))
+                throw Unexpected(token);
+            node = new LogicalExpression(span, logical, left, right);
+        }
+        else
+        {
+            node = new BinaryExpression(span, BinaryOperatorOf(token), left, right);
+        }
+
+        Deepen(span);
+        node.Spine = treeDepth - saved;
+        return node;
     }
 
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=AF8190

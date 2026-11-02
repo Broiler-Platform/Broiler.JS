@@ -159,7 +159,27 @@ internal static class Limits
         new("import-calls", "x = ", "import(", "a", ")", ";"),
         new("async-arrows", "x = ", "async () => ", "1", "", ";"),
         new("object-patterns", "var ", "{a: ", "b", "}", " = c;"),
+
+        // The precedence ladder: a source that climbs the grammar's ten binary precedences, from || to *, before each
+        // charged level. Read by recursion, as stage SJL-13.2e first read it, each precedence added a ParseBinary and
+        // ParseBinaryRest pair to the level's frames; read with an explicit stack, it adds none. #x in reads its right
+        // operand by a recursion of its own, once per level.
+        new("ladder-computed-keys", "x = ", Ladder + "{[", "a", "]: 1}", ";"),
+        new("ladder-parentheses", "x = ", Ladder + "(", "1", ")", ";"),
+        new("ladder-objects", "x = ", Ladder + "{a: ", "1", "}", ";"),
+        new("ladder-calls", "x = ", Ladder + "f(", "1", ")", ";"),
+        new("ladder-brackets", "x = ", Ladder + "[", "1", "]", ";"),
+        new("ladder-templates", "x = ", Ladder + "`${", "1", "}`", ";"),
+        new("ladder-class-methods", "x = ", Ladder + "class { m() { return ", "1", "} }", ";"),
+        new("ladder-import-calls", "x = ", Ladder + "import(", "a", ")", ";"),
+        new("ladder-private-in", "x = class { #x; m() { return ", PrivateInLadder + "(", "1", ")", "; } };"),
     ];
+
+    /// <summary>One operator of each binary precedence from <c>||</c> to <c>*</c>, each operand's right operand the next precedence's.</summary>
+    internal const string Ladder = "a || a && a | a ^ a & a == a < a << a + a * ";
+
+    /// <summary>The ladder with <c>#x in</c> at the relational precedence, whose right operand is read by a recursion of its own.</summary>
+    internal const string PrivateInLadder = "a || a && a | a ^ a & a == #x in a << a + a * ";
 
     /// <summary>
     /// <c>--measure-frames</c>: for each construct and each of four nesting parameters, the parse of a source nested past

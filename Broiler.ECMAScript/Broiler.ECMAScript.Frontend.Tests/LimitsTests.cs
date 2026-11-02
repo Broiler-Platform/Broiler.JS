@@ -60,7 +60,7 @@ public sealed class LimitsTests
     public void The_constants_are_the_derivation_s()
     {
         // Broiler.VM's bound, derived as JSD-0022 derived it (design.md's note of 2026-11-02 at SJL-13.2e, and
-        // docs/frontend/limits-derivation.md): the library's parse needs no stack per level of tree depth.
+        // docs/frontend/limits/derivation.md): the library's parse needs no stack per level of tree depth.
         Assert.Equal(10_000, ParseLimits.MaximumTreeDepth);
 
         // Broiler.VM's supported maximum, confirmed by the measurement, not raised.
@@ -121,6 +121,32 @@ public sealed class LimitsTests
         Assert.Equal(("JSE9202", "limit.tree.too-deep", "10000"), (refused.Diagnostics[0].Code, refused.Diagnostics[0].MessageId, refused.Diagnostics[0].Arguments[0]));
     }
 
+    /// <summary>
+    /// A decorator's member chain and its call, under the decorators proposal's flag (decision D17), are charged as any
+    /// other chain: at the bound accepted, one link past it refused with the tree-depth diagnostic, never built.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void A_decorator_s_member_chain_is_bounded_by_the_tree_depth_constant(bool call)
+    {
+        string Text(int links) => "@a" + string.Concat(Enumerable.Repeat(".a", links)) + (call ? "()" : string.Empty) + " class C {}";
+        ParseResult Parse(string text) => OnDocumentedStack(() => SyntaxParser.Parse(
+            new ParseRequest(new SourceText(text), ParseGoal.Script, Runners.UnicodeDataHome.Tables, NoValidator.Instance)
+            {
+                Proposals = ProposalFlags.Decorators,
+                Limits = new ParseLimits { NestingDepth = new DepthLimit(64) },
+            }));
+        var atBound = ParseLimits.MaximumTreeDepth - (call ? 1 : 0);
+        Assert.Equal(ParseOutcome.Accepted, Parse(Text(atBound)).Outcome);
+        foreach (var links in new[] { atBound + 1, 100_000 })
+        {
+            var refused = Parse(Text(links));
+            Assert.Equal(ParseOutcome.Refused, refused.Outcome);
+            Assert.Equal(("JSE9202", "10000"), (refused.Diagnostics[0].Code, refused.Diagnostics[0].Arguments[0]));
+        }
+    }
+
     [Fact]
     public void Parenthesised_left_operands_nested_in_one_another_are_charged_together()
     {
@@ -137,8 +163,19 @@ public sealed class LimitsTests
     }
 
     /// <summary>
+    /// One operator of each binary precedence from <c>||</c> to <c>*</c>: a source that climbs the whole precedence ladder
+    /// before each level of a construct, which the parser reads with an explicit stack and does not charge (the
+    /// derivation's section 3).
+    /// </summary>
+    private const string Ladder = "a || a && a | a ^ a & a == a < a << a + a * ";
+
+    /// <summary>The ladder with <c>#x in</c> at the relational precedence, whose right operand the parser reads by a recursion of its own.</summary>
+    private const string PrivateInLadder = "a || a && a | a ^ a & a == #x in a << a + a * ";
+
+    /// <summary>
     /// Each construct the parser recurses through, nested at the library's supported maximum, is accepted on the documented
-    /// stack, and one level more is refused with the contract's nesting diagnostic: the constructs the derivation measured.
+    /// stack, and one level more is refused with the contract's nesting diagnostic: the constructs the derivation measured,
+    /// alone and after the precedence ladder.
     /// </summary>
     [Theory]
     [InlineData("x = ", "[", "1", "]", ";")]
@@ -166,6 +203,15 @@ public sealed class LimitsTests
     [InlineData("x = ", "import(", "a", ")", ";")]
     [InlineData("x = ", "async () => ", "1", "", ";")]
     [InlineData("var ", "{a: ", "b", "}", " = c;")]
+    [InlineData("x = ", Ladder + "{[", "a", "]: 1}", ";")]
+    [InlineData("x = ", Ladder + "(", "1", ")", ";")]
+    [InlineData("x = ", Ladder + "{a: ", "1", "}", ";")]
+    [InlineData("x = ", Ladder + "f(", "1", ")", ";")]
+    [InlineData("x = ", Ladder + "[", "1", "]", ";")]
+    [InlineData("x = ", Ladder + "`${", "1", "}`", ";")]
+    [InlineData("x = ", Ladder + "class { m() { return ", "1", "} }", ";")]
+    [InlineData("x = ", Ladder + "import(", "a", ")", ";")]
+    [InlineData("x = class { #x; m() { return ", PrivateInLadder + "(", "1", ")", "; } };")]
     public void Each_recursive_construct_is_accepted_at_the_supported_maximum_on_the_documented_stack(string prefix, string open, string core, string close, string suffix)
     {
         string Text(int levels) => prefix + string.Concat(Enumerable.Repeat(open, levels)) + core + string.Concat(Enumerable.Repeat(close, levels)) + suffix;

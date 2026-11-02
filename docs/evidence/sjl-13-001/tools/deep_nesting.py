@@ -20,7 +20,7 @@ documents (ParseLimits.StackBytes); and read its exit code and its one line. A r
 Every row is reported, one line each, with what it expected and what it got; the summary says how many rows held.
 Exit codes: 0 every row held, 1 a row did not, 2 the corpus or a source was refused.
 
-`stack` (the derivation's measurement, Broiler.ECMAScript/docs/frontend/limits-derivation.md). For each row (or the
+`stack` (the derivation's measurement, Broiler.ECMAScript/docs/frontend/limits/derivation.md). For each row (or the
 rows named), the least thread stack, in KiB, at which the process still ends with the row's expected code: a bisection
 over `--stack-kib` between 64 KiB and the documented stack, to a resolution of 16 KiB. A process that lost its stack
 ends by a signal (SIGABRT, the runtime's stack-overflow exit). Not a judgement: the derivation reads the figures.
