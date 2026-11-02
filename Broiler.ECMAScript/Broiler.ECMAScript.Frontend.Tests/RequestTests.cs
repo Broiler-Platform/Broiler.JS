@@ -5,7 +5,12 @@ using Xunit;
 
 namespace Broiler.ECMAScript.Syntax.Tests;
 
-/// <summary>Providers that throw when read: the request reads neither, and the parse asks the validator nothing at stage 4b.</summary>
+/// <summary>
+/// Providers that throw when read: the request reads neither. <i>(Revised 2026-11-02, at stage SJL-13.2d: the validator admits
+/// every literal, since the parse asks it about each from stage 4d, and the Frontend tests' EarlyErrorTests record its calls;
+/// the summary read "Providers that throw when read: the request reads neither, and the parse asks the validator nothing at
+/// stage 4b.")</i>
+/// </summary>
 internal sealed class NoTables : IUnicodeTables
 {
     internal static NoTables Instance { get; } = new();
@@ -20,7 +25,7 @@ internal sealed class NoValidator : IRegularExpressionValidator
 {
     internal static NoValidator Instance { get; } = new();
 
-    public RegularExpressionVerdict Validate(string pattern, string flags) => throw new InvalidOperationException("called");
+    public RegularExpressionVerdict Validate(string pattern, string flags) => RegularExpressionVerdict.Valid;
 }
 
 /// <summary>

@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   36
-// Annotated:        36/36
+// Relevant units:   37
+// Annotated:        37/37
 // Exempt:           1
-// Human-reviewed:   0/36
+// Human-reviewed:   0/37
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         1/1
 // Resource impact:  2/10 max
-// Unverified:       36
+// Unverified:       37
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -28,7 +28,7 @@ internal sealed partial class Parser
     private int prologueStart = -1;
 
     /// <summary>The goal's root (clauses 16.1 ParseScript, 16.2 ParseModule, 19.2.1.1 PerformEval and 20.2.1.1.1 CreateDynamicFunction).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=A6D14A
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=0CB78B
     // Broiler-Human:        PENDING
     private ProgramNode ParseProgram()
     {
@@ -44,18 +44,18 @@ internal sealed partial class Parser
             case ParseGoal.Eval:
                 // ScriptBody[~Yield, ~Await, ~Return]; the request's top-level await reads it with [Await] (decision D10).
                 inAwait = request.Switches.TopLevelAwait;
-                body = ParseStatementListUntilEnd(directives: true, module: false);
+                body = ParseStatementListUntilEnd(directives: true, module: false, top: true);
                 break;
             case ParseGoal.Module:
                 inAwait = request.Switches.TopLevelAwait;
-                body = ParseStatementListUntilEnd(directives: false, module: true);
+                body = ParseStatementListUntilEnd(directives: false, module: true, top: true);
                 break;
             case ParseGoal.FunctionBody:
                 inYield = kind is DynamicFunctionKind.Generator or DynamicFunctionKind.AsyncGenerator;
                 inAwait = kind is DynamicFunctionKind.Async or DynamicFunctionKind.AsyncGenerator;
                 inReturn = true;
                 functionDepth = 1;
-                body = ParseStatementListUntilEnd(directives: true, module: false);
+                body = ParseStatementListUntilEnd(directives: true, module: false, top: true);
                 break;
             default:
                 // FormalParameters[?Yield, ?Await], read to the end of the text.
@@ -75,11 +75,13 @@ internal sealed partial class Parser
     }
 
     /// <summary>A StatementList, or a ModuleItemList, to the end of the text, its directive prologue first where the goal has one.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=9A61DA
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=F080B0
     // Broiler-Human:        PENDING
-    private List<Statement> ParseStatementListUntilEnd(bool directives, bool module)
+    private List<Statement> ParseStatementListUntilEnd(bool directives, bool module, bool top)
     {
         var body = new List<Statement>();
+        if (top)
+            topLevel = body;
         if (directives)
             ParsePrologue(body, TokenKind.EndOfInput);
 
@@ -227,7 +229,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>The Statement production's alternatives, the lookahead restrictions of ExpressionStatement among them (clause 14.5).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=3CC896
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=8795FC
     // Broiler-Human:        PENDING
     private Statement ParseStatementCore(Token token)
     {
@@ -275,7 +277,7 @@ internal sealed partial class Parser
                     case Word.Import:
                         return ParseImportInStatement(token);
                     case Word.Export:
-                        throw Unexpected(token);
+                        throw ModuleItemOutsideModuleItemList(token);
                     case Word.Let:
                         if (PeekAfter(LexicalGoal.RegExp, LexicalGoal.Div).Kind == TokenKind.LeftBracket)
                             throw Unexpected(token);
@@ -317,15 +319,24 @@ internal sealed partial class Parser
     /// ImportDeclaration is a ModuleItem, so here, inside a block or under the Script goal, it is refused (catalogue row
     /// EX0010 at stage 4d).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=DB0412
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=15C0F1
     // Broiler-Human:        PENDING
     private Statement ParseImportInStatement(Token token)
     {
         var next = PeekAfter(LexicalGoal.RegExp, LexicalGoal.Div);
         if (next.Kind is TokenKind.LeftParen or TokenKind.Dot)
             return ParseExpressionStatement(token);
-        throw Unexpected(token);
+        throw ModuleItemOutsideModuleItemList(token);
     }
+
+    /// <summary>
+    /// An ImportDeclaration or ExportDeclaration where only a statement may stand: under the Script goal, catalogue row EX0010;
+    /// inside a module's block or function, the grammar's generic refusal (EX0008).
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=2D035E
+    // Broiler-Human:        PENDING
+    private ParseAbort ModuleItemOutsideModuleItemList(Token token) =>
+        isModule ? Unexpected(token) : Refuse(Rows.EX0010, SpanOf(token), Spelling(token));
 
     /// <summary>An ExpressionStatement (clause 14.5), a directive where it opens a prologue and holds only its string literal (clause 11.2.1).</summary>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=42DBC3
@@ -442,11 +453,15 @@ internal sealed partial class Parser
         return new IfStatement(SpanFrom(start), test, consequent, alternate);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=A797DB
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=AE4EF1
     // Broiler-Human:        PENDING
     private Statement ParseIfClause()
     {
         var token = Ex;
+
+        // Annex B.3.3's FunctionDeclaration as an `if` clause applies only to non-strict code (catalogue row EG0005).
+        if (IsWord(token, Word.Function) && annexB && strict)
+            throw Refuse(Rows.EG0005, SpanOf(token), "function");
         if (IsWord(token, Word.Function) && annexB && !strict)
         {
             EnterNesting(token);
@@ -496,7 +511,7 @@ internal sealed partial class Parser
     /// lookahead restrictions on <c>let</c> and <c>async of</c>, Annex B.3.5's initialiser in a sloppy <c>for</c>-<c>in</c>,
     /// and no semicolon inserted in the head (row P16b).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14.7.4 s14.7.5 for heads, row P16b; IP=Low; Security=High; Resources=2; Fingerprint=6FBEDD
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14.7.4 s14.7.5 for heads, row P16b; IP=Low; Security=High; Resources=2; Fingerprint=0BE270
     // Broiler-Falsified-If: a semicolon is inserted in a for head, or a head the lookahead restrictions exclude is admitted
     // Broiler-Human:        PENDING
     private Statement ParseFor()
@@ -556,6 +571,9 @@ internal sealed partial class Parser
                 if (only.Initializer is not null)
                 {
                     // Annex B.3.5: for (var BindingIdentifier Initializer in Expression), in sloppy code only.
+                    // Annex B.3.5 applies only to non-strict code (catalogue row EG0007).
+                    if (isIn && kind == DeclarationKind.Var && only.Target is BindingIdentifier && annexB && strict)
+                        throw Refuse(Rows.EG0007, SpanOf(next), "in");
                     if (!(isIn && kind == DeclarationKind.Var && only.Target is BindingIdentifier && annexB && !strict))
                         throw Unexpected(next);
                 }
@@ -586,7 +604,11 @@ internal sealed partial class Parser
             var isOf = IsWord(after, Word.Of);
             if (isOf && (startsWithLet || (startsWithAsync && expression is Identifier { IsEscaped: false } && !isAwait)))
                 throw Unexpected(after);
-            init = ToAssignmentTarget(expression, forHead: true);
+            // EE0053 is the rule of an object or array literal the head converts; a head that is no LeftHandSideExpression
+            // at all is the grammar's plain refusal (EX0008).
+            init = expression is ArrayLiteral or ObjectLiteral
+                ? Converting(Rows.EE0053, () => ToAssignmentPattern(expression))
+                : ToAssignmentTarget(expression, forHead: true);
             CheckCoverInitialized(mark);
             Advance();
             return ParseForInOfRest(start, init, isOf, isAwait);
@@ -665,13 +687,13 @@ internal sealed partial class Parser
     }
 
     /// <summary>A ReturnStatement (clause 14.10): only a function body is parsed with [Return] (catalogue rows EX0032 and EX0033 at stage 4d).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=DD4FE7
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=7A96D4
     // Broiler-Human:        PENDING
     private Statement ParseReturn()
     {
         var keyword = Ex;
         if (!inReturn)
-            throw Unexpected(keyword);
+            throw Refuse(inStaticBlock ? Rows.EX0033 : Rows.EX0032, SpanOf(keyword), "return");
         var start = StartOf(Advance());
         Expression? argument = null;
         if (!AtStatementEnd(Ex))

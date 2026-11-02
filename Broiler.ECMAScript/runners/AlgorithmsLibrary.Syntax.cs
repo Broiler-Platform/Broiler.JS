@@ -29,7 +29,8 @@ namespace Broiler.ECMAScript.Runners;
 /// vector's expected outcome as the home's rule reads it (part B): <c>error: SyntaxError</c> as a refusal, any other outcome
 /// as an acceptance. From stage 4c the library's parser answers every syntax vector: <c>error: SyntaxError</c> where the
 /// tokenizer or the grammar refuses its source, <c>status: accepted</c> everywhere else, a vector only a static-semantic
-/// early error refuses among them until stage 4d reports those. <i>(Revised 2026-11-01, at stage SJL-13.2c, when the parser
+/// early error refuses among them until stage 4d reports those. From stage 4d the declarations walk reports them, and every
+/// syntax vector agrees at the parse. <i>(Revised 2026-11-02, at stage SJL-13.2d, which added the last sentence.)</i> <i>(Revised 2026-11-01, at stage SJL-13.2c, when the parser
 /// was added; the sentence read "Until stage 4c gives the library a parser, a syntax vector is <c>error: SyntaxError</c>
 /// where the tokenizer (stage 4b) refuses its source, and <c>status: not-implemented</c> everywhere else; no vector is
 /// accepted.")</i> <i>(Revised 2026-11-01, at stage SJL-13.2b, when the tokenizer began to refuse a source; the sentence read
@@ -44,9 +45,11 @@ namespace Broiler.ECMAScript.Runners;
 /// <para>
 /// <b>Its providers.</b> The Unicode provider is the tables the owner's generator writes from this repository's pin
 /// (<see cref="UnicodeDataHome"/>, from stage 4b, whose tokenizer reads it): both engines embed tables from the same pinned
-/// files. The home holds neither engine's validator, and <see cref="RunnerRegularExpressions"/> carries nothing and throws if
-/// asked, so that the stage that first asks it (4d) must give the runner a real provider rather than have a parse silently
-/// read an empty one; the parser of stage 4c asks it nothing. <i>(Revised 2026-11-01, at stage SJL-13.2b, whose tokenizer reads the Unicode provider; the paragraph
+/// files. The home holds neither engine's validator; <see cref="RunnerRegularExpressions"/> admits every literal, which no
+/// syntax vector's outcome depends on (its remarks say why). <i>(Revised 2026-11-02, at stage SJL-13.2d, whose parse asks
+/// the provider; it read "The home holds neither engine's validator, and <see cref="RunnerRegularExpressions"/> carries
+/// nothing and throws if asked, so that the stage that first asks it (4d) must give the runner a real provider rather than
+/// have a parse silently read an empty one; the parser of stage 4c asks it nothing.")</i> <i>(Revised 2026-11-01, at stage SJL-13.2b, whose tokenizer reads the Unicode provider; the paragraph
 /// read "<b>Its providers are placeholders until the stages that read them.</b> The home holds neither engine's tables nor
 /// either engine's validator. <c>RunnerUnicodeTables</c> and <see cref="RunnerRegularExpressions"/> carry nothing and throw
 /// if read, so that the stage that first reads one (4b for the tables, 4d for the validator) must give the runner a real
@@ -125,9 +128,15 @@ internal sealed partial class AlgorithmsLibrary
     }
 
     /// <summary>
-    /// The runner's regular-expression provider at stage 4a: no validator. The home holds neither engine's validator, and the
-    /// library asks for none before stage 4d, which gives the runner its provider (for the corpus runner, one that answers from
-    /// the classification, decision D26); until then a call throws.
+    /// The runner's regular-expression provider: every literal is valid. The home holds neither engine's validator, and no
+    /// syntax vector's outcome is a pattern's validity: the corpus has no vector of a row the stage table bases on the
+    /// provider (EE0019, EE0183 to EE0213, EG0002), since a pattern's validity is the engines' (decision D7), and its
+    /// regular-expression vectors test where a literal is delimited, every one with a valid pattern. The parse corpus judges
+    /// the provider's seam, through a provider that answers from the classification (decision D26).
+    /// <i>(Revised 2026-11-02, at stage SJL-13.2d, whose parse asks the provider about every literal; it read "The runner's
+    /// regular-expression provider at stage 4a: no validator. The home holds neither engine's validator, and the library
+    /// asks for none before stage 4d, which gives the runner its provider (for the corpus runner, one that answers from
+    /// the classification, decision D26); until then a call throws.")</i>
     /// </summary>
     internal sealed class RunnerRegularExpressions : IRegularExpressionValidator
     {
@@ -139,8 +148,6 @@ internal sealed partial class AlgorithmsLibrary
         internal static RunnerRegularExpressions Instance { get; } = new();
 
         /// <inheritdoc/>
-        public RegularExpressionVerdict Validate(string pattern, string flags) => throw new NotSupportedException(
-            "The library-level runner's stage-4a regular-expression provider has no validator: the stage whose code asks it "
-            + "(4d, the parse-time early errors) gives the runner its provider.");
+        public RegularExpressionVerdict Validate(string pattern, string flags) => RegularExpressionVerdict.Valid;
     }
 }

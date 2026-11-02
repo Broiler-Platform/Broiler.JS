@@ -346,6 +346,45 @@ Not yet packed under a version of its own: the stream's next version is set when
   stream the parse reads is kept inside the library and is not public. The probe still records the `syntax` vectors
   without judging them, which stage 4d's check judges, and the Conformance tests pin by id every vector the library
   refuses and every one it accepts against an expected refusal.
+- `Broiler.ECMAScript.Frontend`, stage SJL-13.2d: **the diagnostics and the parse-time early errors** (Broiler.VM's
+  JSD-0083, sub-area D, decisions D6, D7, D10, D11 and D12; design [`docs/frontend/design.md`](docs/frontend/design.md),
+  section 9.3's note of this stage):
+  - **the catalogue's shared codes everywhere**: every refusal carries the code and the message identifier of the
+    catalogue row it reports (`early-errors.tsv`), one internal entry per row the stage table assigns `syntax` and none
+    for a `request`, `engine` or `semantics` row. Stage 4c's provisional grammar codes are the rows they stood for,
+    JSE9108 EX0008's and JSE9109 EX0009's, kept where no other row explains the site; the sites that serve a row of
+    their own report it: a cover that covers nothing (EE0017, EE0025, EE0032, EE0037, EE0038, EE0053, EE0087, EE0155),
+    an operand that is no assignment target (EE0033 to EE0035), an optional chain's template (EE0026), a module item
+    under the Script goal (EX0010), `return` outside a function or in a static block (EX0032, EX0033), Annex B's
+    sloppy-only forms in strict code (EG0005, EG0007), an HTML-like comment in a module (EG0001), and a proposal's form
+    its flag does not admit (EP0009 to EP0014). The limits' JSE9201 and JSE9202 were already EX0011's and EX0012's. The
+    arguments each identifier takes are the catalogue's section 6 note of this stage. A refusal's phase is the pass that
+    finds it: `Parser` for the grammar's, a limit's and those sites', `Semantics` for the declarations walk's and the
+    provider's (design section 9.3's note says which rows each pass reports);
+  - **the declarations walk**, in `Broiler.ECMAScript.Semantics`, over the tree the grammar admits, with a stack of its
+    own: the static-semantic early errors of every `syntax` row, the union decision D10 took (names under strictness
+    and the [Yield] and [Await] parameters, legacy octal literals and escapes, templates' escapes, assignment targets,
+    `delete`, `with`, labelled functions and duplicate labels, `new.target` and `import.meta`, a function's parameters
+    and directives, every scope's declared-name conflicts, a class's elements, `using` where nothing disposes, a
+    module's export names and import attributes), with Annex B's relaxations under the switch; the top-level-`await`
+    switch, the one `request` row (EX0023), read as the top level's [Await] parameter with no diagnostic of its own; and
+    every regular-expression literal's validity asked of the request's provider, once per literal in source order,
+    reported at the literal by the row its verdict's identifier names, or EE0019's. A verdict carries an identifier and
+    no row, so of the provider's rows that share an identifier the first in catalogue order reports for all: EE0188 and
+    EE0189 are reported as EE0186; EE0195, EE0210 and EE0212 as EE0193; EE0196, EE0208, EE0211 and EE0213 as EE0194;
+    EE0198 as EE0197; EE0200 as EE0199; and EE0207 as EE0206. These twelve rows have no code of their own in a
+    diagnostic until the verdict can name the row;
+  - **the side tables**, public: `ParseResult.Declarations`, a `DeclarationTables` of every scope (`Scope`, its
+    `ScopeKind` and its `Declaration`s, each with its `BindingKind`, whether lexical, and whether a block-level or an
+    `if` clause's function) and of the program's and every function's strictness and parameter names
+    (`FunctionFacts`), each ordered by source position;
+  - **the library's order and the request's limits** (decision D11): diagnostics in source order, a construct's
+    refusal where the parse reaches it and a scope's conflicts when it closes; under the first error, the first; under
+    all errors, every one up to `ParseLimits.DiagnosticCap`. When the grammar refuses, the early errors of the top-level
+    statements completed before its refusal come first.
+
+  The library-level runner's regular-expression provider admits every literal (no `syntax` vector's outcome is a
+  pattern's validity), and every `syntax` vector now agrees at the parse; the probe judges the area from this stage.
 
 ### Changed
 
@@ -356,8 +395,9 @@ None.
 None: no engine reads the Intl generator, its tables, the Intl library or the frontend yet. Broiler.VM regenerates
 its table with the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone
 SJL-9.5, whose own records list what each observes; rows L9, L18 and Z8's corrections move Broiler.VM's answers when it
-cuts over to the library, at SJL-9.4. The frontend parses from stage 4c, and neither engine references it before
-SJL-13.3's step 1 and SJL-14's bridge. *(Revised 2026-11-02, at SJL-9.3d, when the date-time format's zone resolution was
+cuts over to the library, at SJL-9.4. The frontend parses from stage 4c, reports the parse-time early errors from stage 4d, and neither engine
+references it before SJL-13.3's step 1 and SJL-14's bridge. *(Revised 2026-11-02, at SJL-13.2d; the sentence read "The
+frontend parses from stage 4c, and neither engine references it before SJL-13.3's step 1 and SJL-14's bridge.")* *(Revised 2026-11-02, at SJL-9.3d, when the date-time format's zone resolution was
 added; the clause read "rows L9 and L18's corrections move Broiler.VM's answers".)* *(Revised 2026-11-01, at SJL-13.2c,
 when the parser was added; the sentence read "The frontend accepts no source before stage 4c, refusing from stage 4b only
 a source the lexical grammar refuses, and neither engine references it before SJL-13.3's step 1 and SJL-14's bridge.")*

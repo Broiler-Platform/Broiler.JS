@@ -24,13 +24,14 @@ namespace Broiler.ECMAScript.Probe;
 /// that need an engine, over Broiler.JS's generated tables compiled into the image, under invariant globalization (the
 /// project's <c>InvariantGlobalization</c>). From milestone SJL-13.2a it also runs
 /// <c>Broiler.ECMAScript.Frontend</c>, through the runner's frontend adapter, on the <c>syntax</c> area, whose outcomes it
-/// records and does not judge until stage SJL-13.2d (<see cref="IsRecordedArea"/>): from stage SJL-13.2c the parser answers
+/// recorded and did not judge until stage SJL-13.2d, and judges from there (<see cref="IsParseJudgedArea"/>): from stage SJL-13.2c the parser answers
 /// every vector, a refusal counted among the matches where the vector expects one and an acceptance among them where it
 /// expects any other outcome, and a vector only a static-semantic early error refuses, accepted until stage 4d, counted
 /// among those that differ. <i>(Revised 2026-11-01, at stage SJL-13.2c; it read "records and does not judge until the
 /// library parses (<see cref="IsRecordedArea"/>): from stage SJL-13.2b a vector whose source the tokenizer refuses is
 /// refused, and is counted among the matches, and every other is not implemented; a refusal of a vector that expects an
-/// acceptance would be counted among those that differ.")</i> What the probe proves is that the library, the reader, the validator, the
+/// acceptance would be counted among those that differ.")</i> <i>(Revised 2026-11-02, at stage SJL-13.2d; it read "records and
+/// does not judge until stage SJL-13.2d (<see cref="IsRecordedArea"/>)".)</i> What the probe proves is that the library, the reader, the validator, the
 /// runner and the report compile into a Native AOT image under Broiler.VM's root settings and give
 /// there, over the whole corpus, the answers they give under the JIT. Until SJL-3 it ran the empty
 /// library, whose every answer was <c>status: not-implemented</c>.
@@ -38,38 +39,25 @@ namespace Broiler.ECMAScript.Probe;
 internal static class Program
 {
     /// <summary>
-    /// The areas whose vectors the probe runs and records but does not judge (milestone SJL-13.2a; the plan's stage 4a:
-    /// "the probe runs the syntax vectors (all expected to fail until 4c, recorded, not judged)"). From stage 4c the parser
-    /// answers all of them, and the line of their verdicts shows how many match, how many differ, and how many agree at the
-    /// parse. <i>(Revised 2026-11-01, at stage SJL-13.2c; the sentence read "From stage 4b the tokenizer refuses some of them,
-    /// which the line of their verdicts shows as matches, and the rest stay not implemented.")</i>
+    /// The areas the probe judges at the parse (milestone SJL-13.2a, judged from stage SJL-13.2d; the plan's check for stage 4d,
+    /// "Every <c>syntax</c> row's vectors pass"): each vector must agree at the parse
+    /// (<see cref="AlgorithmsLibrary.MatchesAtTheParse"/>), refused where it expects <c>error: SyntaxError</c> and accepted
+    /// where it expects any other outcome, since a parse knows that a source is accepted and not what it completes with.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// <b>Recorded</b>: every vector of such an area is run through the same runner as every other, its line written to the
-    /// report like any other's, so that the JIT and Native AOT reports are compared over it byte for byte; its verdicts are
-    /// counted on a line of their own, with how many agree at the parse (<see cref="AlgorithmsLibrary.MatchesAtTheParse"/>).
-    /// A crash while running one ends the probe as any crash does, and an area with no vector is a failure.
-    /// </para>
-    /// <para>
-    /// <b>Not judged</b>: no verdict of such an area is added to the failures, so the exit code is decided by the judged
-    /// areas, the corpus's validity, the second run's identical report and the contract types alone. A judged area is held as
-    /// before: each vector must pass, or be "not implemented" where the library does not answer it.
-    /// </para>
-    /// <para>
-    /// The syntax area leaves this set at stage 4d, and is judged from there by <see cref="AlgorithmsLibrary.MatchesAtTheParse"/>:
-    /// the plan's check for stage 4d is "Every syntax row's vectors pass", and for stage 4c "Corpus outcomes at the syntax half
-    /// against the classification, locally", so at stage 4c, whose parser accepts what only a static-semantic early error
-    /// refuses, the area stays recorded and the Conformance tests list, by id, every vector the library refuses and every one
-    /// it accepts against its expected refusal, so that a regression stays visible. <i>(Revised 2026-11-01, at stage
-    /// SJL-13.2c; it read "The syntax area leaves this set at the stage whose parser answers it (4c, or the stage the plan
-    /// names then), and is judged from there by <see cref="AlgorithmsLibrary.MatchesAtTheParse"/>.")</i>
-    /// </para>
+    /// Every such vector is run through the same runner as every other, its line written to the report like any other's, so
+    /// that the JIT and Native AOT reports are compared over it byte for byte; its verdicts are counted on a line of their
+    /// own. A vector that does not agree at the parse is a failure, and an area with no vector is a failure.
+    /// <i>(Revised 2026-11-02, at stage SJL-13.2d, which reports the static-semantic early errors, so that the area is judged;
+    /// it was <c>IsRecordedArea</c>, "The areas whose vectors the probe runs and records but does not judge (milestone
+    /// SJL-13.2a; the plan's stage 4a: "the probe runs the syntax vectors (all expected to fail until 4c, recorded, not
+    /// judged)")", whose verdicts added no failure, and whose remarks said "The syntax area leaves this set at stage 4d, and
+    /// is judged from there by <see cref="AlgorithmsLibrary.MatchesAtTheParse"/>".)</i>
     /// </remarks>
-    internal static bool IsRecordedArea(string? area) => area is RecordedAreas;
+    internal static bool IsParseJudgedArea(string? area) => area is ParseJudgedAreas;
 
-    /// <summary>The recorded areas, as the probe's summary line names them.</summary>
-    internal const string RecordedAreas = "syntax";
+    /// <summary>The areas judged at the parse, as the probe's summary line names them.</summary>
+    internal const string ParseJudgedAreas = "syntax";
 
     internal static int Main(string[] args)
     {
@@ -115,19 +103,21 @@ internal static class Program
         // sub-area (a)'s two scripts of the default locale (AlgorithmsLibrary.IsLibraryIntlDefaultLocaleScript), and every Intl
         // vector reads Broiler.JS's tables compiled into this image (the project's IntlTables.g.cs), never the disk's; every other
         // Intl vector, each of which needs an engine or is a collation vector (intl/collation/, SJL-17's), is not implemented.
-        // The syntax area's vectors are the frontend's, through the runner's frontend adapter, and are recorded, not judged
-        // (IsRecordedArea; milestone SJL-13.2a): from stage 4c the parser answers every one, and the area is judged from stage
-        // 4d, which reports the static-semantic early errors.
+        // The syntax area's vectors are the frontend's, through the runner's frontend adapter, judged at the parse from stage
+        // 4d, which reports the static-semantic early errors (IsParseJudgedArea; recorded, not judged, from milestone SJL-13.2a
+        // to stage 4c).
         var library = new AlgorithmsLibrary();
         var results = LibraryRun.Run(corpus.Records, library);
         var recorded = new int[5];
         foreach (var result in results)
         {
-            if (IsRecordedArea(result.Vector["area"]))
+            if (IsParseJudgedArea(result.Vector["area"]))
             {
                 recorded[(int)result.Verdict]++;
                 if (AlgorithmsLibrary.MatchesAtTheParse(result))
                     recorded[4]++;
+                else
+                    failures.Add(result.Vector.Id + ": " + library.Name + " gave " + result.Rendered + ", which does not agree at the parse");
                 continue;
             }
 
@@ -159,7 +149,7 @@ internal static class Program
             failures.Add("the Intl tables were not compiled into the image");
         var recordedCount = recorded[0] + recorded[1] + recorded[2] + recorded[3];
         if (recordedCount == 0)
-            failures.Add("corpus: no vector of the recorded areas (" + RecordedAreas + ") was read");
+            failures.Add("corpus: no vector of the areas judged at the parse (" + ParseJudgedAreas + ") was read");
 
         if (reportPath is not null)
             File.WriteAllText(reportPath, report);
@@ -167,7 +157,7 @@ internal static class Program
         Console.Out.Write("Broiler.ECMAScript.Probe: corpus revision " + Decimal(corpus.Sources.Revision) + ", "
             + Decimal(corpus.Files.Count) + " files, " + Decimal(results.Count) + " vectors, "
             + Decimal(failures.Count) + " failures\n");
-        Console.Out.Write("Broiler.ECMAScript.Probe: recorded, not judged (" + RecordedAreas + "): "
+        Console.Out.Write("Broiler.ECMAScript.Probe: judged at the parse (" + ParseJudgedAreas + "): "
             + Decimal(recordedCount) + " vectors, " + Decimal(recorded[(int)Verdict.Match]) + " match, "
             + Decimal(recorded[(int)Verdict.Difference] + recorded[(int)Verdict.ClassifiedDivergence]) + " differ, "
             + Decimal(recorded[(int)Verdict.NotImplemented]) + " not implemented, " + Decimal(recorded[4]) + " agree at the parse\n");

@@ -138,7 +138,7 @@ internal sealed partial class Parser
     /// A FormalParameterList (clause 15.1) up to <paramref name="end"/>: binding elements, a rest element last, a trailing comma
     /// where none follows a rest element. Answers whether a trailing comma closes it.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=393D6C
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=38694E
     // Broiler-Human:        PENDING
     private bool ParseFormalParameterList(List<Pattern> into, TokenKind end)
     {
@@ -150,8 +150,10 @@ internal sealed partial class Parser
                 Advance();
                 var target = ParseBindingTarget();
                 into.Add(new RestElement(SpanFrom(StartOf(token)), target));
+
+                // A rest parameter is the last: what follows it is a token no production admits there (EX0008).
                 if (Op.Kind != end)
-                    throw Missing(cur, end == TokenKind.RightParen ? ")" : string.Empty);
+                    throw Unexpected(cur);
                 return false;
             }
 
@@ -167,14 +169,16 @@ internal sealed partial class Parser
     }
 
     /// <summary>A FunctionBody between braces (clause 15.2): [Return] on, its directive prologue first, its strictness its own.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=72AA5D
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=671DF8
     // Broiler-Human:        PENDING
     private IReadOnlyList<Statement> ParseFunctionBody()
     {
         var outerReturn = inReturn;
         var outerStrict = strict;
+        var outerStaticBlock = inStaticBlock;
         functionDepth++;
         inReturn = true;
+        inStaticBlock = false;
         try
         {
             Expect(TokenKind.LeftBrace);
@@ -194,6 +198,7 @@ internal sealed partial class Parser
         {
             functionDepth--;
             inReturn = outerReturn;
+            inStaticBlock = outerStaticBlock;
             strict = outerStrict;
         }
     }
@@ -251,7 +256,7 @@ internal sealed partial class Parser
     /// the async call's elements converted into ArrowFormalParameters, refused where the cover does not cover them
     /// (catalogue rows EE0087 and EE0155 at stage 4d).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=003C03
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=B842AB
     // Broiler-Human:        PENDING
     private Expression ParseArrowFromCover(SourceSpan start, Expression cover, int mark, bool noIn)
     {
@@ -261,7 +266,7 @@ internal sealed partial class Parser
         if (cover is ArrowParametersCover list)
         {
             foreach (var item in list.Items)
-                parameters.Add(ToBindingElement(item));
+                parameters.Add(Converting(Rows.EE0087, () => ToBindingElement(item)));
             if (list.Rest is not null)
                 parameters.Add(list.Rest);
             trailing = list.TrailingComma;
@@ -281,12 +286,13 @@ internal sealed partial class Parser
                     if (arguments[i] is SpreadElement spread)
                     {
                         if (i != arguments.Count - 1 || head.Call.TrailingComma)
-                            throw UnexpectedAt(spread.Span);
-                        parameters.Add(new RestElement(spread.Span, ToBindingTarget(spread.Argument)));
+                            throw Refuse(Rows.EE0155, spread.Span, string.Empty);
+                        parameters.Add(new RestElement(spread.Span, Converting(Rows.EE0155, () => ToBindingTarget(spread.Argument))));
                     }
                     else
                     {
-                        parameters.Add(ToBindingElement(arguments[i]));
+                        var argument = arguments[i];
+                        parameters.Add(Converting(Rows.EE0155, () => ToBindingElement(argument)));
                     }
                 }
             }
@@ -302,7 +308,7 @@ internal sealed partial class Parser
             {
                 var reference = awaitReferences[i];
                 if (!bound.Exists(b => ReferenceEquals(b, reference)))
-                    throw UnexpectedAt(reference.Span);
+                    throw Refuse(Rows.EE0155, reference.Span, "await");
             }
 
             trailing = head.Call.TrailingComma;
@@ -352,7 +358,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>An ArrayBindingPattern or ObjectBindingPattern, charged one level of nesting as Broiler.VM's parser charges it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=791F0E
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=8C8C6D
     // Broiler-Human:        PENDING
     private Pattern ParseBindingPattern()
     {
@@ -383,7 +389,7 @@ internal sealed partial class Parser
                         var target = ParseBindingTarget();
                         elements.Add(new RestElement(SpanFrom(StartOf(token)), target));
                         if (Op.Kind != TokenKind.RightBracket)
-                            throw Missing(cur, "]");
+                            throw Unexpected(cur); // a rest element is the last (EX0008)
                         break;
                     }
 
@@ -413,7 +419,7 @@ internal sealed partial class Parser
                     var rest = ParseBindingIdentifier();
                     properties.Add(new RestElement(SpanFrom(propertyStart), rest));
                     if (Op.Kind != TokenKind.RightBrace)
-                        throw Missing(cur, "}");
+                        throw Unexpected(cur); // a rest property is the last (EX0008)
                     break;
                 }
 
@@ -617,7 +623,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>An array or object literal converted to an ArrayAssignmentPattern or ObjectAssignmentPattern (clause 13.15.5), its CoverInitializedNames taken.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 AssignmentPattern by conversion; IP=Low; Security=High; Resources=2; Fingerprint=75D898
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 AssignmentPattern by conversion; IP=Low; Security=High; Resources=2; Fingerprint=BCA81B
     // Broiler-Falsified-If: a literal that covers no AssignmentPattern is converted, or one that does is refused
     // Broiler-Human:        PENDING
     private Pattern ToAssignmentPattern(Expression literal)
@@ -656,6 +662,8 @@ internal sealed partial class Parser
             if (property is SpreadElement spread)
             {
                 // AssignmentRestProperty: its target is no pattern (catalogue row EE0037).
+                if (spread.Argument is ArrayLiteral or ObjectLiteral && i == @object.Properties.Count - 1 && !@object.TrailingComma)
+                    throw Refuse(Rows.EE0037, spread.Argument.Span, string.Empty);
                 if (i != @object.Properties.Count - 1 || @object.TrailingComma || spread.Argument is ArrayLiteral or ObjectLiteral || !IsLeftHandSide(spread.Argument))
                     throw UnexpectedAt(spread.Span);
                 properties.Add(new RestElement(spread.Span, new TargetPattern(spread.Argument.Span, spread.Argument)));
@@ -694,12 +702,13 @@ internal sealed partial class Parser
     }
 
     /// <summary>A DestructuringAssignmentTarget: a nested literal converted, or a LeftHandSideExpression (whose validity is stage 4d's).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=058D45
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=02FD5C
     // Broiler-Human:        PENDING
     private Pattern ToTargetPattern(Expression expression)
     {
+        // A DestructuringAssignmentTarget that is a literal must cover an AssignmentPattern (catalogue row EE0038).
         if (expression is ArrayLiteral or ObjectLiteral)
-            return ToAssignmentPattern(expression);
+            return Converting(Rows.EE0038, () => ToAssignmentPattern(expression));
         if (IsLeftHandSide(expression))
             return new TargetPattern(expression.Span, expression);
         throw UnexpectedAt(expression.Span);
@@ -820,7 +829,7 @@ internal sealed partial class Parser
     /// flag), or a static block, <c>static</c> where written; <c>get</c>, <c>set</c>, <c>static</c>, <c>async</c> and
     /// <c>accessor</c> are names where a name's end follows them.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=4D0914
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=ECC2DD
     // Broiler-Human:        PENDING
     private SyntaxNode ParseClassElement()
     {
@@ -846,6 +855,16 @@ internal sealed partial class Parser
         }
 
         var memberStart = StartOf(token);
+
+        // `accessor` followed by an element's name on its line is an auto-accessor, whose proposal the request does not
+        // admit here (catalogue row EP0010, decision D17).
+        if (IsWord(token, Word.Accessor) && (proposals & ProposalFlags.AutoAccessors) == 0)
+        {
+            var next = PeekAfter(LexicalGoal.Div, LexicalGoal.Div);
+            if (StartsElementName(next) && !EndsElementName(next) && !next.NewLineBefore)
+                throw Refuse(Rows.EP0010, SpanOf(token), "accessor");
+        }
+
         if (IsWord(token, Word.Accessor) && (proposals & ProposalFlags.AutoAccessors) != 0)
         {
             var next = PeekAfter(LexicalGoal.Div, LexicalGoal.Div);
@@ -938,7 +957,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>A ClassStaticBlock (clause 15.7): its statements under [~Yield, +Await, ~Return].</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=DF31F2
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=E08310
     // Broiler-Human:        PENDING
     private StaticBlock ParseStaticBlock(SourceSpan start)
     {
@@ -947,9 +966,11 @@ internal sealed partial class Parser
         var outerYield = inYield;
         var outerAwait = inAwait;
         var outerReturn = inReturn;
+        var outerStaticBlock = inStaticBlock;
         inYield = false;
         inAwait = true;
         inReturn = false;
+        inStaticBlock = true;
         functionDepth++;
         try
         {
@@ -969,6 +990,7 @@ internal sealed partial class Parser
             inYield = outerYield;
             inAwait = outerAwait;
             inReturn = outerReturn;
+            inStaticBlock = outerStaticBlock;
             functionDepth--;
         }
     }
