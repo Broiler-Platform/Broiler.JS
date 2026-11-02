@@ -4,15 +4,15 @@
 //
 // Copied from Broiler.VM at 4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f:
 //   src/Broiler.VM.Profile.JavaScript/JsDateData.cs
-//     blob fe1b2d5a850dbdd7b170518d36e3fcab25a020ce: JsDateData and JsDayPeriodRule
+//     blob fe1b2d5a850dbdd7b170518d36e3fcab25a020ce: the whole file: JsDateData and JsDayPeriodRule; it replaces stage SJL-9.3a's copy of the same blob, which removed the pattern generators' cache and the member that makes one, since the class is not partial and a second copy beside it could not hold the members sub-area (d) compares
 //
 // Changes from the source, none of which changes a result:
 //   - the namespace;
-//   - the generated SPDX and assurance header and the per-member assurance annotations removed;
-//   - removed: the pattern generators' cache and the member that makes one (`gate`, `generators`, `Generator`), which reach JsDatePatternGenerator, sub-area (d)'s, and decode nothing.
+//   - the generated SPDX and assurance header and the per-member assurance annotations removed.
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Broiler.ECMAScript.Intl.Tests.Differential.Vm;
 
@@ -30,6 +30,10 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential.Vm;
 /// </remarks>
 internal sealed class JsDateData
 {
+    private readonly Lock gate = new();
+
+    private readonly Dictionary<string, JsDatePatternGenerator> generators = new(StringComparer.Ordinal);
+
     /// <summary>Each language's data, by dotted key.</summary>
     internal Dictionary<string, Dictionary<string, string>> Locales { get; } = new(StringComparer.Ordinal);
 
@@ -76,6 +80,23 @@ internal sealed class JsDateData
     /// <summary>A language's value for a key, or nothing.</summary>
     internal string? Value(string language, string key) =>
         Locales.TryGetValue(language, out var values) && values.TryGetValue(key, out var value) ? value : null;
+
+    /// <summary>The pattern generator of a language whose default hour character is <paramref name="hourChar"/>.</summary>
+    internal JsDatePatternGenerator Generator(string language, char hourChar, string decimalSymbol)
+    {
+        var key = language + "|" + hourChar + "|" + decimalSymbol;
+
+        lock (gate)
+        {
+            if (!generators.TryGetValue(key, out var generator))
+            {
+                generator = new JsDatePatternGenerator(this, language, hourChar, decimalSymbol);
+                generators[key] = generator;
+            }
+
+            return generator;
+        }
+    }
 
     /// <summary>
     /// The hour character a region prefers - <c>h</c>, <c>H</c>, <c>K</c> or <c>k</c> - from CLDR's

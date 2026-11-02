@@ -24,7 +24,9 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// and <c>Intl.supportedValuesOf</c> (<see cref="LocaleSection"/>), and sub-area (b)'s, from stage SJL-9.3b, are M1 to M3 and
 /// P1 and P2, the Intl mathematical value, the digit options, FormatNumericToString, plural rules and plural ranges
 /// (<see cref="DecimalSection"/>), and sub-area (c)'s, from stage SJL-9.3c, are N1 to N3 and S1 to S3, number formatting, its
-/// ranges and construction, lists, relative times and display names (<see cref="NumberTextSection"/>). A section names what it compares, and an answer is rendered as text so that
+/// ranges and construction, lists, relative times and display names (<see cref="NumberTextSection"/>), and sub-area (d)'s, from
+/// stage SJL-9.3d, are T1 to T5, the date-time format's construction, formatting, ranges, Intl over Temporal and the time zone's
+/// resolution (<see cref="DateTimeSection"/>). A section names what it compares, and an answer is rendered as text so that
 /// the comparison is exact: a string as it is, a missing answer as <c>&lt;none&gt;</c>, a record by its fields.
 /// </remarks>
 internal static class DifferentialCheck
@@ -42,9 +44,12 @@ internal static class DifferentialCheck
     /// row here, by the inputs it names, never a new row: sub-area (a)'s are L9, L18 and L22 (<see cref="LocaleSection.Known"/>),
     /// sub-area (b)'s is P4, decision D20's compact exponent (<see cref="DecimalSection.Known"/>), and sub-area (c)'s is the data
     /// policy of its rows N1b to N9e, N8a, N8b, S1b, S4b and S8, Broiler.JS's embedding read at the data locale with its own
-    /// numbering-system defaults and symbols (decisions D5, D13 and D21; <see cref="NumberTextSection.Known"/>).
+    /// numbering-system defaults and symbols (decisions D5, D13 and D21; <see cref="NumberTextSection.Known"/>); and sub-area (d)'s
+    /// are row Z8, the correction of Broiler.VM that reports the zone's identifier as given (decision D15), and the data policy
+    /// of its rows T10, T15, T16, T22 and T37, Broiler.JS's embedding read at the data locale with its own numbering-system
+    /// defaults (decisions D5 and D13; <see cref="DateTimeSection.Known"/>).
     /// </remarks>
-    internal static IReadOnlyList<KnownDifference> Known { get; } = [.. LocaleSection.Known(), .. DecimalSection.Known(), .. NumberTextSection.Known()];
+    internal static IReadOnlyList<KnownDifference> Known { get; } = [.. LocaleSection.Known(), .. DecimalSection.Known(), .. NumberTextSection.Known(), .. DateTimeSection.Known()];
 
     /// <summary>Runs the sections named (all when none is), at a scale, from a seed.</summary>
     internal static IReadOnlyList<Section> Run(ulong seed, int scale, IReadOnlyCollection<string>? only = null)
@@ -57,6 +62,8 @@ internal static class DifferentialCheck
 
         // SUB-AREA (C)'S OWN STREAM, from the same seed, so that the earlier stages' sections draw as they did (stage SJL-9.3c).
         var texts = new SeededRandom(seed ^ 0x9C3C_93C0_0000_0000UL);
+        // SUB-AREA (D)'S OWN STREAM, from the same seed, so that the earlier stages' sections draw as they did (stage SJL-9.3d).
+        var dates = new SeededRandom(seed ^ 0x9D3D_93D0_0000_0000UL);
         var sections = new List<Section>();
 
         foreach (var embedding in Embedding.Both())
@@ -69,6 +76,8 @@ internal static class DifferentialCheck
                 sections.AddRange(DecimalSection.Run(embedding, decimals, scale, only));
             if (only is null || only.Any(static s => s is "N1" or "N2" or "N3" or "S1" or "S2" or "S3"))
                 sections.AddRange(NumberTextSection.Run(embedding, texts, scale, only));
+            if (only is null || only.Any(static s => s is "T1" or "T2" or "T3" or "T4" or "T5"))
+                sections.AddRange(DateTimeSection.Run(embedding, dates, scale, only));
         }
 
         return sections;

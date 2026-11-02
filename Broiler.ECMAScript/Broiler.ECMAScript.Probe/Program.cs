@@ -19,7 +19,7 @@ namespace Broiler.ECMAScript.Probe;
 /// directly as well. From milestone SJL-9.3a it also runs <c>Broiler.ECMAScript.Intl</c>, through the
 /// same runner, on the Intl area's sub-area (a), and from stage SJL-9.3b on the operations of sub-area (b) the runner
 /// answers, whose vectors it reads whole (<c>IVectorRecordLibrary</c>), and from stage SJL-9.3c on those of sub-area (c), read
-/// whole the same way. From milestone SJL-13.2a it also runs
+/// whole the same way, and from stage SJL-9.3d on those of sub-area (d), read whole too. From milestone SJL-13.2a it also runs
 /// <c>Broiler.ECMAScript.Frontend</c>, through the runner's frontend adapter, on the <c>syntax</c> area, whose outcomes it
 /// records and does not judge until stage SJL-13.2d (<see cref="IsRecordedArea"/>): from stage SJL-13.2c the parser answers
 /// every vector, a refusal counted among the matches where the vector expects one and an acceptance among them where it
@@ -104,8 +104,9 @@ internal static class Program
         // Broiler.VM's per-engine expectation, the engine whose providers the runner takes (milestone SJL-9.3a). So are
         // sub-area (b)'s of the operations AlgorithmsLibrary.IntlValuesOperations names, read whole with their scripts
         // (stage SJL-9.3b). So are sub-area (c)'s, numbers-and-text's operations AlgorithmsLibrary.IntlNumbersOperations names and
-        // values-and-plurals' format and formatToParts, but the engine-level script forms (stage SJL-9.3c). Every other Intl
-        // vector is not implemented.
+        // values-and-plurals' format and formatToParts, but the engine-level script forms (stage SJL-9.3c). So are sub-area
+        // (d)'s, date-times' operations AlgorithmsLibrary.IntlDateTimesOperations names, but the engine-level script forms
+        // AlgorithmsLibrary.IsEngineLevelDateTimesScript names (stage SJL-9.3d). Every other Intl vector is not implemented.
         // The syntax area's vectors are the frontend's, through the runner's frontend adapter, and are recorded, not judged
         // (IsRecordedArea; milestone SJL-13.2a): from stage 4c the parser answers every one, and the area is judged from stage
         // 4d, which reports the static-semantic early errors.

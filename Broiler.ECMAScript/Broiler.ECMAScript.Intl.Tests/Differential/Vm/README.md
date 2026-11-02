@@ -34,11 +34,20 @@ It runs under the JIT only; the Native AOT probe compiles none of it.
   copied with its resolved options and FormatNumericToString alone, is the whole file from stage SJL-9.3c, whose diff
   against the earlier copy adds lines and removes none but the header's. This is the one exception to "a copy is never
   edited afterwards"; the earlier sections compare the same code, and their reports do not move.
+- *(Added 2026-11-02, at stage SJL-9.3d.)* The same exception replaces `JsDateData.cs`, which stage SJL-9.3a copied without the
+  pattern generators' cache and the member that makes one (`gate`, `generators`, `Generator`), by the whole file at the same
+  commit and blob: sub-area (d)'s sections reach `JsDatePatternGenerator` through it. Its diff against the earlier copy adds
+  lines and removes none but the header's, and section D0's report does not move. `JsRealm.DateTimeFormat.Create.cs` is a second
+  copy of the blob stage SJL-9.3a copied as `JsRealm.DateTimeFormat.cs`, under the rule for a partial class: the two hold no
+  member in common.
 
 | File | Source at `4cf9ca44` | Git blob | Bytes | SHA-256 of the copy |
 |---|---|---|---|---|
 | `JsBigInt.cs` | `src/Broiler.VM.Profile.JavaScript/JsBigInt.cs` | `8898b1970980797a0b10fe6581af4b14f5804678` | 8154 | `dd3cb8550ef7d18cd252a2aa76861a09a634e97e8f550e7552a38cb34a8c0812` |
-| `JsDateData.cs` | `src/Broiler.VM.Profile.JavaScript/JsDateData.cs` | `fe1b2d5a850dbdd7b170518d36e3fcab25a020ce` | 4952 | `1c677234e25933e1f6820165e8ec2c0a24a871e181b2e920169bab3641093ce8` |
+| `JsDateData.cs` | `src/Broiler.VM.Profile.JavaScript/JsDateData.cs` | `fe1b2d5a850dbdd7b170518d36e3fcab25a020ce` | 5802 | `3f0888fedab423a08d51c6b56ac265119cd5f52b9eb5026cc3d90cff3c122f8e` |
+| `JsDateIntervalFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsDateIntervalFormat.cs` | `a0e77e35d49e86461a3e7d79085b537e777e9e11` | 30251 | `ba4e17831a72e19b690d545bdeb1743fa584022d0d68e98d76bbf3fc8f21b7d9` |
+| `JsDatePatternGenerator.cs` | `src/Broiler.VM.Profile.JavaScript/JsDatePatternGenerator.cs` | `4fa8f8627383ec43c5f5566f285af15eb03e9c91` | 32802 | `23e986da951cc8ef8453a562d068e44be226484b71071196245a40b091e49a39` |
+| `JsDateTimeFormatter.cs` | `src/Broiler.VM.Profile.JavaScript/JsDateTimeFormatter.cs` | `b736954240efc744c221492f0ba675fa239949c2` | 28091 | `728705999bf0040c734887e791a2bdfe131480ff67e7ae91384311e97896c633` |
 | `JsDecimal.cs` | `src/Broiler.VM.Profile.JavaScript/JsDecimal.cs` | `de0c9461fc759cb63a07024cc7cbb211a9725c83` | 18599 | `c1e644466df6eac49ff2a29eb662ae23e9464c672493ea24a0bcc01fbc3343ed` |
 | `JsIntlData.cs` | `src/Broiler.VM.Profile.JavaScript.Format/JsIntlData.cs` | `fd0dd0f90140eeeb9a5b2f31a8f600d12dd98f84` | 8366 | `4af5985aa04684feaf0e832ff56f17e234c568bb7199fb88c68bf3792eb9452d` |
 | `JsIntlTables.cs` | `src/Broiler.VM.Profile.JavaScript/JsIntlTables.cs` | `46f1856060283e74727ccfc0b87f9872cfccb0e6` | 16340 | `382a523d87268ee174bfa7c987db3cd76af8b3730530f6b764ae87c4dc6ffd18` |
@@ -48,8 +57,9 @@ It runs under the JIT only; the Native AOT probe compiles none of it.
 | `JsNumberFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsNumberFormat.cs` | `c65c7914ced68db36cf939d9ea2880847c62bbe2` | 3936 | `0a65ec6e3fff21e3bb5f2d24ced264df33e797c2749fcd6ddbbe8ec31bc0d1c5` |
 | `JsNumberFormatter.cs` | `src/Broiler.VM.Profile.JavaScript/JsNumberFormatter.cs` | `e31736af3c25d85e91b2652ea0f849de0f34ed44` | 39203 | `428dc6842c87a12f8ff4bb2615caac570e2b0be870bfb4c04094fe266ade5ad2` |
 | `JsPluralRule.cs` | `src/Broiler.VM.Profile.JavaScript/JsPluralRule.cs` | `5ba6931e402f6bca873448b019f36905033fd61c` | 8063 | `e3d83d18cbaa6fdc37658d830bd24bc1a2143db3360073164637592a3c67ee6f` |
-| `JsRealm.DisplayNames.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.DisplayNames.cs` | `a49be69ade789b2aeea5b422bd9221d78828c174` | 13515 | `dc8cd266db98ade682885da322aa4182cf05342eb3e91a8fcc96fc6fd1bb9ede` |
+| `JsRealm.DateTimeFormat.Create.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.DateTimeFormat.cs` | `bff1811cd34a91f50a9840a2bfc4de81bfb31161` | 32856 | `a96a37a2016ccbfb56d728e7b97fb1bdfd04da44e25c5183fb7211764f268d7c` |
 | `JsRealm.DateTimeFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.DateTimeFormat.cs` | `bff1811cd34a91f50a9840a2bfc4de81bfb31161` | 4988 | `d22c98a67ef3b08375e7a698caabfe877d4c989fee538d3ac3c31df3128843b4` |
+| `JsRealm.DisplayNames.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.DisplayNames.cs` | `a49be69ade789b2aeea5b422bd9221d78828c174` | 13515 | `dc8cd266db98ade682885da322aa4182cf05342eb3e91a8fcc96fc6fd1bb9ede` |
 | `JsRealm.Intl.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.Intl.cs` | `b75e44c777594b41d36a06ddaa366708b83c4159` | 13150 | `5abafd99db6b8f8fe72df71220933652a273b4626ffc77064efd370c3b69c145` |
 | `JsRealm.ListFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.ListFormat.cs` | `df3aac41e14ff7637c3670fb863b07b151e05664` | 6952 | `cbbb5bdd78ea18f1c6df35d3f38fcf150d6054b3b3f018043ed28d5bf394ab72` |
 | `JsRealm.Locale.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.Locale.cs` | `d70618ca673e4d30b47b1e3424d7a734253b68ef` | 23796 | `9bd5f8ad8a81f71559d6a12010e97318ce2e3a1ecab57da9ce351db751f2d302` |
@@ -57,6 +67,7 @@ It runs under the JIT only; the Native AOT probe compiles none of it.
 | `JsRealm.NumberFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.NumberFormat.cs` | `7ae56e7fcc1a01aa976edb86b137b30bb30fd309` | 2446 | `2282bad9905b42d8eb1d41213cbd9d6ab4245385efae99b2562d2761b3e99360` |
 | `JsRealm.PluralRules.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.PluralRules.cs` | `a6358f49750fd30674c07b8f73e7ff34c2b2b06b` | 8409 | `0fac45951c3d2bd583d2d3a8f5a19da96b60b65e85182298852574a1008fbd0d` |
 | `JsRealm.RelativeTimeFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.RelativeTimeFormat.cs` | `d59be7e2e974fa1083e4750db657bb723dc949b2` | 10129 | `8de93eb2367325ded805566caea451e69cd688a64fce053c724785eb19f50fa0` |
+| `JsZoneNames.cs` | `src/Broiler.VM.Profile.JavaScript/JsZoneNames.cs` | `e5012a2eb450992d5680b64980ed9bba4eaf352a` | 12893 | `bf25a4edf7ea94f9c112884c99b1c7637c18c5914ea68d92a556715a59d5da03` |
 
 **What the copies are compared on.** The check's sections are in `../`: D0, the table decoders, from stage SJL-9.3a's
 skeleton (the plan's task 5.0), over the six decoder copies; and L1 to L4, locale identifiers, negotiation, Intl.Locale
@@ -71,5 +82,12 @@ number format's construction, lists, relative times and display names, from stag
 three realm copies `JsRealm.ListFormat.cs`, `JsRealm.RelativeTimeFormat.cs` and `JsRealm.DisplayNames.cs`, and stage
 SJL-9.3b's NumberFormat and PluralRules copies, whose constructors they call; the realm's prototype methods, which those
 three copies remove, are the harness's few lines around each copied operation (`../VmEngine.cs` adds `Base64Options`,
-Broiler.VM's GetOptionsObject, as a stand-in). Each section's population, its counts
+Broiler.VM's GetOptionsObject, as a stand-in). And T1 to T5, the date-time format's construction and resolved options, its
+formatting and ranges with their charge, the formats of Temporal's types and the time zone's resolution, from stage SJL-9.3d's
+task 5.d (`../DateTimeSection.cs`, its population in `../DateTimePopulation.cs`), over `JsDatePatternGenerator.cs`,
+`JsDateIntervalFormat.cs`, `JsDateTimeFormatter.cs`, `JsZoneNames.cs`, the whole `JsDateData.cs` and the realm copy
+`JsRealm.DateTimeFormat.Create.cs`, whose CreateDateTimeFormat reads its options through the earlier stages' realm copies; the
+realm's prototype methods and HandleDateTimeValue, which read script and Temporal objects, are the harness's few lines around the
+copied operations (`../VmEngine.cs` adds the realm's Temporal flag, `JsTemporal.CalendarIdOf` and the zone names and calendars
+`JsIntlTables` builds, as stand-ins). Each section's population, its counts
 and every difference's class are in its report (`dotnet Broiler.ECMAScript.Intl.Tests.dll differential`, `../Program.cs`).

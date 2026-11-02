@@ -123,3 +123,26 @@ internal static class HomeTimeZones
         throw new DirectoryNotFoundException("no Broiler.ECMAScript/data/time/generated/tables.manifest above " + AppContext.BaseDirectory);
     }
 }
+
+/// <summary>
+/// The shared calendars over the time data home's calendar table as committed, <c>Broiler.ECMAScript/data/time/generated/calendars.bin</c>:
+/// what an engine hands a date-time format of a calendar other than the Gregorian and ISO 8601 ones (stage SJL-9.3d).
+/// </summary>
+internal static class HomeCalendars
+{
+    private static readonly Lazy<Temporal.TemporalCalendars> Instance = new(Load);
+
+    internal static Temporal.TemporalCalendars Current => Instance.Value;
+
+    private static Temporal.TemporalCalendars Load()
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            var table = Path.Combine(directory.FullName, "Broiler.ECMAScript", "data", "time", "generated", "calendars.bin");
+            if (File.Exists(table))
+                return new Temporal.TemporalCalendars(new Time.CalendarTables(File.ReadAllBytes(table)));
+        }
+
+        throw new DirectoryNotFoundException("no Broiler.ECMAScript/data/time/generated/calendars.bin above " + AppContext.BaseDirectory);
+    }
+}

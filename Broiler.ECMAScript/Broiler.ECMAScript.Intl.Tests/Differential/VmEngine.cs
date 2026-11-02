@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
 
 namespace Broiler.ECMAScript.Intl.Tests.Differential.Vm;
@@ -185,11 +186,26 @@ internal sealed class VmError(string kind, string message) : Exception(message)
 /// <c>JsIntlTables.TimeZones</c> answers since SJL-8.5, which the copy of <c>JsIntlTables</c> leaves out (milestone SJL-8's).
 /// The copied code passes it where it takes a <see cref="JsIntlTables"/>, and reads its tables through it.
 /// </summary>
-internal sealed class VmIntl(JsIntlTables tables, ITimeZoneDatabase timeZones)
+/// <remarks>
+/// <i>(Extended 2026-11-02, at stage SJL-9.3d.)</i> It also holds what Broiler.VM's <c>JsIntlTables</c> builds from the same data
+/// for its date-time format, which the copy of <c>JsIntlTables</c> leaves out with the time zones: the shared calendars
+/// (<c>JsIntlTables.Calendars</c>) and the zone names (<c>JsIntlTables.ZoneNames</c>), the copied <c>JsZoneNames</c> over the
+/// metazone table's lines and the same database, made the first time a zone is named, as Broiler.VM makes them; and the likely
+/// subtags the copied <c>JsIntlTables</c> answers.
+/// </remarks>
+internal sealed class VmIntl(JsIntlTables tables, ITimeZoneDatabase timeZones, TemporalCalendars? calendars = null, IReadOnlyList<string>? metaZones = null)
 {
+    private readonly Lazy<JsZoneNames> zoneNames = new(() => new JsZoneNames(metaZones ?? [], timeZones));
+
     internal JsIntlTables Tables { get; } = tables;
 
     internal ITimeZoneDatabase TimeZones { get; } = timeZones;
+
+    internal TemporalCalendars Calendars => calendars ?? throw new NotSupportedException("the harness gave this section no calendars");
+
+    internal JsZoneNames ZoneNames => zoneNames.Value;
+
+    internal string? Likely(string source) => Tables.Likely(source);
 
     internal IReadOnlyList<string> Locales => Tables.Locales;
 
@@ -407,4 +423,31 @@ internal sealed partial class JsRealm
     internal static string VmCanonicalCodeForDisplayNames(JsEngine engine, string type, string code) => CanonicalCodeForDisplayNames(engine, type, code);
 
     internal static string? VmDisplayName(JsEngine engine, JsDisplayNamesObject names, string code) => DisplayName(engine, names, code);
+
+    // ---- stage SJL-9.3d's entry points and stand-ins ----------------------------------------------------------------
+
+    /// <summary>
+    /// Whether the realm has Temporal, which Broiler.VM's CreateDateTimeFormat reads as its Duration prototype being built: the
+    /// harness's realm has it, so that the formats of Temporal's types are built, as in every root that composes Temporal.
+    /// </summary>
+    internal JsObject? TemporalDurationPrototype { get; } = new JsObject(null);
+
+    internal static JsDateTimeFormatObject VmCreateDateTimeFormat(JsEngine engine, JsValue locales, JsValue options, string required, string defaults, string? toLocaleStringTimeZone = null) =>
+        CreateDateTimeFormat(engine, engine.Realm.ObjectPrototype, locales, options, required, defaults, toLocaleStringTimeZone);
+
+    internal static Dictionary<string, string> VmComponentsOf(string pattern) => ComponentsOf(pattern);
+
+    internal static (string Identifier, int Offset, JsZoneKind Kind, ITimeZoneRules? Zone) VmResolveTimeZone(JsEngine engine, JsValue value) => ResolveTimeZone(engine, value);
+}
+
+/// <summary>
+/// The member of Broiler.VM's <c>JsTemporal</c> (<c>JsTemporal.Calendar.cs</c>, not copied) its CreateDateTimeFormat calls: a
+/// calendar type's identifier through the shared calendars' canonicalization, as Broiler.VM's does.
+/// </summary>
+internal static class JsTemporal
+{
+    internal static CalendarId CalendarIdOf(string calendar) =>
+        TemporalCalendars.Canonicalize(calendar, out var id) == CalendarStatus.Completed
+            ? id
+            : throw new InvalidOperationException("A Temporal object holds a calendar that is not canonical: " + calendar);
 }

@@ -411,5 +411,11 @@ public sealed class NumbersAndTextTests
         public IReadOnlyDictionary<string, string>? DateValues(string locale, string calendar) => inner.DateValues(locale, calendar);
 
         public IReadOnlyList<DayPeriodRule>? DayPeriods(string language) => inner.DayPeriods(language);
+
+        public IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone) => inner.MetazonePeriods(zone);
+
+        public string? GoldenZone(string metazone, string region) => inner.GoldenZone(metazone, region);
+
+        public string? PrimaryZone(string region) => inner.PrimaryZone(region);
     }
 }

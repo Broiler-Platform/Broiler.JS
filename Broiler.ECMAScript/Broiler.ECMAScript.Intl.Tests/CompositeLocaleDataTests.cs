@@ -82,6 +82,12 @@ public sealed class CompositeLocaleDataTests
         public IReadOnlyDictionary<string, string>? DateValues(string locale, string calendar) => null;
 
         public IReadOnlyList<DayPeriodRule>? DayPeriods(string language) => null;
+
+        public IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone) => null;
+
+        public string? GoldenZone(string metazone, string region) => null;
+
+        public string? PrimaryZone(string region) => null;
     }
 
     [Fact]

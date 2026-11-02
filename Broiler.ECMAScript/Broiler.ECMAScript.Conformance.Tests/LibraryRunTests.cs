@@ -160,7 +160,8 @@ public class LibraryRunTests
             ["intl/locales/negotiation/0021", "intl/locales/providers/0012", "intl/locales/providers/0013", "intl/locales/providers/0014"],
             engineLevel.Select(static v => v.Id).Order(System.StringComparer.Ordinal));
 
-        Assert.All(results.Except(locales).Where(static r => !AlgorithmsLibrary.IsLibraryIntlValues(r.Vector) && !AlgorithmsLibrary.IsLibraryIntlNumbers(r.Vector)),
+        Assert.All(results.Except(locales).Where(static r => !AlgorithmsLibrary.IsLibraryIntlValues(r.Vector) && !AlgorithmsLibrary.IsLibraryIntlNumbers(r.Vector)
+                && !AlgorithmsLibrary.IsLibraryIntlDateTimes(r.Vector)),
             static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
 
         // Intl.NumberFormat.supportedLocalesOf: providers/0007 is the library's FilterLocales, held to Broiler.VM's per-engine
@@ -293,6 +294,63 @@ public class LibraryRunTests
             && AlgorithmsLibrary.IsLibraryIntlNumbers(v)).ToList();
         Assert.All(values, static v => Assert.Contains(v["op"]!, AlgorithmsLibrary.IntlValuesFormatOperations));
         Assert.All(values, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntlValues(v), v.Id));
+    }
+
+    /// <summary>
+    /// Every vector of the Intl area's sub-area (d), <c>intl/date-times.vectors</c>, the runner answers (stage SJL-9.3d) passes
+    /// against the Intl library, or gives Broiler.VM's <c>per-engine</c> expectation; every other vector of the file is not
+    /// implemented: the spies over the options' reads (rows T1 and T2), the bound <c>format</c>'s identity, name and length (row
+    /// T4), the legacy constructor (row T5) and the host's zone through <c>Temporal.Now</c> (row T11), each an engine's.
+    /// </summary>
+    [Fact]
+    public void Every_date_time_vector_the_runner_answers_passes_against_the_Intl_library()
+    {
+        var vectors = Home.Corpus.Records.Where(static v => v.Id.StartsWith(AlgorithmsLibrary.IntlDateTimesPrefix, System.StringComparison.Ordinal)).ToList();
+        var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
+
+        Assert.NotEmpty(vectors);
+        var answered = results.Where(static r => AlgorithmsLibrary.IsLibraryIntlDateTimes(r.Vector)).ToList();
+        var differences = answered.Where(static r => r.Verdict != Verdict.Match && !AlgorithmsLibrary.MatchesBroilerVmExpectation(r))
+            .Select(static r => r.Vector.Id + " " + r.Vector.Script + " expected: " + r.Expected + " got: " + r.Rendered)
+            .ToList();
+        Assert.True(differences.Count == 0, differences.Count + " differences:\n" + string.Join("\n", differences.Take(80)));
+
+        var notAnswered = results.Except(answered).ToList();
+        Assert.All(notAnswered, static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+        Assert.All(notAnswered, static r => Assert.True(AlgorithmsLibrary.IsEngineLevelDateTimesScript(r.Vector.Script), r.Vector.Id));
+        Assert.Equal(
+            ["Date.prototype.toLocaleDateString (option reads)", "Date.prototype.toLocaleString (option reads)",
+             "Date.prototype.toLocaleTimeString (option reads)", "Intl.DateTimeFormat (default time zone)",
+             "Intl.DateTimeFormat (legacy constructor)", "Intl.DateTimeFormat (option reads)",
+             "Intl.DateTimeFormat.prototype.format (bound)"],
+            notAnswered.Select(static r => r.Vector["op"]!).Distinct().Order(System.StringComparer.Ordinal));
+    }
+
+    /// <summary>
+    /// The operation names sub-area (d)'s part of the runner answers keep every other file's outcome. At corpus revision 30 no
+    /// vector outside <c>intl/date-times.vectors</c> carries one of those names, and the test holds that, as sub-area (c)'s does:
+    /// a vector that comes to carry one fails it, so that the test is revisited to check that such a vector gives what the
+    /// runner's operation route gives it. Every other name of the corpus that begins as the file's do - sub-area (a)'s
+    /// <c>Intl.DateTimeFormat</c> and <c>Intl.DateTimeFormat, resolvedOptions().locale</c>, and the time-zone area's
+    /// <c>Intl.DateTimeFormat, resolved timeZone</c> - is not sub-area (d)'s.
+    /// </summary>
+    [Fact]
+    public void Sub_area_d_s_operation_names_move_no_other_area_s_vector()
+    {
+        var names = AlgorithmsLibrary.IntlDateTimesOperations.ToHashSet(System.StringComparer.Ordinal);
+        var others = Home.Corpus.Records
+            .Where(v => names.Contains(v["op"]!) && !v.Id.StartsWith(AlgorithmsLibrary.IntlDateTimesPrefix, System.StringComparison.Ordinal))
+            .ToList();
+
+        // NO OTHER FILE CARRIES THESE NAMES TODAY. A vector that comes to carry one fails here; the check it is then to pass is
+        // the one sub-area (b)'s test makes: Call(op, inputs) == Call(vector), and IsLibraryIntlDateTimes false.
+        Assert.Empty(others.Select(static v => v.Id));
+
+        var nearby = Home.Corpus.Records
+            .Where(static v => v["op"]!.StartsWith("Intl.DateTimeFormat", System.StringComparison.Ordinal) && !v.Id.StartsWith(AlgorithmsLibrary.IntlDateTimesPrefix, System.StringComparison.Ordinal))
+            .ToList();
+        Assert.NotEmpty(nearby);
+        Assert.All(nearby, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntlDateTimes(v), v.Id));
     }
 
     [Fact]
