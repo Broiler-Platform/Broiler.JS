@@ -410,6 +410,48 @@ public sealed class DifferentialCheckTests
         Assert.Equal(400, population.RandomDurations.Count);
     }
 
+    /// <summary>
+    /// Milestone SJL-17.3's sections: over Broiler.VM's tables the collator and its locale data answer as Broiler.VM's, order and
+    /// charge alike, with no difference; over Broiler.JS's, every difference is row O16's, Thai's reordering and the traditional
+    /// collations of <c>es</c> and <c>sv</c>, which Broiler.VM's code does not read.
+    /// </summary>
+    [Fact]
+    public void Broiler_VM_s_collator_and_the_library_differ_only_by_the_tailorings_Broiler_JS_adds()
+    {
+        var sections = DifferentialCheck.Run(DifferentialCheck.DefaultSeed, scale: 1, only: ["C1", "C2"]);
+        var report = DifferentialCheck.Report(sections, DifferentialCheck.DefaultSeed, 1);
+        Assert.Equal(4, sections.Count);
+        Assert.True(sections.All(static s => s.Unclassified == 0), report);
+        Assert.All(sections, static s => Assert.True(s.Compared > 90, s.Name + " compared almost nothing"));
+        var vm = sections.Where(static s => s.Name.EndsWith("(broiler-vm)", StringComparison.Ordinal)).ToList();
+        Assert.All(vm, static s => Assert.Equal(0, s.Classified));
+        Assert.True(sections.Single(static s => s.Name.StartsWith("C1", StringComparison.Ordinal) && s.Name.EndsWith("(broiler-vm)", StringComparison.Ordinal)).Compared > 100_000, report);
+        var js = sections.Where(static s => s.Name.EndsWith("(broiler-js)", StringComparison.Ordinal)).ToList();
+        Assert.All(js, static s => Assert.True(s.Classified > 0, s.Name));
+        Assert.Equal([CollationSection.DataRow], sections.SelectMany(static s => s.ClassifiedByRow.Keys).Distinct());
+    }
+
+    /// <summary>
+    /// The negative control of milestone SJL-17.3: the library reads Broiler.VM's tables with German phonebook's tailoring renamed,
+    /// so that the arms read the tailoring under different names and one of them collates by the root, and the difference is found and left
+    /// unclassified.
+    /// </summary>
+    [Fact]
+    public void A_difference_in_a_tailoring_is_found_and_left_unclassified()
+    {
+        var vm = Embedding.Both().First();
+        var tailorings = (byte[])vm.Text[nameof(IntlTable.CollationTailorings)].Clone();
+        var name = Encoding.ASCII.GetBytes("de-phonebk");
+        var at = tailorings.AsSpan().IndexOf(name);
+        Assert.True(at > 0);
+        tailorings[at] = (byte)'x';
+        var control = Embedding.WithLibraryTables("control", new Dictionary<string, byte[]> { [nameof(IntlTable.CollationTailorings)] = tailorings });
+        var section = Assert.Single(CollationSection.Run(control, new SeededRandom(DifferentialCheck.DefaultSeed), 1, ["C1"]));
+        Assert.True(section.Unclassified > 0);
+        Assert.Equal(0, section.Classified);
+        Assert.Contains(section.Examples, static e => e.Contains("xe-phonebk", StringComparison.Ordinal));
+    }
+
     [Fact]
     public void The_seeded_random_inputs_are_the_same_on_every_run()
     {
