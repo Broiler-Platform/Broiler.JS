@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   24
-// Annotated:        24/24
+// Relevant units:   25
+// Annotated:        25/25
 // Exempt:           5
-// Human-reviewed:   0/24
+// Human-reviewed:   0/25
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         2/2
 // Resource impact:  6/10 max
-// Unverified:       24
+// Unverified:       25
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -254,6 +254,14 @@ public sealed class CldrUcd
     // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=0; Fingerprint=48AC21
     // Broiler-Human:        PENDING
     internal bool IsSymbolOrSeparator(int codePoint) => Categories[category[codePoint]][0] is 'S' or 'Z';
+
+    /// <summary>
+    /// <paramref name="codePoint"/>'s General_Category, its two-letter alias (<c>Lu</c>, <c>Nd</c>, ...): what a collation
+    /// tailoring's <c>[reorder]</c> reads to find where the scripts begin (milestone SJL-17.3).
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=UCD General_Category; IP=Low; Security=Low; Resources=0; Fingerprint=5E84B2
+    // Broiler-Human:        PENDING
+    internal string GeneralCategory(int codePoint) => Categories[category[codePoint]];
 
     /// <summary>The full Hangul syllable decomposition, LV or LVT.</summary>
     // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=1; Fingerprint=3F88E4

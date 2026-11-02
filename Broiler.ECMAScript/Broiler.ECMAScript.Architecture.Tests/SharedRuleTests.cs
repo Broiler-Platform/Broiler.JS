@@ -450,6 +450,11 @@ public class SharedRuleTests
         Assert.Contains("collation-root.bin", generated.Keys);
         Assert.All(generated.Values, static bytes => Assert.NotEmpty(bytes));
 
+        // FROM MILESTONE SJL-17.3, Broiler.JS's collation tables: the tailorings of Broiler.VM's JSD-0084, decision E3, and
+        // their settings, a table Broiler.VM's data never carries.
+        Assert.Contains("collation-tailorings.bin", generated.Keys);
+        Assert.Contains("collation-settings.txt", generated.Keys);
+
         if (Environment.GetEnvironmentVariable(IntlDataHome.WriteVariable) == "1")
             IntlDataHome.Write(home, generated);
 
@@ -467,6 +472,15 @@ public class SharedRuleTests
         var violations = SharedRules.SL7(edited, generated).ToList();
         Assert.Contains("hand-written.vectors is committed in a generated area, and the generator does not write it", violations);
         Assert.Contains("number-locales.txt differs from what the generator writes", violations);
+
+        // The collation tables' witness (milestone SJL-17.3): one byte changed in the tailorings and one in their settings.
+        foreach (var collation in new[] { "collation-tailorings.bin", "collation-settings.txt" })
+        {
+            var edit = (byte[])committed[collation].Clone();
+            edit[edit.Length / 2] ^= 1;
+            var one = new Dictionary<string, byte[]>(committed, StringComparer.Ordinal) { [collation] = edit };
+            Assert.Equal([collation + " differs from what the generator writes"], SharedRules.SL7(one, generated));
+        }
 
         // And a table the generator writes that is not committed.
         var missing = new Dictionary<string, byte[]>(committed, StringComparer.Ordinal);
