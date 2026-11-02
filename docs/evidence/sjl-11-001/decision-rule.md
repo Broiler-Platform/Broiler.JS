@@ -227,6 +227,26 @@ NOT MET otherwise.
 (`Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:698-701` at `1f91b8f1`) reads the current culture; the
 base runs show it (row M2a, under `tr-TR` and under `lt-LT`), and the after runs must not.
 
+*(Note of 2026-11-01, the owner's decision D-partd, taken as recommended under the owner's direction of 2026-10-18,
+"Please do all recommended decisions and skip waiting for review", and recorded in Broiler.VM's JSD-0081, "The owner's
+decisions of 2026-11-01". It was written before any run this part judges, and the rule above is not rewritten. Part
+D's population reads "every vector of conformance/vectors/regexp/ at the corpus revision bundle sjl-11-001 names". Its
+MET clause holds each vector to "the outcome its class expects". But the 18 vectors of `regexp/budget.vectors` whose
+`out` is `status: exhausted` are library-level (JSD-0081's decision D25). The corpus's SCHEMA.md section 4 has an
+engine-level runner skip them and give them no line, and this engine's runner does since `d8cb8406` (corpus revision
+31 with SCHEMA.md's dated note; `CorpusRun`, which names each one it skips in its summary line). So an engine-level
+run can never give their `out`. By this decision **the status vectors are judged at library level only, by
+Broiler.Regex's part D**. **This part's
+population is the non-status vectors** of `regexp/` at that revision, the vectors this engine's run gives a line to.
+The three after reports are compared byte for byte over them, and each is held to its class's outcome as the MET
+clause says. The corpus revision this part names is 32, the one that classifies both engines' first runs. Two more
+readings, from the classification of revision 32 and the same decisions, are recorded for the reader of clause 7:
+- the list of this engine's corrections above reads with row S5's class case (decision D-s5: `\k` in a class beside a
+  named group, which this engine refuses and B.1.2 accepts) and row F3's `(?x:a)` (decision D-widen);
+- its rows M2, S7 and S8 read with the inputs decision D-widen adds.
+
+No test262 file at `ccaac100` tries any of these, so part A's list of C1 rows needs none of them.)*
+
 ## Part E - the deletion list (clause 4)
 
 ```rule

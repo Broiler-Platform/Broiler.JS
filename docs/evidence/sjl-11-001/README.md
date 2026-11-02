@@ -62,6 +62,35 @@ paragraph names the `0.1.0-preview.4` restored when it was written. The filed ru
 
 No other commit is named yet.
 
+*2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
+
+*2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
+runs on the regular-expression vectors (`conformance/vectors/REVISIONS.md` row 32). Its reasons are in
+`scripts/conformance/regexp-divergences.txt`.
+- **The disagreement above is decided.** By the owner's decision D-partd, taken as recommended under the owner's
+  direction of 2026-10-18 and recorded in Broiler.VM's JSD-0081, "The owner's decisions of 2026-11-01", the status
+  vectors are judged at library level only, by Broiler.Regex's part D. This part's population is the non-status vectors.
+  The rule carries the decision as a dated note under part D and is not rewritten.
+- **The runner.** This engine's runner, `CorpusRun`, skips each status vector since `d8cb8406`, and its summary line
+  names each one.
+- **[`engine/`](engine/) holds both engines' first runs on revision 31**, with each engine's negative control.
+  Broiler.JS was run under the invariant culture in UTC and in New York, and under `tr-TR` and `lt-LT`. Broiler.VM was
+  run from a scratch archive and scratch pin. It also holds both engines' runs on revision 32, and
+  [`engine/commands.txt`](engine/commands.txt) says how each was taken.
+- **Revision 31, the base-like reading of the cultures.** This engine's `regexp/` lines under `tr-TR` and `lt-LT`
+  differ from the invariant culture's only in row M2a's vectors. That is the culture dependence part D's after runs
+  must not show (row M2a, a correction SJL-11.5 makes). The reading is retained and read, not judged: it is taken at
+  no commit the rule names.
+- **What the first runs found, beside the rows the correspondence named.** Revision 32 and JSD-0081 record the owner's
+  decisions of 2026-11-01:
+  - row S5's class case is a correction of this engine (D-s5);
+  - since `a58d31d1` this engine's `u` and `v` patterns go to Broiler.Regex `0.1.0-preview.5`, not to the
+    `0.1.0-preview.4` "The pins" above names, and rows M4, S3b and B8 record its answers through it (D-p5);
+  - rows M2, S7, S8 and F3 hold inputs the correspondence's probes did not reach (D-widen).
+
+  The rule's list of this engine's corrections is read with them, by the same dated note. No test262 file at
+  `ccaac100` tries any of their inputs, so part A's list of C1 rows needs none of them.
+
 **What the bundle will hold:**
 - `base/`: part A's base run, imported unchanged with the digest of its zip, and parts C and D's base runs;
 - `after/`: the after runs of every part, each comparison's report, and the table of every C1, C3 and C5 row;

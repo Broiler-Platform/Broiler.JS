@@ -1,0 +1,101 @@
+# Broiler.JS engine-level run: run-revision-31-utc-tr-TR
+# tree: a scratch tree written by git archive d8cb840637e5ba698e600747d9a0dfa0ece701ea (Broiler.JS), built once beforehand:
+#   dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers
+# corpus: conformance/vectors/ of that tree, revision 31
+# host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v185 x86_64; 4 logical CPUs; dotnet SDK 10.0.401
+# zone: TZ=UTC; culture: tr-TR (LANG=tr_TR.UTF-8 LC_ALL=tr_TR.UTF-8)
+# command: env -u LANG -u LANGUAGE -u LC_ALL -u BROILER_VECTORS_WORKERS LANG=tr_TR.UTF-8 LC_ALL=tr_TR.UTF-8 TZ=UTC BROILER_VECTORS_REPORT=<report> dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --logger "console;verbosity=normal"
+# started: 2026-11-01T21:59:43Z
+/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl11-w33/js-tree-r31/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0) için test çalıştırması
+Toplam 1 test dosyası belirtilen desenle eşleşti.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.35]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.83]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:01.31]   Starting:    Broiler.JavaScript.Vectors.Tests
+  Başarılı Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [58 s]
+  Başarılı Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [9 s]
+  Başarılı Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [374 ms]
+  Başarılı Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [27 s]
+  Başarılı Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 3) [8 ms]
+  Başarılı Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 1) [1 ms]
+  Başarılı Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [831 ms]
+108759 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 57 min 7.7 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 5.001 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+[xUnit.net 00:58:46.90]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+[xUnit.net 00:58:46.91]       230 of 108759 vectors differ and nothing classifies them:
+[xUnit.net 00:58:46.91]       intl/date-times/families/0004: expected value: str:"3 in the afternoon", rendered value: str:"3 \u00F6\u011Fleden sonra"
+[xUnit.net 00:58:46.91]       intl/date-times/families/0009: expected value: str:"h12", rendered value: str:"h23"
+[xUnit.net 00:58:46.91]       intl/date-times/families/0010: expected value: str:"3 in the afternoon", rendered value: str:"3 \u00F6\u011Fleden sonra"
+[xUnit.net 00:58:46.91]       intl/date-times/families/0012: expected value: str:"Eastern Standard Time", rendered value: str:"GMT-05:00"
+[xUnit.net 00:58:46.91]       intl/date-times/families/0256: expected value: str:"h12", rendered value: str:"h23"
+[xUnit.net 00:58:46.91]       intl/date-times/families/0257: expected value: str:"3 in the afternoon", rendered value: str:"3 \u00F6\u011Fleden sonra"
+[xUnit.net 00:58:46.91]       intl/date-times/families/0259: expected value: str:"Eastern Standard Time", rendered value: str:"GMT-05:00"
+[xUnit.net 00:58:46.91]       intl/date-times/families/0310: expected value: str:"3 in the afternoon", rendered value: str:"3 \u00F6\u011Fleden sonra"
+[xUnit.net 00:58:46.91]       intl/durations/families/0002: expected value: str:"1 hour, 2 minutes, 3 seconds", rendered value: str:"1 saat 2 dakika 3 saniye"
+[xUnit.net 00:58:46.91]       intl/durations/families/0044: expected value: str:"1 hour, 2 minutes, 3 seconds", rendered value: str:"1 saat 2 dakika 3 saniye"
+[xUnit.net 00:58:46.91]       intl/durations/families/0053: expected value: str:"1 hour, 2 minutes, 3 seconds", rendered value: str:"1 saat 2 dakika 3 saniye"
+[xUnit.net 00:58:46.91]       intl/locales/providers/0008: expected value: str:"en-US", rendered value: str:"tr-TR"
+[xUnit.net 00:58:46.91]       intl/locales/providers/0009: expected value: str:"en-US", rendered value: str:"tr-TR"
+[xUnit.net 00:58:46.91]       intl/locales/providers/0010: expected value: str:"en-US", rendered value: str:"tr-TR"
+[xUnit.net 00:58:46.91]       intl/locales/providers/0011: expected value: str:"en-US", rendered value: str:"tr-TR"
+[xUnit.net 00:58:46.91]       intl/locales/providers/0012: expected value: str:"1,234.5", rendered value: str:"1.234,5"
+[xUnit.net 00:58:46.91]       intl/locales/providers/0014: expected value: str:"en-US,en", rendered value: str:"tr-TR,en"
+[xUnit.net 00:58:46.91]       intl/numbers-and-text/list/0028: expected value: str:"A, B, C, and D", rendered value: str:"A, B, C ve D"
+[xUnit.net 00:58:46.91]       intl/numbers-and-text/relative/0037: expected value: str:"3 days ago", rendered value: str:"3 g\u00FCn \u00F6nce"
+[xUnit.net 00:58:46.91]       intl/numbers-and-text/relative/0038: expected value: str:"3d ago", rendered value: str:"3 g\u00FCn \u00F6nce"
+[xUnit.net 00:58:46.91]       intl/numbers-and-text/families/0001: expected value: str:"-1,234,567.891", rendered value: str:"-1.234.567,891"
+[xUnit.net 00:58:46.91]       intl/numbers-and-text/families/0003: expected value: str:"-\u20AC1,234.50", rendered value: str:"-\u20AC1.234,50"
+[xUnit.net 00:58:46.91]       intl/numbers-and-text/families/0006: expected value: str:"2 kilometers per hour", rendered value: str:"2 kilometre/saat"
+[xUnit.net 00:58:46.91]       intl/numbers-and-text/families/0008: expected value: str:"A, B, and C", rendered value: str:"A, B ve C"
+[xUnit.net 00:58:46.91]       intl/numbers-and-text/families/0009: expected value: str:"3 days ago", rendered value: str:"3 g\u00FCn \u00F6nce"
+[xUnit.net 00:58:46.91]       Stack Trace:
+[xUnit.net 00:58:46.91]         /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl11-w33/js-tree-r31/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(58,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
+[xUnit.net 00:58:46.91]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:58:46.91]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:58:46.91]       Output:
+[xUnit.net 00:58:46.91]         108759 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 57 min 7.7 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 5.001 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+[xUnit.net 00:58:46.97]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = '003dc09f26fda88a38ab4f7d5bd8e9fa6b6b673b0a9c0fc64ffe41f321bf82bf')
+'Blame' veri toplayıcısı iletisi: Tüm testlerin çalışması tamamlandı. Dizi dosyası oluşturulmayacak..
+  Başarısız Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [57 m 8 s]
+  Hata İletisi:
+   230 of 108759 vectors differ and nothing classifies them:
+intl/date-times/families/0004: expected value: str:"3 in the afternoon", rendered value: str:"3 \u00F6\u011Fleden sonra"
+intl/date-times/families/0009: expected value: str:"h12", rendered value: str:"h23"
+intl/date-times/families/0010: expected value: str:"3 in the afternoon", rendered value: str:"3 \u00F6\u011Fleden sonra"
+intl/date-times/families/0012: expected value: str:"Eastern Standard Time", rendered value: str:"GMT-05:00"
+intl/date-times/families/0256: expected value: str:"h12", rendered value: str:"h23"
+intl/date-times/families/0257: expected value: str:"3 in the afternoon", rendered value: str:"3 \u00F6\u011Fleden sonra"
+intl/date-times/families/0259: expected value: str:"Eastern Standard Time", rendered value: str:"GMT-05:00"
+intl/date-times/families/0310: expected value: str:"3 in the afternoon", rendered value: str:"3 \u00F6\u011Fleden sonra"
+intl/durations/families/0002: expected value: str:"1 hour, 2 minutes, 3 seconds", rendered value: str:"1 saat 2 dakika 3 saniye"
+intl/durations/families/0044: expected value: str:"1 hour, 2 minutes, 3 seconds", rendered value: str:"1 saat 2 dakika 3 saniye"
+intl/durations/families/0053: expected value: str:"1 hour, 2 minutes, 3 seconds", rendered value: str:"1 saat 2 dakika 3 saniye"
+intl/locales/providers/0008: expected value: str:"en-US", rendered value: str:"tr-TR"
+intl/locales/providers/0009: expected value: str:"en-US", rendered value: str:"tr-TR"
+intl/locales/providers/0010: expected value: str:"en-US", rendered value: str:"tr-TR"
+intl/locales/providers/0011: expected value: str:"en-US", rendered value: str:"tr-TR"
+intl/locales/providers/0012: expected value: str:"1,234.5", rendered value: str:"1.234,5"
+intl/locales/providers/0014: expected value: str:"en-US,en", rendered value: str:"tr-TR,en"
+intl/numbers-and-text/list/0028: expected value: str:"A, B, C, and D", rendered value: str:"A, B, C ve D"
+intl/numbers-and-text/relative/0037: expected value: str:"3 days ago", rendered value: str:"3 g\u00FCn \u00F6nce"
+intl/numbers-and-text/relative/0038: expected value: str:"3d ago", rendered value: str:"3 g\u00FCn \u00F6nce"
+intl/numbers-and-text/families/0001: expected value: str:"-1,234,567.891", rendered value: str:"-1.234.567,891"
+intl/numbers-and-text/families/0003: expected value: str:"-\u20AC1,234.50", rendered value: str:"-\u20AC1.234,50"
+intl/numbers-and-text/families/0006: expected value: str:"2 kilometers per hour", rendered value: str:"2 kilometre/saat"
+intl/numbers-and-text/families/0008: expected value: str:"A, B, and C", rendered value: str:"A, B ve C"
+intl/numbers-and-text/families/0009: expected value: str:"3 days ago", rendered value: str:"3 g\u00FCn \u00F6nce"
+  Yığın İzleme:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl11-w33/js-tree-r31/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 58
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standart Çıkış İletileri:
+ 108759 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 57 min 7.7 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 5.001 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+
+
+
+Test Çalıştırması Başarısız.
+Toplam test sayısı: 8
+     Geçti: 7
+     Başarısız: 1
+ Toplam süre: 58,8022 Dakika
+# exit: 1
+# ended: 2026-11-01T22:58:33Z

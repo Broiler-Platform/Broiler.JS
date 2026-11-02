@@ -57,11 +57,47 @@ An outcome is one of:
 - `throw: <typed value>`, a thrown value that is not an error object;
 - `status: <word>`, a library-level status (library runners only, for example `not-implemented`).
 
+**An engine-level runner skips a vector whose `out` is a status**: it does not evaluate the vector's script, whose
+text states the computation for a reader, and its report gives the vector no line; a library-level runner gives the
+vector its verdict. *(Added 2026-11-01, at corpus revision 31, when the regular-expression area's `budget.vectors`
+added the corpus's first vectors whose `out` is a status, `status: exhausted`, which decision D25 of Broiler.VM's
+JSD-0081 makes library-level. Until then the bullet above, "a library-level status (library runners only, for example
+`not-implemented`)", was the whole rule, and neither engine-level runner skips such a vector at that revision:
+Broiler.JS's, `Broiler.JS/Broiler.JavaScript.Vectors.Tests` (`EngineRunTests`, which runs every record of the corpus),
+and Broiler.VM's, `VectorsCommand` of its conformance composition (at its `83290f9`, which evaluates every record it
+reads), each evaluate the script, compare the outcome with the status, which no outcome matches, and report a
+difference nothing classifies. Neither runner skips them yet, and no task of SJL-11's plan changes either: the skip
+is a code change of each runner, with a test that a status vector gives no line, and it comes before that runner runs
+revision 31. Broiler.JS's (`CorpusRun` and `EngineRunTests`) comes before revision 31 merges, or in the same change
+as the classification of its first runs (revision 32), since the `engine vectors` job of `.github/workflows/ci.yml`
+runs `EngineRunTests` on any change to `conformance/vectors/` and fails on a difference nothing classifies, and no
+`divergence.broiler-js` field (section 5) can classify a status; Broiler.VM's (`VectorsCommand`) comes before its pin
+moves to revision 31 (rule N13). Until a runner skips them, what it reports for them is no difference of the
+engine's.)* *(Revised 2026-11-01, at `d8cb8406`, whose corpus is revision 31, before revision 32 classifies it: both
+engine-level runners now skip them. Broiler.JS's `CorpusRun`, which `EngineRunTests` runs, skips every vector whose
+`out` is a status before any is evaluated, gives it no result and so no report line, and counts and names each one in
+the run's summary line, which the `engine vectors` job prints; Broiler.VM's `VectorsCommand` does the same in its
+change for SJL-11.3 (its branch `sjl-11-3-vm`, which REVISIONS.md row 32 names), before its pin moves past revision
+30. Each skip came with a test that a status vector is skipped, counted and named, watched failing first. So the
+note's sentences "Neither runner skips them yet, and no task of SJL-11's plan changes either: the skip is a code
+change of each runner, with a test that a status vector gives no line, and it comes before that runner runs revision
+31" and "Until a runner skips them, what it reports for them is no difference of the engine's" describe revision 31
+before `d8cb8406` only; the rule in bold above is unchanged.)*
+
 **`out` may list alternatives**, separated by ` | `, when the specification admits more than one
 result and enumerates them: the least significant digit of Number::toString, which is "not
 necessarily uniquely determined", and RoundMVResult's two options beyond 20 significant digits are
 the cases in the number area. A result matches the vector when it equals any alternative. A note
 names the recommended alternative where the specification recommends one.
+
+**An `impl-defined` vector that a filed owner decision classes because the specification's text gives no
+well-formed result may list, as `out`'s alternatives, the engines' answers that decision records**, since it has no
+ideal outcome to hold; each `per-engine` field still holds that engine's own, and the note cites the decision. *(Added
+2026-11-01, at corpus revision 31, for row M4's empty match from a lastIndex inside a surrogate pair, which decision
+D41 of Broiler.VM's JSD-0081 classes implementation-defined until the specification is corrected: RegExpBuiltinExec
+builds a Match Record whose start passes its end, which GetMatchString's assertion forbids. Until then the paragraph
+above, alternatives "when the specification admits more than one result and enumerates them", and section 5's
+"`out` holds the ideal outcome" were the whole rule.)*
 
 ## 5. Classes
 

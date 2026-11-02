@@ -1,0 +1,84 @@
+How the engine-level runs in this directory were taken (SJL-11.3, the regular-expression vectors, 2026-11-01 and,
+for the runs on revision 32, 2026-11-02 UTC).
+
+They are each engine's first run on the regular-expression area, at corpus revision 31, which revision 32 classifies,
+and both engines' runs on revision 32. They are no part of bundle sjl-11-001's rule, whose part D is taken at the
+commits the rule names; part-d-revision-31.txt reads the three cultures' regexp/ lines of revision 31, and nothing here
+is a verdict.
+
+Host, for every run here: Ubuntu 24.04.5 LTS; Linux 6.18.44 x86_64; 4 logical CPUs; ICU 74.2 (the package libicu74
+74.2-1ubuntu3.1, the only ICU installed), which .NET's globalization loads; dotnet SDK 10.0.401, runtime
+Microsoft.NETCore.App 10.0.12. Other work shared the machine throughout, so no run here is a timing.
+
+Every Broiler.JS run reads a scratch tree written by git archive of the commit it names, built once beforehand with
+  dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers
+(no warning), and is
+  env -u LANG -u LANGUAGE -u LC_ALL [<culture>] [BROILER_VECTORS_WORKERS=4] TZ=<zone> BROILER_VECTORS_REPORT=<report>
+    dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --logger "console;verbosity=normal"
+where <culture> is nothing (the invariant culture), LANG=tr_TR.UTF-8 LC_ALL=tr_TR.UTF-8, or LANG=lt_LT.UTF-8
+LC_ALL=lt_LT.UTF-8 (the culture took effect: dotnet test's own messages in the tr-TR and lt-LT logs are in Turkish and
+Lithuanian). Its negative control changes numbers/to-fixed/0001 in a copy of the corpus and is written beside its
+report. Each Broiler.VM run is, at 897603890da4aa6d1421c01d23c87009da495d6f (branch sjl-11-3-vm, the runner's skip of
+status vectors), built once beforehand with
+  dotnet build src/compositions/Broiler.VM.Composition.JavaScript.Conformance -c Release --disable-build-servers -warnaserror
+  env -u LANG -u LANGUAGE -u LC_ALL TZ=UTC dotnet
+    src/compositions/Broiler.VM.Composition.JavaScript.Conformance/bin/Release/net10.0/Broiler.VM.Composition.JavaScript.Conformance.dll
+    --vectors <archive> --expect <pin> --report <report> [--mutate regexp/text/t5-escape/0001]
+on a scratch archive written twice by
+  git archive --format=tar.gz <commit> -- conformance/vectors ':(exclude)conformance/vectors/controls'
+byte for byte the same, the second extracted and hashed for the scratch pin kept here (never committed to Broiler.VM).
+Each log was written whole by the run's script: a header naming the commit, the build, the corpus, the host and the
+command, then the runner's output, then the exit code and the end time. Every run's summary line names the 18
+status vectors it skipped.
+
+== Revision 31, corpus d8cb840637e5ba698e600747d9a0dfa0ece701ea (revision 31 with SCHEMA.md section 4's note that the
+   runners skip status vectors, and Broiler.JS's CorpusRun skip; Broiler.JS/ is 66973a29's but for that runner)
+
+Broiler.JS, one evaluating process each (BROILER_VECTORS_WORKERS unset), four runs side by side.
+  runs     TZ=UTC; TZ=America/New_York; TZ=UTC with tr-TR; TZ=UTC with lt-LT
+  times    all started 2026-11-01T21:59:43Z; ended 22:58:30Z (UTC), 22:57:42Z (New York), 22:58:33Z (tr-TR) and 22:57:25Z
+           (lt-LT), as the logs say
+  exit     1 each. UTC and New York: 170 unclassified differences, all in the regular-expression area, and the reports
+           are byte for byte the same; tr-TR and lt-LT: those 170 and row M2a's 17 and 13 more in regexp/, beside 43 and
+           27 Intl vectors whose answers follow the host culture's default locale (outside part D's population, not
+           classified). regexp/matching/b8-flat-sequence/0001 reached the runner's 5 s limit in each.
+  files    run-revision-31-{utc,new-york,utc-tr-TR,utc-lt-LT}.log and .tsv.gz; negative-control-revision-31-*.tsv (one
+           difference each, the mutated vector); part-d-revision-31.txt
+
+Broiler.VM, TZ=UTC, from broiler-vm-revision-31.pin's archive.
+  times    the run started 2026-11-01T22:03:41Z and ended 22:21:01Z; its negative control ended 22:36:21Z
+  exit     1 each: 63 unclassified differences, all in the regular-expression area, and 64 under the negative control,
+           the 64th the mutated vector
+  files    broiler-vm-run-revision-31.log, broiler-vm-negative-control-revision-31.log and their .tsv.gz reports
+
+== Revision 32, corpus cfe32852eb801a72603e2b6d868dc72c0b432d66 (the classification; its vector files are this branch's
+   head's, a later commit of the change correcting a sentence of REVISIONS.md's row 32 only)
+
+Broiler.JS. The four runs were first taken side by side in one process each, from 2026-11-01T23:33:32Z; with other
+work on the machine, each exceeded the 90-minute hang limit Directory.Build.targets sets for this test project, and
+dotnet test stopped each at 2026-11-02T01:03Z with no report (their logs are not kept). They were taken again one after
+the other with four evaluating processes each, BROILER_VECTORS_WORKERS=4, as CI's engine vectors job runs the corpus:
+a vector that finds no completion in the parallel pass is run again alone and keeps what it gives there, and the
+summary line names it.
+  runs     TZ=UTC; TZ=America/New_York; TZ=UTC with tr-TR; TZ=UTC with lt-LT
+  times    UTC 01:05:06Z to 01:46:30Z; New York 01:46:30Z to 02:12:34Z; tr-TR 02:12:34Z
+           to 02:44:00Z; lt-LT 02:44:00Z to 02:59:57Z (2026-11-02, as the logs say)
+  exit     UTC and New York: 0 each, no unclassified difference, and the run's tests pass. Their reports are byte for
+           byte the same but for regexp/matching/b8-flat-sequence/0001 (row B8), which its re-check alone completed in
+           the UTC run (reported as a divergence that no longer holds) and did not in the New York run (a classified
+           divergence), as its reason in regexp-divergences.txt says a loaded run may. Row M2a's 20 fields report as no
+           longer holding under the invariant culture.
+           tr-TR and lt-LT: 1 each; their regexp/ lines differ from the invariant culture's only in row M2a's 17 and 13
+           vectors, each a classified divergence there (part-d-revision-32.txt), and no regexp/ vector is unclassified;
+           43 and 27 Intl vectors differ as at revision 31, outside part D's population and not classified. In every
+           run regexp/matching/b8-flat-sequence/0001 found no completion in the parallel pass and was run again alone,
+           as each summary line says.
+  files    run-revision-32-{utc,new-york,utc-tr-TR,utc-lt-LT}.log and .tsv.gz; negative-control-revision-32-*.tsv;
+           part-d-revision-32.txt
+
+Broiler.VM, TZ=UTC, from broiler-vm-revision-32.pin's archive.
+  times    the run started 2026-11-01T23:33:32Z and ended 2026-11-02T00:38:15Z; its negative control ended 01:29:50Z
+  exit     0 for the run: no unclassified difference, the 63 regular-expression vectors of revision 31's differences
+           reported as classified divergences beside the syntax and Intl areas' 63, none no longer holding; 1 for the
+           negative control, its one difference the mutated vector
+  files    broiler-vm-run-revision-32.log, broiler-vm-negative-control-revision-32.log and their .tsv.gz reports
