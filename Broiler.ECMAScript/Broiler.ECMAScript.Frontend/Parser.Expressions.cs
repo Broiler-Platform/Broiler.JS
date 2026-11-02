@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   44
-// Annotated:        44/44
-// Exempt:           7
-// Human-reviewed:   0/44
+// Relevant units:   47
+// Annotated:        47/47
+// Exempt:           8
+// Human-reviewed:   0/47
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         5/5
 // Resource impact:  2/10 max
-// Unverified:       44
+// Unverified:       47
 //
 // GENERATED - DO NOT EDIT MANUALLY
 

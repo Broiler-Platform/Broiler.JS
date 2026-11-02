@@ -222,17 +222,20 @@ Not yet packed under a version of its own: the stream's next version is set when
     that is an `if` clause under Annex B stays one, an arrow keeps its expression body, a `for` head keeps its
     declaration;
   - **the parser**, internal: the syntactic grammar of ECMA-262 clauses 13 to 16 for the Script and Module goals, eval
-    code, and the dynamic function's parameters and body by its kind, each token read under the lexical goal the
-    grammar stands at; cover grammars converted, never parsed again (parenthesised lists and async calls into
-    ArrowFormalParameters, array and object literals into assignment patterns, CoverInitializedNames refused where no
-    conversion takes them); arrow functions without rewinding; automatic semicolon insertion with the restricted
-    productions, none in a for statement's head (rows P16 and P16b); modules with import attributes; classes with
-    fields, private names, static blocks and accessors; templates read in place; Annex B's function in an `if` clause
-    and `for`-`in` initialiser in sloppy code with the switch on; the decorators, `accessor` and import-phase proposals
-    each under its own flag; the request's top-level-`await` switch (decision D10); and the contract's two limits checked
-    before the stack is: the nesting depth charged as Broiler.VM's `JsParser` charges it, and also for the right operand
-    of `**`, and the tree depth charged for each node a binary or a member or call chain adds, from the spine of the
-    chain's first operand, which closes the left-operand gap in its four shapes (decision D14).
+    code, and the dynamic function's parameters and body by its kind, each token read under the lexical goal the grammar
+    stands at; cover grammars converted, never parsed again (parenthesised lists and async calls into
+    ArrowFormalParameters, an async call's `await` references that its parameters do not bind refused, as the
+    AsyncArrowHead's [+Await] reads them; array and object literals into assignment patterns; CoverInitializedNames
+    refused where no conversion takes them); arrow functions without rewinding, an async arrow read as a primary
+    extended by no operator, so that a line break before one inserts a semicolon; automatic semicolon insertion with the
+    restricted productions, none in a for statement's head (rows P16 and P16b); modules with import attributes; classes
+    with fields, private names, static blocks and accessors; templates read in place; Annex B's function in an `if`
+    clause and `for`-`in` initialiser in sloppy code with the switch on; the decorators, `accessor` and import-phase
+    proposals each under its own flag; the request's top-level-`await` switch (decision D10); and the contract's two
+    limits checked before the stack is: the nesting depth charged as Broiler.VM's `JsParser` charges it, and also for
+    the right operand of `**` and for each class heritage, two recursions Broiler.VM's parser leaves uncharged, and the
+    tree depth charged for each node a binary or a member or call chain adds, from the spine of the chain's first
+    operand, which closes the left-operand gap in its four shapes (decision D14).
 
   `SyntaxParser.Parse` now answers `ParseOutcome.Accepted` with the tree in `ParseResult.Tree`, or
   `ParseOutcome.Refused` with the first refusal (decision D11); `ParseOutcome.NotImplemented` stays and is no longer

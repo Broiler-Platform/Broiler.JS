@@ -16,12 +16,12 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Files scanned | 153 |
 | Files not covered | 0 |
 | Files carrying an annotation | 153 |
-| Code units | 3686 |
-| Relevant | 2321 |
-| Exempt by predicate | 1365 |
-| Annotated | 2321 of 2321 (100%) |
-| Human reviewed | 0 of 2321 (0%) |
-| Unverified | 2321 |
+| Code units | 3692 |
+| Relevant | 2324 |
+| Exempt by predicate | 1368 |
+| Annotated | 2324 of 2324 (100%) |
+| Human reviewed | 0 of 2324 (0%) |
+| Unverified | 2324 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2321 |
+| HUMAN_PENDING | 2324 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1365 |
+| EXEMPT | 1368 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 2318 |
+| Low | 2321 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -52,8 +52,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | None | 77 |
 | Low | 1411 |
-| Medium | 681 |
-| High | 208 |
+| Medium | 683 |
+| High | 209 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.1 / 10 |
-| Units scored | 2321 |
+| Units scored | 2324 |
 
 ## High-security review areas
 
@@ -180,6 +180,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Syntax.Parser.ParseParenthesized()` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ToBindingTarget(SyntaxNode)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ToAssignmentPattern(Expression)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseClassTail(SourceSpan, IReadOnlyList<Decorator>, BindingIdentifier?)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ParseFor()` in `Broiler.ECMAScript.Frontend/Parser.Statements.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.Run(ParseRequest)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.Peek(LexicalGoal)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
@@ -280,8 +281,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 208 |
-| Units required to carry one | 208 |
+| Units carrying a criterion | 209 |
+| Units required to carry one | 209 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -302,13 +303,13 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 426 |
+| TrivialPropertyOrAccessor | 427 |
 | ParameterAssigningConstructor | 23 |
 | TrivialExpressionBodiedMember | 33 |
 | CompilerSuppliedRecordOrEnumMember | 78 |
 | DelegatingOverrideOrOperator | 4 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 146 |
+| FieldDeclaringStorage | 148 |
 | EnumMemberOfADeclaredVocabulary | 655 |
 | DeclaredInSource | 0 |
 
@@ -333,7 +334,7 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 5 covered assemblies -
-3686 of them, exempt and relevant alike - with the fingerprint of its declaration.
+3692 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
