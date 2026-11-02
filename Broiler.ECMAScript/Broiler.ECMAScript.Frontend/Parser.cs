@@ -50,9 +50,10 @@ namespace Broiler.ECMAScript.Syntax;
 /// <para>
 /// <b>Limits before the stack</b> (decision D14; JSD-0080's decision D27): the nesting depth is charged once for each
 /// statement, assignment expression, binding pattern, recursing prefix operator and nested <c>new</c>, as Broiler.VM's
-/// <c>JsParser</c> charges it, and for each right operand of <c>**</c>, the one right-recursive binary operator, which
-/// Broiler.VM's parser leaves uncharged; the tree depth is charged once for each node a binary chain or a member or call
-/// chain adds, from the spine of the chain's first operand, which closes the left-operand gap in all four of its shapes.
+/// <c>JsParser</c> charges it, and for each right operand of <c>**</c>, the one right-recursive binary operator, and for
+/// each class heritage, through which a class expression recurses, both of which Broiler.VM's parser leaves uncharged;
+/// the tree depth is charged once for each node a binary chain or a member or call chain adds, from the spine of the
+/// chain's first operand, which closes the left-operand gap in all four of its shapes.
 /// </para>
 /// </remarks>
 // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=130766

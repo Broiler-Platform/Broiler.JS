@@ -727,16 +727,30 @@ internal sealed partial class Parser
         }
     }
 
-    /// <summary>A ClassTail: the ClassHeritage's LeftHandSideExpression and the ClassBody.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=D0A64E
+    /// <summary>
+    /// A ClassTail: the ClassHeritage's LeftHandSideExpression and the ClassBody. The heritage is charged one level of
+    /// nesting (decision D14): a class expression there recurses through it with no statement or assignment between, so
+    /// <c>class extends class extends …</c> would otherwise reach the stack uncharged, a gap Broiler.VM's parser has too.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.7 ClassHeritage, JSD-0083 D14 nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=735E95
+    // Broiler-Falsified-If: a chain of class heritages nested past the request's bound reaches the stack rather than being refused with the nesting diagnostic
     // Broiler-Human:        PENDING
     private ClassNode ParseClassTail(SourceSpan start, IReadOnlyList<Decorator> decorators, BindingIdentifier? name)
     {
         Expression? heritage = null;
         if (IsWord(Op, Word.Extends))
         {
-            Advance();
-            heritage = ParseLeftHandSide();
+            var keyword = Advance();
+            EnterNesting(keyword);
+            try
+            {
+                heritage = ParseLeftHandSide();
+            }
+            finally
+            {
+                ExitNesting();
+            }
+
             if (ReferenceEquals(heritage, arrowCover) || ReferenceEquals(heritage, primaryArrow))
                 throw UnexpectedAt(heritage.Span);
         }

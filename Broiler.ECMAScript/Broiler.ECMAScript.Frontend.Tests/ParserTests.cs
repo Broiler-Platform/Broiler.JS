@@ -947,6 +947,7 @@ public sealed class ParserTests
     [InlineData("", "2 ** ", "2", "", "")]
     [InlineData("", "x => ", "x", "", "")]
     [InlineData("", "a ? b : ", "c", "", "")]
+    [InlineData("x = ", "class extends ", "Object", "{}", "")]
     public void A_source_nested_past_the_bound_is_refused_with_the_nesting_diagnostic(string prefix, string open, string inner, string close, string suffix)
     {
         string Text(int depth) => prefix + string.Concat(Enumerable.Repeat(open, depth)) + inner + string.Concat(Enumerable.Repeat(close, depth)) + suffix;
@@ -966,6 +967,29 @@ public sealed class ParserTests
         Assert.Equal(ParseOutcome.Accepted, Parse(Nesting("(a = 1)", 4)).Outcome);
         Assert.Equal(ParseOutcome.Refused, Parse(Nesting("(a = 1)", 3)).Outcome);
         Assert.Equal(ParseOutcome.Accepted, Parse(Nesting("a + b * c - d", 2)).Outcome);
+    }
+
+    /// <summary>
+    /// A class heritage is charged one level (decision D14): <c>x = </c> and its value are three levels with the statement, and
+    /// each heritage one more, so a chain at the bound is accepted and one heritage more is refused; a chain far past the bound
+    /// is refused before the stack is reached.
+    /// </summary>
+    [Fact]
+    public void A_class_heritage_chain_is_charged_one_level_per_heritage()
+    {
+        static string Chain(int depth) => "x = " + string.Concat(Enumerable.Repeat("class extends ", depth)) + "Object" + string.Concat(Enumerable.Repeat("{}", depth));
+        foreach (var bound in new[] { 16, ParseLimits.MaximumSupportedNestingDepth })
+        {
+            Assert.Equal(ParseOutcome.Accepted, OnLargeStack(() => Parse(Nesting(Chain(bound - 3), bound))).Outcome);
+            var refused = OnLargeStack(() => Parse(Nesting(Chain(bound - 2), bound)));
+            Assert.Equal(ParseOutcome.Refused, refused.Outcome);
+            Assert.Equal("JSE9201", refused.Diagnostics[0].Code);
+        }
+
+        var far = OnLargeStack(() => Parse(Nesting(Chain(50_000), ParseLimits.MaximumSupportedNestingDepth)));
+        Assert.Equal(("JSE9201", "limit.nesting.too-deep"), (far.Diagnostics[0].Code, far.Diagnostics[0].MessageId));
+        Assert.Equal(ParseOutcome.Accepted, Parse(Nesting("class C extends class extends class {} {} {}", 6)).Outcome);
+        Assert.Equal(ParseOutcome.Refused, Parse(Nesting("class C extends class extends class {} {} {}", 2)).Outcome);
     }
 
     [Theory]
