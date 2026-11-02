@@ -263,7 +263,8 @@ publication and the cut-overs inherit them knowingly.)*
 - **The library is packed** on the shared stream, on its `0.1.0-preview.N` scheme, with package validation as the other
   shared libraries have it, from this stage (decision D29); its publication is the owner's (the plan's WP6). Its public
   API is unchanged by the stage.
-- **Every Intl vector is answered at library level** by the runner, but thirty whose outcome needs an engine, which the
+- **Every Intl vector is answered at library level** by the runner, the collation vectors under `intl/collation/` (corpus
+  revision 33, SJL-17's) aside, but thirty whose outcome needs an engine, which the
   Conformance tests list by identifier (an object's reads and coercions observed by a Proxy, a getter or `valueOf`, the
   bound `format`, the legacy constructor, the host's zone, a constructor called without `new`, StringListFromIterable's
   iteration, whether a built-in exists, and casing with the default locale). The Native AOT probe runs them over

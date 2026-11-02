@@ -395,12 +395,20 @@ public class LibraryRunTests
     /// <c>format</c>'s identity, name and length (rows T4 and N11), the normative-optional legacy constructor (rows T5 and N12),
     /// the host's zone through <c>Temporal.Now</c> (row T11), a constructor called without <c>new</c> (rows S2 and U18),
     /// StringListFromIterable's iteration of a list (row S2), whether the engine defines a built-in (row L37), and casing, which is
-    /// Broiler.Unicode's, with the engine's default locale (row L35). No Intl operation is left unrouted.
+    /// Broiler.Unicode's, with the engine's default locale (row L35). No Intl operation is left unrouted. The collation vectors,
+    /// of the area <c>intl</c> under <c>intl/collation/</c> since corpus revision 33, are milestone SJL-17's, whose library
+    /// stage adds their route: this library has no collation, and each of them is not implemented.
     /// </summary>
     [Fact]
     public void Every_Intl_vector_is_answered_at_library_level_but_those_that_need_an_engine()
     {
-        var vectors = Home.Corpus.Records.Where(static v => v["area"] == "intl").ToList();
+        var all = Home.Corpus.Records.Where(static v => v["area"] == "intl").ToList();
+        var collation = all.Where(static v => v.Id.StartsWith("intl/collation/", System.StringComparison.Ordinal)).ToList();
+        Assert.NotEmpty(collation);
+        Assert.All(LibraryRun.Run(collation, new AlgorithmsLibrary()), static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+        Assert.All(collation, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntl(v), v.Id));
+
+        var vectors = all.Except(collation).ToList();
         var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
 
         Assert.NotEmpty(vectors);

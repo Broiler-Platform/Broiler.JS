@@ -128,7 +128,8 @@ internal sealed partial class AlgorithmsLibrary
     /// <c>AlgorithmsLibrary.IntlNumbers.cs</c> (from stage SJL-9.3c), sub-area (d)'s of <c>AlgorithmsLibrary.IntlDateTimes.cs</c>
     /// (from stage SJL-9.3d), and sub-area (e)'s of <c>AlgorithmsLibrary.IntlDurations.cs</c> (from stage SJL-9.3e). From stage
     /// SJL-9.3f, the integration, it is every Intl vector but those whose outcome needs an engine, which the Conformance tests list
-    /// by identifier: sub-area (a)'s two default-locale scripts are answered too (<see cref="IsLibraryIntlDefaultLocaleScript"/>).
+    /// by identifier, and the collation vectors (<c>intl/collation/</c>, milestone SJL-17's): sub-area (a)'s two default-locale
+    /// scripts are answered too (<see cref="IsLibraryIntlDefaultLocaleScript"/>).
     /// </summary>
     internal static bool IsLibraryIntl(VectorRecord vector) =>
         (vector.Id.StartsWith(IntlLocalesPrefix, StringComparison.Ordinal)
