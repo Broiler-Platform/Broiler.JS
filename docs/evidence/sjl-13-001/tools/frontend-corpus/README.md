@@ -18,6 +18,13 @@ variant and configuration the classification expects refused with a row among th
 basis is `provider`, it refuses the first literal the library asks about with the first such row's message identifier,
 and it admits every other literal.
 
+*(Noted 2026-11-02, at SJL-13.2f, under decision (a) of the rule's revision of that day,
+[`../../decision-rule-revised-2026-11-02.md`](../../decision-rule-revised-2026-11-02.md), before any run it judges:)* with
+`--provider-readings docs/evidence/sjl-13-001/readings/provider-readings.tsv`, the provider also refuses the first literal
+the library asks about for every input, variant and configuration that list names, with the message identifier of the
+row it names (EE0019's, `regexp.literal.invalid`), and the report's header names the list's SHA-256
+(`#% provider-readings`) and its number of lines.
+
 **What it writes.** One line per parse: `id`, `variant`, `config`, the outcome (`accepted`, `refused`, `crashed`, or
 `absent` when the input's text is missing or differs from the manifest's SHA-256), and for a refusal the first
 diagnostic's shared code, phase and span (`offset+length@line:column`), and for a refusal at either limit the depth the

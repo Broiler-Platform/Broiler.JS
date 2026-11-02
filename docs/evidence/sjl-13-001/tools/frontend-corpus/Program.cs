@@ -29,7 +29,11 @@ namespace FrontendCorpus;
 /// input, as the classification records it: for an input, variant and configuration the classification expects refused
 /// with a row among the rows it names first whose stage-table basis is <c>provider</c>, it refuses the first literal the
 /// library asks it about, naming the message identifier of the first such row; it admits every other literal. A
-/// <c>json</c> variant is read under the Script goal (the probe's requests).
+/// <c>json</c> variant is read under the Script goal (the probe's requests). <i>(Revised 2026-11-02, at stage SJL-13.2f,
+/// under decision (a) of the rule's revision of that day, <c>decision-rule-revised-2026-11-02.md</c>, before any run it
+/// judges: with <c>--provider-readings file</c>, the provider also refuses the first literal the library asks it about for
+/// every input, variant and configuration the file lists (<c>readings/provider-readings.tsv</c>), naming the message
+/// identifier of the row the file names, EE0019's; the report's header names the file's SHA-256.)</i>
 /// </remarks>
 internal static class Program
 {
@@ -44,7 +48,7 @@ internal static class Program
         {
             if (!options.ContainsKey(required))
             {
-                Console.Error.Write("usage: frontend-corpus --corpus dir --test262 dir --classification file --catalogue file --stages file --out file [--commit id]\n");
+                Console.Error.Write("usage: frontend-corpus --corpus dir --test262 dir --classification file --catalogue file --stages file --out file [--commit id] [--provider-readings file]\n");
                 return 2;
             }
         }
@@ -53,6 +57,9 @@ internal static class Program
         var messageIds = ReadColumn(options["--catalogue"], "id", "message_id");
         var basis = ReadColumn(options["--stages"], "id", "basis");
         var refusals = ProviderRefusals(options["--classification"], basis, messageIds);
+        var readings = 0;
+        if (options.TryGetValue("--provider-readings", out var readingsFile))
+            readings = ProviderReadings(readingsFile, messageIds, refusals);
 
         var lines = new List<string>();
         var counts = new int[4];
@@ -88,6 +95,11 @@ internal static class Program
         report.Append("#% stages\t").Append(Sha256(options["--stages"])).Append('\n');
         report.Append("#% stack-bytes\t").Append(ParseLimits.StackBytes.ToString(CultureInfo.InvariantCulture)).Append('\n');
         report.Append("#% provider-refusals\t").Append(refusals.Count.ToString(CultureInfo.InvariantCulture)).Append('\n');
+        if (readingsFile is not null)
+        {
+            report.Append("#% provider-readings\t").Append(Sha256(readingsFile)).Append('\n');
+            report.Append("#% provider-readings-lines\t").Append(readings.ToString(CultureInfo.InvariantCulture)).Append('\n');
+        }
         report.Append("id\tvariant\tconfig\toutcome\tcode\tphase\tspan\tdepth\n");
         foreach (var line in lines)
             report.Append(line).Append('\n');
@@ -165,6 +177,26 @@ internal static class Program
         }
 
         return refusals;
+    }
+
+    /// <summary>
+    /// Adds each line of the provider readings (decision (a) of the rule's revision of 2026-11-02) that the classification
+    /// gives no provider row: its input, variant and configuration, with the message identifier of the row it names. A
+    /// line the classification already gives a provider row keeps that row's. Answers the number of lines read.
+    /// </summary>
+    private static int ProviderReadings(string file, Dictionary<string, string> messageIds, Dictionary<string, string> refusals)
+    {
+        var lines = 0;
+        foreach (var line in File.ReadAllLines(file, new UTF8Encoding(false)))
+        {
+            if (line.Length == 0 || line.StartsWith('#') || line.StartsWith("id\t", StringComparison.Ordinal))
+                continue;
+            var c = line.Split('\t');
+            lines++;
+            refusals.TryAdd(c[0] + "\t" + c[1] + "\t" + c[2], messageIds[c[3]]);
+        }
+
+        return lines;
     }
 
     private static Dictionary<string, string> ReadColumn(string path, string key, string value)

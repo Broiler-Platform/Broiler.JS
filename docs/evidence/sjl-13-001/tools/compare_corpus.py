@@ -5,6 +5,7 @@
 
 Usage:
     compare_corpus.py compare --report R --classification C --catalogue K --nesting V=64,J=512 --tree-depth 10000 --out DIR
+        [--provider-readings P --classification-readings Q]
     compare_corpus.py control --report R --classification C --out R2
 
 (Revised 2026-11-02, at stage SJL-13.2f, after review, before any run at the library commit: L is admitted at a reported
@@ -12,6 +13,16 @@ depth past the bound, as part A's text reads, not equal to it; and the completen
 classification's digests with the rule commit's, pinned below, as part A's completeness reads. The comparison first
 committed admitted L at a reported depth equal to the bound, reading the library's report of the bound it refused past as
 a depth past it, and compared the classification with the report's own record of it.)
+
+(Revised 2026-11-02, at stage SJL-13.2f, under the rule's revision of that day, decision-rule-revised-2026-11-02.md,
+before any run it judges. With --provider-readings and --classification-readings, the lists in readings/, it reads part
+A as revised: decision (a), a line readings/provider-readings.tsv lists admits EE0019's shared code first beside the
+classification's rows (`refused-by-provider-reading`); decision (b), a line readings/classification-readings.tsv lists
+admits the row it names first (`refused-by-classification-reading`), or, where it names `either`, is read as
+semantics-only (`semantics-only-read-accepted`, `semantics-only-read-refused`); decision (e), where the classification
+names EX0008 or EX0009, the other's shared code is admitted too (`refused-by-grammar-pair`); decision (f), a refusal at a
+limit reported at a depth equal to its bound is admitted as L (`L-nesting-at-bound`, `L-tree-at-bound`). Each list's
+SHA-256 is written to the summary. Without the two options it reads the rule as first written, as before.)
 
 `compare` reads the report of tools/frontend-corpus in the fields part A's configuration lists (the outcome, and for a
 refusal the first diagnostic's shared code and the depth the library reports), the classification
@@ -101,11 +112,29 @@ def sha256(path):
         return hashlib.sha256(handle.read()).hexdigest()
 
 
+def read_readings(path):
+    """A readings list (readings/): its lines by (id, variant, config), each with its last column."""
+    lines = {}
+    if path is None:
+        return lines
+    with open(path, encoding="utf-8") as handle:
+        for line in handle.read().split("\n"):
+            if not line or line.startswith("#") or line.startswith("id\t"):
+                continue
+            fields = line.split("\t")
+            lines[(fields[0], fields[1], fields[2])] = fields[-1]
+    return lines
+
+
 def compare(args):
     nesting = dict(item.split("=") for item in args.nesting.split(","))
     tree_depth = args.tree_depth
     codes = {row["id"]: row["shared_code"] for row in read_table(args.catalogue)}
     nesting_code, tree_code = codes["EX0011"], codes["EX0012"]
+    revised = args.provider_readings is not None and args.classification_readings is not None
+    provider_readings = read_readings(args.provider_readings)
+    classification_readings = read_readings(args.classification_readings)
+    grammar_pair = {"EX0008", "EX0009"}
     inputs, expected = read_classification(args.classification)
     header, report = read_report(args.report)
 
@@ -128,11 +157,15 @@ def compare(args):
             reason, outcome, code, depth = "missing", "-", "-", "-"
         else:
             outcome, code, depth = fields[3], fields[4], fields[7]
-            allowed = {codes[r] for r in row["first"].split(";") if r in codes} if row["first"] != "-" else set()
+            first = row["first"].split(";") if row["first"] != "-" else []
+            allowed = {codes[r] for r in first if r in codes}
+            reading = classification_readings.get(key)
             if outcome in ("crashed", "absent"):
                 reason = outcome
             elif row["expect"] == "either":
                 reason = "semantics-only-" + outcome
+            elif reading == "either":
+                reason = "semantics-only-read-" + outcome
             elif row["expect"] == "accepted":
                 if outcome == "accepted":
                     reason = "accepted"
@@ -140,6 +173,10 @@ def compare(args):
                     reason = "L-nesting"
                 elif code == tree_code and past(depth, tree_depth):
                     reason = "L-tree"
+                elif revised and code == nesting_code and depth == nesting[row["config"]]:
+                    reason = "L-nesting-at-bound"
+                elif revised and code == tree_code and depth == tree_depth:
+                    reason = "L-tree-at-bound"
                 else:
                     reason = "expected-acceptance-refused"
             else:
@@ -147,6 +184,12 @@ def compare(args):
                     reason = "expected-refusal-accepted"
                 elif code in allowed:
                     reason = "refused-as-classified"
+                elif key in provider_readings and code == codes[provider_readings[key]]:
+                    reason = "refused-by-provider-reading"
+                elif reading is not None and code == codes[reading]:
+                    reason = "refused-by-classification-reading"
+                elif revised and grammar_pair & set(first) and code in {codes[r] for r in grammar_pair}:
+                    reason = "refused-by-grammar-pair"
                 else:
                     reason = "first-code-not-allowed"
         reasons[(reason, row["config"])] += 1
@@ -176,6 +219,10 @@ def compare(args):
     summary.append("classification-manifest-input\t" + inputs.get("conformance/parse/corpus.manifest", "-"))
     summary.append("report-classification\t" + header.get("classification", "-"))
     summary.append("catalogue\t" + sha256(args.catalogue))
+    summary.append("rule-revision\t" + ("decision-rule-revised-2026-11-02.md" if revised else "-"))
+    summary.append("provider-readings\t" + (sha256(args.provider_readings) if args.provider_readings else "-"))
+    summary.append("classification-readings\t" + (sha256(args.classification_readings) if args.classification_readings else "-"))
+    summary.append("report-provider-readings\t" + header.get("provider-readings", "-"))
     classification_digest = sha256(args.classification)
     manifest_agrees = header.get("manifest") == RULE_MANIFEST_SHA256 and inputs.get("conformance/parse/corpus.manifest") == RULE_MANIFEST_SHA256
     classification_agrees = classification_digest == RULE_CLASSIFICATION_SHA256 and header.get("classification") == RULE_CLASSIFICATION_SHA256
@@ -196,6 +243,13 @@ def compare(args):
     for line in failures[:50]:
         print("failure\t" + line)
     complete = manifest_agrees and classification_agrees
+    if revised:
+        # The report's provider read the list this comparison reads (decision (a) of the revision of 2026-11-02).
+        readings_agree = header.get("provider-readings") == sha256(args.provider_readings)
+        summary_note = "provider-readings-agree\t" + ("yes" if readings_agree else "no")
+        with open(os.path.join(args.out, "summary.txt"), "a", encoding="utf-8", newline="\n") as handle:
+            handle.write(summary_note + "\n")
+        complete = complete and readings_agree
     return 0 if not failures and complete else 1
 
 
@@ -236,6 +290,8 @@ def main():
     c.add_argument("--nesting", required=True)
     c.add_argument("--tree-depth", required=True)
     c.add_argument("--out", required=True)
+    c.add_argument("--provider-readings")
+    c.add_argument("--classification-readings")
     k = sub.add_parser("control")
     k.add_argument("--report", required=True)
     k.add_argument("--classification", required=True)
