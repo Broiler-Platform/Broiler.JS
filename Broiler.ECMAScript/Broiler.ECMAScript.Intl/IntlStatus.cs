@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   1
 // Annotated:        1/1
-// Exempt:           17
+// Exempt:           27
 // Human-reviewed:   0/1
 // IP risk:          Low
 // Security risk:    Low
@@ -34,13 +34,18 @@ namespace Broiler.ECMAScript.Intl;
 /// area are the engines' own, where they read script values".)</i>
 /// <i>(Extended 2026-11-01, at stage SJL-9.3c, which appends sub-area (c)'s three, each a <c>RangeError</c>: a relative time's
 /// value or unit, and a display-name code.)</i>
+/// <i>(Extended 2026-11-02, at stage SJL-9.3d, which appends sub-area (d)'s ten: four <c>RangeError</c>s - a time zone offset
+/// with seconds, an unknown time zone, a time value TimeClip refuses and a Temporal value in a calendar the format does not
+/// write - and six <c>TypeError</c>s that CreateDateTimeFormat and HandleDateTimeValue raise after every read of a script value:
+/// a style with components, a date format with a time style, a time format with a date style, a Temporal type the options give
+/// no field of, a ZonedDateTime outside its own <c>toLocaleString</c>, and a range of two types.)</i>
 /// </para>
 /// <para>
 /// <b>The numbers are stable.</b> Each stage of milestone SJL-9.3 appends the statuses its sub-area's operations answer,
 /// and no number is reused.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 X3 statuses; IP=Low; Security=Low; Resources=0; Fingerprint=9FF49F
+// Broiler-AI:           Origin=AI; Spec=JSD-0082 X3 statuses; IP=Low; Security=Low; Resources=0; Fingerprint=B32D3F
 // Broiler-Human:        PENDING
 public enum IntlStatus
 {
@@ -128,4 +133,52 @@ public enum IntlStatus
     /// <c>sec-canonicalcodefordisplaynames</c>): a <c>RangeError</c>.
     /// </summary>
     InvalidDisplayNamesCode = 16,
+
+    /// <summary>
+    /// A <c>timeZone</c> option is an offset string with seconds or a fraction, which CreateDateTimeFormat refuses
+    /// (<c>sec-createdatetimeformat</c>, as <c>tc39/proposal-temporal@e8cc03fc</c> amends it): a <c>RangeError</c>.
+    /// </summary>
+    TimeZoneOffsetHasSeconds = 17,
+
+    /// <summary>
+    /// A <c>timeZone</c> option names no available named time zone (GetAvailableNamedTimeZoneIdentifier,
+    /// <c>sec-getavailablenamedtimezoneidentifier</c>): a <c>RangeError</c>.
+    /// </summary>
+    InvalidTimeZone = 18,
+
+    /// <summary>
+    /// <c>dateStyle</c> or <c>timeStyle</c> is given with a date-time component (CreateDateTimeFormat,
+    /// <c>sec-createdatetimeformat</c>): a <c>TypeError</c>.
+    /// </summary>
+    StyleWithComponents = 19,
+
+    /// <summary>A date format (<c>required</c> <c>date</c>) is given a <c>timeStyle</c> (CreateDateTimeFormat): a <c>TypeError</c>.</summary>
+    DateFormatWithTimeStyle = 20,
+
+    /// <summary>A time format (<c>required</c> <c>time</c>) is given a <c>dateStyle</c> (CreateDateTimeFormat): a <c>TypeError</c>.</summary>
+    TimeFormatWithDateStyle = 21,
+
+    /// <summary>A Number's time value is one TimeClip refuses (HandleDateTimeOthers, <c>sec-handledatetimeothers</c>): a <c>RangeError</c>.</summary>
+    TimeValueOutOfRange = 22,
+
+    /// <summary>
+    /// The format's options give no field of a Temporal value's type (the proposal's GetDateTimeFormat answering null, in
+    /// HandleDateTimeTemporalDate and its siblings): a <c>TypeError</c>.
+    /// </summary>
+    TemporalTypeNotFormatted = 23,
+
+    /// <summary>
+    /// A Temporal value's calendar is not one the format writes it in (HandleDateTimeTemporalDate and its siblings, and
+    /// <c>Temporal.ZonedDateTime.prototype.toLocaleString</c>): a <c>RangeError</c>.
+    /// </summary>
+    TemporalCalendarMismatch = 24,
+
+    /// <summary>A <c>Temporal.ZonedDateTime</c> is given to a format other than its own <c>toLocaleString</c>'s (HandleDateTimeValue): a <c>TypeError</c>.</summary>
+    ZonedDateTimeNotFormatted = 25,
+
+    /// <summary>
+    /// A range's start and end are not two Temporal values of one type or two Numbers (the proposal's
+    /// PartitionDateTimeRangePattern, SameTemporalType): a <c>TypeError</c>.
+    /// </summary>
+    RangeOfDifferentTypes = 26,
 }

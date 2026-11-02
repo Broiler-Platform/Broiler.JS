@@ -43,6 +43,7 @@
     <Compile Include="..\runners\AlgorithmsLibrary.Intl.cs" Link="AlgorithmsLibrary.Intl.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.IntlValues.cs" Link="AlgorithmsLibrary.IntlValues.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.IntlNumbers.cs" Link="AlgorithmsLibrary.IntlNumbers.cs" />
+    <Compile Include="..\runners\AlgorithmsLibrary.IntlDateTimes.cs" Link="AlgorithmsLibrary.IntlDateTimes.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.Syntax.cs" Link="AlgorithmsLibrary.Syntax.cs" />
     <Compile Include="..\runners\UnicodeDataHome.cs" Link="UnicodeDataHome.cs" />
     <Compile Include="..\runners\TemporalAdapter.cs" Link="TemporalAdapter.cs" />

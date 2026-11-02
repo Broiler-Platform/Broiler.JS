@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   22
-// Annotated:        22/22
+// Relevant units:   25
+// Annotated:        25/25
 // Exempt:           3
-// Human-reviewed:   0/22
+// Human-reviewed:   0/25
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
-// Resource impact:  0/10 max
-// Unverified:       22
+// Resource impact:  1/10 max
+// Unverified:       25
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -221,4 +221,33 @@ public interface ILocaleData
     // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 question layer; IP=Low; Security=Low; Resources=0; Fingerprint=9862E9
     // Broiler-Human:        PENDING
     IReadOnlyList<DayPeriodRule>? DayPeriods(string language);
+
+    /// <summary>
+    /// The metazones an IANA zone uses, each over the period it is in use, in the table's order (UTS #35 Part 4, Metazones:
+    /// <c>metaZones</c>' <c>timezone</c> usage), or <see langword="null"/> for a zone CLDR maps to none. A world question,
+    /// keyed by the zone's identifier as CLDR names it.
+    /// </summary>
+    /// <param name="zone">The zone, for example <c>America/Indiana/Knox</c>.</param>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 question layer; IP=Low; Security=Low; Resources=1; Fingerprint=09C481
+    // Broiler-Human:        PENDING
+    IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone);
+
+    /// <summary>
+    /// A metazone's golden zone in a region (UTS #35 Part 4, Metazones: <c>mapZones</c>' <c>mapZone</c>), or
+    /// <see langword="null"/> where CLDR names none for that region; the world's is region <c>001</c>.
+    /// </summary>
+    /// <param name="metazone">The metazone, for example <c>America_Eastern</c>.</param>
+    /// <param name="region">The region, for example <c>US</c> or <c>001</c>.</param>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 question layer; IP=Low; Security=Low; Resources=1; Fingerprint=48E290
+    // Broiler-Human:        PENDING
+    string? GoldenZone(string metazone, string region);
+
+    /// <summary>
+    /// A country's primary zone (UTS #35 Part 4, Time Zone Names: <c>primaryZones</c>), which names a country of several
+    /// zones by the country, or <see langword="null"/> for a country CLDR gives none.
+    /// </summary>
+    /// <param name="region">The country, for example <c>DE</c>.</param>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 question layer; IP=Low; Security=Low; Resources=1; Fingerprint=FEE2C5
+    // Broiler-Human:        PENDING
+    string? PrimaryZone(string region);
 }

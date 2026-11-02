@@ -927,7 +927,7 @@ internal sealed partial class AlgorithmsLibrary
 
         // ---- JSON.stringify --------------------------------------------------------------------------------------------------
 
-        private static string Json(object? value)
+        internal static string Json(object? value)
         {
             var text = new StringBuilder();
             Write(value);

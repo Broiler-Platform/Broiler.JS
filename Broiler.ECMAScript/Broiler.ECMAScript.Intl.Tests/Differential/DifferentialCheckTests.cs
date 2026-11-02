@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Broiler.ECMAScript.Time;
 using Xunit;
 
 namespace Broiler.ECMAScript.Intl.Tests.Differential;
@@ -225,6 +226,92 @@ public sealed class DifferentialCheckTests
             or "Intl.RelativeTimeFormat.prototype.format" or "Intl.DisplayNames.prototype.of" or "Intl.NumberFormat.prototype.formatRange").ToList();
         var missed = formats.Where(v => !called.Contains(v["id"]!)).Select(static v => v.Script).ToList();
         Assert.True(missed.Count <= 3, string.Join("\n", missed));
+    }
+
+    /// <summary>
+    /// Sub-area (d) (stage SJL-9.3d): Broiler.VM's date-time code answers as the library does over Broiler.VM's embedding but for
+    /// row Z8, the resolved zone's identifier as given where Broiler.VM reported its primary (decision D15), and over Broiler.JS's
+    /// every other difference is one the library's answer under Broiler.VM's reading of the data removes - the data locale's
+    /// language and Broiler.VM's numbering systems (decisions D5 and D13). No formatted String, part or charge differs over
+    /// Broiler.VM's embedding.
+    /// </summary>
+    [Fact]
+    public void Broiler_VM_s_date_time_code_and_the_library_differ_only_by_row_Z8_and_the_data_they_read()
+    {
+        var sections = DifferentialCheck.Run(DifferentialCheck.DefaultSeed, scale: 1, only: ["T1", "T2", "T3", "T4", "T5"]);
+        var report = DifferentialCheck.Report(sections, DifferentialCheck.DefaultSeed, 1);
+        Assert.Equal(10, sections.Count);
+        Assert.True(sections.All(static s => s.Unclassified == 0), report);
+        Assert.All(sections, static s => Assert.True(s.Compared > 300, s.Name + " compared almost nothing"));
+        var vm = sections.Where(static s => s.Name.EndsWith("(broiler-vm)", StringComparison.Ordinal)).ToList();
+        Assert.All(vm, static s => Assert.True(s.ClassifiedByRow.Keys.All(static r => r == DateTimeSection.ZoneRow), s.Name));
+        Assert.All(vm.Where(static s => s.Name[..2] is "T2" or "T3" or "T4"), static s => Assert.Equal(0, s.Classified));
+        Assert.True(vm.Single(static s => s.Name.StartsWith("T5", StringComparison.Ordinal)).Classified > 0, report);
+        var rows = sections.SelectMany(static s => s.ClassifiedByRow.Keys).Distinct().Order(StringComparer.Ordinal).ToList();
+        Assert.Equal([DateTimeSection.DataRow, DateTimeSection.ZoneRow], rows);
+    }
+
+    /// <summary>
+    /// The negative control of sub-area (d): the library reads Broiler.VM's tables with English's wide January changed, and the
+    /// difference is found and left unclassified, since neither reading of the same tables gives Broiler.VM's answer.
+    /// </summary>
+    [Fact]
+    public void A_difference_in_a_month_name_is_found_and_left_unclassified()
+    {
+        var vm = Embedding.Both().First();
+        var dates = Encoding.ASCII.GetString(vm.Text[nameof(IntlTable.DateLocales)]);
+        Assert.Contains("en|months.format.wide.1|January\n", dates, StringComparison.Ordinal);
+        var changed = Encoding.ASCII.GetBytes(dates.Replace("en|months.format.wide.1|January\n", "en|months.format.wide.1|Janvier\n", StringComparison.Ordinal));
+        var control = Embedding.WithLibraryTables("control", new Dictionary<string, byte[]> { [nameof(IntlTable.DateLocales)] = changed });
+        var section = Assert.Single(DateTimeSection.Run(control, new SeededRandom(DifferentialCheck.DefaultSeed), 1, ["T2"]));
+        Assert.True(section.Unclassified > 0);
+        Assert.Equal(0, section.Classified);
+        Assert.Contains(section.Examples, static e => e.Contains("January", StringComparison.Ordinal) && e.Contains("Janvier", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Sub-area (d)'s population keeps every dataset input and each vector's own format (decision D22): the dates program's cases,
+    /// instants and ranges, the calendar-formats program's calendars and dates, the temporal-intl program's formats and values, the
+    /// zone-names program's zones, styles and instants, the database's names, and the format each date-times vector constructs.
+    /// </summary>
+    [Fact]
+    public void Sub_area_d_s_population_keeps_every_dataset_input_and_each_vector_s_own_format()
+    {
+        var population = DateTimePopulation.Build(Embedding.Both().First(), new SeededRandom(DifferentialCheck.DefaultSeed), 1, HomeTimeZones.Current);
+        Assert.Contains(population.DatasetCases, static c => c.Format.Locale == "en" && c.Format.Bag["dateStyle"] is "full" && c.Times.Contains(8.64e15) && c.Ranges.Count == 6);
+        Assert.Contains(population.DatasetCases, static c => c.Format.Bag["calendar"] is "chinese" && c.Times.Count == 13);
+        Assert.Contains(population.DatasetCases, static c => c.Format.Bag["timeZone"] is "Antarctica/Troll" && c.Format.Bag["timeZoneName"] is "longGeneric" && c.Times.Count == 3);
+        Assert.Equal(72, population.TemporalFormats.Count);
+        Assert.Contains(population.TemporalValues, static v => v.Kind == "zoned" && v.Zone == "Europe/Berlin");
+        Assert.Contains("Asia/Calcutta", population.Zones);
+        var datasetZones = DateTimePopulation.TimeZoneDatasetNames();
+        Assert.Equal(597, datasetZones.Count);
+        Assert.Contains("Africa/Asmera", datasetZones);
+        Assert.Contains("America/Knox_IN", datasetZones);
+        Assert.All(datasetZones, z => Assert.Contains(z, population.Zones));
+        Assert.All(HomeTimeZones.Current.PrimaryIdentifiers, z => Assert.Contains(z, population.Zones));
+        Assert.Contains(population.TemporalValues, static v => v.Kind == "date" && v.Date == new IsoDate(-271821, 4, 19));
+        Assert.Contains(population.TemporalValues, static v => v.Kind == "year-month" && v.Date == new IsoDate(-271821, 4, 1));
+        Assert.Contains(population.TemporalRanges, static r => r.Start.Kind == "date-time" && r.End.Date == new IsoDate(275760, 9, 13));
+
+        var vectors = Population.IntlVectors("date-times.vectors");
+        var constructing = vectors.Count(static v => v.Script.Contains("new Intl.DateTimeFormat(", StringComparison.Ordinal) || v.Script.Contains(").toLocale", StringComparison.Ordinal));
+        Assert.True(population.VectorCases.Count >= constructing - 10, population.VectorCases.Count + " of " + constructing);
+        Assert.Contains(population.VectorCases, static c => c.Format.Locale == "de" && c.Format.Bag["timeZone"] is "America/New_York" && c.Times.Contains(1704467229123));
+    }
+
+    [Fact]
+    public void Row_Z8_covers_a_difference_only_when_the_primary_identifier_gives_Broiler_VM_s_answer()
+    {
+        var zones = new Section("T5 the time zone's resolution (test)");
+        zones.Compare("zone \"Asia/Calcutta\" (Z8's reading: \"Asia/Kolkata 0 Named rules\") (Broiler.VM's reading: \"Asia/Kolkata 0 Named rules\")",
+            "Asia/Kolkata 0 Named rules", "Asia/Calcutta 0 Named rules");
+        Assert.Equal(1, zones.ClassifiedByRow[DateTimeSection.ZoneRow]);
+
+        // Another primary, or a difference neither reading removes: unclassified.
+        zones.Compare("zone \"Asia/Calcutta\" (Z8's reading: \"Asia/Calcutta 0 Named rules\") (Broiler.VM's reading: \"Asia/Calcutta 0 Named rules\")",
+            "Asia/Kolkata 0 Named rules", "Asia/Calcutta 0 Named rules");
+        Assert.Equal(1, zones.Unclassified);
     }
 
     [Fact]

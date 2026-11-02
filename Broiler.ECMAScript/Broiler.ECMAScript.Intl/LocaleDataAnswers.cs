@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   8
-// Annotated:        8/8
+// Relevant units:   9
+// Annotated:        9/9
 // Exempt:           7
-// Human-reviewed:   0/8
+// Human-reviewed:   0/9
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  0/10 max
-// Unverified:       8
+// Unverified:       9
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -102,3 +102,15 @@ public readonly record struct DayPeriodRule(string Period, int From, int Before,
 // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 answers; IP=Low; Security=Low; Resources=0; Fingerprint=93CC83
 // Broiler-Human:        PENDING
 public readonly record struct PluralRuleText(string Category, string Rule);
+
+/// <summary>
+/// One period over which an IANA zone uses a metazone (UTS #35 Part 4, Metazones), in milliseconds since the epoch, as ICU
+/// reads CLDR's: a period CLDR states without a start begins at 1970-01-01 00:00 UTC, and one without an end ends at
+/// 9999-12-31 23:59 UTC.
+/// </summary>
+/// <param name="From">The period's first instant.</param>
+/// <param name="To">The instant the period ends before.</param>
+/// <param name="Metazone">The metazone, for example <c>America_Central</c>.</param>
+// Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 answers; IP=Low; Security=Low; Resources=0; Fingerprint=7A1D8A
+// Broiler-Human:        PENDING
+public readonly record struct MetazonePeriod(long From, long To, string Metazone);
