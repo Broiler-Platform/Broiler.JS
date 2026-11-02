@@ -13,15 +13,15 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 162 |
+| Files scanned | 165 |
 | Files not covered | 0 |
-| Files carrying an annotation | 162 |
-| Code units | 4124 |
-| Relevant | 2591 |
-| Exempt by predicate | 1533 |
-| Annotated | 2591 of 2591 (100%) |
-| Human reviewed | 0 of 2591 (0%) |
-| Unverified | 2591 |
+| Files carrying an annotation | 165 |
+| Code units | 4218 |
+| Relevant | 2653 |
+| Exempt by predicate | 1565 |
+| Annotated | 2653 of 2653 (100%) |
+| Human reviewed | 0 of 2653 (0%) |
+| Unverified | 2653 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2591 |
+| HUMAN_PENDING | 2653 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1533 |
+| EXEMPT | 1565 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 2588 |
+| Low | 2650 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,8 +51,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 1607 |
-| Medium | 732 |
+| Low | 1659 |
+| Medium | 742 |
 | High | 231 |
 | Critical | 0 |
 | *not annotated* | 0 |
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.1 / 10 |
-| Units scored | 2591 |
+| Units scored | 2653 |
 
 ## High-security review areas
 
@@ -205,7 +205,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Syntax.Tokenizer.CodePointAt(int, out int)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.RootCollation.Read(string)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.RootCollation.Elements(string)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Tailoring.Apply(RootCollation, CldrUcd, string, IReadOnlyDictionary<string, string>)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Tailoring.Apply(RootCollation, CldrUcd, string, Func<string, string?>)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Generate(IntlCldrPin, IReadOnlyDictionary<string, byte[]>, CldrUcd, IntlGeneratorOptions)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Archive.Bytes(string)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Text(string, string, IEnumerable<string>)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` - Security=High, human line PENDING
@@ -325,14 +325,14 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 464 |
+| TrivialPropertyOrAccessor | 473 |
 | ParameterAssigningConstructor | 27 |
-| TrivialExpressionBodiedMember | 33 |
+| TrivialExpressionBodiedMember | 34 |
 | CompilerSuppliedRecordOrEnumMember | 111 |
 | DelegatingOverrideOrOperator | 4 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 186 |
-| EnumMemberOfADeclaredVocabulary | 708 |
+| FieldDeclaringStorage | 200 |
+| EnumMemberOfADeclaredVocabulary | 716 |
 | DeclaredInSource | 0 |
 
 ## Per-unit exemptions
@@ -356,14 +356,14 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 5 covered assemblies -
-4124 of them, exempt and relevant alike - with the fingerprint of its declaration.
+4218 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
 trivial is no longer invisible: a semantic change to one moves a value in a generated file
 the check compares byte for byte. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` holds the manifest to the tree.
 
-Beside the units it lists **every covered file** - 162 of them - with a
+Beside the units it lists **every covered file** - 165 of them - with a
 fingerprint over the complete token stream of its compilation unit. A unit entry exists only
 for a declaration kind the scanner enumerates, and an enumeration is a whitelist: an
 `[assembly: ...]` attribute is a member of nothing and can be in no unit at all.
