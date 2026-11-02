@@ -138,7 +138,8 @@ public class LibraryRunTests
     /// SJL-9.3a), over the Intl data home's tables and Broiler.VM's providers, or gives Broiler.VM's <c>per-engine</c>
     /// expectation, the engine whose providers the runner takes; but the engine-level ones, whose outcome is an engine's or
     /// another sub-area's. Every other Intl vector is not implemented yet, but sub-area (b)'s (from stage SJL-9.3b, the next
-    /// test) and sub-area (c)'s (from stage SJL-9.3c), and no other area's verdict moves: the Unicode
+    /// test), sub-area (c)'s (from stage SJL-9.3c), sub-area (d)'s (from stage SJL-9.3d) and sub-area (e)'s (from stage SJL-9.3e),
+    /// and no other area's verdict moves: the Unicode
     /// area's <c>String.prototype.toLocaleLowerCase</c>, the one operation name the two areas share, stays unanswered.
     /// </summary>
     [Fact]
@@ -161,7 +162,7 @@ public class LibraryRunTests
             engineLevel.Select(static v => v.Id).Order(System.StringComparer.Ordinal));
 
         Assert.All(results.Except(locales).Where(static r => !AlgorithmsLibrary.IsLibraryIntlValues(r.Vector) && !AlgorithmsLibrary.IsLibraryIntlNumbers(r.Vector)
-                && !AlgorithmsLibrary.IsLibraryIntlDateTimes(r.Vector)),
+                && !AlgorithmsLibrary.IsLibraryIntlDateTimes(r.Vector) && !AlgorithmsLibrary.IsLibraryIntlDurations(r.Vector)),
             static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
 
         // Intl.NumberFormat.supportedLocalesOf: providers/0007 is the library's FilterLocales, held to Broiler.VM's per-engine
@@ -351,6 +352,59 @@ public class LibraryRunTests
             .ToList();
         Assert.NotEmpty(nearby);
         Assert.All(nearby, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntlDateTimes(v), v.Id));
+    }
+
+    /// <summary>
+    /// Every vector of the Intl area's sub-area (e), <c>intl/durations.vectors</c>, the runner answers (stage SJL-9.3e) passes against
+    /// the Intl library, or gives Broiler.VM's <c>per-engine</c> expectation; every other vector of the file is not implemented: the
+    /// getters a script defines on the argument or on <c>Temporal.Duration.prototype</c>, which observe an engine's reads (rows U7
+    /// and U9), and the constructor called without <c>new</c> (row U18), each an engine's.
+    /// </summary>
+    [Fact]
+    public void Every_duration_vector_the_runner_answers_passes_against_the_Intl_library()
+    {
+        var vectors = Home.Corpus.Records.Where(static v => v.Id.StartsWith(AlgorithmsLibrary.IntlDurationsPrefix, System.StringComparison.Ordinal)).ToList();
+        var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
+
+        Assert.NotEmpty(vectors);
+        var answered = results.Where(static r => AlgorithmsLibrary.IsLibraryIntlDurations(r.Vector)).ToList();
+        var differences = answered.Where(static r => r.Verdict != Verdict.Match && !AlgorithmsLibrary.MatchesBroilerVmExpectation(r))
+            .Select(static r => r.Vector.Id + " " + r.Vector.Script + " expected: " + r.Expected + " got: " + r.Rendered)
+            .ToList();
+        Assert.True(differences.Count == 0, differences.Count + " differences:\n" + string.Join("\n", differences.Take(80)));
+
+        var notAnswered = results.Except(answered).ToList();
+        Assert.All(notAnswered, static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+        Assert.All(notAnswered, static r => Assert.True(AlgorithmsLibrary.IsEngineLevelDurationsScript(r.Vector.Script), r.Vector.Id));
+        Assert.Equal(
+            ["intl/durations/argument/0001", "intl/durations/argument/0002", "intl/durations/argument/0003", "intl/durations/argument/0004",
+             "intl/durations/argument/0015", "intl/durations/styles/0040"],
+            notAnswered.Select(static r => r.Vector.Id).Order(System.StringComparer.Ordinal));
+    }
+
+    /// <summary>
+    /// The operation names sub-area (e)'s part of the runner answers keep every other file's outcome. At corpus revision 32 no
+    /// vector outside <c>intl/durations.vectors</c> carries one of those names, and the test holds that, as sub-areas (c) and (d)'s
+    /// do: a vector that comes to carry one fails it, so that the test is revisited. Every other name of the corpus that begins as
+    /// the file's do - sub-area (a)'s <c>Intl.DurationFormat, resolvedOptions().locale</c>, and the Temporal area's
+    /// <c>Temporal.Duration</c> operations - is not sub-area (e)'s.
+    /// </summary>
+    [Fact]
+    public void Sub_area_e_s_operation_names_move_no_other_area_s_vector()
+    {
+        var names = AlgorithmsLibrary.IntlDurationsOperations.ToHashSet(System.StringComparer.Ordinal);
+        var others = Home.Corpus.Records
+            .Where(v => names.Contains(v["op"]!) && !v.Id.StartsWith(AlgorithmsLibrary.IntlDurationsPrefix, System.StringComparison.Ordinal))
+            .ToList();
+        Assert.Empty(others.Select(static v => v.Id));
+
+        var nearby = Home.Corpus.Records
+            .Where(static v => (v["op"]!.StartsWith("Intl.DurationFormat", System.StringComparison.Ordinal) || v["op"]!.StartsWith("Temporal.Duration", System.StringComparison.Ordinal))
+                && !v.Id.StartsWith(AlgorithmsLibrary.IntlDurationsPrefix, System.StringComparison.Ordinal))
+            .ToList();
+        Assert.Contains(nearby, static v => v["area"] == "intl");
+        Assert.Contains(nearby, static v => v["area"] == "temporal");
+        Assert.All(nearby, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntlDurations(v), v.Id));
     }
 
     [Fact]
