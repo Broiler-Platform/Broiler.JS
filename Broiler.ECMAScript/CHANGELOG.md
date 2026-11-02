@@ -385,6 +385,34 @@ Not yet packed under a version of its own: the stream's next version is set when
 
   The library-level runner's regular-expression provider admits every literal (no `syntax` vector's outcome is a
   pattern's validity), and every `syntax` vector now agrees at the parse; the probe judges the area from this stage.
+- `Broiler.ECMAScript.Frontend`, stage SJL-13.2e: **the limits, determinism and fuzzing** (Broiler.VM's JSD-0083,
+  decisions D14 and D22; design [`docs/frontend/design.md`](docs/frontend/design.md), section 9.2's and 9.3's notes of
+  this stage):
+  - **the tree-depth constant derived** as Broiler.VM's JSD-0022 derived Broiler.VM's, in
+    [`docs/frontend/limits/derivation.md`](docs/frontend/limits/derivation.md) with its measurements: the frames and
+    bytes each level of the parser's recursion costs, under the JIT and under Native AOT, and the least stack each source
+    of the home rule's deep-nesting corpus needs. A level of tree depth costs the library no frame (its chain builders
+    are loops and its declarations walk keeps its own stack), so `ParseLimits.MaximumTreeDepth` stays Broiler.VM's bound,
+    10,000, now derived and not provisional; a level of nesting costs from 1 to 10 frames and from 288 to 6,032 bytes, and
+    `ParseLimits.MaximumSupportedNestingDepth` is confirmed at 512;
+  - **`ParseLimits.StackBytes`**, new: the stack the library documents for a parse, 16 MiB, the stack Broiler.VM's
+    `CompilationStack` declares, on which the costliest construct measured needs at the supported maximum nesting
+    3,082,864 bytes under the JIT and 1,846,192 under Native AOT;
+  - **the left-operand charge** of stage 4c tested on the documented stack: a chain whose left operand is a
+    parenthesised chain, however the two divide the bound and at every level of parentheses, and the four shapes of the
+    home rule's deep-nesting corpus;
+  - **determinism tests** over the parse corpus's stored inputs, both configurations and eval code: a canonical dump of
+    each parse (the tree with every node's kind, span and raw facts, the token stream, the diagnostics and the side
+    tables) is the same bytes in a repeated parse, on another thread, in the reverse order, on two threads at once and
+    under tr-TR, lt-LT and the invariant culture;
+  - **the Native AOT probe's frontend modes**, each its own run and none changing the probe's corpus run:
+    `--parse-one` (one source parsed alone, on a thread of `ParseLimits.StackBytes`, its outcome its exit code: the
+    deep-nesting corpus's runner, driven by `docs/evidence/sjl-13-001/tools/deep_nesting.py`), `--measure-frames` (the
+    derivation's measurement), `--fuzz` (the home's fuzz target, decision D22, over the seeds the home rule's bundle
+    commits) and `--digest-corpus` (the canonical dump's SHA-256 for every parse of the parse corpus, compared between the
+    JIT and the Native AOT image). The library grants the probe its internals for the dump, as it grants its tests.
+
+  No parse changes its answer.
 
 ### Changed
 
