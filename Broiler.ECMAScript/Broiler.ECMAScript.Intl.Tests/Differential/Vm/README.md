@@ -60,6 +60,7 @@ It runs under the JIT only; the Native AOT probe compiles none of it.
 | `JsRealm.DateTimeFormat.Create.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.DateTimeFormat.cs` | `bff1811cd34a91f50a9840a2bfc4de81bfb31161` | 32856 | `a96a37a2016ccbfb56d728e7b97fb1bdfd04da44e25c5183fb7211764f268d7c` |
 | `JsRealm.DateTimeFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.DateTimeFormat.cs` | `bff1811cd34a91f50a9840a2bfc4de81bfb31161` | 4988 | `d22c98a67ef3b08375e7a698caabfe877d4c989fee538d3ac3c31df3128843b4` |
 | `JsRealm.DisplayNames.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.DisplayNames.cs` | `a49be69ade789b2aeea5b422bd9221d78828c174` | 13515 | `dc8cd266db98ade682885da322aa4182cf05342eb3e91a8fcc96fc6fd1bb9ede` |
+| `JsRealm.DurationFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.DurationFormat.cs` | `8a6dfae2acddacef9b3b676316026f0a80abc301` | 20215 | `0173ead4f0ca05e849b01963d51a351446dc5db0d4fb8c6a7c38278ab0fcb36f` |
 | `JsRealm.Intl.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.Intl.cs` | `b75e44c777594b41d36a06ddaa366708b83c4159` | 13150 | `5abafd99db6b8f8fe72df71220933652a273b4626ffc77064efd370c3b69c145` |
 | `JsRealm.ListFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.ListFormat.cs` | `df3aac41e14ff7637c3670fb863b07b151e05664` | 6952 | `cbbb5bdd78ea18f1c6df35d3f38fcf150d6054b3b3f018043ed28d5bf394ab72` |
 | `JsRealm.Locale.cs` | `src/Broiler.VM.Profile.JavaScript/JsRealm.Locale.cs` | `d70618ca673e4d30b47b1e3424d7a734253b68ef` | 23796 | `9bd5f8ad8a81f71559d6a12010e97318ce2e3a1ecab57da9ce351db751f2d302` |
@@ -89,5 +90,11 @@ task 5.d (`../DateTimeSection.cs`, its population in `../DateTimePopulation.cs`)
 `JsRealm.DateTimeFormat.Create.cs`, whose CreateDateTimeFormat reads its options through the earlier stages' realm copies; the
 realm's prototype methods and HandleDateTimeValue, which read script and Temporal objects, are the harness's few lines around the
 copied operations (`../VmEngine.cs` adds the realm's Temporal flag, `JsTemporal.CalendarIdOf` and the zone names and calendars
-`JsIntlTables` builds, as stand-ins). Each section's population, its counts
+`JsIntlTables` builds, as stand-ins). And U1 and U2, the duration format's construction and its formatting with the charge, from stage SJL-9.3e's task 5.e
+(`../DurationSection.cs`, its population in `../DurationPopulation.cs`), over the realm copy `JsRealm.DurationFormat.cs`, whose
+constructor reads its options through the earlier stages' realm copies and whose PartitionDurationFormatPattern builds its number
+and list formats through stage SJL-9.3c's `JsRealm.NumberFormat.DigitOptions.cs` and `JsRealm.ListFormat.cs`; the realm's
+prototype methods and the reads of the argument, ToTemporalDuration and ECMA-402's ToDurationRecord, which read script and
+Temporal objects, are not copied, and both arms are handed the same valid duration record (`../VmEngine.cs` adds the engine's
+meter as a `WorkCharge`, which the copy hands `JsDecimal.FromString`, as a stand-in). Each section's population, its counts
 and every difference's class are in its report (`dotnet Broiler.ECMAScript.Intl.Tests.dll differential`, `../Program.cs`).

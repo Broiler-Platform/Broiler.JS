@@ -337,6 +337,95 @@ Broiler.ECMAScript.Intl.DisplayNamesType.Language = 0
 Broiler.ECMAScript.Intl.DisplayNamesType.Region = 1
 Broiler.ECMAScript.Intl.DisplayNamesType.Script = 2
 Broiler.ECMAScript.Intl.DisplayNamesType.value__ field System.Int32
+Broiler.ECMAScript.Intl.DurationDigitalFormat struct : System.IEquatable`1<Broiler.ECMAScript.Intl.DurationDigitalFormat>
+Broiler.ECMAScript.Intl.DurationDigitalFormat..ctor(System.String, System.String, System.Boolean) method System.Void
+Broiler.ECMAScript.Intl.DurationDigitalFormat.Deconstruct(System.String&, System.String&, System.Boolean&) method System.Void
+Broiler.ECMAScript.Intl.DurationDigitalFormat.Equals(Broiler.ECMAScript.Intl.DurationDigitalFormat) method System.Boolean
+Broiler.ECMAScript.Intl.DurationDigitalFormat.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Intl.DurationDigitalFormat.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Intl.DurationDigitalFormat.ToString() method virtual System.String
+Broiler.ECMAScript.Intl.DurationDigitalFormat.get_HourMinuteSeparator() method System.String
+Broiler.ECMAScript.Intl.DurationDigitalFormat.get_MinuteSecondSeparator() method System.String
+Broiler.ECMAScript.Intl.DurationDigitalFormat.get_TwoDigitHours() method System.Boolean
+Broiler.ECMAScript.Intl.DurationDigitalFormat.op_Equality(Broiler.ECMAScript.Intl.DurationDigitalFormat, Broiler.ECMAScript.Intl.DurationDigitalFormat) method static System.Boolean
+Broiler.ECMAScript.Intl.DurationDigitalFormat.op_Inequality(Broiler.ECMAScript.Intl.DurationDigitalFormat, Broiler.ECMAScript.Intl.DurationDigitalFormat) method static System.Boolean
+Broiler.ECMAScript.Intl.DurationDigitalFormat.set_HourMinuteSeparator(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DurationDigitalFormat.set_MinuteSecondSeparator(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DurationDigitalFormat.set_TwoDigitHours(System.Boolean) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DurationFormatCore sealed class
+Broiler.ECMAScript.Intl.DurationFormatCore.Create(Broiler.ECMAScript.Intl.ILocaleData, System.String, System.String, System.String, Broiler.ECMAScript.Intl.DurationFormatStyle, System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.DurationUnitOptions>, System.Nullable`1<System.Int32>) method static Broiler.ECMAScript.Intl.DurationFormatCore
+Broiler.ECMAScript.Intl.DurationFormatCore.DigitalFormat(Broiler.ECMAScript.Intl.ILocaleData, System.String) method static Broiler.ECMAScript.Intl.DurationDigitalFormat
+Broiler.ECMAScript.Intl.DurationFormatCore.Format(Broiler.ECMAScript.Temporal.DurationFields, Broiler.ECMAScript.WorkCharge) method System.String
+Broiler.ECMAScript.Intl.DurationFormatCore.FormatToParts(Broiler.ECMAScript.Temporal.DurationFields, Broiler.ECMAScript.WorkCharge) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.DurationPart>
+Broiler.ECMAScript.Intl.DurationFormatCore.GetDurationUnitOptions(Broiler.ECMAScript.Intl.DurationUnit, System.Nullable`1<Broiler.ECMAScript.Intl.DurationUnitStyle>, System.Nullable`1<Broiler.ECMAScript.Intl.DurationUnitDisplay>, Broiler.ECMAScript.Intl.DurationFormatStyle, System.Nullable`1<Broiler.ECMAScript.Intl.DurationUnitStyle>, System.Boolean, Broiler.ECMAScript.Intl.DurationUnitOptions&) method static Broiler.ECMAScript.Intl.IntlStatus
+Broiler.ECMAScript.Intl.DurationFormatCore.UnitName(Broiler.ECMAScript.Intl.DurationUnit) method static System.String
+Broiler.ECMAScript.Intl.DurationFormatCore.UnitSingular(Broiler.ECMAScript.Intl.DurationUnit) method static System.String
+Broiler.ECMAScript.Intl.DurationFormatCore.UnitStyles(Broiler.ECMAScript.Intl.DurationUnit) method static System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.DurationUnitStyle>
+Broiler.ECMAScript.Intl.DurationFormatCore.get_FractionalDigits() method System.Nullable`1<System.Int32>
+Broiler.ECMAScript.Intl.DurationFormatCore.get_HourMinuteSeparator() method System.String
+Broiler.ECMAScript.Intl.DurationFormatCore.get_Locale() method System.String
+Broiler.ECMAScript.Intl.DurationFormatCore.get_MinuteSecondSeparator() method System.String
+Broiler.ECMAScript.Intl.DurationFormatCore.get_NumberingSystem() method System.String
+Broiler.ECMAScript.Intl.DurationFormatCore.get_Style() method Broiler.ECMAScript.Intl.DurationFormatStyle
+Broiler.ECMAScript.Intl.DurationFormatCore.get_Units() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.DurationUnitOptions>
+Broiler.ECMAScript.Intl.DurationFormatStyle enum
+Broiler.ECMAScript.Intl.DurationFormatStyle.Digital = 3
+Broiler.ECMAScript.Intl.DurationFormatStyle.Long = 0
+Broiler.ECMAScript.Intl.DurationFormatStyle.Narrow = 2
+Broiler.ECMAScript.Intl.DurationFormatStyle.Short = 1
+Broiler.ECMAScript.Intl.DurationFormatStyle.value__ field System.Int32
+Broiler.ECMAScript.Intl.DurationPart struct : System.IEquatable`1<Broiler.ECMAScript.Intl.DurationPart>
+Broiler.ECMAScript.Intl.DurationPart..ctor(System.String, System.String, System.String) method System.Void
+Broiler.ECMAScript.Intl.DurationPart.Deconstruct(System.String&, System.String&, System.String&) method System.Void
+Broiler.ECMAScript.Intl.DurationPart.Equals(Broiler.ECMAScript.Intl.DurationPart) method System.Boolean
+Broiler.ECMAScript.Intl.DurationPart.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Intl.DurationPart.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Intl.DurationPart.ToString() method virtual System.String
+Broiler.ECMAScript.Intl.DurationPart.get_Type() method System.String
+Broiler.ECMAScript.Intl.DurationPart.get_Unit() method System.String
+Broiler.ECMAScript.Intl.DurationPart.get_Value() method System.String
+Broiler.ECMAScript.Intl.DurationPart.op_Equality(Broiler.ECMAScript.Intl.DurationPart, Broiler.ECMAScript.Intl.DurationPart) method static System.Boolean
+Broiler.ECMAScript.Intl.DurationPart.op_Inequality(Broiler.ECMAScript.Intl.DurationPart, Broiler.ECMAScript.Intl.DurationPart) method static System.Boolean
+Broiler.ECMAScript.Intl.DurationPart.set_Type(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DurationPart.set_Unit(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DurationPart.set_Value(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DurationUnit enum
+Broiler.ECMAScript.Intl.DurationUnit.Days = 3
+Broiler.ECMAScript.Intl.DurationUnit.Hours = 4
+Broiler.ECMAScript.Intl.DurationUnit.Microseconds = 8
+Broiler.ECMAScript.Intl.DurationUnit.Milliseconds = 7
+Broiler.ECMAScript.Intl.DurationUnit.Minutes = 5
+Broiler.ECMAScript.Intl.DurationUnit.Months = 1
+Broiler.ECMAScript.Intl.DurationUnit.Nanoseconds = 9
+Broiler.ECMAScript.Intl.DurationUnit.Seconds = 6
+Broiler.ECMAScript.Intl.DurationUnit.Weeks = 2
+Broiler.ECMAScript.Intl.DurationUnit.Years = 0
+Broiler.ECMAScript.Intl.DurationUnit.value__ field System.Int32
+Broiler.ECMAScript.Intl.DurationUnitDisplay enum
+Broiler.ECMAScript.Intl.DurationUnitDisplay.Always = 1
+Broiler.ECMAScript.Intl.DurationUnitDisplay.Auto = 0
+Broiler.ECMAScript.Intl.DurationUnitDisplay.value__ field System.Int32
+Broiler.ECMAScript.Intl.DurationUnitOptions struct : System.IEquatable`1<Broiler.ECMAScript.Intl.DurationUnitOptions>
+Broiler.ECMAScript.Intl.DurationUnitOptions..ctor(Broiler.ECMAScript.Intl.DurationUnitStyle, Broiler.ECMAScript.Intl.DurationUnitDisplay) method System.Void
+Broiler.ECMAScript.Intl.DurationUnitOptions.Deconstruct(Broiler.ECMAScript.Intl.DurationUnitStyle&, Broiler.ECMAScript.Intl.DurationUnitDisplay&) method System.Void
+Broiler.ECMAScript.Intl.DurationUnitOptions.Equals(Broiler.ECMAScript.Intl.DurationUnitOptions) method System.Boolean
+Broiler.ECMAScript.Intl.DurationUnitOptions.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Intl.DurationUnitOptions.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Intl.DurationUnitOptions.ToString() method virtual System.String
+Broiler.ECMAScript.Intl.DurationUnitOptions.get_Display() method Broiler.ECMAScript.Intl.DurationUnitDisplay
+Broiler.ECMAScript.Intl.DurationUnitOptions.get_Style() method Broiler.ECMAScript.Intl.DurationUnitStyle
+Broiler.ECMAScript.Intl.DurationUnitOptions.op_Equality(Broiler.ECMAScript.Intl.DurationUnitOptions, Broiler.ECMAScript.Intl.DurationUnitOptions) method static System.Boolean
+Broiler.ECMAScript.Intl.DurationUnitOptions.op_Inequality(Broiler.ECMAScript.Intl.DurationUnitOptions, Broiler.ECMAScript.Intl.DurationUnitOptions) method static System.Boolean
+Broiler.ECMAScript.Intl.DurationUnitOptions.set_Display(Broiler.ECMAScript.Intl.DurationUnitDisplay) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DurationUnitOptions.set_Style(Broiler.ECMAScript.Intl.DurationUnitStyle) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.DurationUnitStyle enum
+Broiler.ECMAScript.Intl.DurationUnitStyle.Fractional = 5
+Broiler.ECMAScript.Intl.DurationUnitStyle.Long = 0
+Broiler.ECMAScript.Intl.DurationUnitStyle.Narrow = 2
+Broiler.ECMAScript.Intl.DurationUnitStyle.Numeric = 3
+Broiler.ECMAScript.Intl.DurationUnitStyle.Short = 1
+Broiler.ECMAScript.Intl.DurationUnitStyle.TwoDigit = 4
+Broiler.ECMAScript.Intl.DurationUnitStyle.value__ field System.Int32
 Broiler.ECMAScript.Intl.FormatStyle enum
 Broiler.ECMAScript.Intl.FormatStyle.Long = 0
 Broiler.ECMAScript.Intl.FormatStyle.Narrow = 2
@@ -436,7 +525,10 @@ Broiler.ECMAScript.Intl.IntlDecimalKind.value__ field System.Int32
 Broiler.ECMAScript.Intl.IntlStatus enum
 Broiler.ECMAScript.Intl.IntlStatus.Completed = 0
 Broiler.ECMAScript.Intl.IntlStatus.DateFormatWithTimeStyle = 20
+Broiler.ECMAScript.Intl.IntlStatus.DurationUnitAfterFractional = 28
+Broiler.ECMAScript.Intl.IntlStatus.DurationUnitAfterNumeric = 29
 Broiler.ECMAScript.Intl.IntlStatus.FractionDigitsOutOfOrder = 10
+Broiler.ECMAScript.Intl.IntlStatus.FractionalDurationUnitAlwaysDisplayed = 27
 Broiler.ECMAScript.Intl.IntlStatus.InvalidDisplayNamesCode = 16
 Broiler.ECMAScript.Intl.IntlStatus.InvalidKey = 7
 Broiler.ECMAScript.Intl.IntlStatus.InvalidLanguageSubtag = 2

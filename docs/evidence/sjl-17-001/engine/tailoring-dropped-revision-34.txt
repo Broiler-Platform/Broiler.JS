@@ -1,0 +1,215 @@
+intl/collation/options/sensitivity/0016	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0017	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0018	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0019	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0020	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0021	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0022	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0023	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0024	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0025	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0026	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/sensitivity/0027	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0028	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0029	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0030	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0031	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0047	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0048	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0049	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0050	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0051	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0052	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0053	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0054	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0055	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0056	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0057	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/sensitivity/0058	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0059	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0060	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0061	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0062	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0079	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0080	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0081	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0082	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0083	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0084	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0085	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0086	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0087	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0088	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0089	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/sensitivity/0090	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0091	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0092	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0093	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0094	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0111	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0112	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0113	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0114	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0115	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0116	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0117	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0118	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0119	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0120	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0121	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0122	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0123	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0124	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0125	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0126	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0127	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0128	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0129	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0130	match	reference=out	dropped=windows
+intl/collation/options/sensitivity/0131	difference	reference=out	dropped=windows
+intl/collation/options/numeric/0172	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0173	match	reference=out	dropped=windows
+intl/collation/options/numeric/0174	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0175	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0176	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0177	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0178	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0179	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0180	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0181	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0182	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0183	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0184	match	reference=out	dropped=windows
+intl/collation/options/numeric/0185	match	reference=out	dropped=windows
+intl/collation/options/numeric/0186	match	reference=out	dropped=windows
+intl/collation/options/numeric/0187	match	reference=out	dropped=windows
+intl/collation/options/numeric/0188	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0189	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/numeric/0190	match	reference=out	dropped=windows
+intl/collation/options/case-first/0122	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0123	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0124	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0125	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0126	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0127	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0128	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0129	match	reference=out	dropped=windows
+intl/collation/options/case-first/0130	match	reference=out	dropped=windows
+intl/collation/options/case-first/0131	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0132	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0133	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0134	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0135	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0136	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0137	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0138	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0139	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0140	match	reference=out	dropped=windows
+intl/collation/options/case-first/0141	match	reference=out	dropped=windows
+intl/collation/options/case-first/0142	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/options/case-first/0143	classified-divergence	reference=out	not compared (classified divergence)
+intl/collation/tailorings/de-phonebook/0001	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0002	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0003	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0004	match	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0005	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0006	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0007	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0008	match	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0009	match	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0010	match	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0011	match	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0012	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0013	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0014	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0015	match	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0016	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0017	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0018	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0019	match	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0020	match	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0021	match	reference=out	dropped=windows
+intl/collation/tailorings/de-phonebook/0022	match	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0001	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0002	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0003	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0004	match	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0005	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0006	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0007	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0008	match	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0009	match	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0010	match	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0011	match	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0012	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0013	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0014	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0015	match	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0016	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0017	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0018	difference	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0019	match	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0020	match	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0021	match	reference=out	dropped=windows
+intl/collation/tailorings/de-search/0022	difference	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0001	difference	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0002	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0003	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0004	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0005	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0006	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0007	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0008	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0009	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0010	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0011	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0012	difference	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0013	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0014	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0015	difference	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0016	match	reference=out	dropped!=windows
+intl/collation/tailorings/root-search/0017	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0018	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0019	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0020	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0021	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0022	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0023	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0024	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0025	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0026	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0027	match	reference=out	dropped!=windows
+intl/collation/tailorings/root-search/0028	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0029	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0030	match	reference=out	dropped!=windows
+intl/collation/tailorings/root-search/0031	difference	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0032	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0033	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0034	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0035	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0036	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0037	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0038	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0039	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0040	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0041	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0042	difference	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0043	match	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0044	difference	reference=out	dropped=windows
+intl/collation/tailorings/root-search/0045	difference	reference=out	dropped=windows
+intl/collation/tailorings/locale-compare/0003	match	reference=out	dropped=windows
+intl/collation/tailorings/locale-compare/0006	match	reference=out	dropped=windows
+intl/collation/tailorings/locale-compare/0009	match	reference=out	dropped=windows
+intl/collation/tailorings/locale-compare/0012	match	reference=out	dropped=windows
+intl/collation/tailorings/locale-compare/0015	match	reference=out	dropped=windows
+intl/collation/tailorings/locale-compare/0018	match	reference=out	dropped=windows
+intl/collation/tailorings/locale-compare/0021	match	reference=out	dropped=windows
+intl/collation/tailorings/locale-compare/0024	match	reference=out	dropped=windows
+intl/collation/tailorings/locale-compare/0027	difference	reference=out	dropped=windows
+intl/collation/tailorings/locale-compare/0030	difference	reference=out	dropped=windows
+intl/collation/tailorings/locale-compare/0033	match	reference=out	dropped=windows
+# v26.12.0, ICU 78.3, CLDR 48.0
+# 34	classified-divergence: reference=out, not compared (classified divergence)
+# 35	difference: reference=out, dropped=windows
+# 3	match: reference=out, dropped!=windows
+# 138	match: reference=out, dropped=windows

@@ -1,0 +1,27 @@
+  Determining projects to restore...
+  Restored /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj (in 990 ms).
+  Restored /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 999 ms).
+  15 of 17 projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.ExpressionCompiler -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Ast -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.Parser -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.JSClassGenerator -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Compiler -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.Extensions -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.BuiltIns -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Modules -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Globals -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.Clr -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:27.97

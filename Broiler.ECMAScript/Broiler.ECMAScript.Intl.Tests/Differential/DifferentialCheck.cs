@@ -26,7 +26,8 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// (<see cref="DecimalSection"/>), and sub-area (c)'s, from stage SJL-9.3c, are N1 to N3 and S1 to S3, number formatting, its
 /// ranges and construction, lists, relative times and display names (<see cref="NumberTextSection"/>), and sub-area (d)'s, from
 /// stage SJL-9.3d, are T1 to T5, the date-time format's construction, formatting, ranges, Intl over Temporal and the time zone's
-/// resolution (<see cref="DateTimeSection"/>). A section names what it compares, and an answer is rendered as text so that
+/// resolution (<see cref="DateTimeSection"/>), and sub-area (e)'s, from stage SJL-9.3e, are U1 and U2, the duration format's
+/// construction and its formatting with the charge (<see cref="DurationSection"/>). A section names what it compares, and an answer is rendered as text so that
 /// the comparison is exact: a string as it is, a missing answer as <c>&lt;none&gt;</c>, a record by its fields.
 /// </remarks>
 internal static class DifferentialCheck
@@ -47,9 +48,11 @@ internal static class DifferentialCheck
     /// numbering-system defaults and symbols (decisions D5, D13 and D21; <see cref="NumberTextSection.Known"/>); and sub-area (d)'s
     /// are row Z8, the correction of Broiler.VM that reports the zone's identifier as given (decision D15), and the data policy
     /// of its rows T10, T15, T16, T22 and T37, Broiler.JS's embedding read at the data locale with its own numbering-system
-    /// defaults (decisions D5 and D13; <see cref="DateTimeSection.Known"/>).
+    /// defaults (decisions D5 and D13; <see cref="DateTimeSection.Known"/>); and sub-area (e)'s is the data policy of its rows U13 to
+    /// U16, Broiler.JS's embedding read at the data locale with its own numbering-system defaults and symbols and its digital formats
+    /// (decisions D5, D13, D21 and D34; <see cref="DurationSection.Known"/>).
     /// </remarks>
-    internal static IReadOnlyList<KnownDifference> Known { get; } = [.. LocaleSection.Known(), .. DecimalSection.Known(), .. NumberTextSection.Known(), .. DateTimeSection.Known()];
+    internal static IReadOnlyList<KnownDifference> Known { get; } = [.. LocaleSection.Known(), .. DecimalSection.Known(), .. NumberTextSection.Known(), .. DateTimeSection.Known(), .. DurationSection.Known()];
 
     /// <summary>Runs the sections named (all when none is), at a scale, from a seed.</summary>
     internal static IReadOnlyList<Section> Run(ulong seed, int scale, IReadOnlyCollection<string>? only = null)
@@ -64,6 +67,8 @@ internal static class DifferentialCheck
         var texts = new SeededRandom(seed ^ 0x9C3C_93C0_0000_0000UL);
         // SUB-AREA (D)'S OWN STREAM, from the same seed, so that the earlier stages' sections draw as they did (stage SJL-9.3d).
         var dates = new SeededRandom(seed ^ 0x9D3D_93D0_0000_0000UL);
+        // SUB-AREA (E)'S OWN STREAM, from the same seed, so that the earlier stages' sections draw as they did (stage SJL-9.3e).
+        var durations = new SeededRandom(seed ^ 0x9E3E_93E0_0000_0000UL);
         var sections = new List<Section>();
 
         foreach (var embedding in Embedding.Both())
@@ -78,6 +83,8 @@ internal static class DifferentialCheck
                 sections.AddRange(NumberTextSection.Run(embedding, texts, scale, only));
             if (only is null || only.Any(static s => s is "T1" or "T2" or "T3" or "T4" or "T5"))
                 sections.AddRange(DateTimeSection.Run(embedding, dates, scale, only));
+            if (only is null || only.Any(static s => s is "U1" or "U2"))
+                sections.AddRange(DurationSection.Run(embedding, durations, scale, only));
         }
 
         return sections;
