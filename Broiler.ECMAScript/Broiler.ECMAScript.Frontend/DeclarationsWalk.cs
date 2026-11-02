@@ -49,14 +49,14 @@ namespace Broiler.ECMAScript.Semantics;
 // Broiler-Human:        PENDING
 internal sealed class DeclarationsWalk
 {
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=609781
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=774738
     // Broiler-Human:        PENDING
     private static readonly FrozenSet<string> StrictReserved = new HashSet<string>(StringComparer.Ordinal)
     {
         "implements", "interface", "let", "package", "private", "protected", "public", "static", "yield",
     }.ToFrozenSet(StringComparer.Ordinal);
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=E5CC63
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0B9019
     // Broiler-Human:        PENDING
     private static readonly FrozenSet<string> Reserved = new HashSet<string>(StringComparer.Ordinal)
     {
@@ -596,7 +596,7 @@ internal sealed class DeclarationsWalk
     }
 
     /// <summary>The rows a regular-expression literal's provider decides (the stage table's basis <c>provider</c>), in catalogue order.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=68871C
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=DF2A2A
     // Broiler-Human:        PENDING
     internal static readonly System.Collections.Immutable.ImmutableArray<LexicalRefusal> RegularExpressionRows =
     [
