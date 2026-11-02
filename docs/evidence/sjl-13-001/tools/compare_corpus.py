@@ -7,6 +7,12 @@ Usage:
     compare_corpus.py compare --report R --classification C --catalogue K --nesting V=64,J=512 --tree-depth 10000 --out DIR
     compare_corpus.py control --report R --classification C --out R2
 
+(Revised 2026-11-02, at stage SJL-13.2f, after review, before any run at the library commit: L is admitted at a reported
+depth past the bound, as part A's text reads, not equal to it; and the completeness test compares the manifest's and the
+classification's digests with the rule commit's, pinned below, as part A's completeness reads. The comparison first
+committed admitted L at a reported depth equal to the bound, reading the library's report of the bound it refused past as
+a depth past it, and compared the classification with the report's own record of it.)
+
 `compare` reads the report of tools/frontend-corpus in the fields part A's configuration lists (the outcome, and for a
 refusal the first diagnostic's shared code and the depth the library reports), the classification
 (classification/classification.tsv.gz) and the catalogue's shared codes (Broiler.ECMAScript/docs/frontend/early-errors.tsv),
@@ -17,8 +23,9 @@ line as the run took them. Per input, variant and configuration it gives one rea
 - admitted: `accepted` (an expected acceptance accepted); `refused-as-classified` (an expected refusal refused with a
   first code of the rows the classification names); `semantics-only-accepted` and `semantics-only-refused` (an input the
   classification marks `either`); `L-nesting` and `L-tree` (an expected acceptance refused with EX0011's shared code at
-  the configuration's nesting parameter, or with EX0012's at the tree-depth constant: the depth the library reports is
-  the bound it refused past);
+  a reported depth past the configuration's nesting parameter, or with EX0012's at a reported depth past the tree-depth
+  constant, as part A reads; a refusal at either limit reported at a depth not past its bound, as the library reports
+  the bound it refused past, is `expected-acceptance-refused`);
 - failures: `crashed`; `absent`; `expected-acceptance-refused` (outside L); `expected-refusal-accepted`;
   `first-code-not-allowed`; `missing` (in the classification, not in the report); `extra` (in the report, not in the
   classification).
@@ -34,6 +41,17 @@ import collections
 import gzip
 import hashlib
 import sys
+
+# The rule commit's digests (238069ab8150858a112461b42b95c1f49c1f4eb1, Broiler.JS#1081): part A's completeness reads "the
+# manifest's digest and the classification's equal to the rule commit's".
+RULE_COMMIT = "238069ab8150858a112461b42b95c1f49c1f4eb1"
+RULE_MANIFEST_SHA256 = "1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc"
+RULE_CLASSIFICATION_SHA256 = "753b54fee1a530a91d2c58400eb52e700221fddbb4ed9670d4362f6d268a512f"
+
+
+def past(depth, bound):
+    """Whether a reported depth is past a bound: both whole numbers, the depth greater."""
+    return depth.isdigit() and bound.isdigit() and int(depth) > int(bound)
 
 
 def read_table(path):
@@ -118,9 +136,9 @@ def compare(args):
             elif row["expect"] == "accepted":
                 if outcome == "accepted":
                     reason = "accepted"
-                elif code == nesting_code and depth == nesting[row["config"]]:
+                elif code == nesting_code and past(depth, nesting[row["config"]]):
                     reason = "L-nesting"
-                elif code == tree_code and depth == tree_depth:
+                elif code == tree_code and past(depth, tree_depth):
                     reason = "L-tree"
                 else:
                     reason = "expected-acceptance-refused"
@@ -158,8 +176,14 @@ def compare(args):
     summary.append("classification-manifest-input\t" + inputs.get("conformance/parse/corpus.manifest", "-"))
     summary.append("report-classification\t" + header.get("classification", "-"))
     summary.append("catalogue\t" + sha256(args.catalogue))
-    summary.append("manifest-agrees\t" + ("yes" if header.get("manifest") == inputs.get("conformance/parse/corpus.manifest") else "no"))
-    summary.append("classification-agrees\t" + ("yes" if header.get("classification") == sha256(args.classification) else "no"))
+    classification_digest = sha256(args.classification)
+    manifest_agrees = header.get("manifest") == RULE_MANIFEST_SHA256 and inputs.get("conformance/parse/corpus.manifest") == RULE_MANIFEST_SHA256
+    classification_agrees = classification_digest == RULE_CLASSIFICATION_SHA256 and header.get("classification") == RULE_CLASSIFICATION_SHA256
+    summary.append("rule-commit\t" + RULE_COMMIT)
+    summary.append("rule-manifest\t" + RULE_MANIFEST_SHA256)
+    summary.append("rule-classification\t" + RULE_CLASSIFICATION_SHA256)
+    summary.append("manifest-agrees\t" + ("yes" if manifest_agrees else "no"))
+    summary.append("classification-agrees\t" + ("yes" if classification_agrees else "no"))
     summary.append("expected\t%d" % len(expected))
     summary.append("reported\t%d" % len(report))
     for (reason, config), count in sorted(reasons.items()):
@@ -171,7 +195,7 @@ def compare(args):
     print("compare_corpus: %d expected, %d reported, %d failures" % (len(expected), len(report), len(failures)))
     for line in failures[:50]:
         print("failure\t" + line)
-    complete = header.get("manifest") == inputs.get("conformance/parse/corpus.manifest") and header.get("classification") == sha256(args.classification)
+    complete = manifest_agrees and classification_agrees
     return 0 if not failures and complete else 1
 
 

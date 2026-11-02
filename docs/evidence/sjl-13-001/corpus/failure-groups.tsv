@@ -47,6 +47,7 @@
 4	2	first-code-not-allowed	J	EE0006;EE0007;EE0008;EE0009;EE0014;EE0042;EE0055;EE0087;EE0155;EP0001;EP0004;EX0008	EX0009	T042520 strict
 4	2	first-code-not-allowed	V	EE0032;EE0035;EE0036;EE0038;EE0039;EE0053	EE0033	J000040 strict
 4	2	first-code-not-allowed	J	EE0032;EE0035;EE0036;EE0038;EE0039;EE0053	EE0033	J000040 strict
+4	2	expected-acceptance-refused	J	-	EX0011	J000243 strict
 3	3	expected-refusal-accepted	V	EE0032;EE0038;EE0039;EE0053;EE0087;EE0155;EG0008	-	T037840 module
 3	3	expected-refusal-accepted	J	EE0032;EE0038;EE0039;EE0053;EE0087;EE0155;EG0008	-	T037840 module
 2	1	first-code-not-allowed	V	EG0008	EX0008	T001070 strict
@@ -58,6 +59,7 @@
 2	2	expected-refusal-accepted	V	EE0182	-	T041636 module
 2	2	expected-refusal-accepted	J	EE0182	-	T041636 module
 2	1	first-code-not-allowed	J	VM-code-list(56 rows)	EX0009	J000285 strict
+2	1	expected-acceptance-refused	J	-	EX0012	J000451 strict
 2	1	first-code-not-allowed	V	EE0064;EG0003;EG0005	EE0047	J001200 strict
 2	1	first-code-not-allowed	J	EE0064;EG0003;EG0005	EE0047	J001200 strict
 2	1	first-code-not-allowed	V	VM-code-list(23 rows)	EX0009	J002184 strict

@@ -1,5 +1,5 @@
 control: line 6341's outcome flipped to accepted, line 6343's first code changed to JSE0000
-compare_corpus: 402758 expected, 402758 reported, 1918 failures
+compare_corpus: 402758 expected, 402758 reported, 1924 failures
 failure	T000740	E1	V	refused	EE0003;EE0004	accepted	-	-	expected-refusal-accepted
 failure	T000740	E3	V	refused	EE0003;EE0004	refused	JSE0000	-	first-code-not-allowed
 failure	T001070	strict	V	refused	EG0008	refused	JSE9108	-	first-code-not-allowed
@@ -50,4 +50,3 @@ failure	T014350	strict	J	refused	EX0001	accepted	-	-	expected-refusal-accepted
 failure	T014350	sloppy	J	refused	EX0001	accepted	-	-	expected-refusal-accepted
 failure	T014352	strict	J	refused	EX0008	accepted	-	-	expected-refusal-accepted
 failure	T014352	sloppy	J	refused	EX0008	accepted	-	-	expected-refusal-accepted
-exit 1

@@ -68,3 +68,33 @@ python3 -I docs/evidence/sjl-13-001/tools/contract_check.py --jsd0080 jsd-0080.m
   --project Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj \
   --rows Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Rows.cs --stages Broiler.ECMAScript/docs/frontend/stages.tsv --out listing.txt
 #   controls 1 and 2: the same over copies of those files with the changes in control-1-*.diff and control-2-*
+
+# After review, 2026-11-02 (README, "After review"): at 25678837cab780edf4cb166b40eacdf9c3e01b56, from the branch's
+# worktree, the same environment. Files in review/.
+dotnet build Broiler.ECMAScript.slnf -c Release --disable-build-servers
+dotnet test Broiler.ECMAScript/<each test project> -c Release --no-build --disable-build-servers
+dotnet <probe dll> conformance/vectors --report probe-jit.tsv
+dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -r linux-x64 --disable-build-servers
+<probe image> conformance/vectors --report probe-aot.tsv
+dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -p:PublishAot=false --disable-build-servers
+dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/publish/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit-published.tsv
+DOTNET_TC_CallCounting=0 dotnet <probe dll> --measure-frames > frames-jit-first-tier.tsv
+python3 -I docs/evidence/sjl-13-001/tools/deep_nesting.py run --probe "dotnet <probe dll>" --out deep-jit.tsv
+python3 -I docs/evidence/sjl-13-001/tools/deep_nesting.py run --probe "<probe image>" --out deep-aot.tsv
+dotnet <probe dll> --digest-corpus conformance/parse --out run-1.tsv --test262 <test262>
+#   part A: the runner as above with --commit 25678837cab780edf4cb166b40eacdf9c3e01b56, and the comparison as revised
+#   (tools/compare_corpus.py) over its report; the comparison also taken again over 920f18f4's report (corpus/), and its
+#   control; corpus/failure-groups.tsv groups the comparison's failures by reason, configuration, the classification's
+#   rows and the row of the library's first code, as before
+python3 -I docs/evidence/sjl-13-001/review/probe-sources.py <folder>
+dotnet <probe dll> --parse-one <folder>/<source>.js --nesting 512      # at 6d9ded70, 197b204b and 25678837
+dotnet <probe dll> --fuzz docs/evidence/sjl-13-001/inputs/fuzz-seeds.txt --test262 <test262> --findings findings-jit
+<probe image> --fuzz docs/evidence/sjl-13-001/inputs/fuzz-seeds.txt --test262 <test262> --findings findings-aot
+#   eng/pack.ps1 -ProjectSet Shared rendered in bash, as above; python3 -I scripts/packaging/test_pristine_consumer.py --set shared
+# The rule commit's digests, as tools/compare_corpus.py pins them, and the vectors commit's conditions:
+git show 238069ab8150858a112461b42b95c1f49c1f4eb1:docs/evidence/sjl-13-001/classification/classification.tsv.gz | sha256sum
+git show 238069ab8150858a112461b42b95c1f49c1f4eb1:conformance/parse/corpus.manifest | sha256sum
+git merge-base --is-ancestor 238069ab8150858a112461b42b95c1f49c1f4eb1 ed494b2e3953b03eae305dc736b8be23dcff3cf9
+git merge-base --is-ancestor ed494b2e3953b03eae305dc736b8be23dcff3cf9 61cb15b5472955079f3b0bf98c600f4128094614
+# Stage 4e's dump (determinism/stage-4e-6d9ded70.*): run 1 above with the probe built in a scratch worktree of
+# 6d9ded70a008a07884612a543177d8a674baaf8a

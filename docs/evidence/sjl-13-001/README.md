@@ -252,10 +252,10 @@ it. What follows is each part as its text reads the runs at the branch's head; n
 
 | Part | Configuration as run | Outcome at the head, by the rule's text |
 |---|---|---|
-| A, the parse corpus and test262's syntax tests as classified | [`tools/frontend-corpus/`](tools/frontend-corpus/README.md), the library's corpus runner, and [`tools/compare_corpus.py`](tools/compare_corpus.py), both committed in `920f18f4` before any run of this part; every input, variant and configuration (V and J) and every eval request under E0 to E7 in V, test262 at `ccaac100` checked against the manifest's SHA-256; the provider answering from the classification (decision D26) | **Not met.** The run is complete (no input absent or crashed; the manifest's and the classification's digests equal the rule commit's) and the control is reported (two more failures); but 1,916 inputs, variants and configurations have no admitted outcome (below) |
+| A, the parse corpus and test262's syntax tests as classified | [`tools/frontend-corpus/`](tools/frontend-corpus/README.md), the library's corpus runner, and [`tools/compare_corpus.py`](tools/compare_corpus.py), both committed in `920f18f4` before any run of this part; every input, variant and configuration (V and J) and every eval request under E0 to E7 in V, test262 at `ccaac100` checked against the manifest's SHA-256; the provider answering from the classification (decision D26) | **Not met.** The run is complete (no input absent or crashed; the manifest's and the classification's digests equal the rule commit's, which the comparison pins) and the control is reported (two more failures); but 1,922 inputs, variants and configurations have no admitted outcome (below). *(Revised 2026-11-02, after review; it read "the manifest's and the classification's digests equal the rule commit's) ... but 1,916 inputs": the comparison first committed admitted L at a reported depth equal to the bound, and compared the classification with the report's record of it, not with the rule commit's; both are corrected, and the comparison is taken again over the same report, below)* |
 | B, the `syntax` vectors (template T3) | the Native AOT probe under the JIT, whose library-level runner parses each vector through the frontend adapter under the library's default request; the vectors at corpus revision 34, whose `syntax` area is the vectors commit's (`ed494b2e`, unchanged since) | **Met**: every one of the 549 vectors agrees at the parse; the control (`syntax/statements/ee0040/0002`'s expected refusal changed to an acceptance in a copy of the corpus) is reported as the one failure |
 | C, determinism (L13, SL9) | rule SL9's test (the architecture tests); the probe's dump mode `--digest-corpus` in three processes: run 1 in the manifest's order, run 2 reversed, run 3 on two threads, each parse twice at once; controls K1 and K2 as scratch patches | **Not met.** SL9 passes, and every input gives one hash in all four parses (the three files are the same bytes); K1 behaves as stated (run 2 differs from run 1 in 194,361 lines; SL2 refuses the patched library) and agrees again after its revert; **K2 does not**: run 2 differs from run 1 in 132,685 lines, but rule SL9 passes, so "rule SL9 must fail" does not hold. SL9 compares its runs inside one process, where a string-hash seed is one, over the vector corpus, whose `syntax` vectors read an outcome and no side table; a patch of this kind cannot make it fail. K2 agrees again after its revert |
-| D, the Native AOT probe (L10) | `dotnet publish -c Release -r linux-x64` with Broiler.VM's root settings, and the JIT build, each running the vector corpus | **Not met**, as configured: both local publications succeed with no warning, both runs pass and their reports are the same bytes, but the configuration's run by `.github/workflows/shared-libraries.yml` at the library commit is not taken (it is the merge's, an orchestration step) |
+| D, the Native AOT probe (L10) | `dotnet publish -c Release -r linux-x64` with Broiler.VM's root settings, and the JIT build, each running the vector corpus | **Not met**, as configured: the Native AOT publication and the JIT build succeed with no warning, both runs pass and their reports are the same bytes, but the configuration's run by `.github/workflows/shared-libraries.yml` at the library commit is not taken (it is the merge's, an orchestration step), and at this head the JIT publication was not taken: the JIT run is the solution build's output, as the shared workflow's is. *(Revised 2026-11-02, after review; it read "both local publications succeed with no warning", where one publication and one build were taken. The JIT publication is taken after review, with the fix, in the section below)* |
 | E, the shared libraries' rules | the architecture tests in Release (SL1 to SL10 with their witnesses, the API baseline in both directions, the register); package validation by a bash rendering of `eng/pack.ps1 -ProjectSet Shared`; the assurance check as the shared workflow runs it | **Met**: 32 of 32 architecture tests pass, every witness refused, the frontend in scope of every rule and of SL1's row; four packages packed and validated at `0.1.0-preview.9`, `Broiler.ECMAScript.Frontend` among them; "no violations" |
 | F, fuzzing (L9) | the probe's `--fuzz` over [`inputs/fuzz-seeds.txt`](inputs/fuzz-seeds.txt) (548 lines, 64 mutants each, 2,000 ms a parse) on a thread of `ParseLimits.StackBytes`, under the JIT and as the Native AOT image; the control a scratch copy whose parser throws on a ConditionalExpression | **Met**: no finding under either runtime; the control reports 238 findings, and the reverted copy's run is the run's, line for line |
 | G, the limits | [`tools/deep_nesting.py`](tools/deep_nesting.py) `run` over [`inputs/deep/`](inputs/deep/manifest.tsv), each of the 54 sources alone in its own process, under the JIT and as the image; the derivation, [`Broiler.ECMAScript/docs/frontend/limits/derivation.md`](../../../Broiler.ECMAScript/docs/frontend/limits/derivation.md), with its frames per level measured again five ways (`limits/frames-*.tsv`) | **Met**: 54 of 54 rows hold under both runtimes, every exit its row's; the measurement gives the costliest construct at 512 levels the same stack as the derivation states (its section 4's margins stand) |
@@ -281,22 +281,69 @@ configuration with its reason, and `corpus/comparison-summary.txt` the tallies b
   classification expects it to, but with another row's code, most often EX0001's where it names EX0009 or EX0008, EX0009's
   where it names EX0008, and EX0008's where it names a cover's rows (EE0087, EE0155); the groups name each pair. Each is
   a library defect (a site that reports the wrong row) or a classification error, decided per group.
+- **6 refusals at a limit reported at the bound, not past it**: in configuration J, J000243 and J000799 refused with
+  JSE9201 at 512, the nesting parameter, and J000451 with JSE9202 at 10,000, the tree-depth constant, strict and sloppy,
+  all of Broiler.JS's corpus. Part A admits L "at a reported depth past" the bound; the library reports the bound it
+  refused past (the diagnostic's argument), not the depth it reached, so as the rule is written no refusal at a limit
+  can be admitted. Before the library commit, either the runner reports the depth the parse reached (the library
+  refuses a level of nesting, or a chain node's height, one past its bound), or a new dated rule file reads the
+  reported bound as the rule's "past"; until one of them, these six stand as failures.
 
-Part A's admitted outcomes include L in configuration J (two inputs refused at the nesting parameter and one at the
-tree-depth constant, each reported with its bound), all of them in Broiler.JS's corpus.
+*(Revised 2026-11-02, after review; the paragraph that stood here read "Part A's admitted outcomes include L in
+configuration J (two inputs refused at the nesting parameter and one at the tree-depth constant, each reported with its
+bound), all of them in Broiler.JS's corpus.", counting the six as admitted by a reading of "past" as "equal to the bound
+refused past", which the rule's text does not give. The corrected comparison, [`tools/compare_corpus.py`](tools/compare_corpus.py)
+as revised, taken again over the same report, counts them as failures: `corpus/comparison.tsv.gz`,
+`corpus/comparison-summary.txt`, `corpus/failure-groups.tsv` and `corpus/control/` are its output, 1,922 failures and
+the control's 1,924.)*
 
 **What stage 4f changed that the runs read.** The tree-depth charge of every shape of the tree (the owner's decision of
 2026-11-02 on decision D14; the derivation's section 5): the probe's report of the vector corpus at the head is the same
 bytes as at `origin/main` (`6d9ded70`) (`probe/sha256.txt`), and the dump of every one of the parse corpus's 295,795
-parses in configuration V is the same as stage 4e's (its verifier's dump): no parse of the corpus in configuration V moves, and part A's
-L in configuration J is a chain past the constant, which stage 4e refused too.
+parses in configuration V is the same as stage 4e's (`determinism/stage-4e-6d9ded70.sha256` and its log: run 1 of
+the dump mode taken the same way with the probe built at `6d9ded70`, the same SHA-256 as this head's run 1): no parse of
+the corpus in configuration V moves, and part A's refusal of J000451 in configuration J is of a chain past the constant,
+which stage 4e refused too. *(Revised 2026-11-02, after review; it read "is the same as stage 4e's (its verifier's
+dump)", which the bundle did not retain, and "part A's L in configuration J is a chain past the constant".)*
 
 **The files.** `corpus/` (part A: the runner's report, the comparison, its control), `vectors/` (B), `determinism/` (C:
 run 1's dump, the three runs' digests and logs, SL2 and SL9 from the architecture tests, and K1 and K2 each with its
 patch, its runs' digests, the first lines where they differ, the rule its patch must fail and its revert), `probe/` (D),
 `rules/` (E: the architecture tests, the assurance check, the pack and the pristine consumer), `fuzz/` (F, with the
-control's findings by name), `limits/` (G), `contract/` (H). The dump files of run 2, run 3 and the controls' runs are
-not kept, only their SHA-256: run 2's and run 3's are run 1's bytes.
+control's findings by name), `limits/` (G), `contract/` (H), and `review/` (the checks taken again after review, the
+section below). The dump files of run 2, run 3 and the controls' runs are not kept, only their SHA-256: run 2's and run
+3's are run 1's bytes. *(Noted 2026-11-02, after review: for K1 and K2 this departs from part C's "retained with their
+output": each control keeps its runs' SHA-256 and the first lines where they differ, not its runs' dumps, which were not
+kept and cannot be retaken at this head as they were. At the library commit each control's runs are retained whole,
+gzipped as `determinism/run-1.tsv.gz` is.)*
+
+### After review, 2026-11-02: the charge by height alone, and the checks it touches
+
+*(Added 2026-11-02, at SJL-13.2f, after review.)* The review of the branch found that the tree-depth charge as first made
+refused trees within the constant (a chain began at the depth the parse had reached, so an argument, a key or a right
+operand beside a deep left operand was charged both), and stage 4e's charge some too. Commit
+`25678837cab780edf4cb166b40eacdf9c3e01b56` refuses a chain node by its height alone (the derivation's section 5, revised
+the same day), so the commits after `920f18f4` change the library's parser and tests as well as this bundle: the
+sentence above, "The commits after it on the branch add this section and the runs' files under this bundle and change no
+other path", no longer holds. The parts taken at `920f18f4` stand as they were taken, none a verdict; the checks the
+change touches were taken again at `25678837`, from the branch's worktree (uncommitted edits to records only), built in
+Release with `--disable-build-servers`, no `LANG`, `TZ=UTC`, and retained in [`review/`](review/):
+
+| Check | What it gives at `25678837` |
+|---|---|
+| The solution filter's build and every test project | no warning; every test passes, the Frontend's 946 among them (`review/build.txt`, `review/tests.txt`) |
+| The probe over the vector corpus (part B's and D's runs) | the JIT build, the Native AOT image and, taken now, the JIT publication (`dotnet publish -c Release -p:PublishAot=false`), each with no warning and exit 0; the three reports are the same bytes, and the same as at `origin/main` and at `920f18f4` (`review/probe-sha256.txt` against `probe/sha256.txt`) |
+| Part A's runner, and the comparison as revised | the report is the same as at `920f18f4` but its commit line (`review/report.tsv.gz`); the comparison over it gives the same tallies as over `920f18f4`'s, 1,922 failures (`review/comparison-summary.txt`) |
+| Part C's dump mode, run 1 | the same SHA-256 as at `920f18f4` and at stage 4e (`review/digest-sha256.txt`, `determinism/sha256.txt`, `determinism/stage-4e-6d9ded70.sha256`): no parse of the corpus moves in configuration V |
+| Part G's runner over the deep-nesting corpus | 54 of 54 rows hold under the JIT and as the image, every line as at `920f18f4` (`review/deep-*.tsv`) |
+| The first tier's frames per level | every row the same frames; every nesting row a little more stack left, none less (`review/frames-jit-first-tier.tsv` against `limits/frames-jit-first-tier.tsv`) |
+| `--parse-one` over the derivation's probes and the review's sources | stage 4e's seven probes past the constant refused, its control refused; the sources within the constant that stage 4e or the first charge refused accepted, and one past them refused (`review/probes.tsv`, at stage 4e, at `197b204b` and at `25678837`; the sources from `review/probe-sources.py`) |
+| Part F's fuzzing, under the JIT and as the image | no finding under either runtime; the two tallies are the same, and differ from `920f18f4`'s in four mutants, each refused at the tree-depth constant there and by another row now (in J one by JSE9108 and two by JSE9109, in V one by JSE9201): the first charge refused a summed depth before the parse reached that row's error, and the charge by height refuses only a chain node, once built, whose height passes the constant (`review/fuzz-*.txt` against `fuzz/fuzz-*.txt`) |
+| Packing, the pristine consumer, the assurance check | four packages validated at `0.1.0-preview.9`; the consumer passes; the assurance check (Broiler.Code `afd4ffb2`, from a folder holding it and this tree side by side) finds no violations (`review/pack.log`, `review/pristine.log`, `review/assurance-check.log`) |
+
+Not taken again: part C's runs 2 and 3 and its controls, part F's control, and part H's check, which reads the public
+API, the project file, `Rows.cs` and the stage table, none of which the change moves; part E's architecture tests ran
+with every test project.
 
 ## State
 
@@ -348,7 +395,19 @@ No other commit is named yet. *(Revised 2026-10-27, at the `syntax` vectors; rea
 the default-branch merge of SJL-13.2f, the done-when, branch `sjl-13-2f-done`; it is named here by all forty digits when
 that merge lands, and every part is taken there. The parts were taken at the branch's head before it, at
 `920f18f4579d729819bfcf3c02d18b75c78fd7b5` (the section "The rule's parts at stage SJL-13.2f's head"), which the rule
-counts as no run of a part.)*
+counts as no run of a part.)* *(Added 2026-11-02, at SJL-13.2f, after review: the two commits this
+section names "when the change has merged" have merged, and are named here. **The rule commit** is
+`238069ab8150858a112461b42b95c1f49c1f4eb1`, the merge of Broiler.JS#1081; its `classification/classification.tsv.gz`
+has SHA-256 `753b54fee1a530a91d2c58400eb52e700221fddbb4ed9670d4362f6d268a512f` and `conformance/parse/corpus.manifest`
+`1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc`, which part A's comparison pins. **The vectors
+commit** is `ed494b2e3953b03eae305dc736b8be23dcff3cf9`, the merge of Broiler.JS#1082, which adds the `syntax` area at
+its corpus revision. The rule's conditions hold, by `git merge-base --is-ancestor`: the rule commit is an ancestor of
+the vectors commit (its first parent), and the vectors commit an ancestor of the first default-branch merge that adds a
+file under `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/`, `61cb15b5472955079f3b0bf98c600f4128094614` (Broiler.JS#1085,
+SJL-13.2a, whose first such commit is `7b96d43e8cda306afefd0cfd6c0117e82f4b5c0c`); and `git diff` of
+`conformance/vectors/syntax/` from the vectors commit to `origin/main` (`6d9ded70`) is empty. The sentence "No other
+commit is named yet." above no longer holds: the rule commit and the vectors commit are named here, and the library
+commit is named when it lands.)*
 
 **What the bundle will hold:**
 - `corpus/`: part A's report in both configurations, the comparison's output with every admitted outcome listed by

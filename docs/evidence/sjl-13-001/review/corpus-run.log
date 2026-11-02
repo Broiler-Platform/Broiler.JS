@@ -1,0 +1,5 @@
+# part A runner at 25678837cab780edf4cb166b40eacdf9c3e01b56 (the branch's worktree, with uncommitted edits to records only, none to code or to the runner's inputs), Release, TZ=UTC, no LANG
+# start: 2026-11-02T20:08:39Z
+frontend-corpus: 402758 parses: 368681 accepted, 34077 refused, 0 crashed, 0 absent
+# exit: 0
+# end: 2026-11-02T20:09:34Z
