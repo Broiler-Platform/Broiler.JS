@@ -1,0 +1,31 @@
+Test run for <control tree>/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.23]   Discovering: Broiler.ECMAScript.Architecture.Tests
+[xUnit.net 00:00:00.51]   Discovered:  Broiler.ECMAScript.Architecture.Tests
+[xUnit.net 00:00:00.75]   Starting:    Broiler.ECMAScript.Architecture.Tests
+[xUnit.net 00:00:01.00]     Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state [FAIL]
+[xUnit.net 00:00:01.00]       Assert.Empty() Failure: Collection was not empty
+[xUnit.net 00:00:01.00]       Collection: ["Broiler.ECMAScript.Frontend: Broiler.ECMAScript.Sy"···]
+[xUnit.net 00:00:01.00]       Stack Trace:
+[xUnit.net 00:00:01.00]         <control tree>/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/SharedRuleTests.cs(79,0): at Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state()
+[xUnit.net 00:00:01.00]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.00]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state [86 ms]
+  Error Message:
+   Assert.Empty() Failure: Collection was not empty
+Collection: ["Broiler.ECMAScript.Frontend: Broiler.ECMAScript.Sy"···]
+  Stack Trace:
+     at Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state() in <control tree>/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/SharedRuleTests.cs:line 79
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:02.48]   Finished:    Broiler.ECMAScript.Architecture.Tests (ID = '67d421531fac7fc489eb6ac6fd83ded7bf59fd8006aeed31d6acfc8dd0268534')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_The_witness_is_refused_for_each_kind_of_state [1 s]
+
+Test Run Failed.
+Total tests: 2
+     Passed: 1
+     Failed: 1
+ Total time: 3.2827 Seconds
+sl2 exit 1

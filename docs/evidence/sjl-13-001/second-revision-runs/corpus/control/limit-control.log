@@ -1,0 +1,4 @@
+# a copy of report.tsv with T000001 strict J made refused by EX0011's code (JSE9201) at depth 512, an input readings/limit-readings.tsv does not list
+compare_corpus: 402758 expected, 402758 reported, 1 failures
+failure	T000001	strict	J	accepted	-	refused	JSE9201	512	expected-acceptance-refused
+exit 1

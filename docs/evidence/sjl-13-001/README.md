@@ -34,6 +34,15 @@ fail; (d) parts A and G read decision D14 as stage 4f decided it; (e) EX0008 and
 where the classification names either; (f) a limit's refusal reported at its bound is read as past it. `decision-rule.md`
 is unchanged; the revision is weaker evidence for the decisions it changes, as the rule's section "Revisions" says.)*
 
+*(Noted 2026-11-02, at SJL-13.2f, after review of that revision and before any run it judges: the rule is revised a
+second time by [`decision-rule-revised-2026-11-02-second.md`](decision-rule-revised-2026-11-02-second.md), which quotes
+the first revision whole. (f') replaces (f): a limit's refusal reported at its bound is L only for an input
+[`readings/limit-readings.tsv`](readings/limit-readings.tsv) lists, whose own source
+[`tools/limit_readings.py`](tools/limit_readings.py) measures past the bound; (e') replaces (e): EX0008 and EX0009 are
+read for each other only for the lines [`readings/grammar-readings.tsv`](readings/grammar-readings.tsv) lists. It also
+corrects the first revision's text, and records that (e) and (f) were the stage's own proposals, not decisions the
+brief recommended. Neither earlier rule file is edited.)*
+
 **Area verdict:** [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "Area verdicts", "The frontend's syntax
 half (SJL-13.1)", with Broiler.VM's JSD-0083,
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0083-the-shared-syntax-library-and-the-wide-path.md`,
@@ -405,6 +414,33 @@ Frontend's 969 tests among them (`checks/`); the probe over the vector corpus, u
 again: parts B, D, E, F, G and H, whose runs at `920f18f4` and `25678837` stand as they were taken, none a verdict. Part D
 needs the shared workflow's run at the library commit, which is the merge's.
 
+### Parts A and C taken again under the second revision, 2026-11-02
+
+*(Added 2026-11-02, at SJL-13.2f, after review.)* After the library change of `295e61ead1a3bea8bb1b6684eb7957df506db9f1`
+(a class heritage's deferred literal refusals, EE0032 and EE0017, and EE0038 for a literal an assignment pattern takes;
+CHANGELOG, design.md section 9.4), the rule's second revision
+([`decision-rule-revised-2026-11-02-second.md`](decision-rule-revised-2026-11-02-second.md), commit
+`7aff49a2`, with its two lists and their scripts) and the comparison's revision under it (commit
+`1c6a3f2b55cb3e10580ed7d09113706aee669a0f`, before any run it judges), parts A and C were taken again at `1c6a3f2b`, from
+a clean tree written by `git archive` of that commit, as the section above took them. **These runs are void under the
+rule, as every run before the library commit is: they are not at the library commit, and they show only what the parts
+would read there if nothing moves.** Files in [`second-revision-runs/`](second-revision-runs/commands.txt).
+
+| Part | What the runs give at `1c6a3f2b` | As the rule revised twice reads it |
+|---|---|---|
+| A | 402,758 parses, none crashed or absent; the report's lines are the same as at `a321cd7e` (the library change of `295e61ea` moves no parse of the corpus); the manifest's and the classification's digests equal the rule commit's, the report read the provider list the comparison reads, and the three readings lists rebuild byte for byte from their scripts (`corpus/readings-check.log`); **no failure**. Admitted beyond the classification's rows: 710 by the provider reading (a), 626 by a classification reading and 26 read as semantics-only (b), 442 by the grammar reading (e'), and 6 limits at their bound by the measured reading (f'), J000243 and J000799 (nesting 25,001 and 15,001, past 512) and J000451 (a chain of 20,000, past 10,000). The control is reported as two failures (`corpus/control/`) | would be **met** |
+| C | Rule SL9 passes (`determinism/sl2-sl9.log`); runs 1, 2 (reversed) and 3 (two threads) give the same SHA-256 for every parse, `5b8cd282…`, the bytes of the run at `a321cd7e`. K1: run 2 differs from run 1 in 194,361 lines and rule SL2 refuses the patched library; K2: run 2 differs from run 1 in 123,745 lines, so the comparison of the runs' hashes reports the difference (decision (c)); SL9 passes under it. Each reverted: the tree equals the run tree's and run 1 is the run's bytes | would be **met** |
+
+A refusal at a limit at its bound of an input the list does not name is now a failure: a copy of the report with one
+accepted parse in J made refused by EX0011's code at depth 512 was reported as one failure
+(`expected-acceptance-refused`; `corpus/control/limit-control.log`). The dumps themselves are not kept, as at `a321cd7e` (the departure recorded above stands).
+Taken with them, in the same tree: the solution filter builds with no warning, and every test project passes, the
+Frontend's 982 tests among them (`checks/`); the probe over the vector corpus under the JIT and as the Native AOT image
+(published with no warning) gives byte-identical reports, `86166c99…`, the bytes of `origin/main`'s: no probe line moves.
+The conformance scripts' tests pass (428, 15 skipped). Not taken again: parts B, D, E, F, G and H, which read nothing
+this round moves but the library's two sites, whose tests run with the Frontend's; part D needs the shared workflow's
+run at the library commit.
+
 ## State
 
 **2026-10-26, at SJL-13.1: rules only. Nothing here is a verdict, and nothing has been taken.**
@@ -485,6 +521,8 @@ commit is named when it lands.)*
 - `readings/`: the lists the rule's revision of 2026-11-02 reads for part A, and the triage behind them; `revised-runs/`:
   parts A and C taken again under that revision at `a321cd7e`, void as every run before the library commit is *(added
   2026-11-02, at SJL-13.2f)*.
+- `second-revision-runs/`: parts A and C taken again under the rule's second revision of 2026-11-02 at `1c6a3f2b`, void
+  as every run before the library commit is *(added 2026-11-02, at SJL-13.2f, after review)*.
 
 **It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them. *(Noted 2026-11-02, at SJL-13.2f: the runs at the branch's head are taken, and the folders above hold them; the
 section "The rule's parts at stage SJL-13.2f's head" reads them.)*

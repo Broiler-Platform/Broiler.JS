@@ -1,0 +1,6 @@
+# part A run: frontend-corpus at 1c6a3f2b55cb3e10580ed7d09113706aee669a0f (clean tree written by git archive), Release, TZ=UTC, no LANG, under decision-rule-revised-2026-11-02-second.md
+# host: Linux 6.18.44-fc-v185 x86_64, 4 logical CPUs; dotnet 10.0.401
+# start: 2026-11-02T23:06:57Z
+frontend-corpus: 402758 parses: 367971 accepted, 34787 refused, 0 crashed, 0 absent
+# exit: 0
+# end: 2026-11-02T23:07:37Z

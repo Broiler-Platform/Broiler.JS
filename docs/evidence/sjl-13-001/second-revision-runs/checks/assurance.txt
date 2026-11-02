@@ -1,0 +1,2 @@
+# assurance check, Broiler.Code origin/main 2c1ad0640aa52f7e996a1daa4fc19a251e43681c (git archive) beside the branch at 1c6a3f2b: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript
+Broiler.ECMAScript: no violations.

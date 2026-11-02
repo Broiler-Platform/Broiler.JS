@@ -1,0 +1,47 @@
+# Bundle sjl-13-001: parts A and C taken again under decision-rule-revised-2026-11-02-second.md, 2026-11-02, at stage SJL-13.2f.
+# Tree: git archive of 1c6a3f2b55cb3e10580ed7d09113706aee669a0f into an empty folder (a clean tree); every command from
+# that folder's root, PATH and DOTNET_ROOT at .NET SDK 10.0.401, no LANG, TZ=UTC. test262 at
+# ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e is a checkout at <test262>. These runs are not the rule's verdict: the rule
+# runs every part at the library commit (README.md, "Parts A and C taken again under the second revision").
+
+# Build (no warning) and every test project (checks/build.txt, checks/tests.txt)
+dotnet build Broiler.ECMAScript.slnf -c Release --disable-build-servers
+dotnet test Broiler.ECMAScript.slnf -c Release --no-build --disable-build-servers
+
+# Part A: corpus/ (report.tsv.gz written with gzip -n -9)
+dotnet build docs/evidence/sjl-13-001/tools/frontend-corpus -c Release --disable-build-servers
+dotnet docs/evidence/sjl-13-001/tools/frontend-corpus/bin/Release/net10.0/frontend-corpus.dll --corpus conformance/parse \
+  --test262 <test262> --classification docs/evidence/sjl-13-001/classification/classification.tsv.gz \
+  --catalogue Broiler.ECMAScript/docs/frontend/early-errors.tsv --stages Broiler.ECMAScript/docs/frontend/stages.tsv \
+  --out report.tsv --commit 1c6a3f2b55cb3e10580ed7d09113706aee669a0f \
+  --provider-readings docs/evidence/sjl-13-001/readings/provider-readings.tsv
+python3 -I docs/evidence/sjl-13-001/tools/compare_corpus.py compare --report report.tsv \
+  --classification docs/evidence/sjl-13-001/classification/classification.tsv.gz \
+  --catalogue Broiler.ECMAScript/docs/frontend/early-errors.tsv --nesting V=64,J=512 --tree-depth 10000 --out comparison \
+  --provider-readings docs/evidence/sjl-13-001/readings/provider-readings.tsv \
+  --classification-readings docs/evidence/sjl-13-001/readings/classification-readings.tsv \
+  --limit-readings docs/evidence/sjl-13-001/readings/limit-readings.tsv \
+  --grammar-readings docs/evidence/sjl-13-001/readings/grammar-readings.tsv
+# The three readings lists rebuilt by their scripts' check modes (corpus/readings-check.log), as readings/README.md gives them
+python3 -I docs/evidence/sjl-13-001/tools/compare_corpus.py control --report report.tsv \
+  --classification docs/evidence/sjl-13-001/classification/classification.tsv.gz --out control-report.tsv
+python3 -I docs/evidence/sjl-13-001/tools/compare_corpus.py compare --report control-report.tsv ... (the same options)
+
+# Part C: determinism/ (the dumps themselves are not kept: their SHA-256 and, for each control, the first lines where its runs differ)
+dotnet <probe dll> --digest-corpus conformance/parse --out run-1.tsv --test262 <test262>
+dotnet <probe dll> --digest-corpus conformance/parse --out run-2.tsv --test262 <test262> --reverse
+dotnet <probe dll> --digest-corpus conformance/parse --out run-3.tsv --test262 <test262> --two-threads
+dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests -c Release --no-build \
+  --filter "FullyQualifiedName~SL2|FullyQualifiedName~SL9" --logger "console;verbosity=normal"     (sl2-sl9.log)
+#   K1, K2: a second git archive of the same commit, the patch (K1/control.patch, K2/control.patch) applied, the probe
+#   and the architecture tests built there; run 1 and run 2 as above; dotnet test ... --filter SL2 (K1) or SL9 (K2);
+#   the file restored from the run tree, Broiler.ECMAScript/ compared with the run tree's (bin, obj, TestResults aside),
+#   the probe built again and run 1 taken again (revert-check.txt)
+
+# The probe over the vector corpus, JIT and Native AOT (checks/)
+dotnet <probe dll> conformance/vectors --report probe-jit.tsv
+dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -r linux-x64 --disable-build-servers
+Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/Broiler.ECMAScript.Probe conformance/vectors --report probe-aot.tsv
+
+# In the branch's worktree (checks/python-tests.txt)
+BROILER_UNICODE_PINS=<Broiler.Unicode>/data/unicode/pins python3 -I -m unittest discover -s scripts/conformance/tests
