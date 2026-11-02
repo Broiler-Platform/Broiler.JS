@@ -110,13 +110,15 @@ internal sealed partial class AlgorithmsLibrary
 
     /// <summary>
     /// Whether a vector is the Intl area's that this runner answers: sub-area (a)'s, but the engine-level ones, and sub-area (b)'s
-    /// operations of <c>AlgorithmsLibrary.IntlValues.cs</c> (from stage SJL-9.3b), and sub-area (c)'s of
-    /// <c>AlgorithmsLibrary.IntlNumbers.cs</c> (from stage SJL-9.3c).
+    /// operations of <c>AlgorithmsLibrary.IntlValues.cs</c> (from stage SJL-9.3b), sub-area (c)'s of
+    /// <c>AlgorithmsLibrary.IntlNumbers.cs</c> (from stage SJL-9.3c), and sub-area (d)'s of <c>AlgorithmsLibrary.IntlDateTimes.cs</c>
+    /// (from stage SJL-9.3d).
     /// </summary>
     internal static bool IsLibraryIntl(VectorRecord vector) =>
         (vector.Id.StartsWith(IntlLocalesPrefix, StringComparison.Ordinal) && !IsEngineLevelIntl(vector["op"] ?? string.Empty, vector["in"] ?? string.Empty))
         || IsLibraryIntlValues(vector)
-        || IsLibraryIntlNumbers(vector);
+        || IsLibraryIntlNumbers(vector)
+        || IsLibraryIntlDateTimes(vector);
 
     /// <summary>
     /// Whether a difference is the answer Broiler.VM's plan commits it to, the engine whose parameters this runner takes: an
