@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   26
-// Annotated:        26/26
+// Relevant units:   29
+// Annotated:        29/29
 // Exempt:           6
-// Human-reviewed:   0/26
+// Human-reviewed:   0/29
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         2/2
 // Resource impact:  1/10 max
-// Unverified:       26
+// Unverified:       29
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -258,12 +258,18 @@ public sealed class CompositeLocaleData : ILocaleData
         Resolve(IntlTable.DayPeriods, language, (data, tag) => data.DayPeriods(tag));
 
     /// <inheritdoc/>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=FDE6B8
+    // Broiler-Human:        PENDING
     public IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone) => shared.MetazonePeriods(zone) ?? secondary?.MetazonePeriods(zone);
 
     /// <inheritdoc/>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=3C93A8
+    // Broiler-Human:        PENDING
     public string? GoldenZone(string metazone, string region) => shared.GoldenZone(metazone, region) ?? secondary?.GoldenZone(metazone, region);
 
     /// <inheritdoc/>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=5BDFCD
+    // Broiler-Human:        PENDING
     public string? PrimaryZone(string region) => shared.PrimaryZone(region) ?? secondary?.PrimaryZone(region);
 
     /// <summary>A question about a locale whose answer is a reference, asked along the chain.</summary>

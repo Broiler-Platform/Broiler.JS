@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   22
-// Annotated:        22/22
+// Relevant units:   25
+// Annotated:        25/25
 // Exempt:           3
-// Human-reviewed:   0/22
+// Human-reviewed:   0/25
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
-// Resource impact:  0/10 max
-// Unverified:       22
+// Resource impact:  1/10 max
+// Unverified:       25
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -228,6 +228,8 @@ public interface ILocaleData
     /// keyed by the zone's identifier as CLDR names it.
     /// </summary>
     /// <param name="zone">The zone, for example <c>America/Indiana/Knox</c>.</param>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 question layer; IP=Low; Security=Low; Resources=1; Fingerprint=09C481
+    // Broiler-Human:        PENDING
     IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone);
 
     /// <summary>
@@ -236,6 +238,8 @@ public interface ILocaleData
     /// </summary>
     /// <param name="metazone">The metazone, for example <c>America_Eastern</c>.</param>
     /// <param name="region">The region, for example <c>US</c> or <c>001</c>.</param>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 question layer; IP=Low; Security=Low; Resources=1; Fingerprint=48E290
+    // Broiler-Human:        PENDING
     string? GoldenZone(string metazone, string region);
 
     /// <summary>
@@ -243,5 +247,7 @@ public interface ILocaleData
     /// zones by the country, or <see langword="null"/> for a country CLDR gives none.
     /// </summary>
     /// <param name="region">The country, for example <c>DE</c>.</param>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 question layer; IP=Low; Security=Low; Resources=1; Fingerprint=FEE2C5
+    // Broiler-Human:        PENDING
     string? PrimaryZone(string region);
 }

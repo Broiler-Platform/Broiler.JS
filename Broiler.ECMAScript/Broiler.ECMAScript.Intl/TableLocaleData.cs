@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   61
-// Annotated:        61/61
-// Exempt:           13
-// Human-reviewed:   0/61
+// Relevant units:   71
+// Annotated:        71/71
+// Exempt:           14
+// Human-reviewed:   0/71
 // IP risk:          Low
 // Security risk:    High
-// Criteria:         2/2
+// Criteria:         3/3
 // Resource impact:  3/10 max
-// Unverified:       61
+// Unverified:       71
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -85,7 +85,7 @@ public sealed class TableLocaleData : ILocaleData
     /// <summary>Creates the decoder over a data set; nothing is decoded until a question needs it.</summary>
     /// <param name="data">The tables, which answer the same bytes for the life of the process.</param>
     /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Medium; Resources=1; Fingerprint=41EDD5
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Medium; Resources=1; Fingerprint=3E16C8
     // Broiler-Human:        PENDING
     public TableLocaleData(IIntlDataSet data)
     {
@@ -347,6 +347,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=2EAFB8
+    // Broiler-Human:        PENDING
     public IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone)
     {
         ArgumentNullException.ThrowIfNull(zone);
@@ -354,6 +356,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=7FFDD2
+    // Broiler-Human:        PENDING
     public string? GoldenZone(string metazone, string region)
     {
         ArgumentNullException.ThrowIfNull(metazone);
@@ -362,6 +366,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=4D29C8
+    // Broiler-Human:        PENDING
     public string? PrimaryZone(string region)
     {
         ArgumentNullException.ThrowIfNull(region);
@@ -670,13 +676,14 @@ public sealed class TableLocaleData : ILocaleData
             : (int.Parse(time.AsSpan(0, 2), NumberStyles.Integer, NumberFormatInfo.InvariantInfo) * 60)
                 + int.Parse(time.AsSpan(3), NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=2; Fingerprint=B27D7D
-    // Broiler-Human:        PENDING
     /// <summary>
     /// Decodes the metazone table, as Broiler.VM's <c>JsZoneNames</c> reads it: a zone's periods (<c>z</c>), a metazone's golden
     /// zone in a region (<c>g</c>) and a country's primary zone (<c>p</c>); a period's bound is <c>yyyy-MM-dd HH:mm</c> UTC, and
     /// an empty one the start of 1970 or the end of 9999, as ICU reads CLDR's.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=2; Fingerprint=B01CA5
+    // Broiler-Falsified-If: a metazone period's bounds or name differ from the CLDR metaZones table's, or a line of another form is accepted
+    // Broiler-Human:        PENDING
     private MetazoneTables ReadMetazones()
     {
         var tables = new MetazoneTables();
@@ -710,6 +717,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <summary>A metazone period's bound, <c>yyyy-MM-dd HH:mm</c> UTC, in milliseconds since the epoch.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=27E0C8
+    // Broiler-Human:        PENDING
     private static long MetazoneTime(string text)
     {
         static int Number(string text, int at, int length) =>
@@ -724,6 +733,8 @@ public sealed class TableLocaleData : ILocaleData
         return ((days * 1440) + (Number(text, 11, 2) * 60) + Number(text, 14, 2)) * 60_000;
     }
 
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=2; Fingerprint=B27D7D
+    // Broiler-Human:        PENDING
     private LocaleInfoTables ReadLocaleInfo()
     {
         var info = new LocaleInfoTables();
@@ -906,15 +917,25 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <summary>The metazone table, decoded.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=4F0FC1
+    // Broiler-Human:        PENDING
     private sealed class MetazoneTables
     {
         /// <summary>The end of a period CLDR states without one: 9999-12-31 23:59 UTC.</summary>
+        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=E8690F
+        // Broiler-Human:        PENDING
         internal const long NoEnd = 253_402_300_740_000L;
 
+        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=8D313F
+        // Broiler-Human:        PENDING
         internal Dictionary<string, List<MetazonePeriod>> Periods { get; } = new(StringComparer.Ordinal);
 
+        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=50C12F
+        // Broiler-Human:        PENDING
         internal Dictionary<string, string> Golden { get; } = new(StringComparer.Ordinal);
 
+        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=781B0F
+        // Broiler-Human:        PENDING
         internal Dictionary<string, string> PrimaryZones { get; } = new(StringComparer.Ordinal);
     }
 }

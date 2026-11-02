@@ -1,5 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
+//
+// Broiler Code Assurance
+// ----------------------
+// Relevant units:   21
+// Annotated:        21/21
+// Exempt:           17
+// Human-reviewed:   0/21
+// IP risk:          Low
+// Security risk:    High
+// Criteria:         5/5
+// Resource impact:  2/10 max
+// Unverified:       21
+//
+// GENERATED - DO NOT EDIT MANUALLY
 
 using System;
 using System.Collections.Generic;
@@ -40,6 +54,8 @@ namespace Broiler.ECMAScript.Intl;
 /// <para><b>Immutable</b> once made, but for the formats of Temporal's types, each made under a lock the first time it is
 /// asked for: one may be shared between threads (convention 10).</para>
 /// </remarks>
+// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=0; Fingerprint=8D4870
+// Broiler-Human:        PENDING
 public sealed class DateTimeFormat
 {
     /// <summary>
@@ -59,6 +75,8 @@ public sealed class DateTimeFormat
 
     private readonly Func<string, DateTimeFormatter?> temporalBuild;
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=0; Fingerprint=DDA092
+    // Broiler-Human:        PENDING
     private readonly Dictionary<string, DateTimeFormatter?> temporal = new(StringComparer.Ordinal);
 
     private readonly Lock gate = new();
@@ -89,6 +107,8 @@ public sealed class DateTimeFormat
     public string? HourCycle { get; private init; }
 
     /// <summary><c>hour12</c> as <c>resolvedOptions</c> reports it: whether [[HourCycle]] is <c>h11</c> or <c>h12</c>; <see langword="null"/> where it is.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=0; Fingerprint=6C74C9
+    // Broiler-Human:        PENDING
     public bool? Hour12 => HourCycle is null ? null : HourCycle is "h11" or "h12";
 
     /// <summary>[[DateStyle]], or <see langword="null"/>.</summary>
@@ -119,6 +139,8 @@ public sealed class DateTimeFormat
     /// <param name="data">The locale data, ordinarily a <see cref="CompositeLocaleData"/>.</param>
     /// <param name="locale">The matched available locale.</param>
     /// <returns>The values, each once.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots nu values, JSD-0082 D13; IP=Low; Security=Low; Resources=1; Fingerprint=34508B
+    // Broiler-Human:        PENDING
     public static IReadOnlyList<string?> NumberingSystemKeyValues(ILocaleData data, string locale) => NumberFormatter.NumberingSystemKeyValues(data, locale);
 
     // ---- making one -----------------------------------------------------------------------------------------------------
@@ -138,6 +160,9 @@ public sealed class DateTimeFormat
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
     /// <exception cref="ArgumentException">A component, style or key value outside the values ECMA-402 admits: the engine's
     /// GetOption and ResolveLocale, which come first, would not give it.</exception>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=High; Resources=2; Fingerprint=E3C420
+    // Broiler-Falsified-If: a resolved option differs from CreateDateTimeFormat's as amended by proposal-temporal e8cc03fc, or a refusal is another status
+    // Broiler-Human:        PENDING
     public static IntlStatus Create(DateTimeData data, ResolvedLocale resolved, DateTimeFormatOptions options, out DateTimeFormat? format)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -347,6 +372,8 @@ public sealed class DateTimeFormat
     }
 
     /// <summary>The checks of a precondition the engine's reads hold: each value one ECMA-402 admits.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=F60779
+    // Broiler-Human:        PENDING
     private static void Check(DateTimeFormatOptions options)
     {
         foreach (var name in DateTimeComponents.Names)
@@ -377,12 +404,16 @@ public sealed class DateTimeFormat
     }
 
     /// <summary>A calendar type's identifier: the shared calendars' canonical one.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=5BD4B8
+    // Broiler-Human:        PENDING
     private static CalendarId CalendarIdOf(string calendar) =>
         TemporalCalendars.Canonicalize(calendar, out var id) == CalendarStatus.Completed
             ? id
             : throw new ArgumentException("the ca key resolved to a calendar that is not one of CalendarKeyValues: " + calendar);
 
     /// <summary>A numbering system's ten digits, the <c>latn</c> ones where the data gives the system none.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots nu values, JSD-0082 D13; IP=Low; Security=Low; Resources=1; Fingerprint=94AF7E
+    // Broiler-Human:        PENDING
     private static string[] Digits(ILocaleData data, string system)
     {
         if ((data.NumberingSystemDigits(system) ?? data.NumberingSystemDigits("latn")) is { Count: 10 } digits)
@@ -415,6 +446,9 @@ public sealed class DateTimeFormat
     /// format does not write, checked first (row T39); <see cref="IntlStatus.TemporalTypeNotFormatted"/> (<c>TypeError</c>) for a
     /// type the options give no field of; or <see cref="IntlStatus.ZonedDateTimeNotFormatted"/> (<c>TypeError</c>) for a
     /// ZonedDateTime, which a format other than its own <c>toLocaleString</c>'s does not write.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=proposal-temporal e8cc03fc sec-temporal-handledatetimevalue sec-temporal-getdatetimeformat sec-temporal-adjustdatetimestyleformat via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=High; Resources=2; Fingerprint=D0B2D8
+    // Broiler-Falsified-If: a value is formatted with another format than HandleDateTimeValue selects, or one it refuses is formatted
+    // Broiler-Human:        PENDING
     public IntlStatus HandleDateTimeValue(DateTimeValue value, out DateTimeFormatter? formatter, out double time)
     {
         formatter = null;
@@ -494,6 +528,9 @@ public sealed class DateTimeFormat
     /// <param name="yTime">The end's time value.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, <see cref="IntlStatus.RangeOfDifferentTypes"/> (<c>TypeError</c>,
     /// SameTemporalType), or a status of <see cref="HandleDateTimeValue"/>'s for the start, then for the end.</returns>
+    // Broiler-AI:           Origin=Ported; Spec=proposal-temporal e8cc03fc sec-temporal-handledatetimevalue sec-temporal-getdatetimeformat sec-temporal-adjustdatetimestyleformat via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=High; Resources=2; Fingerprint=DB73C7
+    // Broiler-Falsified-If: a range of two values is formatted although they are of different types, or with another format than HandleDateTimeValue selects
+    // Broiler-Human:        PENDING
     public IntlStatus HandleDateTimeRange(DateTimeValue x, DateTimeValue y, out DateTimeFormatter? formatter, out double xTime, out double yTime)
     {
         formatter = null;
@@ -528,6 +565,8 @@ public sealed class DateTimeFormat
     /// <c>month-day</c>, <c>time</c>, <c>date-time</c> or <c>instant</c>, or <see langword="null"/> where the options exclude
     /// the type; each built the first time it is asked for.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=proposal-temporal e8cc03fc sec-temporal-handledatetimevalue sec-temporal-getdatetimeformat sec-temporal-adjustdatetimestyleformat via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=B04E31
+    // Broiler-Human:        PENDING
     internal DateTimeFormatter? TemporalFormat(string kind)
     {
         lock (gate)
@@ -551,6 +590,9 @@ public sealed class DateTimeFormat
     /// The proposal's GetDateTimeFormat (<c>sec-getdatetimeformat</c>) over the explicitly requested components: the pattern a
     /// Temporal type is written in, or nothing where the options name components and none of the type's own.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=proposal-temporal e8cc03fc sec-temporal-handledatetimevalue sec-temporal-getdatetimeformat sec-temporal-adjustdatetimestyleformat via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=High; Resources=2; Fingerprint=2C1F8E
+    // Broiler-Falsified-If: a Temporal type's pattern holds a field GetDateTimeFormat's required and defaults for that type exclude, or lacks one they include
+    // Broiler-Human:        PENDING
     private static string? TemporalFormatPattern(Dictionary<string, string> options, string required, string defaults, bool inheritAll, Func<Dictionary<string, string>, string> best)
     {
         string[] requiredOptions = required switch
@@ -623,6 +665,9 @@ public sealed class DateTimeFormat
     /// The proposal's AdjustDateTimeStyleFormat (<c>sec-adjustdatetimestyleformat</c>): the style's pattern where it writes only
     /// fields the type has, else the best pattern for those of its fields the type has.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=proposal-temporal e8cc03fc sec-temporal-handledatetimevalue sec-temporal-getdatetimeformat sec-temporal-adjustdatetimestyleformat via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=High; Resources=2; Fingerprint=67FA27
+    // Broiler-Falsified-If: a style's pattern for a Temporal type differs from AdjustDateTimeStyleFormat's
+    // Broiler-Human:        PENDING
     private static string AdjustStylePattern(string stylePattern, string[] allowed, Func<Dictionary<string, string>, string> best)
     {
         var components = ComponentsOf(stylePattern);
@@ -652,12 +697,18 @@ public sealed class DateTimeFormat
     }
 
     /// <summary>The hour cycle a CLDR hour letter writes.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=160F23
+    // Broiler-Human:        PENDING
     internal static string HourCycleOfChar(char c) => c switch { 'h' => "h12", 'K' => "h11", 'k' => "h24", _ => "h23" };
 
     /// <summary>The CLDR hour letter of an hour cycle.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=00FA5A
+    // Broiler-Human:        PENDING
     internal static char CharOfHourCycle(string hc) => hc switch { "h11" => 'K', "h12" => 'h', "h24" => 'k', _ => 'H' };
 
     /// <summary>The hour cycle of a pattern's first hour field, or nothing for a pattern without an hour.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=08B2E8
+    // Broiler-Human:        PENDING
     internal static string? HourCycleOf(string pattern)
     {
         var quoted = false;
@@ -678,6 +729,8 @@ public sealed class DateTimeFormat
     }
 
     /// <summary>A pattern with every hour field written in <paramref name="hourChar"/>, as V8 writes the resolved cycle into ICU's.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=EC6EB7
+    // Broiler-Human:        PENDING
     private static string ReplaceHourCycle(string pattern, char hourChar)
     {
         var result = new StringBuilder(pattern.Length + 1);
@@ -712,6 +765,8 @@ public sealed class DateTimeFormat
     }
 
     /// <summary>The skeleton of the requested components, the hour in the resolved cycle's letter.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=F7724F
+    // Broiler-Human:        PENDING
     private static string SkeletonOfComponents(Dictionary<string, string> components, char hourChar)
     {
         var skeleton = new StringBuilder();
@@ -754,6 +809,8 @@ public sealed class DateTimeFormat
     /// The pattern of a date style, a time style or both, joined by CLDR's date-time pattern for the date style; a time whose
     /// hour cycle is not the resolved one is regenerated from its skeleton.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=4ECBB8
+    // Broiler-Human:        PENDING
     private static string StylePattern(DateData dates, string language, string? dateStyle, string? timeStyle, string hc, char hcChar, DateTimePatternGenerator generator)
     {
         var date = dateStyle is null ? null : dates.Value(language, "dateFormats." + dateStyle);
@@ -785,6 +842,8 @@ public sealed class DateTimeFormat
     }
 
     /// <summary>The components a pattern writes, as resolvedOptions reports them.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=DD7F43
+    // Broiler-Human:        PENDING
     internal static Dictionary<string, string> ComponentsOf(string pattern)
     {
         var components = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -852,6 +911,8 @@ public sealed class DateTimeFormat
     }
 
     /// <summary>The components of a pattern in Table 16's order, <c>fractionalSecondDigits</c> as its digit count.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=65DD12
+    // Broiler-Human:        PENDING
     private static IReadOnlyList<KeyValuePair<string, string>> Resolved(string pattern)
     {
         var components = ComponentsOf(pattern);

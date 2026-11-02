@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 1894 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2125 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 143 |
-| Code units | 2874 |
-| Relevant | 1894 |
-| Exempt | 980 |
-| Assessed | 1894 of 1894 (100%) |
-| Human reviewed | 0 of 1894 (0%) |
-| Unverified | 1894 |
+| Files scanned | 151 |
+| Code units | 3235 |
+| Relevant | 2125 |
+| Exempt | 1110 |
+| Assessed | 2125 of 2125 (100%) |
+| Human reviewed | 0 of 2125 (0%) |
+| Unverified | 2125 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1894 |
+| HUMAN_PENDING | 2125 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 980 |
+| EXEMPT | 1110 |
 
 ## 5. Aliases In The Tree
 
@@ -205,16 +205,22 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` | 15 | 12 | 3 | 12 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` | 19 | 14 | 5 | 14 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Generation/Time/TzdbTableSource.cs` | 2 | 2 | 0 | 2 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` | 32 | 26 | 6 | 26 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` | 35 | 29 | 6 | 29 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/DateIntervalFormatter.cs` | 43 | 33 | 10 | 33 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/DateTimeData.cs` | 21 | 13 | 8 | 13 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Intl/DateTimeFormat.cs` | 38 | 21 | 17 | 21 | Low | High | 5/5 |
+| `Broiler.ECMAScript.Intl/DateTimeFormatOptions.cs` | 60 | 18 | 42 | 18 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` | 53 | 38 | 15 | 38 | Low | High | 5/5 |
+| `Broiler.ECMAScript.Intl/DateTimePatternGenerator.cs` | 83 | 68 | 15 | 68 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Intl/DigitOptions.cs` | 37 | 18 | 19 | 18 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/DisplayNamesCore.cs` | 29 | 11 | 18 | 11 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/IIntlDataSet.cs` | 33 | 3 | 30 | 3 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Intl/ILocaleData.cs` | 25 | 22 | 3 | 22 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Intl/ILocaleData.cs` | 28 | 25 | 3 | 25 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlDecimal.cs` | 37 | 27 | 10 | 27 | Low | High | 3/3 |
-| `Broiler.ECMAScript.Intl/IntlStatus.cs` | 18 | 1 | 17 | 1 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Intl/IntlStatus.cs` | 28 | 1 | 27 | 1 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlTableText.cs` | 6 | 6 | 0 | 6 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/ListFormatter.cs` | 19 | 8 | 11 | 8 | Low | High | 1/1 |
-| `Broiler.ECMAScript.Intl/LocaleDataAnswers.cs` | 15 | 8 | 7 | 8 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Intl/LocaleDataAnswers.cs` | 16 | 9 | 7 | 9 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/LocaleId.cs` | 28 | 22 | 6 | 22 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/LocaleInfo.cs` | 20 | 18 | 2 | 18 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` | 15 | 12 | 3 | 12 | Low | High | 2/2 |
@@ -226,8 +232,10 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Intl/PluralEngine.cs` | 26 | 18 | 8 | 18 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/PluralRulesRecord.cs` | 16 | 8 | 8 | 8 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/RelativeTimeFormatter.cs` | 18 | 8 | 10 | 8 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Intl/ResolvedTimeZone.cs` | 14 | 4 | 10 | 4 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/SupportedValues.cs` | 6 | 4 | 2 | 4 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Intl/TableLocaleData.cs` | 74 | 61 | 13 | 61 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/TableLocaleData.cs` | 85 | 71 | 14 | 71 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Intl/ZoneNamer.cs` | 21 | 19 | 2 | 19 | Low | High | 2/2 |
 
 ## 7. Decisions Recorded
 
@@ -582,6 +590,36 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.ResolveValue<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, Spec=JSD-0082 D8 composite order, `E00AAB`, PENDING
   - Falsified if: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
+- `Broiler.ECMAScript.Intl.DateIntervalFormatter.Format(LocalDateTime, LocalDateTime, DateTimeFormatter, StringBuilder, List<DateTimeField>)` in `Broiler.ECMAScript.Intl/DateIntervalFormatter.cs` - Security=High, Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat), `35904E`, PENDING
+  - Falsified if: a range's String differs from PartitionDateTimeRangePattern's over CLDR intervalFormats and the fallback pattern
+- `Broiler.ECMAScript.Intl.DateIntervalFormatter.Largest(LocalDateTime, LocalDateTime)` in `Broiler.ECMAScript.Intl/DateIntervalFormatter.cs` - Security=High, Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat), `6854FD`, PENDING
+  - Falsified if: the largest differing field differs from ICU's for the two local times, so another interval pattern is chosen
+- `Broiler.ECMAScript.Intl.DateTimeFormat.Create(DateTimeData, ResolvedLocale, DateTimeFormatOptions, out DateTimeFormat?)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat, `E3C420`, PENDING
+  - Falsified if: a resolved option differs from CreateDateTimeFormat's as amended by proposal-temporal e8cc03fc, or a refusal is another status
+- `Broiler.ECMAScript.Intl.DateTimeFormat.HandleDateTimeValue(DateTimeValue, out DateTimeFormatter?, out double)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, Spec=proposal-temporal e8cc03fc sec-temporal-handledatetimevalue sec-temporal-getdatetimeformat sec-temporal-adjustdatetimestyleformat via Broiler.VM JsRealm.DateTimeFormat, `D0B2D8`, PENDING
+  - Falsified if: a value is formatted with another format than HandleDateTimeValue selects, or one it refuses is formatted
+- `Broiler.ECMAScript.Intl.DateTimeFormat.HandleDateTimeRange(DateTimeValue, DateTimeValue, out DateTimeFormatter?, out double, out double)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, Spec=proposal-temporal e8cc03fc sec-temporal-handledatetimevalue sec-temporal-getdatetimeformat sec-temporal-adjustdatetimestyleformat via Broiler.VM JsRealm.DateTimeFormat, `DB73C7`, PENDING
+  - Falsified if: a range of two values is formatted although they are of different types, or with another format than HandleDateTimeValue selects
+- `Broiler.ECMAScript.Intl.DateTimeFormat.TemporalFormatPattern(Dictionary<string, string>, string, string, bool, Func<Dictionary<string, string>, string>)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, Spec=proposal-temporal e8cc03fc sec-temporal-handledatetimevalue sec-temporal-getdatetimeformat sec-temporal-adjustdatetimestyleformat via Broiler.VM JsRealm.DateTimeFormat, `2C1F8E`, PENDING
+  - Falsified if: a Temporal type's pattern holds a field GetDateTimeFormat's required and defaults for that type exclude, or lacks one they include
+- `Broiler.ECMAScript.Intl.DateTimeFormat.AdjustStylePattern(string, string[], Func<Dictionary<string, string>, string>)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, Spec=proposal-temporal e8cc03fc sec-temporal-handledatetimevalue sec-temporal-getdatetimeformat sec-temporal-adjustdatetimestyleformat via Broiler.VM JsRealm.DateTimeFormat, `67FA27`, PENDING
+  - Falsified if: a style's pattern for a Temporal type differs from AdjustDateTimeStyleFormat's
+- `Broiler.ECMAScript.Intl.DateTimeFormatter.RangeParts(double, double, WorkCharge?)` in `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` - Security=High, Spec=ECMA-402 sec-formatdatetimepattern sec-partitiondatetimepattern UTS35 Part 4 section 8 via Broiler.VM JsDateTimeFormatter, `D598B5`, PENDING
+  - Falsified if: a range's parts differ from PartitionDateTimeRangePattern's, or its charge from the output's length
+- `Broiler.ECMAScript.Intl.DateTimeFormatter.FormatPattern(string, LocalDateTime, StringBuilder, List<DateTimeField>)` in `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` - Security=High, Spec=ECMA-402 sec-formatdatetimepattern sec-partitiondatetimepattern UTS35 Part 4 section 8 via Broiler.VM JsDateTimeFormatter, `EF47EB`, PENDING
+  - Falsified if: a pattern's String differs from FormatDateTimePattern's for its fields read as UTS 35 Part 4 section 8 states
+- `Broiler.ECMAScript.Intl.DateTimeFormatter.Field(char, int, LocalDateTime, bool, bool, StringBuilder)` in `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` - Security=High, Spec=ECMA-402 sec-formatdatetimepattern sec-partitiondatetimepattern UTS35 Part 4 section 8 via Broiler.VM JsDateTimeFormatter, `A72821`, PENDING
+  - Falsified if: a pattern field's text differs from CLDR's name or digits for the field, width and local time
+- `Broiler.ECMAScript.Intl.DateTimeFormatter.FlexibleDayPeriod(char, int, LocalDateTime, bool, bool)` in `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` - Security=High, Spec=ECMA-402 sec-formatdatetimepattern sec-partitiondatetimepattern UTS35 Part 4 section 8 via Broiler.VM JsDateTimeFormatter, `DC97EB`, PENDING
+  - Falsified if: a day period's name differs from CLDR's dayPeriodRules period for the locale and minute of the day
+- `Broiler.ECMAScript.Intl.DateTimeFormatter.ZoneName(char, int, long)` in `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` - Security=High, Spec=ECMA-402 sec-formatdatetimepattern sec-partitiondatetimepattern UTS35 Part 4 section 8 via Broiler.VM JsDateTimeFormatter, `726D96`, PENDING
+  - Falsified if: a zone's name differs from UTS 35 Part 4 section 7's for its primary identifier, width and instant
+- `Broiler.ECMAScript.Intl.DateTimePatternGenerator.BestPattern(string, int)` in `Broiler.ECMAScript.Intl/DateTimePatternGenerator.cs` - Security=High, Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator), `4E6042`, PENDING
+  - Falsified if: a skeleton's pattern differs from ICU DateTimePatternGenerator getBestPattern's over the locale's CLDR availableFormats and appendItems
+- `Broiler.ECMAScript.Intl.DateTimePatternGenerator.Distance(Skeleton, Skeleton, int, out int, out int)` in `Broiler.ECMAScript.Intl/DateTimePatternGenerator.cs` - Security=High, Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator), `531AC5`, PENDING
+  - Falsified if: a pattern's distance to a skeleton differs from ICU's, so another availableFormats entry is chosen
+- `Broiler.ECMAScript.Intl.DateTimePatternGenerator.AdjustFieldTypes(string, Skeleton?, int, int, Skeleton)` in `Broiler.ECMAScript.Intl/DateTimePatternGenerator.cs` - Security=High, Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator), `4D9929`, PENDING
+  - Falsified if: a matched pattern's field widths differ from ICU adjustFieldTypes' for the requested skeleton
 - `Broiler.ECMAScript.Intl.DigitOptionRules.SetNumberFormatDigitOptions(DigitOptionValues, FractionDigitDefaults, NumberNotation, out DigitOptions?)` in `Broiler.ECMAScript.Intl/DigitOptions.cs` - Security=High, Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat, `5E6F7D`, PENDING
   - Falsified if: a resolved slot differs from SetNumberFormatDigitOptions' for the same option values, or a refusal is another status or none
 - `Broiler.ECMAScript.Intl.DisplayNamesCore.CanonicalCode(string, out string, WorkCharge?)` in `Broiler.ECMAScript.Intl/DisplayNamesCore.cs` - Security=High, Spec=ECMA-402 sec-canonicalcodefordisplaynames sec-Intl.DisplayNames-internal-slots via Broiler.VM JsRealm.DisplayNames, `00A256`, PENDING
@@ -636,10 +674,18 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: the category is selected over another String than FormatNumericToString's, or compact notation passes another exponent than ComputeExponent's
 - `Broiler.ECMAScript.Intl.RelativeTimeFormatter.FormatToParts(double, string, out IReadOnlyList<RelativeTimePart>, WorkCharge?)` in `Broiler.ECMAScript.Intl/RelativeTimeFormatter.cs` - Security=High, Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat, `170A9C`, PENDING
   - Falsified if: the parts differ from PartitionRelativeTimePattern's with the magnitude written, or a refusal is another status
+- `Broiler.ECMAScript.Intl.ResolvedTimeZone.Resolve(string, ITimeZoneDatabase, out ResolvedTimeZone?, WorkCharge?)` in `Broiler.ECMAScript.Intl/ResolvedTimeZone.cs` - Security=High, Spec=ECMA-402 sec-getavailablenamedtimezoneidentifier sec-istimezoneoffsetstring, JSD-0082 D15 via Broiler.VM JsRealm.DateTimeFormat, `373863`, PENDING
+  - Falsified if: an identifier is accepted that GetAvailableNamedTimeZoneIdentifier or IsTimeZoneOffsetString refuses, or its identifier or primary differs from the database's
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadNumbers()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `21E4C4`, PENDING
   - Falsified if: a number, currency, unit, plural, plural-range or numbering-system answer differs from what Broiler.VM's JsIntlTables.ReadNumbers decodes from the same tables
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadDates()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `E8AF35`, PENDING
   - Falsified if: a language's date data in a calendar holds a key or a value, or enumerates in an order, other than Broiler.VM's JsIntlTables.ReadDates decodes from the same table
+- `Broiler.ECMAScript.Intl.TableLocaleData.ReadMetazones()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `B01CA5`, PENDING
+  - Falsified if: a metazone period's bounds or name differ from the CLDR metaZones table's, or a line of another form is accepted
+- `Broiler.ECMAScript.Intl.ZoneNamer.Metazone(string, long)` in `Broiler.ECMAScript.Intl/ZoneNamer.cs` - Security=High, Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames, `20DA34`, PENDING
+  - Falsified if: a zone's metazone at an instant differs from CLDR metaZones' period that holds it
+- `Broiler.ECMAScript.Intl.ZoneNamer.Generic(DateData, string, string, System.Func<string, string?>, string, ITimeZoneRules, long, bool)` in `Broiler.ECMAScript.Intl/ZoneNamer.cs` - Security=High, Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames, `D9E938`, PENDING
+  - Falsified if: a generic zone name differs from UTS 35 Part 4 section 7.3's metazone, golden zone and location fallbacks
 
 ## 10. What This Record Does Not Say
 
@@ -656,5 +702,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-847 of the 1894 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+883 of the 2125 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

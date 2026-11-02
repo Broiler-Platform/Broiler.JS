@@ -1,5 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
+//
+// Broiler Code Assurance
+// ----------------------
+// Relevant units:   33
+// Annotated:        33/33
+// Exempt:           10
+// Human-reviewed:   0/33
+// IP risk:          Low
+// Security risk:    High
+// Criteria:         2/2
+// Resource impact:  2/10 max
+// Unverified:       33
+//
+// GENERATED - DO NOT EDIT MANUALLY
 
 using System;
 using System.Collections.Generic;
@@ -21,28 +35,56 @@ namespace Broiler.ECMAScript.Intl;
 /// format has a date and a time write the date once and the times as a range.
 /// </para>
 /// </remarks>
+// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=AE24FD
+// Broiler-Human:        PENDING
 internal sealed class DateIntervalFormatter
 {
     /// <summary>The calendar fields a range compares, largest first, as ICU's interval indexes.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=D48789
+    // Broiler-Human:        PENDING
     internal const int Era = 0;
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=6322C7
+    // Broiler-Human:        PENDING
     internal const int Year = 1;
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=0E2031
+    // Broiler-Human:        PENDING
     internal const int Month = 2;
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=1D8625
+    // Broiler-Human:        PENDING
     internal const int Date = 3;
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=B3015E
+    // Broiler-Human:        PENDING
     internal const int AmPm = 4;
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=436FBE
+    // Broiler-Human:        PENDING
     internal const int Hour = 5;
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=BF6F16
+    // Broiler-Human:        PENDING
     internal const int Minute = 6;
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=18DE2D
+    // Broiler-Human:        PENDING
     internal const int Second = 7;
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=14BAD4
+    // Broiler-Human:        PENDING
     internal const int Millisecond = 8;
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=8FA89F
+    // Broiler-Human:        PENDING
     private const int Count = 9;
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=9EE739
+    // Broiler-Human:        PENDING
     private static readonly ImmutableArray<int> Levels = [0, 10, 20, 30, 40, 50, 60, 70, 80];
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=F78CFA
+    // Broiler-Human:        PENDING
     private static readonly ImmutableArray<char> Letters = ['G', 'y', 'M', 'd', 'a', 'h', 'm', 's', 'S'];
 
     private readonly string?[] firstParts = new string?[Count];
 
     private readonly string?[] secondParts = new string?[Count];
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=0; Fingerprint=5B7B20
+    // Broiler-Human:        PENDING
     private readonly Dictionary<string, string?[]> intervals = new(StringComparer.Ordinal);
 
     private readonly List<string> skeletons = [];
@@ -58,6 +100,8 @@ internal sealed class DateIntervalFormatter
     private readonly string? dateTimeFormat;
 
     /// <summary>Prepares the patterns of a format whose pattern's skeleton is <paramref name="skeleton"/>.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Medium; Resources=2; Fingerprint=87F85B
+    // Broiler-Human:        PENDING
     internal DateIntervalFormatter(DateData data, string language, DateTimePatternGenerator generator, string skeleton)
     {
         this.generator = generator;
@@ -175,6 +219,9 @@ internal sealed class DateIntervalFormatter
     /// The range from <paramref name="from"/> to <paramref name="to"/> as ICU's <c>formatImpl</c>
     /// writes it, with its fields; the first index is -1 when it is one date.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=High; Resources=2; Fingerprint=35904E
+    // Broiler-Falsified-If: a range's String differs from PartitionDateTimeRangePattern's over CLDR intervalFormats and the fallback pattern
+    // Broiler-Human:        PENDING
     internal int Format(LocalDateTime from, LocalDateTime to, DateTimeFormatter formatter, StringBuilder text, List<DateTimeField> fields)
     {
         var field = Largest(from, to);
@@ -214,6 +261,9 @@ internal sealed class DateIntervalFormatter
     }
 
     /// <summary>The largest calendar field two times differ in, or -1.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=High; Resources=2; Fingerprint=6854FD
+    // Broiler-Falsified-If: the largest differing field differs from ICU's for the two local times, so another interval pattern is chosen
+    // Broiler-Human:        PENDING
     private static int Largest(LocalDateTime from, LocalDateTime to)
     {
         if (from.Era != to.Era)
@@ -260,6 +310,8 @@ internal sealed class DateIntervalFormatter
     }
 
     /// <summary>ICU's <c>fallbackFormat</c>.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Medium; Resources=1; Fingerprint=4DE1DE
+    // Broiler-Human:        PENDING
     private int FallbackFormat(string pattern, LocalDateTime from, LocalDateTime to, bool sameDay, DateTimeFormatter formatter, StringBuilder text, List<DateTimeField> fields)
     {
         if (sameDay && datePattern is not null && timePattern is not null && dateTimeFormat is not null)
@@ -289,6 +341,8 @@ internal sealed class DateIntervalFormatter
     }
 
     /// <summary>ICU's <c>fallbackRange</c>: both ends in one pattern, joined by CLDR's fallback.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Medium; Resources=1; Fingerprint=82F746
+    // Broiler-Human:        PENDING
     private int FallbackRange(string pattern, LocalDateTime from, LocalDateTime to, DateTimeFormatter formatter, StringBuilder text, List<DateTimeField> fields)
     {
         var zero = Fallback.IndexOf("{0}", StringComparison.Ordinal);
@@ -318,6 +372,8 @@ internal sealed class DateIntervalFormatter
     /// ICU's <c>normalizeHourMetacharacters</c>: the hour field becomes one hour letter of the cycle
     /// the locale writes it in, followed on a twelve-hour clock by its day period.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=1; Fingerprint=BF14B7
+    // Broiler-Human:        PENDING
     private string NormalizeHour(string text)
     {
         var hourChar = '\0';
@@ -409,6 +465,8 @@ internal sealed class DateIntervalFormatter
     }
 
     /// <summary>ICU's <c>getDateTimeSkeleton</c>: a skeleton's date and time halves, each also normalized.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Medium; Resources=1; Fingerprint=5FF123
+    // Broiler-Human:        PENDING
     private static void Split(string text, out string date, out string normalizedDate, out string time, out string normalizedTime)
     {
         var dateText = new StringBuilder();
@@ -514,6 +572,8 @@ internal sealed class DateIntervalFormatter
     }
 
     /// <summary>ICU's <c>setSeparateDateTimePtn</c>.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Medium; Resources=1; Fingerprint=E6EA55
+    // Broiler-Human:        PENDING
     private bool SetSeparateDateTimePattern(string dateSkeleton, string timeSkeleton)
     {
         var current = timeSkeleton.Length != 0 ? timeSkeleton : dateSkeleton;
@@ -563,6 +623,8 @@ internal sealed class DateIntervalFormatter
     }
 
     /// <summary>ICU's <c>setIntervalPattern</c> for one field: whether it extended the skeleton by the field's letter.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Medium; Resources=1; Fingerprint=518A1B
+    // Broiler-Human:        PENDING
     private bool SetIntervalPattern(int field, string current, string best, int difference, bool extend, out string? extendedSkeleton, out string? extendedBest)
     {
         extendedSkeleton = null;
@@ -615,8 +677,12 @@ internal sealed class DateIntervalFormatter
         return false;
     }
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=1; Fingerprint=FFA40C
+    // Broiler-Human:        PENDING
     private string? Pattern(string name, int field) => intervals.TryGetValue(name, out var patterns) ? patterns[field] : null;
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=1; Fingerprint=F6A8CC
+    // Broiler-Human:        PENDING
     private void SetPatternInfo(int field, string? first, string? second)
     {
         if (first is not null)
@@ -631,6 +697,8 @@ internal sealed class DateIntervalFormatter
     }
 
     /// <summary>An interval pattern split where its first repeated field begins.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Medium; Resources=1; Fingerprint=A57732
+    // Broiler-Human:        PENDING
     private void SetIntervalPattern(int field, string pattern)
     {
         var split = SplitPoint(pattern);
@@ -639,6 +707,8 @@ internal sealed class DateIntervalFormatter
     }
 
     /// <summary>ICU's <c>splitPatternInto2Part</c>.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=1; Fingerprint=F60D25
+    // Broiler-Human:        PENDING
     private static int SplitPoint(string pattern)
     {
         var seen = new bool[58];
@@ -694,6 +764,8 @@ internal sealed class DateIntervalFormatter
     }
 
     /// <summary>ICU's <c>getBestSkeleton</c> over the interval skeletons.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Medium; Resources=1; Fingerprint=46985F
+    // Broiler-Human:        PENDING
     private string? BestSkeleton(string text, out int difference)
     {
         var input = text;
@@ -763,6 +835,8 @@ internal sealed class DateIntervalFormatter
         return best;
     }
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=1; Fingerprint=241A2D
+    // Broiler-Human:        PENDING
     private static int[] Widths(string text)
     {
         var widths = new int[58];
@@ -779,6 +853,8 @@ internal sealed class DateIntervalFormatter
     }
 
     /// <summary>ICU's <c>adjustFieldWidth</c>: an interval pattern's fields widened to the skeleton's.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Medium; Resources=1; Fingerprint=26C0EC
+    // Broiler-Human:        PENDING
     private static string AdjustFieldWidth(string input, string best, string pattern, int difference)
     {
         var adjusted = new StringBuilder(pattern);
@@ -876,6 +952,8 @@ internal sealed class DateIntervalFormatter
         return adjusted.ToString();
     }
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=1; Fingerprint=002915
+    // Broiler-Human:        PENDING
     private static void ReplaceInPattern(StringBuilder pattern, char from, char to)
     {
         var quoted = false;
@@ -897,6 +975,8 @@ internal sealed class DateIntervalFormatter
     /// ICU's <c>isFieldUnitIgnored</c>: whether every field of a pattern is larger than
     /// <paramref name="field"/>, so that a difference in it does not show.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=1; Fingerprint=0CF5E9
+    // Broiler-Human:        PENDING
     internal static bool IsFieldUnitIgnored(string pattern, int field)
     {
         var fieldLevel = Levels[field];
@@ -940,6 +1020,8 @@ internal sealed class DateIntervalFormatter
     }
 
     /// <summary>ICU's level of a pattern letter: the larger, the smaller the unit; -1 for a letter with none.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat); IP=Low; Security=Low; Resources=1; Fingerprint=90282A
+    // Broiler-Human:        PENDING
     private static int Level(char c) => c switch
     {
         'G' or 'O' or 'V' or 'X' or 'Z' or 'g' or 'l' or 'v' or 'x' or 'z' => 0,

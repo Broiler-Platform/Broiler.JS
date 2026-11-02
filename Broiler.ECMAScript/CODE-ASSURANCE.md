@@ -13,15 +13,15 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 143 |
+| Files scanned | 151 |
 | Files not covered | 0 |
-| Files carrying an annotation | 143 |
-| Code units | 2874 |
-| Relevant | 1894 |
-| Exempt by predicate | 980 |
-| Annotated | 1894 of 1894 (100%) |
-| Human reviewed | 0 of 1894 (0%) |
-| Unverified | 1894 |
+| Files carrying an annotation | 151 |
+| Code units | 3235 |
+| Relevant | 2125 |
+| Exempt by predicate | 1110 |
+| Annotated | 2125 of 2125 (100%) |
+| Human reviewed | 0 of 2125 (0%) |
+| Unverified | 2125 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1894 |
+| HUMAN_PENDING | 2125 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 980 |
+| EXEMPT | 1110 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 1892 |
+| Low | 2123 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,9 +51,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 1134 |
-| Medium | 542 |
-| High | 198 |
+| Low | 1303 |
+| Medium | 585 |
+| High | 217 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.1 / 10 |
-| Units scored | 1894 |
+| Units scored | 2125 |
 
 ## High-security review areas
 
@@ -236,6 +236,21 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Generation.Time.TzdbTableGenerator.Generate(TzdbPin, IReadOnlyDictionary<string, byte[]>, CldrPin, IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.Resolve<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.CompositeLocaleData.ResolveValue<T>(IntlTable, string, Func<ILocaleData, string, T?>)` in `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateIntervalFormatter.Format(LocalDateTime, LocalDateTime, DateTimeFormatter, StringBuilder, List<DateTimeField>)` in `Broiler.ECMAScript.Intl/DateIntervalFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateIntervalFormatter.Largest(LocalDateTime, LocalDateTime)` in `Broiler.ECMAScript.Intl/DateIntervalFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormat.Create(DateTimeData, ResolvedLocale, DateTimeFormatOptions, out DateTimeFormat?)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormat.HandleDateTimeValue(DateTimeValue, out DateTimeFormatter?, out double)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormat.HandleDateTimeRange(DateTimeValue, DateTimeValue, out DateTimeFormatter?, out double, out double)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormat.TemporalFormatPattern(Dictionary<string, string>, string, string, bool, Func<Dictionary<string, string>, string>)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormat.AdjustStylePattern(string, string[], Func<Dictionary<string, string>, string>)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormatter.RangeParts(double, double, WorkCharge?)` in `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormatter.FormatPattern(string, LocalDateTime, StringBuilder, List<DateTimeField>)` in `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormatter.Field(char, int, LocalDateTime, bool, bool, StringBuilder)` in `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormatter.FlexibleDayPeriod(char, int, LocalDateTime, bool, bool)` in `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormatter.ZoneName(char, int, long)` in `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimePatternGenerator.BestPattern(string, int)` in `Broiler.ECMAScript.Intl/DateTimePatternGenerator.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimePatternGenerator.Distance(Skeleton, Skeleton, int, out int, out int)` in `Broiler.ECMAScript.Intl/DateTimePatternGenerator.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.DateTimePatternGenerator.AdjustFieldTypes(string, Skeleton?, int, int, Skeleton)` in `Broiler.ECMAScript.Intl/DateTimePatternGenerator.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.DigitOptionRules.SetNumberFormatDigitOptions(DigitOptionValues, FractionDigitDefaults, NumberNotation, out DigitOptions?)` in `Broiler.ECMAScript.Intl/DigitOptions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.DisplayNamesCore.CanonicalCode(string, out string, WorkCharge?)` in `Broiler.ECMAScript.Intl/DisplayNamesCore.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.DisplayNamesCore.LanguageName(string, Func<string, string, string?>)` in `Broiler.ECMAScript.Intl/DisplayNamesCore.cs` - Security=High, human line PENDING
@@ -263,15 +278,19 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Intl.PluralRule.Parse(string)` in `Broiler.ECMAScript.Intl/PluralEngine.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.PluralRulesRecord.ResolvePlural(IntlDecimal, WorkCharge?)` in `Broiler.ECMAScript.Intl/PluralRulesRecord.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.RelativeTimeFormatter.FormatToParts(double, string, out IReadOnlyList<RelativeTimePart>, WorkCharge?)` in `Broiler.ECMAScript.Intl/RelativeTimeFormatter.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.ResolvedTimeZone.Resolve(string, ITimeZoneDatabase, out ResolvedTimeZone?, WorkCharge?)` in `Broiler.ECMAScript.Intl/ResolvedTimeZone.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadNumbers()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadDates()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.TableLocaleData.ReadMetazones()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.ZoneNamer.Metazone(string, long)` in `Broiler.ECMAScript.Intl/ZoneNamer.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Intl.ZoneNamer.Generic(DateData, string, string, System.Func<string, string?>, string, ITimeZoneRules, long, bool)` in `Broiler.ECMAScript.Intl/ZoneNamer.cs` - Security=High, human line PENDING
 
 ## Falsification criteria
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 198 |
-| Units required to carry one | 198 |
+| Units carrying a criterion | 217 |
+| Units required to carry one | 217 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -292,14 +311,14 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 228 |
-| ParameterAssigningConstructor | 22 |
+| TrivialPropertyOrAccessor | 258 |
+| ParameterAssigningConstructor | 26 |
 | TrivialExpressionBodiedMember | 33 |
-| CompilerSuppliedRecordOrEnumMember | 78 |
+| CompilerSuppliedRecordOrEnumMember | 111 |
 | DelegatingOverrideOrOperator | 4 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 118 |
-| EnumMemberOfADeclaredVocabulary | 497 |
+| FieldDeclaringStorage | 153 |
+| EnumMemberOfADeclaredVocabulary | 525 |
 | DeclaredInSource | 0 |
 
 ## Per-unit exemptions
@@ -323,14 +342,14 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 5 covered assemblies -
-2874 of them, exempt and relevant alike - with the fingerprint of its declaration.
+3235 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
 trivial is no longer invisible: a semantic change to one moves a value in a generated file
 the check compares byte for byte. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` holds the manifest to the tree.
 
-Beside the units it lists **every covered file** - 143 of them - with a
+Beside the units it lists **every covered file** - 151 of them - with a
 fingerprint over the complete token stream of its compilation unit. A unit entry exists only
 for a declaration kind the scanner enumerates, and an enumeration is a whitelist: an
 `[assembly: ...]` attribute is a member of nothing and can be in no unit at all.

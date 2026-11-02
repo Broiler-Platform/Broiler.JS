@@ -1,5 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
+//
+// Broiler Code Assurance
+// ----------------------
+// Relevant units:   13
+// Annotated:        13/13
+// Exempt:           8
+// Human-reviewed:   0/13
+// IP risk:          Low
+// Security risk:    Medium
+// Criteria:         0/0
+// Resource impact:  2/10 max
+// Unverified:       13
+//
+// GENERATED - DO NOT EDIT MANUALLY
 
 using System;
 using System.Collections.Generic;
@@ -30,6 +44,8 @@ namespace Broiler.ECMAScript.Intl;
 /// is read here but through the provider and those two.
 /// </para>
 /// </remarks>
+// Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 provider for sub-area (d), no table read outside the provider; IP=Low; Security=Low; Resources=0; Fingerprint=46C18D
+// Broiler-Human:        PENDING
 public sealed class DateTimeData
 {
     private readonly Lazy<ZoneNamer> zoneNames;
@@ -39,6 +55,8 @@ public sealed class DateTimeData
     /// <param name="timeZones">The IANA Time Zone Database the formats' zones are found in.</param>
     /// <param name="calendars">The calendars a format other than the Gregorian and ISO 8601 ones writes its fields in.</param>
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 provider for sub-area (d), no table read outside the provider; IP=Low; Security=Low; Resources=1; Fingerprint=72F008
+    // Broiler-Human:        PENDING
     public DateTimeData(ILocaleData data, ITimeZoneDatabase timeZones, TemporalCalendars calendars)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -64,6 +82,8 @@ public sealed class DateTimeData
     internal DateData Dates { get; }
 
     /// <summary>CLDR's metazones and the algorithms that name a zone by them, built the first time a zone is named.</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 provider for sub-area (d), no table read outside the provider; IP=Low; Security=Low; Resources=0; Fingerprint=CBD23D
+    // Broiler-Human:        PENDING
     internal ZoneNamer ZoneNames => zoneNames.Value;
 }
 
@@ -83,20 +103,28 @@ public sealed class DateTimeData
 /// Broiler.VM's are: a generator never changes after it is made. They are made under a lock.
 /// </para>
 /// </remarks>
+// Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=0; Fingerprint=ECB0AE
+// Broiler-Human:        PENDING
 internal sealed class DateData
 {
     private readonly ILocaleData data;
 
     private readonly Lock gate = new();
 
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=0; Fingerprint=2AC135
+    // Broiler-Human:        PENDING
     private readonly Dictionary<string, DateTimePatternGenerator> generators = new(StringComparer.Ordinal);
 
     internal DateData(ILocaleData data) => this.data = data;
 
     /// <summary>The locale data.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=0; Fingerprint=CBB118
+    // Broiler-Human:        PENDING
     internal ILocaleData Locale => data;
 
     /// <summary>The locale of a data language: <c>en</c> for <c>en@hebrew</c>.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=2423B2
+    // Broiler-Human:        PENDING
     internal static string LanguageOf(string dataLanguage)
     {
         var at = dataLanguage.IndexOf('@', StringComparison.Ordinal);
@@ -104,6 +132,8 @@ internal sealed class DateData
     }
 
     /// <summary>The calendar of a data language: <c>gregory</c> for <c>en</c>, <c>hebrew</c> for <c>en@hebrew</c>.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=C33AE3
+    // Broiler-Human:        PENDING
     private static string CalendarOf(string dataLanguage)
     {
         var at = dataLanguage.IndexOf('@', StringComparison.Ordinal);
@@ -111,15 +141,23 @@ internal sealed class DateData
     }
 
     /// <summary>A data language's value for a key, or nothing.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=AC40D5
+    // Broiler-Human:        PENDING
     internal string? Value(string dataLanguage, string key) => data.DateValue(LanguageOf(dataLanguage), CalendarOf(dataLanguage), key);
 
     /// <summary>Every value of a data language, in the order the decoding left them, or nothing.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=8424B6
+    // Broiler-Human:        PENDING
     internal IReadOnlyDictionary<string, string>? Values(string dataLanguage) => data.DateValues(LanguageOf(dataLanguage), CalendarOf(dataLanguage));
 
     /// <summary>A language's day period rules, or nothing; a calendar's data is its language's for day periods, which belong to no calendar.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=0A5911
+    // Broiler-Human:        PENDING
     internal IReadOnlyList<DayPeriodRule>? DayPeriods(string dataLanguage) => data.DayPeriods(LanguageOf(dataLanguage));
 
     /// <summary>The pattern generator of a data language whose default hour character is <paramref name="hourChar"/>.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Medium; Resources=2; Fingerprint=000431
+    // Broiler-Human:        PENDING
     internal DateTimePatternGenerator Generator(string dataLanguage, char hourChar, string decimalSymbol)
     {
         var key = dataLanguage + "|" + hourChar + "|" + decimalSymbol;
@@ -140,6 +178,8 @@ internal sealed class DateData
     /// The hour character a region prefers - <c>h</c>, <c>H</c>, <c>K</c> or <c>k</c> - from CLDR's time data, the world's
     /// where the region has none.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=8E92E1
+    // Broiler-Human:        PENDING
     internal char PreferredHourChar(string region)
     {
         if ((data.HourCycles(region) ?? data.HourCycles("001")) is not { } cycles)
