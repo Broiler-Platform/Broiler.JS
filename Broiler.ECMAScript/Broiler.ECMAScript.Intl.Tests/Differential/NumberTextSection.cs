@@ -596,7 +596,8 @@ internal static class NumberTextSection
     }
 
     /// <summary>Locale data less every numbering system's own symbols, the <c>symbols@</c> keys Broiler.VM's tables never carry.</summary>
-    private sealed class WithoutOwnSymbols(ILocaleData inner) : ILocaleData
+    /// <remarks><i>(Noted 2026-11-02, at stage SJL-9.3e: internal, where it was private, so that sub-area (e)'s section reads the data as Broiler.VM does with the same type; nothing it answers changes.)</i></remarks>
+    internal sealed class WithoutOwnSymbols(ILocaleData inner) : ILocaleData
     {
         public IReadOnlyList<string> Locales => inner.Locales;
 

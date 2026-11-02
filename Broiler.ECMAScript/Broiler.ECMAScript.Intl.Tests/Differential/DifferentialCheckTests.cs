@@ -346,6 +346,70 @@ public sealed class DifferentialCheckTests
         Assert.Contains(section.Examples, static e => e.Contains("vm \"other | 1.", StringComparison.Ordinal) && e.Contains("library \"one | 1.", StringComparison.Ordinal));
     }
 
+    /// <summary>
+    /// Sub-area (e) (stage SJL-9.3e): Broiler.VM's duration format answers as the library does over Broiler.VM's embedding - every
+    /// resolved option, formatted part and charge - and over Broiler.JS's every difference is one the library's answer under
+    /// Broiler.VM's reading of the data removes: the data locale's language, Broiler.VM's numbering systems and no own symbols
+    /// (decisions D5, D13, D21 and D34; rows U13 to U16).
+    /// </summary>
+    [Fact]
+    public void Broiler_VM_s_duration_code_and_the_library_differ_only_by_the_data_they_read()
+    {
+        var sections = DifferentialCheck.Run(DifferentialCheck.DefaultSeed, scale: 1, only: ["U1", "U2"]);
+        var report = DifferentialCheck.Report(sections, DifferentialCheck.DefaultSeed, 1);
+        Assert.Equal(4, sections.Count);
+        Assert.True(sections.All(static s => s.Unclassified == 0), report);
+        Assert.All(sections, static s => Assert.True(s.Compared > 250, s.Name + " compared almost nothing"));
+        Assert.All(sections.Where(static s => s.Name.EndsWith("(broiler-vm)", StringComparison.Ordinal)), static s => Assert.Equal(0, s.Classified));
+        var rows = sections.SelectMany(static s => s.ClassifiedByRow.Keys).Distinct().ToList();
+        Assert.Equal([DurationSection.DataRow], rows);
+    }
+
+    /// <summary>
+    /// The negative control of sub-area (e): the library reads Broiler.VM's tables with English's time separator changed, and the
+    /// difference is found in the clock and left unclassified, since Broiler.VM's reading of the same tables gives the library's
+    /// answer.
+    /// </summary>
+    [Fact]
+    public void A_difference_in_the_time_separator_is_found_and_left_unclassified()
+    {
+        var vm = Embedding.Both().First();
+        var numbers = Encoding.ASCII.GetString(vm.Text[nameof(IntlTable.NumberLocales)]);
+        Assert.Contains("en|symbols.timeSeparator|:", numbers, StringComparison.Ordinal);
+        var changed = Encoding.ASCII.GetBytes(numbers.Replace("en|symbols.timeSeparator|:", "en|symbols.timeSeparator|.", StringComparison.Ordinal));
+        var control = Embedding.WithLibraryTables("control", new Dictionary<string, byte[]> { [nameof(IntlTable.NumberLocales)] = changed });
+        var section = Assert.Single(DurationSection.Run(control, new SeededRandom(DifferentialCheck.DefaultSeed), 1, ["U2"]));
+        Assert.True(section.Unclassified > 0);
+        Assert.Equal(0, section.Classified);
+        Assert.Contains(section.Examples, static e => e.Contains("literal:::-", StringComparison.Ordinal) && e.Contains("literal:.:-", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Sub-area (e)'s population keeps every dataset input and each vector's own format (decision D22): the durations program's
+    /// two locales with its fifteen formats, its error group's formats and its sixteen durations with the valid ones of its error
+    /// group, and the format and durations of each durations vector whose script constructs one.
+    /// </summary>
+    [Fact]
+    public void Sub_area_e_s_population_keeps_every_dataset_input_and_each_vector_s_own_format()
+    {
+        var population = DurationPopulation.Build(Embedding.Both().First(), new SeededRandom(DifferentialCheck.DefaultSeed), 1);
+        Assert.Equal(30 + 5, population.DatasetFormats.Count);
+        Assert.Contains(population.DatasetFormats, static f => f.Locale == "de" && f.Bag["numberingSystem"] is "arab");
+        Assert.Contains(population.DatasetFormats, static f => f.Bag["fractionalDigits"] is 10.0);
+        Assert.Equal(16 + 1, population.DatasetDurations.Count);
+        Assert.Contains(population.DatasetDurations, static d => d.Minutes == -5 && d.Seconds == 0);
+        Assert.Contains(population.DatasetDurations, static d => d.Hours == 1 && d.Minutes == 0 && d.Years == 0);
+
+        var vectors = Population.IntlVectors("durations.vectors");
+        var constructing = vectors.Count(static v => v.Script.Contains("new Intl.DurationFormat(", StringComparison.Ordinal) || v.Script.Contains(").toLocaleString(", StringComparison.Ordinal));
+        Assert.Equal(constructing, population.VectorCalls.Count);
+        Assert.Contains(population.VectorCalls, static c => c.Locale == "en" && c.Durations.Any(static d => d.Hours == 1 && d.Minutes == 30 && d.Seconds == 0));
+        Assert.Contains(population.VectorCalls, static c => c.Id.StartsWith("intl/durations/unit-options/", StringComparison.Ordinal) && c.Bag["minutes"] is "numeric"
+            && c.Durations.Any(static d => d.Minutes == 5 && d.Hours == 0));
+        Assert.Contains(population.VectorCalls, static c => c.Durations.Any(static d => d.Years == 1 && d.Nanoseconds == 10 && d.Seconds == 7));
+        Assert.Equal(400, population.RandomDurations.Count);
+    }
+
     [Fact]
     public void The_seeded_random_inputs_are_the_same_on_every_run()
     {
