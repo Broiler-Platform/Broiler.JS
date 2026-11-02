@@ -32,17 +32,22 @@
     (decision D18), and Broiler.Unicode.Algorithms. No engine, nothing of Broiler.VM, and no table:
     each engine embeds its own, which this library reads through the provider (SJL-D-6 (c)).
 
-    NOT PACKED YET. Decision D29 publishes one stream version that carries the complete library, and
-    the plan's stage SJL-9.3f packs it; until then the package identity is set and nothing is packed,
-    so that no stream version carries a part of it.
+    Stages SJL-9.3c to SJL-9.3e add number formatting with the list, relative-time and display-name
+    formatters (sub-area (c)), date-time formatting, intervals and zone names with Intl over Temporal
+    (sub-area (d)), and duration formatting (sub-area (e)).
+
+    PACKED FROM STAGE SJL-9.3f. Decision D29 publishes one stream version that carries the complete
+    library, so the package identity was set at SJL-9.3a and nothing was packed until the library was
+    complete; stage SJL-9.3f, the integration, makes the project packable, on the shared stream's
+    0.1.0-preview.N scheme with the other shared packages, with package validation as they have it.
+    Publishing that version is the owner's (the plan's WP6).
   -->
   <PropertyGroup>
     <RootNamespace>Broiler.ECMAScript.Intl</RootNamespace>
     <AssemblyName>Broiler.ECMAScript.Intl</AssemblyName>
     <PackageId>Broiler.ECMAScript.Intl</PackageId>
-    <Description>The Intl algorithms shared by the Broiler JavaScript engines (ECMA-402), over the locale data an engine hands in: the data contract (the generated tables as an IIntlDataSet, decoded once into the question-level ILocaleData, with CompositeLocaleData ordering the shared data, an optional secondary provider, and the locale's parent and root), the statuses that replace engine errors, locale identifiers, negotiation, Intl.Locale's record, Locale info and supportedValuesOf, the Intl mathematical value, the digit options, FormatNumericToString, and plural rules and ranges, and number formatting with list, relative-time and display-name formatting.</Description>
+    <Description>The Intl algorithms shared by the Broiler JavaScript engines (ECMA-402), over the locale data an engine hands in: the data contract (the generated tables as an IIntlDataSet, decoded once into the question-level ILocaleData, with CompositeLocaleData ordering the shared data, an optional secondary provider, and the locale's parent and root), the statuses that replace engine errors, locale identifiers, negotiation, Intl.Locale's record, Locale info and supportedValuesOf, the Intl mathematical value, the digit options, FormatNumericToString, plural rules and ranges, number formatting with list, relative-time and display-name formatting, date-time formatting with ranges, day periods, hour cycles and zone names over CLDR's metazone history and Intl over Temporal, and duration formatting.</Description>
     <PackageTags>broiler;ecmascript;javascript;shared;intl;ecma-402;cldr</PackageTags>
-    <IsPackable>false</IsPackable>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
   <ItemGroup>
