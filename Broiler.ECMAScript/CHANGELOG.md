@@ -211,7 +211,28 @@ Not yet packed under a version of its own: the stream's next version is set when
   `new Intl.DurationFormat("lt").format({hours: 1, minutes: 2})` is `"01:02:00"`, where Node 22 writes `"1 val. 2 min."`.
   Broiler.VM's tables carry no such locale. Vectors `intl/durations/families/0003` and `intl/durations/families/0048` (`af`
   and `lt`, `long`) keep the words as Broiler.JS's expectation, so SJL-9.5 lists the move under decision D34, or the owner
-  restricts the step to `numeric` hours by a dated decision made in both engines.
+  restricts the step to `numeric` hours by a dated decision made in both engines. *(Noted 2026-11-02, at SJL-9.3f: settled
+  as the owner's decision of that date, taken under the owner's direction of 2026-10-18, "Please do all recommended
+  decisions and skip waiting for review.": the library follows the pinned text as written. ECMA-402 at `3d4c558`,
+  `spec/durationformat.html:615`, GetDurationUnitOptions' step "If _unit_ is "hours" and _twoDigitHours_ is true, set
+  _style_ to "2-digit"", is unconditional, and `tc39/ecma402` `main` at `3691634` (2026-10-23) has the same step at the
+  same line; the slot's definition at `:170`, "[[TwoDigitHours]] must be a Boolean value indicating whether hours are
+  always displayed using two digits when using style "numeric"", constrains the data and restricts no step. So no code
+  changes, and SJL-9.5 lists the move under decision D34.)*
+- `Broiler.ECMAScript.Intl`, stage SJL-9.3f, the integration (Broiler.VM's JSD-0082, the plan's task 5.f, decisions D29 and
+  D33): the library is **packed** on the shared stream, with package validation as `Broiler.ECMAScript.Algorithms` and
+  `Broiler.ECMAScript.Generation` have it; its publication is the owner's. Row T10, settled: where the data locale's region
+  prefers a cycle of the other kind, `hour12` takes the first 12-hour (`h`, `K`) or 24-hour (`H`, `k`) format CLDR's time
+  data allows for the region, `h12` and `h23` where none is, so `ja` and `ja-JP` with `hour12: true` resolve `h11` and write
+  `K` hours, as test262's `intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js` asks and CLDR's own `ja`
+  patterns write; the library read the preferred format alone, as Broiler.VM does, and answered `h12`. Every other region of
+  CLDR 48.2.0's time data allows `h` before any `K` and no `k`, so no other answer moves, Broiler.VM's `de` and `en` none.
+
+  The library-level runner answers every Intl vector, the routes of stages SJL-9.3a to SJL-9.3e combined, and two more of
+  sub-area (a), read whole: `(1234.5).toLocaleString()` with the default locale and `supportedLocalesOf` of the default
+  locale a NumberFormat resolves and `en` (rows L33 and L44); thirty vectors, listed by identifier in the Conformance tests,
+  need an engine. The Native AOT probe runs them over Broiler.JS's generated tables compiled into its image, which its build
+  writes from `data/intl/generated/` into a C# source it does not commit, under invariant globalization as before.
 - `Broiler.ECMAScript.Conformance` (test-only, not packed): `IVectorRecordLibrary`, a library the library-level runner
   hands each vector whole, script included, which `LibraryRun.Run` calls in place of the operation and the decoded
   inputs (stage SJL-9.3b): the Intl area's sub-area (b) vectors give their options and arguments in the script alone.

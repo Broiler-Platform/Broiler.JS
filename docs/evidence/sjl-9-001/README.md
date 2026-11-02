@@ -363,6 +363,21 @@ which has no budget rule." No other record states them.
   on decision D5's list, so the shared tables carry no default for the other 51 (`bn`, `mr`, `ne`, `my` and the
   regional `ar-*` among them): a reading SJL-9.3 and SJL-9.5 take up, which the plan's dated note names.
 
+## The library's differential check (SJL-9.3)
+
+Decision D22's differential check is the library's gate at every stage of SJL-9.3: Broiler.VM's code at its rule commit
+`4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f`, as pinned copies in
+[`Broiler.ECMAScript.Intl.Tests/Differential/Vm/`](../../../Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/),
+against `Broiler.ECMAScript.Intl`, test-only and under the JIT, over every Intl vector, every dataset input as a library
+call, and seeded random tags, numbers, dates and durations, with both embeddings' tables. Its harness is that project's
+own code, committed with the library, so this bundle keeps no copy of it. SJL-9.3f, the integration, retains its summary
+here, as the plan's task 5.f asks: [`algorithms/differential-summary.txt`](algorithms/differential-summary.txt), the
+report at scales 1 and 5 of the stage's head, with the command, the seed and the machine. **No difference is
+unclassified at either scale.** Each classified difference is listed by row in the report, with its first examples;
+against SJL-9.3e's reports, only the two date-time sections of Broiler.JS's embedding move, by the `ja` and `ja-JP`
+formats with `hour12: true` that row T10's settlement at this stage answers `h11`, classified under that row's data
+policy. *(Added 2026-11-02, at SJL-9.3f.)*
+
 ## State
 
 **2026-10-26, at SJL-9.1: the rule and its data only. Nothing here is a verdict, and nothing has been taken.**

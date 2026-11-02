@@ -78,7 +78,7 @@ contain three pieces of third-party code and one set of public-domain formulas, 
   contributors: from `JsTemporal.Durations`, the duration members of `JsTemporalCore`, the rule half of
   `JsTemporal.Options`, and the arithmetic of its realm files' duration and difference methods. Each unit records its
   origin in its assurance annotation.
-- `Broiler.ECMAScript.Intl` (not packed until stage SJL-9.3f), at stage SJL-9.3a, is ported from Broiler.VM under the
+- `Broiler.ECMAScript.Intl` (packed from stage SJL-9.3f), at stage SJL-9.3a, is ported from Broiler.VM under the
   same licence and by the same contributors: its table decoders from `JsIntlTables`, and its locale identifiers,
   negotiation, `Intl.Locale` steps, Locale info and `supportedValuesOf` from `JsLocaleTag` and the engine-free steps of
   `JsRealm.Intl`, `JsRealm.Locale`, `JsRealm.DateTimeFormat` and `JsRealm.NumberFormat`. Each unit records its origin in
@@ -183,7 +183,9 @@ differences: the bullet on them was added after the bullet on the calendars, and
 `Broiler.ECMAScript.Algorithms.Tests` ended "Its Temporal calendar tests (milestone SJL-10.3) hold, under
 `Temporal/Correspondence/`, byte-for-byte copies of ten of Broiler.VM's answer files of correspondence `sjl-10-001`,
 under the same licence and by the same contributors, and read the retained dataset
-`conformance/datasets/time/temporal-calendars.js` and its answers in place.".
+`conformance/datasets/time/temporal-calendars.js` and its answers in place.". Revised 2026-11-02, at stage SJL-9.3f,
+when `Broiler.ECMAScript.Intl` was made packable: its bullet began "`Broiler.ECMAScript.Intl` (not packed until stage
+SJL-9.3f), at stage SJL-9.3a, is ported". The package carries no table and no CLDR data.
 
 ## The time data home (`Broiler.ECMAScript/data/time/`)
 
@@ -228,7 +230,8 @@ This repository is also the home of both engines' locale data (decision SJL-D-22
 lists of the two embeddings, and the tables `Broiler.ECMAScript.Generation` writes from them for this engine into
 `data/intl/generated/`. **No package carries the inputs or the tables** (decision SJL-D-6 (c)): each engine embeds
 its tables itself, Broiler.VM as its `JsCldrTables.g.cs` and Broiler.JS from milestone SJL-9.5. Until then nothing
-in this engine reads them.
+in this engine reads them, but the shared folder's tests and its Native AOT probe, which from stage SJL-9.3f compiles
+them into its own image; the probe is test code, never packed or shipped.
 
 - **The Unicode Common Locale Data Repository (CLDR)**, release 48.2.0, archived unmodified in
   [`data/intl/cldr/`](Broiler.ECMAScript/data/intl/cldr/README.md), each file held by its length and SHA-256 in
@@ -250,7 +253,9 @@ in this engine reads them.
   `CollationBuilder::setCaseBits` as Broiler.VM's generator described them; it reproduces no ICU code.
 
 *Added 2026-10-26, at milestone SJL-9.2b, when the data home's inputs and generator were added. Broiler.VM's
-`THIRD_PARTY_NOTICES.md` carries the CLDR and UCD entries for its own copies.*
+`THIRD_PARTY_NOTICES.md` carries the CLDR and UCD entries for its own copies. Revised 2026-11-02, at stage SJL-9.3f,
+when the probe began to compile the tables into its image: the first paragraph's last sentence read "Until then nothing
+in this engine reads them."*
 
 ## The reference datasets (`conformance/datasets/time/`)
 

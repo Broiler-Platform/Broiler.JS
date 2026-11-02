@@ -9,7 +9,7 @@ home, `Broiler.ECMAScript/data/intl/`, and generator, in `Broiler.ECMAScript.Gen
 or the home's data exists. **Revised:** 2026-10-27, at stage SJL-9.3a, by dated notes on "Why there is no project yet",
 the library's project now existing, and on sections 1 and 5, the composite's parent walk and its secondary provider, and
 week data keyed by region; and on 2026-11-01, at stage SJL-9.3b, by a dated note on section 1's sub-area (b), and the same
-day, at stage SJL-9.3c, by a dated note on its sub-area (c), and on 2026-11-02, at stage SJL-9.3d, by a dated note on its sub-area (d), and the same day, at stage SJL-9.3e, by a dated note on its sub-area (e) ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
+day, at stage SJL-9.3c, by a dated note on its sub-area (c), and on 2026-11-02, at stage SJL-9.3d, by a dated note on its sub-area (d), and the same day, at stage SJL-9.3e, by a dated note on its sub-area (e), and the same day, at stage SJL-9.3f, by a dated note on the integration and on section 5's first item ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
 both roles (Broiler.VM's exception EX-30), and nothing here has been read by anyone but its author.
 
 **What this document is.** The Intl library's design document in its home, one of the three places SJL-9.1 files the
@@ -258,6 +258,34 @@ the record SJL-10's library already holds, and ValidateDurationUnitStyle's three
   `Temporal.Duration.prototype.toLocaleString`'s construction; the parts arrays and `resolvedOptions`' object. A record that
   is not a valid duration of integral fields is a precondition broken (`ArgumentException`).
 
+*(Noted 2026-11-02, at SJL-9.3f: the integration, the plan's task 5.f, and two readings settled there, so that the
+publication and the cut-overs inherit them knowingly.)*
+- **The library is packed** on the shared stream, on its `0.1.0-preview.N` scheme, with package validation as the other
+  shared libraries have it, from this stage (decision D29); its publication is the owner's (the plan's WP6). Its public
+  API is unchanged by the stage.
+- **Every Intl vector is answered at library level** by the runner, but thirty whose outcome needs an engine, which the
+  Conformance tests list by identifier (an object's reads and coercions observed by a Proxy, a getter or `valueOf`, the
+  bound `format`, the legacy constructor, the host's zone, a constructor called without `new`, StringListFromIterable's
+  iteration, whether a built-in exists, and casing with the default locale). The Native AOT probe runs them over
+  Broiler.JS's tables compiled into its image, which its build writes from `data/intl/generated/` into a source it does not
+  commit, under invariant globalization: no answer reads the host's culture data.
+- **Row T10, the 12- and 24-hour cycles.** Where the data locale's region prefers a cycle of the other kind,
+  [[hourCycle12]] and [[hourCycle24]] are the first cycle of that kind among CLDR's allowed formats for the region (UTS #35's
+  time data), `h12` and `h23` where none is. Japan allows `H K h`, so `ja` with `hour12: true` resolves `h11`, as test262's
+  `resolvedOptions/hourCycle-default.js` asks and CLDR's own `ja` patterns write (`aK:mm`); sub-area (d)'s port read the
+  preferred format alone, as Broiler.VM does, and answered `h12`, which would have failed that file at SJL-9.5, where
+  Broiler.JS passes it with a hand table. No other region of CLDR 48.2.0's time data allows `K` before `h`, or any `k`, so
+  no other answer moves; Broiler.VM's tables' `de` and `en` answer as before. The ECMA-402 text leaves both slots to the
+  implementation (`h11` or `h12`, `h23` or `h24`), so this is data policy (C5) on row T10, not a correction.
+- **Two-digit hours, settled** (sub-area (e)'s note above). The owner's decision of 2026-11-02, taken under the owner's
+  direction of 2026-10-18 ("Please do all recommended decisions and skip waiting for review."): the library follows the
+  pinned text as written. GetDurationUnitOptions' step "If _unit_ is "hours" and _twoDigitHours_ is true, set _style_ to
+  "2-digit"" is unconditional at `3d4c558`'s `spec/durationformat.html:615`, and still is at `tc39/ecma402` `main`'s
+  `3691634` (2026-10-23, the same line); the slot's definition at `:170` ("... whether hours are always displayed using two
+  digits when using style "numeric"") describes the data and restricts no step. So `af` and `lt` keep their clock in
+  every style, no code changes, and SJL-9.5 lists the move under decision D34; Broiler.VM's tables carry no locale whose
+  `duration.hms` begins `hh`, so its code is not touched by it.
+
 Each takes **resolved options as records**, never an options object, and answers strings, parts records or a status
 (conventions 2 and 3). Its code takes no culture call: what Broiler.VM's code does today through `ToUpperInvariant`,
 `ToLowerInvariant`, `CultureInfo` or a culture-sensitive overload, the library does by ASCII casing or with
@@ -436,7 +464,10 @@ the composite's secondary provider. **It is never a second implementation of the
   answers for every region it lists, and CLDR gives a region it does not list the world's week, `001`, so a culture's
   first day, which .NET gives by culture, has no region-keyed question that could carry it, and the host answers
   `Week` with no data. Decision D6 names it; this reading, that it is not part of the contract, is the code's, and the
-  owner confirms it or asks for a locale-keyed question before SJL-9.3f packs the interface.)*
+  owner confirms it or asks for a locale-keyed question before SJL-9.3f packs the interface.)* *(Noted 2026-11-02, at
+  SJL-9.3f: the interface is packed with that reading; no confirmation of it by the owner is recorded, and none was
+  asked for at this stage. A locale-keyed first-day question added later would be a new member of `ILocaleData`, which
+  needs a default implementation to keep an implementer such as Broiler.JS's host provider compiling.)*
 - **Every other question answers "no data"**, so the algorithm uses the parent or root: .NET has no plural, compact,
   unit, list, relative-time, display-name, interval or day-period data.
 - **It never throws for want of host data.** Under `InvariantGlobalization`, which Native AOT applications commonly set,
@@ -515,4 +546,8 @@ engine's, and the one ordinal comparison kept. *(Extended 2026-11-02, at SJL-9.3
 else here is changed.")* The header's "Revised" line gains that stage's note, ending where it read "a dated note on its
 sub-area (d) ("Corrections" lists them)."; and section 1 gains a dated note on sub-area (e): its names, and seven readings - the
 constructor split at its reads, the data locale, two-digit hours in every style, the `nu` values' default, the charges, the
-fraction's ASCII digits, and what stays the engine's. Nothing else here is changed.
+fraction's ASCII digits, and what stays the engine's. *(Extended 2026-11-02, at SJL-9.3f; the sentence after the list read
+"Nothing else here is changed.")* The header's "Revised" line gains that stage's note, ending where it read "a dated note on
+its sub-area (e) ("Corrections" lists them)."; section 1 gains a dated note on the integration - the package, every vector
+at library level with the probe's embedded tables, row T10's hour cycles, and two-digit hours settled; and section 5's
+first item a dated note that the interface is packed with its reading of the week. Nothing else here is changed.
