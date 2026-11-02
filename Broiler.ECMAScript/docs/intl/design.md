@@ -197,7 +197,9 @@ the library's internal types behind `DateTimeFormatter`, and its day periods and
   specific, generic, partial-location and location names, and the identifier a `VV` field would write - is the primary's.
   `ResolvedTimeZone.Resolve` charges one unit per code unit of the option, where Broiler.VM charges nothing, so Broiler.VM's
   adapter passes a meter that charges nothing there (row L43's reading); the formatter charges Broiler.VM's unit, the output's
-  length, once per String or range, `FormatToParts` and `Format` alike. The pattern search charges nothing, as in Broiler.VM:
+  length, once per String, `FormatToParts` and `Format` alike, and for a range whose two dates collapse to one date, once for
+  the range's text and again for the one date's, as Broiler.VM's `RangeParts` charges its meter (decision D18, row T40). The pattern
+  search charges nothing, as in Broiler.VM:
   its work is bounded by the skeleton, whose fields Table 16 bounds, and by the data, not by the caller's input.
 - **What stays the engine's**: the option reads in CreateDateTimeFormat's order, the `calendar` and `numberingSystem` options'
   type checks (`LocaleId.IsUnicodeType`) and GetNumberOption's range; ResolveLocale's matching; the default zone, UTC in
