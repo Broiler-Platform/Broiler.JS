@@ -234,9 +234,9 @@ class CommittedFileTests(unittest.TestCase):
         self.assertEqual(generator.CORPUS_REVISION, rows[-1])
         # Revision 29 added the area; revision 30 added the regular-expression delimiting vectors review asked for.
         since = Counter(v["since"] for v in self.vectors.values())
-        self.assertEqual({str(generator.SINCE), str(generator.CORPUS_REVISION)}, set(since))
+        self.assertEqual({str(generator.SINCE), str(generator.REVIEWED)}, set(since))
         self.assertTrue(all(vector_id.startswith("syntax/lexical/regexp-delimiting/")
-                            for vector_id, v in self.vectors.items() if v["since"] == str(generator.CORPUS_REVISION)))
+                            for vector_id, v in self.vectors.items() if v["since"] == str(generator.REVIEWED)))
 
     def test_a_vector_is_added_at_revision_29_or_30(self) -> None:
         saved = list(generator.CASES)

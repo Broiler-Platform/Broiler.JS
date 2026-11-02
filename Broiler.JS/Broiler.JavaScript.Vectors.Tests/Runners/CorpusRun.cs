@@ -35,15 +35,25 @@ namespace Broiler.JavaScript.Vectors.Tests.Runners;
 /// which also lets a vector that hangs only sometimes pass. <see cref="Rechecked"/> names every vector
 /// run again, <see cref="Summary"/> prints them, and CI's engine vectors job raises a warning for them.
 /// </para>
+/// <para>
+/// <b>A status vector is skipped</b>, as the corpus's SCHEMA.md section 4 has an engine-level runner do: a
+/// vector whose <c>out</c> is a library-level status (<c>status: exhausted</c>, which the regular-expression
+/// area's budget vectors expect of Broiler.Regex at a step budget) is never evaluated and has no result, so the
+/// report gives it no line. It is not dropped silently: <see cref="Skipped"/> names every one, in the list's
+/// order, and <see cref="Summary"/> counts and names them. <i>(Added 2026-11-01, at <c>d8cb8406</c>, whose corpus is
+/// revision 31, the revision that added the first such vectors, and which revision 32 then classifies; until then
+/// every vector of the list was evaluated, and a status vector was a difference nothing classifies.)</i>
+/// </para>
 /// </remarks>
 public sealed class CorpusRun
 {
     /// <summary>How many vectors a worker takes at a time.</summary>
     public const int DefaultBlockSize = 512;
 
-    private CorpusRun(IReadOnlyList<VectorResult> results, int workers, TimeSpan elapsed, TimeSpan slowest, string slowestId, IReadOnlyList<string> rechecked)
+    private CorpusRun(IReadOnlyList<VectorResult> results, IReadOnlyList<string> skipped, int workers, TimeSpan elapsed, TimeSpan slowest, string slowestId, IReadOnlyList<string> rechecked)
     {
         Results = results;
+        Skipped = skipped;
         Workers = workers;
         Elapsed = elapsed;
         Slowest = slowest;
@@ -51,8 +61,11 @@ public sealed class CorpusRun
         Rechecked = rechecked;
     }
 
-    /// <summary>One result per vector, in the list's order.</summary>
+    /// <summary>One result per vector evaluated, in the list's order: every vector but those <see cref="Skipped"/>.</summary>
     public IReadOnlyList<VectorResult> Results { get; }
+
+    /// <summary>The vectors whose <c>out</c> is a status, skipped and given no result (SCHEMA.md section 4), in the list's order.</summary>
+    public IReadOnlyList<string> Skipped { get; }
 
     /// <summary>How many evaluating processes the parallel pass used.</summary>
     public int Workers { get; }
@@ -74,6 +87,19 @@ public sealed class CorpusRun
     /// <returns>The number of processes.</returns>
     public static int WorkersFrom(string? value)
         => int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var workers) && workers > 1 ? workers : 1;
+
+    /// <summary>
+    /// Whether an engine-level runner skips <paramref name="vector"/>: its <c>out</c> is a library-level
+    /// status (SCHEMA.md section 4), which no engine's evaluation can render.
+    /// </summary>
+    /// <param name="vector">A vector, already validated.</param>
+    /// <returns>Whether the vector's <c>out</c> is a status.</returns>
+    public static bool IsStatusVector(VectorRecord vector)
+    {
+        ArgumentNullException.ThrowIfNull(vector);
+        return Outcome.TryParseAlternatives(vector.Out, out var alternatives, out _, out _)
+            && alternatives.Any(static alternative => alternative.Kind == OutcomeKind.Status);
+    }
 
     /// <summary>Runs <paramref name="vectors"/> in <paramref name="workers"/> processes.</summary>
     /// <param name="vectors">The vectors, already validated.</param>
@@ -105,6 +131,9 @@ public sealed class CorpusRun
         ArgumentOutOfRangeException.ThrowIfLessThan(blockSize, 1);
 
         var clock = Stopwatch.StartNew();
+        var skipped = vectors.Where(IsStatusVector).Select(static vector => vector.Id).ToArray();
+        if (skipped.Length > 0)
+            vectors = vectors.Where(static vector => !IsStatusVector(vector)).ToArray();
         var blocks = vectors.Chunk(blockSize).ToArray();
         var parts = new VectorResult[blocks.Length][];
         var times = new TimeSpan[vectors.Count];
@@ -187,6 +216,7 @@ public sealed class CorpusRun
 
         return new CorpusRun(
             results,
+            skipped,
             workers,
             clock.Elapsed,
             times.Length == 0 ? TimeSpan.Zero : times[slowest],
@@ -194,13 +224,20 @@ public sealed class CorpusRun
             rechecked);
     }
 
-    /// <summary>One line for the test's output: N, the elapsed time, the slowest vector and the re-check.</summary>
+    /// <summary>One line for the test's output: N, the elapsed time, the slowest vector, the status vectors skipped and the re-check.</summary>
     /// <returns>The line.</returns>
     public string Summary()
     {
         var limit = BroilerJsEngine.Limit.TotalSeconds;
         var line = FormattableString.Invariant(
             $"{Results.Count} vectors in {Workers} evaluating process(es) (BROILER_VECTORS_WORKERS) in {(int)Elapsed.TotalMinutes} min {Elapsed.TotalSeconds % 60:0.0} s; the slowest, {SlowestId}, took {Slowest.TotalSeconds:0.000} s of the {limit:0} s limit");
+        if (Skipped.Count > 0)
+        {
+            line += FormattableString.Invariant(
+                $"; {Skipped.Count} vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): ")
+                + string.Join(", ", Skipped);
+        }
+
         if (Workers == 1)
             return line + ".";
         return line + FormattableString.Invariant($"; {Rechecked.Count} found no completion in the parallel pass and were run again alone")

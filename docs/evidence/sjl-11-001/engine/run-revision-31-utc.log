@@ -1,0 +1,101 @@
+# Broiler.JS engine-level run: run-revision-31-utc
+# tree: a scratch tree written by git archive d8cb840637e5ba698e600747d9a0dfa0ece701ea (Broiler.JS), built once beforehand:
+#   dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers
+# corpus: conformance/vectors/ of that tree, revision 31
+# host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v185 x86_64; 4 logical CPUs; dotnet SDK 10.0.401
+# zone: TZ=UTC; culture: invariant (no LANG, LC_ALL or LANGUAGE)
+# command: env -u LANG -u LANGUAGE -u LC_ALL -u BROILER_VECTORS_WORKERS  TZ=UTC BROILER_VECTORS_REPORT=<report> dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --logger "console;verbosity=normal"
+# started: 2026-11-01T21:59:43Z
+Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl11-w33/js-tree-r31/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.29]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.73]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:01.04]   Starting:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [50 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [6 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [131 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [29 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 3) [106 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 1) [1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [1 s]
+108759 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 57 min 14.8 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 5.001 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+[xUnit.net 00:58:44.37]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+[xUnit.net 00:58:44.37]       170 of 108759 vectors differ and nothing classifies them:
+[xUnit.net 00:58:44.37]       regexp/case-insensitive/m2-kelvin-and-long-s/0001: expected value: bool:false, rendered value: bool:true
+[xUnit.net 00:58:44.37]       regexp/case-insensitive/m2b-multi-code-point-uppercase/0001: expected value: bool:false, rendered value: bool:true
+[xUnit.net 00:58:44.37]       regexp/case-insensitive/m2b-multi-code-point-uppercase/0002: expected value: bool:false, rendered value: bool:true
+[xUnit.net 00:58:44.37]       regexp/case-insensitive/m2b-multi-code-point-uppercase/0004: expected value: bool:false, rendered value: bool:true
+[xUnit.net 00:58:44.37]       regexp/case-insensitive/m2c-other-folding/0021: expected value: bool:false, rendered value: bool:true
+[xUnit.net 00:58:44.37]       regexp/case-insensitive/m2c-other-folding/0022: expected value: bool:false, rendered value: bool:true
+[xUnit.net 00:58:44.37]       regexp/case-insensitive/u3-unicode-17-casing/0001: expected value: bool:true, rendered value: bool:false
+[xUnit.net 00:58:44.37]       regexp/case-insensitive/u3-unicode-17-casing/0003: expected value: bool:true, rendered value: bool:false
+[xUnit.net 00:58:44.37]       regexp/case-insensitive/u3-unicode-17-casing/0005: expected value: bool:true, rendered value: bool:false
+[xUnit.net 00:58:44.37]       regexp/last-index/m4-empty-match-d41/0001: expected value: str:"lastIndex=1;index=1;length=1;0=0:;groups=u;indices=u", rendered value: str:"lastIndex=0;index=0;length=1;0=0:;groups=u;indices=u"
+[xUnit.net 00:58:44.38]       regexp/last-index/match-global/0007: expected value: str:"3;0:;0:;0:", rendered value: str:"2;0:;0:"
+[xUnit.net 00:58:44.38]       regexp/last-index/match-global/0008: expected value: str:"3;0:;0:;0:", rendered value: str:"2;0:;0:"
+[xUnit.net 00:58:44.38]       regexp/last-index/split/0006: expected value: str:"3;1:a;2:\u000Ab;2:\u2028c", rendered value: str:"2;1:a;4:\u000Ab\u2028c"
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0001: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0002: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0003: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0004: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0005: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0006: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0007: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0008: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0009: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0010: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0011: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       regexp/literals/s11-modifiers/0012: expected error: SyntaxError, rendered value: bool:true
+[xUnit.net 00:58:44.38]       Stack Trace:
+[xUnit.net 00:58:44.38]         /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl11-w33/js-tree-r31/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(58,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
+[xUnit.net 00:58:44.38]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:58:44.38]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:58:44.38]       Output:
+[xUnit.net 00:58:44.38]         108759 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 57 min 14.8 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 5.001 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+[xUnit.net 00:58:44.42]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = '003dc09f26fda88a38ab4f7d5bd8e9fa6b6b673b0a9c0fc64ffe41f321bf82bf')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [57 m 15 s]
+  Error Message:
+   170 of 108759 vectors differ and nothing classifies them:
+regexp/case-insensitive/m2-kelvin-and-long-s/0001: expected value: bool:false, rendered value: bool:true
+regexp/case-insensitive/m2b-multi-code-point-uppercase/0001: expected value: bool:false, rendered value: bool:true
+regexp/case-insensitive/m2b-multi-code-point-uppercase/0002: expected value: bool:false, rendered value: bool:true
+regexp/case-insensitive/m2b-multi-code-point-uppercase/0004: expected value: bool:false, rendered value: bool:true
+regexp/case-insensitive/m2c-other-folding/0021: expected value: bool:false, rendered value: bool:true
+regexp/case-insensitive/m2c-other-folding/0022: expected value: bool:false, rendered value: bool:true
+regexp/case-insensitive/u3-unicode-17-casing/0001: expected value: bool:true, rendered value: bool:false
+regexp/case-insensitive/u3-unicode-17-casing/0003: expected value: bool:true, rendered value: bool:false
+regexp/case-insensitive/u3-unicode-17-casing/0005: expected value: bool:true, rendered value: bool:false
+regexp/last-index/m4-empty-match-d41/0001: expected value: str:"lastIndex=1;index=1;length=1;0=0:;groups=u;indices=u", rendered value: str:"lastIndex=0;index=0;length=1;0=0:;groups=u;indices=u"
+regexp/last-index/match-global/0007: expected value: str:"3;0:;0:;0:", rendered value: str:"2;0:;0:"
+regexp/last-index/match-global/0008: expected value: str:"3;0:;0:;0:", rendered value: str:"2;0:;0:"
+regexp/last-index/split/0006: expected value: str:"3;1:a;2:\u000Ab;2:\u2028c", rendered value: str:"2;1:a;4:\u000Ab\u2028c"
+regexp/literals/s11-modifiers/0001: expected error: SyntaxError, rendered value: bool:true
+regexp/literals/s11-modifiers/0002: expected error: SyntaxError, rendered value: bool:true
+regexp/literals/s11-modifiers/0003: expected error: SyntaxError, rendered value: bool:true
+regexp/literals/s11-modifiers/0004: expected error: SyntaxError, rendered value: bool:true
+regexp/literals/s11-modifiers/0005: expected error: SyntaxError, rendered value: bool:true
+regexp/literals/s11-modifiers/0006: expected error: SyntaxError, rendered value: bool:true
+regexp/literals/s11-modifiers/0007: expected error: SyntaxError, rendered value: bool:true
+regexp/literals/s11-modifiers/0008: expected error: SyntaxError, rendered value: bool:true
+regexp/literals/s11-modifiers/0009: expected error: SyntaxError, rendered value: bool:true
+regexp/literals/s11-modifiers/0010: expected error: SyntaxError, rendered value: bool:true
+regexp/literals/s11-modifiers/0011: expected error: SyntaxError, rendered value: bool:true
+regexp/literals/s11-modifiers/0012: expected error: SyntaxError, rendered value: bool:true
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl11-w33/js-tree-r31/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 58
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 108759 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 57 min 14.8 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 5.001 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+
+
+
+Test Run Failed.
+Total tests: 8
+     Passed: 7
+     Failed: 1
+ Total time: 58.7571 Minutes
+# exit: 1
+# ended: 2026-11-01T22:58:30Z
