@@ -421,7 +421,7 @@ observes.")*
   Broiler.Unicode's pin entry for the same file; each embedding's locale list, `broiler-vm.txt` and
   `broiler-js.txt`, per decision D5; and Broiler.JS's tables generated from them with their manifest. Rule SL7
   regenerates the tables. The `timezone.json` the time home pins is the same file, byte for byte.
-- Broiler.JS's collation tables (milestone SJL-17.3; JSD-0084, decisions E3 and E13): `collation-tailorings.bin` carries the
+- Broiler.JS's collation tables (milestone SJL-17.3; JSD-0084, decision E3): `collation-tailorings.bin` carries the
   tailorings of decision E3's list, Broiler.VM's three, unchanged, first, and `collation-settings.txt`, a new table, Thai's
   shifted alternate and reordering; `collation-root.bin` is unchanged, Broiler.VM's byte for byte. Their rules are CLDR
   **48.2.0**'s `common/collation/es.xml`, `sv.xml` and `th.xml`, which the Intl home's pin gains, retrieved twice from the

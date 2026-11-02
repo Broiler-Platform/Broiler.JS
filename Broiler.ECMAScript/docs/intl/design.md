@@ -300,7 +300,7 @@ alternate, numeric collation and the tailoring by name, which `FromResolved` map
 the tailoring a language, usage and collation select (`TailoringFor`), the relevant keys' values (`KeyValues`) and a
 tailoring's default alternate (`ShiftedByDefault`). They live in `Broiler.ECMAScript.Intl/Collation/`, namespace
 `Broiler.ECMAScript.Intl`. Eight readings:
-- **The engine reads the options and resolves the locale**; the library takes the record (decision E2's X3). The Collator's
+- **The engine reads the options and resolves the locale**; the library takes the record (JSD-0084's X3). The Collator's
   available locales stay each engine's (decision D7): Broiler.VM's are its data's, and Broiler.JS's cut-over hands in the
   locales its covered list and its host provider give.
 - **The tailoring is chosen from the data**, by name `language-type` with the BCP 47 type: search usage takes the language's
@@ -320,7 +320,8 @@ tailoring's default alternate (`ShiftedByDefault`). They live in `Broiler.ECMASc
   2026-11-02 under the owner's direction of 2026-10-18 ("Please do all recommended decisions and skip waiting for review"),
   taken as recommended at SJL-17.3, which JSD-0084's decision E-han left the reading to: the radical-stroke order CLDR's
   root and ICU take would need Unihan's `kRSUnicode` for every unified ideograph as a new pinned input, and its table, sized
-  at SJL-17.3, is many times Broiler.VM's N28 headroom; Broiler.VM's tables cannot carry it, and a shared collator with two
+  at SJL-17.3, is several times Broiler.VM's N28 headroom in every form SJL-17.3 measured, a delta-coded run list and a
+  compressed one among them; Broiler.VM's tables cannot carry it, and a shared collator with two
   Han orders would answer by embedding; ECMA-402 leaves the order to the implementation and UTS #35 Part 5 allows either; and
   no test262 file or `orderings` line orders Han across blocks (finding F1). Row O3 stays data policy (C5): Broiler.JS's Han
   order moves from its host's radical-stroke order to the implicit weights at its cut-over, SJL-17.5, which records it.

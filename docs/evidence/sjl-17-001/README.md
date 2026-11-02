@@ -177,7 +177,8 @@ was written require:
   `out` or, for the Han vectors whose answer moves with the order across blocks, Broiler.VM's expectation, the implicit
   weights the owner's decision of 2026-11-02 on row O3 keeps (the Intl design's dated note); the archived CollationTest
   files order at library level; the differential check's sections C1 and C2 find no unclassified difference. The sizes of
-  the tables are stated with the stage's report, not here. No engine reads the collator before its cut-over, SJL-17.4 or
+  the tables are stated with the stage's report, not here: JSD-0084's decision E13 reads "Broiler.JS: the collation size
+  stated in its bundle", and that statement stays open in this bundle until a later dated line makes it. No engine reads the collator before its cut-over, SJL-17.4 or
   SJL-17.5, so no run of this rule moves.
 
 ## State
