@@ -3,7 +3,9 @@
     The tests of the shared syntax library (milestone SJL-13.2; Broiler.VM's JSD-0083). At stage SJL-13.2a: the request's
     defaults for each goal and the preconditions it refuses, the limits and their constants, the providers' shapes, the
     diagnostics' forms, and the parse entry's answer for every goal. At stage SJL-13.2b: the tokenizer, production by
-    production, and the parse entry's lexical answer. Each later stage adds its own. JIT only: the Native
+    production, and the parse entry's lexical answer. At stage SJL-13.2c: the parser, production by production, the
+    correspondence's rows P, cover grammars, automatic semicolon insertion, the limits and the tree's spans. Each later
+    stage adds its own. JIT only: the Native
     AOT probe runs the vectors, not these.
   -->
   <PropertyGroup>

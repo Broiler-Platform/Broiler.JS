@@ -13,15 +13,15 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 143 |
+| Files scanned | 153 |
 | Files not covered | 0 |
-| Files carrying an annotation | 143 |
-| Code units | 2874 |
-| Relevant | 1894 |
-| Exempt by predicate | 980 |
-| Annotated | 1894 of 1894 (100%) |
-| Human reviewed | 0 of 1894 (0%) |
-| Unverified | 1894 |
+| Files carrying an annotation | 153 |
+| Code units | 3692 |
+| Relevant | 2324 |
+| Exempt by predicate | 1368 |
+| Annotated | 2324 of 2324 (100%) |
+| Human reviewed | 0 of 2324 (0%) |
+| Unverified | 2324 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1894 |
+| HUMAN_PENDING | 2324 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 980 |
+| EXEMPT | 1368 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 1892 |
+| Low | 2321 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,9 +51,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 1134 |
-| Medium | 542 |
-| High | 198 |
+| Low | 1411 |
+| Medium | 683 |
+| High | 209 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.1 / 10 |
-| Units scored | 1894 |
+| Units scored | 2324 |
 
 ## High-security review areas
 
@@ -170,12 +170,23 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Time.ZonedTime.GetStartOfDay(ITimeZoneRules, IsoDate, out BigInteger)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Time.ZonedTime.Possible(ITimeZoneRules, IsoDateTime, Span<BigInteger>, out int)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Time.ZonedTime.Disambiguate(ITimeZoneRules, ReadOnlySpan<BigInteger>, IsoDateTime, Disambiguation, out BigInteger)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Syntax.LexicalScan.Run(ParseRequest)` in `Broiler.ECMAScript.Frontend/LexicalScan.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Syntax.LexicalScan.OnlyAnExpressionFollows(TokenKind)` in `Broiler.ECMAScript.Frontend/LexicalScan.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Syntax.LexicalScan.OnlyAnOperatorFollows(TokenKind, ParseGoal, bool)` in `Broiler.ECMAScript.Frontend/LexicalScan.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.ParseLimits.MaximumTreeDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.ParseLimits.MaximumSupportedNestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.ParseLimits.NestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseAssignment(bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.CheckCoverInitialized(int)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseBinaryRest(Expression, int, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseChainLinks(Expression, bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseParenthesized()` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ToBindingTarget(SyntaxNode)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ToAssignmentPattern(Expression)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseClassTail(SourceSpan, IReadOnlyList<Decorator>, BindingIdentifier?)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseFor()` in `Broiler.ECMAScript.Frontend/Parser.Statements.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.Run(ParseRequest)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.Peek(LexicalGoal)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ConsumeSemicolon()` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.EnterNesting(Token)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.Deepen(SourceSpan)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.SyntaxParser.Parse(ParseRequest)` in `Broiler.ECMAScript.Frontend/SyntaxParser.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Tokenizer.NewLinePending` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Tokenizer.Next(LexicalGoal)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
@@ -270,8 +281,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 198 |
-| Units required to carry one | 198 |
+| Units carrying a criterion | 209 |
+| Units required to carry one | 209 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -292,14 +303,14 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 228 |
-| ParameterAssigningConstructor | 22 |
+| TrivialPropertyOrAccessor | 427 |
+| ParameterAssigningConstructor | 23 |
 | TrivialExpressionBodiedMember | 33 |
 | CompilerSuppliedRecordOrEnumMember | 78 |
 | DelegatingOverrideOrOperator | 4 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 118 |
-| EnumMemberOfADeclaredVocabulary | 497 |
+| FieldDeclaringStorage | 148 |
+| EnumMemberOfADeclaredVocabulary | 655 |
 | DeclaredInSource | 0 |
 
 ## Per-unit exemptions
@@ -323,14 +334,14 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 5 covered assemblies -
-2874 of them, exempt and relevant alike - with the fingerprint of its declaration.
+3692 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
 trivial is no longer invisible: a semantic change to one moves a value in a generated file
 the check compares byte for byte. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` holds the manifest to the tree.
 
-Beside the units it lists **every covered file** - 143 of them - with a
+Beside the units it lists **every covered file** - 153 of them - with a
 fingerprint over the complete token stream of its compilation unit. A unit entry exists only
 for a declaration kind the scanner enumerates, and an enumeration is a whitelist: an
 `[assembly: ...]` attribute is a member of nothing and can be in no unit at all.
