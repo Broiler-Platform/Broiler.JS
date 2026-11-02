@@ -204,9 +204,14 @@ the library's internal types behind `DateTimeFormatter`, and its day periods and
   Broiler.VM and the host's in Broiler.JS (row T11); `Temporal.ZonedDateTime.prototype.toLocaleString`'s refusal of a
   `timeZone` option; ToDateTimeFormattable's ToNumber and the reading of a Temporal object's slots into a `DateTimeValue`;
   `formatRange`'s refusal of an `undefined` end; `Date.prototype.toLocale*String`'s "Invalid Date"; the bound `format`, the
-  legacy constructor (row T5) and the parts arrays with their per-part charge. A time value the formatter is handed is one
-  TimeClip keeps; any other is a precondition broken (`ArgumentOutOfRangeException`), the engine's `RangeError` having come
-  first through `HandleDateTimeValue`.
+  legacy constructor (row T5) and the parts arrays with their per-part charge. A Number's time value the formatter is handed
+  is one TimeClip keeps, the engine's `RangeError` having come first through `HandleDateTimeValue`; a Temporal value's is not
+  clipped (the proposal's HandleDateTimeValue, test262's `temporal-objects-no-time-clip` tests, row T38), so the noon of
+  `PlainDate(-271821, 4, 19)`, the limits' `PlainDateTime` and `PlainYearMonth(-271821, 4)` lie outside TimeClip's range and are
+  written as Broiler.VM writes them. The formatter takes any integral time within the ISO dates of Temporal's values,
+  `DateTimeFormatter.MinTime` (-271821-04-01, a PlainYearMonth's earliest reference day) to `MaxTime` (the end of
+  +275760-09-30); any other is a precondition broken (`ArgumentOutOfRangeException`), which no value `HandleDateTimeValue`
+  completes for reaches.
 - **One comparison keeps .NET's ordinal casing**: `ZoneNamer` compares a zone's standard name with its generic name ignoring
   case by `StringComparison.OrdinalIgnoreCase`, as Broiler.VM does, which no culture reaches (decision D19 names the
   culture-sensitive calls; this is not one), so that no answer moves.

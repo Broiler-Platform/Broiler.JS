@@ -253,6 +253,41 @@ public sealed class DateTimeTests
     }
 
     [Fact]
+    public void T38_a_Temporal_value_beyond_TimeClip_is_written_unclipped()
+    {
+        // TEST262'S temporal-objects-no-time-clip: HandleDateTimeValue does not clip a Temporal value, so the limits' noons and
+        // date-times lie beyond TimeClip's 8.64e15 and are written as Broiler.VM writes them.
+        foreach (var calendar in new[] { "iso8601", "gregory" })
+        {
+            var format = Format("en", calendar: "gregory");
+            string Plain(DateTimeValue value, out double time)
+            {
+                Assert.Equal(IntlStatus.Completed, format.HandleDateTimeValue(value, out var formatter, out time));
+                return formatter!.Format(time);
+            }
+
+            Assert.Equal("4/19/271822", Plain(DateTimeValue.PlainDate(new IsoDate(-271821, 4, 19), calendar), out var time));
+            Assert.Equal(-8.64e15 - 43_200_000, time);
+            Assert.Equal("9/13/275760", Plain(DateTimeValue.PlainDate(new IsoDate(275760, 9, 13), calendar), out time));
+            Assert.Equal(8.64e15 + 43_200_000, time);
+            Assert.StartsWith("4/19/271822, 12:00:00", Plain(DateTimeValue.PlainDateTime(new IsoDateTime(new IsoDate(-271821, 4, 19), new IsoTime(0, 0, 0, 0, 0, 1)), calendar), out time), StringComparison.Ordinal);
+            Assert.Equal(-8.64e15 - 86_400_000, time);
+            Assert.StartsWith("9/13/275760, 11:59:59", Plain(DateTimeValue.PlainDateTime(new IsoDateTime(new IsoDate(275760, 9, 13), new IsoTime(23, 59, 59, 999, 999, 999)), calendar), out time), StringComparison.Ordinal);
+            Assert.Equal(8.64e15 + 86_399_999, time);
+            if (calendar == "gregory")
+            {
+                Assert.Equal("4/271822", Plain(DateTimeValue.PlainYearMonth(new IsoDate(-271821, 4, 1), calendar), out time));
+                Assert.Equal(DateTimeFormatter.MinTime + 43_200_000, time);
+                Assert.Equal("9/275760", Plain(DateTimeValue.PlainYearMonth(new IsoDate(275760, 9, 1), calendar), out _));
+            }
+
+            Assert.Equal(IntlStatus.Completed, format.HandleDateTimeRange(DateTimeValue.PlainDate(new IsoDate(-271821, 4, 19), calendar),
+                DateTimeValue.PlainDate(new IsoDate(275760, 9, 13), calendar), out var range, out var x, out var y));
+            Assert.Equal("4/19/271822 BC\u2009\u2013\u20099/13/275760 AD", range!.FormatRange(x, y));
+        }
+    }
+
+    [Fact]
     public void T39_a_plain_year_month_s_calendar_is_checked_before_its_fields()
     {
         var format = Format("en", new DateTimeComponents { Hour = "numeric" });
@@ -295,6 +330,14 @@ public sealed class DateTimeTests
             format.HandleDateTimeRange(DateTimeValue.PlainDate(new IsoDate(2024, 1, 5), "iso8601"), DateTimeValue.Number(0), out _, out _, out _));
         Assert.Throws<ArgumentOutOfRangeException>(() => format.Formatter.Format(double.NaN));
         Assert.Throws<ArgumentOutOfRangeException>(() => format.Formatter.Format(0.5));
+
+        // THE FORMATTER'S PRECONDITION is the ISO dates of Temporal's values, not TimeClip's range, which HandleDateTimeValue
+        // keeps for a Number alone (row T38).
+        Assert.Equal("4/1/271822", format.Formatter.Format(DateTimeFormatter.MinTime));
+        Assert.Equal("9/30/275760", format.Formatter.Format(DateTimeFormatter.MaxTime));
+        Assert.Throws<ArgumentOutOfRangeException>(() => format.Formatter.Format(DateTimeFormatter.MinTime - 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => format.Formatter.FormatToParts(DateTimeFormatter.MaxTime + 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => format.Formatter.FormatRange(0, double.PositiveInfinity));
     }
 
     // ---- T40: the charge -------------------------------------------------------------------------------------------------

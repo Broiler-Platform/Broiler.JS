@@ -264,6 +264,14 @@ internal static class DateTimeSection
                     () => VmTemporal(arms, used, value),
                     reading => LibraryTemporal(arms, used, value, reading));
             }
+
+            // THE RANGES OF TEMPORAL VALUES, formatRange's HandleDateTimeValue of each end, none clipped.
+            foreach (var (start, end) in population.TemporalRanges)
+            {
+                Compare(section, "temporal range " + format.Label + " " + start.Label + " .. " + end.Label,
+                    () => VmTemporalRange(arms, format, start, end),
+                    reading => LibraryTemporalRange(arms, format, start, end, reading));
+            }
         }
 
         return section;
@@ -276,27 +284,7 @@ internal static class DateTimeSection
     private static string VmTemporal(Arms arms, FormatInput input, TemporalInput value)
     {
         var format = VmFormat(arms, input, value.Zone);
-
-        static double Milliseconds(BigInteger epochNs)
-        {
-            var quotient = BigInteger.DivRem(epochNs, 1_000_000, out var remainder);
-            return (double)(remainder.Sign < 0 ? quotient - 1 : quotient);
-        }
-
-        static double Noon(IsoDate date) => Milliseconds(IsoArithmetic.GetUtcEpochNanoseconds(new IsoDateTime(date, new IsoTime(12, 0, 0, 0, 0, 0))));
-
-        bool Same(bool isoAllowed) => value.Calendar == format.Calendar || (isoAllowed && value.Calendar == "iso8601");
-
-        (string Kind, double Time, bool CalendarOk) step = value.Kind switch
-        {
-            "date" => ("date", Noon(value.Date), Same(true)),
-            "year-month" => ("year-month", Noon(value.Date), Same(false)),
-            "month-day" => ("month-day", Noon(value.Date), Same(false)),
-            "time" => ("time", Milliseconds(IsoArithmetic.GetUtcEpochNanoseconds(new IsoDateTime(new IsoDate(1970, 1, 1), value.Time))), true),
-            "date-time" => ("date-time", Milliseconds(IsoArithmetic.GetUtcEpochNanoseconds(new IsoDateTime(value.Date, value.Time))), Same(true)),
-            "instant" => ("instant", Milliseconds(value.EpochNanoseconds), true),
-            _ => ("instant", Milliseconds(value.EpochNanoseconds), value.Calendar == "iso8601" || value.Calendar == format.Calendar),
-        };
+        var step = VmStep(format, value);
 
         if (!step.CalendarOk)
             return "error: RangeError";
@@ -308,21 +296,77 @@ internal static class DateTimeSection
         return Render(parts.Select(static p => (p.Type, p.Value, p.Source))) + " charge " + (arms.Engine.Charged - before);
     }
 
+    /// <summary>Broiler.VM's realm's step for one value: the format it takes, its time and whether its calendar passes.</summary>
+    private static (string Kind, double Time, bool CalendarOk) VmStep(JsDateTimeFormatObject format, TemporalInput value)
+    {
+        static double Milliseconds(BigInteger epochNs)
+        {
+            var quotient = BigInteger.DivRem(epochNs, 1_000_000, out var remainder);
+            return (double)(remainder.Sign < 0 ? quotient - 1 : quotient);
+        }
+
+        static double Noon(IsoDate date) => Milliseconds(IsoArithmetic.GetUtcEpochNanoseconds(new IsoDateTime(date, new IsoTime(12, 0, 0, 0, 0, 0))));
+
+        bool Same(bool isoAllowed) => value.Calendar == format.Calendar || (isoAllowed && value.Calendar == "iso8601");
+
+        return value.Kind switch
+        {
+            "date" => ("date", Noon(value.Date), Same(true)),
+            "year-month" => ("year-month", Noon(value.Date), Same(false)),
+            "month-day" => ("month-day", Noon(value.Date), Same(false)),
+            "time" => ("time", Milliseconds(IsoArithmetic.GetUtcEpochNanoseconds(new IsoDateTime(new IsoDate(1970, 1, 1), value.Time))), true),
+            "date-time" => ("date-time", Milliseconds(IsoArithmetic.GetUtcEpochNanoseconds(new IsoDateTime(value.Date, value.Time))), Same(true)),
+            "instant" => ("instant", Milliseconds(value.EpochNanoseconds), true),
+            _ => ("instant", Milliseconds(value.EpochNanoseconds), value.Calendar == "iso8601" || value.Calendar == format.Calendar),
+        };
+    }
+
+    /// <summary>Broiler.VM's formatRange over two Temporal values of one type: each end's step, the start's format writing both.</summary>
+    private static string VmTemporalRange(Arms arms, FormatInput input, TemporalInput start, TemporalInput end)
+    {
+        var format = VmFormat(arms, input);
+        var x = VmStep(format, start);
+        if (!x.CalendarOk)
+            return "error: RangeError";
+        var formatter = format.Temporal!.For(x.Kind);
+        if (formatter is null)
+            return "error: TypeError";
+        var y = VmStep(format, end);
+        if (!y.CalendarOk)
+            return "error: RangeError";
+        var before = arms.Engine.Charged;
+        var parts = formatter.RangeParts(arms.Engine, x.Time, y.Time);
+        return Render(parts.Select(static p => (p.Type, p.Value, p.Source))) + " charge " + (arms.Engine.Charged - before);
+    }
+
+    private static string LibraryTemporalRange(Arms arms, FormatInput input, TemporalInput start, TemporalInput end, Reading reading)
+    {
+        if (LibraryFormat(arms, input, reading, out var format) is { } refused)
+            return refused;
+        var status = format!.HandleDateTimeRange(ValueOf(start), ValueOf(end), out var formatter, out var x, out var y);
+        if (status != IntlStatus.Completed)
+            return Refusal(status);
+        ulong charged = 0;
+        var parts = formatter!.FormatRangeToParts(x, y, units => charged += units);
+        return Render(parts.Select(static p => (p.Type, p.Value, p.Source))) + " charge " + charged;
+    }
+
+    private static DateTimeValue ValueOf(TemporalInput value) => value.Kind switch
+    {
+        "date" => DateTimeValue.PlainDate(value.Date, value.Calendar),
+        "year-month" => DateTimeValue.PlainYearMonth(value.Date, value.Calendar),
+        "month-day" => DateTimeValue.PlainMonthDay(value.Date, value.Calendar),
+        "time" => DateTimeValue.PlainTime(value.Time),
+        "date-time" => DateTimeValue.PlainDateTime(new IsoDateTime(value.Date, value.Time), value.Calendar),
+        "instant" => DateTimeValue.Instant(value.EpochNanoseconds),
+        _ => DateTimeValue.ZonedDateTime(value.EpochNanoseconds, value.Calendar),
+    };
+
     private static string LibraryTemporal(Arms arms, FormatInput input, TemporalInput value, Reading reading)
     {
         if (LibraryFormat(arms, input, reading, out var format, value.Zone) is { } refused)
             return refused;
-        var temporal = value.Kind switch
-        {
-            "date" => DateTimeValue.PlainDate(value.Date, value.Calendar),
-            "year-month" => DateTimeValue.PlainYearMonth(value.Date, value.Calendar),
-            "month-day" => DateTimeValue.PlainMonthDay(value.Date, value.Calendar),
-            "time" => DateTimeValue.PlainTime(value.Time),
-            "date-time" => DateTimeValue.PlainDateTime(new IsoDateTime(value.Date, value.Time), value.Calendar),
-            "instant" => DateTimeValue.Instant(value.EpochNanoseconds),
-            _ => DateTimeValue.ZonedDateTime(value.EpochNanoseconds, value.Calendar),
-        };
-        var status = format!.HandleDateTimeValue(temporal, out var formatter, out var time);
+        var status = format!.HandleDateTimeValue(ValueOf(value), out var formatter, out var time);
         if (status != IntlStatus.Completed)
             return Refusal(status);
         ulong charged = 0;

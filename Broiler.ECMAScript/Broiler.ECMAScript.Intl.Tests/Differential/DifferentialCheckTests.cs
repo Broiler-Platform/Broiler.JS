@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Broiler.ECMAScript.Time;
 using Xunit;
 
 namespace Broiler.ECMAScript.Intl.Tests.Differential;
@@ -284,6 +285,9 @@ public sealed class DifferentialCheckTests
         Assert.Contains(population.TemporalValues, static v => v.Kind == "zoned" && v.Zone == "Europe/Berlin");
         Assert.Contains("Asia/Calcutta", population.Zones);
         Assert.All(HomeTimeZones.Current.PrimaryIdentifiers, z => Assert.Contains(z, population.Zones));
+        Assert.Contains(population.TemporalValues, static v => v.Kind == "date" && v.Date == new IsoDate(-271821, 4, 19));
+        Assert.Contains(population.TemporalValues, static v => v.Kind == "year-month" && v.Date == new IsoDate(-271821, 4, 1));
+        Assert.Contains(population.TemporalRanges, static r => r.Start.Kind == "date-time" && r.End.Date == new IsoDate(275760, 9, 13));
 
         var vectors = Population.IntlVectors("date-times.vectors");
         var constructing = vectors.Count(static v => v.Script.Contains("new Intl.DateTimeFormat(", StringComparison.Ordinal) || v.Script.Contains(").toLocale", StringComparison.Ordinal));

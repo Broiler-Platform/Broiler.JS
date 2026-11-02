@@ -266,25 +266,42 @@ public sealed class DateTimeFormatter
     // Broiler-Human:        PENDING
     internal TimeZoneKind ZoneKind => timeZone.Kind;
 
+    /// <summary>
+    /// The least time value the formatter writes: -271821-04-01T00:00:00.000Z, the first day of the earliest month a Temporal value
+    /// holds (the proposal's ISOYearMonthWithinLimits), a PlainYearMonth's reference day. HandleDateTimeValue does not clip a
+    /// Temporal value (test262 <c>temporal-objects-no-time-clip</c>), so the noon of <c>PlainDate(-271821, 4, 19)</c>, the
+    /// limits' PlainDateTime and <c>PlainYearMonth(-271821, 4)</c> lie below TimeClip's -8.64e15 and are written as Broiler.VM
+    /// writes them; a Number below -8.64e15 is HandleDateTimeValue's <see cref="IntlStatus.TimeValueOutOfRange"/> first.
+    /// </summary>
+    public const double MinTime = -8_640_001_641_600_000;
+
+    /// <summary>
+    /// The greatest time value the formatter writes: +275760-09-30T23:59:59.999Z, the last of the latest month a Temporal value
+    /// holds; as <see cref="MinTime"/>, above TimeClip's 8.64e15 for the limits' Temporal values only.
+    /// </summary>
+    public const double MaxTime = 8_640_001_555_199_999;
+
     /// <summary>The pattern a single time value is written in, in CLDR's pattern syntax (UTS #35 Part 4, Date Format Patterns).</summary>
     public string Pattern { get; }
 
     /// <summary>FormatDateTime (<c>sec-formatdatetime</c>): the String the parts of <paramref name="time"/> make.</summary>
-    /// <param name="time">A time value TimeClip keeps (<c>sec-timeclip</c>): integral, of magnitude at most 8.64e15.</param>
+    /// <param name="time">An integral time value within the ISO dates of Temporal's values (see <see cref="MinTime"/> and
+    /// <see cref="MaxTime"/>): a Number TimeClip keeps (<c>sec-timeclip</c>), or a time HandleDateTimeValue writes for a Temporal
+    /// value, which it does not clip (<see cref="DateTimeFormat.HandleDateTimeValue"/>).</param>
     /// <param name="charge">The caller's meter: the String's length in code units (decision D18).</param>
     /// <returns>The formatted String.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="time"/> is not a time value TimeClip keeps: the engine's
-    /// <c>RangeError</c>, which comes first, was not thrown.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="time"/> is not integral or is outside those dates: no value
+    /// HandleDateTimeValue completes for writes it, the engine's <c>RangeError</c> for a Number TimeClip refuses coming first.</exception>
     // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatdatetimepattern sec-partitiondatetimepattern UTS35 Part 4 section 8 via Broiler.VM JsDateTimeFormatter; IP=Low; Security=Medium; Resources=2; Fingerprint=CEE738
     // Broiler-Human:        PENDING
     public string Format(double time, WorkCharge? charge = null) => Joined(FormatToParts(time, charge));
 
     /// <summary>FormatDateTimeToParts (<c>sec-formatdatetimetoparts</c>): the parts of <paramref name="time"/>.</summary>
-    /// <param name="time">A time value TimeClip keeps: integral, of magnitude at most 8.64e15.</param>
+    /// <param name="time">As <see cref="Format"/>'s.</param>
     /// <param name="charge">The caller's meter: the formatted String's length in code units (decision D18); an engine's
     /// per-part charge for the array it builds is its own.</param>
     /// <returns>The parts, in order, each with no source.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="time"/> is not a time value TimeClip keeps.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">As <see cref="Format"/>'s.</exception>
     // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatdatetimepattern sec-partitiondatetimepattern UTS35 Part 4 section 8 via Broiler.VM JsDateTimeFormatter; IP=Low; Security=Medium; Resources=2; Fingerprint=D67D3C
     // Broiler-Human:        PENDING
     public IReadOnlyList<DateTimePart> FormatToParts(double time, WorkCharge? charge = null)
@@ -294,12 +311,12 @@ public sealed class DateTimeFormatter
     }
 
     /// <summary>FormatDateTimeRange (<c>sec-formatdatetimerange</c>): the String the parts of the range make.</summary>
-    /// <param name="x">The start, a time value TimeClip keeps.</param>
-    /// <param name="y">The end, a time value TimeClip keeps.</param>
-    /// <param name="charge">The caller's meter: the range's length in code units, or the one date's where the range writes one
-    /// (decision D18).</param>
+    /// <param name="x">The start, a time value as <see cref="Format"/> takes.</param>
+    /// <param name="y">The end, a time value as <see cref="Format"/> takes.</param>
+    /// <param name="charge">The caller's meter: the range's length in code units, and where the two dates collapse to one, the one
+    /// date's as well, as Broiler.VM charges its meter (decision D18).</param>
     /// <returns>The formatted String.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="x"/> or <paramref name="y"/> is not a time value TimeClip keeps.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="x"/> or <paramref name="y"/> is not a time value <see cref="Format"/> takes.</exception>
     // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatdatetimepattern sec-partitiondatetimepattern UTS35 Part 4 section 8 via Broiler.VM JsDateTimeFormatter; IP=Low; Security=Medium; Resources=2; Fingerprint=99C992
     // Broiler-Human:        PENDING
     public string FormatRange(double x, double y, WorkCharge? charge = null) => Joined(FormatRangeToParts(x, y, charge));
@@ -308,11 +325,11 @@ public sealed class DateTimeFormatter
     /// FormatDateTimeRangeToParts (<c>sec-formatdatetimerangetoparts</c>): the parts of the range from <paramref name="x"/> to
     /// <paramref name="y"/>, each with its source.
     /// </summary>
-    /// <param name="x">The start, a time value TimeClip keeps.</param>
-    /// <param name="y">The end, a time value TimeClip keeps.</param>
+    /// <param name="x">The start, a time value as <see cref="Format"/> takes.</param>
+    /// <param name="y">The end, a time value as <see cref="Format"/> takes.</param>
     /// <param name="charge">As <see cref="FormatRange"/>'s.</param>
     /// <returns>The parts.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="x"/> or <paramref name="y"/> is not a time value TimeClip keeps.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="x"/> or <paramref name="y"/> is not a time value <see cref="Format"/> takes.</exception>
     // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatdatetimepattern sec-partitiondatetimepattern UTS35 Part 4 section 8 via Broiler.VM JsDateTimeFormatter; IP=Low; Security=Medium; Resources=2; Fingerprint=8D1DC1
     // Broiler-Human:        PENDING
     public IReadOnlyList<DateTimePart> FormatRangeToParts(double x, double y, WorkCharge? charge = null)
@@ -341,9 +358,9 @@ public sealed class DateTimeFormatter
     // Broiler-Human:        PENDING
     private static void CheckTime(double time, string name)
     {
-        if (double.IsNaN(time) || Math.Abs(time) > 8.64e15 || Math.Truncate(time) != time)
+        if (double.IsNaN(time) || time < MinTime || time > MaxTime || Math.Truncate(time) != time)
         {
-            throw new ArgumentOutOfRangeException(name, "a date-time format writes a time value TimeClip keeps");
+            throw new ArgumentOutOfRangeException(name, "a date-time format writes an integral time value within the ISO dates of Temporal's values");
         }
     }
 

@@ -154,11 +154,13 @@ Not yet packed under a version of its own: the stream's next version is set when
     selected pattern (row T7), with no hour cycle for a pattern without an hour (row T8, decision D33 (b)). The formats of
     Temporal's types (the proposal's GetDateTimeFormat and AdjustDateTimeStyleFormat), and HandleDateTimeValue and the
     range's checks over a `DateTimeValue` of `DateTimeValueKind`, a Number or a Temporal object's slots: a plain value
-    written at UTC (`377fb80e`, row T38), the calendar checked before the type's fields (row T39);
+    written at UTC and, unlike a Number, not clipped (`377fb80e`, row T38), the calendar checked before the type's fields
+    (row T39);
   - **`DateTimeFormatter`**, with `DateTimePart`: FormatDateTimePattern as ICU's SimpleDateFormat writes a pattern - names in
     the data locale and calendar (rows T14 and T35), a calendar's fields and the day's weekday (row T34), a numbering
     system's digits (row T37), flexible day periods with noon (rows T17 to T20) - and PartitionDateTimeRangePattern as ICU's
-    DateIntervalFormat writes a range over every field of the two dates (rows T29 to T31), each charged its output's length;
+    DateIntervalFormat writes a range over every field of the two dates (rows T29 to T31), each charged its output's length,
+    for any integral time within the ISO dates of Temporal's values (`MinTime` to `MaxTime`, beyond TimeClip's range);
     behind them `DateTimePatternGenerator`, `DateIntervalFormatter` and `ZoneNamer` (specific, generic, partial-location and
     location names over CLDR's metazone history, and the localized GMT format with seconds, rows T22 to T26);
   - **`ResolvedTimeZone`**, with `TimeZoneKind`: a `timeZone` option's String resolved to an offset or an available named

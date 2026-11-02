@@ -159,6 +159,8 @@ Broiler.ECMAScript.Intl.DateTimeFormatter.Format(System.Double, Broiler.ECMAScri
 Broiler.ECMAScript.Intl.DateTimeFormatter.FormatRange(System.Double, System.Double, Broiler.ECMAScript.WorkCharge) method System.String
 Broiler.ECMAScript.Intl.DateTimeFormatter.FormatRangeToParts(System.Double, System.Double, Broiler.ECMAScript.WorkCharge) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.DateTimePart>
 Broiler.ECMAScript.Intl.DateTimeFormatter.FormatToParts(System.Double, Broiler.ECMAScript.WorkCharge) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Intl.DateTimePart>
+Broiler.ECMAScript.Intl.DateTimeFormatter.MaxTime field static const System.Double = 0x433EB2091F8E77FF
+Broiler.ECMAScript.Intl.DateTimeFormatter.MinTime field static const System.Double = 0xC33EB20924B4D400
 Broiler.ECMAScript.Intl.DateTimeFormatter.get_Pattern() method System.String
 Broiler.ECMAScript.Intl.DateTimeFormatter.get_ResolvedTimeZone() method Broiler.ECMAScript.Intl.ResolvedTimeZone
 Broiler.ECMAScript.Intl.DateTimeFormatter.get_TimeZone() method System.String

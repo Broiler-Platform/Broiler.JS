@@ -43,8 +43,8 @@ internal sealed record TemporalInput(string Kind, IsoDate Date, IsoTime Time, Bi
 /// <c>intl/date-times.vectors</c> constructs, with the times and ranges its script writes; every dataset input of the
 /// <c>dates</c>, <c>calendar-formats</c>, <c>temporal-intl</c> and <c>zone-names</c> programs as library calls - each case's
 /// format with the program's instants, ranges, dates and Temporal values - and the <c>timezones</c> names the time data home's
-/// database lists; and seeded random formats, times, ranges, Temporal values and zone names over the embedding's locales, so many
-/// per unit of scale.
+/// database lists; Temporal's limits, which HandleDateTimeValue does not clip; and seeded random formats, times, ranges, Temporal
+/// values and zone names over the embedding's locales, so many per unit of scale.
 /// </summary>
 internal sealed class DateTimePopulation
 {
@@ -61,6 +61,9 @@ internal sealed class DateTimePopulation
     internal List<FormatInput> TemporalFormats { get; } = [];
 
     internal List<TemporalInput> TemporalValues { get; } = [];
+
+    /// <summary>The ranges of two Temporal values of one type the Temporal section writes with formatRange: the limits' own.</summary>
+    internal List<(TemporalInput Start, TemporalInput End)> TemporalRanges { get; } = [];
 
     internal List<double> Times { get; } = [];
 
@@ -198,6 +201,27 @@ internal sealed class DateTimePopulation
             population.TemporalValues.Add(new TemporalInput(random.Pick(new[] { "date", "year-month", "month-day", "date-time" }), date, time, default, calendar));
             population.TemporalValues.Add(new TemporalInput("time", default, time, default, "iso8601"));
             population.TemporalValues.Add(new TemporalInput("instant", default, default, IsoArithmetic.GetUtcEpochNanoseconds(new IsoDateTime(date, time)), "iso8601"));
+        }
+
+        // THE TEMPORAL LIMITS, which HandleDateTimeValue does not clip (test262's temporal-objects-no-time-clip tests): the least
+        // and greatest PlainDate, PlainDateTime and PlainYearMonth, in iso8601 and gregory, each alone and as a range.
+        foreach (var calendar in new[] { "iso8601", "gregory" })
+        {
+            var limits = new (TemporalInput Min, TemporalInput Max)[]
+            {
+                (new TemporalInput("date", new IsoDate(-271821, 4, 19), default, default, calendar),
+                    new TemporalInput("date", new IsoDate(275760, 9, 13), default, default, calendar)),
+                (new TemporalInput("date-time", new IsoDate(-271821, 4, 19), new IsoTime(0, 0, 0, 0, 0, 1), default, calendar),
+                    new TemporalInput("date-time", new IsoDate(275760, 9, 13), new IsoTime(23, 59, 59, 999, 999, 999), default, calendar)),
+                (new TemporalInput("year-month", new IsoDate(-271821, 4, 1), default, default, calendar),
+                    new TemporalInput("year-month", new IsoDate(275760, 9, 1), default, default, calendar)),
+            };
+            foreach (var (min, max) in limits)
+            {
+                population.TemporalValues.Add(min);
+                population.TemporalValues.Add(max);
+                population.TemporalRanges.Add((min, max));
+            }
         }
 
         return population;
