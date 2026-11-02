@@ -105,9 +105,9 @@ does, with four evaluating processes:
            e7d38378d51fa4150d9f00778bac70ca43bf7d5f04fd097b4acfbf5a3009ae90). The two logs keep their CRLF line ends.
 
 Against this engine's run on revision 34 above (run-revision-34-utc.tsv.gz, the same 111157 lines), the Windows
-report's collation lines differ in the 35 and in 2 classified divergences, options/case-first/0122 and 0133 (German
-phonebook with caseFirst upper, row O8), which render otherwise there, as the phonebook tailoring is not applied, and
-stay classified.
+report's collation lines differ in the 35 and in 2 classified divergences, options/case-first/0122 (German phonebook
+with caseFirst upper) and 0133 (German search with caseFirst upper), row O8, which render otherwise there, as the
+phonebook and the search tailoring are not applied, and stay classified.
 
 The reference, asked what that host answers. tailoring_dropped.mjs, run by the reference Node.js v26.12.0 (ICU 78.3,
 CLDR 48.0) under TZ=UTC with no LANG, LC_ALL or LANGUAGE, as
