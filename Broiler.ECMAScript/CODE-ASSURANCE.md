@@ -16,12 +16,12 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Files scanned | 168 |
 | Files not covered | 0 |
 | Files carrying an annotation | 168 |
-| Code units | 4623 |
-| Relevant | 2972 |
+| Code units | 4625 |
+| Relevant | 2974 |
 | Exempt by predicate | 1651 |
-| Annotated | 2972 of 2972 (100%) |
-| Human reviewed | 0 of 2972 (0%) |
-| Unverified | 2972 |
+| Annotated | 2974 of 2974 (100%) |
+| Human reviewed | 0 of 2974 (0%) |
+| Unverified | 2974 |
 
 ## Review states
 
@@ -29,7 +29,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2972 |
+| HUMAN_PENDING | 2974 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
@@ -40,7 +40,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 2969 |
+| Low | 2971 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,9 +51,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 1880 |
+| Low | 1881 |
 | Medium | 837 |
-| High | 234 |
+| High | 235 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.0 / 10 |
-| Units scored | 2972 |
+| Units scored | 2974 |
 
 ## High-security review areas
 
@@ -176,6 +176,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Syntax.ParseLimits.NestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ParseAssignment(bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.CheckCoverInitialized(int)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ToAssignmentTargetOrDeferred(Expression, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ParseBinary(int, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.CombineBinary(Expression, Token, Expression)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ParseChainLinks(Expression, bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
@@ -306,8 +307,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 234 |
-| Units required to carry one | 234 |
+| Units carrying a criterion | 235 |
+| Units required to carry one | 235 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -359,7 +360,7 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 5 covered assemblies -
-4623 of them, exempt and relevant alike - with the fingerprint of its declaration.
+4625 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as

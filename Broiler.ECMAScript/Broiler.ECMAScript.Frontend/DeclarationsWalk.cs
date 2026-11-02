@@ -530,13 +530,24 @@ internal sealed class DeclarationsWalk
         Label,
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=6304E4
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=5AF585
     // Broiler-Human:        PENDING
     private void CheckName(string name, bool escaped, SyntaxNode at, NameUse use, Context context)
     {
-        if (context.InStaticBlock && name == "await")
+        // A static block reads its statements under [+Await]: an `await` BindingIdentifier there is EE0009's in either goal,
+        // an escaped name EE0011's or EE0013's (below), and EE0140 ("Contains `await`", which looks into no function and
+        // finds no `await` terminal in an escaped name) the unescaped reference's or label's alone. (Revised
+        // 2026-11-02, at stage SJL-13.2f, by part A's triage: every `await` name in a static block was refused EE0140, so that
+        // `function await() {}` there, which EE0140 does not reach, was refused by it.)
+        if (context.InStaticBlock && name == "await" && !escaped && use != NameUse.Binding)
         {
             Report(Rows.EE0140, at, name);
+            return;
+        }
+
+        if (context.InStaticBlock && name == "await" && !escaped)
+        {
+            Report(Rows.EE0009, at, name);
             return;
         }
 

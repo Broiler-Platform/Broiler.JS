@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   54
-// Annotated:        54/54
+// Relevant units:   55
+// Annotated:        55/55
 // Exempt:           9
-// Human-reviewed:   0/54
+// Human-reviewed:   0/55
 // IP risk:          Low
 // Security risk:    High
-// Criteria:         6/6
+// Criteria:         7/7
 // Resource impact:  2/10 max
-// Unverified:       54
+// Unverified:       55
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -65,7 +65,7 @@ internal sealed partial class Parser
     /// pattern, or a ConditionalExpression. With <paramref name="defer"/>, a CoverInitializedName read here and not
     /// converted is left to the caller, whose literal may yet become a pattern.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=5AC280
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=8DDDD0
     // Broiler-Falsified-If: an arrow is read where its cover was not the whole left operand, a target that is no LeftHandSideExpression is admitted, or a CoverInitializedName no conversion takes is admitted
     // Broiler-Human:        PENDING
     private Expression ParseAssignment(bool noIn, bool defer = false)
@@ -118,7 +118,7 @@ internal sealed partial class Parser
             {
                 SyntaxNode target;
                 if (op == AssignmentOperator.Assign && left is ArrayLiteral or ObjectLiteral)
-                    target = Converting(Rows.EE0032, () => ToAssignmentPattern(left));
+                    target = ToAssignmentTargetOrDeferred(left, defer);
                 else if (IsLeftHandSide(left))
                     target = left;
                 else
@@ -150,16 +150,60 @@ internal sealed partial class Parser
     }
 
     /// <summary>Refuses the first CoverInitializedName read since <paramref name="mark"/> that no conversion took (catalogue row EE0017 at stage 4d).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.5 CoverInitializedName; IP=Low; Security=High; Resources=2; Fingerprint=EB5FEA
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.5 CoverInitializedName; IP=Low; Security=High; Resources=2; Fingerprint=BCA969
     // Broiler-Falsified-If: a CoverInitializedName that no conversion took is admitted
     // Broiler-Human:        PENDING
     private void CheckCoverInitialized(int mark)
     {
-        // A CoverInitializedName that no conversion took into a pattern (catalogue row EE0017).
-        if (coverInitialized.Count > mark)
+        // A CoverInitializedName that no conversion took into a pattern (catalogue row EE0017), or an assignment's literal
+        // target that covers no AssignmentPattern and that no arrow's head took (EE0032's refusal, deferred): the first in
+        // source order. (Revised 2026-11-02, at stage SJL-13.2f; it refused the first CoverInitializedName alone.)
+        ParseAbort? first = null;
+        for (var i = mark; i < coverInitialized.Count; i++)
         {
-            var (at, name) = coverInitializedAt[coverInitialized[mark]];
-            throw Refuse(Rows.EE0017, SpanOf(at), name);
+            var literal = coverInitialized[i];
+            ParseAbort refusal;
+            if (deferredPatterns.TryGetValue(literal, out var deferred))
+            {
+                refusal = deferred;
+            }
+            else
+            {
+                var (at, name) = coverInitializedAt[literal];
+                refusal = Refuse(Rows.EE0017, SpanOf(at), name);
+            }
+
+            if (first is null || refusal.Diagnostic.Span.Offset < first.Diagnostic.Span.Offset)
+                first = refusal;
+        }
+
+        if (first is not null)
+            throw first;
+    }
+
+    /// <summary>
+    /// An assignment's array or object literal target converted to an AssignmentPattern; where the assignment stands inside
+    /// a cover an arrow's head may yet convert (<paramref name="defer"/>), a literal that covers none is kept as read and its
+    /// refusal deferred: the head converts it into ArrowFormalParameters and refuses it by its own row (EE0087 or EE0155),
+    /// since an arrow's parameters are no AssignmentExpression, and otherwise the refusal is made when the cover resolves.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.1 EE0032, s15.3.1 ArrowParameters cover early errors; IP=Low; Security=High; Resources=2; Fingerprint=722F78
+    // Broiler-Falsified-If: a literal that covers no AssignmentPattern is admitted outside an arrow's head, or an arrow's head that covers it is refused by EE0032
+    // Broiler-Human:        PENDING
+    private SyntaxNode ToAssignmentTargetOrDeferred(Expression left, bool defer)
+    {
+        if (!defer)
+            return Converting(Rows.EE0032, () => ToAssignmentPattern(left));
+        try
+        {
+            return Converting(Rows.EE0032, () => ToAssignmentPattern(left));
+        }
+        catch (ParseAbort refusal)
+        {
+            coverInitialized.Remove(left);
+            coverInitialized.Add(left);
+            deferredPatterns[left] = refusal;
+            return left;
         }
     }
 

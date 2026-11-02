@@ -447,6 +447,24 @@ Not yet packed under a version of its own: the stream's next version is set when
   (`x = a+...+a + (b+...+b)`, 5,001 operands on each side, a tree 5,002 deep), is accepted. No source of the parse corpus
   changes its answer. No public API changes.
 
+  *(Added 2026-11-02, at SJL-13.2f, after part A's first codes were triaged; bundle `sjl-13-001`'s README, "Part A's first
+  codes, triaged".)* Two sites reported a row whose condition does not hold where another's does; each now reports the
+  row that holds, and no source changes its outcome:
+  - **an `await` binding in a class static block** is refused by EE0009 (JSE1305, `identifier.await.in-async`), the
+    BindingIdentifier's row under the block's [+Await], and an escaped one by EE0011 (JSE1307) or, in a module, EE0013
+    (JSE1309), where every `await` name in a static block was refused by EE0140 (JSE1573,
+    `class.static-block.await`). EE0140, "ClassStaticBlockStatementList Contains `await`", looks into no function and finds
+    no `await` terminal in an escaped name, so `class C { static { function await() {} } }` was refused by a row that
+    does not reach it; EE0140 stays the row of an `await` expression and of an unescaped reference in the block;
+  - **an assignment inside an arrow's head whose array or object literal covers no AssignmentPattern**
+    (`([...[x], y] = [1]) => 0`, `({ a: [...x, y] = 1 }) => 0`) is refused by the arrow's cover row, EE0087 (JSE1520), or
+    at an async head EE0155 (JSE1588), where it was refused by EE0032 (JSE1328) when the assignment was read: an arrow's
+    parameters are no AssignmentExpression, so EE0032 holds of none of them. The literal's refusal now waits for the cover
+    around it, as a CoverInitializedName's does, and is EE0032's where no arrow's head takes it (`([...[x], y] = [1]);`).
+
+  In the parse corpus 112 refusals change their first code and none its outcome: 40 from JSE1573 to JSE1305 and 72 from
+  JSE1328 to JSE1520 (both configurations).
+
 - `Broiler.ECMAScript.Intl`: **collation** (milestone SJL-17.3; Broiler.VM's JSD-0084, the area verdict "Collation (SJL-17.1)"
   of this repository's plan), in `Broiler.ECMAScript.Intl/Collation/`. `UcaCollator`, ECMA-402's CompareStrings over the
   Unicode Collation Algorithm, CLDR 48.2.0's root collation and a tailoring, under the resolved options as a record,

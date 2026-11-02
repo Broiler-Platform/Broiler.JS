@@ -484,7 +484,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>A cover's target as a BindingIdentifier or BindingPattern: a name, a literal, or an assignment pattern the parse already converted.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.3 ArrowFormalParameters by conversion; IP=Low; Security=High; Resources=2; Fingerprint=C25A33
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.3 ArrowFormalParameters by conversion; IP=Low; Security=High; Resources=2; Fingerprint=402371
     // Broiler-Falsified-If: a cover element that covers no binding is converted, or one that does is refused
     // Broiler-Human:        PENDING
     private Pattern ToBindingTarget(SyntaxNode node)
@@ -494,6 +494,7 @@ internal sealed partial class Parser
             case Identifier identifier:
                 return ToBindingIdentifier(identifier);
             case ArrayLiteral array:
+                coverInitialized.Remove(array);
                 return ToArrayBindingPattern(array);
             case ObjectLiteral @object:
                 coverInitialized.Remove(@object);

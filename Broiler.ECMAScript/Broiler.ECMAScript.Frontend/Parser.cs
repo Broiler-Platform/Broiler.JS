@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   41
-// Annotated:        41/41
+// Relevant units:   42
+// Annotated:        42/42
 // Exempt:           35
-// Human-reviewed:   0/41
+// Human-reviewed:   0/42
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         6/6
 // Resource impact:  2/10 max
-// Unverified:       41
+// Unverified:       42
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -133,11 +133,22 @@ internal sealed partial class Parser
     // refusal come first (decision D11, the library's order).
     private List<Statement>? topLevel;
 
-    // The object literals holding a CoverInitializedName that no conversion has taken yet, in source order.
-    private readonly List<ObjectLiteral> coverInitialized = new();
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=B90EB2
+    // The literals whose refusal waits for the cover around them: an object literal holding a CoverInitializedName, and an
+    // assignment's array or object literal target that covers no AssignmentPattern, read where an arrow's head may yet
+    // convert it (deferredPatterns), each until a conversion takes it, in the order read. (Revised 2026-11-02, at stage
+    // SJL-13.2f, by part A's triage; it read "The object literals holding a CoverInitializedName that no conversion has
+    // taken yet, in source order.", and an assignment target's refusal was made where the assignment was read.)
+    private readonly List<Expression> coverInitialized = new();
+
+    // The refusal of each deferred assignment target in coverInitialized: EE0032's, or a nested literal's row, made when
+    // no arrow's head takes the literal (stage SJL-13.2f).
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.1 EE0032, s15.3.1 ArrowParameters cover early errors; IP=Low; Security=Low; Resources=0; Fingerprint=4E23F0
     // Broiler-Human:        PENDING
-    private readonly Dictionary<ObjectLiteral, (Token At, string Name)> coverInitializedAt = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<Expression, ParseAbort> deferredPatterns = new(ReferenceEqualityComparer.Instance);
+
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=ABA2F0
+    // Broiler-Human:        PENDING
+    private readonly Dictionary<Expression, (Token At, string Name)> coverInitializedAt = new(ReferenceEqualityComparer.Instance);
 
     // The cover the primary expression just read, which an arrow's => may convert: a parenthesised list, or an async call.
     private Expression? arrowCover;

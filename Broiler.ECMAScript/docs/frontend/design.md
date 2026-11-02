@@ -555,6 +555,17 @@ F and G read.)*
 The stage table [`stages.tsv`](stages.tsv) records the assignment for every catalogue row (`syntax`, `request`,
 `engine` or `semantics`), with each engine's current stage and site.
 
+*(Noted 2026-11-02, at SJL-13.2f, after the triage of part A's first codes in bundle `sjl-13-001`, on the rows two
+sites report; no row's stage moves.)* An `await` BindingIdentifier in a class static block, whatever declares it, is
+refused by EE0009, the row of a BindingIdentifier under [+Await], which the block's statements are read under; an escaped
+one by EE0011, or EE0013 in a module; EE0140, "ClassStaticBlockStatementList Contains `await`", is the row of an `await`
+expression or an unescaped reference there. The walk refused every `await` name in a static block by EE0140, which
+looks into no function (`function await() {}` there) and finds no `await` terminal in an escaped name. And an
+assignment inside an arrow's head whose array or object literal covers no AssignmentPattern is refused by the arrow's
+cover row, EE0087, or EE0155 at an async head: the literal's refusal waits for the cover around it, as a
+CoverInitializedName's does (EE0017), and is EE0032's where no arrow's head takes it. The parser refused it by EE0032
+when the assignment was read, before `=>` was seen, though an arrow's parameters are no AssignmentExpression.
+
 ## Corrections
 
 *(Revised 2026-10-26, at SJL-13.1; it read "None.")* Each revision of 2026-10-26 above quotes what it replaced:
@@ -568,6 +579,10 @@ The stage table [`stages.tsv`](stages.tsv) records the assignment for every cata
 - sections 3, 4 and 5 gain notes; section 7 gains SJL-13's records; section 8's first, second and last items are
   revised;
 - section 9 is new.
+
+*(Added 2026-11-02, at SJL-13.2f, after part A's first codes were triaged.)* Section 9.4 gains the note on the rows of an
+`await` binding in a static block (EE0009, EE0011, EE0013 for EE0140) and of an arrow head's literal that covers no
+AssignmentPattern (EE0087 or EE0155 for EE0032).
 
 *(Added 2026-11-02, at SJL-13.2f.)* Section 9.1's packing row gains the note that the library is packable; section 9.2
 gains the note on the owner's decision of 2026-11-02 on decision D14's residual shapes, each chain node charged its whole
