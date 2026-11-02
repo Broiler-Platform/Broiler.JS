@@ -347,6 +347,41 @@ Not yet packed under a version of its own: the stream's next version is set when
   without judging them, which stage 4d's check judges, and the Conformance tests pin by id every vector the library
   refuses and every one it accepts against an expected refusal.
 
+- `Broiler.ECMAScript.Intl`: **collation** (milestone SJL-17.3; Broiler.VM's JSD-0084, the area verdict "Collation (SJL-17.1)"
+  of this repository's plan), in `Broiler.ECMAScript.Intl/Collation/`. `UcaCollator`, ECMA-402's CompareStrings over the
+  Unicode Collation Algorithm, CLDR 48.2.0's root collation and a tailoring, under the resolved options as a record,
+  `UcaCollatorOptions` (strength, case level, case order, the shifted alternate, numeric collation and the tailoring by
+  name, with `CollationStrength` and `CollationCaseFirst`, and `FromResolved`, Broiler.VM's mapping of `sensitivity`,
+  `ignorePunctuation`, `caseFirst` and `numeric` onto them); and `UcaCollationData`, the collation tables of an
+  `IIntlDataSet` decoded once, with the questions an engine's Collator asks of them: the tailoring a language, usage and
+  collation select (`TailoringFor`), the values of the relevant keys (`KeyValues`, ECMA-402's `[[SortLocaleData]]` and
+  `[[SearchLocaleData]]`), and whether a tailoring shifts by default (`ShiftedByDefault`, Thai's, decision E5). Ported from
+  Broiler.VM's `JsCollator`, `JsCollationData`, `NewCollator`'s choice of a tailoring and `CollatorKeyData` at its SJL-17 rule
+  commit `4e6a41e9` with the three changes of the programme's library stages: no culture is read; a string whose NFD form
+  passes the caller's ceiling is a status, `IntlStatus.NormalizedStringTooLong` (30), where Broiler.VM threw its
+  `RangeError`; and the caller's `WorkCharge` is charged where Broiler.VM charged its meter, in its units, NFD as
+  `normalize` charges it and each collation element of both strings (decision E7, no C2). NFD and the combining classes are
+  Broiler.Unicode's `UnicodeNormalization`, which the engine hands in (decision E6). The element lookup is unchanged;
+  `TailoringFor` and `KeyValues` read the tailorings the data carries, so that over Broiler.VM's three they answer as its
+  code does, and a tailoring that states `[reorder]` moves its script's primaries before the other scripts'. Han across
+  blocks keeps UCA 17's implicit weights by block, Broiler.VM's order (the owner's decision of 2026-11-02 on row O3, the
+  Intl design's dated note). `IntlTable.CollationSettings` (32) is appended for the tailorings' settings, a table Broiler.VM's
+  data never carries (decision D8), which an engine without it answers as an empty span.
+- `Broiler.ECMAScript.Generation`: the collation tailorings of Broiler.JS's list (milestone SJL-17.3; JSD-0084, decision E3):
+  `IntlGeneratorOptions.BroilerJsTailorings`, Broiler.VM's three followed by every collation CLDR 48.2.0 gives for `es`, `sv`
+  and `th` (`es-standard`, `es-search`, `es-trad`, `sv-standard`, `sv-search`, `sv-trad`, `th-standard`), and the rule syntax
+  they use: the reset `[before 1]`, an extension (`/`), and the settings `[alternate shifted]` and `[reorder Thai]`, which the
+  new `CollationSettings` table carries. Any other syntax is refused by name, as before, CLDR's `eor` and `emoji` rules among
+  it (finding F2). With Broiler.VM's options the generator writes Broiler.VM's tables byte for byte, as before: its three
+  tailorings state no setting, so no settings table is written for them.
+- `Broiler.ECMAScript.Conformance` (test-only, not packed): the library-level runner answers the collation vectors
+  (`intl/collation/`, corpus revisions 33 and 34) through the shared collator over Broiler.JS's tables, with the Collator's
+  available locales those the tables' collation data covers; every one gives its `out`, or, for the 34 Han vectors whose
+  answer moves with the order of unified ideographs across blocks, Broiler.VM's `per-engine` expectation. `Broiler.ECMAScript.Intl.Tests`
+  orders every line of CLDR 48.2.0's archived CollationTest files at library level (the L4 oracle, decision E9), and the
+  differential check gains sections C1 and C2, Broiler.VM's collator and `CollatorKeyData` at `4e6a41e9` against the
+  library.
+
 ### Changed
 
 None.
@@ -358,7 +393,9 @@ its table with the generator at its work package SJL-9.2c, and Broiler.JS embeds
 SJL-9.5, whose own records list what each observes; rows L9, L18 and Z8's corrections move Broiler.VM's answers when it
 cuts over to the library, at SJL-9.4. The frontend parses from stage 4c, and neither engine references it before
 SJL-13.3's step 1 and SJL-14's bridge. *(Revised 2026-11-02, at SJL-9.3d, when the date-time format's zone resolution was
-added; the clause read "rows L9 and L18's corrections move Broiler.VM's answers".)* *(Revised 2026-11-01, at SJL-13.2c,
+added; the clause read "rows L9 and L18's corrections move Broiler.VM's answers".)* *(Added 2026-11-02, at SJL-17.3, when the collator was added:
+neither engine compares strings with the library's collator before its cut-over, Broiler.VM's at SJL-17.4 and Broiler.JS's
+at SJL-17.5, whose records list what each observes.)* *(Revised 2026-11-01, at SJL-13.2c,
 when the parser was added; the sentence read "The frontend accepts no source before stage 4c, refusing from stage 4b only
 a source the lexical grammar refuses, and neither engine references it before SJL-13.3's step 1 and SJL-14's bridge.")*
 *(Revised 2026-11-01, at SJL-13.2b, when the tokenizer was added; the sentence read "The frontend answers no source
@@ -384,6 +421,11 @@ observes.")*
   Broiler.Unicode's pin entry for the same file; each embedding's locale list, `broiler-vm.txt` and
   `broiler-js.txt`, per decision D5; and Broiler.JS's tables generated from them with their manifest. Rule SL7
   regenerates the tables. The `timezone.json` the time home pins is the same file, byte for byte.
+- Broiler.JS's collation tables (milestone SJL-17.3; JSD-0084, decisions E3 and E13): `collation-tailorings.bin` carries the
+  tailorings of decision E3's list, Broiler.VM's three, unchanged, first, and `collation-settings.txt`, a new table, Thai's
+  shifted alternate and reordering; `collation-root.bin` is unchanged, Broiler.VM's byte for byte. Their rules are CLDR
+  **48.2.0**'s `common/collation/es.xml`, `sv.xml` and `th.xml`, which the Intl home's pin gains, retrieved twice from the
+  CLDR repository's tag `release-48-2`. Broiler.VM's tables do not change (rule N28).
 
 ## 0.1.0-preview.7 — published to nuget.org
 

@@ -41,12 +41,19 @@ generator reads the other systems' symbols from `common/main/<locale>.xml` for e
 directories found byte-identical, and the `root.xml` retrieved with them equals Broiler.VM's. They state no version and
 are held by their hashes alone.
 
+**Broiler.JS's collation files** were added on 2026-11-02 at milestone SJL-17.3: Broiler.JS's collation tables carry the
+tailorings of Broiler.VM's JSD-0084, decision E3, and CLDR's rules for `es`, `sv` and `th` are `common/collation/es.xml`,
+`sv.xml` and `th.xml`. They were retrieved twice from
+`https://raw.githubusercontent.com/unicode-org/cldr/release-48-2/common/collation/`, the pin's `repository-source`, into two
+directories `cmp` found byte-identical, and the `de.xml`, `en.xml` and `root.xml` retrieved with them equal Broiler.VM's. They
+state no version and are held by their hashes alone.
+
 | | |
 |---|---|
 | Version | **CLDR 48.2.0**; UCA **17.0.0**, the Unicode version of [`../ucd/`](../ucd/README.md) |
-| Files | `cldr-48.2.0/common/` (Broiler.VM's collation files, `common/main/root.xml` and the UCA files; Broiler.JS's `common/main/<locale>.xml` files) and `cldr-48.2.0/json/<package>/` (the cldr-json files), each at its path in its source |
+| Files | `cldr-48.2.0/common/` (Broiler.VM's collation files, `common/main/root.xml` and the UCA files; Broiler.JS's `common/main/<locale>.xml` files and, from 2026-11-02, its collation files `es.xml`, `sv.xml` and `th.xml`) and `cldr-48.2.0/json/<package>/` (the cldr-json files), each at its path in its source |
 | Licence | [`cldr-LICENSE.txt`](cldr-LICENSE.txt), the CLDR repository's `LICENSE` at the tag `release-48-2`: the Unicode License v3 (SPDX `Unicode-3.0`) |
-| Retrieved | Broiler.VM's files by Broiler.VM, 2026-10-04 and 2026-10-05; the extra files and the XML files 2026-10-26; each **twice**, byte-identical |
+| Retrieved | Broiler.VM's files by Broiler.VM, 2026-10-04 and 2026-10-05; the extra files and the XML files 2026-10-26; the collation files 2026-11-02; each **twice**, byte-identical |
 
 ### The names files CLDR does not carry
 

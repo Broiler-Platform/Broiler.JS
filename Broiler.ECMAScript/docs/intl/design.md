@@ -9,7 +9,7 @@ home, `Broiler.ECMAScript/data/intl/`, and generator, in `Broiler.ECMAScript.Gen
 or the home's data exists. **Revised:** 2026-10-27, at stage SJL-9.3a, by dated notes on "Why there is no project yet",
 the library's project now existing, and on sections 1 and 5, the composite's parent walk and its secondary provider, and
 week data keyed by region; and on 2026-11-01, at stage SJL-9.3b, by a dated note on section 1's sub-area (b), and the same
-day, at stage SJL-9.3c, by a dated note on its sub-area (c), and on 2026-11-02, at stage SJL-9.3d, by a dated note on its sub-area (d), and the same day, at stage SJL-9.3e, by a dated note on its sub-area (e), and the same day, at stage SJL-9.3f, by a dated note on the integration and on section 5's first item ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
+day, at stage SJL-9.3c, by a dated note on its sub-area (c), and on 2026-11-02, at stage SJL-9.3d, by a dated note on its sub-area (d), and the same day, at stage SJL-9.3e, by a dated note on its sub-area (e), and the same day, at stage SJL-9.3f, by a dated note on the integration and on section 5's first item, and the same day, at milestone SJL-17.3, by a dated note on collation and on sections 3 and 8 ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
 both roles (Broiler.VM's exception EX-30), and nothing here has been read by anyone but its author.
 
 **What this document is.** The Intl library's design document in its home, one of the three places SJL-9.1 files the
@@ -292,6 +292,41 @@ Each takes **resolved options as records**, never an options object, and answers
 `ToLowerInvariant`, `CultureInfo` or a culture-sensitive overload, the library does by ASCII casing or with
 `NumberFormatInfo.InvariantInfo` (decision D19, convention 9). SJL-9.3 settles the names.
 
+*(Added 2026-11-02, at milestone SJL-17.3, collation; Broiler.VM's JSD-0084.)* **The names.** `UcaCollator` compares two
+strings under a `UcaCollatorOptions` record - `CollationStrength`, the case level, `CollationCaseFirst`, the shifted
+alternate, numeric collation and the tailoring by name, which `FromResolved` maps from ECMA-402's resolved `sensitivity`,
+`ignorePunctuation`, `caseFirst` and `numeric` as Broiler.VM's `NewCollator` does - over a `UcaCollationData`, the tables
+`CollationRoot`, `CollationTailorings` and the appended `CollationSettings` decoded once; `UcaCollationData` also answers
+the tailoring a language, usage and collation select (`TailoringFor`), the relevant keys' values (`KeyValues`) and a
+tailoring's default alternate (`ShiftedByDefault`). They live in `Broiler.ECMAScript.Intl/Collation/`, namespace
+`Broiler.ECMAScript.Intl`. Eight readings:
+- **The engine reads the options and resolves the locale**; the library takes the record (decision E2's X3). The Collator's
+  available locales stay each engine's (decision D7): Broiler.VM's are its data's, and Broiler.JS's cut-over hands in the
+  locales its covered list and its host provider give.
+- **The tailoring is chosen from the data**, by name `language-type` with the BCP 47 type: search usage takes the language's
+  own search collation, else root search; sort usage the language's collation of the resolved type, else its standard one,
+  else the root. Over Broiler.VM's three tailorings this is its `NewCollator`'s choice; `KeyValues` likewise answers its
+  `CollatorKeyData` over them, and `es` and `sv` name `trad` over Broiler.JS's.
+- **The settings table** (`CollationSettings`, `IntlTable` 32, a table Broiler.VM's data never carries, decision D8) holds
+  what a tailoring's rules state besides its weights: Thai's `[alternate shifted]`, which `ShiftedByDefault` answers for the
+  engine's `ignorePunctuation` default (decision E5), and `[reorder Thai]`, the Thai letters' root primaries moved before the
+  first script's, applied to every element after the lookup.
+- **NFD and the combining classes** are Broiler.Unicode's `UnicodeNormalization`, which the engine hands in (decision E6),
+  as Broiler.VM's profile calls the same owner since SJL-7.4.
+- **The charges** are Broiler.VM's, in its units (decision E7, row O17): NFD as `normalize` charges it, then the collation
+  elements of both strings once both are looked up; equal strings charge nothing. Broiler.JS passes none.
+- **A string past the ceiling** is `IntlStatus.NormalizedStringTooLong`, Broiler.VM's `RangeError`.
+- **Han across blocks** keeps UCA 17's implicit weights by block, Broiler.VM's order. Recorded as the owner's decision of
+  2026-11-02 under the owner's direction of 2026-10-18 ("Please do all recommended decisions and skip waiting for review"),
+  taken as recommended at SJL-17.3, which JSD-0084's decision E-han left the reading to: the radical-stroke order CLDR's
+  root and ICU take would need Unihan's `kRSUnicode` for every unified ideograph as a new pinned input, and its table, sized
+  at SJL-17.3, is many times Broiler.VM's N28 headroom; Broiler.VM's tables cannot carry it, and a shared collator with two
+  Han orders would answer by embedding; ECMA-402 leaves the order to the implementation and UTS #35 Part 5 allows either; and
+  no test262 file or `orderings` line orders Han across blocks (finding F1). Row O3 stays data policy (C5): Broiler.JS's Han
+  order moves from its host's radical-stroke order to the implicit weights at its cut-over, SJL-17.5, which records it.
+- **What stays the engine's**: the option reads in the specification's order, ResolveLocale over its providers, the bound
+  `compare` and its caching, `localeCompare`'s coercion and its realm's `%Intl.Collator%`, and its errors.
+
 ## 2. What each engine hands the library
 
 ### The default and available locales
@@ -383,7 +418,9 @@ and fields separated by `|`, in the order the generator writes them; a character
 **Versioning.** The format is documented and versioned by the data home. A change to it breaks the library's provider
 contract, so it is a **major version** of `Broiler.ECMAScript.Intl`, and each engine regenerates its embedded tables in
 the change that adopts it (the area design's section 6). Appending an `IntlTable` value for a table Broiler.VM's data
-never carries keeps the format, since an engine that lacks a table answers an empty span (decision D8).
+never carries keeps the format, since an engine that lacks a table answers an empty span (decision D8). *(Added 2026-11-02,
+at milestone SJL-17.3: `CollationSettings`, 32, is the first such value, the settings Broiler.JS's tailorings state; the
+generator writes the table only where a tailoring states one, so Broiler.VM's tables are unchanged.)*
 
 **The data versions are public** (exit clause 2, convention 13): `IIntlDataSet.CldrVersion`, and the generator's
 `IntlDataVersions`, the CLDR, UCA and Unicode versions it writes from. The data's notices travel with the tables
@@ -520,7 +557,8 @@ available locales, which are section 2's.
 
 - **The library's names, types and API** beyond the plan's, which SJL-9.3 settles under the conventions.
 - **The table sizes**, which are SJL-9.2's measurement.
-- **Collation**, which is SJL-17's.
+- **Collation**, which is SJL-17's. *(Noted 2026-11-02, at milestone SJL-17.3: the collator is in the library, section 1's
+dated note on collation; the cut-overs are SJL-17.4's and SJL-17.5's.)*
 - **Making Intl code optional** in either engine, which is a later decision (the milestone's "Does not do").
 - **Either engine's default-locale and available-locale policy** beyond decision D7's two readings.
 
@@ -551,4 +589,10 @@ fraction's ASCII digits, and what stays the engine's. *(Extended 2026-11-02, at 
 "Nothing else here is changed.")* The header's "Revised" line gains that stage's note, ending where it read "a dated note on
 its sub-area (e) ("Corrections" lists them)."; section 1 gains a dated note on the integration - the package, every vector
 at library level with the probe's embedded tables, row T10's hour cycles, and two-digit hours settled; and section 5's
-first item a dated note that the interface is packed with its reading of the week. Nothing else here is changed.
+first item a dated note that the interface is packed with its reading of the week. *(Extended 2026-11-02, at milestone
+SJL-17.3; the sentence after the list read "Nothing else here is changed.")* The header's "Revised" line gains that
+milestone's note, ending where it read "and on section 5's first item ("Corrections" lists them)."; section 1 gains a dated
+note on collation - its names, and eight readings: the engine's reads, the tailoring chosen from the data, the settings
+table, normalization, the charges, the ceiling's status, Han across blocks (the owner's decision of 2026-11-02 on row O3),
+and what stays the engine's; section 3 a dated note on the appended `CollationSettings`; and section 8's item on collation a
+dated note. Nothing else here is changed.
