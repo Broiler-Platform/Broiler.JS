@@ -181,15 +181,27 @@ library"; JSD-0083's decision D14 as filed names four shapes, and stage SJL-13.2
 or logical operator's node, a member's, a call's, a tagged template's) on any path from the root to a leaf, through
 every child a node has; a parenthesis, a template, a substitution and every other node count none, as before, and stay
 bounded by the nesting parameter, which charges each recursion of the parser. Each chain node is charged its
-**height**, one more than the highest of its children (`Parser.Charge`), and a chain begins at the height of its first
-operand; the height of any other node is the highest of its children's, computed once per node with an explicit stack
-(`Parser.HeightOf`), so the charge adds no frame per level of the tree. A chain node whose height, added to the depth
-its chain began at, passes the constant is refused before it is used. Along a chain's left spine the charge is the one
-stage 4c made, `a + b` for a chain of `a` nodes beginning a chain of `b`, so the four shapes JSD-0083 names are refused
-exactly where they were, and the deep-nesting corpus's sources end as before. A right operand, a call's argument or a
-computed key read inside a chain is still charged from the depth the chain has reached when it is read, as stage 4c
-charged it: that can only refuse earlier, never later, than the tree's depth, and no source refused at stage 4e is
-accepted now.
+**height**, one more than the highest of its children (`Parser.Charge`); the height of any other node is the highest of
+its children's, computed once per node with an explicit stack (`Parser.HeightOf`), so the charge adds no frame per
+level of the tree. A chain node whose height passes the constant is refused before it is used, and nothing else is
+charged: the parse builds the tree from its leaves, so a tree deeper than the constant has a chain node whose height
+passes it first, wherever it stands, and a tree within the constant is accepted however its chains stand beside or
+below one another. Along a chain's left spine the height is the one stage 4c charged, `a + b` for a chain of `a` nodes
+beginning a chain of `b`, so the four shapes JSD-0083 names are refused past the constant as before, and the deep-nesting
+corpus's sources end as before (part G's runner, taken again with this change: 54 of 54 rows hold under the JIT and as
+the image).
+
+*(Revised 2026-11-02, at stage SJL-13.2f, after review; the paragraph's charge as first written kept the depth the
+parse had reached when a chain began: "A chain node whose height, added to the depth its chain began at, passes the
+constant is refused before it is used. ... A right operand, a call's argument or a computed key read inside a chain is
+still charged from the depth the chain has reached when it is read, as stage 4c charged it: that can only refuse
+earlier, never later, than the tree's depth, and no source refused at stage 4e is accepted now." Summing the chain's
+depth with an operand's height refused trees within the constant: `x = a.a...a + f(b+...+b)`, 5,000 links and 5,000
+operands, a tree 5,002 deep, was refused with JSE9202, and stage 4e accepted it. Stage 4e's charge summed a right
+operand with the chain's depth too, so it refused some trees within the constant: `x = a+...+a + (b+...+b)`, 5,001
+operands on each side, 5,002 deep. Both are accepted now, and the test
+`LimitsTests.A_tree_within_the_constant_is_accepted_however_its_chains_stand` holds them, with trees at the bound and
+one past it.)*
 
 **The shapes it reaches beyond the four**, each read from the parser, every place an expression can stand below a chain
 node or begin a chain (the tests `LimitsTests.Every_shape_of_the_tree_is_charged_its_depth`, each with a chain of 5,000
@@ -197,38 +209,64 @@ nodes in the shape's place and a chain past it, at the bound accepted, one node 
 refused, on the documented stack):
 - **a right operand of a chain's early node**, by precedence (`x = 1 + 2*...*2 + 3+...+3`) or parenthesised
   (`x = a + (b+...+b) + c+...+c`), which multiplied with nesting;
-- **a chain beginning with an expression whose spine stage 4c did not name**: a prefix operator's or `await`'s operand;
-  an array literal's element or spread element; an object literal's value or computed key; a call's argument or spread
+- **a chain beginning with an expression whose spine stage 4c did not name**: a prefix operator's, `await`'s or
+  `yield`'s operand; a prefix or postfix update's operand; an array literal's element or spread element; an object literal's value or computed key; a call's argument or spread
   argument; `new`'s argument; `import(…)`'s argument; a computed member's key, an optional chain's included; a tagged
-  template's substitution;
+  template's substitution; a decorator's expression, under the decorators proposal's flag (the test
+  `LimitsTests.A_decorator_s_expression_is_charged_its_depth`);
 - **a parenthesised expression that is not a chain, holding one**: a sequence, a conditional, an assignment, an arrow
   function's body, a function expression's body, a class's heritage and a class field's initialiser;
 - **`#x in`'s right operand**, a chain under the private-in node that begins a logical chain.
 
 Chains side by side are charged their deepest, not their sum: a call's arguments, an array's elements, a sequence's
 expressions and a program's statements, each chain within the bound, are accepted however many there are (the test
-`LimitsTests.Chains_side_by_side_are_charged_their_deepest_not_their_sum`). Stage SJL-13.2e's four probes of this
-section, taken again with `--parse-one` (configuration V, nesting parameter 512), are each refused with JSE9202 at
-10,000 now: `x = [a+...+a].b...b`, `x = f(a+...+a) + b+...+b`, `x = -(a+...+a) + b+...+b`, and the control
-`x = (a+...+a) + b+...+b`.
+`LimitsTests.Chains_side_by_side_are_charged_their_deepest_not_their_sum`); and so are a chain node's own children, a
+left operand beside a right operand, an argument or a key (the test
+`LimitsTests.A_tree_within_the_constant_is_accepted_however_its_chains_stand`). Stage SJL-13.2e's seven probes of this
+section and its control, taken again with `--parse-one` (configuration V, nesting parameter 512), each with 9,999 nodes
+on each side, are each refused with JSE9202 at 10,000 now: `x = 1 + 2*...*2 + 3+...+3`, `x = a + (b+...+b) + c+...+c`,
+`x = -(a+...+a) + b+...+b`, `x = [a+...+a].b...b`, `x = f(a+...+a) + b+...+b`, `x = (0, a+...+a) + b+...+b`,
+`x = (c ? 0 : a+...+a) + b+...+b`, and the control `x = (a+...+a) + b+...+b`; the seven were accepted at stage 4e, and
+the control refused. *(Revised 2026-11-02, after review; it read "Stage SJL-13.2e's four probes of this section, taken
+again with `--parse-one` (configuration V, nesting parameter 512), are each refused with JSE9202 at 10,000 now:
+`x = [a+...+a].b...b`, `x = f(a+...+a) + b+...+b`, `x = -(a+...+a) + b+...+b`, and the control `x = (a+...+a) +
+b+...+b`.", which named three of the seven and the control.)* The bundle `docs/evidence/sjl-13-001/`'s `review/`
+retains the probes' answers at stage 4e, at the charge as first made and with this change (`probes.tsv`).
 
 **What the stack pays.** Nothing more: the first tier's measurement of section 2 (`--measure-frames` with
 `DOTNET_TC_CallCounting=0`), taken again with this change, gives every tree row of section 3's first table the same
 frames and bytes, and every nesting row the same frames, three constructs needing a little less stack per level
 (parentheses, templates and substitutions, and `new`, which no longer keep a spine in their frame: parentheses 3,360
 bytes a level for 3,376); the computed key, the costliest, is unchanged. Section 3's figures stand as written, and section
-4's margins with them. The bundle `docs/evidence/sjl-13-001/`'s `limits/` retains this stage's measurements.
+4's margins with them. The bundle `docs/evidence/sjl-13-001/`'s `limits/` retains this stage's measurements. *(Noted
+2026-11-02, after review: the charge by height alone keeps no depth in the precedence climb's frame or the chain
+builder's, and the first tier's measurement taken again with it gives every row the same frames and every nesting row a
+little more stack left, 3,952 to 24,320 bytes at the nesting parameter's 512, the computed key 8,208 bytes, about 16 a
+level; no row needs more. Section 3's figures are each at or above this change's, and section 4's margins stand. The
+bundle's `review/frames-jit-first-tier.tsv` retains it.)*
 
-**What it moves.** In the library, a source whose tree passes the constant in one of these shapes was accepted at stage
-SJL-13.2e and is refused now; no source within the constant changes its answer, and no engine references the library
+**What it moves.** In the library, the answer is the tree's depth against the constant and nothing else. Two kinds of
+source move, both away from stage SJL-13.2e: a source whose tree passes the constant in one of these shapes was accepted
+at stage 4e and is refused now; and a source whose tree is within the constant, which stage 4e refused because it summed
+a right operand's height with the depth its chain had reached (`x = a+...+a + (b+...+b)`, 5,001 operands on each side,
+5,002 deep), is accepted now. No source of the parse corpus moves: the dump of its 295,795 parses in configuration V
+(part C's dump mode) is the same bytes at stage 4e and with this change, and part A's runner's report in both
+configurations is the same with this change as at the head the parts were taken at. No engine references the library
 yet. **Broiler.VM's base does not charge these shapes** (its `JsParser.Continue` restores the depth it saved for each
 call and reads a right operand through `ParseBinary`), so an input of one of them past the bound, accepted at the base,
 is refused at SJL-13's step 1: an implementation limit, the class L of bundle `sjl-13-001`'s part B and part A's C3 in
-Broiler.VM, never a correction. Broiler.VM's area rule as written (`docs/evidence/sjl-13-001/decision-rule-area.md`, part
-A's C3, part B's L and part C's fifth row) names the four shapes alone, so such an input there would be outside C3 and L
-until Broiler.VM revises its rule by a new dated file before its runs; no input of the parse corpus is known to have such
-a tree. A walk of a consumer's that recurses once per level, as Broiler.VM's lowering does, now meets no tree deeper than
-the constant from the library.
+Broiler.VM, never a correction. **And Broiler.VM's base sums as stage 4e did**: its `Continue` reads each right operand
+through `ParseBinary` at the depth its chain has reached, so an input whose tree is within the bound, but whose right
+operand's height and the chain's depth before it together pass it, is refused at the base and accepted after step 1.
+Broiler.VM's area rule as written (`docs/evidence/sjl-13-001/decision-rule-area.md`, part A's C3, part B's L and part C's
+fifth row) names the four shapes alone and admits no move from refused to accepted, so either kind of input there would
+be outside its classes until Broiler.VM revises its rule by a new dated file before its runs; no input of the parse
+corpus is known to have such a tree. A walk of a consumer's that recurses once per level, as Broiler.VM's lowering does,
+now meets no tree deeper than the constant from the library. *(Revised 2026-11-02, after review; it read "In the library,
+a source whose tree passes the constant in one of these shapes was accepted at stage SJL-13.2e and is refused now; no
+source within the constant changes its answer, and no engine references the library yet." and, after the class L
+sentence, "names the four shapes alone, so such an input there would be outside C3 and L until Broiler.VM revises its
+rule by a new dated file before its runs; no input of the parse corpus is known to have such a tree.")*
 
 *The section as it read at stage SJL-13.2e, under the title "5. What the tree-depth charge does not reach":* "Decision D14 charges a chain's nodes and a **left operand's spine**: a parenthesised chain, a template's substitution, a member or call chain, and a parenthesised chain as a member chain's object, each beginning a chain, are charged together, and the deep-nesting corpus holds all four. What the charge counts is the depth **along a chain and the spines of its left operands**; it does not count the depth at which a **right operand's** subtree hangs. A chain is charged from the tree depth its parse began at, and a chain's nodes are charged as they are built, so a right operand read before its chain's first node is built is charged from the chain's start, and its own subtree, whatever its depth, leaves the chain's count where it was. Four shapes follow, each probed on 2026-11-02 with `--parse-one` (configuration V, nesting parameter 512), each with 9,999 nodes on each side: - **A right operand of a chain's early nodes**, with no parentheses: `x = 1 + 2*2*...*2 + 3+...+3` is accepted. The `*`  chain is the first `+` node's right operand, read before that node is built, so it is charged from 0 to 9,999 and  released; the `+` chain then reaches 10,000. The `*` chain hangs under the deepest `+` node, so the tree is about  20,000 deep. `x = a + (b+...+b) + c+...+c` is accepted in the same way. Since each level of parentheses costs the  nesting bound one or two units, and each can begin such a right operand again, the depth **multiplies with nesting**:  bounded by about the nesting bound's levels times the constant, not by the constant. - **A chain that begins with an expression whose spine D14 does not name**: a prefix operator's operand, an array  literal's element, a call's argument: `x = -(a+a+...+a) + b+...+b`, `x = [a+...+a].b...b` and `x = f(a+...+a) +  b+...+b` are accepted, their trees about 20,000 deep. - **A parenthesised sequence or conditional as the left operand**: `x = (0, a+...+a) + b+...+b` and  `x = (c ? 0 : a+...+a) + b+...+b` are accepted. A SequenceExpression and a ConditionalExpression carry a spine of 0,  so the chain inside them is not charged to the chain they begin. - **The control**: `x = (a+...+a) + b+...+b`, D14's first shape, is refused with JSE9202 at 10,000. The library is not reached by any of them, since a level of tree depth costs it no frame (section 3), and Broiler.VM's base charges them the same way (its `JsParser.Continue` restores the depth it saved for each call and reads a right operand through `ParseBinary`), so step 1 moves no answer for them. A consumer whose walks recurse per node and lean on the constant, as JSD-0022's do, meets trees deeper than the constant there. Whether the charge should reach them is decision D14's to revise, not this stage's: JSD-0083 names the four shapes, and a wider charge would move refusals no record lists."
 

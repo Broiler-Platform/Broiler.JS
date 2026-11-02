@@ -415,19 +415,32 @@ not charge them either, and the decision is D14's".)* **The owner's decision of 
 the direction of 2026-10-18 quoted above: every such shape is charged against the tree depth, so that a tree deeper than
 `ParseLimits.MaximumTreeDepth` is refused with the contract's tree-depth diagnostic (EX0012) wherever it is built. The
 plan's decision D14 reads "the left-operand gap is closed in the library", because keeping it "would put a known hole in
-a shared library"; JSD-0083's decision D14 as filed names four shapes, which the charge still refuses where it did. Each
-chain node is now charged its height, one more than the highest of all its children, and a chain begins at its first
-operand's height; any other node's height is its highest child's, computed once with an explicit stack, so the charge
-adds no frame per level. The shapes it reaches beyond the four, each read from the parser and tested at the bound, one
-past and far past on the documented stack, are listed in the derivation's section 5 as revised that day: a right operand
-of a chain's early node, a prefix operator's or `await`'s operand, an array or object literal's element, value, spread or
-computed key, a call's, `new`'s or `import(…)`'s argument, a computed member's key, a tagged template's substitution, a
+a shared library"; JSD-0083's decision D14 as filed names four shapes, which the charge still refuses past the constant.
+Each chain node is now charged its height, one more than the highest of all its children, and refused when that height
+passes the constant; nothing else is charged, so the answer is the tree's depth against the constant: every tree deeper
+is refused, wherever it is built, and every tree within it is accepted. Any other node's height is its highest child's,
+computed once with an explicit stack, so the charge adds no frame per level. The shapes it reaches beyond the four, each
+read from the parser and tested at the bound, one past and far past on the documented stack, are listed in the
+derivation's section 5 as revised that day: a right operand of a chain's early node, a prefix operator's, `await`'s or
+`yield`'s operand, an update's operand, an array or object literal's element, value, spread or computed key, a call's,
+`new`'s or `import(…)`'s argument, a computed member's key, a tagged template's substitution, a decorator's expression, a
 parenthesised sequence, conditional or assignment, an arrow's or a function's body, a class's heritage or field
-initialiser, and `#x in`'s right operand. Chains side by side are charged their deepest, not their sum. No source within
-the constant changes its answer. **The effect on Broiler.VM** (its bundle `sjl-13-001`'s part B class L and part A's C3):
-its base does not charge these shapes, so an input of one of them past the bound, accepted at its base, moves to refused
-at SJL-13's step 1, an implementation limit of class L, never a correction; Broiler.VM's area rule names the four shapes
-alone in C3, L and part C's fifth row, and its JSD-0083 decision D14 takes a dated note of this decision.
+initialiser, and `#x in`'s right operand. Chains side by side are charged their deepest, not their sum, and so are a
+chain node's own children, a left operand beside a right operand, an argument or a key. **What moves**: a source whose
+tree passes the constant in one of these shapes, accepted at stage 4e, is refused; and a source whose tree is within the
+constant, which stage 4e refused because it summed a right operand's height with the depth its chain had reached
+(`x = a+...+a + (b+...+b)`, 5,001 operands on each side, 5,002 deep), is accepted. No source of the parse corpus moves.
+**The effect on Broiler.VM** (its bundle `sjl-13-001`'s part B class L and part A's C3): its base does not charge these
+shapes, so an input of one of them past the bound, accepted at its base, moves to refused at SJL-13's step 1, an
+implementation limit of class L, never a correction; and its base sums a right operand with its chain's depth as stage
+4e did, so an input whose tree is within the bound and which the base refuses for that sum moves to accepted.
+Broiler.VM's area rule names the four shapes alone in C3, L and part C's fifth row and admits no move to accepted, and
+its JSD-0083 decision D14 takes a dated note of this decision. *(Revised 2026-11-02, after review; the note as first
+written read "which the charge still refuses where it did. Each chain node is now charged its height, one more than the
+highest of all its children, and a chain begins at its first operand's height;" and "No source within the constant
+changes its answer.", and gave Broiler.VM only the move to refused: a chain began at the depth the parse had reached, so
+an argument or a right operand beside a deep left operand was charged both, and trees within the constant were
+refused.)*
 
 ### 9.3 The result
 
