@@ -22,6 +22,18 @@ Clause 1 is read from parts H and E, with part G for the contract's limits; clau
 parts C and D. There is no base and no measurement part: the library is new, and every part is judged at one commit,
 the library commit.
 
+*(Noted 2026-11-02, at SJL-13.2f, after the runs at the stage's heads were seen: the rule is revised by
+[`decision-rule-revised-2026-11-02.md`](decision-rule-revised-2026-11-02.md), which quotes it whole, the owner's
+decisions of that day taken as recommended under the direction of 2026-10-18 - (a) part A's provider also refuses a
+literal the classification refuses for a regular-expression reason whatever row it names, by the list
+[`readings/provider-readings.tsv`](readings/provider-readings.tsv) that [`tools/provider_readings.py`](tools/provider_readings.py)
+writes; (b) the classification's errors are read by the listed mapping
+[`readings/classification-readings.tsv`](readings/classification-readings.tsv), the classification unedited; (c) part
+C's control K2 is expected to make the cross-process comparison of the runs' hashes report a difference, not rule SL9 to
+fail; (d) parts A and G read decision D14 as stage 4f decided it; (e) EX0008 and EX0009 are admitted for each other
+where the classification names either; (f) a limit's refusal reported at its bound is read as past it. `decision-rule.md`
+is unchanged; the revision is weaker evidence for the decisions it changes, as the rule's section "Revisions" says.)*
+
 **Area verdict:** [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "Area verdicts", "The frontend's syntax
 half (SJL-13.1)", with Broiler.VM's JSD-0083,
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0083-the-shared-syntax-library-and-the-wide-path.md`,
@@ -344,6 +356,25 @@ Release with `--disable-build-servers`, no `LANG`, `TZ=UTC`, and retained in [`r
 Not taken again: part C's runs 2 and 3 and its controls, part F's control, and part H's check, which reads the public
 API, the project file, `Rows.cs` and the stage table, none of which the change moves; part E's architecture tests ran
 with every test project.
+
+### Part A's first codes, triaged, 2026-11-02
+
+*(Added 2026-11-02, at SJL-13.2f, after the runs above were seen.)* Every one of the 1,922 failures of part A's
+comparison at `920f18f4` was read: the input, the library's refusing site, the catalogue's and the stage table's rows,
+and the rows the classification names. [`readings/triage.tsv`](readings/triage.tsv) gives each group of
+`corpus/failure-groups.tsv` with what answers it:
+
+| Outcome | Parses | What |
+|---|---|---|
+| (i) a library site reporting the wrong row, fixed | 112 | 40 refusals of an `await` binding in a class static block, refused by EE0140 where EE0009 holds (EE0140 looks into no function); 72 of an arrow head's literal that covers no AssignmentPattern, refused by EE0032 where EE0087 holds. Commit `9d4c7ef323eb5184412379d15a0b087f4f2abe78`, with tests that failed before it (design.md section 9.4's note, the CHANGELOG) |
+| (ii) the classification naming rows that do not hold | 652 | readings H1 to H9 (626 first codes: a `#` that begins no token, EX0001, 562; EX0010 for `import`/`export` in a script, 20; EE0033, EE0047, EE0155, EE0009 and EX0008 where the rows named do not hold, 44) and S1, S2 (26 refusals the library does not make, which stage 4f's records called library defects: the rule that holds is EE0054 or EE0171, both `semantics`, and the row named, EG0008 or EE0182, does not hold); listed in [`readings/classification-readings.tsv`](readings/classification-readings.tsv) |
+| (iii) EX0008 for EX0009, or the reverse | 442 | the catalogue's two generic grammar rows at a token the grammar does not admit where the parser stands |
+| the provider's reading | 710 | regular-expression literals the classification refuses under non-provider rows: in J, 255 test262 inputs under Broiler.JS's scanner codes; in V and J, 50 Broiler.JS inputs under Broiler.VM's code-2101 rows |
+| a limit reported at its bound | 6 | J000243, J000799 (nesting, 512) and J000451 (tree depth, 10,000), strict and sloppy, in J |
+
+None of (ii), (iii), the provider's reading or the limits is a library defect, and none is answered by editing the
+classification: [`decision-rule-revised-2026-11-02.md`](decision-rule-revised-2026-11-02.md) decides how each is read,
+its decisions (b), (e), (a) and (f). Of the 1,180 first codes no row allowed, 112 are (i), 626 (ii) and 442 (iii).
 
 ## State
 
