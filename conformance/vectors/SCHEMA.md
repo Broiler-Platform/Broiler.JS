@@ -73,15 +73,16 @@ as the classification of its first runs (revision 32), since the `engine vectors
 runs `EngineRunTests` on any change to `conformance/vectors/` and fails on a difference nothing classifies, and no
 `divergence.broiler-js` field (section 5) can classify a status; Broiler.VM's (`VectorsCommand`) comes before its pin
 moves to revision 31 (rule N13). Until a runner skips them, what it reports for them is no difference of the
-engine's.)* *(Revised 2026-11-01, at corpus revision 32: both engine-level runners now skip them. Broiler.JS's
-`CorpusRun`, which `EngineRunTests` runs, skips every vector whose `out` is a status before any is evaluated, gives it
-no result and so no report line, and counts and names each one in the run's summary line, which the `engine vectors`
-job prints; Broiler.VM's `VectorsCommand` does the same in its change for SJL-11.3 (its branch `sjl-11-3-vm`, which
-REVISIONS.md row 32 names), before its pin moves past revision 30. Each skip came with a test that a status vector is
-skipped, counted and named, watched failing first. So the note's sentences "Neither runner skips them yet, and no task
-of SJL-11's plan changes either: the skip is a code change of each runner, with a test that a status vector gives no
-line, and it comes before that runner runs revision 31" and "Until a runner skips them, what it reports for them is no
-difference of the engine's" describe revision 31 only; the rule in bold above is unchanged.)*
+engine's.)* *(Revised 2026-11-01, at `d8cb8406`, whose corpus is revision 31, before revision 32 classifies it: both
+engine-level runners now skip them. Broiler.JS's `CorpusRun`, which `EngineRunTests` runs, skips every vector whose
+`out` is a status before any is evaluated, gives it no result and so no report line, and counts and names each one in
+the run's summary line, which the `engine vectors` job prints; Broiler.VM's `VectorsCommand` does the same in its
+change for SJL-11.3 (its branch `sjl-11-3-vm`, which REVISIONS.md row 32 names), before its pin moves past revision
+30. Each skip came with a test that a status vector is skipped, counted and named, watched failing first. So the
+note's sentences "Neither runner skips them yet, and no task of SJL-11's plan changes either: the skip is a code
+change of each runner, with a test that a status vector gives no line, and it comes before that runner runs revision
+31" and "Until a runner skips them, what it reports for them is no difference of the engine's" describe revision 31
+before `d8cb8406` only; the rule in bold above is unchanged.)*
 
 **`out` may list alternatives**, separated by ` | `, when the specification admits more than one
 result and enumerates them: the least significant digit of Number::toString, which is "not

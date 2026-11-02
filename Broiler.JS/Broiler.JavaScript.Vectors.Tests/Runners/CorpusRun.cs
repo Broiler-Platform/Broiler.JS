@@ -40,9 +40,9 @@ namespace Broiler.JavaScript.Vectors.Tests.Runners;
 /// vector whose <c>out</c> is a library-level status (<c>status: exhausted</c>, which the regular-expression
 /// area's budget vectors expect of Broiler.Regex at a step budget) is never evaluated and has no result, so the
 /// report gives it no line. It is not dropped silently: <see cref="Skipped"/> names every one, in the list's
-/// order, and <see cref="Summary"/> counts and names them. <i>(Added 2026-11-01, at corpus revision 32, whose
-/// first such vectors corpus revision 31 added; until then every vector of the list was evaluated, and a status
-/// vector was a difference nothing classifies.)</i>
+/// order, and <see cref="Summary"/> counts and names them. <i>(Added 2026-11-01, at <c>d8cb8406</c>, whose corpus is
+/// revision 31, the revision that added the first such vectors, and which revision 32 then classifies; until then
+/// every vector of the list was evaluated, and a status vector was a difference nothing classifies.)</i>
 /// </para>
 /// </remarks>
 public sealed class CorpusRun

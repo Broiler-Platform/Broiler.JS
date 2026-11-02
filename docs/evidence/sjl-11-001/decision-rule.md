@@ -233,9 +233,10 @@ decisions of 2026-11-01". It was written before any run this part judges, and th
 D's population reads "every vector of conformance/vectors/regexp/ at the corpus revision bundle sjl-11-001 names". Its
 MET clause holds each vector to "the outcome its class expects". But the 18 vectors of `regexp/budget.vectors` whose
 `out` is `status: exhausted` are library-level (JSD-0081's decision D25). The corpus's SCHEMA.md section 4 has an
-engine-level runner skip them and give them no line, and this engine's runner does since corpus revision 32
-(`CorpusRun`, which names each one it skips in its summary line). So an engine-level run can never give their `out`.
-By this decision **the status vectors are judged at library level only, by Broiler.Regex's part D**. **This part's
+engine-level runner skip them and give them no line, and this engine's runner does since `d8cb8406` (corpus revision
+31 with SCHEMA.md's dated note; `CorpusRun`, which names each one it skips in its summary line). So an engine-level
+run can never give their `out`. By this decision **the status vectors are judged at library level only, by
+Broiler.Regex's part D**. **This part's
 population is the non-status vectors** of `regexp/` at that revision, the vectors this engine's run gives a line to.
 The three after reports are compared byte for byte over them, and each is held to its class's outcome as the MET
 clause says. The corpus revision this part names is 32, the one that classifies both engines' first runs. Two more
