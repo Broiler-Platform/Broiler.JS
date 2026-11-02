@@ -818,6 +818,9 @@ public sealed class ParserTests
     [InlineData("P05d", "import a from 'm' assert { type: 'json' };", ParseGoal.Module, false)]
     [InlineData("P07", "new import(a)", ParseGoal.Script, false)]
     [InlineData("P07", "import(...a)", ParseGoal.Script, false)]
+    // P08's refusals are early errors (catalogue rows EE0027 and EA0002), stage 4d's: the grammar admits both.
+    [InlineData("P08", "import.meta;", ParseGoal.Script, true)]
+    [InlineData("P08", "new.target", ParseGoal.Script, true)]
     [InlineData("P09", "({ async\nm() {} })", ParseGoal.Script, false)]
     [InlineData("P09", "function f() { let\nawait 0; }", ParseGoal.Script, false)]
     [InlineData("P10", "do {}; while (false)", ParseGoal.Script, false)]
@@ -831,6 +834,11 @@ public sealed class ParserTests
     [InlineData("P15a", "[...a = 1] = c", ParseGoal.Script, false)]
     [InlineData("P15a", "[...a,] = c", ParseGoal.Script, false)]
     [InlineData("P15a", "({...a, b} = c)", ParseGoal.Script, false)]
+    // P15b's refusal of a parenthesised nested target that is no simple target is an early error (catalogue row EE0039),
+    // stage 4d's; a parenthesised simple target is valid.
+    [InlineData("P15b", "var b; ({ a: (b = 7) } = {});", ParseGoal.Script, true)]
+    [InlineData("P15b", "var b; ({ a: ([b]) } = { a: [1] });", ParseGoal.Script, true)]
+    [InlineData("P15b", "var b; ({ a: (b) } = { a: 8 }); b", ParseGoal.Script, true)]
     [InlineData("P16", "a\nb", ParseGoal.Script, true)]
     [InlineData("P16b", "for (var i = 0\ni < 1; i++) ;", ParseGoal.Script, false)]
     [InlineData("P16b", "for (let i = 0\ni < 1; i++) ;", ParseGoal.Script, false)]
@@ -849,6 +857,11 @@ public sealed class ParserTests
     [InlineData("P23", "function f(...a, b) {}", ParseGoal.Script, false)]
     [InlineData("P23", "function f(...a,) {}", ParseGoal.Script, false)]
     [InlineData("P24", "function f() { class C { static { return; } } }", ParseGoal.Script, false)]
+    // P25's refusal of `using` at the top level of a Script or of eval code is an early error (catalogue row EP0008), stage
+    // 4d's: the grammar admits the declaration there, and in a block.
+    [InlineData("P25", "using x = null;", ParseGoal.Script, true)]
+    [InlineData("P25", "using x = null;", ParseGoal.Eval, true)]
+    [InlineData("P25", "var r; { using x = null; r = 3; } r", ParseGoal.Script, true)]
     [InlineData("P31", "({...{a}} = o)", ParseGoal.Script, false)]
     [InlineData("P31", "({...[a]} = o)", ParseGoal.Script, false)]
     [InlineData("P31", "[...[a]] = []", ParseGoal.Script, true)]
