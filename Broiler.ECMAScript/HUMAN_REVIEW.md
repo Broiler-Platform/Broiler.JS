@@ -50,9 +50,9 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 168 |
-| Code units | 4624 |
+| Code units | 4623 |
 | Relevant | 2972 |
-| Exempt | 1652 |
+| Exempt | 1651 |
 | Assessed | 2972 of 2972 (100%) |
 | Human reviewed | 0 of 2972 (0%) |
 | Unverified | 2972 |
@@ -71,7 +71,7 @@ annotations and the current fingerprints; nothing stores them.
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1652 |
+| EXEMPT | 1651 |
 
 ## 5. Aliases In The Tree
 
@@ -179,7 +179,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Frontend/Parser.Functions.cs` | 32 | 32 | 0 | 32 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Frontend/Parser.Modules.cs` | 10 | 10 | 0 | 10 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/Parser.Statements.cs` | 38 | 37 | 1 | 37 | Low | High | 1/1 |
-| `Broiler.ECMAScript.Frontend/Parser.cs` | 77 | 41 | 36 | 41 | Low | High | 6/6 |
+| `Broiler.ECMAScript.Frontend/Parser.cs` | 76 | 41 | 35 | 41 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Frontend/ProposalFlags.cs` | 11 | 2 | 9 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/Rows.cs` | 212 | 212 | 0 | 212 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SourceText.cs` | 7 | 2 | 5 | 2 | Low | Low | 0/0 |
@@ -487,11 +487,11 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: an arrow is read where its cover was not the whole left operand, a target that is no LeftHandSideExpression is admitted, or a CoverInitializedName no conversion takes is admitted
 - `Broiler.ECMAScript.Syntax.Parser.CheckCoverInitialized(int)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.2.5 CoverInitializedName, `EB5FEA`, PENDING
   - Falsified if: a CoverInitializedName that no conversion took is admitted
-- `Broiler.ECMAScript.Syntax.Parser.ParseBinary(int, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge and nesting bound, `D2774C`, PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseBinary(int, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge and nesting bound, `C1A259`, PENDING
   - Falsified if: an operator binds with another precedence or associativity than the grammar's, a chain is charged without its left operand's height or a node without its right operand's, or a right operand of a higher precedence adds a frame to the parser's stack
-- `Broiler.ECMAScript.Syntax.Parser.CombineBinary(Expression, Token, Expression, int)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.6-s13.13 precedence, s13.13 coalesce, JSD-0083 D14 left-operand charge, `47D7D7`, PENDING
+- `Broiler.ECMAScript.Syntax.Parser.CombineBinary(Expression, Token, Expression)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.6-s13.13 precedence, s13.13 coalesce, JSD-0083 D14 left-operand charge, `74F764`, PENDING
   - Falsified if: a CoalesceExpression mixed with a LogicalOR or LogicalAND operand is built, or a chain node is built without its charge
-- `Broiler.ECMAScript.Syntax.Parser.ParseChainLinks(Expression, bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14, `9E07DE`, PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseChainLinks(Expression, bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14, `6DE43D`, PENDING
   - Falsified if: a link the grammar refuses is admitted, or a chain is charged without its first expression's height or a link without its arguments' or key's
 - `Broiler.ECMAScript.Syntax.Parser.ParseParenthesized()` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList, `4D6B21`, PENDING
   - Falsified if: a form only parameters have is admitted without the arrow, or an arrow head is read again rather than converted
@@ -511,8 +511,8 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a semicolon is inserted where no rule of clause 12.10 inserts one, or refused where one does
 - `Broiler.ECMAScript.Syntax.Parser.EnterNesting(Token)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, Spec=JSD-0083 D14 nesting bound, JSD-0080 D27, `68FB67`, PENDING
   - Falsified if: a recursion the nesting bound charges reaches the stack past the request's bound, or a source within the bound is refused
-- `Broiler.ECMAScript.Syntax.Parser.Charge(SyntaxNode, int, SourceSpan)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02, `24CCD2`, PENDING
-  - Falsified if: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused, or a node's height misses a child's
+- `Broiler.ECMAScript.Syntax.Parser.Charge(SyntaxNode, SourceSpan)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02, `3FA06F`, PENDING
+  - Falsified if: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused, a node's height misses a child's, or a tree within the constant is refused
 - `Broiler.ECMAScript.Syntax.Parser.HeightOf(SyntaxNode)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02, `DD2A62`, PENDING
   - Falsified if: a node's height differs from the most chain nodes on a path below it, or its computation recurses per level of the tree
 - `Broiler.ECMAScript.Syntax.SyntaxParser.Parse(ParseRequest)` in `Broiler.ECMAScript.Frontend/SyntaxParser.cs` - Security=High, Spec=ECMA-262 s16.1 s16.2 s19.2.1.1 s20.2.1.1.1 goals, JSD-0083 SJL-13.2c parse entry D32, `6F6645`, PENDING

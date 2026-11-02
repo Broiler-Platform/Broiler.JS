@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   41
 // Annotated:        41/41
-// Exempt:           36
+// Exempt:           35
 // Human-reviewed:   0/41
 // IP risk:          Low
 // Security risk:    High
@@ -58,9 +58,9 @@ namespace Broiler.ECMAScript.Syntax;
 /// statement, assignment expression, binding pattern, recursing prefix operator and nested <c>new</c>, as Broiler.VM's
 /// <c>JsParser</c> charges it, and for each right operand of <c>**</c>, the one right-recursive binary operator, and for
 /// each class heritage, through which a class expression recurses, both of which Broiler.VM's parser leaves uncharged;
-/// the tree depth is charged once for each node a binary chain or a member or call chain adds, from the height of the
-/// chain's first operand, and each chain node is charged its whole height, the most chain nodes on any path below it,
-/// so that a tree deeper than <see cref="ParseLimits.MaximumTreeDepth"/> is refused wherever it is built. <i>(Revised
+/// the tree depth is charged once for each node a binary chain or a member or call chain adds, each charged its whole
+/// height, the most chain nodes on any path from it to a leaf, so that a tree deeper than
+/// <see cref="ParseLimits.MaximumTreeDepth"/> is refused wherever it is built, and no tree within it is. <i>(Revised
 /// 2026-11-02, at stage SJL-13.2f, by the owner's decision of that day on decision D14's residual left-operand shapes;
 /// it read "the tree depth is charged once for each node a binary chain or a member or call chain adds, from the spine of
 /// the chain's first operand, which closes the left-operand gap in all four of its shapes.")</i>
@@ -120,7 +120,6 @@ internal sealed partial class Parser
 
     // The limits' counters.
     private int nesting;
-    private int treeDepth;
 
     // The row a conversion of a cover refuses by when what was read covers nothing the conversion admits (stage 4d: EE0087 or
     // EE0155 at an arrow's head, EE0032 or EE0053 at an assignment's or a for head's pattern, EE0038 inside one), or null
@@ -521,27 +520,30 @@ internal sealed partial class Parser
     private void ExitNesting() => nesting--;
 
     /// <summary>
-    /// Charges a chain node: its height is one more than its highest child's (<see cref="HeightOf"/>), and the tree depth
-    /// where it stands is <paramref name="saved"/>, the depth its chain began at, and that height; past the library's
+    /// Charges a chain node: its height is one more than its highest child's (<see cref="HeightOf"/>); past the library's
     /// constant the source is refused (catalogue row EX0012) before the node is used.
     /// </summary>
     /// <remarks>
     /// Every child counts, not the left operand's spine alone (decision D14, as the owner decided on 2026-11-02): a right
     /// operand, a call's argument, a computed key, a template's substitution, and through a prefix operator, an array or
     /// object literal, a sequence, a conditional or a function the chains inside them, so that a tree deeper than the
-    /// constant is refused wherever it is built. <i>(Revised 2026-11-02, at stage SJL-13.2f; it was <c>Deepen</c>, "Charges
-    /// one level of tree depth for a chain node, refusing the source past the library's constant (catalogue row EX0012).",
-    /// which added one to the depth whatever the node's right operand or arguments held.)</i>
+    /// constant is refused wherever it is built. The check is the node's height alone: the parse builds a tree from its
+    /// leaves, so every chain node of a tree deeper than the constant has a descendant, or is one, whose height passes it
+    /// first, and a tree within the constant, however its chains stand beside or below one another, is accepted.
+    /// <i>(Revised 2026-11-02, at stage SJL-13.2f; it was <c>Deepen</c>, "Charges one level of tree depth for a chain
+    /// node, refusing the source past the library's constant (catalogue row EX0012).", which added one to the depth
+    /// whatever the node's right operand or arguments held, and which charged a chain from the depth the parse had reached
+    /// when the chain began, so that a right operand or an argument read inside a chain was charged that depth and its own
+    /// together and a tree within the constant could be refused.)</i>
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=High; Resources=2; Fingerprint=24CCD2
-    // Broiler-Falsified-If: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused, or a node's height misses a child's
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=High; Resources=2; Fingerprint=3FA06F
+    // Broiler-Falsified-If: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused, a node's height misses a child's, or a tree within the constant is refused
     // Broiler-Human:        PENDING
-    private void Charge(SyntaxNode node, int saved, SourceSpan at)
+    private void Charge(SyntaxNode node, SourceSpan at)
     {
         var height = ChildrenHeight(node) + 1;
         node.Height = height;
-        treeDepth = saved + height;
-        if (treeDepth > ParseLimits.MaximumTreeDepth)
+        if (height > ParseLimits.MaximumTreeDepth)
             throw Refuse(TreeTooDeep, at, ParseLimits.MaximumTreeDepth.ToString(NumberFormatInfo.InvariantInfo));
     }
 
