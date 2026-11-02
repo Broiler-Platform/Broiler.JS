@@ -39,6 +39,8 @@ namespace Broiler.ECMAScript.Intl;
 /// write - and six <c>TypeError</c>s that CreateDateTimeFormat and HandleDateTimeValue raise after every read of a script value:
 /// a style with components, a date format with a time style, a time format with a date style, a Temporal type the options give
 /// no field of, a ZonedDateTime outside its own <c>toLocaleString</c>, and a range of two types.)</i>
+/// <i>(Extended 2026-11-02, at stage SJL-9.3e, which appends sub-area (e)'s three, each a <c>RangeError</c> of
+/// ValidateDurationUnitStyle: a fractional unit displayed always, and a unit's style after a fractional or a numeric unit.)</i>
 /// </para>
 /// <para>
 /// <b>The numbers are stable.</b> Each stage of milestone SJL-9.3 appends the statuses its sub-area's operations answer,
@@ -181,4 +183,22 @@ public enum IntlStatus
     /// PartitionDateTimeRangePattern, SameTemporalType): a <c>TypeError</c>.
     /// </summary>
     RangeOfDifferentTypes = 26,
+
+    /// <summary>
+    /// A fractional duration unit is displayed <c>always</c> (ValidateDurationUnitStyle, <c>sec-validatedurationunitstyle</c>,
+    /// step 1): a <c>RangeError</c>.
+    /// </summary>
+    FractionalDurationUnitAlwaysDisplayed = 27,
+
+    /// <summary>
+    /// A duration unit after a fractional unit is not fractional (ValidateDurationUnitStyle, <c>sec-validatedurationunitstyle</c>,
+    /// step 2): a <c>RangeError</c>.
+    /// </summary>
+    DurationUnitAfterFractional = 28,
+
+    /// <summary>
+    /// A duration unit after a <c>numeric</c> or <c>2-digit</c> unit is neither fractional, <c>numeric</c> nor <c>2-digit</c>
+    /// (ValidateDurationUnitStyle, <c>sec-validatedurationunitstyle</c>, step 3): a <c>RangeError</c>.
+    /// </summary>
+    DurationUnitAfterNumeric = 29,
 }

@@ -57,7 +57,8 @@ public sealed class ContractTests
              ("RangeIsNotANumber", 13), ("RelativeTimeValueNotFinite", 14), ("InvalidRelativeTimeUnit", 15), ("InvalidDisplayNamesCode", 16),
              ("TimeZoneOffsetHasSeconds", 17), ("InvalidTimeZone", 18), ("StyleWithComponents", 19), ("DateFormatWithTimeStyle", 20),
              ("TimeFormatWithDateStyle", 21), ("TimeValueOutOfRange", 22), ("TemporalTypeNotFormatted", 23), ("TemporalCalendarMismatch", 24),
-             ("ZonedDateTimeNotFormatted", 25), ("RangeOfDifferentTypes", 26)],
+             ("ZonedDateTimeNotFormatted", 25), ("RangeOfDifferentTypes", 26), ("FractionalDurationUnitAlwaysDisplayed", 27),
+             ("DurationUnitAfterFractional", 28), ("DurationUnitAfterNumeric", 29)],
             Enum.GetValues<IntlStatus>().Select(static s => (s.ToString(), (int)s)).ToArray());
     }
 }
