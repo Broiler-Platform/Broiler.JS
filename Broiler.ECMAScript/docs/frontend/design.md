@@ -324,7 +324,7 @@ correspondence's findings changed it.
 | Namespaces | `Broiler.ECMAScript.Syntax`: the request, the tokenizer, the tree, the parser and the diagnostics. `Broiler.ECMAScript.Semantics`: the declarations walk from SJL-13.2, the model from SJL-15 |
 | References | `Broiler.ECMAScript.Algorithms` and `Broiler.Unicode.Algorithms` only: rule SL1's layering row `Frontend → [Algorithms, Broiler.Unicode.Algorithms]`. No `Broiler.Regex` edge (decision D7) |
 | Public API | `PublicAPI.txt`, held by the API baseline in both directions, and assurance from the first commit |
-| Packing | `IsPackable` false until SJL-13.2's done-when; then published in the shared stream with the owner's approval (decision D30) |
+| Packing | `IsPackable` false until SJL-13.2's done-when; then published in the shared stream with the owner's approval (decision D30). *(Noted 2026-11-02, at SJL-13.2f, the done-when: `IsPackable` is true, on the shared stream's `0.1.0-preview.N` scheme, the owner's words of 2026-11-01, with package validation as the other shared packages run it; nothing is published.)* |
 | `Broiler.ECMAScript.Algorithms` | Unchanged at SJL-13, an added member included: a helper the library needs is internal to it. Literal values come from `NumericLiterals.Evaluate`, of unbounded length; an engine applies its own ceilings |
 
 ### 9.2 The request
@@ -409,6 +409,25 @@ stage 4e, with the stack it requires stated beside it, which admits Broiler.VM's
   a prefix operator's operand, an array literal's element or a call's argument, and a parenthesised sequence or
   conditional as a left operand each reach past the constant; Broiler.VM's base does not charge them either, and the
   decision is D14's.
+
+*(Noted 2026-11-02, at SJL-13.2f, on the note above's last item, "each reach past the constant; Broiler.VM's base does
+not charge them either, and the decision is D14's".)* **The owner's decision of 2026-11-02**, taken as recommended under
+the direction of 2026-10-18 quoted above: every such shape is charged against the tree depth, so that a tree deeper than
+`ParseLimits.MaximumTreeDepth` is refused with the contract's tree-depth diagnostic (EX0012) wherever it is built. The
+plan's decision D14 reads "the left-operand gap is closed in the library", because keeping it "would put a known hole in
+a shared library"; JSD-0083's decision D14 as filed names four shapes, which the charge still refuses where it did. Each
+chain node is now charged its height, one more than the highest of all its children, and a chain begins at its first
+operand's height; any other node's height is its highest child's, computed once with an explicit stack, so the charge
+adds no frame per level. The shapes it reaches beyond the four, each read from the parser and tested at the bound, one
+past and far past on the documented stack, are listed in the derivation's section 5 as revised that day: a right operand
+of a chain's early node, a prefix operator's or `await`'s operand, an array or object literal's element, value, spread or
+computed key, a call's, `new`'s or `import(…)`'s argument, a computed member's key, a tagged template's substitution, a
+parenthesised sequence, conditional or assignment, an arrow's or a function's body, a class's heritage or field
+initialiser, and `#x in`'s right operand. Chains side by side are charged their deepest, not their sum. No source within
+the constant changes its answer. **The effect on Broiler.VM** (its bundle `sjl-13-001`'s part B class L and part A's C3):
+its base does not charge these shapes, so an input of one of them past the bound, accepted at its base, moves to refused
+at SJL-13's step 1, an implementation limit of class L, never a correction; Broiler.VM's area rule names the four shapes
+alone in C3, L and part C's fifth row, and its JSD-0083 decision D14 takes a dated note of this decision.
 
 ### 9.3 The result
 
@@ -536,6 +555,10 @@ The stage table [`stages.tsv`](stages.tsv) records the assignment for every cata
 - sections 3, 4 and 5 gain notes; section 7 gains SJL-13's records; section 8's first, second and last items are
   revised;
 - section 9 is new.
+
+*(Added 2026-11-02, at SJL-13.2f.)* Section 9.1's packing row gains the note that the library is packable; section 9.2
+gains the note on the owner's decision of 2026-11-02 on decision D14's residual shapes, each chain node charged its whole
+height, and its effect on Broiler.VM's class L. The derivation's section 5 is revised the same day.
 
 *(Added 2026-11-02, at SJL-13.2e.)* Section 1's limits row, its "Deterministic" and "Limits are checked before the stack
 is" properties and section 8's last item gain notes that the derivation is made; section 9.2 a note on the derivation,

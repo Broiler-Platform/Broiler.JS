@@ -12,9 +12,11 @@
     goal its caller names, and a parse entry that refuses a source the lexical grammar refuses and answers "not
     implemented" for every other. Stage SJL-13.2c adds the tree, public and immutable, and the parser, internal: the
     syntactic grammar of every goal, with cover grammars converted and the two limits checked before the stack is;
-    the parse entry answers accepted, with the tree, or refused. The diagnostics' identifiers and the
-    parse-time early errors are stage 4d's, the limits' derivation, determinism and fuzzing stage 4e's, and the done-when
-    stage 4f's.
+    the parse entry answers accepted, with the tree, or refused. Stage SJL-13.2d gives every refusal its catalogue
+    row's code and adds the declarations walk in Broiler.ECMAScript.Semantics, the parse-time early errors and the side
+    tables; stage SJL-13.2e derives the limits and adds determinism and fuzzing; stage SJL-13.2f, the done-when, charges
+    every chain node its whole height in tree depth (the owner's decision of 2026-11-02 on decision D14) and packs the
+    library.
 
     References (decision D6; rule SL1's row Frontend -> [Algorithms, Broiler.Unicode.Algorithms]):
     Broiler.ECMAScript.Algorithms, whose WorkCharge and DepthLimit the request takes and whose
@@ -23,16 +25,18 @@
     Broiler.Regex: the regular-expression validator is an interface of this library that each engine supplies
     (decision D7). No engine, and nothing of Broiler.VM.
 
-    NOT PACKED YET. IsPackable stays false until stage SJL-13.2f, the done-when (decision D6), so that no version of
-    the shared stream carries part of the library; the package identity is set and nothing is packed.
+    PACKED FROM STAGE SJL-13.2f, the done-when (decision D6): IsPackable was false from stage 4a to 4e, so that no
+    version of the shared stream carries part of the library, and is true now, on the shared stream's 0.1.0-preview.N
+    scheme with the other shared packages, with package validation as they have it (a first version, validated without
+    a baseline). Publishing that version is the owner's, with the owner's approval (decision D30).
   -->
   <PropertyGroup>
     <RootNamespace>Broiler.ECMAScript.Syntax</RootNamespace>
     <AssemblyName>Broiler.ECMAScript.Frontend</AssemblyName>
     <PackageId>Broiler.ECMAScript.Frontend</PackageId>
-    <Description>The shared syntax library of the Broiler JavaScript engines (ECMA-262): an immutable parse request with goals, switches, the inherited context of eval code, proposal flags, a lexer extension, limits and providers (Broiler.Unicode's tables, a regular-expression validator each engine supplies, an optional work meter), an immutable syntax tree with full spans and raw facts, and diagnostics with shared codes, message identifiers, phases and spans. The tokenizer reads the lexical grammar and the parser the syntactic grammar; the static-semantic early errors follow in a later stage.</Description>
+    <Description>The shared syntax library of the Broiler JavaScript engines (ECMA-262): an immutable parse request with goals, switches, the inherited context of eval code, proposal flags, a lexer extension, limits and providers (Broiler.Unicode's tables, a regular-expression validator each engine supplies, an optional work meter), an immutable syntax tree with full spans and raw facts, and diagnostics with shared codes, message identifiers, phases and spans. The tokenizer reads the lexical grammar of ECMA-262 and the parser its syntactic grammar for scripts, modules, eval code and the dynamic function's parameters and body, with cover grammars converted, the declarations walk reports the parse-time early errors with side tables of each scope's declarations, and the nesting depth and tree depth are checked before the stack is.</Description>
     <PackageTags>broiler;ecmascript;javascript;shared;frontend;parser;syntax;ecma-262</PackageTags>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
   <ItemGroup>

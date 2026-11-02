@@ -103,6 +103,13 @@ contain three pieces of third-party code and one set of public-domain formulas, 
   compiler and the tz source format, not from `zic`'s code. **The package carries no data**: it reads the
   pinned archives its caller hands it, and the tables it writes are files of this repository, under the
   time data section below, never package content (decision SJL-D-6 (c)).
+- `Broiler.ECMAScript.Frontend` (packed from stage SJL-13.2f), the shared syntax library of milestone SJL-13.2, is
+  written for the programme, Apache-2.0, with no third-party code: its tokenizer, parser, tree and declarations walk
+  from ECMA-262's grammar and early errors, its tree's shape seeded from Broiler.VM's `JsSyntax` under the same licence
+  and by the same contributors, and its diagnostics' codes and message identifiers from this repository's early-error
+  catalogue, `Broiler.ECMAScript/docs/frontend/early-errors.tsv`. Each unit records its origin in its assurance
+  annotation. **It carries no data**: the Unicode classes it reads are the tables its caller hands in (Broiler.Unicode's
+  `IUnicodeTables`), and a regular-expression literal's validity is the caller's validator's.
 - `Broiler.ECMAScript.Conformance` (not packed) holds the conformance corpus's reader, validator and
   runners, written for the programme. The corpus it reads, `conformance/vectors/`, takes its expected
   values from ECMA-262 and from an exact reference computation in this repository, not from code.
@@ -187,7 +194,9 @@ differences: the bullet on them was added after the bullet on the calendars, and
 under the same licence and by the same contributors, and read the retained dataset
 `conformance/datasets/time/temporal-calendars.js` and its answers in place.". Revised 2026-11-02, at stage SJL-9.3f,
 when `Broiler.ECMAScript.Intl` was made packable: its bullet began "`Broiler.ECMAScript.Intl` (not packed until stage
-SJL-9.3f), at stage SJL-9.3a, is ported". The package carries no table and no CLDR data.
+SJL-9.3f), at stage SJL-9.3a, is ported". The package carries no table and no CLDR data. Revised 2026-11-02, at stage SJL-13.2f, when
+`Broiler.ECMAScript.Frontend` was made packable: the bullet on it was added; the library had been in the repository,
+not packed, since stage SJL-13.2a.
 
 ## The time data home (`Broiler.ECMAScript/data/time/`)
 
