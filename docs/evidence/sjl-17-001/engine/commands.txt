@@ -73,3 +73,50 @@ Broiler.VM, TZ=UTC, from broiler-vm-revision-34.pin's archive.
            this engine; 1 for the negative control, its one
            difference the mutated vector
   files    broiler-vm-run-revision-34.log, broiler-vm-negative-control-revision-34.log and their .tsv.gz reports
+
+== Revision 34 as corrected before the merge (2026-11-02): CI's windows-latest host
+
+These files are not runs taken here. They are CI's, retained as its artifact and its job log gave them, and they are
+the run revision 34's classification reads for that host. No run here was taken again: the correction adds
+divergence.broiler-js fields and changes no engine code and no expected value (REVISIONS.md row 34).
+
+The run. Broiler-Platform/Broiler.JS's CI run 41418502645 (event pull_request, Broiler-Platform/Broiler.JS#1091, its
+head edbd51821e8ecba06d35eaf23a07da2867ab0ffc), job 125188274552, `engine vectors (windows-latest)`, 2026-11-02 from
+09:10:59Z to 09:28:24Z by the job's record. It checked out refs/pull/1091/merge, 54a38bce8c87f5d0600d11dca795c00c475cb9d0,
+the merge of that head onto b7310890, whose tree is the head's. Its host, by the job's log: Windows Server 2025
+(10.0.26100), image windows-2025-vs2026 20261021.278.1; .NET runtime 10.0.14 and SDK 10.0.403 by setup-dotnet;
+.NET's globalization there is the operating system's icu.dll, whose version neither the job's log nor the image's
+software list (Windows2025-VS2026-Readme.md at win25-vs2026/20261021.278) states. The job ran, as ci.yml's vectors job
+does, with four evaluating processes:
+  dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --nologo
+  BROILER_VECTORS_WORKERS=4 BROILER_VECTORS_REPORT=engine-vectors.tsv
+    dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo
+      --filter "Category=EngineCorpus" --logger "console;verbosity=detailed"
+  exit     1: 35 unclassified differences, every one a collation vector of corpus revision 34 as it stood at
+           edbd5182, which this correction classifies (collation-divergences.txt, reasons js-o16-ci-windows and
+           js-o6-ci-windows); 10 fields of other areas reported as no longer holding, which the runner does not fail
+           on and this correction does not read
+  files    ci-windows-run-41418502645-revision-34.tsv.gz, the artifact engine-vectors-windows-latest's
+           engine-vectors.tsv compressed here with gzip -n -9 (uncompressed SHA-256
+           ac3cc7e4494ef9b26b8ce7f31df0b0d7162e44a94063163f381967b6a38373c9, as the artifact holds it);
+           ci-windows-run-41418502645-revision-34.log, the artifact's engine-vectors.log, byte for byte (SHA-256
+           5f62c4fe1ca5f30be2db705bf845f4298ec7d1b9e038bb4bbcbbe8d18db4cff4); ci-windows-job-125188274552.log, the
+           job's whole log as the GitHub API returns it (SHA-256
+           e7d38378d51fa4150d9f00778bac70ca43bf7d5f04fd097b4acfbf5a3009ae90). The two logs keep their CRLF line ends.
+
+Against this engine's run on revision 34 above (run-revision-34-utc.tsv.gz, the same 111157 lines), the Windows
+report's collation lines differ in the 35 and in 2 classified divergences, options/case-first/0122 and 0133 (German
+phonebook with caseFirst upper, row O8), which render otherwise there, as the phonebook tailoring is not applied, and
+stay classified.
+
+The reference, asked what that host answers. tailoring_dropped.mjs, run by the reference Node.js v26.12.0 (ICU 78.3,
+CLDR 48.0) under TZ=UTC with no LANG, LC_ALL or LANGUAGE, as
+  node tailoring_dropped.mjs conformance/vectors/collation ci-windows-run-41418502645-revision-34.tsv.gz
+evaluates every collation vector whose script asks for German phonebook (by keyword or by option) or for usage
+"search", as written and with the tailoring dropped, and compares the second with what Broiler.JS rendered on that
+host where the run reports a difference or a match (a classified divergence differs there for its own row, and is
+listed but not compared). Its output is
+tailoring-dropped-revision-34.txt: each of the 35 differences is the reference's answer with the tailoring dropped;
+so is each of the vectors that match there, but for root-search/0016, 0027 and 0030, the three under und with usage
+"search" whose answer root search moves, which match as written: under und that host applies root search. It is a
+witness of that host's answers, never of Broiler.JS's code and never an expected value.

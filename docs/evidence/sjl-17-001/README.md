@@ -117,13 +117,44 @@ was written require:
 - **2026-11-02: what revision 34 does not read.** Its classification is of the host above, ICU 74.2, and of no other.
   CI's `engine vectors (windows-latest)` job runs this engine over the operating system's `icu.dll`, of a version
   neither the job's log nor the image's software list states (revision 28's `-ci-windows` reasons), and its report on
-  this change has not been read. If that ICU
+  this change was read before the merge (the next item). If that ICU
   is older than 74 (Unicode 15.1), it weighs CJK Extension I as unassigned, as ICU 74.2 weighs Extension J, and the
   `impl-defined` vectors `intl/collation/root/han/0011`, `0056` and `0057`, which hold Extension I and carry no
   divergence field, would differ there, as might CollationTest pairs whose weights changed after its Unicode
-  version. The job's report is read before this change merges, and any collation difference it shows is classified
-  at the next revision under a `-ci-windows` reason, as revision 28 classified that host's Intl differences;
-  revision 34 is not edited once CI has read it.
+  version. The job's report was read before this change merged, and the collation differences it showed are
+  classified in revision 34 itself, before the merge, under `-ci-windows` reasons, as revision 28 classified that
+  host's Intl differences in revision 28 (the next item). *(2026-11-02, before the merge: this item read "its report
+  on this change has not been read" and "The job's report is read before this change merges, and any collation
+  difference it shows is classified at the next revision under a `-ci-windows` reason, as revision 28 classified that
+  host's Intl differences; revision 34 is not edited once CI has read it." Revision 28's own correction was made in
+  revision 28 before its merge, and the owner's decision of 2026-11-02 takes revision 34 the same way.)*
+- **2026-11-02, before the merge: revision 34 as corrected reads CI's `windows-latest` host.** CI's run 41418502645 of
+  this change's integration (Broiler-Platform/Broiler.JS#1091, at `edbd5182`) failed in
+  `engine vectors (windows-latest)`, **job 125188274552**: Windows Server 2025 (10.0.26100), image
+  `windows-2025-vs2026` 20261021.278.1, whose ICU is the operating system's `icu.dll`, of a version neither the job's
+  log nor the image's software list states; its `engine vectors (ubuntu-24.04)` job passed. 35 collation vectors that
+  match on the host above differed there, each where the collator this engine's `CompareInfo` gives on that host
+  applies none of German phonebook, German search and root search under `en`, and orders as `de` and `en` do without
+  them. The reference with the tailoring dropped gives each of the 35 answers, and the answer of every vector asking
+  for those tailorings that matches there, but three under `und` with `usage: "search"`: under `und` that host applies
+  root search ([`engine/tailoring_dropped.mjs`](engine/tailoring_dropped.mjs),
+  [`engine/tailoring-dropped-revision-34.txt`](engine/tailoring-dropped-revision-34.txt)). On the owner's decision,
+  taken as recommended under the direction of 2026-10-18, revision 34 classifies the 35 in place, before the merge, as
+  revision 28 classified that host's Intl differences: each as data policy (C5), answered by SJL-17.5. 34 are under
+  row O16, which their notes name (reason `js-o16-ci-windows`): German phonebook, by keyword, by option and through
+  `localeCompare`, German search, and root search under `en`. One, `intl/collation/options/sensitivity/0131`, `a`
+  against U+00E4 under `de` search at `base`, is under row O6, which its note names alone, read for that host by a
+  dated note on row O6, the owner's decision E-o6w of 2026-11-02 in Broiler.VM's JSD-0084 (reason `js-o6-ci-windows`;
+  on Broiler.VM's branch `sjl-17-2-vm-win` at `a1253a96`, observed, not merged). Each of the 35 matches on the host above, where a
+  run reports it as no longer holding, which the runner does not fail on. In the collation vectors, the Windows report
+  differs from this engine's run on revision 34 above only in the 35 and in two classified divergences,
+  `options/case-first/0122` and `0133` (German phonebook with `caseFirst: "upper"`, row O8), which render otherwise
+  there and stay classified; the Han vectors holding Extension I, which the item above named, match there. The run's
+  report and log and the job's log are retained in [`engine/`](engine/) (`ci-windows-*`), as
+  [`engine/commands.txt`](engine/commands.txt) says. No run above was taken again: the correction adds
+  `divergence.broiler-js` fields and changes no engine code and no expected value, and a runner's verdict reads
+  whether a vector has the field, so on the host above each of the 35 reports its divergence as no longer holding,
+  and Broiler.VM's verdicts are as its runs give them.
 - **2026-11-02: the `orderings` copy and the harness's bundle.** `conformance/datasets/intl/` holds Broiler.VM's
   `orderings` program and its retained answer from Broiler.VM `4e6a41e9`, under the second `source-commit` block of
   its `datasets.pin`, and `scripts/conformance/run_reference_datasets.py --bundle sjl-17-001` runs part B's
