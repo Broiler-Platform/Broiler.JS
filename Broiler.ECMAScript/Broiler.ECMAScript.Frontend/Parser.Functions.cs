@@ -70,7 +70,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>A function's FormalParameters and FunctionBody, under the function's own [Yield] and [Await] (clause 15).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=411E82
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=2FA3F1
     // Broiler-Human:        PENDING
     private FunctionNode ParseFunctionRest(SourceSpan start, BindingIdentifier? name, bool isAsync, bool isGenerator)
     {
@@ -78,6 +78,7 @@ internal sealed partial class Parser
         var outerAwait = inAwait;
         inYield = isGenerator;
         inAwait = isAsync;
+        var awaitMark = awaitReferences.Count;
         try
         {
             var parameters = new List<Pattern>();
@@ -91,11 +92,12 @@ internal sealed partial class Parser
         {
             inYield = outerYield;
             inAwait = outerAwait;
+            DropAwaitReferences(awaitMark);
         }
     }
 
     /// <summary>A method's parameters and body (clause 15.4): a getter's none, a setter's one, and no rest element for either.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=0EE2D0
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=BFE7D1
     // Broiler-Human:        PENDING
     private FunctionNode ParseMethod(SourceSpan start, MethodKind kind, bool isAsync, bool isGenerator)
     {
@@ -103,6 +105,7 @@ internal sealed partial class Parser
         var outerAwait = inAwait;
         inYield = isGenerator;
         inAwait = isAsync;
+        var awaitMark = awaitReferences.Count;
         try
         {
             var parameters = new List<Pattern>();
@@ -127,6 +130,7 @@ internal sealed partial class Parser
         {
             inYield = outerYield;
             inAwait = outerAwait;
+            DropAwaitReferences(awaitMark);
         }
     }
 
@@ -198,7 +202,7 @@ internal sealed partial class Parser
     /// An arrow function's <c>=&gt;</c> and ConciseBody (clauses 15.3 and 15.9), its parameters already converted: an
     /// expression body under [~Yield] and the arrow's own [Await], or a FunctionBody.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=769EFB
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=19D7C2
     // Broiler-Human:        PENDING
     private Expression ParseArrowFunction(SourceSpan start, IReadOnlyList<Pattern> parameters, bool trailing, bool isAsync, int mark, bool noIn = false)
     {
@@ -208,6 +212,7 @@ internal sealed partial class Parser
         var outerAwait = inAwait;
         inYield = false;
         inAwait = isAsync;
+        var awaitMark = awaitReferences.Count;
         try
         {
             IReadOnlyList<Statement> body;
@@ -237,6 +242,7 @@ internal sealed partial class Parser
         {
             inYield = outerYield;
             inAwait = outerAwait;
+            DropAwaitReferences(awaitMark);
         }
     }
 
@@ -245,7 +251,7 @@ internal sealed partial class Parser
     /// the async call's elements converted into ArrowFormalParameters, refused where the cover does not cover them
     /// (catalogue rows EE0087 and EE0155 at stage 4d).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=D903B6
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=003C03
     // Broiler-Human:        PENDING
     private Expression ParseArrowFromCover(SourceSpan start, Expression cover, int mark, bool noIn)
     {
@@ -266,18 +272,37 @@ internal sealed partial class Parser
         {
             var head = (AsyncArrowHead)cover;
             var arguments = head.Call.Arguments;
-            for (var i = 0; i < arguments.Count; i++)
+            var bound = new List<Identifier>();
+            awaitBound = bound;
+            try
             {
-                if (arguments[i] is SpreadElement spread)
+                for (var i = 0; i < arguments.Count; i++)
                 {
-                    if (i != arguments.Count - 1 || head.Call.TrailingComma)
-                        throw UnexpectedAt(spread.Span);
-                    parameters.Add(new RestElement(spread.Span, ToBindingTarget(spread.Argument)));
+                    if (arguments[i] is SpreadElement spread)
+                    {
+                        if (i != arguments.Count - 1 || head.Call.TrailingComma)
+                            throw UnexpectedAt(spread.Span);
+                        parameters.Add(new RestElement(spread.Span, ToBindingTarget(spread.Argument)));
+                    }
+                    else
+                    {
+                        parameters.Add(ToBindingElement(arguments[i]));
+                    }
                 }
-                else
-                {
-                    parameters.Add(ToBindingElement(arguments[i]));
-                }
+            }
+            finally
+            {
+                awaitBound = null;
+            }
+
+            // The head is ArrowFormalParameters[~Yield, +Await]: an `await` the cover read as an IdentifierReference that
+            // its parameters do not bind (an initialiser's, a computed key's, a nested cover's) can only begin an
+            // AwaitExpression there, so the cover covers no AsyncArrowHead (catalogue row EE0155 at stage 4d).
+            for (var i = head.AwaitMark; i < awaitReferences.Count; i++)
+            {
+                var reference = awaitReferences[i];
+                if (!bound.Exists(b => ReferenceEquals(b, reference)))
+                    throw UnexpectedAt(reference.Span);
             }
 
             trailing = head.Call.TrailingComma;
@@ -434,9 +459,13 @@ internal sealed partial class Parser
     // ---------------------------------------------------------------------------------------------------------------
     // Conversions of the covers (clauses 13.2.10, 13.15.5 and 15.3): what was read is converted, never read again.
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=B53875
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=2E38E7
     // Broiler-Human:        PENDING
-    private static BindingIdentifier ToBindingIdentifier(Identifier identifier) => new(identifier.Span, identifier.Name, identifier.IsEscaped);
+    private BindingIdentifier ToBindingIdentifier(Identifier identifier)
+    {
+        awaitBound?.Add(identifier);
+        return new BindingIdentifier(identifier.Span, identifier.Name, identifier.IsEscaped);
+    }
 
     /// <summary>A cover's element as a BindingElement of ArrowFormalParameters.</summary>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=2E1091
@@ -882,7 +911,7 @@ internal sealed partial class Parser
     /// inside an async function, and <c>x = await 1</c> is refused), where ES2026's production reads
     /// <c>Initializer[+In, ?Yield, ?Await]</c>.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=2EFFF3
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=F82313
     // Broiler-Human:        PENDING
     private Expression? ParseFieldInitializer()
     {
@@ -893,6 +922,7 @@ internal sealed partial class Parser
         var outerAwait = inAwait;
         inYield = false;
         inAwait = false;
+        var awaitMark = awaitReferences.Count;
         functionDepth++;
         try
         {
@@ -903,6 +933,7 @@ internal sealed partial class Parser
             functionDepth--;
             inYield = outerYield;
             inAwait = outerAwait;
+            DropAwaitReferences(awaitMark);
         }
     }
 
@@ -943,7 +974,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>Decorators, under the decorators proposal's flag (decision D17): <c>@</c> and a member chain, its call, or a parenthesised expression.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=1A3769
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=9FC66F
     // Broiler-Human:        PENDING
     private IReadOnlyList<Decorator> ParseDecorators()
     {
@@ -965,7 +996,7 @@ internal sealed partial class Parser
                 if (!IsIdentifierReference(token))
                     throw Unexpected(token);
                 Advance();
-                expression = new Identifier(SpanOf(token), token.Value!, token.IsEscaped);
+                expression = NoteAwaitReference(new Identifier(SpanOf(token), token.Value!, token.IsEscaped));
                 while (Op.Kind == TokenKind.Dot)
                 {
                     Advance();

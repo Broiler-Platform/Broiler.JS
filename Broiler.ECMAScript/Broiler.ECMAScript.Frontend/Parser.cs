@@ -124,6 +124,13 @@ internal sealed partial class Parser
     // An arrow function the primary expression read whole (async x => ...), which only an AssignmentExpression may be.
     private Expression? primaryArrow;
 
+    // The unescaped `await` IdentifierReferences read outside [Await] in the function the parse stands in, in source order:
+    // an async arrow's conversion refuses each its cover read that its parameters do not bind (clause 15.9).
+    private readonly List<Identifier> awaitReferences = new();
+
+    // While an async arrow's cover is converted, the `await` names its own parameters bind.
+    private List<Identifier>? awaitBound;
+
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=4A46A2
     // Broiler-Human:        PENDING
     private Parser(ParseRequest request)

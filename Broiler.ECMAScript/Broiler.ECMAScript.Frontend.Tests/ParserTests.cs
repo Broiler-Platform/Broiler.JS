@@ -493,7 +493,32 @@ public sealed class ParserTests
     [InlineData("async x => {} ? a : b")]
     [InlineData("new (a) => 1")]
     [InlineData("switch => 1")]
+    // An async arrow head is ArrowFormalParameters[+Await]: an `await` its parameters do not bind begins an AwaitExpression.
+    [InlineData("async(x = await) => {  }")]
+    [InlineData("async(a = (await) => {}) => {};")]
+    [InlineData("async({[await]: a}) => {}")]
+    [InlineData("async(x = [await] = []) => {}")]
+    [InlineData("async(a = async(await) => {}) => {}")]
+    [InlineData("async(a = {await}) => {}")]
     public void A_cover_that_does_not_cover_its_conversion_is_refused(string text) => Refuse(text);
+
+    /// <summary>
+    /// An <c>await</c> an async arrow's own parameters bind is a BindingIdentifier, which the grammar admits under [+Await]
+    /// (its refusal is an early error, stage 4d's); one inside a nested function, or in a non-async arrow's body, is read
+    /// under that function's own [Await]; and a cover no <c>=&gt;</c> follows is a call.
+    /// </summary>
+    [Theory]
+    [InlineData("async(await) => {}")]
+    [InlineData("async({await}) => {}")]
+    [InlineData("async({a: await = 1}) => {}")]
+    [InlineData("async([await] = []) => {}")]
+    [InlineData("async(...await) => {}")]
+    [InlineData("async(a = await => 1) => {}")]
+    [InlineData("async(a = function () { await; }) => {}")]
+    [InlineData("async(a = () => await) => {}")]
+    [InlineData("async(x = await)")]
+    [InlineData("(x = await) => {}")]
+    public void An_await_an_async_arrow_head_binds_or_does_not_read_is_left_to_the_early_errors(string text) => Accept(text);
 
     [Theory]
     [InlineData("[a, [b], {c}, ...d] = e", "(ArrayPattern (TargetPattern (Identifier a)) (ArrayPattern (TargetPattern (Identifier b))) (ObjectPattern (PatternProperty shorthand (TargetPattern (Identifier c)))) (RestElement (TargetPattern (Identifier d))))")]

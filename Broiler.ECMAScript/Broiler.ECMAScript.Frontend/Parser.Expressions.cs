@@ -64,7 +64,7 @@ internal sealed partial class Parser
     /// pattern, or a ConditionalExpression. With <paramref name="defer"/>, a CoverInitializedName read here and not
     /// converted is left to the caller, whose literal may yet become a pattern.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=7F4E8A
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=07ED58
     // Broiler-Falsified-If: an arrow is read where its cover was not the whole left operand, a target that is no LeftHandSideExpression is admitted, or a CoverInitializedName no conversion takes is admitted
     // Broiler-Human:        PENDING
     private Expression ParseAssignment(bool noIn, bool defer = false)
@@ -103,7 +103,11 @@ internal sealed partial class Parser
                 if (next.NewLineBefore)
                     throw Unexpected(next);
                 if (left is Identifier identifier)
+                {
+                    // ArrowParameters : BindingIdentifier, which `await` may be under [+Await] too (an early error, stage 4d).
+                    ForgetAwaitReference(identifier);
                     return ParseArrowFunction(StartOf(token), new[] { (Pattern)ToBindingIdentifier(identifier) }, false, isAsync: false, mark, noIn);
+                }
                 if (cover is not null && ReferenceEquals(cover, left))
                     return ParseArrowFromCover(StartOf(token), cover, mark, noIn);
                 throw Unexpected(next);
@@ -501,7 +505,7 @@ internal sealed partial class Parser
     /// <paramref name="asyncHead"/>, a first argument list on the same line as <c>async</c> is read as the
     /// CoverCallExpressionAndAsyncArrowHead, which a following <c>=&gt;</c> converts.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=1760B9
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=486255
     // Broiler-Falsified-If: a link the grammar refuses is admitted, or a chain is charged without its first expression's spine
     // Broiler-Human:        PENDING
     private Expression ParseChainLinks(Expression current, bool allowCalls, bool asyncHead = false)
@@ -574,12 +578,13 @@ internal sealed partial class Parser
                         {
                             asyncHead = false;
                             var mark = coverInitialized.Count;
+                            var awaitMark = awaitReferences.Count;
                             var (arguments, trailing) = ParseArguments(defer: true);
                             var call = new CallExpression(SpanFrom(start), current, arguments, trailing, isOptional: false);
                             var arrow = Op;
                             if (arrow.Kind == TokenKind.Arrow && !arrow.NewLineBefore)
                             {
-                                var head = new AsyncArrowHead(call, mark);
+                                var head = new AsyncArrowHead(call, mark, awaitMark);
                                 arrowCover = head;
                                 return head;
                             }
@@ -857,7 +862,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>A primary expression that begins with a name: a keyword's, a function or class expression, an async arrow, or an IdentifierReference.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=B90D02
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=C5E822
     // Broiler-Human:        PENDING
     private Expression ParseNamePrimary(Token token)
     {
@@ -916,7 +921,39 @@ internal sealed partial class Parser
         }
 
         Advance();
-        return new Identifier(SpanOf(token), token.Value!, false);
+        return NoteAwaitReference(new Identifier(SpanOf(token), token.Value!, false));
+    }
+
+    /// <summary>
+    /// Records an unescaped <c>await</c> IdentifierReference read outside [Await], which an enclosing async arrow's head reads
+    /// under [+Await], where it can only begin an AwaitExpression (clause 15.9): the conversion refuses it where its own
+    /// parameters do not bind it. Answers the reference.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.9 AsyncArrowHead [+Await], CoverCallExpressionAndAsyncArrowHead; IP=Low; Security=Medium; Resources=2; Fingerprint=EBB690
+    // Broiler-Human:        PENDING
+    private Identifier NoteAwaitReference(Identifier reference)
+    {
+        if (!reference.IsEscaped && reference.Name == "await")
+            awaitReferences.Add(reference);
+        return reference;
+    }
+
+    /// <summary>Forgets the last <c>await</c> reference recorded when it is <paramref name="identifier"/>, which the grammar reads as a BindingIdentifier instead.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.9 AsyncArrowHead [+Await], CoverCallExpressionAndAsyncArrowHead; IP=Low; Security=Medium; Resources=2; Fingerprint=8303BC
+    // Broiler-Human:        PENDING
+    private void ForgetAwaitReference(Identifier identifier)
+    {
+        if (awaitReferences.Count > 0 && ReferenceEquals(awaitReferences[^1], identifier))
+            awaitReferences.RemoveAt(awaitReferences.Count - 1);
+    }
+
+    /// <summary>Drops the <c>await</c> references a nested function read, from <paramref name="mark"/> on: its [Await] is its own, never an enclosing async arrow head's.</summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.9 AsyncArrowHead [+Await], CoverCallExpressionAndAsyncArrowHead; IP=Low; Security=Medium; Resources=2; Fingerprint=2BEB80
+    // Broiler-Human:        PENDING
+    private void DropAwaitReferences(int mark)
+    {
+        if (awaitReferences.Count > mark)
+            awaitReferences.RemoveRange(mark, awaitReferences.Count - mark);
     }
 
     /// <summary>Whether, after the current <c>async</c> and the name after it, <c>=&gt;</c> follows on the same line: the AsyncArrowHead's two-token lookahead.</summary>
@@ -1145,7 +1182,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>One PropertyDefinition (clause 13.2.5), or a MethodDefinition (clause 15.4) of an object literal.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=D597E3
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=9554B3
     // Broiler-Human:        PENDING
     private SyntaxNode ParsePropertyDefinition(ref Token? coverAt)
     {
@@ -1210,7 +1247,7 @@ internal sealed partial class Parser
         // A shorthand: an IdentifierReference (clause 13.1), with a CoverInitializedName's Initializer where `=` follows.
         if (name is not IdentifierName identifierName || !IsIdentifierReference(token))
             throw Unexpected(after);
-        var reference = new Identifier(identifierName.Span, identifierName.Name, identifierName.IsEscaped);
+        var reference = NoteAwaitReference(new Identifier(identifierName.Span, identifierName.Name, identifierName.IsEscaped));
         if (after.Kind == TokenKind.Equals)
         {
             Advance();
@@ -1292,13 +1329,15 @@ internal sealed partial class Parser
     }
 
     /// <summary>The CoverCallExpressionAndAsyncArrowHead an <c>async</c> call was read as (clause 15.9), which only an AssignmentExpression converts.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=DD6098
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=DAF410
     // Broiler-Human:        PENDING
-    private sealed class AsyncArrowHead(CallExpression call, int mark) : ExpressionCover(call.Span)
+    private sealed class AsyncArrowHead(CallExpression call, int mark, int awaitMark) : ExpressionCover(call.Span)
     {
         internal CallExpression Call { get; } = call;
 
         internal int Mark { get; } = mark;
+
+        internal int AwaitMark { get; } = awaitMark;
     }
 }
 
