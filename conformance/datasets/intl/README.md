@@ -15,6 +15,8 @@ under invariant globalization. Milestone SJL-9.2 (work package SJL-9.2a) copied 
 which carries that rule and JSD-0082. The thirteenth program, `timezones.js`, stays in
 [`conformance/datasets/time/`](../time/README.md), and the harness reads it from there. Broiler.VM's `orderings`
 dataset is collation's, SJL-17's, and is not copied (JSD-0082, decision D16).
+*(2026-11-01, milestone SJL-17.2: it is now, in a block of its own, for bundle `sjl-17-001`'s rule; see "The
+`orderings` copy" below. The sentence before this note stands for the twelve programs above, which do not include it.)*
 
 They sit beside the corpus, [`conformance/vectors/`](../../vectors/README.md), and are not part of it: a vector pins one
 operation's outcome with its provenance, while these are whole programs and the answers a reference implementation
@@ -51,6 +53,27 @@ runs each program in its own engine and holds every line to the retained answer 
 `sjl-9-001`'s [`divergence-groups.tsv`](../../../docs/evidence/sjl-9-001/divergence-groups.tsv) classes every group of
 these divergences files, each file named by its blob, which is the one pinned here.
 
+## The `orderings` copy (bundle `sjl-17-001`)
+
+Part B of **bundle `sjl-17-001`'s rule**, [`docs/evidence/sjl-17-001/decision-rule.md`](../../../docs/evidence/sjl-17-001/decision-rule.md),
+committed at milestone SJL-17.1, takes "Broiler.VM's src/tests/cldr/orderings/ program with its retained answer, and its
+divergences file if that commit holds one ..., byte for byte as Broiler.VM's commit that carries its own bundle
+sjl-17-001 rule holds them, which SJL-17.2 copies into conformance/datasets/intl/ under a new source-commit block of
+datasets.pin". Milestone SJL-17.2 copied it on 2026-11-01 from Broiler.VM's `4e6a41e9d3860b8ca79d5d3ea6de215c1592b0c0`,
+the merge of Broiler-Platform/Broiler.VM#179, which carries that rule and JSD-0084: the second `source-commit` block of
+[`datasets.pin`](datasets.pin).
+
+| Program | Broiler.VM's directory | What it covers | The answer |
+|---|---|---|---|
+| `orderings` | `src/tests/cldr/orderings/` | `Intl.Collator` in `en`, `en-US`, `de`, `de-DE` and German's `phonebk` collation: 81 words sorted under 27 collators, every sensitivity, `ignorePunctuation`, `numeric`, both `caseFirst` orders, `usage: 'search'`, and the `-u-kn` and `-u-kf` keywords; each line the words in order, with `=` or `<` between two neighbours | `orderings.icu-77.1.txt`, Node 22.22.0 (ICU 77.1, CLDR 47.0) |
+
+**It has no divergences file.** Broiler.VM's directory at that commit holds `README.md`, the program and the retained
+answer, and nothing else, so its pin line's divergences field is `-` and the expected answer of each line is the
+retained one; Broiler.VM's check `intl/i1/german-and-english-orderings-match-icu` reads it so, and the harness applies
+no divergence. Its lines are not `<what> => <answer>` lines: each is the collator's number, locale and options, then
+the sorted words, and the harness compares it whole. Bundle `sjl-17-001`'s
+[`divergence-groups.tsv`](../../../docs/evidence/sjl-17-001/divergence-groups.tsv) therefore holds no group.
+
 ## How the copies are held
 
 - **By their digests.** `datasets.pin` records each copy's SHA-256, from the bytes `git cat-file blob
@@ -68,6 +91,9 @@ these divergences files, each file named by its blob, which is the one pinned he
 - **Without conversion.** The thirty-six copies are `-text` in [`.gitattributes`](../../../.gitattributes), so no
   end-of-line filter touches them on any platform. They have LF line endings; most are ASCII, and some hold UTF-8 text
   beyond it.
+  The two copies of `orderings` (SJL-17.2) stay under the folder's `text eol=lf`, since milestone SJL-17.2 changes no
+  file outside `scripts/conformance/`, `conformance/` and `docs/`: they hold no CR, so that attribute writes them byte
+  for byte on commit and on every platform's checkout, and the harness's tests hold both to that and to their pin.
 - **Never edited.** The rule names the Broiler.VM commit it takes its copies from. Another answer or program would be
   another copy from another named commit, and a new rule; a pin line is added, never changed.
 
@@ -88,6 +114,8 @@ python3 scripts/conformance/run_reference_datasets.py run --bundle sjl-9-001 --t
 python3 scripts/conformance/run_reference_datasets.py run --bundle sjl-9-001 --invariant-globalization --tree <checkout> --label base --out <dir>
 # An after run against a base run of the same kind, line by line:
 python3 scripts/conformance/run_reference_datasets.py compare --base <base dir> --after <after dir> --out <dir>
+# Part B of bundle sjl-17-001's rule: the orderings program alone (no run under invariant globalization):
+python3 scripts/conformance/run_reference_datasets.py run --bundle sjl-17-001 --tree <checkout> --build --label base --out <dir>
 # The copies of both collections against their pins:
 python3 scripts/conformance/run_reference_datasets.py verify
 ```
@@ -100,6 +128,8 @@ by a person, and its base run is read, not judged; part D's verdict reads the ru
 The twelve programs and their divergences files are Broiler.VM's, by the same contributors as this repository, under
 the Apache License 2.0 (their SPDX headers say so; the licence text is [`LICENSE`](../../../LICENSE)). The answers are
 what ICU 77.1, through Node, and the Temporal proposal's reference polyfill, through the same Node's ICU, printed for
-those programs, one line per operation: they reproduce none of either's code or text, and no CLDR file.
+those programs, one line per operation: they reproduce none of either's code or text, and no CLDR file. The
+`orderings` program (SJL-17.2) is Broiler.VM's too, under the same licence, and its answer is what ICU 77.1 printed for it,
+one line per collator.
 [`THIRD_PARTY_NOTICES.md`](../../../THIRD_PARTY_NOTICES.md) records their sources. Nothing here ships: no project
 builds or packs this directory.

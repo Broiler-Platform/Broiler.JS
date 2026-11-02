@@ -28,6 +28,14 @@ takes "part C's harness with --invariant-globalization, which sets DOTNET_SYSTEM
 shell": ``run --invariant-globalization`` does that, a run without it removes the variable from the shell's
 environment, a run's outputs say which it was, and ``compare`` joins only two runs taken the same way.
 
+**Four rules, since SJL-17.2.** Bundle sjl-17-001's rule, part B (docs/evidence/sjl-17-001/decision-rule.md), takes
+"Broiler.VM's src/tests/cldr/orderings/ program with its retained answer, and its divergences file if that commit holds
+one", copied into conformance/datasets/intl/ under a new source-commit block of its datasets.pin, through
+"scripts/conformance/run_reference_datasets.py --bundle sjl-17-001 in the shell built in Release; no LANG and TZ=UTC".
+The program has no divergences file, so its pin line names none (``-``) and its expected answer is the retained answer;
+Broiler.VM's check intl/i1/german-and-english-orderings-match-icu reads it so, and asks for at least 20 lines. The
+rule's part C is its invariant probe, not a dataset, so this bundle takes no ``--invariant-globalization``.
+
 Two commands do that:
 
 - ``run`` builds the shell in Release (``--build``) or takes the one already built, checks every copy
@@ -103,7 +111,10 @@ NO_LINE = "(no line)"
 VM_LEAST = {"timezones": 600, "temporal": 1500, "temporal-calendars": 3500,
             "numbers": 2000, "dates": 1000, "locales": 700, "plurals": 1200, "lists": 450, "relativetimes": 2400,
             "segments": 110, "durations": 500, "displaynames": 800, "temporal-intl": 1200, "calendar-formats": 5500,
-            "zone-names": 2600}
+            "zone-names": 2600,
+            # intl/i1/german-and-english-orderings-match-icu asks for at least 20 lines (expected.Length >= 20 at
+            # Broiler.VM's 4e6a41e), where the other checks ask for more lines than their floor.
+            "orderings": 19}
 
 # The environment variable part D of bundle sjl-9-001's rule sets for the shell, and its value there.
 INVARIANT_VARIABLE = "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT"
@@ -111,12 +122,18 @@ INVARIANT_VARIABLE = "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT"
 
 @dataclass(frozen=True)
 class Bundle:
-    """An evidence bundle whose rule's part C this harness runs: the rule, the programs it takes, and the
-    collections (``COLLECTIONS``) whose pins hold them."""
+    """An evidence bundle whose rule's dataset part this harness runs: the rule, the programs it takes, the
+    collections (``COLLECTIONS``) whose pins hold them, the part a run is taken for, and the part a run under invariant
+    globalization is taken for, or None where the rule has none."""
     name: str
     rule: str
     programs: tuple[str, ...]
     collections: tuple[str, ...] = ("time",)
+    part: str = "C"
+    invariant_part: str | None = "D"
+
+    def part_of(self, invariant: bool) -> str:
+        return (self.invariant_part or "?") if invariant else self.part
 
 
 # The directories of copies, each with its own datasets.pin: the time area's (SJL-8.4, SJL-10.2) and the Intl
@@ -134,7 +151,14 @@ BUNDLES = {
     # programs, then timezones.js from block 1 of the time area's pin.
     "sjl-9-001": Bundle("sjl-9-001", "docs/evidence/sjl-9-001/decision-rule.md, parts C and D",
                         INTL_PROGRAMS + ("timezones",), ("intl", "time")),
+    # Part B of bundle sjl-17-001's rule (milestone SJL-17.2): Broiler.VM's orderings program, from the second block of
+    # the Intl area's pin; no run under invariant globalization.
+    "sjl-17-001": Bundle("sjl-17-001", "docs/evidence/sjl-17-001/decision-rule.md, part B", ("orderings",), ("intl",),
+                         part="B", invariant_part=None),
 }
+
+# A program line's divergences field when the program has no divergences file (the Intl area's orderings).
+NO_DIVERGENCES = "-"
 
 DRIVER_LINE = "reference-dataset-driver"
 COMPLETION_LINE = "reference-dataset-completion"
@@ -167,7 +191,10 @@ class Program:
     name: str
     program: str
     answer: str
-    divergences: str
+    divergences: str  # NO_DIVERGENCES when the program has none
+
+    def files(self) -> tuple[str, ...]:
+        return (self.program, self.answer) + (() if self.divergences == NO_DIVERGENCES else (self.divergences,))
 
 
 @dataclass(frozen=True)
@@ -214,7 +241,7 @@ def read_pin(text: str) -> Pin:
     if not source_commits or not files or not programs:
         raise HarnessError(f"{PIN_NAME} names no source commit, no file or no program")
     for program in programs:
-        for name in (program.program, program.answer, program.divergences):
+        for name in program.files():
             if name not in files:
                 raise HarnessError(f"{PIN_NAME}: program {program.name} names {name}, which no file line pins")
     return Pin(tuple(source_commits), files, tuple(programs))
@@ -707,11 +734,18 @@ def run_program(dll: Path, directory: Path, program: Program, out: Path, timeout
     outcome = parse_driver_output(stdout.decode("utf-8", errors="replace"), program.program, program_text, exit_code)
     answered = split_answer(outcome.completion) if outcome.completed else []
     retained_text = read_all_text((directory / program.answer).read_bytes())
-    divergences_text = read_all_text((directory / program.divergences).read_bytes())
+    divergences_text = divergences_of(directory, program)
     expected, results = compare_program(retained_text, divergences_text, answered)
     return ProgramRun(program, seconds, exit_code, stdout, stderr, outcome, expected, results,
                       len(read_divergences(divergences_text)), len(split_retained(retained_text)),
                       negative_control(expected, answered, results))
+
+
+def divergences_of(directory: Path, program: Program) -> str:
+    """A program's divergences file as text; a program with none has no divergence."""
+    if program.divergences == NO_DIVERGENCES:
+        return ""
+    return read_all_text((directory / program.divergences).read_bytes())
 
 
 def write_program_outputs(run: ProgramRun, out: Path) -> dict:
@@ -754,7 +788,7 @@ def write_program_outputs(run: ProgramRun, out: Path) -> dict:
 
 def population(pin: Pin, programs: Sequence[Program]) -> list[PinnedFile]:
     """The copies the programs read: each one's program, retained answer and divergences, in pin order."""
-    names = {name for p in programs for name in (p.program, p.answer, p.divergences)}
+    names = {name for p in programs for name in p.files()}
     return [pinned for pinned in pin.files.values() if pinned.name in names]
 
 
@@ -846,6 +880,8 @@ def command_run(arguments: argparse.Namespace) -> int:
     bundle = BUNDLES[arguments.bundle]
     sources = load_sources(bundle, collection_directories(arguments))
     invariant = bool(arguments.invariant_globalization)
+    if invariant and bundle.invariant_part is None:
+        raise HarnessError(f"bundle {bundle.name}'s rule has no dataset part under invariant globalization")
     tree = Path(arguments.tree).resolve()
     out = Path(arguments.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -882,7 +918,7 @@ def command_run(arguments: argparse.Namespace) -> int:
         "copies": {p.name: p.sha256 for p in copies},
         "programs": {},
     }
-    report = [f"Reference datasets, bundle {bundle.name}'s rule, part {'D' if invariant else 'C'}: one run"
+    report = [f"Reference datasets, bundle {bundle.name}'s rule, part {bundle.part_of(invariant)}: one run"
               + (" under invariant globalization" if invariant else ""), ""] + identity + [""]
     failed = False
     for program in selected:
@@ -892,7 +928,8 @@ def command_run(arguments: argparse.Namespace) -> int:
         control = entry["negativeControl"]
         failed |= not entry["completed"] or not control["shownAsDifference"] or not control["otherLinesUnchanged"]
         report += [
-            f"{program.name} ({program.program}, expected: {program.answer} with {program.divergences})",
+            f"{program.name} ({program.program}, expected: {program.answer} with "
+            f"{'no divergences file' if program.divergences == NO_DIVERGENCES else program.divergences})",
             f"  completed: {yes_no(entry['completed'])}"
             + (f"; uncaught {entry['uncaught']}" if entry["uncaught"] else "")
             + (f"; {'; '.join(entry['problems'])}" if entry["problems"] else ""),
@@ -995,7 +1032,7 @@ def command_compare(arguments: argparse.Namespace) -> int:
               "base": {"label": base["label"], "shellCommit": base["shellCommit"], "shellSha256": base["shellSha256"]},
               "after": {"label": after["label"], "shellCommit": after["shellCommit"], "shellSha256": after["shellSha256"]},
               "copies": after["copies"], "programs": {}}
-    text = [f"Reference datasets, bundle {bundle.name}'s rule, part {'D' if invariant_of(after) else 'C'}: an after run"
+    text = [f"Reference datasets, bundle {bundle.name}'s rule, part {bundle.part_of(invariant_of(after))}: an after run"
             " against a base run" + (" under invariant globalization" if invariant_of(after) else ""), "",
             f"base: {base['label']}, shell commit {base['shellCommit']}, BroilerJS.dll {base['shellSha256']}",
             f"after: {after['label']}, shell commit {after['shellCommit']}, BroilerJS.dll {after['shellSha256']}",
@@ -1041,7 +1078,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     run = commands.add_parser("run", help="run the programs in one shell and compare each line with its expected answer")
     run.add_argument("--bundle", required=True, choices=sorted(BUNDLES),
-                     help="the bundle whose rule's part C the run is taken for, which fixes the programs it runs")
+                     help="the bundle whose rule's dataset part the run is taken for, which fixes the programs it runs")
     run.add_argument("--tree", default=str(REPOSITORY), help="the checkout whose shell runs (default: this one)")
     run.add_argument("--build", action="store_true", help="build the shell in Release in that checkout first")
     run.add_argument("--shell", help="a BroilerJS.dll to run instead of the checkout's Release build")

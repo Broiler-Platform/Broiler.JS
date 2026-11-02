@@ -1,0 +1,84 @@
+Test run for D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Vectors.Tests\bin\Release\net10.0\Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Vectors.Tests\bin\Release\net10.0\Broiler.JavaScript.Vectors.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.30]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.61]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.89]   Starting:    Broiler.JavaScript.Vectors.Tests
+111157 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 14 min 58.8 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 3.175 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001.
+[xUnit.net 00:15:02.89]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+[xUnit.net 00:15:02.89]       35 of 111157 vectors differ and nothing classifies them:
+intl/collation/options/sensitivity/0131: expected value: str:"<", rendered value: str:"="
+intl/collation/tailorings/de-phonebook/0001: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+intl/collation/tailorings/de-phonebook/0002: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0003: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0005: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0006: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0007: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0012: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+intl/collation/tailorings/de-phonebook/0013: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0014: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0016: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0017: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0018: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0001: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+intl/collation/tailorings/de-search/0002: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0003: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0005: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0006: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0007: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0012: expected value: str:"a < Ab < Ae = \u00E4 = ae = \u00C4 = AE < \u00C4b < Af < b < o < Od < Oe = \u00F6 = oe < \u00D6b < ss = \u00DF < st < u < Ub < Ue = \u00FC = ue < \u00DCb", rendered value: str:"a = \u00E4 = \u00C4 < Ab = \u00C4b < Ae = ae = AE < Af < b < o = \u00F6 < \u00D6b < Od < Oe = oe < ss = \u00DF < st < u = \u00FC < Ub = \u00DCb < Ue = ue"
+intl/collation/tailorings/de-search/0013: expected value: str:"=", rendered value: str:"<"
+intl/collation/tailorings/de-search/0014: expected value: str:"=", rendered value: str:"<"
+intl/collation/tailorings/de-search/0016: expected value: str:"=", rendered value: str:"<"
+intl/collation/tailorings/de-search/0017: expected value: str:"=", rendered value: str:"<"
+intl/collation/tailorings/de-search/0018: expected value: str:">", rendered value: str:"<"
+[xUnit.net 00:15:02.89]       Stack Trace:
+[xUnit.net 00:15:02.89]         /_/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(58,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
+[xUnit.net 00:15:02.89]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:15:02.89]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:15:02.89]       Output:
+[xUnit.net 00:15:02.89]         111157 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 14 min 58.8 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 3.175 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001.
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [15 m 1 s]
+  Error Message:
+   35 of 111157 vectors differ and nothing classifies them:
+intl/collation/options/sensitivity/0131: expected value: str:"<", rendered value: str:"="
+intl/collation/tailorings/de-phonebook/0001: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+intl/collation/tailorings/de-phonebook/0002: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0003: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0005: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0006: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0007: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0012: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+intl/collation/tailorings/de-phonebook/0013: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0014: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0016: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0017: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-phonebook/0018: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0001: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+intl/collation/tailorings/de-search/0002: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0003: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0005: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0006: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0007: expected value: str:">", rendered value: str:"<"
+intl/collation/tailorings/de-search/0012: expected value: str:"a < Ab < Ae = \u00E4 = ae = \u00C4 = AE < \u00C4b < Af < b < o < Od < Oe = \u00F6 = oe < \u00D6b < ss = \u00DF < st < u < Ub < Ue = \u00FC = ue < \u00DCb", rendered value: str:"a = \u00E4 = \u00C4 < Ab = \u00C4b < Ae = ae = AE < Af < b < o = \u00F6 < \u00D6b < Od < Oe = oe < ss = \u00DF < st < u = \u00FC < Ub = \u00DCb < Ue = ue"
+intl/collation/tailorings/de-search/0013: expected value: str:"=", rendered value: str:"<"
+intl/collation/tailorings/de-search/0014: expected value: str:"=", rendered value: str:"<"
+intl/collation/tailorings/de-search/0016: expected value: str:"=", rendered value: str:"<"
+intl/collation/tailorings/de-search/0017: expected value: str:"=", rendered value: str:"<"
+intl/collation/tailorings/de-search/0018: expected value: str:">", rendered value: str:"<"
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /_/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 58
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 111157 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 14 min 58.8 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 3.175 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001.
+
+
+[xUnit.net 00:15:02.99]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = '7789aa4acb540536a860f2f06af5bd73da51d47211065e8ec52c95b720684470')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 15.0644 Minutes

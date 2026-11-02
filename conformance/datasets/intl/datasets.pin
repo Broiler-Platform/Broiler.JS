@@ -23,13 +23,30 @@
 # src/tests/temporal` and `git diff --stat cd1928d 4cf9ca4 -- src/tests/cldr src/tests/temporal` print nothing.
 # Each divergences file is `divergences.txt` in Broiler.VM, so it is renamed here after its program, as SJL-8.4
 # named the time area's; nothing else is renamed, and no byte is changed. `orderings` (SJL-17's) is not copied.
+# (2026-11-01, milestone SJL-17.2: the second block below copies it, from another commit, for bundle sjl-17-001's
+# rule. The sentence before this note stands for the first block, which still holds no copy of it.)
+#
+# THE SECOND BLOCK (2026-11-01, milestone SJL-17.2, work package 17.2). Part B of bundle sjl-17-001's rule
+# (docs/evidence/sjl-17-001/decision-rule.md, committed at milestone SJL-17.1) takes "Broiler.VM's
+# src/tests/cldr/orderings/ program with its retained answer, and its divergences file if that commit holds one ...,
+# byte for byte as Broiler.VM's commit that carries its own bundle sjl-17-001 rule holds them, which SJL-17.2 copies
+# into conformance/datasets/intl/ under a new source-commit block of datasets.pin; a copy whose digest differs is not
+# the population". That commit is 4e6a41e9d3860b8ca79d5d3ea6de215c1592b0c0, the merge of
+# Broiler-Platform/Broiler.VM#179, which holds docs/evidence/sjl-17-001/decision-rule-area.md and JSD-0084. Its
+# src/tests/cldr/orderings/ holds README.md, orderings.icu-77.1.txt (the retained answer) and orderings.js (the
+# program), and no divergences file, as at 83290f9, whose tree the rule's parenthesis names: `git diff --stat
+# 83290f9 4e6a41e -- src/tests/cldr/orderings` prints nothing. The two files were written by `git cat-file blob
+# 4e6a41e:<path>` in a Broiler.VM checkout, from the commit's objects, and keep their names; the program line's
+# divergences field is `-`, which says the dataset has no divergences file, so its expected answer is the retained
+# answer, line for line (Broiler.VM's check intl/i1/german-and-english-orderings-match-icu reads no divergences).
 #
 # WHAT A LINE MEANS. As in conformance/datasets/time/datasets.pin: `source-commit <commit>` names the Broiler.VM
 # commit of the `file` lines after it, up to the next `source-commit` line; `copied` says when that block was
 # copied. `file <name in this directory> <bytes> <sha256> <git blob id> <Broiler.VM path at the block's
 # source-commit>`. `program <name> <program> <retained answer> <divergences>` says which three files make one
-# program's dataset. The harness, scripts/conformance/run_reference_datasets.py, refuses to run when a file's
-# length or SHA-256 differs from its line, and its tests hold every file to its line, and its blob id to its
+# program's dataset. A divergences field of `-` says the program has none (the second block's `orderings`), and the
+# harness then applies no divergence. The harness, scripts/conformance/run_reference_datasets.py, refuses to run when a
+# file's length or SHA-256 differs from its line, and its tests hold every file to its line, and its blob id to its
 # bytes, on every run of the conformance scripts' tests. To check by hand, in this directory:
 #
 #   awk '$1 == "file" { print $4 "  " $2 }' datasets.pin | sha256sum -c
@@ -87,3 +104,8 @@ file calendar-formats.divergences.txt 148512 858cbb9de2fa948e294bafca5c54caf983a
 file zone-names.js 12189 3f47c84802e66ee988182e5e6412d3df730cb69de9b4fbd37181a7cec6fe47a9 ecf3b0c763b4380b91323e0d1b81a2edc76c608a src/tests/temporal/zone-names/zone-names.js
 file zone-names.polyfill-e8cc03fc.txt 296279 1ce2ea5767272e2914bd992bb38379711e3930db315a72654b5c575b294f9c13 352a4b5549c3d44eae489a8922be788745dd5407 src/tests/temporal/zone-names/zone-names.polyfill-e8cc03fc.txt
 file zone-names.divergences.txt 31634 2522c9ede8175161243203bbc67f4b0f09afad149fca45ec269c5547d3fcaf3f 1608a201b6479266ae0ec00a51f6bd7e9fe5d2c9 src/tests/temporal/zone-names/divergences.txt
+source-commit 4e6a41e9d3860b8ca79d5d3ea6de215c1592b0c0
+copied 2026-11-01
+program orderings orderings.js orderings.icu-77.1.txt -
+file orderings.js 3051 d3c968d64f7809eb90219d1452db27ad6a022715bc96c0c4922634f371c6cab8 df6b6910b0ed6805b3b10aece07cd5dd84c661f5 src/tests/cldr/orderings/orderings.js
+file orderings.icu-77.1.txt 23105 c21e6ef4292a2b2308d7a8c99e558a41a8ee00bfddbe4b9c2e3fc3b33adbed1e dad23be8dd0412eecbad1f077e283b3e53a88c3a src/tests/cldr/orderings/orderings.icu-77.1.txt

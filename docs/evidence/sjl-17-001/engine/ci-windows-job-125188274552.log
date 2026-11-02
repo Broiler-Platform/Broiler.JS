@@ -1,0 +1,475 @@
+﻿2026-11-02T09:11:28.7791920Z Current runner version: '2.338.2'
+2026-11-02T09:11:28.7820373Z ##[group]Runner Image Provisioner
+2026-11-02T09:11:28.7821288Z Hosted Compute Agent
+2026-11-02T09:11:28.7821900Z Version: 20261021.618
+2026-11-02T09:11:28.7822484Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-11-02T09:11:28.7823135Z Build Date: 2026-10-21T00:45:21Z
+2026-11-02T09:11:28.7823798Z Worker ID: {6cceb6ff-cd33-487d-bd88-5995c68f8cb7}
+2026-11-02T09:11:28.7824468Z Region: northcentralus
+2026-11-02T09:11:28.7824971Z Cloud: Azure
+2026-11-02T09:11:28.7825466Z ##[endgroup]
+2026-11-02T09:11:28.7827107Z ##[group]Operating System
+2026-11-02T09:11:28.7828323Z Microsoft Windows Server 2025
+2026-11-02T09:11:28.7829285Z 10.0.26100
+2026-11-02T09:11:28.7829958Z Datacenter
+2026-11-02T09:11:28.7830599Z ##[endgroup]
+2026-11-02T09:11:28.7831255Z ##[group]Runner Image
+2026-11-02T09:11:28.7832064Z Image: windows-2025-vs2026
+2026-11-02T09:11:28.7832839Z Version: 20261021.278.1
+2026-11-02T09:11:28.7835016Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261021.278/images/windows/Windows2025-VS2026-Readme.md
+2026-11-02T09:11:28.7837137Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261021.278
+2026-11-02T09:11:28.7838899Z ##[endgroup]
+2026-11-02T09:11:28.7840337Z ##[group]GITHUB_TOKEN Permissions
+2026-11-02T09:11:28.7842986Z Contents: read
+2026-11-02T09:11:28.7844134Z Metadata: read
+2026-11-02T09:11:28.7844873Z ##[endgroup]
+2026-11-02T09:11:28.7847463Z Secret source: Actions
+2026-11-02T09:11:28.7848708Z Cache mode: write
+2026-11-02T09:11:28.7849591Z Prepare workflow directory
+2026-11-02T09:11:28.8443438Z Prepare all required actions
+2026-11-02T09:11:28.8497502Z Getting action download info
+2026-11-02T09:11:29.0980973Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-11-02T09:11:29.2134700Z Download action repository 'actions/setup-dotnet@v6' (SHA:a98b56852c35b8e3190ac28c8c2271da59106c68)
+2026-11-02T09:11:29.5572913Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-11-02T09:11:29.7629105Z Complete job name: engine vectors (windows-latest)
+2026-11-02T09:11:29.9041673Z ##[group]Run actions/checkout@v7
+2026-11-02T09:11:29.9043111Z with:
+2026-11-02T09:11:29.9043682Z   repository: Broiler-Platform/Broiler.JS
+2026-11-02T09:11:29.9048367Z   token: ***
+2026-11-02T09:11:29.9048935Z   ssh-strict: true
+2026-11-02T09:11:29.9049453Z   ssh-user: git
+2026-11-02T09:11:29.9049928Z   persist-credentials: true
+2026-11-02T09:11:29.9050434Z   clean: true
+2026-11-02T09:11:29.9050980Z   sparse-checkout-cone-mode: true
+2026-11-02T09:11:29.9051910Z   fetch-depth: 1
+2026-11-02T09:11:29.9052461Z   fetch-tags: false
+2026-11-02T09:11:29.9052940Z   show-progress: true
+2026-11-02T09:11:29.9053465Z   lfs: false
+2026-11-02T09:11:29.9053929Z   submodules: false
+2026-11-02T09:11:29.9054393Z   set-safe-directory: true
+2026-11-02T09:11:29.9054909Z   allow-unsafe-pr-checkout: false
+2026-11-02T09:11:29.9055942Z env:
+2026-11-02T09:11:29.9056361Z   PACKAGE_VERSION: 
+2026-11-02T09:11:29.9056865Z   BROILER_VECTORS_WORKERS: 4
+2026-11-02T09:11:29.9057465Z   BROILER_VECTORS_REPORT: engine-vectors.tsv
+2026-11-02T09:11:29.9058043Z ##[endgroup]
+2026-11-02T09:11:30.0725464Z Syncing repository: Broiler-Platform/Broiler.JS
+2026-11-02T09:11:30.0728568Z ##[group]Getting Git version info
+2026-11-02T09:11:30.0730318Z Working directory is 'D:\a\Broiler.JS\Broiler.JS'
+2026-11-02T09:11:30.1402025Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-02T09:11:30.4908855Z git version 2.56.0.windows.2
+2026-11-02T09:11:30.4973358Z ##[endgroup]
+2026-11-02T09:11:30.4992153Z Temporarily overriding HOME='D:\a\_temp\5eff7bfa-430c-4702-a880-d1f438eb9ebb' before making global git config changes
+2026-11-02T09:11:30.4994930Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-02T09:11:30.5002641Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\Broiler.JS\Broiler.JS
+2026-11-02T09:11:30.5683710Z Deleting the contents of 'D:\a\Broiler.JS\Broiler.JS'
+2026-11-02T09:11:30.5689504Z ##[group]Determining repository object format
+2026-11-02T09:11:30.5692547Z ##[endgroup]
+2026-11-02T09:11:30.5694282Z ##[group]Initializing the repository
+2026-11-02T09:11:30.5702492Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\Broiler.JS\Broiler.JS
+2026-11-02T09:11:30.6743305Z Initialized empty Git repository in D:/a/Broiler.JS/Broiler.JS/.git/
+2026-11-02T09:11:30.6800711Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/Broiler-Platform/Broiler.JS
+2026-11-02T09:11:30.7521108Z ##[endgroup]
+2026-11-02T09:11:30.7522698Z ##[group]Disabling automatic garbage collection
+2026-11-02T09:11:30.7524092Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-02T09:11:30.7927530Z ##[endgroup]
+2026-11-02T09:11:30.7929919Z ##[group]Setting up auth
+2026-11-02T09:11:30.7932269Z Removing SSH command configuration
+2026-11-02T09:11:30.7941382Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T09:11:30.8370197Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-02T09:11:32.3551769Z Removing HTTP extra header
+2026-11-02T09:11:32.3571068Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T09:11:32.3966766Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-02T09:11:32.9493348Z Removing includeIf entries pointing to credentials config files
+2026-11-02T09:11:32.9505607Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T09:11:32.9906623Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-02T09:11:33.5602149Z [command]"C:\Program Files\Git\bin\git.exe" config --file D:\a\_temp\git-credentials-d5dca377-d847-42d9-8047-3cda69d719b5.config http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-02T09:11:33.6013800Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/Broiler.JS/Broiler.JS/.git.path D:\a\_temp\git-credentials-d5dca377-d847-42d9-8047-3cda69d719b5.config
+2026-11-02T09:11:33.6417150Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/Broiler.JS/Broiler.JS/.git/worktrees/*.path D:\a\_temp\git-credentials-d5dca377-d847-42d9-8047-3cda69d719b5.config
+2026-11-02T09:11:33.6874090Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-d5dca377-d847-42d9-8047-3cda69d719b5.config
+2026-11-02T09:11:33.7269956Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-d5dca377-d847-42d9-8047-3cda69d719b5.config
+2026-11-02T09:11:33.7674785Z ##[endgroup]
+2026-11-02T09:11:33.7675692Z ##[group]Fetching the repository
+2026-11-02T09:11:33.7689200Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +54a38bce8c87f5d0600d11dca795c00c475cb9d0:refs/remotes/pull/1091/merge
+2026-11-02T09:11:39.1222165Z From https://github.com/Broiler-Platform/Broiler.JS
+2026-11-02T09:11:39.1224781Z  * [new ref]         54a38bce8c87f5d0600d11dca795c00c475cb9d0 -> pull/1091/merge
+2026-11-02T09:11:39.1277122Z ##[endgroup]
+2026-11-02T09:11:39.1278167Z ##[group]Determining the checkout info
+2026-11-02T09:11:39.1280306Z ##[endgroup]
+2026-11-02T09:11:39.1294639Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-02T09:11:39.1841172Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-02T09:11:39.2243304Z ##[group]Checking out the ref
+2026-11-02T09:11:39.2253843Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/remotes/pull/1091/merge
+2026-11-02T09:11:40.3800924Z Updating files:  25% (2217/8605)
+2026-11-02T09:11:40.4061900Z Updating files:  26% (2238/8605)
+2026-11-02T09:11:40.4530785Z Updating files:  27% (2324/8605)
+2026-11-02T09:11:40.5453293Z Updating files:  28% (2410/8605)
+2026-11-02T09:11:40.5620475Z Updating files:  29% (2496/8605)
+2026-11-02T09:11:40.5903306Z Updating files:  30% (2582/8605)
+2026-11-02T09:11:40.6069435Z Updating files:  31% (2668/8605)
+2026-11-02T09:11:40.6319612Z Updating files:  32% (2754/8605)
+2026-11-02T09:11:40.6519715Z Updating files:  33% (2840/8605)
+2026-11-02T09:11:40.6730588Z Updating files:  34% (2926/8605)
+2026-11-02T09:11:40.6888571Z Updating files:  35% (3012/8605)
+2026-11-02T09:11:40.7021848Z Updating files:  36% (3098/8605)
+2026-11-02T09:11:40.7149002Z Updating files:  37% (3184/8605)
+2026-11-02T09:11:40.7319561Z Updating files:  38% (3270/8605)
+2026-11-02T09:11:40.7505238Z Updating files:  39% (3356/8605)
+2026-11-02T09:11:40.7663064Z Updating files:  40% (3442/8605)
+2026-11-02T09:11:40.7836555Z Updating files:  41% (3529/8605)
+2026-11-02T09:11:40.7998975Z Updating files:  42% (3615/8605)
+2026-11-02T09:11:40.8167056Z Updating files:  43% (3701/8605)
+2026-11-02T09:11:40.8359987Z Updating files:  44% (3787/8605)
+2026-11-02T09:11:40.8587683Z Updating files:  45% (3873/8605)
+2026-11-02T09:11:40.9250483Z Updating files:  46% (3959/8605)
+2026-11-02T09:11:40.9362998Z Updating files:  47% (4045/8605)
+2026-11-02T09:11:40.9458953Z Updating files:  48% (4131/8605)
+2026-11-02T09:11:40.9572098Z Updating files:  49% (4217/8605)
+2026-11-02T09:11:40.9675479Z Updating files:  50% (4303/8605)
+2026-11-02T09:11:40.9790783Z Updating files:  51% (4389/8605)
+2026-11-02T09:11:40.9891035Z Updating files:  52% (4475/8605)
+2026-11-02T09:11:40.9999784Z Updating files:  53% (4561/8605)
+2026-11-02T09:11:41.0095373Z Updating files:  54% (4647/8605)
+2026-11-02T09:11:41.0221014Z Updating files:  55% (4733/8605)
+2026-11-02T09:11:41.0331330Z Updating files:  56% (4819/8605)
+2026-11-02T09:11:41.0434980Z Updating files:  57% (4905/8605)
+2026-11-02T09:11:41.0534918Z Updating files:  58% (4991/8605)
+2026-11-02T09:11:41.0643687Z Updating files:  59% (5077/8605)
+2026-11-02T09:11:41.0744393Z Updating files:  60% (5163/8605)
+2026-11-02T09:11:41.0846375Z Updating files:  61% (5250/8605)
+2026-11-02T09:11:41.0949227Z Updating files:  62% (5336/8605)
+2026-11-02T09:11:41.1050554Z Updating files:  63% (5422/8605)
+2026-11-02T09:11:41.1152359Z Updating files:  64% (5508/8605)
+2026-11-02T09:11:41.1258868Z Updating files:  65% (5594/8605)
+2026-11-02T09:11:41.1360439Z Updating files:  66% (5680/8605)
+2026-11-02T09:11:41.1460967Z Updating files:  67% (5766/8605)
+2026-11-02T09:11:41.1564260Z Updating files:  68% (5852/8605)
+2026-11-02T09:11:41.1660743Z Updating files:  69% (5938/8605)
+2026-11-02T09:11:41.1757416Z Updating files:  70% (6024/8605)
+2026-11-02T09:11:41.1930080Z Updating files:  71% (6110/8605)
+2026-11-02T09:11:41.2206941Z Updating files:  72% (6196/8605)
+2026-11-02T09:11:41.3232135Z Updating files:  73% (6282/8605)
+2026-11-02T09:11:41.9103404Z Updating files:  73% (6347/8605)
+2026-11-02T09:11:42.0334572Z Updating files:  74% (6368/8605)
+2026-11-02T09:11:42.0866118Z Updating files:  75% (6454/8605)
+2026-11-02T09:11:42.1608015Z Updating files:  76% (6540/8605)
+2026-11-02T09:11:42.2575253Z Updating files:  77% (6626/8605)
+2026-11-02T09:11:42.3981105Z Updating files:  78% (6712/8605)
+2026-11-02T09:11:42.4263210Z Updating files:  78% (6767/8605)
+2026-11-02T09:11:42.5869856Z Updating files:  79% (6798/8605)
+2026-11-02T09:11:43.0237691Z Updating files:  80% (6884/8605)
+2026-11-02T09:11:43.2163090Z Updating files:  81% (6971/8605)
+2026-11-02T09:11:43.2997235Z Updating files:  82% (7057/8605)
+2026-11-02T09:11:43.3343662Z Updating files:  83% (7143/8605)
+2026-11-02T09:11:43.3475771Z Updating files:  83% (7160/8605)
+2026-11-02T09:11:43.8414173Z Updating files:  84% (7229/8605)
+2026-11-02T09:11:43.9282215Z Updating files:  85% (7315/8605)
+2026-11-02T09:11:43.9795428Z Updating files:  86% (7401/8605)
+2026-11-02T09:11:44.0317234Z Updating files:  87% (7487/8605)
+2026-11-02T09:11:44.0883179Z Updating files:  88% (7573/8605)
+2026-11-02T09:11:44.5772330Z Updating files:  89% (7659/8605)
+2026-11-02T09:11:44.6309632Z Updating files:  89% (7663/8605)
+2026-11-02T09:11:44.7131018Z Updating files:  90% (7745/8605)
+2026-11-02T09:11:44.7659430Z Updating files:  91% (7831/8605)
+2026-11-02T09:11:44.8412809Z Updating files:  92% (7917/8605)
+2026-11-02T09:11:44.8574259Z Updating files:  93% (8003/8605)
+2026-11-02T09:11:44.9215095Z Updating files:  94% (8089/8605)
+2026-11-02T09:11:44.9881975Z Updating files:  95% (8175/8605)
+2026-11-02T09:11:45.0689767Z Updating files:  96% (8261/8605)
+2026-11-02T09:11:45.1658971Z Updating files:  97% (8347/8605)
+2026-11-02T09:11:45.4802153Z Updating files:  98% (8433/8605)
+2026-11-02T09:11:46.5563935Z Updating files:  98% (8465/8605)
+2026-11-02T09:11:46.8075395Z Updating files:  98% (8469/8605)
+2026-11-02T09:11:46.8368690Z Updating files:  99% (8519/8605)
+2026-11-02T09:11:46.8369171Z Updating files: 100% (8605/8605)
+2026-11-02T09:11:46.8369608Z Updating files: 100% (8605/8605), done.
+2026-11-02T09:11:46.8590356Z Note: switching to 'refs/remotes/pull/1091/merge'.
+2026-11-02T09:11:46.8590903Z 
+2026-11-02T09:11:46.8596119Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-11-02T09:11:46.8596952Z changes and commit them, and you can discard any commits you make in this
+2026-11-02T09:11:46.8597603Z state without impacting any branches by switching back to a branch.
+2026-11-02T09:11:46.8597901Z 
+2026-11-02T09:11:46.8598647Z If you want to create a new branch to retain commits you create, you may
+2026-11-02T09:11:46.8599178Z do so (now or later) by using -c with the switch command. Example:
+2026-11-02T09:11:46.8599755Z 
+2026-11-02T09:11:46.8600104Z   git switch -c <new-branch-name>
+2026-11-02T09:11:46.8600353Z 
+2026-11-02T09:11:46.8600478Z Or undo this operation with:
+2026-11-02T09:11:46.8600699Z 
+2026-11-02T09:11:46.8600824Z   git switch -
+2026-11-02T09:11:46.8601049Z 
+2026-11-02T09:11:46.8601280Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-11-02T09:11:46.8601842Z 
+2026-11-02T09:11:46.8602237Z HEAD is now at 54a38bc Merge edbd51821e8ecba06d35eaf23a07da2867ab0ffc into b7310890433bb3c78b79c786865cfbe28184d2f8
+2026-11-02T09:11:46.8996094Z ##[endgroup]
+2026-11-02T09:11:46.9506710Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-02T09:11:46.9864194Z 54a38bce8c87f5d0600d11dca795c00c475cb9d0
+2026-11-02T09:11:47.0354164Z ##[group]Run actions/setup-dotnet@v6
+2026-11-02T09:11:47.0354821Z with:
+2026-11-02T09:11:47.0355253Z   dotnet-version: 10.0.x
+2026-11-02T09:11:47.0355653Z   cache: false
+2026-11-02T09:11:47.0355989Z env:
+2026-11-02T09:11:47.0356342Z   PACKAGE_VERSION: 
+2026-11-02T09:11:47.0356749Z   BROILER_VECTORS_WORKERS: 4
+2026-11-02T09:11:47.0357185Z   BROILER_VECTORS_REPORT: engine-vectors.tsv
+2026-11-02T09:11:47.0357608Z ##[endgroup]
+2026-11-02T09:11:47.3332359Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -Sta -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command & 'D:\a\_actions\actions\setup-dotnet\v6\externals\install-dotnet.ps1' -SkipNonVersionedFiles -Runtime dotnet -Channel LTS
+2026-11-02T09:11:49.5842775Z dotnet-install: Downloaded file https://builds.dotnet.microsoft.com/dotnet/Runtime/10.0.14/dotnet-runtime-10.0.14-win-x64.zip size is 36971047 bytes.
+2026-11-02T09:11:49.5846326Z dotnet-install: Either downloaded or local package size can not be measured. One of them may be corrupted.
+2026-11-02T09:11:49.5876424Z dotnet-install: Extracting the archive.
+2026-11-02T09:11:50.4570840Z dotnet-install: Note that the script does not ensure your Windows version is supported during the installation.
+2026-11-02T09:11:50.4576243Z dotnet-install: To check the list of supported versions, go to https://learn.microsoft.com/dotnet/core/install/windows#supported-versions
+2026-11-02T09:11:50.4583216Z dotnet-install: Installed version is 10.0.14
+2026-11-02T09:11:50.4591259Z dotnet-install: Installation finished
+2026-11-02T09:11:50.5976196Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -Sta -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command & 'D:\a\_actions\actions\setup-dotnet\v6\externals\install-dotnet.ps1' -SkipNonVersionedFiles -Channel 10.0
+2026-11-02T09:12:01.2018503Z dotnet-install: Downloaded file https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.403/dotnet-sdk-10.0.403-win-x64.zip size is 300745255 bytes.
+2026-11-02T09:12:01.2026680Z dotnet-install: Either downloaded or local package size can not be measured. One of them may be corrupted.
+2026-11-02T09:12:01.2057898Z dotnet-install: Extracting the archive.
+2026-11-02T09:12:20.3171576Z dotnet-install: Note that the script does not ensure your Windows version is supported during the installation.
+2026-11-02T09:12:20.3174288Z dotnet-install: To check the list of supported versions, go to https://learn.microsoft.com/dotnet/core/install/windows#supported-versions
+2026-11-02T09:12:20.3180959Z dotnet-install: Installed version is 10.0.403
+2026-11-02T09:12:20.3187025Z dotnet-install: Installation finished
+2026-11-02T09:12:20.4096371Z ##[group]Run args=()
+2026-11-02T09:12:20.4096911Z [36;1margs=()[0m
+2026-11-02T09:12:20.4097287Z [36;1mif [ -n "$PACKAGE_VERSION" ]; then[0m
+2026-11-02T09:12:20.4097786Z [36;1m  args+=("-p:BroilerEnginePackageVersion=$PACKAGE_VERSION")[0m
+2026-11-02T09:12:20.4098234Z [36;1mfi[0m
+2026-11-02T09:12:20.4098812Z [36;1mdotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --nologo "${args[@]}"[0m
+2026-11-02T09:12:20.4119686Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-02T09:12:20.4120185Z env:
+2026-11-02T09:12:20.4120497Z   PACKAGE_VERSION: 
+2026-11-02T09:12:20.4120836Z   BROILER_VECTORS_WORKERS: 4
+2026-11-02T09:12:20.4121223Z   BROILER_VECTORS_REPORT: engine-vectors.tsv
+2026-11-02T09:12:20.4121699Z   DOTNET_ROOT: C:\Program Files\dotnet
+2026-11-02T09:12:20.4122047Z ##[endgroup]
+2026-11-02T09:12:22.4625704Z   Determining projects to restore...
+2026-11-02T09:12:26.5542908Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj (in 1.65 sec).
+2026-11-02T09:12:26.5675765Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj (in 4 ms).
+2026-11-02T09:12:27.8685341Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.ExpressionCompiler\Broiler.JavaScript.ExpressionCompiler.csproj (in 1.29 sec).
+2026-11-02T09:12:27.8777137Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Ast\Broiler.JavaScript.Ast.csproj (in 2.99 sec).
+2026-11-02T09:12:27.8827579Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.BuiltIns\Broiler.JavaScript.BuiltIns.csproj (in 2.99 sec).
+2026-11-02T09:12:27.8850947Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.All\Broiler.JavaScript.All.csproj (in 3 sec).
+2026-11-02T09:12:27.8866898Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj (in 8 ms).
+2026-11-02T09:12:27.8948223Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Debugger\Broiler.JavaScript.Debugger.csproj (in 13 ms).
+2026-11-02T09:12:27.8988817Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Compiler\Broiler.JavaScript.Compiler.csproj (in 10 ms).
+2026-11-02T09:12:27.9073884Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Clr\Broiler.JavaScript.Clr.csproj (in 11 ms).
+2026-11-02T09:12:27.9117882Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Storage\Broiler.JavaScript.Storage.csproj (in 5 ms).
+2026-11-02T09:12:27.9164674Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Runtime\Broiler.JavaScript.Runtime.csproj (in 8 ms).
+2026-11-02T09:12:27.9185331Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Parser\Broiler.JavaScript.Parser.csproj (in 5 ms).
+2026-11-02T09:12:27.9416890Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Modules\Broiler.JavaScript.Modules.csproj (in 11 ms).
+2026-11-02T09:12:27.9469645Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.LinqExpressions\Broiler.JavaScript.LinqExpressions.csproj (in 8 ms).
+2026-11-02T09:12:27.9502284Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.ModuleExtensions\Broiler.JavaScript.ModuleExtensions.csproj (in 15 ms).
+2026-11-02T09:12:27.9784688Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Globals\Broiler.JavaScript.Globals.csproj (in 15 ms).
+2026-11-02T09:12:27.9806739Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Extensions\Broiler.JavaScript.Extensions.csproj (in 8 ms).
+2026-11-02T09:12:27.9869847Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj (in 3 ms).
+2026-11-02T09:12:36.6336807Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.JSClassGenerator\Broiler.JavaScript.JSClassGenerator.csproj (in 8.69 sec).
+2026-11-02T09:12:39.0825872Z   Restored D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Vectors.Tests\Broiler.JavaScript.Vectors.Tests.csproj (in 11.19 sec).
+2026-11-02T09:12:46.0169668Z   Broiler.ECMAScript.Conformance -> D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Conformance\bin\Release\net10.0\Broiler.ECMAScript.Conformance.dll
+2026-11-02T09:12:46.0216039Z   Broiler.ECMAScript.Algorithms -> D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\bin\Release\net10.0\Broiler.ECMAScript.Algorithms.dll
+2026-11-02T09:12:52.0842907Z   Broiler.JavaScript.Expressions -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Expressions\bin\Release\net10.0\Broiler.JavaScript.Expressions.dll
+2026-11-02T09:12:53.5027326Z   Broiler.JavaScript.ExpressionCompiler -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.ExpressionCompiler\bin\Release\net10.0\Broiler.JavaScript.ExpressionCompiler.dll
+2026-11-02T09:12:58.9622006Z   Broiler.JavaScript.Ast -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Ast\bin\Release\net10.0\Broiler.JavaScript.Ast.dll
+2026-11-02T09:13:00.0572926Z   Broiler.JavaScript.Storage -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Storage\bin\Release\net10.0\Broiler.JavaScript.Storage.dll
+2026-11-02T09:13:00.1713570Z   Broiler.JavaScript.Parser -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Parser\bin\Release\net10.0\Broiler.JavaScript.Parser.dll
+2026-11-02T09:13:00.5444671Z   Broiler.JavaScript.JSClassGenerator -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.JSClassGenerator\bin\Release\netstandard2.0\Broiler.JavaScript.JSClassGenerator.dll
+2026-11-02T09:13:01.8932930Z   Broiler.JavaScript.Runtime -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Runtime\bin\Release\net10.0\Broiler.JavaScript.Runtime.dll
+2026-11-02T09:13:02.6296702Z   Broiler.JavaScript.Engine -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Engine\bin\Release\net10.0\Broiler.JavaScript.Engine.dll
+2026-11-02T09:13:03.3116030Z   Broiler.JavaScript.LinqExpressions -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.LinqExpressions\bin\Release\net10.0\Broiler.JavaScript.LinqExpressions.dll
+2026-11-02T09:13:03.7168251Z   Broiler.JavaScript.Extensions -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Extensions\bin\Release\net10.0\Broiler.JavaScript.Extensions.dll
+2026-11-02T09:13:05.4514502Z   Broiler.JavaScript.Compiler -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Compiler\bin\Release\net10.0\Broiler.JavaScript.Compiler.dll
+2026-11-02T09:13:08.8736442Z   Broiler.JavaScript.BuiltIns -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.BuiltIns\bin\Release\net10.0\Broiler.JavaScript.BuiltIns.dll
+2026-11-02T09:13:09.3842845Z   Broiler.JavaScript.Modules -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Modules\bin\Release\net10.0\Broiler.JavaScript.Modules.dll
+2026-11-02T09:13:10.0572886Z   Broiler.JavaScript.Debugger -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Debugger\bin\Release\net10.0\Broiler.JavaScript.Debugger.dll
+2026-11-02T09:13:10.3920179Z   Broiler.JavaScript.Globals -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Globals\bin\Release\net10.0\Broiler.JavaScript.Globals.dll
+2026-11-02T09:13:10.4203360Z   Broiler.JavaScript.Clr -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Clr\bin\Release\net10.0\Broiler.JavaScript.Clr.dll
+2026-11-02T09:13:10.7461394Z   Broiler.JavaScript.ModuleExtensions -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.ModuleExtensions\bin\Release\net10.0\Broiler.JavaScript.ModuleExtensions.dll
+2026-11-02T09:13:10.9968990Z   Broiler.JavaScript.All -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.All\bin\Release\net10.0\Broiler.JavaScript.All.dll
+2026-11-02T09:13:11.6576846Z   Broiler.JavaScript.Vectors.Tests -> D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Vectors.Tests\bin\Release\net10.0\Broiler.JavaScript.Vectors.Tests.dll
+2026-11-02T09:13:11.6839310Z 
+2026-11-02T09:13:11.6848586Z Build succeeded.
+2026-11-02T09:13:11.6849641Z     0 Warning(s)
+2026-11-02T09:13:11.6850086Z     0 Error(s)
+2026-11-02T09:13:11.6851876Z 
+2026-11-02T09:13:11.6852860Z Time Elapsed 00:00:50.55
+2026-11-02T09:13:12.0940452Z ##[group]Run set -o pipefail
+2026-11-02T09:13:12.0941572Z [36;1mset -o pipefail[0m
+2026-11-02T09:13:12.0942286Z [36;1mdotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo \[0m
+2026-11-02T09:13:12.0943427Z [36;1m  --filter "Category=EngineCorpus" --logger "console;verbosity=detailed" 2>&1 | tee engine-vectors.log[0m
+2026-11-02T09:13:12.0964100Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-02T09:13:12.0964644Z env:
+2026-11-02T09:13:12.0964906Z   PACKAGE_VERSION: 
+2026-11-02T09:13:12.0965212Z   BROILER_VECTORS_WORKERS: 4
+2026-11-02T09:13:12.0965598Z   BROILER_VECTORS_REPORT: engine-vectors.tsv
+2026-11-02T09:13:12.0966518Z   DOTNET_ROOT: C:\Program Files\dotnet
+2026-11-02T09:13:12.0966898Z ##[endgroup]
+2026-11-02T09:13:13.2541778Z Test run for D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Vectors.Tests\bin\Release\net10.0\Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+2026-11-02T09:13:13.4775742Z A total of 1 test files matched the specified pattern.
+2026-11-02T09:13:13.4776848Z D:\a\Broiler.JS\Broiler.JS\Broiler.JS\Broiler.JavaScript.Vectors.Tests\bin\Release\net10.0\Broiler.JavaScript.Vectors.Tests.dll
+2026-11-02T09:13:14.2722925Z [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.14)
+2026-11-02T09:13:14.5593831Z [xUnit.net 00:00:00.30]   Discovering: Broiler.JavaScript.Vectors.Tests
+2026-11-02T09:13:14.8593074Z [xUnit.net 00:00:00.61]   Discovered:  Broiler.JavaScript.Vectors.Tests
+2026-11-02T09:13:15.1448624Z [xUnit.net 00:00:00.89]   Starting:    Broiler.JavaScript.Vectors.Tests
+2026-11-02T09:28:16.6133802Z 111157 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 14 min 58.8 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 3.175 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001.
+2026-11-02T09:28:17.1363596Z [xUnit.net 00:15:02.89]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+2026-11-02T09:28:17.1389090Z [xUnit.net 00:15:02.89]       35 of 111157 vectors differ and nothing classifies them:
+2026-11-02T09:28:17.1391800Z intl/collation/options/sensitivity/0131: expected value: str:"<", rendered value: str:"="
+2026-11-02T09:28:17.1394729Z intl/collation/tailorings/de-phonebook/0001: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+2026-11-02T09:28:17.1397504Z intl/collation/tailorings/de-phonebook/0002: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1400589Z intl/collation/tailorings/de-phonebook/0003: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1402245Z intl/collation/tailorings/de-phonebook/0005: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1406329Z intl/collation/tailorings/de-phonebook/0006: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1411239Z intl/collation/tailorings/de-phonebook/0007: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1413800Z intl/collation/tailorings/de-phonebook/0012: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+2026-11-02T09:28:17.1416027Z intl/collation/tailorings/de-phonebook/0013: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1417183Z intl/collation/tailorings/de-phonebook/0014: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1418425Z intl/collation/tailorings/de-phonebook/0016: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1419607Z intl/collation/tailorings/de-phonebook/0017: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1420812Z intl/collation/tailorings/de-phonebook/0018: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1423067Z intl/collation/tailorings/de-search/0001: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+2026-11-02T09:28:17.1425371Z intl/collation/tailorings/de-search/0002: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1426485Z intl/collation/tailorings/de-search/0003: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1427567Z intl/collation/tailorings/de-search/0005: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1428650Z intl/collation/tailorings/de-search/0006: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1429792Z intl/collation/tailorings/de-search/0007: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1432323Z intl/collation/tailorings/de-search/0012: expected value: str:"a < Ab < Ae = \u00E4 = ae = \u00C4 = AE < \u00C4b < Af < b < o < Od < Oe = \u00F6 = oe < \u00D6b < ss = \u00DF < st < u < Ub < Ue = \u00FC = ue < \u00DCb", rendered value: str:"a = \u00E4 = \u00C4 < Ab = \u00C4b < Ae = ae = AE < Af < b < o = \u00F6 < \u00D6b < Od < Oe = oe < ss = \u00DF < st < u = \u00FC < Ub = \u00DCb < Ue = ue"
+2026-11-02T09:28:17.1435020Z intl/collation/tailorings/de-search/0013: expected value: str:"=", rendered value: str:"<"
+2026-11-02T09:28:17.1436134Z intl/collation/tailorings/de-search/0014: expected value: str:"=", rendered value: str:"<"
+2026-11-02T09:28:17.1437228Z intl/collation/tailorings/de-search/0016: expected value: str:"=", rendered value: str:"<"
+2026-11-02T09:28:17.1438388Z intl/collation/tailorings/de-search/0017: expected value: str:"=", rendered value: str:"<"
+2026-11-02T09:28:17.1439437Z intl/collation/tailorings/de-search/0018: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.1440316Z [xUnit.net 00:15:02.89]       Stack Trace:
+2026-11-02T09:28:17.1442036Z [xUnit.net 00:15:02.89]         /_/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(58,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
+2026-11-02T09:28:17.1443913Z [xUnit.net 00:15:02.89]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+2026-11-02T09:28:17.1445426Z [xUnit.net 00:15:02.89]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+2026-11-02T09:28:17.1446317Z [xUnit.net 00:15:02.89]       Output:
+2026-11-02T09:28:17.1454620Z [xUnit.net 00:15:02.89]         111157 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 14 min 58.8 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 3.175 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001.
+2026-11-02T09:28:17.2284753Z   Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [15 m 1 s]
+2026-11-02T09:28:17.2286173Z   Error Message:
+2026-11-02T09:28:17.2286960Z    35 of 111157 vectors differ and nothing classifies them:
+2026-11-02T09:28:17.2287821Z intl/collation/options/sensitivity/0131: expected value: str:"<", rendered value: str:"="
+2026-11-02T09:28:17.2290093Z intl/collation/tailorings/de-phonebook/0001: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+2026-11-02T09:28:17.2292166Z intl/collation/tailorings/de-phonebook/0002: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2293205Z intl/collation/tailorings/de-phonebook/0003: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2294217Z intl/collation/tailorings/de-phonebook/0005: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2295434Z intl/collation/tailorings/de-phonebook/0006: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2297113Z intl/collation/tailorings/de-phonebook/0007: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2397064Z intl/collation/tailorings/de-phonebook/0012: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+2026-11-02T09:28:17.2417417Z intl/collation/tailorings/de-phonebook/0013: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2419373Z intl/collation/tailorings/de-phonebook/0014: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2420780Z intl/collation/tailorings/de-phonebook/0016: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2422218Z intl/collation/tailorings/de-phonebook/0017: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2423857Z intl/collation/tailorings/de-phonebook/0018: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2426666Z intl/collation/tailorings/de-search/0001: expected value: str:"a < Ab < ae < Ae < AE < \u00E4 < \u00C4 < \u00C4b < Af < b < o < Od < oe < Oe < \u00F6 < \u00D6b < ss < \u00DF < st < u < Ub < ue < Ue < \u00FC < \u00DCb", rendered value: str:"a < \u00E4 < \u00C4 < Ab < \u00C4b < ae < Ae < AE < Af < b < o < \u00F6 < \u00D6b < Od < oe < Oe < ss < \u00DF < st < u < \u00FC < Ub < \u00DCb < ue < Ue"
+2026-11-02T09:28:17.2446459Z intl/collation/tailorings/de-search/0002: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2448349Z intl/collation/tailorings/de-search/0003: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2532183Z intl/collation/tailorings/de-search/0005: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2536719Z intl/collation/tailorings/de-search/0006: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2537857Z intl/collation/tailorings/de-search/0007: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2540555Z intl/collation/tailorings/de-search/0012: expected value: str:"a < Ab < Ae = \u00E4 = ae = \u00C4 = AE < \u00C4b < Af < b < o < Od < Oe = \u00F6 = oe < \u00D6b < ss = \u00DF < st < u < Ub < Ue = \u00FC = ue < \u00DCb", rendered value: str:"a = \u00E4 = \u00C4 < Ab = \u00C4b < Ae = ae = AE < Af < b < o = \u00F6 < \u00D6b < Od < Oe = oe < ss = \u00DF < st < u = \u00FC < Ub = \u00DCb < Ue = ue"
+2026-11-02T09:28:17.2546972Z intl/collation/tailorings/de-search/0013: expected value: str:"=", rendered value: str:"<"
+2026-11-02T09:28:17.2560341Z intl/collation/tailorings/de-search/0014: expected value: str:"=", rendered value: str:"<"
+2026-11-02T09:28:17.2561428Z intl/collation/tailorings/de-search/0016: expected value: str:"=", rendered value: str:"<"
+2026-11-02T09:28:17.2563315Z intl/collation/tailorings/de-search/0017: expected value: str:"=", rendered value: str:"<"
+2026-11-02T09:28:17.2602258Z intl/collation/tailorings/de-search/0018: expected value: str:">", rendered value: str:"<"
+2026-11-02T09:28:17.2622328Z   Stack Trace:
+2026-11-02T09:28:17.2637168Z      at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /_/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 58
+2026-11-02T09:28:17.2661110Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+2026-11-02T09:28:17.2664799Z    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+2026-11-02T09:28:17.2666048Z   Standard Output Messages:
+2026-11-02T09:28:17.2673135Z  111157 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 14 min 58.8 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 3.175 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001.
+2026-11-02T09:28:17.2678428Z 
+2026-11-02T09:28:17.2678439Z 
+2026-11-02T09:28:17.2679001Z [xUnit.net 00:15:02.99]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = '7789aa4acb540536a860f2f06af5bd73da51d47211065e8ec52c95b720684470')
+2026-11-02T09:28:17.2945014Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+2026-11-02T09:28:17.3408116Z 
+2026-11-02T09:28:17.3408681Z Test Run Failed.
+2026-11-02T09:28:17.3409118Z Total tests: 1
+2026-11-02T09:28:17.3409469Z      Failed: 1
+2026-11-02T09:28:17.3409876Z  Total time: 15.0644 Minutes
+2026-11-02T09:28:17.4256753Z ##[error]Process completed with exit code 1.
+2026-11-02T09:28:17.4476758Z ##[group]Run [ -f engine-vectors.log ] || exit 0
+2026-11-02T09:28:17.4477364Z [36;1m[ -f engine-vectors.log ] || exit 0[0m
+2026-11-02T09:28:17.4477842Z [36;1mline="$(grep -m 1 'evaluating process(es)' engine-vectors.log || true)"[0m
+2026-11-02T09:28:17.4478306Z [36;1mline="${line%$'\r'}"[0m
+2026-11-02T09:28:17.4478656Z [36;1mline="${line#"${line%%[![:space:]]*}"}"[0m
+2026-11-02T09:28:17.4479028Z [36;1mif [ -z "$line" ]; then[0m
+2026-11-02T09:28:17.4479398Z [36;1m  echo "The corpus test wrote no summary line."[0m
+2026-11-02T09:28:17.4479773Z [36;1m  exit 0[0m
+2026-11-02T09:28:17.4480039Z [36;1mfi[0m
+2026-11-02T09:28:17.4480332Z [36;1mecho "$line" >> "$GITHUB_STEP_SUMMARY"[0m
+2026-11-02T09:28:17.4480935Z [36;1magain="$(sed -nE 's/.*; ([0-9]+) found no completion in the parallel pass.*/\1/p' <<< "$line")"[0m
+2026-11-02T09:28:17.4481449Z [36;1mif [ "${again:-0}" -gt 0 ]; then[0m
+2026-11-02T09:28:17.4482072Z [36;1m  echo "::warning title=Engine vectors run again alone on $RUNNER_OS::${line//%/%25}"[0m
+2026-11-02T09:28:17.4482540Z [36;1mfi[0m
+2026-11-02T09:28:17.4495128Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-02T09:28:17.4495594Z env:
+2026-11-02T09:28:17.4495894Z   PACKAGE_VERSION: 
+2026-11-02T09:28:17.4496191Z   BROILER_VECTORS_WORKERS: 4
+2026-11-02T09:28:17.4496547Z   BROILER_VECTORS_REPORT: engine-vectors.tsv
+2026-11-02T09:28:17.4496922Z   DOTNET_ROOT: C:\Program Files\dotnet
+2026-11-02T09:28:17.4497252Z ##[endgroup]
+2026-11-02T09:28:17.7751943Z ##[warning]111157 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 14 min 58.8 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 3.175 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001.
+2026-11-02T09:28:17.8264205Z ##[group]Run actions/upload-artifact@v7
+2026-11-02T09:28:17.8267101Z with:
+2026-11-02T09:28:17.8281731Z   name: engine-vectors-windows-latest
+2026-11-02T09:28:17.8283290Z   path: engine-vectors.tsv
+engine-vectors.log
+
+2026-11-02T09:28:17.8284155Z   if-no-files-found: warn
+2026-11-02T09:28:17.8284899Z   compression-level: 6
+2026-11-02T09:28:17.8285406Z   overwrite: false
+2026-11-02T09:28:17.8286203Z   include-hidden-files: false
+2026-11-02T09:28:17.8286717Z   archive: true
+2026-11-02T09:28:17.8287339Z env:
+2026-11-02T09:28:17.8287754Z   PACKAGE_VERSION: 
+2026-11-02T09:28:17.8288243Z   BROILER_VECTORS_WORKERS: 4
+2026-11-02T09:28:17.8288996Z   BROILER_VECTORS_REPORT: engine-vectors.tsv
+2026-11-02T09:28:17.8289553Z   DOTNET_ROOT: C:\Program Files\dotnet
+2026-11-02T09:28:17.8290318Z ##[endgroup]
+2026-11-02T09:28:18.0444980Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-11-02T09:28:18.0446892Z The least common ancestor is D:\a\Broiler.JS\Broiler.JS. This will be the root directory of the artifact
+2026-11-02T09:28:18.0448003Z With the provided path, there will be 2 files uploaded
+2026-11-02T09:28:18.0448793Z Artifact name is valid!
+2026-11-02T09:28:18.0449209Z Root directory input is valid!
+2026-11-02T09:28:18.2854042Z Uploading artifact: engine-vectors-windows-latest.zip
+2026-11-02T09:28:18.2892378Z Beginning upload of artifact content to blob storage
+2026-11-02T09:28:18.6994889Z Uploaded bytes 776392
+2026-11-02T09:28:18.7274802Z Finished uploading artifact content to blob storage!
+2026-11-02T09:28:18.7277025Z SHA256 digest of uploaded artifact is 7f17a060578b8cf2dea729e015af1a000b02645d0936455a56e349c56a9edc68
+2026-11-02T09:28:18.7277962Z Finalizing artifact upload
+2026-11-02T09:28:19.2129264Z Artifact engine-vectors-windows-latest successfully finalized. Artifact ID 13130131019
+2026-11-02T09:28:19.2130243Z Artifact engine-vectors-windows-latest has been successfully uploaded! Final size is 776392 bytes. Artifact ID is 13130131019
+2026-11-02T09:28:19.2138880Z Artifact download URL: https://github.com/Broiler-Platform/Broiler.JS/actions/runs/41418502645/artifacts/13130131019
+2026-11-02T09:28:19.2605745Z Post job cleanup.
+2026-11-02T09:28:19.4509475Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-02T09:28:19.4943599Z git version 2.56.0.windows.2
+2026-11-02T09:28:19.5036961Z Temporarily overriding HOME='D:\a\_temp\694cd756-673d-495c-8691-6034c8cf8d75' before making global git config changes
+2026-11-02T09:28:19.5038551Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-02T09:28:19.5075570Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\Broiler.JS\Broiler.JS
+2026-11-02T09:28:19.5511241Z Removing SSH command configuration
+2026-11-02T09:28:19.5523307Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T09:28:19.5923694Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-02T09:28:20.2251467Z Removing HTTP extra header
+2026-11-02T09:28:20.2262472Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T09:28:20.2657151Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-02T09:28:20.8565939Z Removing includeIf entries pointing to credentials config files
+2026-11-02T09:28:20.8578217Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T09:28:20.8930712Z includeif.gitdir:D:/a/Broiler.JS/Broiler.JS/.git.path
+2026-11-02T09:28:20.8931535Z includeif.gitdir:D:/a/Broiler.JS/Broiler.JS/.git/worktrees/*.path
+2026-11-02T09:28:20.8932441Z includeif.gitdir:/github/workspace/.git.path
+2026-11-02T09:28:20.8932932Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-02T09:28:20.8976532Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/Broiler.JS/Broiler.JS/.git.path
+2026-11-02T09:28:20.9346180Z D:\a\_temp\git-credentials-d5dca377-d847-42d9-8047-3cda69d719b5.config
+2026-11-02T09:28:20.9394568Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/Broiler.JS/Broiler.JS/.git.path D\:\\a\\_temp\\git\-credentials\-d5dca377\-d847\-42d9\-8047\-3cda69d719b5\.config
+2026-11-02T09:28:20.9829037Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/Broiler.JS/Broiler.JS/.git/worktrees/*.path
+2026-11-02T09:28:21.0166719Z D:\a\_temp\git-credentials-d5dca377-d847-42d9-8047-3cda69d719b5.config
+2026-11-02T09:28:21.0211716Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/Broiler.JS/Broiler.JS/.git/worktrees/*.path D\:\\a\\_temp\\git\-credentials\-d5dca377\-d847\-42d9\-8047\-3cda69d719b5\.config
+2026-11-02T09:28:21.0617213Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-02T09:28:21.0978097Z /github/runner_temp/git-credentials-d5dca377-d847-42d9-8047-3cda69d719b5.config
+2026-11-02T09:28:21.1021185Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-d5dca377\-d847\-42d9\-8047\-3cda69d719b5\.config
+2026-11-02T09:28:21.1421293Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-02T09:28:21.1760893Z /github/runner_temp/git-credentials-d5dca377-d847-42d9-8047-3cda69d719b5.config
+2026-11-02T09:28:21.1809191Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-d5dca377\-d847\-42d9\-8047\-3cda69d719b5\.config
+2026-11-02T09:28:21.2197639Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-02T09:28:21.8206312Z Removing credentials config 'D:\a\_temp\git-credentials-d5dca377-d847-42d9-8047-3cda69d719b5.config'
+2026-11-02T09:28:21.8452625Z Cleaning up orphan processes

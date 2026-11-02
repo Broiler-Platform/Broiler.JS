@@ -5,7 +5,8 @@
 // package SJL-9.2a). It is ICU, through the reference Node.js release bundle sjl-9-001's reference.txt names: the
 // newest release whose process.versions.cldr begins "48", v26.12.0 (ICU 78.3, CLDR 48.0), retrieved and checked by
 // its tarball's SHA-256 (decision D17 of Broiler.VM's JSD-0082). It is neither engine's code.
-// generate_intl_vectors.py writes the requests, runs this driver, and reads the answers; it is the only caller.
+// generate_intl_vectors.py writes the requests, runs this driver, and reads the answers; so, since corpus revision 33
+// (milestone SJL-17.2), does generate_collation_vectors.py, without --witness. They are its only callers.
 //
 //   <node> intlref.mjs <prelude.js> <requests.json> <answers.json> [--witness]
 //
