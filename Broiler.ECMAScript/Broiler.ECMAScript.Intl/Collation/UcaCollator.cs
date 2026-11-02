@@ -45,6 +45,13 @@ namespace Broiler.ECMAScript.Intl;
 /// <c>normalize</c> charges it, through the normalization owner's meter, and each collation element of both strings - the
 /// sort keys, after every contraction and expansion - once both are looked up. Broiler.JS passes none.
 /// </para>
+/// <para>
+/// <i>(Note of 2026-11-02, at the review of SJL-17.3.)</i> The element charge is an exception to <see cref="WorkCharge"/>'s
+/// contract as written, "Charges work to the caller's budget, before the work it charges for is done": it follows the lookup
+/// of both strings' elements, at Broiler.VM's point (<c>JsCollator.cs:107-109</c> at <c>4e6a41e9</c>), under JSD-0084's
+/// decision E7 and row O17, which name that point. The work done before it is the lookup over the NFD forms, within a constant
+/// factor of their length, and NFD's own charge has paid for that length before it.
+/// </para>
 /// <para><b>Immutable</b>: one may be shared between threads (convention 10).</para>
 /// </remarks>
 // Broiler-AI:           Origin=Ported; Spec=UTS10, ECMA-402 sec-collator-comparestrings via Broiler.VM JsCollator; IP=Low; Security=Medium; Resources=3; Fingerprint=B6048B
