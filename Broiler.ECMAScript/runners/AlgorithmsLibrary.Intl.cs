@@ -69,14 +69,15 @@ internal sealed partial class AlgorithmsLibrary
     /// <item><c>String.prototype.toLocaleLowerCase</c>: the Unicode area's operation too (see the type's remarks); casing is
     /// Broiler.Unicode's, and with no locale it reads the engine's default-locale provider (row L35).</item>
     /// <item><c>Number.prototype.toLocaleString</c>: formatting a number, sub-area (c)'s, with the engine's default locale
-    /// (row L33).</item>
+    /// (row L33), from the operation and inputs alone; read whole, the locales file's vector of it, <c>providers/0012</c>, is the
+    /// library's from stage SJL-9.3f (<see cref="IsLibraryIntlDefaultLocaleScript"/>).</item>
     /// <item><c>Intl.NumberFormat.supportedLocalesOf</c> with the one input <c>en</c>: <c>providers/0014</c> (row L44), whose
     /// script asks for the default locale an engine resolves and <c>en</c>
-    /// (<c>[new Intl.NumberFormat().resolvedOptions().locale, "en"]</c>) while its inputs carry <c>en</c> alone, so no runner
-    /// can hand the library the list the script builds. That is the vector's defect, which a corpus revision mends by giving
-    /// it the default locale as an input. The operation's other vector, <c>providers/0007</c>, is the library's: FilterLocales
-    /// over Broiler.VM's available locales, held to its <c>per-engine.broiler-vm</c> expectation (row L28), as
-    /// <c>Intl.DisplayNames.supportedLocalesOf</c> is.</item>
+    /// (<c>[new Intl.NumberFormat().resolvedOptions().locale, "en"]</c>) while its inputs carry <c>en</c> alone, so the operation
+    /// and inputs cannot hand the library the list the script builds; read whole, with its script, the vector is the library's
+    /// from stage SJL-9.3f (<see cref="IsLibraryIntlDefaultLocaleScript"/>). The operation's other vector, <c>providers/0007</c>,
+    /// is the library's: FilterLocales over Broiler.VM's available locales, held to its <c>per-engine.broiler-vm</c> expectation
+    /// (row L28), as <c>Intl.DisplayNames.supportedLocalesOf</c> is.</item>
     /// <item><c>Intl.DisplayNames.supportedLocalesOf</c> with no argument: <c>typeof</c> of the built-in, whether the engine
     /// defines it (row L37).</item>
     /// </list>
@@ -109,13 +110,29 @@ internal sealed partial class AlgorithmsLibrary
     }
 
     /// <summary>
+    /// Whether a sub-area (a) vector is one of the two whose script reads the engine's default locale and which the runner,
+    /// reading the vector whole (<see cref="IVectorRecordLibrary"/>), answers through sub-area (c)'s reader of scripts (stage
+    /// SJL-9.3f): <c>Number.prototype.toLocaleString</c> with no locale, <c>providers/0012</c> (row L33), a NumberFormat of the
+    /// default locale over the library; and <c>Intl.NumberFormat.supportedLocalesOf</c> of the default locale a NumberFormat
+    /// resolves and <c>en</c>, <c>providers/0014</c> (row L44), FilterLocales over Broiler.VM's available locales. The default locale
+    /// and the available locales are Broiler.VM's providers' (decision D7), as for every other vector of the sub-area.
+    /// </summary>
+    internal static bool IsLibraryIntlDefaultLocaleScript(VectorRecord vector) =>
+        vector.Id.StartsWith(IntlLocalesPrefix, StringComparison.Ordinal)
+        && (vector["op"] == "Number.prototype.toLocaleString"
+            || (vector["op"] == "Intl.NumberFormat.supportedLocalesOf" && vector.Script.StartsWith("Intl.NumberFormat.supportedLocalesOf([new Intl.NumberFormat()", StringComparison.Ordinal)));
+
+    /// <summary>
     /// Whether a vector is the Intl area's that this runner answers: sub-area (a)'s, but the engine-level ones, and sub-area (b)'s
     /// operations of <c>AlgorithmsLibrary.IntlValues.cs</c> (from stage SJL-9.3b), sub-area (c)'s of
     /// <c>AlgorithmsLibrary.IntlNumbers.cs</c> (from stage SJL-9.3c), sub-area (d)'s of <c>AlgorithmsLibrary.IntlDateTimes.cs</c>
-    /// (from stage SJL-9.3d), and sub-area (e)'s of <c>AlgorithmsLibrary.IntlDurations.cs</c> (from stage SJL-9.3e).
+    /// (from stage SJL-9.3d), and sub-area (e)'s of <c>AlgorithmsLibrary.IntlDurations.cs</c> (from stage SJL-9.3e). From stage
+    /// SJL-9.3f, the integration, it is every Intl vector but those whose outcome needs an engine, which the Conformance tests list
+    /// by identifier: sub-area (a)'s two default-locale scripts are answered too (<see cref="IsLibraryIntlDefaultLocaleScript"/>).
     /// </summary>
     internal static bool IsLibraryIntl(VectorRecord vector) =>
-        (vector.Id.StartsWith(IntlLocalesPrefix, StringComparison.Ordinal) && !IsEngineLevelIntl(vector["op"] ?? string.Empty, vector["in"] ?? string.Empty))
+        (vector.Id.StartsWith(IntlLocalesPrefix, StringComparison.Ordinal)
+            && (IsLibraryIntlDefaultLocaleScript(vector) || !IsEngineLevelIntl(vector["op"] ?? string.Empty, vector["in"] ?? string.Empty)))
         || IsLibraryIntlValues(vector)
         || IsLibraryIntlNumbers(vector)
         || IsLibraryIntlDateTimes(vector)
