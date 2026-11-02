@@ -382,6 +382,17 @@ public sealed class ParserTests
             Assert.Equal("(ExpressionStatement " + tree + ")", dump);
     }
 
+    /// <summary>
+    /// A meta property's node, read where the early errors allow it from stage 4d: <c>import.meta</c> in a module and
+    /// <c>new.target</c> in a function (catalogue rows EE0027, EE0163 and EA0002 refuse each elsewhere).
+    /// </summary>
+    [Fact]
+    public void A_meta_property_has_its_node_where_it_is_allowed()
+    {
+        Assert.Equal("(ExpressionStatement (MetaProperty (IdentifierName import) (IdentifierName meta)))", First("import.meta", ParseGoal.Module));
+        Assert.Equal("(FunctionDeclaration (Function (BindingIdentifier f) (ExpressionStatement (MetaProperty (IdentifierName new) (IdentifierName target)))))", First("function f() { new.target }"));
+    }
+
     [Theory]
     [InlineData("-a ** 2")]
     [InlineData("typeof a ** 2")]
@@ -515,9 +526,6 @@ public sealed class ParserTests
     /// arrow's body, is read under that function's own [Await]; and a cover no <c>=&gt;</c> follows is a call.
     /// <i>(Revised 2026-11-02, at stage SJL-13.2d, which refuses the first six; they were accepted here, "its refusal is an
     /// early error, stage 4d's".)</i>
-    /// <i>(Revised 2026-11-02, at stage SJL-13.2d: four sources the grammar admits are refused from stage 4d by their early
-    /// errors, P15b's parenthesised patterns (EE0039), P25's <c>using</c> at a script's top level (EP0008) and P35's
-    /// <c>0++</c> (EE0028), and P08's two meta properties are read where they are allowed; they were all accepted here.)</i>
     /// </summary>
     [Theory]
     [InlineData("async(await) => {}")]
@@ -825,6 +833,13 @@ public sealed class ParserTests
     // ---------------------------------------------------------------------------------------------------------------
     // The correspondence's rows P (Broiler.VM's bundle sjl-13-001), each answered as the specification answers it.
 
+    /// <summary>
+    /// Each row P of the correspondence, answered as the specification answers it.
+    /// <i>(Revised 2026-11-02, at stage SJL-13.2d: five sources the grammar admits are refused from stage 4d by their early
+    /// errors, P15b's two parenthesised patterns (EE0039), P25's <c>using</c> at the top level of a script and of eval code
+    /// (EP0008) and P35's <c>0++</c> (EE0028), and P08's two meta properties are read where they are allowed, in a module
+    /// and in a function; they were all accepted here, read under the Script goal.)</i>
+    /// </summary>
     [Theory]
     [InlineData("P01", "'use strict'; var a;", ParseGoal.Script, true)]
     [InlineData("P02", "using a = b; await using c = d;", ParseGoal.Module, true)]
@@ -834,7 +849,8 @@ public sealed class ParserTests
     [InlineData("P05d", "import a from 'm' assert { type: 'json' };", ParseGoal.Module, false)]
     [InlineData("P07", "new import(a)", ParseGoal.Script, false)]
     [InlineData("P07", "import(...a)", ParseGoal.Script, false)]
-    // P08's refusals are early errors (catalogue rows EE0027 and EA0002), stage 4d's: the grammar admits both.
+    // P08's refusals are early errors (catalogue rows EE0027 and EA0002), which refuse both from stage 4d where they are not
+    // allowed: each is read where it is.
     [InlineData("P08", "import.meta;", ParseGoal.Module, true)]
     [InlineData("P08", "function f() { new.target }", ParseGoal.Script, true)]
     [InlineData("P09", "({ async\nm() {} })", ParseGoal.Script, false)]

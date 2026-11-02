@@ -511,7 +511,7 @@ internal sealed partial class Parser
     /// lookahead restrictions on <c>let</c> and <c>async of</c>, Annex B.3.5's initialiser in a sloppy <c>for</c>-<c>in</c>,
     /// and no semicolon inserted in the head (row P16b).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14.7.4 s14.7.5 for heads, row P16b; IP=Low; Security=High; Resources=2; Fingerprint=EDFCD9
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14.7.4 s14.7.5 for heads, row P16b; IP=Low; Security=High; Resources=2; Fingerprint=0BE270
     // Broiler-Falsified-If: a semicolon is inserted in a for head, or a head the lookahead restrictions exclude is admitted
     // Broiler-Human:        PENDING
     private Statement ParseFor()
@@ -604,7 +604,11 @@ internal sealed partial class Parser
             var isOf = IsWord(after, Word.Of);
             if (isOf && (startsWithLet || (startsWithAsync && expression is Identifier { IsEscaped: false } && !isAwait)))
                 throw Unexpected(after);
-            init = Converting(Rows.EE0053, () => ToAssignmentTarget(expression, forHead: true));
+            // EE0053 is the rule of an object or array literal the head converts; a head that is no LeftHandSideExpression
+            // at all is the grammar's plain refusal (EX0008).
+            init = expression is ArrayLiteral or ObjectLiteral
+                ? Converting(Rows.EE0053, () => ToAssignmentPattern(expression))
+                : ToAssignmentTarget(expression, forHead: true);
             CheckCoverInitialized(mark);
             Advance();
             return ParseForInOfRest(start, init, isOf, isAwait);

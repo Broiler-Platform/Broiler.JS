@@ -109,12 +109,14 @@ public sealed class ContractTests
     }
 
     /// <summary>
-    /// The parse entry at stage 4c (the 4b test it replaces asserted that a text the tokenizer does not refuse was answered
+    /// The parse entry (the 4b test the stage 4c test replaced asserted that a text the tokenizer does not refuse was answered
     /// not implemented): the meter is charged the text's length once, before the parse reads it, and nothing for an empty
-    /// text; the regular-expression provider is never asked, the literal's validity being stage 4d's; and every text is
-    /// answered accepted or refused, with a diagnostic exactly for a refusal, for every goal. <i>(Revised 2026-11-02, at stage
-    /// SJL-13.2d: <c>let let = 1;</c>, which only an early error refuses (catalogue row EE0042), is refused from stage 4d, and
-    /// the provider, asked about every literal from stage 4d, admits <c>/(/</c> here.)</i>
+    /// text; the regular-expression provider is asked about every literal, and this test's provider admits each, <c>/(/</c>
+    /// among them; and every text is answered accepted or refused, with a diagnostic exactly for a refusal, for every goal,
+    /// <c>let let = 1;</c> refused by an early error (catalogue row EE0042) wherever a statement may stand. <i>(Revised
+    /// 2026-11-02, at stage SJL-13.2d, when the early errors and the provider's verdicts joined the parse; it read "The parse
+    /// entry at stage 4c (...): ...; the regular-expression provider is never asked, the literal's validity being stage 4d's;
+    /// and every text is answered accepted or refused, with a diagnostic exactly for a refusal, for every goal.")</i>
     /// </summary>
     [Theory]
     [InlineData(ParseGoal.Script)]

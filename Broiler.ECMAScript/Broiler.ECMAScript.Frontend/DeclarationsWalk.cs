@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   85
-// Annotated:        85/85
+// Relevant units:   86
+// Annotated:        86/86
 // Exempt:           42
-// Human-reviewed:   0/85
+// Human-reviewed:   0/86
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       85
+// Unverified:       86
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -68,7 +68,7 @@ internal sealed class DeclarationsWalk
     private readonly ParseRequest request;
     private readonly bool annexB;
     private readonly bool isModule;
-    private readonly List<(int Key, int Sequence, SyntaxDiagnostic Diagnostic)> found = new();
+    private readonly List<(int Key, int SubKey, int Sequence, SyntaxDiagnostic Diagnostic)> found = new();
     private readonly List<(int Start, int Sequence, Scope Scope)> scopes = new();
     private readonly List<(int Start, int Sequence, FunctionFacts Facts)> functions = new();
     // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=4AC307
@@ -165,11 +165,13 @@ internal sealed class DeclarationsWalk
         return walk.Ordered(refusedAt);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=3C58D0
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=7D56CF
     // Broiler-Human:        PENDING
     private List<SyntaxDiagnostic> Ordered(int before)
     {
-        found.Sort(static (a, b) => a.Key != b.Key ? a.Key.CompareTo(b.Key) : a.Sequence.CompareTo(b.Sequence));
+        // By place, then (for the conflicts a scope's close reports) by the second of the conflicting declarations, then by
+        // the order the walk found them in.
+        found.Sort(static (a, b) => a.Key != b.Key ? a.Key.CompareTo(b.Key) : a.SubKey != b.SubKey ? a.SubKey.CompareTo(b.SubKey) : a.Sequence.CompareTo(b.Sequence));
         var list = new List<SyntaxDiagnostic>(found.Count);
         foreach (var entry in found)
         {
@@ -198,18 +200,27 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Reporting.
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9F6E89
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=34AB6C
     // Broiler-Human:        PENDING
-    private void Report(LexicalRefusal row, SourceSpan span, int key, string argument = "")
+    private void Report(LexicalRefusal row, SourceSpan span, int key, int subKey, string argument = "")
     {
         var diagnostic = new SyntaxDiagnostic(row.Code, row.MessageId, argument.Length == 0 ? Array.Empty<string>() : new[] { argument },
             DiagnosticPhase.Semantics, span, request.Source.Name);
-        found.Add((key, sequence++, diagnostic));
+        found.Add((key, subKey, sequence++, diagnostic));
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=C9055D
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=67E8B3
     // Broiler-Human:        PENDING
-    private void Report(LexicalRefusal row, SyntaxNode at, string argument = "") => Report(row, at.Span, at.Span.Offset, argument);
+    private void Report(LexicalRefusal row, SyntaxNode at, string argument = "") => Report(row, at.Span, at.Span.Offset, at.Span.Offset, argument);
+
+    /// <summary>
+    /// A declared-name conflict, reported at the second of the conflicting declarations and placed at the close of the scope
+    /// that holds them, after the conflicts of the same scope whose second declaration comes earlier (decision D11).
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9326BB
+    // Broiler-Human:        PENDING
+    private void ReportConflict(LexicalRefusal row, SyntaxNode second, int scopeEnd, string name) =>
+        Report(row, second.Span, scopeEnd, second.Span.Offset, name);
 
     // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=FF2B43
     // Broiler-Human:        PENDING
@@ -218,7 +229,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // The program.
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=3685CD
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=075477
     // Broiler-Human:        PENDING
     private void WalkProgram(ProgramNode program, IReadOnlyList<Statement> body, bool closed)
     {
@@ -271,14 +282,13 @@ internal sealed class DeclarationsWalk
                 BoundNames(parameter, null, nodes);
             if (DuplicateParameterRow(DynamicShape(kind), IsSimpleParameterList(program.Parameters), strict) is { } duplicateRow)
             {
+                // Every name bound more than once, at its second binding (decision D11: all of them under all errors).
                 var seen = new HashSet<string>(StringComparer.Ordinal);
+                var reported = new HashSet<string>(StringComparer.Ordinal);
                 foreach (var node in nodes)
                 {
-                    if (!seen.Add(node.Name))
-                    {
+                    if (!seen.Add(node.Name) && reported.Add(node.Name))
                         Report(duplicateRow, node, node.Name);
-                        break;
-                    }
                 }
             }
         }
@@ -624,7 +634,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Functions (clauses 15.1 to 15.9).
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=66F5C7
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0FD09D
     // Broiler-Human:        PENDING
     private void VisitFunction(FunctionNode function, Context outer)
     {
@@ -661,13 +671,11 @@ internal sealed class DeclarationsWalk
         if (DuplicateParameterRow(shape, simple, strict) is { } duplicateRow)
         {
             var seen = new HashSet<string>(StringComparer.Ordinal);
+            var reported = new HashSet<string>(StringComparer.Ordinal);
             foreach (var parameter in parameterNodes)
             {
-                if (!seen.Add(parameter.Name))
-                {
+                if (!seen.Add(parameter.Name) && reported.Add(parameter.Name))
                     Report(duplicateRow, parameter, parameter.Name);
-                    break;
-                }
             }
         }
 
@@ -680,22 +688,23 @@ internal sealed class DeclarationsWalk
         CheckConflicts(lexical, vars, end, Rows.EE0078, Rows.EE0079);
         if (ParameterCollisionRow(shape, function) is { } collisionRow)
         {
+            // Each such name once, at its first lexical declaration, which follows the parameter.
             var parameterSet = new HashSet<string>(parameterNames, StringComparer.Ordinal);
             foreach (var declaration in lexical)
             {
-                if (parameterSet.Contains(declaration.Name))
-                {
-                    Report(collisionRow, declaration.Node.Span, end, declaration.Name);
-                    break;
-                }
+                if (parameterSet.Remove(declaration.Name))
+                    ReportConflict(collisionRow, declaration.Node, end, declaration.Name);
             }
         }
 
+        // An arrow's parameters keep the enclosing [Yield] (ArrowParameters[?Yield], and `async x =>`'s
+        // AsyncArrowBindingIdentifier[?Yield]), except an async arrow's parenthesised head, whose ArrowFormalParameters are
+        // [~Yield] (clauses 15.3 and 15.9).
         var isArrow = function.IsArrow;
         var parameterContext = new Context
         {
             Strict = strict,
-            Yield = isArrow ? outer.Yield && !function.IsAsync : function.IsGenerator,
+            Yield = isArrow ? outer.Yield && (!function.IsAsync || !IsParenthesizedAsyncHead(function)) : function.IsGenerator,
             Await = isArrow ? function.IsAsync || outer.Await : function.IsAsync,
             InFunction = isArrow ? outer.InFunction : true,
             ParamsOf = shape,
@@ -1371,7 +1380,7 @@ internal sealed class DeclarationsWalk
         Push(labelled.Body, context with { Labels = new LabelSet(name, context.Labels) });
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=FF46FE
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=8BC487
     // Broiler-Human:        PENDING
     private void VisitCatch(CatchClause @catch, Context context)
     {
@@ -1386,29 +1395,26 @@ internal sealed class DeclarationsWalk
 
         // A name the parameter binds twice (EE0065).
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        var reported = new HashSet<string>(StringComparer.Ordinal);
         foreach (var node in nodes)
         {
-            if (!seen.Add(node.Name))
-            {
+            if (!seen.Add(node.Name) && reported.Add(node.Name))
                 Report(Rows.EE0065, node, node.Name);
-                break;
-            }
         }
 
         if (nodes.Count > 0)
         {
             var end = End(@catch);
+            // Each name once per rule, at the declaration that follows the parameter (decision D11).
             var parameterNames = new HashSet<string>(names, StringComparer.Ordinal);
             var lexical = new List<Declaration>();
             foreach (var statement in @catch.Body.Body)
                 CollectLexical(statement, lexical, inBlock: true);
+            var lexicalReported = new HashSet<string>(StringComparer.Ordinal);
             foreach (var declaration in lexical)
             {
-                if (parameterNames.Contains(declaration.Name))
-                {
-                    Report(Rows.EE0066, declaration.Node.Span, end, declaration.Name);
-                    break;
-                }
+                if (parameterNames.Contains(declaration.Name) && lexicalReported.Add(declaration.Name))
+                    ReportConflict(Rows.EE0066, declaration.Node, end, declaration.Name);
             }
 
             // A var of the parameter's name (EE0067), which Annex B.3.4 admits for a lone BindingIdentifier (EG0006), a for-of
@@ -1417,13 +1423,11 @@ internal sealed class DeclarationsWalk
             foreach (var statement in @catch.Body.Body)
                 CollectVars(statement, vars);
             var lone = @catch.Parameter is BindingIdentifier;
+            var varReported = new HashSet<string>(StringComparer.Ordinal);
             foreach (var declaration in vars)
             {
-                if (parameterNames.Contains(declaration.Name) && (!lone || !annexB))
-                {
-                    Report(Rows.EE0067, declaration.Node.Span, end, declaration.Name);
-                    break;
-                }
+                if (parameterNames.Contains(declaration.Name) && (!lone || !annexB) && varReported.Add(declaration.Name))
+                    ReportConflict(Rows.EE0067, declaration.Node, end, declaration.Name);
             }
         }
 
@@ -1519,7 +1523,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // The static semantics of declarations: BoundNames, LexicallyDeclaredNames and VarDeclaredNames (clauses 8.2 and 14).
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=3A5F14
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9059BA
     // Broiler-Human:        PENDING
     private void CheckConflicts(List<Declaration> lexical, List<Declaration> vars, int scopeEnd, LexicalRefusal duplicateRow, LexicalRefusal collisionRow, bool sloppy = false)
     {
@@ -1528,15 +1532,18 @@ internal sealed class DeclarationsWalk
 
         // A name lexically declared twice: Annex B.3.2.4 admits two plain function declarations of a block in sloppy code,
         // which CollectLexical marks by their kind and the walk by strictness (EG0004's exception).
+        // Every such name is reported once, at its first declaration that conflicts with an earlier one; every conflict of
+        // the scope is found, whatever else conflicts there, and the order sorts them (decision D11).
         var seen = new Dictionary<string, Declaration>(StringComparer.Ordinal);
+        var reported = new HashSet<string>(StringComparer.Ordinal);
         foreach (var declaration in lexical)
         {
             if (seen.TryGetValue(declaration.Name, out var earlier))
             {
-                if (!(annexB && sloppy && earlier.IsBlockFunction && declaration.IsBlockFunction && IsSloppyPlainFunction(earlier) && IsSloppyPlainFunction(declaration)))
+                if (!(annexB && sloppy && earlier.IsBlockFunction && declaration.IsBlockFunction && IsSloppyPlainFunction(earlier) && IsSloppyPlainFunction(declaration))
+                    && reported.Add(declaration.Name))
                 {
-                    Report(duplicateRow, declaration.Node.Span, scopeEnd, declaration.Name);
-                    return;
+                    ReportConflict(duplicateRow, declaration.Node, scopeEnd, declaration.Name);
                 }
             }
             else
@@ -1556,22 +1563,38 @@ internal sealed class DeclarationsWalk
     // Broiler-Human:        PENDING
     private bool IsSloppyPlainFunction(Declaration declaration) => sloppyPlainFunctions.Contains(declaration.Node);
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=EEC123
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=2FF186
     // Broiler-Human:        PENDING
     private void CheckCollisions(List<Declaration> lexical, List<Declaration> vars, int scopeEnd, LexicalRefusal collisionRow)
     {
         if (lexical.Count == 0 || vars.Count == 0)
             return;
-        var lexicalNames = new HashSet<string>(StringComparer.Ordinal);
+        // Each name both lexically and var-declared, once: the pair of its first lexical and its first var declaration is the
+        // first that conflicts, and the later of the two is reported (decision D11).
+        var firstLexical = new Dictionary<string, Declaration>(StringComparer.Ordinal);
         foreach (var declaration in lexical)
-            lexicalNames.Add(declaration.Name);
+        {
+            if (!firstLexical.TryGetValue(declaration.Name, out var known) || declaration.Node.Span.Offset < known.Node.Span.Offset)
+                firstLexical[declaration.Name] = declaration;
+        }
+
+        var firstVar = new Dictionary<string, Declaration>(StringComparer.Ordinal);
         foreach (var declaration in vars)
         {
-            if (lexicalNames.Contains(declaration.Name))
+            if (firstLexical.ContainsKey(declaration.Name)
+                && (!firstVar.TryGetValue(declaration.Name, out var known) || declaration.Node.Span.Offset < known.Node.Span.Offset))
             {
-                Report(collisionRow, declaration.Node.Span, scopeEnd, declaration.Name);
-                return;
+                firstVar[declaration.Name] = declaration;
             }
+        }
+
+        foreach (var declaration in vars)
+        {
+            if (!firstVar.TryGetValue(declaration.Name, out var first) || !ReferenceEquals(first, declaration))
+                continue;
+            var lexicalDeclaration = firstLexical[declaration.Name];
+            var second = declaration.Node.Span.Offset > lexicalDeclaration.Node.Span.Offset ? declaration : lexicalDeclaration;
+            ReportConflict(collisionRow, second.Node, scopeEnd, declaration.Name);
         }
     }
 

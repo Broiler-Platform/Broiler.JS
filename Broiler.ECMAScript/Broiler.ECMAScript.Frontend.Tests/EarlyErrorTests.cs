@@ -369,6 +369,25 @@ public sealed class EarlyErrorTests
         Assert.DoesNotContain(syntax, r => !covered.Contains(r));
     }
 
+    /// <summary>
+    /// The provider's rows that share a message identifier with an earlier row are reported by that row's code, a verdict
+    /// naming no row (the changelog's entry of stage 4d lists them): exactly these twelve, each by the row named here.
+    /// </summary>
+    [Fact]
+    public void The_provider_s_rows_reported_by_an_earlier_row_s_code_are_exactly_the_twelve_named()
+    {
+        var shadowed = DeclarationsWalk.RegularExpressionRows
+            .Select(row => (Row: RowName(row), As: RowName(DeclarationsWalk.RegularExpressionRows.First(r => r.MessageId == row.MessageId))))
+            .Where(static pair => pair.Row != pair.As)
+            .ToList();
+        Assert.Equal(new[]
+        {
+            ("EE0188", "EE0186"), ("EE0189", "EE0186"), ("EE0195", "EE0193"), ("EE0196", "EE0194"), ("EE0198", "EE0197"),
+            ("EE0200", "EE0199"), ("EE0207", "EE0206"), ("EE0208", "EE0194"), ("EE0210", "EE0193"), ("EE0211", "EE0194"),
+            ("EE0212", "EE0193"), ("EE0213", "EE0194"),
+        }, shadowed);
+    }
+
     private static string RowName(LexicalRefusal refusal) =>
         typeof(Rows).GetFields(BindingFlags.Static | BindingFlags.NonPublic).First(f => (LexicalRefusal)f.GetValue(null)! == refusal).Name;
 
@@ -444,6 +463,79 @@ public sealed class EarlyErrorTests
         Assert.Equal(new[] { CodeOf("EE0005"), CodeOf("EE0005") }, capped.Diagnostics.Select(static d => d.Code));
         Assert.Null(capped.Tree);
         Assert.Null(capped.Declarations);
+    }
+
+    [Fact]
+    public void A_scope_s_conflicts_come_in_the_source_order_of_their_second_declarations_and_all_of_them_under_all_errors()
+    {
+        // Two conflicts of different kinds in one scope: the collision closes at `var a` (offset 11), before the duplicate
+        // closes at the second `let b` (offset 25), whatever order the walk checks them in.
+        const string text = "let a; var a; let b; let b;";
+        var first = Parse("", text).Diagnostics.Single();
+        Assert.Equal((CodeOf("EE0161"), 11), (first.Code, first.Span.Offset));
+        var all = Parse("all", text).Diagnostics;
+        Assert.Equal(new[] { (CodeOf("EE0161"), 11), (CodeOf("EE0160"), 25) }, all.Select(static d => (d.Code, d.Span.Offset)));
+        Assert.Equal(new[] { "a", "b" }, all.Select(static d => d.Arguments.Single()));
+
+        // The second of a colliding pair is reported, whichever kind it is.
+        Assert.Equal(11, Parse("", "var a; let a;").Diagnostics.Single().Span.Offset);
+
+        // Each name once per rule, every name of the scope: duplicates, collisions, parameters and a catch's parameter.
+        Assert.Equal(new[] { CodeOf("EE0160"), CodeOf("EE0160"), CodeOf("EE0161") },
+            Parse("all", "let b; let a; let a; let a; let b; var b;").Diagnostics.Select(static d => d.Code));
+        Assert.Equal(new[] { "a", "b" }, Parse("all", "\"use strict\"; function f(a, a, b, a, b) {}").Diagnostics.Select(static d => d.Arguments.Single()));
+        Assert.Equal(new[] { "a", "b" }, Parse("all", "function f(a, b) { let a; let b; }").Diagnostics.Select(static d => d.Arguments.Single()));
+        Assert.Equal(new[] { "a", "b" }, Parse("all", "try {} catch ([a, a, b, b]) {}").Diagnostics.Select(static d => d.Arguments.Single()));
+        Assert.Equal(new[] { (CodeOf("EE0066"), "a"), (CodeOf("EE0067"), "b"), (CodeOf("EE0066"), "c") },
+            Parse("all", "try {} catch ([a, b, c]) { let a; var b; let c; }").Diagnostics.Select(static d => (d.Code, d.Arguments.Single())));
+        Assert.Equal(CodeOf("EE0066"), Parse("", "try {} catch ([a, b, c]) { let a; var b; let c; }").Diagnostics.Single().Code);
+    }
+
+    [Fact]
+    public void A_for_head_that_is_no_left_hand_side_is_the_grammar_s_refusal_and_a_literal_head_EE0053_s()
+    {
+        Assert.Equal(CodeOf("EX0008"), Parse("", "for (a = 0 in {});").Diagnostics.Single().Code);
+        Assert.Equal(CodeOf("EX0008"), Parse("", "for (a + b of c);").Diagnostics.Single().Code);
+        Assert.Equal(CodeOf("EE0053"), Parse("", "for ([a + 1] of b);").Diagnostics.Single().Code);
+        Assert.Equal(ParseOutcome.Accepted, Parse("", "for ({ a } of b); for ([a.b] in c);").Outcome);
+    }
+
+    [Fact]
+    public void An_async_arrow_s_lone_parameter_keeps_the_enclosing_Yield()
+    {
+        // AsyncArrowBindingIdentifier[?Yield] (clause 15.9): `yield` binds nothing inside a generator (EE0008).
+        Assert.Equal(CodeOf("EE0008"), Parse("", "function* g() { async yield => 0; }").Diagnostics.Single().Code);
+        Assert.Equal(ParseOutcome.Accepted, Parse("", "function g() { async yield => 0; }").Outcome);
+        Assert.Equal(ParseOutcome.Accepted, Parse("", "function* g() { async x => 0; }").Outcome);
+    }
+
+    [Fact]
+    public void A_misplaced_at_sign_is_EP0009_s_only_where_the_proposal_is_off()
+    {
+        Assert.Equal(CodeOf("EP0009"), Parse("", "var @;").Diagnostics.Single().Code);
+        Assert.Equal(CodeOf("EX0008"), Parse("dec", "var @;").Diagnostics.Single().Code);
+    }
+
+    [Fact]
+    public void The_parser_s_early_errors_take_the_name_where_there_is_one_and_otherwise_no_argument()
+    {
+        // The catalogue's section 6 note of stage 4d: `assignment.*`, `cover.*` and `expression.*` take the name, or none.
+        foreach (var (text, row) in new[] { ("a + b = 1;", "EE0033"), ("a + b += 1;", "EE0034"), ("a + b ||= 1;", "EE0035"), ("();", "EE0025"), ("a?.b`c`;", "EE0026") })
+        {
+            var diagnostic = Parse("", text).Diagnostics.Single();
+            Assert.Equal(CodeOf(row), diagnostic.Code);
+            Assert.Empty(diagnostic.Arguments);
+            Assert.Equal(DiagnosticPhase.Parser, diagnostic.Phase);
+        }
+
+        var shorthand = Parse("", "({ a = 1 });").Diagnostics.Single();
+        Assert.Equal(CodeOf("EE0017"), shorthand.Code);
+        Assert.Equal(new[] { "a" }, shorthand.Arguments);
+
+        // The walk's report of the same row has phase Semantics (design section 9.3's note of stage 4d).
+        var walked = Parse("", "1 = 2;").Diagnostics.Single();
+        Assert.Equal((CodeOf("EE0033"), DiagnosticPhase.Semantics), (walked.Code, walked.Phase));
+        Assert.Empty(walked.Arguments);
     }
 
     [Fact]

@@ -64,7 +64,7 @@ internal sealed partial class Parser
     /// pattern, or a ConditionalExpression. With <paramref name="defer"/>, a CoverInitializedName read here and not
     /// converted is left to the caller, whose literal may yet become a pattern.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=3D0257
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=5AC280
     // Broiler-Falsified-If: an arrow is read where its cover was not the whole left operand, a target that is no LeftHandSideExpression is admitted, or a CoverInitializedName no conversion takes is admitted
     // Broiler-Human:        PENDING
     private Expression ParseAssignment(bool noIn, bool defer = false)
@@ -127,7 +127,7 @@ internal sealed partial class Parser
                     var row = op == AssignmentOperator.Assign ? Rows.EE0033
                         : op is AssignmentOperator.AndAssign or AssignmentOperator.OrAssign or AssignmentOperator.CoalesceAssign ? Rows.EE0035
                         : Rows.EE0034;
-                    throw Refuse(row, left.Span, Spelling(next));
+                    throw Refuse(row, left.Span, string.Empty);
                 }
 
                 Advance();
@@ -149,7 +149,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>Refuses the first CoverInitializedName read since <paramref name="mark"/> that no conversion took (catalogue row EE0017 at stage 4d).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.5 CoverInitializedName; IP=Low; Security=High; Resources=2; Fingerprint=6736EC
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.5 CoverInitializedName; IP=Low; Security=High; Resources=2; Fingerprint=EB5FEA
     // Broiler-Falsified-If: a CoverInitializedName that no conversion took is admitted
     // Broiler-Human:        PENDING
     private void CheckCoverInitialized(int mark)
@@ -157,8 +157,8 @@ internal sealed partial class Parser
         // A CoverInitializedName that no conversion took into a pattern (catalogue row EE0017).
         if (coverInitialized.Count > mark)
         {
-            var at = coverInitializedAt[coverInitialized[mark]];
-            throw Refuse(Rows.EE0017, SpanOf(at), Spelling(at));
+            var (at, name) = coverInitializedAt[coverInitialized[mark]];
+            throw Refuse(Rows.EE0017, SpanOf(at), name);
         }
     }
 
@@ -516,7 +516,7 @@ internal sealed partial class Parser
     /// <paramref name="asyncHead"/>, a first argument list on the same line as <c>async</c> is read as the
     /// CoverCallExpressionAndAsyncArrowHead, which a following <c>=&gt;</c> converts.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=F4ECE4
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=6FF1E5
     // Broiler-Falsified-If: a link the grammar refuses is admitted, or a chain is charged without its first expression's spine
     // Broiler-Human:        PENDING
     private Expression ParseChainLinks(Expression current, bool allowCalls, bool asyncHead = false)
@@ -562,7 +562,7 @@ internal sealed partial class Parser
                         else if (after.Kind is TokenKind.NoSubstitutionTemplate or TokenKind.TemplateHead)
                         {
                             // OptionalChain : ?. TemplateLiteral matches a production only to be refused (catalogue row EE0026).
-                            throw Refuse(Rows.EE0026, SpanOf(after), Spelling(after));
+                            throw Refuse(Rows.EE0026, SpanOf(after), string.Empty);
                         }
                         else
                         {
@@ -619,7 +619,7 @@ internal sealed partial class Parser
                         // An OptionalChain followed by a TemplateLiteral matches a production only to be refused (catalogue
                         // row EE0026).
                         if (optional)
-                            throw Refuse(Rows.EE0026, SpanOf(token), Spelling(token));
+                            throw Refuse(Rows.EE0026, SpanOf(token), string.Empty);
                         var quasi = ParseTemplate();
                         current = new TaggedTemplateExpression(SpanFrom(start), current, quasi);
                         Fix(current, start);
@@ -1061,7 +1061,7 @@ internal sealed partial class Parser
     /// <c>=&gt;</c> follows on the same line, the cover an AssignmentExpression converts into ArrowFormalParameters. The
     /// forms only parameters have (<c>()</c>, a trailing comma, a rest element) are refused without the arrow.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList; IP=Low; Security=High; Resources=2; Fingerprint=D6E336
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList; IP=Low; Security=High; Resources=2; Fingerprint=D8DAB8
     // Broiler-Falsified-If: a form only parameters have is admitted without the arrow, or an arrow head is read again rather than converted
     // Broiler-Human:        PENDING
     private Expression ParseParenthesized()
@@ -1110,7 +1110,7 @@ internal sealed partial class Parser
 
         // The cover covers no ParenthesizedExpression (catalogue row EE0025).
         if (items.Count == 0 || rest is not null || trailing)
-            throw Refuse(Rows.EE0025, SpanOf(next), Spelling(next));
+            throw Refuse(Rows.EE0025, SpanOf(next), string.Empty);
         CheckCoverInitialized(mark);
         var inner = items.Count == 1 ? items[0] : new SequenceExpression(SpanFromTo(items[0].Span, items[^1].Span), Lists.Freeze(items));
         var node = new ParenthesizedExpression(SpanFrom(start), inner);
@@ -1170,14 +1170,14 @@ internal sealed partial class Parser
     /// An ObjectLiteral (clause 13.2.5): its PropertyDefinitions, methods and accessors, spreads, and the CoverInitializedName
     /// <c>{ a = 1 }</c>, which only a conversion to a pattern admits.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=581926
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=3388A7
     // Broiler-Human:        PENDING
     private Expression ParseObjectLiteral()
     {
         var start = StartOf(Advance());
         var properties = new List<SyntaxNode>();
         var trailing = false;
-        Token? coverAt = null;
+        (Token At, string Name)? coverAt = null;
         while (true)
         {
             var token = Op;
@@ -1203,9 +1203,9 @@ internal sealed partial class Parser
     }
 
     /// <summary>One PropertyDefinition (clause 13.2.5), or a MethodDefinition (clause 15.4) of an object literal.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=9554B3
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=C0CEAA
     // Broiler-Human:        PENDING
-    private SyntaxNode ParsePropertyDefinition(ref Token? coverAt)
+    private SyntaxNode ParsePropertyDefinition(ref (Token At, string Name)? coverAt)
     {
         var token = Op;
         var start = StartOf(token);
@@ -1272,7 +1272,7 @@ internal sealed partial class Parser
         if (after.Kind == TokenKind.Equals)
         {
             Advance();
-            coverAt ??= after;
+            coverAt ??= (after, identifierName.Name);
             var initializer = ParseAssignment(noIn: false);
             var cover = new AssignmentExpression(SpanFrom(start), AssignmentOperator.Assign, reference, initializer);
             return new PropertyDefinition(SpanFrom(start), PropertyKind.Shorthand, name, cover);
