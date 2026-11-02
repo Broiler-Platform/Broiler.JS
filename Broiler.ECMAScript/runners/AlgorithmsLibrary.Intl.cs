@@ -381,13 +381,48 @@ internal sealed partial class AlgorithmsLibrary
             LocaleId.TryParse(locale, out var id) == IntlStatus.Completed && id!.Language == "de" ? [null, "phonebk"] : [null];
     }
 
-    /// <summary>The data home's Broiler.JS tables, each file held to its manifest's length and SHA-256.</summary>
+    /// <summary>
+    /// Where a build compiles Broiler.JS's tables into its image, the bytes of one file of the generated area by its file name,
+    /// <c>tables.manifest</c> among them; the span is left empty for a name the image does not hold. The Native AOT probe's build
+    /// implements it (its <c>IntlTables.g.cs</c>, stage SJL-9.3f); a project that compiles no implementation reads the tables
+    /// from disk.
+    /// </summary>
+    static partial void EmbeddedIntlTable(string name, ref ReadOnlySpan<byte> bytes);
+
+    /// <summary>
+    /// Whether the tables every Intl vector reads were compiled into this image (<see cref="EmbeddedIntlTable"/>) rather than
+    /// read from the data home on disk.
+    /// </summary>
+    internal static bool IntlTablesEmbedded => EmbeddedIntlFile("tables.manifest") is not null;
+
+    /// <summary>The bytes of one file the image holds, or <see langword="null"/> where it holds none.</summary>
+    private static byte[]? EmbeddedIntlFile(string name)
+    {
+        ReadOnlySpan<byte> bytes = default;
+        EmbeddedIntlTable(name, ref bytes);
+        return bytes.IsEmpty ? null : bytes.ToArray();
+    }
+
+    /// <summary>
+    /// The data home's Broiler.JS tables, each file held to its manifest's length and SHA-256: from the image where the build
+    /// compiled them into it, and otherwise from disk.
+    /// </summary>
     private static TableLocaleData LoadIntlTables()
     {
-        var generated = IntlTablesDirectory(AppContext.BaseDirectory);
+        Func<string, byte[]> read;
+        if (EmbeddedIntlFile("tables.manifest") is not null)
+        {
+            read = static name => EmbeddedIntlFile(name) ?? throw new InvalidDataException(name + " is not in the image");
+        }
+        else
+        {
+            var generated = IntlTablesDirectory(AppContext.BaseDirectory);
+            read = name => File.ReadAllBytes(Path.Combine(generated, name));
+        }
+
         string? cldrVersion = null;
         var recorded = new Dictionary<string, (long Length, string Sha256)>(StringComparer.Ordinal);
-        foreach (var line in File.ReadAllLines(Path.Combine(generated, "tables.manifest")))
+        foreach (var line in Encoding.ASCII.GetString(read("tables.manifest")).Split('\n'))
         {
             var fields = line.Split(' ');
             if (fields.Length == 2 && fields[0] == "cldr-version")
@@ -405,7 +440,7 @@ internal sealed partial class AlgorithmsLibrary
                 if (!recorded.TryGetValue(name, out var expected))
                     continue;
 
-                var bytes = File.ReadAllBytes(Path.Combine(generated, name));
+                var bytes = read(name);
                 if (expected.Length != bytes.Length || expected.Sha256 != Convert.ToHexStringLower(SHA256.HashData(bytes)))
                     throw new InvalidDataException(name + " is not the table its manifest records");
                 tables[table] = bytes;
