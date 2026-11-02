@@ -35,7 +35,16 @@ JSD-0080 is named "JSD-0080's decision Dn".)*
 creates it. The early-error catalogue of SJL-12.3 sits beside this document (decision D31). *(Noted 2026-10-26, at
 SJL-13.1: there is still no project. SJL-13.2's stage 4a creates `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` and
 `Broiler.ECMAScript.Frontend.Tests/` with SL1's row (decision D6), after the `syntax` vectors' corpus revision, and
-the stage table [`stages.tsv`](stages.tsv) now sits beside the catalogue.)*
+the stage table [`stages.tsv`](stages.tsv) now sits beside the catalogue.)* *(Noted 2026-11-01, at SJL-13.2a: "there
+is still no project" no longer holds. Stage 4a created
+[`Broiler.ECMAScript.Frontend/`](../../Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj) and
+`Broiler.ECMAScript.Frontend.Tests/` with SL1's row, after the `syntax` vectors' corpus revision 30: the request, the
+diagnostics' types and a parse entry that answers "not implemented" for every source, under the conventions, the API
+baseline and assurance from its first commit; its `PublicAPI.txt` fixes the names section 9 records.)* *(Noted
+2026-11-01, at SJL-13.2b: "a parse entry that answers "not implemented" for every source" no longer holds. Stage 4b
+added the tokenizer, internal to the library, and the parse entry now refuses a source the lexical grammar refuses, with
+the tokenizer's diagnostic, and answers not implemented for every other until the parser of stage 4c; section 9.3's note
+says what the tokenizer gives.)*
 
 ## 1. The contract
 
@@ -47,7 +56,7 @@ From the area design's section 4, with decision D41's specifics.
 |---|---|
 | Source | Text, source name, base offset, base line and column (for sub-parses). A leading byte-order mark is the host's to drop *(added 2026-10-26, at SJL-13.1, decision D15)* |
 | Goal | `Script` or `Module`. `Eval`, `FormalParameters` and `FunctionBody` are reserved in both engines (decision D41); the last two let `CreateDynamicFunction` parse its pieces as the specification requires, which neither engine does today. *(Noted 2026-10-26, at SJL-13.1: the library carries all five goals from SJL-13.2's stage 4a. No planned Broiler.VM change routes its dynamic function through the last two yet, which the correspondence hands on as H18, and Broiler.JS's bridge passes them at SJL-14.)* |
-| Switches | Forced strictness; top-level `await` allowed, **for whichever goal the request sets it**: Broiler.VM sets it for the Module goal only, Broiler.JS for a module and for a script whose top level may await (its `ScriptWithTopLevelAwait` preset, `JSContext.EvalWithTopLevelAwaitAsync` and the shell's retry); with it off, the library reads a top level as a non-async function's body of the same goal (decision D10); Annex B on or off, on for scripts; HTML-like comments on or off (script goal only) *(revised 2026-10-26, at SJL-13.1, decisions D10 and D17; read "Forced strictness; top-level `await` allowed; Annex B on or off; HTML-like comments on or off (script goal only)")* |
+| Switches | Forced strictness; top-level `await` allowed, **for whichever goal the request sets it**: Broiler.VM sets it for the Module goal only, Broiler.JS for a module and for a script whose top level may await (its `ScriptWithTopLevelAwait` preset, `JSContext.EvalWithTopLevelAwaitAsync` and the shell's retry); with it off, the library reads a top level as a non-async function's body of the same goal (decision D10); Annex B on or off, on for scripts; HTML-like comments on or off (script goal only) *(revised 2026-10-26, at SJL-13.1, decisions D10 and D17; read "Forced strictness; top-level `await` allowed; Annex B on or off; HTML-like comments on or off (script goal only)")* *(Noted 2026-11-01, at SJL-13.2a: "for whichever goal the request sets it" is, in the library's types, for whichever of the Script and Module goals the request sets it, and "on for scripts" is on by default for every goal; section 9.2's note says why.)* |
 | Inherited evaluation context | Broiler.VM's evaluation flags (`JsFormat.EvalRequestFlags`): `Strict`, `InFunction`, `InMethod`, `InDerivedConstructor`, `InClassFieldInitializer` and `InClassBody`; an optional set of the visible private names, whose absence leaves the check to the engine, and which Broiler.VM does not pass at SJL-13, since its executor checks an eval program's private names at run time; **no caller's lexical names at SJL-13 or SJL-14**: the conflict they serve is EvalDeclarationInstantiation's, a run-time `SyntaxError` each engine raises today, until SJL-15's model *(revised 2026-10-26, at SJL-13.1, decision D16; read "Broiler.VM's evaluation flags (`JsFormat.EvalRequestFlags`): `Strict`, `InFunction`, `InMethod`, `InDerivedConstructor`, `InClassFieldInitializer` and `InClassBody`; the visible private names; the caller's lexical names, which Broiler.JS needs for direct `eval`")* |
 | Proposal flags | Off by default, **one flag per form**, each its own catalogue row: decorators; `accessor`; the import phases' declaration forms `import source x from` and `import defer * as ns from` and their call forms `import.source(…)` and `import.defer(…)`. An engine admits what its own manifest admits: Broiler.VM none (a decorator is refused where the parse reaches it); Broiler.JS what it parses today, decorators, `accessor` and the two call forms *(revised 2026-10-26, at SJL-13.1, decision D17, which refines JSD-0080's single "import phases" parameter; read "Decorators, `accessor`, import phases. Off by default; an engine admits what its own manifest admits")* |
 | Lexer extensions | A narrow parameter for non-standard literal suffixes. Broiler.JS's `m` is the only one, and decision SJL-D-17 keeps its `Decimal` meaning in Broiler.JS |
@@ -318,6 +327,42 @@ correspondence's findings changed it.
 | Regular-expression provider | A validator interface, with no package edge; each engine supplies its own (Broiler.VM's over the validator its binder calls today; Broiler.JS's at SJL-14). Its answer is valid, or invalid with the failing condition's message identifier where the validator can tell it and EE0019's `regexp.literal.invalid` where it cannot, with the validator's message as its argument. The library reports it at the literal's span | D7 |
 | Meter | An optional `WorkCharge`: nullable, charged before the work, its units and block size documented. Both engines pass none at SJL-13, and the library polls for no cancellation, its work being linear in the source | D32 |
 
+*(Noted 2026-11-01, at SJL-13.2a, where the library's types differ from this table's words; JSD-0083 wins, and the
+types follow it.)*
+- **Inherited context**, "Strictness; the function, method, derived-constructor and field-initialiser flags": the
+  caller's strictness travels as the request's forced-strictness switch, as JSD-0083's decision D16 maps Broiler.VM's
+  `Strict` evaluation flag ("The six eval flags map to forced strictness and the function context"), so
+  `InheritedContext` carries the four flags and the optional private names, and no strictness of its own. Broiler.VM's
+  sixth flag, `InClassBody`, has no field: its meaning, "an enclosing class declares private names the scope map does
+  not describe", is the private-name set's absence, which Broiler.VM passes at SJL-13 whatever the flag (decision D16).
+- **Goal**, "the dynamic function's parameters and its body": the request also carries the dynamic function's kind
+  (`DynamicFunctionKind`: normal, generator, async, async generator), which CreateDynamicFunction's `kind` makes the
+  `[Yield]` and `[Await]` parameters of both goals, and which every other goal refuses but its default.
+- **Limits**, "the tree depth, a constant of the library derived at stage 4e": the constant is set at stage 4a to
+  Broiler.VM's bound, `ParseLimits.MaximumTreeDepth`, since decision D14 holds the two equal and forbids a lower one;
+  stage 4e derives the stack it requires and states it beside it. The library's supported maximum nesting,
+  `ParseLimits.MaximumSupportedNestingDepth`, which Broiler.JS passes (decision D47), is set to Broiler.VM's supported
+  maximum, the least it may be; stage 4e's measurement confirms or raises it.
+- **Meter**, "its units and block size documented": one unit per UTF-16 code unit of the source text, the whole text in
+  one block, charged before the parse reads it (`ParseRequest.Meter`); at stage 4a the parse reads nothing and charges
+  nothing. *(Noted 2026-11-01, at SJL-13.2b: "at stage 4a the parse reads nothing and charges nothing" no longer
+  describes the parse. From stage 4b it charges the meter the text's length, in one block, before it reads the first
+  code unit, and the tokenizer charges nothing of its own: its work is linear in the text, a BigInt literal being checked
+  for its form and its value left to the engine.)*
+- **Switches**, "Top-level `await`, which applies to whichever goal the request sets it for" (section 1's switches row
+  reads "for whichever goal the request sets it"): the request admits the switch for the Script and Module goals
+  alone, the two goals decision D10 names an engine setting it for, and refuses it for eval code and the dynamic
+  function's parameters and body when the request is made (`ParseRequest.Switches`). ECMA-262 parses eval code as a
+  Script without the `[Await]` parameter, and a dynamic function's two goals take theirs from its kind. Neither engine
+  sets it for those goals: Broiler.VM sets it for the Module goal only, and Broiler.JS's
+  `JSContext.EvalWithTopLevelAwaitAsync` sets it for its program, a Script, and compiles the eval code and the dynamic
+  functions that program reaches without it.
+- **Switches**, "Annex B, on for scripts" (section 1's switches row reads "Annex B on or off, on for scripts"): the
+  switch is on for scripts, as decision D17 says, and `ParseSwitches.For` sets it on by default for every other goal
+  too, the Module goal included, which is the library's own choice beyond D17's words. ECMA-262 applies Annex B's
+  regular-expression grammar (B.1.2) in every goal, and the strict-only exclusions (the sloppy-code relaxations, which
+  a module's code, being strict, does not take) follow from strictness, whatever the switch.
+
 ### 9.3 The result
 
 | Part | What it carries | Decisions |
@@ -326,6 +371,18 @@ correspondence's findings changed it.
 | Tokens | The token stream the parse produced, each token with its raw facts: Broiler.VM's step 1 compares it with its slice tokenizer's (a field map, not the library taking that tokenizer's conventions), and Broiler.JS's bridge builds its token chain from it at SJL-14 | D21 |
 | Side tables | From the declarations walk, ordered by source position: each scope's kind and its declarations; each block-level function declaration, with whether it is an `if` clause's; each function's parameter names; each program's and each function's strictness. Neither engine computes them again | D10 |
 | Diagnostics | Section 3: a shared code, a phase, a span, the source name, a message identifier with its arguments. Under first error, the first refusal in the library's order; a scope's declared-name conflicts are checked when the scope closes | D11, D15 |
+
+*(Noted 2026-11-01, at SJL-13.2b, on the table's "Tokens" row, "The token stream the parse produced, each token with its
+raw facts".)* The tokenizer exists from stage 4b, internal to the library, and the result carries no token stream yet:
+which input element a `/` or a `}` begins is the syntactic grammar's goal (ECMA-262 clause 12), which the tokenizer takes
+from its caller and never from the tokens it has read, so a whole stream exists only where the parser names each goal,
+from stage 4c. Each token carries its kind (an identifier name with the reserved or contextual word its cooked name
+spells, never decided a keyword), its offsets, line and column, its cooked value (an identifier's name, a string's SV, a
+template piece's TV) with a template piece's TRV, a numeric literal's Number value from `NumericLiterals.Evaluate`, a
+regular-expression literal's split between body and flags, and the facts a parser reads: a line terminator before it,
+an escape in a name, the legacy octal and non-octal decimal literals and escapes, a template's `NotEscapeSequence`, the
+BigInt and `m` suffixes, and an escape or line continuation in a string. A lexical refusal is a diagnostic of phase
+tokenizer with the catalogue's shared code (EX0001 to EX0007, EX0025, EE0001, EE0002), at the construct's start.
 
 ### 9.4 What the syntax half reports (decision D10, the union)
 
@@ -353,3 +410,11 @@ The stage table [`stages.tsv`](stages.tsv) records the assignment for every cata
 - sections 3, 4 and 5 gain notes; section 7 gains SJL-13's records; section 8's first, second and last items are
   revised;
 - section 9 is new.
+
+*(Added 2026-11-01, at SJL-13.2b.)* "Why there is no project yet" gains the note that the parse entry no longer answers
+not implemented for every source, section 9.2's meter note a note that the parse charges from stage 4b, and section 9.3
+a note on the token stream the result does not carry yet and what each token gives.
+
+*(Added 2026-11-01, at SJL-13.2a.)* "Why there is no project yet" gains the note that the project exists, and
+section 9.2 a note on the six places the library's types differ from its table, each quoting its words, and section
+1's switches row a note on the two of them that are in that row too.

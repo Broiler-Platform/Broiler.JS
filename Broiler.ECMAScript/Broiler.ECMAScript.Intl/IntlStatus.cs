@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   1
 // Annotated:        1/1
-// Exempt:           8
+// Exempt:           17
 // Human-reviewed:   0/1
 // IP risk:          Low
 // Security risk:    Low
@@ -28,13 +28,19 @@ namespace Broiler.ECMAScript.Intl;
 /// as fine as the messages the engines keep, and changing an engine's text changes nothing here. Every status below is
 /// a <c>RangeError</c> in ECMA-402; the <c>TypeError</c>s of the area are the engines' own, where they read script values
 /// (an element of a locale list that is neither a String nor an Object, an options value that is not an Object).
+/// <i>(Revised 2026-11-01, at stage SJL-9.3b, which appends the statuses of sub-area (b): one of them,
+/// <see cref="RoundingIncrementNeedsFractionDigits"/>, is SetNumberFormatDigitOptions' own <c>TypeError</c>, which no read of a
+/// script value raises. The sentence read "Every status below is a <c>RangeError</c> in ECMA-402; the <c>TypeError</c>s of the
+/// area are the engines' own, where they read script values".)</i>
+/// <i>(Extended 2026-11-01, at stage SJL-9.3c, which appends sub-area (c)'s three, each a <c>RangeError</c>: a relative time's
+/// value or unit, and a display-name code.)</i>
 /// </para>
 /// <para>
 /// <b>The numbers are stable.</b> Each stage of milestone SJL-9.3 appends the statuses its sub-area's operations answer,
 /// and no number is reused.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 X3 statuses; IP=Low; Security=Low; Resources=0; Fingerprint=16C4DB
+// Broiler-AI:           Origin=AI; Spec=JSD-0082 X3 statuses; IP=Low; Security=Low; Resources=0; Fingerprint=9FF49F
 // Broiler-Human:        PENDING
 public enum IntlStatus
 {
@@ -67,4 +73,59 @@ public enum IntlStatus
 
     /// <summary>The key is none of <c>Intl.supportedValuesOf</c>'s (<c>sec-intl.supportedvaluesof</c>): a <c>RangeError</c>.</summary>
     InvalidKey = 7,
+
+    /// <summary>
+    /// A number option is not-a-number or outside its range (ECMA-402 DefaultNumberOption, <c>sec-defaultnumberoption</c>,
+    /// which GetNumberOption and SetNumberFormatDigitOptions call): a <c>RangeError</c>.
+    /// </summary>
+    NumberOptionOutOfRange = 8,
+
+    /// <summary>
+    /// <c>roundingIncrement</c> is none of 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500 and 5000
+    /// (SetNumberFormatDigitOptions, <c>sec-setnumberformatdigitoptions</c>): a <c>RangeError</c>.
+    /// </summary>
+    RoundingIncrementNotAdmitted = 9,
+
+    /// <summary>
+    /// <c>minimumFractionDigits</c> is greater than <c>maximumFractionDigits</c> (SetNumberFormatDigitOptions): a
+    /// <c>RangeError</c>.
+    /// </summary>
+    FractionDigitsOutOfOrder = 10,
+
+    /// <summary>
+    /// A <c>roundingIncrement</c> other than 1 with a rounding type other than fraction digits (SetNumberFormatDigitOptions:
+    /// "If _intlObj_.[[RoundingType]] is not ~fraction-digits~, throw a *TypeError* exception"): a <c>TypeError</c>, the one
+    /// status of this enumeration that is not a <c>RangeError</c>.
+    /// </summary>
+    RoundingIncrementNeedsFractionDigits = 11,
+
+    /// <summary>
+    /// A <c>roundingIncrement</c> other than 1 with unequal minimum and maximum fraction digits (SetNumberFormatDigitOptions):
+    /// a <c>RangeError</c>.
+    /// </summary>
+    RoundingIncrementNeedsEqualFractionDigits = 12,
+
+    /// <summary>
+    /// A range starts or ends at not-a-number (ResolvePluralRange, <c>sec-resolvepluralrange</c>, and PartitionNumberRangePattern,
+    /// <c>sec-partitionnumberrangepattern</c>): a <c>RangeError</c>.
+    /// </summary>
+    RangeIsNotANumber = 13,
+
+    /// <summary>
+    /// A relative time's value is not-a-number or an infinity (PartitionRelativeTimePattern, <c>sec-PartitionRelativeTimePattern</c>,
+    /// step 1): a <c>RangeError</c>.
+    /// </summary>
+    RelativeTimeValueNotFinite = 14,
+
+    /// <summary>
+    /// A relative time's unit is none of the eight units and their plurals (SingularRelativeTimeUnit,
+    /// <c>sec-singularrelativetimeunit</c>): a <c>RangeError</c>.
+    /// </summary>
+    InvalidRelativeTimeUnit = 15,
+
+    /// <summary>
+    /// A display-name code is not well-formed for the format's type (CanonicalCodeForDisplayNames,
+    /// <c>sec-canonicalcodefordisplaynames</c>): a <c>RangeError</c>.
+    /// </summary>
+    InvalidDisplayNamesCode = 16,
 }

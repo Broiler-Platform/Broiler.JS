@@ -137,7 +137,8 @@ public class LibraryRunTests
     /// Every vector of the Intl area's sub-area (a), <c>intl/locales.vectors</c>, passes against the Intl library (milestone
     /// SJL-9.3a), over the Intl data home's tables and Broiler.VM's providers, or gives Broiler.VM's <c>per-engine</c>
     /// expectation, the engine whose providers the runner takes; but the engine-level ones, whose outcome is an engine's or
-    /// another sub-area's. Every other Intl vector is not implemented yet, and no other area's verdict moves: the Unicode
+    /// another sub-area's. Every other Intl vector is not implemented yet, but sub-area (b)'s (from stage SJL-9.3b, the next
+    /// test) and sub-area (c)'s (from stage SJL-9.3c), and no other area's verdict moves: the Unicode
     /// area's <c>String.prototype.toLocaleLowerCase</c>, the one operation name the two areas share, stays unanswered.
     /// </summary>
     [Fact]
@@ -159,7 +160,8 @@ public class LibraryRunTests
             ["intl/locales/negotiation/0021", "intl/locales/providers/0012", "intl/locales/providers/0013", "intl/locales/providers/0014"],
             engineLevel.Select(static v => v.Id).Order(System.StringComparer.Ordinal));
 
-        Assert.All(results.Except(locales), static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+        Assert.All(results.Except(locales).Where(static r => !AlgorithmsLibrary.IsLibraryIntlValues(r.Vector) && !AlgorithmsLibrary.IsLibraryIntlNumbers(r.Vector)),
+            static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
 
         // Intl.NumberFormat.supportedLocalesOf: providers/0007 is the library's FilterLocales, held to Broiler.VM's per-engine
         // expectation; providers/0014, whose inputs lack the default locale its script prepends, is not answered.
@@ -170,6 +172,127 @@ public class LibraryRunTests
         var unicode = LibraryRun.Run(Home.Corpus.Records.Where(static v => v["op"] == "String.prototype.toLocaleLowerCase").ToList(), new AlgorithmsLibrary());
         Assert.Contains(unicode, static r => r.Vector["area"] == "unicode");
         Assert.All(unicode, static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+    }
+
+    /// <summary>
+    /// Every vector of the Intl area's sub-area (b), <c>intl/values-and-plurals.vectors</c>, of an operation the runner answers
+    /// passes against the Intl library (stage SJL-9.3b), or gives Broiler.VM's <c>per-engine</c> expectation; every other vector
+    /// of the file is not implemented: the formatting ones, sub-area (c)'s, and the engine's reads and coercions. <i>(Revised
+    /// 2026-11-01, at stage SJL-9.3c: the formatting ones are sub-area (c)'s part's since that stage, which its own test holds,
+    /// and of them the one whose outcome is an object's <c>valueOf</c> count stays not implemented. The list of operations not
+    /// answered read "Intl.NumberFormat (option coercions)", "Intl.NumberFormat (option reads)", "Intl.NumberFormat
+    /// (resolvedOptions)", "Intl.NumberFormat.prototype.format", "Intl.NumberFormat.prototype.formatToParts" and
+    /// "Intl.PluralRules (option reads)", over every vector the part does not answer.)</i>
+    /// </summary>
+    [Fact]
+    public void Every_values_and_plurals_vector_the_runner_answers_passes_against_the_Intl_library()
+    {
+        var vectors = Home.Corpus.Records.Where(static v => v.Id.StartsWith(AlgorithmsLibrary.IntlValuesPrefix, System.StringComparison.Ordinal)).ToList();
+        var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
+
+        Assert.NotEmpty(vectors);
+        var answered = results.Where(static r => AlgorithmsLibrary.IsLibraryIntlValues(r.Vector)).ToList();
+        var differences = answered.Where(static r => r.Verdict != Verdict.Match && !AlgorithmsLibrary.MatchesBroilerVmExpectation(r))
+            .Select(static r => r.Vector.Id + " " + r.Vector.Script + " expected: " + r.Expected + " got: " + r.Rendered)
+            .ToList();
+        Assert.True(differences.Count == 0, differences.Count + " differences:\n" + string.Join("\n", differences.Take(60)));
+        Assert.Equal(results.Count - 97, answered.Count);
+
+        var notAnswered = results.Except(answered).Where(static r => !AlgorithmsLibrary.IsLibraryIntlNumbers(r.Vector)).ToList();
+        Assert.All(notAnswered, static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+        Assert.Equal(
+            ["Intl.NumberFormat (option coercions)", "Intl.NumberFormat (option reads)", "Intl.NumberFormat (resolvedOptions)",
+             "Intl.NumberFormat.prototype.format", "Intl.PluralRules (option reads)"],
+            notAnswered.Select(static r => r.Vector["op"]!).Distinct().Order(System.StringComparer.Ordinal));
+        Assert.Equal(5, notAnswered.Count);
+    }
+
+    /// <summary>
+    /// The operation names sub-area (b)'s part of the runner answers keep every other file's outcome: each vector of the corpus
+    /// outside <c>intl/values-and-plurals.vectors</c> with one of those names gives what the runner's operation route gives it,
+    /// as before the part was added (<c>IVectorLibrary.Call</c> sees no area). <i>(Revised 2026-11-01, at stage SJL-9.3c: one of
+    /// those names, <c>Intl.NumberFormat.prototype.resolvedOptions</c>, is also sub-area (c)'s in <c>intl/numbers-and-text.vectors</c>,
+    /// whose vectors that stage's part answers; so a vector of that file is held only not to be sub-area (b)'s, and every other
+    /// file's as before: the corpus that is loaded holds no other.)</i>
+    /// </summary>
+    [Fact]
+    public void Sub_area_b_s_operation_names_move_no_other_area_s_vector()
+    {
+        var library = new AlgorithmsLibrary();
+        var others = Home.Corpus.Records
+            .Where(static v => AlgorithmsLibrary.IntlValuesOperations.Contains(v["op"]!) && !v.Id.StartsWith(AlgorithmsLibrary.IntlValuesPrefix, System.StringComparison.Ordinal))
+            .ToList();
+
+        Assert.NotEmpty(others);
+        Assert.All(others, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntlValues(v), v.Id));
+        var outside = others.Where(static v => !v.Id.StartsWith(AlgorithmsLibrary.IntlNumbersPrefix, System.StringComparison.Ordinal)).ToList();
+        Assert.All(outside, v => Assert.Equal(((IVectorLibrary)library).Call(v["op"]!, LibraryRun.Inputs(v)), library.Call(v)));
+        Assert.All(LibraryRun.Run(outside, library), static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+        Assert.All(outside, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntl(v), v.Id));
+    }
+
+    /// <summary>
+    /// Every vector of the Intl area's sub-area (c) the runner answers (stage SJL-9.3c) - <c>intl/numbers-and-text.vectors</c>'
+    /// operations but the engine-level script forms, and the <c>format</c> and <c>formatToParts</c> vectors of
+    /// <c>intl/values-and-plurals.vectors</c> - passes against the Intl library, or gives Broiler.VM's <c>per-engine</c>
+    /// expectation; every other vector of <c>numbers-and-text.vectors</c> is not implemented: the bound <c>format</c>, the
+    /// legacy constructor, the reads after construction, a constructor called without <c>new</c> and the lists
+    /// StringListFromIterable refuses, each an engine's.
+    /// </summary>
+    [Fact]
+    public void Every_numbers_and_text_vector_the_runner_answers_passes_against_the_Intl_library()
+    {
+        var vectors = Home.Corpus.Records.Where(static v => v.Id.StartsWith(AlgorithmsLibrary.IntlNumbersPrefix, System.StringComparison.Ordinal)
+            || (v.Id.StartsWith(AlgorithmsLibrary.IntlValuesPrefix, System.StringComparison.Ordinal) && AlgorithmsLibrary.IntlValuesFormatOperations.Contains(v["op"]!))).ToList();
+        var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
+
+        Assert.NotEmpty(vectors);
+        var answered = results.Where(static r => AlgorithmsLibrary.IsLibraryIntlNumbers(r.Vector)).ToList();
+        var differences = answered.Where(static r => r.Verdict != Verdict.Match && !AlgorithmsLibrary.MatchesBroilerVmExpectation(r))
+            .Select(static r => r.Vector.Id + " " + r.Vector.Script + " expected: " + r.Expected + " got: " + r.Rendered)
+            .ToList();
+        Assert.True(differences.Count == 0, differences.Count + " differences:\n" + string.Join("\n", differences.Take(80)));
+
+        var values = answered.Count(static r => r.Vector.Id.StartsWith(AlgorithmsLibrary.IntlValuesPrefix, System.StringComparison.Ordinal));
+        Assert.Equal(92, values);
+
+        var notAnswered = results.Except(answered).ToList();
+        Assert.All(notAnswered, static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
+        Assert.All(notAnswered, static r => Assert.True(AlgorithmsLibrary.IsEngineLevelNumbersScript(r.Vector.Script), r.Vector.Id));
+        Assert.Equal(
+            ["intl/numbers-and-text/options/0001", "intl/numbers-and-text/options/0002", "intl/numbers-and-text/options/0003",
+             "intl/numbers-and-text/options/0004", "intl/numbers-and-text/options/0005", "intl/numbers-and-text/options/0006"],
+            notAnswered.Where(static r => r.Vector["op"]!.StartsWith("Intl.NumberFormat", System.StringComparison.Ordinal)
+                    || r.Vector["op"] == "Number.prototype.toLocaleString (reads)")
+                .Where(static r => r.Vector.Id.StartsWith(AlgorithmsLibrary.IntlNumbersPrefix, System.StringComparison.Ordinal))
+                .Select(static r => r.Vector.Id).Order(System.StringComparer.Ordinal));
+    }
+
+    /// <summary>
+    /// The operation names sub-area (c)'s part of the runner answers keep every other file's outcome. At corpus revision 30 no
+    /// vector outside the two Intl files it reads carries one of those names, and the test holds that: a vector that comes to
+    /// carry one fails it, so that the test is revisited to check that such a vector gives what the runner's operation route
+    /// gives it and is not answered as sub-area (c)'s (<c>IVectorLibrary.Call</c> sees no area). Within the two files, a name
+    /// answers only its own file's vectors.
+    /// </summary>
+    [Fact]
+    public void Sub_area_c_s_operation_names_move_no_other_area_s_vector()
+    {
+        var names = AlgorithmsLibrary.IntlNumbersOperations.Concat(AlgorithmsLibrary.IntlValuesFormatOperations).ToHashSet(System.StringComparer.Ordinal);
+        var others = Home.Corpus.Records
+            .Where(v => names.Contains(v["op"]!) && !v.Id.StartsWith(AlgorithmsLibrary.IntlNumbersPrefix, System.StringComparison.Ordinal)
+                && !v.Id.StartsWith(AlgorithmsLibrary.IntlValuesPrefix, System.StringComparison.Ordinal))
+            .ToList();
+
+        // NO OTHER FILE CARRIES THESE NAMES TODAY. A vector that comes to carry one fails here; the check it is then to pass is
+        // the one sub-area (b)'s test makes: Call(op, inputs) == Call(vector), and IsLibraryIntlNumbers false.
+        Assert.Empty(others.Select(static v => v.Id));
+
+        // Within the two files, an operation name of sub-area (c) answers only its own file's vectors.
+        var values = Home.Corpus.Records.Where(static v => v.Id.StartsWith(AlgorithmsLibrary.IntlValuesPrefix, System.StringComparison.Ordinal)
+            && AlgorithmsLibrary.IsLibraryIntlNumbers(v)).ToList();
+        Assert.All(values, static v => Assert.Contains(v["op"]!, AlgorithmsLibrary.IntlValuesFormatOperations));
+        Assert.All(values, static v => Assert.False(AlgorithmsLibrary.IsLibraryIntlValues(v), v.Id));
     }
 
     [Fact]

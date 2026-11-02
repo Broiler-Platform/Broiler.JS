@@ -24,7 +24,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
     <ProjectReference Include="..\Broiler.ECMAScript.Intl\Broiler.ECMAScript.Intl.csproj" />
+    <ProjectReference Include="..\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj" />
     <ProjectReference Include="..\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj" />
+    <!-- The runner's Unicode provider for the syntax area: the tables the owner's generator writes from this
+         repository's pin, data/unicode/pins/, read from disk as the corpus is (milestone SJL-13.2b). -->
+    <PackageReference Include="Broiler.Unicode.Generation" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\runners\CorpusDirectory.cs" Link="CorpusDirectory.cs" />
@@ -34,6 +38,10 @@
     <Compile Include="..\runners\AlgorithmsLibrary.TimeZones.cs" Link="AlgorithmsLibrary.TimeZones.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.Temporal.cs" Link="AlgorithmsLibrary.Temporal.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.Intl.cs" Link="AlgorithmsLibrary.Intl.cs" />
+    <Compile Include="..\runners\AlgorithmsLibrary.IntlValues.cs" Link="AlgorithmsLibrary.IntlValues.cs" />
+    <Compile Include="..\runners\AlgorithmsLibrary.IntlNumbers.cs" Link="AlgorithmsLibrary.IntlNumbers.cs" />
+    <Compile Include="..\runners\AlgorithmsLibrary.Syntax.cs" Link="AlgorithmsLibrary.Syntax.cs" />
+    <Compile Include="..\runners\UnicodeDataHome.cs" Link="UnicodeDataHome.cs" />
     <Compile Include="..\runners\TemporalAdapter.cs" Link="TemporalAdapter.cs" />
     <Compile Include="..\runners\TemporalAdapter.Methods.cs" Link="TemporalAdapter.Methods.cs" />
   </ItemGroup>

@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The tests of the shared syntax library (milestone SJL-13.2; Broiler.VM's JSD-0083). At stage SJL-13.2a: the request's
+    defaults for each goal and the preconditions it refuses, the limits and their constants, the providers' shapes, the
+    diagnostics' forms, and the parse entry's answer for every goal. At stage SJL-13.2b: the tokenizer, production by
+    production, and the parse entry's lexical answer. Each later stage adds its own. JIT only: the Native
+    AOT probe runs the vectors, not these.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- A test project is not a library the Native AOT probe runs; xunit discovers by reflection. -->
+    <IsAotCompatible>false</IsAotCompatible>
+    <IsTrimmable>false</IsTrimmable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The tokenizer's tests read Broiler.Unicode's classes over the tables the owner's generator writes from this
+         repository's pin (stage SJL-13.2b), as the library-level runner does. -->
+    <PackageReference Include="Broiler.Unicode.Generation" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\runners\UnicodeDataHome.cs" Link="UnicodeDataHome.cs" />
+  </ItemGroup>
+</Project>

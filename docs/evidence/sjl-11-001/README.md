@@ -36,6 +36,16 @@ and its correspondence from code, retained in Broiler.VM's bundle of the same na
 moves the pin to `0.2.0-preview.1` (JSD-0081 decision D12). From SJL-11.5 this engine passes Broiler.Regex no meter,
 a frame ceiling of `1 << 20`, a trail ceiling of `1 << 21` and a nesting limit of 512 (decisions D7 and D10).
 
+*Dated note, 2026-11-01; the paragraph above is not rewritten.* It reads "until SJL-11.5 moves the pin to
+`0.2.0-preview.1` (JSD-0081 decision D12)", after decision D12 of Broiler.VM's JSD-0081 ("the SJL-11 surface ships as
+`0.2.0-preview.1`"). The owner wrote on 2026-11-01 "Please keep using version 0.1.0-x scheme!", which revises D12: the
+SJL-11 surface ships in the `0.1.0-preview.N` stream, not as `0.2.0-preview.1`, and since the owner published
+Broiler.Regex `0.1.0-preview.5` on 2026-10-29 from Broiler.Regex `24344b3`, the next is `0.1.0-preview.6`. SJL-11.5
+moves the pin to `0.1.0-preview.6`, or a later version of the same stream. This engine's `Directory.Packages.props`
+has pinned Broiler.Regex `0.1.0-preview.5` since the owner's dependency update of 2026-10-29 (`a58d31d1`), where the
+paragraph names the `0.1.0-preview.4` restored when it was written. The filed rule carries a dated note of its own
+([`decision-rule.md`](decision-rule.md)).
+
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in Broiler.VM).
 **Reviewer:** none, and nothing here has been read by anyone but its author.
 

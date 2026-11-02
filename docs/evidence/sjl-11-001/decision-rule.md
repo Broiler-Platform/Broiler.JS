@@ -18,6 +18,13 @@ branch: part A's MET line admits a row passing at the base that fails after unde
 read "outside C3 (L)", so that kind (E), row M4's empty match, admits a move in either direction, as its definition
 says. Nothing else changed.*
 
+*Dated note, 2026-11-01; the rule above is not rewritten.* Its opening paragraph reads "no adapter onto Broiler.Regex 0.2", the
+version that decision D12 of Broiler.VM's JSD-0081 named ("The SJL-11 surface ships as **`0.2.0-preview.1`**"). The owner
+wrote on 2026-11-01 "Please keep using version 0.1.0-x scheme!", which revises D12: the SJL-11 surface ships in the
+`0.1.0-preview.N` stream, as `0.1.0-preview.6`, the next after `0.1.0-preview.5`, which the owner published on
+2026-10-29 from Broiler.Regex `24344b3`. "Broiler.Regex 0.2" is read as the Broiler.Regex version that carries the
+SJL-11 surface, `0.1.0-preview.6` or a later version of the same stream; nothing else of the rule changes.
+
 **What this file is.** Five predeclared decisions, one per part.
 - **The templates.** Part A is template T2 of the programme's validation document
   (`Broiler.VM/docs/javascript-shared-libraries/validation.md` section 4), part B T5. Part C is resource accounting

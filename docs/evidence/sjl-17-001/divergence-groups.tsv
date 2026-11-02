@@ -1,0 +1,18 @@
+# Bundle sjl-17-001: every group of Broiler.VM's divergences file for the orderings reference dataset, each with its
+# class for part B of this bundle's decision rule (milestone SJL-17, work package SJL-17.1; JSD-0084).
+#
+# Broiler.VM commit: 83290f9a56dbce0d538509dd77ab8dee6ea00f41 (its origin/main on 2026-11-01), whose
+# src/tests/cldr/orderings/ the commit that carries Broiler.VM's own bundle sjl-17-001 rule holds unchanged.
+# Each file is read from that commit's objects; `git -C <Broiler.VM> ls-tree <commit> src/tests/cldr/orderings/`
+# lists README.md, orderings.icu-77.1.txt (the retained answer) and orderings.js (the program), and no
+# divergences.txt.
+#
+# THE TABLE HOLDS NO GROUP. src/tests/cldr/orderings/ has no divergences file at that commit: Broiler.VM answers every
+# line of the program as its retained answer, ICU 77.1's (the slice compiler's check
+# intl/i1/german-and-english-orderings-match-icu, and Broiler.VM's bundle sjl-17-001 correspondence, row O18). So the
+# expected answer of each line in part B is the retained answer's line, and part B's classes V (a line whose expected
+# answer comes from a divergence in a coverage group) and R (a line of V's kind that equals the reference's) can hold
+# no line. A divergences file added to Broiler.VM after the commit named in the rule is not part B's population.
+#
+# The columns are bundle sjl-9-001's divergence-groups.tsv's, so a reader of both reads one format.
+file	blob	lines	header-lines	divergence-lines	divergences	class	note	header

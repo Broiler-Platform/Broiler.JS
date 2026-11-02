@@ -17,13 +17,46 @@ namespace Broiler.ECMAScript.Probe;
 /// runners' <c>AlgorithmsLibrary</c>: every number vector must match, and a vector of any area the
 /// library does not implement yet must be "not implemented". The contract types are exercised
 /// directly as well. From milestone SJL-9.3a it also runs <c>Broiler.ECMAScript.Intl</c>, through the
-/// same runner, on the Intl area's sub-area (a). What the probe proves is that the library, the reader, the validator, the
+/// same runner, on the Intl area's sub-area (a), and from stage SJL-9.3b on the operations of sub-area (b) the runner
+/// answers, whose vectors it reads whole (<c>IVectorRecordLibrary</c>), and from stage SJL-9.3c on those of sub-area (c), read
+/// whole the same way. From milestone SJL-13.2a it also runs
+/// <c>Broiler.ECMAScript.Frontend</c>, through the runner's frontend adapter, on the <c>syntax</c> area, whose outcomes it
+/// records and does not judge until the library parses (<see cref="IsRecordedArea"/>): from stage SJL-13.2b a vector whose
+/// source the tokenizer refuses is refused, and is counted among the matches, and every other is not implemented; a refusal
+/// of a vector that expects an acceptance would be counted among those that differ. What the probe proves is that the library, the reader, the validator, the
 /// runner and the report compile into a Native AOT image under Broiler.VM's root settings and give
 /// there, over the whole corpus, the answers they give under the JIT. Until SJL-3 it ran the empty
 /// library, whose every answer was <c>status: not-implemented</c>.
 /// </remarks>
 internal static class Program
 {
+    /// <summary>
+    /// The areas whose vectors the probe runs and records but does not judge (milestone SJL-13.2a; the plan's stage 4a:
+    /// "the probe runs the syntax vectors (all expected to fail until 4c, recorded, not judged)"). From stage 4b the
+    /// tokenizer refuses some of them, which the line of their verdicts shows as matches, and the rest stay not implemented.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Recorded</b>: every vector of such an area is run through the same runner as every other, its line written to the
+    /// report like any other's, so that the JIT and Native AOT reports are compared over it byte for byte; its verdicts are
+    /// counted on a line of their own, with how many agree at the parse (<see cref="AlgorithmsLibrary.MatchesAtTheParse"/>).
+    /// A crash while running one ends the probe as any crash does, and an area with no vector is a failure.
+    /// </para>
+    /// <para>
+    /// <b>Not judged</b>: no verdict of such an area is added to the failures, so the exit code is decided by the judged
+    /// areas, the corpus's validity, the second run's identical report and the contract types alone. A judged area is held as
+    /// before: each vector must pass, or be "not implemented" where the library does not answer it.
+    /// </para>
+    /// <para>
+    /// The syntax area leaves this set at the stage whose parser answers it (4c, or the stage the plan names then), and is
+    /// judged from there by <see cref="AlgorithmsLibrary.MatchesAtTheParse"/>.
+    /// </para>
+    /// </remarks>
+    internal static bool IsRecordedArea(string? area) => area is RecordedAreas;
+
+    /// <summary>The recorded areas, as the probe's summary line names them.</summary>
+    internal const string RecordedAreas = "syntax";
+
     internal static int Main(string[] args)
     {
         string? root = null;
@@ -57,12 +90,27 @@ internal static class Program
         // built-in's length, the properties an engine reads, and the calendar an object lends (milestone SJL-10.3). Of the
         // Intl area, sub-area (a)'s vectors are the Intl library's, over the Intl data home's tables and Broiler.VM's
         // providers, but the engine-level ones AlgorithmsLibrary.IsEngineLevelIntl names; an impl-defined one may give
-        // Broiler.VM's per-engine expectation, the engine whose providers the runner takes; every other Intl vector is not
-        // implemented (milestone SJL-9.3a).
+        // Broiler.VM's per-engine expectation, the engine whose providers the runner takes (milestone SJL-9.3a). So are
+        // sub-area (b)'s of the operations AlgorithmsLibrary.IntlValuesOperations names, read whole with their scripts
+        // (stage SJL-9.3b). So are sub-area (c)'s, numbers-and-text's operations AlgorithmsLibrary.IntlNumbersOperations names and
+        // values-and-plurals' format and formatToParts, but the engine-level script forms (stage SJL-9.3c). Every other Intl
+        // vector is not implemented.
+        // The syntax area's vectors are the frontend's, through the runner's frontend adapter, and are recorded, not judged
+        // (IsRecordedArea; milestone SJL-13.2a): from stage 4b a vector the tokenizer refuses is a match, every other not
+        // implemented, until the parser (4c) answers them.
         var library = new AlgorithmsLibrary();
         var results = LibraryRun.Run(corpus.Records, library);
+        var recorded = new int[5];
         foreach (var result in results)
         {
+            if (IsRecordedArea(result.Vector["area"]))
+            {
+                recorded[(int)result.Verdict]++;
+                if (AlgorithmsLibrary.MatchesAtTheParse(result))
+                    recorded[4]++;
+                continue;
+            }
+
             var implemented = result.Vector["area"] switch
             {
                 "numbers" => true,
@@ -85,6 +133,9 @@ internal static class Program
             failures.Add("the report of a second run differs from the first");
 
         failures.AddRange(ContractTypes.Check());
+        var recordedCount = recorded[0] + recorded[1] + recorded[2] + recorded[3];
+        if (recordedCount == 0)
+            failures.Add("corpus: no vector of the recorded areas (" + RecordedAreas + ") was read");
 
         if (reportPath is not null)
             File.WriteAllText(reportPath, report);
@@ -92,6 +143,10 @@ internal static class Program
         Console.Out.Write("Broiler.ECMAScript.Probe: corpus revision " + Decimal(corpus.Sources.Revision) + ", "
             + Decimal(corpus.Files.Count) + " files, " + Decimal(results.Count) + " vectors, "
             + Decimal(failures.Count) + " failures\n");
+        Console.Out.Write("Broiler.ECMAScript.Probe: recorded, not judged (" + RecordedAreas + "): "
+            + Decimal(recordedCount) + " vectors, " + Decimal(recorded[(int)Verdict.Match]) + " match, "
+            + Decimal(recorded[(int)Verdict.Difference] + recorded[(int)Verdict.ClassifiedDivergence]) + " differ, "
+            + Decimal(recorded[(int)Verdict.NotImplemented]) + " not implemented, " + Decimal(recorded[4]) + " agree at the parse\n");
         foreach (var failure in failures)
             Console.Error.Write(failure + "\n");
         return failures.Count == 0 ? 0 : 1;
