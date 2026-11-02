@@ -109,10 +109,10 @@ public sealed class ContractTests
     }
 
     /// <summary>
-    /// The parse entry at stage 4b (the 4a test it replaces asserted that nothing was read or charged): the meter is
-    /// charged the text's length once, before the parse reads it, and nothing for an empty text; the regular-expression
-    /// provider is never asked, the literal's validity being stage 4d's; and a text the lexical grammar does not refuse is
-    /// answered not implemented, with no diagnostic, for every goal.
+    /// The parse entry at stage 4c (the 4b test it replaces asserted that a text the tokenizer does not refuse was answered
+    /// not implemented): the meter is charged the text's length once, before the parse reads it, and nothing for an empty
+    /// text; the regular-expression provider is never asked, the literal's validity being stage 4d's; and every text is
+    /// answered accepted or refused, with a diagnostic exactly for a refusal, for every goal.
     /// </summary>
     [Theory]
     [InlineData(ParseGoal.Script)]
@@ -120,15 +120,17 @@ public sealed class ContractTests
     [InlineData(ParseGoal.Eval)]
     [InlineData(ParseGoal.FormalParameters)]
     [InlineData(ParseGoal.FunctionBody)]
-    public void A_source_the_tokenizer_does_not_refuse_is_not_implemented_and_the_meter_is_charged_its_length(ParseGoal goal)
+    public void Every_source_is_accepted_or_refused_and_the_meter_is_charged_its_length(ParseGoal goal)
     {
         foreach (var text in new[] { string.Empty, "1", "let let = 1;", "/(/", "a\u2028b" })
         {
             var charges = new System.Collections.Generic.List<ulong>();
             var request = new ParseRequest(new SourceText(text), goal, Runners.UnicodeDataHome.Tables, NoValidator.Instance) { Meter = charges.Add };
             var result = SyntaxParser.Parse(request);
-            Assert.Equal(ParseOutcome.NotImplemented, result.Outcome);
-            Assert.Empty(result.Diagnostics);
+            var accepted = goal != ParseGoal.FormalParameters || text.Length == 0;
+            Assert.Equal(accepted ? ParseOutcome.Accepted : ParseOutcome.Refused, result.Outcome);
+            Assert.Equal(accepted ? 0 : 1, result.Diagnostics.Count);
+            Assert.Equal(accepted, result.Tree is not null);
             Assert.Equal(text.Length == 0 ? [] : [(ulong)text.Length], charges);
         }
 

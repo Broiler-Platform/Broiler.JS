@@ -172,6 +172,7 @@ class CommittedFileTests(unittest.TestCase):
                 self.assertRegex(record["note"], rf"correspondence rows? [A-Z0-9a-z, ]*\b{row.group(1)}\b",
                                  (record["id"], engine))
 
+    @NEEDS_DATA  # write_files builds the corpus, which reads the pinned UCD, as GeneratorTests' do
     def test_the_divergence_file_refuses_an_unknown_id_and_a_status_vector(self) -> None:
         with self.assertRaises(generator.GeneratorError):
             generator.write_files(Path(tempfile.mkdtemp()), {"regexp/syntax/none/0001": {"broiler-js": "x"}})
