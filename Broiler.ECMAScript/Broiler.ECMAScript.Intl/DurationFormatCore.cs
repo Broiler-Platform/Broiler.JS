@@ -1,5 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
+//
+// Broiler Code Assurance
+// ----------------------
+// Relevant units:   33
+// Annotated:        33/33
+// Exempt:           32
+// Human-reviewed:   0/33
+// IP risk:          Low
+// Security risk:    High
+// Criteria:         3/3
+// Resource impact:  2/10 max
+// Unverified:       33
+//
+// GENERATED - DO NOT EDIT MANUALLY
 
 using System;
 using System.Collections.Generic;
@@ -12,7 +26,7 @@ using Broiler.ECMAScript.Temporal;
 namespace Broiler.ECMAScript.Intl;
 
 /// <summary>A unit of a duration, in Table 20's order (ECMA-402 <c>sec-Intl.DurationFormat</c>, Table 20).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=07E306
 // Broiler-Human:        PENDING
 public enum DurationUnit
 {
@@ -48,7 +62,7 @@ public enum DurationUnit
 }
 
 /// <summary>[[Style]] of an <c>Intl.DurationFormat</c>, its base style (the <c>style</c> option).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=473ACE
 // Broiler-Human:        PENDING
 public enum DurationFormatStyle
 {
@@ -66,7 +80,7 @@ public enum DurationFormatStyle
 }
 
 /// <summary>The style of one unit of a duration format: a unit option's value, or <see cref="Fractional"/>, which GetDurationUnitOptions makes of a sub-second unit's <c>numeric</c>.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=F3A05E
 // Broiler-Human:        PENDING
 public enum DurationUnitStyle
 {
@@ -93,7 +107,7 @@ public enum DurationUnitStyle
 }
 
 /// <summary>The display of one unit of a duration format (the <c><i>unit</i>Display</c> option).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=9761FF
 // Broiler-Human:        PENDING
 public enum DurationUnitDisplay
 {
@@ -107,7 +121,7 @@ public enum DurationUnitDisplay
 /// <summary>One unit's [[<i>Unit</i>Options]]: what GetDurationUnitOptions resolved (<c>sec-getdurationunitoptions</c>).</summary>
 /// <param name="Style">The unit's style.</param>
 /// <param name="Display">The unit's display.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=1F81DD
 // Broiler-Human:        PENDING
 public readonly record struct DurationUnitOptions(DurationUnitStyle Style, DurationUnitDisplay Display);
 
@@ -118,7 +132,7 @@ public readonly record struct DurationUnitOptions(DurationUnitStyle Style, Durat
 /// <param name="HourMinuteSeparator">[[HourMinuteSeparator]]: CLDR's <c>timeSeparator</c> symbol.</param>
 /// <param name="MinuteSecondSeparator">[[MinuteSecondSeparator]]: the same symbol.</param>
 /// <param name="TwoDigitHours">[[TwoDigitHours]]: whether CLDR's <c>durationUnit-type-hms</c> pattern begins <c>hh</c> (JSD-0051 §2).</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat-internal-slots DigitalFormat, JSD-0082 D34; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat-internal-slots DigitalFormat, JSD-0082 D34; IP=Low; Security=Low; Resources=0; Fingerprint=2280F8
 // Broiler-Human:        PENDING
 public readonly record struct DurationDigitalFormat(string HourMinuteSeparator, string MinuteSecondSeparator, bool TwoDigitHours);
 
@@ -126,7 +140,7 @@ public readonly record struct DurationDigitalFormat(string HourMinuteSeparator, 
 /// <param name="Type">A number part's type, or <c>literal</c>.</param>
 /// <param name="Value">The part's text.</param>
 /// <param name="Unit">The singular unit, for a part of a unit's number; <see langword="null"/> for the list's literals and the clock's separators.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat.prototype.formatToParts parts; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat.prototype.formatToParts parts; IP=Low; Security=Low; Resources=0; Fingerprint=8FF93F
 // Broiler-Human:        PENDING
 public readonly record struct DurationPart(string Type, string Value, string? Unit);
 
@@ -169,11 +183,13 @@ public readonly record struct DurationPart(string Type, string Value, string? Un
 /// </para>
 /// <para><b>Immutable</b>: one may be shared between threads (convention 10).</para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondurationformatpattern sec-getdurationunitoptions via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondurationformatpattern sec-getdurationunitoptions via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=299A44
 // Broiler-Human:        PENDING
 public sealed class DurationFormatCore
 {
     /// <summary>Table 20: each unit, its singular, its styles and its digital default.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles via Broiler.VM JsRealm.DurationFormat DurationUnits; IP=Low; Security=Low; Resources=0; Fingerprint=24EC5B
+    // Broiler-Human:        PENDING
     private static readonly ImmutableArray<UnitRow> Table =
     [
         new("years", "year", [DurationUnitStyle.Long, DurationUnitStyle.Short, DurationUnitStyle.Narrow], DurationUnitStyle.Short),
@@ -188,12 +204,20 @@ public sealed class DurationFormatCore
         new("nanoseconds", "nanosecond", [DurationUnitStyle.Long, DurationUnitStyle.Short, DurationUnitStyle.Narrow, DurationUnitStyle.Numeric], DurationUnitStyle.Numeric),
     ];
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=76D994
+    // Broiler-Human:        PENDING
     private const int UnitCount = 10;
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=A5E8EB
+    // Broiler-Human:        PENDING
     private const int HoursIndex = (int)DurationUnit.Hours;
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=A295F1
+    // Broiler-Human:        PENDING
     private const int MinutesIndex = (int)DurationUnit.Minutes;
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=0353DD
+    // Broiler-Human:        PENDING
     private const int SecondsIndex = (int)DurationUnit.Seconds;
 
     private readonly ILocaleData data;
@@ -202,7 +226,7 @@ public sealed class DurationFormatCore
 
     private readonly DurationUnitOptions[] units;
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondurationformatpattern sec-getdurationunitoptions via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondurationformatpattern sec-getdurationunitoptions via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=46F324
     // Broiler-Human:        PENDING
     private DurationFormatCore(ILocaleData data, string locale, string dataLocale, string numberingSystem, DurationFormatStyle style,
         DurationUnitOptions[] units, int? fractionalDigits, DurationDigitalFormat digital)
@@ -244,7 +268,7 @@ public sealed class DurationFormatCore
     /// <param name="unit">The unit.</param>
     /// <returns>The name.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="unit"/> is not a unit.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=9044F3
     // Broiler-Human:        PENDING
     public static string UnitName(DurationUnit unit) => Row(unit).Unit;
 
@@ -252,7 +276,7 @@ public sealed class DurationFormatCore
     /// <param name="unit">The unit.</param>
     /// <returns>The singular.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="unit"/> is not a unit.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=D4EA55
     // Broiler-Human:        PENDING
     public static string UnitSingular(DurationUnit unit) => Row(unit).Singular;
 
@@ -260,7 +284,7 @@ public sealed class DurationFormatCore
     /// <param name="unit">The unit.</param>
     /// <returns>The styles, never <see cref="DurationUnitStyle.Fractional"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="unit"/> is not a unit.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=49C82D
     // Broiler-Human:        PENDING
     public static IReadOnlyList<DurationUnitStyle> UnitStyles(DurationUnit unit) => Row(unit).Styles;
 
@@ -273,7 +297,7 @@ public sealed class DurationFormatCore
     /// <param name="dataLocale">ResolveLocale's [[DataLocale]].</param>
     /// <returns>The digital format.</returns>
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-Intl.DurationFormat-internal-slots DigitalFormat, JSD-0082 D34 via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-Intl.DurationFormat-internal-slots DigitalFormat, JSD-0082 D34 via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=0; Fingerprint=A54B61
     // Broiler-Human:        PENDING
     public static DurationDigitalFormat DigitalFormat(ILocaleData data, string dataLocale)
     {
@@ -302,7 +326,7 @@ public sealed class DurationFormatCore
     /// <see cref="IntlStatus.DurationUnitAfterFractional"/> or <see cref="IntlStatus.DurationUnitAfterNumeric"/>, in that order of the checks.</returns>
     /// <exception cref="ArgumentException"><paramref name="style"/> is a style the unit's option does not admit, which GetOption refuses first.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="unit"/> is not a unit.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-getdurationunitoptions sec-validatedurationunitstyle via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=High; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-getdurationunitoptions sec-validatedurationunitstyle via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=High; Resources=1; Fingerprint=6C5263
     // Broiler-Falsified-If: a unit's resolved style or display differs from GetDurationUnitOptions' for the options and the unit before, or a refusal is another status
     // Broiler-Human:        PENDING
     public static IntlStatus GetDurationUnitOptions(DurationUnit unit, DurationUnitStyle? style, DurationUnitDisplay? display, DurationFormatStyle baseStyle,
@@ -398,7 +422,7 @@ public sealed class DurationFormatCore
     /// <returns>The formatter.</returns>
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="units"/> does not hold ten units, or <paramref name="fractionalDigits"/> is outside 0 to 9.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-Intl.DurationFormat via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-Intl.DurationFormat via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=1C74B2
     // Broiler-Human:        PENDING
     public static DurationFormatCore Create(ILocaleData data, string locale, string dataLocale, string numberingSystem, DurationFormatStyle style,
         IReadOnlyList<DurationUnitOptions> units, int? fractionalDigits)
@@ -436,7 +460,7 @@ public sealed class DurationFormatCore
     /// <param name="charge">The caller's meter, as for <see cref="FormatToParts"/>.</param>
     /// <returns>The String.</returns>
     /// <exception cref="ArgumentException"><paramref name="duration"/> is not a valid duration of integral fields.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondurationformatpattern via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondurationformatpattern via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=FE7E1F
     // Broiler-Human:        PENDING
     public string Format(DurationFields duration, WorkCharge? charge = null)
     {
@@ -463,7 +487,7 @@ public sealed class DurationFormatCore
     /// <c>length / 8 + 1</c> as its String is read, and one for each step of the list's template.</param>
     /// <returns>The parts.</returns>
     /// <exception cref="ArgumentException"><paramref name="duration"/> is not a valid duration of integral fields.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondurationformatpattern sec-listformatparts via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=High; Resources=2; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondurationformatpattern sec-listformatparts via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=High; Resources=2; Fingerprint=654A9B
     // Broiler-Falsified-If: the parts differ from PartitionDurationFormatPattern's for the record, or the charge from Broiler.VM's for the same duration and format
     // Broiler-Human:        PENDING
     public IReadOnlyList<DurationPart> FormatToParts(DurationFields duration, WorkCharge? charge = null)
@@ -543,7 +567,7 @@ public sealed class DurationFormatCore
     /// written hours and seconds - from the first numeric unit, each by FormatNumericHours, FormatNumericMinutes or
     /// FormatNumericSeconds, the first written carrying the sign and a negative duration's zero hours or minutes <c>-0</c>.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumericunits via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumericunits via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=403B1A
     // Broiler-Human:        PENDING
     private List<DurationPart> FormatNumericUnits(double[] record, int first, bool signDisplayed, WorkCharge? charge)
     {
@@ -587,7 +611,7 @@ public sealed class DurationFormatCore
     /// <c>2-digit</c>, the sign never but on the first field, and the seconds' fraction truncated to <c>fractionalDigits</c> or nine
     /// digits.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerichours sec-formatnumericminutes sec-formatnumericseconds via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerichours sec-formatnumericminutes sec-formatnumericseconds via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=D42A69
     // Broiler-Human:        PENDING
     private void FormatNumericField(int index, IntlDecimal value, string? separator, bool signDisplayed, List<DurationPart> result, WorkCharge? charge)
     {
@@ -614,7 +638,7 @@ public sealed class DurationFormatCore
     /// ListFormatParts (<c>sec-listformatparts</c>): a unit list format of the base style, <c>short</c> for <c>digital</c>, over each
     /// element's text, and each element's parts in its place, the list's literals carrying no unit.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-listformatparts via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-listformatparts via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Medium; Resources=1; Fingerprint=3F7AFC
     // Broiler-Human:        PENDING
     private List<DurationPart> ListFormatParts(List<List<DurationPart>> lists, WorkCharge? charge)
     {
@@ -659,7 +683,7 @@ public sealed class DurationFormatCore
     /// A number format of the duration format's locale and numbering system, made as its constructor makes it from
     /// <paramref name="options"/>: one unit charged for the locale CanonicalizeLocaleList reads (Broiler.VM's <c>JsRealm.Intl.cs:282</c>).
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondurationformatpattern NumberFormat construction via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-partitiondurationformatpattern NumberFormat construction via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=3DD3E5
     // Broiler-Human:        PENDING
     private NumberFormatter NumberFormat(NumberFormatOptions options, WorkCharge? charge)
     {
@@ -671,7 +695,7 @@ public sealed class DurationFormatCore
     /// SetNumberFormatDigitOptions over the options a duration's number format is made with: the minimum integer digits, and, for a
     /// value with a fraction, up to nine fraction digits or exactly <c>fractionalDigits</c>, truncated; otherwise the style's defaults.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions for DurationFormat's number formats via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions for DurationFormat's number formats via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=6E00B7
     // Broiler-Human:        PENDING
     private DigitOptions Digits(NumberStyle style, int minimumIntegerDigits, bool fractions)
     {
@@ -688,7 +712,7 @@ public sealed class DurationFormatCore
     /// The value of unit <paramref name="index"/> with ComputeFractionalDigits (<c>sec-computefractionaldigits</c>) added: the
     /// fractional units that follow it, each a thousandth of the one before, as an exact decimal (rows U11, U20 and U21).
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-computefractionaldigits sec-nextunitfractional via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=High; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-computefractionaldigits sec-nextunitfractional via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=High; Resources=1; Fingerprint=63FACA
     // Broiler-Falsified-If: a unit with its fractional units differs from the exact sum ComputeFractionalDigits makes, in digits or sign
     // Broiler-Human:        PENDING
     private IntlDecimal WithFractions(double[] record, int index, WorkCharge? charge)
@@ -715,7 +739,7 @@ public sealed class DurationFormatCore
     }
 
     /// <summary>DurationSign (<c>sec-durationsign</c>): the sign of the first field that is not zero, or 0.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-durationsign via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-durationsign via Broiler.VM JsRealm.DurationFormat; IP=Low; Security=Low; Resources=1; Fingerprint=7B1E85
     // Broiler-Human:        PENDING
     private static int DurationSign(double[] record)
     {
@@ -739,7 +763,7 @@ public sealed class DurationFormatCore
     /// The record's ten fields in Table 20's order, once it is held to be what ToTemporalDuration makes: every field an integral
     /// Number and the whole a valid duration (the proposal's IsValidDuration, <see cref="TemporalLimits.CheckDuration"/>).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=proposal-temporal sec-temporal-totemporalduration record precondition; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=AI; Spec=proposal-temporal sec-temporal-totemporalduration record precondition; IP=Low; Security=Medium; Resources=1; Fingerprint=373E8C
     // Broiler-Human:        PENDING
     private static double[] RecordOf(DurationFields duration)
     {
@@ -765,11 +789,11 @@ public sealed class DurationFormatCore
         return record;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-isfractionalsecondunitname; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-isfractionalsecondunitname; IP=Low; Security=Low; Resources=0; Fingerprint=EBBFA3
     // Broiler-Human:        PENDING
     private static bool IsFractionalSecondUnit(DurationUnit unit) => unit is DurationUnit.Milliseconds or DurationUnit.Microseconds or DurationUnit.Nanoseconds;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=2FD97D
     // Broiler-Human:        PENDING
     private static UnitRow Row(DurationUnit unit) =>
         unit is >= DurationUnit.Years and <= DurationUnit.Nanoseconds
@@ -777,7 +801,7 @@ public sealed class DurationFormatCore
             : throw new ArgumentOutOfRangeException(nameof(unit), unit, "Not a unit of Table 20.");
 
     /// <summary>One row of Table 20.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.DurationFormat Table 20 units and styles; IP=Low; Security=Low; Resources=0; Fingerprint=5D01A8
     // Broiler-Human:        PENDING
     private readonly record struct UnitRow(string Unit, string Singular, ImmutableArray<DurationUnitStyle> Styles, DurationUnitStyle Digital);
 }
