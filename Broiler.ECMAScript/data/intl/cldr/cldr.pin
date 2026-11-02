@@ -52,6 +52,15 @@
 # line below) into two directories that `diff -r` found byte-identical, and root.xml, retrieved with
 # them, equals Broiler.VM's entry. The files are unmodified; the same owner's direction applies.
 #
+# EXTENDED 2026-11-02 FOR MILESTONE SJL-17.3. Broiler.JS's collation tables carry the tailorings of
+# Broiler.VM's JSD-0084, decision E3: root search and German phonebook and search, which Broiler.VM's
+# entries above already hold, and every collation CLDR 48.2.0 gives for es, sv and th. Their rules are
+# CLDR's common/collation/es.xml, sv.xml and th.xml, retrieved twice by Claude on 2026-11-02 from
+# https://raw.githubusercontent.com/unicode-org/cldr/release-48-2/common/collation/ (the
+# repository-source line below) into two directories that `cmp` found byte-identical; de.xml, en.xml and
+# root.xml, retrieved with them, equal Broiler.VM's entries. The files are unmodified; the same owner's
+# direction applies.
+#
 # WHAT A LINE MEANS. As in Broiler.VM's pin: `file <path relative to this directory> <bytes> <sha256>`.
 # A supplemental JSON file states its CLDR major version, a package.json its package version and the
 # UCA files their UCA version, which the generator's IntlCldrPin compares with the pinned ones; the
@@ -2085,3 +2094,8 @@ file cldr-48.2.0/common/main/zh_Hans.xml 458 138d8d3b9b646ab10d30628911ce79426ed
 file cldr-48.2.0/common/main/zh_Hans_SG.xml 13739 d920abb71b6dbab8fda7a02c15eaaddb15128c7f6fff1f3946b4152a3c46e116
 file cldr-48.2.0/common/main/zh_Hant.xml 779004 3af22c10d26b47fec92cbb1aeab62e057a45caf8760860dbbe6fdb548a24bc64
 file cldr-48.2.0/common/main/zu.xml 430863 e309dd4e1d9c864c7e03a0ac592a6b910d97e7c3bf93f7d2d6b7a53f29201ee0
+
+# Broiler.JS's common/collation XML files, added 2026-11-02 for milestone SJL-17.3 (see above).
+file cldr-48.2.0/common/collation/es.xml 1042 ab7b5b8066379ed64830805a231eac31f306c949f30d4ab39c665ab86b9b89cf
+file cldr-48.2.0/common/collation/sv.xml 1135 e1f1ba79ec79ee120f462e3883c995db6e45720cb3f77d3806fee0d6b8455ec5
+file cldr-48.2.0/common/collation/th.xml 1849 56787e3232786e42cc24870fa189d8714bc1f5b94c17d1440f90559a8b4c83fd

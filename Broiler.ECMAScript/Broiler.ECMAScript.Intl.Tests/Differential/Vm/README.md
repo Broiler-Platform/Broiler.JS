@@ -34,6 +34,13 @@ It runs under the JIT only; the Native AOT probe compiles none of it.
   copied with its resolved options and FormatNumericToString alone, is the whole file from stage SJL-9.3c, whose diff
   against the earlier copy adds lines and removes none but the header's. This is the one exception to "a copy is never
   edited afterwards"; the earlier sections compare the same code, and their reports do not move.
+- *(Added 2026-11-02, at milestone SJL-17.3.)* The collation section's two copies, `JsCollator.cs` and `JsCollationData.cs`, are
+  Broiler.VM's at its SJL-17 rule commit, **`4e6a41e9d3860b8ca79d5d3ea6de215c1592b0c0`** (Broiler-Platform/Broiler.VM#179), the
+  commit SJL-17.3's brief and Broiler.VM's JSD-0084 name. Neither file changed between `4cf9ca44` and `4e6a41e9`: each is the same
+  git blob at both commits, which its row records, so its header names both commits and the rule above holds it to the SJL-9 rule
+  commit's blob too. Their stand-ins are in `../VmEngine.cs`: `JsRealm.NormalizeText` and `JsUnicode.Normalization`, the
+  normalization owner's calls Broiler.VM's profile makes, over the tables the owner's generator writes from this repository's pin,
+  and a harness entry to the realm's private `CollatorKeyData`, which `JsRealm.Intl.cs` already holds.
 - *(Added 2026-11-02, at stage SJL-9.3d.)* The same exception replaces `JsDateData.cs`, which stage SJL-9.3a copied without the
   pattern generators' cache and the member that makes one (`gate`, `generators`, `Generator`), by the whole file at the same
   commit and blob: sub-area (d)'s sections reach `JsDatePatternGenerator` through it. Its diff against the earlier copy adds
@@ -44,6 +51,8 @@ It runs under the JIT only; the Native AOT probe compiles none of it.
 | File | Source at `4cf9ca44` | Git blob | Bytes | SHA-256 of the copy |
 |---|---|---|---|---|
 | `JsBigInt.cs` | `src/Broiler.VM.Profile.JavaScript/JsBigInt.cs` | `8898b1970980797a0b10fe6581af4b14f5804678` | 8154 | `dd3cb8550ef7d18cd252a2aa76861a09a634e97e8f550e7552a38cb34a8c0812` |
+| `JsCollationData.cs` | `src/Broiler.VM.Profile.JavaScript/JsCollationData.cs` | `2e489977897a9cda79922f6138279077376f5a0e` | 18910 | `f9b4b8a02567d5eae826ba7fa482786585f6a5cc4247b38ba682fafda2e472ff` |
+| `JsCollator.cs` | `src/Broiler.VM.Profile.JavaScript/JsCollator.cs` | `3004ac685ed23241b0e412a559f7c0685be1cc49` | 8624 | `b2bce2909fa6e91a7539a42f979ac689884d17af8b43103d1e78ab8516abeba7` |
 | `JsDateData.cs` | `src/Broiler.VM.Profile.JavaScript/JsDateData.cs` | `fe1b2d5a850dbdd7b170518d36e3fcab25a020ce` | 5802 | `3f0888fedab423a08d51c6b56ac265119cd5f52b9eb5026cc3d90cff3c122f8e` |
 | `JsDateIntervalFormat.cs` | `src/Broiler.VM.Profile.JavaScript/JsDateIntervalFormat.cs` | `a0e77e35d49e86461a3e7d79085b537e777e9e11` | 30251 | `ba4e17831a72e19b690d545bdeb1743fa584022d0d68e98d76bbf3fc8f21b7d9` |
 | `JsDatePatternGenerator.cs` | `src/Broiler.VM.Profile.JavaScript/JsDatePatternGenerator.cs` | `4fa8f8627383ec43c5f5566f285af15eb03e9c91` | 32802 | `23e986da951cc8ef8453a562d068e44be226484b71071196245a40b091e49a39` |
@@ -96,5 +105,7 @@ constructor reads its options through the earlier stages' realm copies and whose
 and list formats through stage SJL-9.3c's `JsRealm.NumberFormat.DigitOptions.cs` and `JsRealm.ListFormat.cs`; the realm's
 prototype methods and the reads of the argument, ToTemporalDuration and ECMA-402's ToDurationRecord, which read script and
 Temporal objects, are not copied, and both arms are handed the same valid duration record (`../VmEngine.cs` adds the engine's
-meter as a `WorkCharge`, which the copy hands `JsDecimal.FromString`, as a stand-in). Each section's population, its counts
+meter as a `WorkCharge`, which the copy hands `JsDecimal.FromString`, as a stand-in). And C1 and C2, the collator's comparison with
+its charge and the Collator's locale data, from milestone SJL-17.3 (`../CollationSection.cs`), over `JsCollator.cs`,
+`JsCollationData.cs` and `JsRealm.Intl.cs`'s `CollatorKeyData`. Each section's population, its counts
 and every difference's class are in its report (`dotnet Broiler.ECMAScript.Intl.Tests.dll differential`, `../Program.cs`).

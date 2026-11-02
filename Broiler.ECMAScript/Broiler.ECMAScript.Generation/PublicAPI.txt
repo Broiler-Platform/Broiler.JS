@@ -52,6 +52,7 @@ Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.Equals(Broiler.ECMAScrip
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.Equals(System.Object) method virtual System.Boolean
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.GetHashCode() method virtual System.Int32
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.ToString() method virtual System.String
+Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_BroilerJsTailorings() method static System.Collections.Immutable.ImmutableArray`1<System.String>
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_BroilerVmCalendars() method static System.Collections.Immutable.ImmutableArray`1<System.String>
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_BroilerVmTailorings() method static System.Collections.Immutable.ImmutableArray`1<System.String>
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_Calendars() method System.Collections.Immutable.ImmutableArray`1<System.String>

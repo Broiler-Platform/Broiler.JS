@@ -166,6 +166,26 @@ was written require:
   part B's base run, which the rule takes at the first parent of SJL-17.5's merge; its `identity.txt` names no commit,
   since the tree was written by `git archive` of `60fc3a5b`.
 
+## SJL-17.3: the shared collator and Broiler.JS's collation tables
+
+*(Added 2026-11-02, at SJL-17.3. Nothing here is a run of the rule, and nothing here is a verdict.)*
+
+- **2026-11-02: the library's collator and Broiler.JS's collation tables.** `Broiler.ECMAScript.Intl` gains `UcaCollator` and
+  `UcaCollationData`, ported from Broiler.VM's `JsCollator` and `JsCollationData` at `4e6a41e9`, and the data home writes
+  Broiler.JS's tailorings of JSD-0084's decision E3 into `Broiler.ECMAScript/data/intl/generated/`, with Thai's settings in a
+  new table; Broiler.VM's tables are unchanged (rule N28). Every collation vector is answered at library level and gives its
+  `out` or, for the Han vectors whose answer moves with the order across blocks, Broiler.VM's expectation, the implicit
+  weights the owner's decision of 2026-11-02 on row O3 keeps (the Intl design's dated note); the archived CollationTest
+  files order at library level; the differential check's sections C1 and C2 find no unclassified difference. The sizes of
+  the tables, measured with `stat` on the committed files, are 160,603 bytes for `collation-root.bin`, 7,850 bytes for
+  `collation-tailorings.bin` and 64 bytes for `collation-settings.txt`, 168,517 bytes in all. JSD-0084's decision E13 reads
+  "Broiler.JS: the collation size stated in its bundle", and the owner's decision of 2026-11-02, taken under the owner's
+  direction of 2026-10-18 ("Please do all recommended decisions and skip waiting for review"), is that E13 is met by
+  stating them here: rule H5 forbids a bundle README only test262 suite totals. *(Revised 2026-11-02, later, at SJL-17.3;
+  the sentences read "The sizes of the tables are stated with the stage's report, not here: JSD-0084's decision E13 reads
+  "Broiler.JS: the collation size stated in its bundle", and that statement stays open in this bundle until a later dated
+  line makes it.")* No engine reads the collator before its cut-over, SJL-17.4 or SJL-17.5, so no run of this rule moves.
+
 ## State
 
 Rule and data only, 2026-11-01, at SJL-17.1. **Nothing here is a verdict, and no run of the rule has been taken.** *(2026-11-02, at SJL-17.2: the vector runs and the datasets run above are retained; none is a run of the rule.)* The

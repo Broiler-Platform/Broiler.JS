@@ -346,6 +346,29 @@ internal sealed partial class JsRealm
     /// <summary>Builds <c>Intl.Locale</c> on an <c>Intl</c> object of its own, as the realm's <c>SetupIntl</c> does.</summary>
     internal void SetupLocaleForTheHarness() => SetupLocale(new JsObject(ObjectPrototype));
 
+    /// <summary>The copied <c>CollatorKeyData</c>, private to the realm, as the collation section calls it (milestone SJL-17.3).</summary>
+    internal static string?[] CollatorKeyDataForTheHarness(string locale, string key, string usage) => CollatorKeyData(locale, key, usage);
+
+    /// <summary>
+    /// Broiler.VM's <c>JsRealm.NormalizeText</c>, which the copied <c>JsCollator</c> calls for NFD (milestone SJL-17.3): the stand-in
+    /// makes the call Broiler.VM's makes - Broiler.Unicode's <c>Transform</c> into the form asked for, under the string-length
+    /// ceiling, charging the engine's meter, whose <c>UnicodeCharge</c> is its <c>Charge</c> - and throws as it throws past the
+    /// ceiling, which the harness never reaches. It decides no answer: the normalization is the owner's, as the library's is.
+    /// </summary>
+    internal static string NormalizeText(JsEngine engine, string text, bool compose, bool compatibility)
+    {
+        var form = compose
+            ? compatibility ? Broiler.Unicode.Algorithms.NormalForm.Nfkc : Broiler.Unicode.Algorithms.NormalForm.Nfc
+            : compatibility ? Broiler.Unicode.Algorithms.NormalForm.Nfkd : Broiler.Unicode.Algorithms.NormalForm.Nfd;
+
+        return JsUnicode.Normalization.Transform(text, form, StringLengthCeiling, engine.Charge, out var result) == Broiler.Unicode.Algorithms.UnicodeStatus.Success
+            ? result!
+            : throw engine.Error("RangeError", "Invalid string length");
+    }
+
+    /// <summary>Broiler.VM's string-length ceiling (<c>JsRealm.String.cs</c>), which the harness's strings never approach.</summary>
+    internal const int StringLengthCeiling = 1 << 24;
+
     private JsNativeFunction Native(string name, int length, JsNativeCall call) => new(this, FunctionPrototype, name, length, call);
 
     private void Method(JsObject target, string name, int length, JsNativeCall call) =>
@@ -458,4 +481,17 @@ internal static class JsTemporal
         TemporalCalendars.Canonicalize(calendar, out var id) == CalendarStatus.Completed
             ? id
             : throw new InvalidOperationException("A Temporal object holds a calendar that is not canonical: " + calendar);
+}
+
+/// <summary>
+/// Broiler.VM's <c>JsUnicode</c>, the normalization owner's tables as its profile composes them, which the copied
+/// <c>JsCollationData</c> asks for combining classes and the stand-in <c>NormalizeText</c> for NFD (milestone SJL-17.3): here the
+/// tables the owner's generator writes from this repository's pin, the library's own.
+/// </summary>
+internal static class JsUnicode
+{
+    private static readonly Lazy<Broiler.Unicode.Algorithms.UnicodeNormalization> normalization =
+        new(static () => new Broiler.Unicode.Algorithms.UnicodeNormalization(Broiler.ECMAScript.Runners.UnicodeDataHome.Tables));
+
+    internal static Broiler.Unicode.Algorithms.UnicodeNormalization Normalization => normalization.Value;
 }

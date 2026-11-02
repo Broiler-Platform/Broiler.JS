@@ -18,11 +18,18 @@ public sealed class ContractTests
         ("TimeZones", 26), ("TimeZoneIds", 27), ("TimeZoneRegions", 28), ("Calendars", 29), ("MetaZones", 30), ("TimeZoneRelease", 31),
     ];
 
+    /// <summary>
+    /// The values a stage appended for a table Broiler.VM's data never carries (decision D8): milestone SJL-17.3's collation
+    /// settings, which an engine without them answers as an empty span. <i>(Added 2026-11-02, at milestone SJL-17.3; until then
+    /// the test held that no value was appended.)</i>
+    /// </summary>
+    private static readonly (string Name, int Number)[] Appended = [("CollationSettings", 32)];
+
     [Fact]
-    public void IntlTable_keeps_JsIntlTable_s_numbers_and_appends_none()
+    public void IntlTable_keeps_JsIntlTable_s_numbers_and_appends_only_tables_Broiler_VM_s_data_never_carries()
     {
         var values = Enum.GetValues<IntlTable>().Select(static t => (t.ToString(), (int)t)).ToArray();
-        Assert.Equal(BroilerVmTables, values);
+        Assert.Equal([.. BroilerVmTables, .. Appended], values);
     }
 
     [Fact]
@@ -34,7 +41,9 @@ public sealed class ContractTests
 
     /// <summary>
     /// Every table the data home's generator writes for Broiler.JS is one Broiler.VM's data carries, so the stage appends no
-    /// value (decision D8): each file of <c>data/intl/generated/</c> but the manifest names an <see cref="IntlTable"/>.
+    /// value (decision D8): each file of <c>data/intl/generated/</c> but the manifest names an <see cref="IntlTable"/>. <i>(Revised
+    /// 2026-11-02, at milestone SJL-17.3: Broiler.JS's tables carry the collation settings too, the one value appended for a table
+    /// Broiler.VM's data never carries; the file of each is still named by an <see cref="IntlTable"/>.)</i>
     /// </summary>
     [Fact]
     public void Every_table_of_the_data_home_is_an_IntlTable()
@@ -58,7 +67,8 @@ public sealed class ContractTests
              ("TimeZoneOffsetHasSeconds", 17), ("InvalidTimeZone", 18), ("StyleWithComponents", 19), ("DateFormatWithTimeStyle", 20),
              ("TimeFormatWithDateStyle", 21), ("TimeValueOutOfRange", 22), ("TemporalTypeNotFormatted", 23), ("TemporalCalendarMismatch", 24),
              ("ZonedDateTimeNotFormatted", 25), ("RangeOfDifferentTypes", 26), ("FractionalDurationUnitAlwaysDisplayed", 27),
-             ("DurationUnitAfterFractional", 28), ("DurationUnitAfterNumeric", 29)],
+             ("DurationUnitAfterFractional", 28), ("DurationUnitAfterNumeric", 29),
+             ("NormalizedStringTooLong", 30)],
             Enum.GetValues<IntlStatus>().Select(static s => (s.ToString(), (int)s)).ToArray());
     }
 }

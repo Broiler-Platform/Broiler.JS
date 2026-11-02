@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   35
-// Annotated:        35/35
-// Exempt:           4
-// Human-reviewed:   0/35
+// Relevant units:   40
+// Annotated:        40/40
+// Exempt:           5
+// Human-reviewed:   0/40
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         3/3
 // Resource impact:  7/10 max
-// Unverified:       35
+// Unverified:       40
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -396,7 +396,11 @@ public static partial class CldrTableGenerator
     /// <c>[last primary ignorable]</c>, the relations <c>&lt;</c>, <c>&lt;&lt;</c>, <c>&lt;&lt;&lt;</c> and
     /// <c>=</c>, quoting, <c>\u</c> escapes, comments, <c>[import]</c>, <c>[suppressContractions]</c> and
     /// <c>[normalization on]</c>. Anything else is refused by name, so a re-pin that brings syntax this engine
-    /// does not know fails generation instead of generating a different order.
+    /// does not know fails generation instead of generating a different order. <i>(Extended 2026-11-02, at milestone
+    /// SJL-17.3, for Broiler.JS's tailorings of <c>es</c>, <c>sv</c> and <c>th</c> (Broiler.VM's JSD-0084, decision E3): the
+    /// reset <c>[before 1]</c>, an extension (<c>/</c>), and the settings <c>[alternate shifted]</c> and <c>[reorder Thai]</c>,
+    /// which the CollationSettings table carries. A prefix (<c>|</c>), any other reset, setting or script, and the star
+    /// relations are still refused, so CLDR's <c>eor</c> and <c>emoji</c> rules still are (finding F2).)</i>
     /// </para>
     /// <para>
     /// <b>A relation takes the weight one above its predecessor at its level</b>, and the common weight at the
@@ -506,20 +510,20 @@ public static partial class CldrTableGenerator
             return result;
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=799DD5
+        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=4F73F8
         // Broiler-Human:        PENDING
         internal static Tailoring Build(
-            RootCollation root, CldrUcd database, string rules, IReadOnlyDictionary<string, string> imports)
+            RootCollation root, CldrUcd database, string rules, Func<string, string?> imports)
         {
             var tailoring = new Tailoring();
             tailoring.Apply(root, database, rules, imports);
             return tailoring;
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=7; Fingerprint=1FC4E4
+        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=7; Fingerprint=CE9BFD
         // Broiler-Falsified-If: rule syntax outside the supported subset is accepted, or a tailored weight that runs into the next root weight is written
         // Broiler-Human:        PENDING
-        private void Apply(RootCollation root, CldrUcd database, string rules, IReadOnlyDictionary<string, string> imports)
+        private void Apply(RootCollation root, CldrUcd database, string rules, Func<string, string?> imports)
         {
             var used = new HashSet<string>(StringComparer.Ordinal);
             ScaledElement[]? current = null;
@@ -614,7 +618,7 @@ public static partial class CldrTableGenerator
                     {
                         var name = option["import ".Length..].Trim();
 
-                        if (!imports.TryGetValue(name, out var imported))
+                        if (imports(name) is not { } imported)
                         {
                             throw new InvalidDataException("collation rules import `" + name + "`, which the generator was not given");
                         }
@@ -625,6 +629,21 @@ public static partial class CldrTableGenerator
 
                     if (option == "normalization on")
                     {
+                        continue;
+                    }
+
+                    // THE TAILORING'S SETTINGS (milestone SJL-17.3): the shifted alternate as its default, and a script's
+                    // primaries moved before the other scripts', each a line of the CollationSettings table, read by the
+                    // collator. Thai's tailoring states both.
+                    if (option == "alternate shifted")
+                    {
+                        AddSetting("alternate|shifted");
+                        continue;
+                    }
+
+                    if (option.StartsWith("reorder ", StringComparison.Ordinal))
+                    {
+                        AddSetting(Reorder(root, database, option["reorder ".Length..].Trim()));
                         continue;
                     }
 
@@ -649,6 +668,15 @@ public static partial class CldrTableGenerator
                     if (rules[at] == '[')
                     {
                         var position = Bracketed(rules, ref at);
+
+                        // [before 1] (milestone SJL-17.3): the reset is just before the string's primary, after the root's
+                        // greatest primary below it, so a relation at the primary level sorts between the two. Swedish's
+                        // tailoring puts U+00E5, U+00E4 and U+00F6 before the root's U+01C0 so, and Thai's two before others.
+                        if (position == "before 1")
+                        {
+                            current = [BeforePrimary(root, Lookup(Nfd(database, Text(rules, ref at))))];
+                            continue;
+                        }
 
                         if (position != "last primary ignorable")
                         {
@@ -680,6 +708,24 @@ public static partial class CldrTableGenerator
                 if (target.Length == 0)
                 {
                     throw new InvalidDataException("collation rules relate an empty string");
+                }
+
+                // AN EXTENSION, relation/extension (milestone SJL-17.3): the tailored string's elements are the relation's
+                // and then the extension's, as Swedish's &t<<<U+00FE/h makes U+00FE a t with a tertiary difference followed by an h.
+                // The next relation is relative to the tailored string without its extension.
+                ScaledElement[]? extension = null;
+
+                if (at < rules.Length && rules[at] == '/')
+                {
+                    at++;
+                    var extended = Nfd(database, Text(rules, ref at));
+
+                    if (extended.Length == 0)
+                    {
+                        throw new InvalidDataException("collation rules extend a relation by an empty string");
+                    }
+
+                    extension = Lookup(extended);
                 }
 
                 var next = (ScaledElement[])current.Clone();
@@ -714,10 +760,134 @@ public static partial class CldrTableGenerator
                     }
                 }
 
-                next = WithCase(next, RootOf(target));
-                Entries[RootCollation.KeyOf(target)] = next;
-                current = next;
+                if (extension is null)
+                {
+                    next = WithCase(next, RootOf(target));
+                    Entries[RootCollation.KeyOf(target)] = next;
+                    current = next;
+                    continue;
+                }
+
+                // THE CASE OF AN EXTENDED STRING is read over all its elements, as ICU's setCaseBits reads them.
+                var stated = WithCase([.. next, .. extension], RootOf(target));
+                Entries[RootCollation.KeyOf(target)] = stated;
+                current = stated[..next.Length];
             }
+        }
+
+        /// <summary>The tailoring's settings, each a line of the CollationSettings table without the tailoring's name, in the order its rules state them.</summary>
+        internal List<string> SettingLines { get; } = [];
+
+        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 collation settings; IP=Low; Security=Low; Resources=1; Fingerprint=0705CB
+        // Broiler-Human:        PENDING
+        private void AddSetting(string line)
+        {
+            if (!SettingLines.Contains(line, StringComparer.Ordinal))
+            {
+                SettingLines.Add(line);
+            }
+        }
+
+        /// <summary>
+        /// The CollationSettings table's lines: per tailoring, in the options' order, <c>name|alternate|shifted</c> where its rules
+        /// state <c>[alternate shifted]</c>, and <c>name|reorder|first|last|before</c> where they state <c>[reorder script]</c>,
+        /// the script's root primaries from <c>first</c> to <c>last</c> moved before the root primary <c>before</c>, each four
+        /// hexadecimal digits.
+        /// </summary>
+        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 collation settings; IP=Low; Security=Low; Resources=1; Fingerprint=B14694
+        // Broiler-Human:        PENDING
+        internal static List<string> Settings(IReadOnlyList<(string Name, Tailoring Tailoring)> tailorings)
+        {
+            var lines = new List<string>();
+
+            foreach (var (name, tailoring) in tailorings)
+            {
+                foreach (var line in tailoring.SettingLines)
+                {
+                    lines.Add(name + "|" + line);
+                }
+            }
+
+            return lines;
+        }
+
+        /// <summary>
+        /// The scripts a <c>[reorder]</c> may name, each with the block its letters are in: Thai alone, which CLDR 48.2.0's
+        /// tailoring of <c>th</c> names. Another script is refused by name, as other syntax is.
+        /// </summary>
+        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 reorder; IP=Low; Security=Low; Resources=0; Fingerprint=9318FF
+        // Broiler-Human:        PENDING
+        private static ImmutableArray<(string Script, int First, int Last)> ReorderScripts { get; } = [("Thai", 0x0E00, 0x0E7F)];
+
+        /// <summary>
+        /// <c>[reorder script]</c>'s setting: the script's primaries in the root, from the least to the greatest primary of a
+        /// root mapping whose code points are all in its block, at or after the first script's; and that first primary, the
+        /// least primary of a letter after every decimal digit's, where the scripts begin after the space, punctuation, symbol,
+        /// currency and digit groups (UTS #35 Part 5, reordering groups). Refused unless no other mapping has a primary in the
+        /// script's range, so that moving the range moves that script alone.
+        /// </summary>
+        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 reorder, reordering groups; IP=Low; Security=Medium; Resources=5; Fingerprint=F68279
+        // Broiler-Human:        PENDING
+        private static string Reorder(RootCollation root, CldrUcd database, string script)
+        {
+            if (ReorderScripts.FirstOrDefault(entry => string.Equals(entry.Script, script, StringComparison.Ordinal)) is not { Script: not null } named)
+            {
+                throw new InvalidDataException("collation rules reorder `" + script + "`, which this generator does not implement");
+            }
+
+            var singles = root.Entries
+                .Where(static entry => !entry.Key.Contains(' ', StringComparison.Ordinal) && entry.Value.Length == 1)
+                .Select(static entry => (CodePoint: RootCollation.Key(entry.Key)[0], entry.Value[0].Primary))
+                .ToList();
+            var digits = singles.Where(entry => database.GeneralCategory(entry.CodePoint) == "Nd").Max(static entry => entry.Primary);
+            var scripts = singles.Where(entry => database.GeneralCategory(entry.CodePoint)[0] == 'L' && entry.Primary > digits).Min(static entry => entry.Primary);
+
+            bool InBlock(string key) => RootCollation.Key(key).All(codePoint => codePoint >= named.First && codePoint <= named.Last);
+
+            var primaries = root.Entries
+                .Where(entry => InBlock(entry.Key))
+                .SelectMany(static entry => entry.Value)
+                .Select(static element => element.Primary)
+                .Where(primary => primary >= scripts)
+                .ToList();
+
+            if (primaries.Count == 0)
+            {
+                throw new InvalidDataException("collation rules reorder `" + script + "`, whose letters have no primary in the root");
+            }
+
+            var first = primaries.Min();
+            var last = primaries.Max();
+
+            if (root.Entries.Any(entry => !InBlock(entry.Key) && entry.Value.Any(element => element.Primary >= first && element.Primary <= last)))
+            {
+                throw new InvalidDataException("collation rules reorder `" + script + "`, whose primaries the root shares with another script");
+            }
+
+            return string.Create(NumberFormatInfo.InvariantInfo, $"reorder|{first:X4}|{last:X4}|{scripts:X4}");
+        }
+
+        /// <summary>
+        /// <c>&amp;[before 1]</c>'s reset: the root's greatest primary below the string's, with the common secondary and tertiary
+        /// and that primary's variability, so that a relation at the primary level sorts just before the string. Refused
+        /// unless the string has exactly one element with a primary, which is its first.
+        /// </summary>
+        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 reset before; IP=Low; Security=Medium; Resources=4; Fingerprint=0165BE
+        // Broiler-Human:        PENDING
+        private static ScaledElement BeforePrimary(RootCollation root, ScaledElement[] reset)
+        {
+            if (reset.Length == 0 || reset[0].Primary == 0 || reset.Skip(1).Any(static element => element.Primary != 0) || reset[0].Primary % 256 != 0)
+            {
+                throw new InvalidDataException("collation rules reset before a string that is not one root primary, which this generator does not implement");
+            }
+
+            var target = reset[0].Primary >> 8;
+            var below = root.Entries.Values
+                .SelectMany(static elements => elements)
+                .Where(element => element.Primary != 0 && element.Primary < target)
+                .MaxBy(static element => element.Primary);
+
+            return new ScaledElement((long)below.Primary << 8, CommonSecondary, CommonTertiary, below.Variable);
         }
 
         // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=DAB761
@@ -802,7 +972,7 @@ public static partial class CldrTableGenerator
         }
 
         /// <summary>The text after a reset or relation, up to the next operator, with quotes and escapes resolved.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=1F2F56
+        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=891497
         // Broiler-Human:        PENDING
         private static int[] Text(string rules, ref int at)
         {
@@ -818,9 +988,15 @@ public static partial class CldrTableGenerator
                     break;
                 }
 
-                if (c is '|' or '/')
+                // AN EXTENSION ENDS THE TEXT (milestone SJL-17.3), which the relation reads after it; a prefix is refused.
+                if (c == '/')
                 {
-                    throw new InvalidDataException("collation rules use a prefix or an extension, which this generator does not implement");
+                    break;
+                }
+
+                if (c == '|')
+                {
+                    throw new InvalidDataException("collation rules use a prefix, which this generator does not implement");
                 }
 
                 if (c == '\'')

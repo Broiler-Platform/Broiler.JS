@@ -53,6 +53,7 @@
     <Compile Include="..\runners\AlgorithmsLibrary.IntlNumbers.cs" Link="AlgorithmsLibrary.IntlNumbers.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.IntlDateTimes.cs" Link="AlgorithmsLibrary.IntlDateTimes.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.IntlDurations.cs" Link="AlgorithmsLibrary.IntlDurations.cs" />
+    <Compile Include="..\runners\AlgorithmsLibrary.Collation.cs" Link="AlgorithmsLibrary.Collation.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.Syntax.cs" Link="AlgorithmsLibrary.Syntax.cs" />
     <Compile Include="..\runners\UnicodeDataHome.cs" Link="UnicodeDataHome.cs" />
     <Compile Include="..\runners\TemporalAdapter.cs" Link="TemporalAdapter.cs" />
