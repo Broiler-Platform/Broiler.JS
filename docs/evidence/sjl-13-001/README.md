@@ -318,7 +318,12 @@ parts, and nothing here is a verdict; the line above stands for the rule's parts
   retained with its output. Each reads what the library writes: part A's the corpus runner's report, in the fields
   part A's configuration lists, with the classification and the catalogue, and no expectation of its own; part H's the
   library's `PublicAPI.txt`. Part A's corpus runner, its dump mode for part C and part F's fuzz target are the
-  library's, written by SJL-13.2 (stages 4a and 4e). *(2026-11-02, at SJL-13.2e:* part G's runner,
+  library's, written by SJL-13.2 (stages 4a and 4e). *(Noted 2026-11-02, at SJL-13.2f: "Part A's corpus runner, its dump
+  mode for part C and part F's fuzz target are the library's, written by SJL-13.2 (stages 4a and 4e)" held of part C's
+  dump mode and part F's fuzz target, the probe's, and not of part A's runner, which no stage had written: stage 4f
+  commits it, [`tools/frontend-corpus/`](tools/frontend-corpus/README.md), the second place the rule names, with part A's
+  comparison, [`tools/compare_corpus.py`](tools/compare_corpus.py), and part H's check,
+  [`tools/contract_check.py`](tools/contract_check.py), in `920f18f4`, before any run of either part.)* *(2026-11-02, at SJL-13.2e:* part G's runner,
   [`tools/deep_nesting.py`](tools/deep_nesting.py), is committed here before any run of part G: it starts one process
   per row of [`inputs/deep/manifest.tsv`](inputs/deep/manifest.tsv), the Native AOT probe's `--parse-one` mode under the
   JIT or as its image, and reads each process's exit code; its `stack` mode measures the least stack each source needs,
