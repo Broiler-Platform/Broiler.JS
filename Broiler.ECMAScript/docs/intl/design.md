@@ -9,7 +9,7 @@ home, `Broiler.ECMAScript/data/intl/`, and generator, in `Broiler.ECMAScript.Gen
 or the home's data exists. **Revised:** 2026-10-27, at stage SJL-9.3a, by dated notes on "Why there is no project yet",
 the library's project now existing, and on sections 1 and 5, the composite's parent walk and its secondary provider, and
 week data keyed by region; and on 2026-11-01, at stage SJL-9.3b, by a dated note on section 1's sub-area (b), and the same
-day, at stage SJL-9.3c, by a dated note on its sub-area (c), and on 2026-11-02, at stage SJL-9.3d, by a dated note on its sub-area (d) ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
+day, at stage SJL-9.3c, by a dated note on its sub-area (c), and on 2026-11-02, at stage SJL-9.3d, by a dated note on its sub-area (d), and the same day, at stage SJL-9.3e, by a dated note on its sub-area (e) ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
 both roles (Broiler.VM's exception EX-30), and nothing here has been read by anyone but its author.
 
 **What this document is.** The Intl library's design document in its home, one of the three places SJL-9.1 files the
@@ -217,6 +217,38 @@ the library's internal types behind `DateTimeFormatter`, and its day periods and
 - **One comparison keeps .NET's ordinal casing**: `ZoneNamer` compares a zone's standard name with its generic name ignoring
   case by `StringComparison.OrdinalIgnoreCase`, as Broiler.VM does, which no culture reaches (decision D19 names the
   culture-sensitive calls; this is not one), so that no answer moves.
+
+
+*(Noted 2026-11-02, at SJL-9.3e: sub-area (e) as built, and the readings its code makes that the item above does not
+state, so that SJL-9.3f's packing and the cut-overs inherit them knowingly. Its public names are `DurationFormatCore` with
+the enumerations `DurationUnit`, `DurationFormatStyle`, `DurationUnitStyle` and `DurationUnitDisplay` and the records
+`DurationUnitOptions`, `DurationDigitalFormat` and `DurationPart`; the duration it formats is Temporal's `DurationFields`,
+the record SJL-10's library already holds, and ValidateDurationUnitStyle's three refusals are `IntlStatus` 27 to 29.)*
+- **The constructor is split at its reads**: the engine reads the `localeMatcher`, `numberingSystem` and `style` options,
+  resolves the locale, asks `DurationFormatCore.DigitalFormat` for the data locale's [[DigitalFormat]], and then reads each
+  unit's two options in Table 20's order, checked against `DurationFormatCore.UnitStyles`, handing each pair to
+  `GetDurationUnitOptions`, which applies the defaults and ValidateDurationUnitStyle and answers a status where the
+  specification throws; `fractionalDigits` is the engine's GetNumberOption. A style the unit's list does not hold is a
+  precondition broken (`ArgumentException`), GetOption's `RangeError` having come first. `fractional` is a style of its own,
+  which the engine's `resolvedOptions` writes as `numeric`.
+- **The data is read at the data locale**, as sub-areas (c) and (d)'s is: `symbols.timeSeparator` and `duration.hms` for
+  [[DigitalFormat]], and the unit and list patterns through the number and list formatters, where Broiler.VM read the data
+  locale's language. For Broiler.VM's tables the two read the same lines; for Broiler.JS's, `en-DK` reads its own `.` (rows
+  U13 and U14, decision D34). The separator is the locale's `latn` one whatever the numbering system, as Broiler.VM reads it.
+- **The `nu` values put the locale's default numbering system first**, `NumberFormatter.NumberingSystemKeyValues`'s, where
+  Broiler.VM's duration format put `latn` first; Broiler.JS's `ar-EG` resolves `arab` and `fa` `arabext` (row U16, data
+  policy), and each number is written with its system's own symbols where the data carries them (decision D21).
+- **The charges are Broiler.VM's** (row U19): one per unit PartitionDurationFormatPattern visits; for each number or list
+  format it makes, the one unit Broiler.VM's constructor charges for the locale it canonicalises; each number's
+  FormatNumericToString; a fraction's String read as a decimal, `length / 8 + 1`; and each step of the list's template.
+  `Format` and `FormatToParts` charge alike, and the engine's one unit per part of a `formatToParts` array is its own.
+- **A fraction is written in ASCII digits** by `BigIntText`, where Broiler.VM wrote the integer with the invariant culture
+  (decision D19, row U20); no answer moves.
+- **What stays the engine's**: GetOptionsObject and the option reads; ResolveLocale's matching; ToTemporalDuration (a
+  property bag's reads in alphabetical order with ToIntegerIfIntegral, a String through Temporal's grammar) or ECMA-402's own
+  ToDurationRecord, and CreateTemporalDuration's IsValidDuration (rows U7 to U10 and U22); `supportedLocalesOf`;
+  `Temporal.Duration.prototype.toLocaleString`'s construction; the parts arrays and `resolvedOptions`' object. A record that
+  is not a valid duration of integral fields is a precondition broken (`ArgumentException`).
 
 Each takes **resolved options as records**, never an options object, and answers strings, parts records or a status
 (conventions 2 and 3). Its code takes no culture call: what Broiler.VM's code does today through `ToUpperInvariant`,
@@ -471,4 +503,8 @@ the Unicode classifications written out. *(Extended 2026-11-02, at SJL-9.3d; the
 here is changed.")* The header's "Revised" line gains that stage's note, ending where it read "a dated note on its sub-area (c)
 ("Corrections" lists them)."; and section 1 gains a dated note on sub-area (d): its names, and six readings - the data
 locale, the metazone questions, the `nu` values' default, the zone named by its primary with the charges, what stays the
-engine's, and the one ordinal comparison kept. Nothing else here is changed.
+engine's, and the one ordinal comparison kept. *(Extended 2026-11-02, at SJL-9.3e; the sentence after the list read "Nothing
+else here is changed.")* The header's "Revised" line gains that stage's note, ending where it read "a dated note on its
+sub-area (d) ("Corrections" lists them)."; and section 1 gains a dated note on sub-area (e): its names, and six readings - the
+constructor split at its reads, the data locale, the `nu` values' default, the charges, the fraction's ASCII digits, and what
+stays the engine's. Nothing else here is changed.
