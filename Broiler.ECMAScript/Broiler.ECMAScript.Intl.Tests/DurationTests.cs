@@ -222,6 +222,30 @@ public sealed class DurationTests
         Assert.Equal("1:02:03", Format("en", DurationFormatStyle.Digital).Format(D(hours: 1, minutes: 2, seconds: 3)));
     }
 
+    /// <summary>
+    /// GetDurationUnitOptions makes the hours <c>2-digit</c> wherever [[TwoDigitHours]] is true, whatever the style resolved
+    /// (ECMA-402's step, as Broiler.VM ports it), so that with decision D34's reading of Broiler.JS's data the hours of every
+    /// style become <c>2-digit</c> in <c>af</c> and <c>lt</c>, the minutes and seconds after them too, and a duration with hours
+    /// is written as a clock in the <c>long</c>, <c>short</c> and <c>narrow</c> styles as well (where Node writes
+    /// <c>"1 val. 2 min."</c>). The design note's dated 9.3e note records it; Broiler.VM's tables never reach the step.
+    /// </summary>
+    [Fact]
+    public void U14_two_digit_hours_make_every_style_s_hours_a_clock_in_af_and_lt()
+    {
+        foreach (var locale in new[] { "af", "lt" })
+        {
+            foreach (var style in new[] { DurationFormatStyle.Long, DurationFormatStyle.Short, DurationFormatStyle.Narrow })
+            {
+                var format = Format(locale, style);
+                Assert.Equal("hours=2-digit/auto minutes=2-digit/always seconds=2-digit/always",
+                    Resolved(format, DurationUnit.Hours, DurationUnit.Minutes, DurationUnit.Seconds));
+                Assert.Equal("01:02:00", format.Format(D(hours: 1, minutes: 2)));
+            }
+        }
+
+        Assert.Equal("1 hr, 2 min", Format("en").Format(D(hours: 1, minutes: 2)));
+    }
+
     [Fact]
     public void U15_German_units_and_lists()
     {

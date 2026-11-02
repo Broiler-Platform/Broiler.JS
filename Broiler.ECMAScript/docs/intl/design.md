@@ -235,6 +235,14 @@ the record SJL-10's library already holds, and ValidateDurationUnitStyle's three
   [[DigitalFormat]], and the unit and list patterns through the number and list formatters, where Broiler.VM read the data
   locale's language. For Broiler.VM's tables the two read the same lines; for Broiler.JS's, `en-DK` reads its own `.` (rows
   U13 and U14, decision D34). The separator is the locale's `latn` one whatever the numbering system, as Broiler.VM reads it.
+- **Two-digit hours reach every style**: GetDurationUnitOptions makes the hours `2-digit` wherever [[TwoDigitHours]] is
+  true, whatever style they resolved, as ECMA-402's step reads and Broiler.VM ports it (the slot's definition says "when
+  using style "numeric""). With decision D34's reading of Broiler.JS's data that is `af` and `lt`, so there the minutes and
+  seconds after the hours become `2-digit` too and a duration with hours is written as a clock in the `long`, `short` and
+  `narrow` styles as well (`lt`'s `{hours: 1, minutes: 2}` is `"01:02:00"`, Node 22's `"1 val. 2 min."`), not only the
+  `digital` answers decision D34 names. Broiler.VM's tables carry no such locale. SJL-9.5 lists the move under decision D34
+  (vectors `intl/durations/families/0003` and `/0048` keep the words as Broiler.JS's expectation), unless the owner
+  restricts the step to `numeric` hours by a dated decision made in both engines.
 - **The `nu` values put the locale's default numbering system first**, `NumberFormatter.NumberingSystemKeyValues`'s, where
   Broiler.VM's duration format put `latn` first; Broiler.JS's `ar-EG` resolves `arab` and `fa` `arabext` (row U16, data
   policy), and each number is written with its system's own symbols where the data carries them (decision D21).
@@ -505,6 +513,6 @@ here is changed.")* The header's "Revised" line gains that stage's note, ending 
 locale, the metazone questions, the `nu` values' default, the zone named by its primary with the charges, what stays the
 engine's, and the one ordinal comparison kept. *(Extended 2026-11-02, at SJL-9.3e; the sentence after the list read "Nothing
 else here is changed.")* The header's "Revised" line gains that stage's note, ending where it read "a dated note on its
-sub-area (d) ("Corrections" lists them)."; and section 1 gains a dated note on sub-area (e): its names, and six readings - the
-constructor split at its reads, the data locale, the `nu` values' default, the charges, the fraction's ASCII digits, and what
-stays the engine's. Nothing else here is changed.
+sub-area (d) ("Corrections" lists them)."; and section 1 gains a dated note on sub-area (e): its names, and seven readings - the
+constructor split at its reads, the data locale, two-digit hours in every style, the `nu` values' default, the charges, the
+fraction's ASCII digits, and what stays the engine's. Nothing else here is changed.

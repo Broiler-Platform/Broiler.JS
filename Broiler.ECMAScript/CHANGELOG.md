@@ -203,6 +203,15 @@ Not yet packed under a version of its own: the stream's next version is set when
   script forms, and the Native AOT probe holds them; the reads of the argument (ToTemporalDuration, a String through Temporal's
   grammar, or ECMA-402's ToDurationRecord, rows U7 to U10 and U22), the option reads, `supportedLocalesOf`, the parts arrays and
   `resolvedOptions`' object stay the engines'.
+
+  Decision D34's reading moves more than the `digital` answers it names. [[TwoDigitHours]] is true for `af` and `lt` in
+  Broiler.JS's data, and GetDurationUnitOptions makes the hours `2-digit` whatever style they resolved (ECMA-402's step,
+  as Broiler.VM ports it), the minutes and seconds after them too; so in those two locales a duration with hours is written
+  as a clock in the `long`, `short` and `narrow` styles as well, and the hours resolve `2-digit`:
+  `new Intl.DurationFormat("lt").format({hours: 1, minutes: 2})` is `"01:02:00"`, where Node 22 writes `"1 val. 2 min."`.
+  Broiler.VM's tables carry no such locale. Vectors `intl/durations/families/0003` and `intl/durations/families/0048` (`af`
+  and `lt`, `long`) keep the words as Broiler.JS's expectation, so SJL-9.5 lists the move under decision D34, or the owner
+  restricts the step to `numeric` hours by a dated decision made in both engines.
 - `Broiler.ECMAScript.Conformance` (test-only, not packed): `IVectorRecordLibrary`, a library the library-level runner
   hands each vector whole, script included, which `LibraryRun.Run` calls in place of the operation and the decoded
   inputs (stage SJL-9.3b): the Intl area's sub-area (b) vectors give their options and arguments in the script alone.
