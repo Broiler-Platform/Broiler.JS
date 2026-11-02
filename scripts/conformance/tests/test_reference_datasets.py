@@ -44,6 +44,10 @@ INTL_SOURCES = {
 }
 INTL_COPIES = tuple(name for program, (suffix, _) in INTL_SOURCES.items()
                     for name in (f"{program}.js", f"{program}.{suffix}.txt", f"{program}.divergences.txt"))
+# The commit that carries Broiler.VM's bundle sjl-17-001 rule, which the orderings copy comes from (SJL-17.2), and the
+# copy: a program and its retained answer, with no divergences file.
+BROILER_VM_4E6A41E = "4e6a41e9d3860b8ca79d5d3ea6de215c1592b0c0"
+ORDERINGS_COPIES = ("orderings.js", "orderings.icu-77.1.txt")
 
 
 def driver_escape(text: str) -> str:
@@ -68,7 +72,7 @@ def read_copy(name: str, directory: Path = H.DATASETS) -> str:
 def vm_answer(program: H.Program, directory: Path = H.DATASETS) -> list[str]:
     """Broiler.VM's own answer, as its check holds it: the retained answer with the divergences applied."""
     retained = H.split_retained(read_copy(program.answer, directory))
-    replaced = H.read_divergences(read_copy(program.divergences, directory))
+    replaced = H.read_divergences(H.divergences_of(directory, program))
     return H.expected_answer(retained, replaced, len(retained)).lines
 
 
@@ -176,13 +180,14 @@ class IntlPinTests(unittest.TestCase):
         H.load_datasets(H.INTL_DATASETS)
 
     def test_the_pin_names_broiler_vm_4cf9ca4_and_the_twelve_programs(self) -> None:
-        self.assertEqual((BROILER_VM_4CF9CA4,), self.pin.source_commits)
-        self.assertEqual(set(INTL_COPIES), set(self.pin.files))
+        self.assertEqual((BROILER_VM_4CF9CA4, BROILER_VM_4E6A41E), self.pin.source_commits)
+        self.assertEqual(set(INTL_COPIES) | set(ORDERINGS_COPIES), set(self.pin.files))
         self.assertEqual(
             [(name, f"{name}.js", f"{name}.{suffix}.txt", f"{name}.divergences.txt")
-             for name, (suffix, _) in INTL_SOURCES.items()],
+             for name, (suffix, _) in INTL_SOURCES.items()] + [("orderings", *ORDERINGS_COPIES, H.NO_DIVERGENCES)],
             [(p.name, p.program, p.answer, p.divergences) for p in self.pin.programs])
-        self.assertEqual(H.INTL_PROGRAMS, tuple(p.name for p in self.pin.programs))
+        self.assertEqual(H.INTL_PROGRAMS + ("orderings",), tuple(p.name for p in self.pin.programs))
+        self.assertEqual({BROILER_VM_4CF9CA4}, {self.pin.files[n].source_commit for n in INTL_COPIES})
         for name, (suffix, directory) in INTL_SOURCES.items():
             self.assertEqual(f"{directory}/{name}.js", self.pin.files[f"{name}.js"].source_path)
             self.assertEqual(f"{directory}/{name}.{suffix}.txt", self.pin.files[f"{name}.{suffix}.txt"].source_path)
@@ -206,7 +211,34 @@ class IntlPinTests(unittest.TestCase):
             self.assertEqual(pinned.blob, process.stdout.strip(), pinned.name)
 
     def test_the_directory_holds_the_copies_the_pin_and_the_readme_alone(self) -> None:
-        self.assertEqual(set(INTL_COPIES) | {H.PIN_NAME, "README.md"}, {p.name for p in H.INTL_DATASETS.iterdir()})
+        self.assertEqual(set(INTL_COPIES) | set(ORDERINGS_COPIES) | {H.PIN_NAME, "README.md"},
+                         {p.name for p in H.INTL_DATASETS.iterdir()})
+
+    def test_the_second_block_is_broiler_vm_4e6a41e_s_orderings_with_no_divergences_file(self) -> None:
+        for name in ORDERINGS_COPIES:
+            self.assertEqual(BROILER_VM_4E6A41E, self.pin.files[name].source_commit)
+            self.assertEqual(f"src/tests/cldr/orderings/{name}", self.pin.files[name].source_path)
+        program = self.pin.program("orderings")
+        self.assertEqual(ORDERINGS_COPIES, program.files())
+        self.assertEqual(ORDERINGS_COPIES, tuple(p.name for p in H.population(self.pin, [program])))
+        # The two copies are LF text with no CR under the folder's `text eol=lf`, which then changes no byte of them.
+        for name in ORDERINGS_COPIES:
+            self.assertNotIn(b"\r", (H.INTL_DATASETS / name).read_bytes(), name)
+        process = subprocess.run(["git", "-C", str(H.REPOSITORY), "check-attr", "eol", "--",
+                                  *(f"conformance/datasets/intl/{name}" for name in ORDERINGS_COPIES)],
+                                 capture_output=True, text=True, check=False)
+        if process.returncode == 0:
+            self.assertEqual([f"conformance/datasets/intl/{name}: eol: lf" for name in ORDERINGS_COPIES],
+                             process.stdout.splitlines())
+        checkout = broiler_vm_checkout()
+        if checkout is None:
+            self.skipTest("no Broiler.VM checkout (BROILER_VM, or one beside this repository)")
+        process = subprocess.run(["git", "-C", str(checkout), "ls-tree", "--name-only", BROILER_VM_4E6A41E,
+                                  "src/tests/cldr/orderings/"], capture_output=True, text=True, check=False)
+        if process.returncode != 0:
+            self.skipTest(f"{checkout} does not hold Broiler.VM {BROILER_VM_4E6A41E}")
+        self.assertEqual(["src/tests/cldr/orderings/README.md", "src/tests/cldr/orderings/orderings.icu-77.1.txt",
+                          "src/tests/cldr/orderings/orderings.js"], process.stdout.split())
 
     def test_no_program_is_pinned_in_both_collections(self) -> None:
         time = H.read_pin((H.DATASETS / H.PIN_NAME).read_text(encoding="utf-8"))
@@ -383,13 +415,13 @@ class TheDatasetsTests(unittest.TestCase):
         # lines than its floor; Broiler.VM's own answer, the expected one, then equals the expected answer.
         for program in H.load_datasets(H.INTL_DATASETS).programs:
             retained = H.split_retained(read_copy(program.answer, H.INTL_DATASETS))
-            replaced = H.read_divergences(read_copy(program.divergences, H.INTL_DATASETS))
+            replaced = H.read_divergences(H.divergences_of(H.INTL_DATASETS, program))
             expected = H.expected_answer(retained, replaced, len(retained))
             self.assertGreater(len(retained), H.VM_LEAST[program.name], program.name)
             self.assertEqual(len(replaced), expected.used, program.name)
             answer = vm_answer(program, H.INTL_DATASETS)
             _, results = H.compare_program(read_copy(program.answer, H.INTL_DATASETS),
-                                           read_copy(program.divergences, H.INTL_DATASETS), answer)
+                                           H.divergences_of(H.INTL_DATASETS, program), answer)
             self.assertTrue(all(r.equal for r in results), program.name)
             control = H.negative_control(expected, answer, results)
             self.assertTrue(control["shownAsDifference"] and control["otherLinesUnchanged"], program.name)
@@ -406,13 +438,17 @@ class BundleTests(unittest.TestCase):
 
     def test_each_bundle_s_rule_and_programs(self) -> None:
         self.assertEqual({"sjl-8-001": ("timezones", "temporal"), "sjl-10-001": ("temporal", "temporal-calendars"),
-                          "sjl-9-001": (*INTL_SOURCES, "timezones")},
+                          "sjl-9-001": (*INTL_SOURCES, "timezones"), "sjl-17-001": ("orderings",)},
                          {name: bundle.programs for name, bundle in H.BUNDLES.items()})
-        self.assertEqual({"sjl-8-001": ("time",), "sjl-10-001": ("time",), "sjl-9-001": ("intl", "time")},
+        self.assertEqual({"sjl-8-001": ("time",), "sjl-10-001": ("time",), "sjl-9-001": ("intl", "time"),
+                          "sjl-17-001": ("intl",)},
                          {name: bundle.collections for name, bundle in H.BUNDLES.items()})
+        self.assertEqual({"sjl-8-001": "C", "sjl-10-001": "C", "sjl-9-001": "C", "sjl-17-001": "B"},
+                         {name: bundle.part for name, bundle in H.BUNDLES.items()})
+        self.assertIsNone(H.BUNDLES["sjl-17-001"].invariant_part)
         for name, bundle in H.BUNDLES.items():
             self.assertEqual(name, bundle.name)
-            parts = "parts C and D" if name == "sjl-9-001" else "part C"
+            parts = {"sjl-9-001": "parts C and D", "sjl-17-001": "part B"}.get(name, "part C")
             self.assertEqual(f"docs/evidence/{name}/decision-rule.md, {parts}", bundle.rule)
             self.assertTrue((H.REPOSITORY / bundle.rule.split(",")[0]).is_file(), bundle.rule)
             sources = H.load_sources(bundle, H.COLLECTIONS)
@@ -655,6 +691,36 @@ class RunTests(unittest.TestCase):
             self.assertIn("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT removed", identity)
             report = (root / "out" / "report.txt").read_text(encoding="utf-8")
             self.assertTrue(report.startswith("Reference datasets, bundle sjl-9-001's rule, part C: one run\n"))
+
+    def test_a_run_of_bundle_sjl_17_001_runs_orderings_with_no_divergences_file_for_part_b(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            code, calls = self.run_bundle(root, "--bundle", "sjl-17-001")
+            self.assertEqual(0, code)
+            self.assertEqual([("orderings.js", "UTC", False)], calls)
+            self.assertEqual(["intl"], [cwd for _, cwd, _ in self.environments])
+            summary = json.loads((root / "out" / "summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(("sjl-17-001", False), (summary["bundle"], summary["invariantGlobalization"]))
+            self.assertEqual(list(ORDERINGS_COPIES), list(summary["copies"]))
+            self.assertEqual({name: BROILER_VM_4E6A41E for name in ORDERINGS_COPIES}, summary["datasetsSourceCommits"])
+            entry = summary["programs"]["orderings"]
+            self.assertEqual((True, 0, 0, 0, 27), (entry["completed"], entry["differing"], entry["divergenceEntries"],
+                                                   entry["divergencesUsed"], entry["comparedLines"]))
+            self.assertTrue(entry["negativeControl"]["shownAsDifference"] and entry["negativeControl"]["otherLinesUnchanged"])
+            identity = (root / "out" / "identity.txt").read_text(encoding="utf-8")
+            self.assertIn("for docs/evidence/sjl-17-001/decision-rule.md, part B", identity)
+            self.assertIn("(Broiler.VM 4e6a41e:src/tests/cldr/orderings/orderings.icu-77.1.txt)", identity)
+            report = (root / "out" / "report.txt").read_text(encoding="utf-8")
+            self.assertTrue(report.startswith("Reference datasets, bundle sjl-17-001's rule, part B: one run\n"))
+            self.assertIn("expected: orderings.icu-77.1.txt with no divergences file", report)
+
+    def test_bundle_sjl_17_001_takes_no_run_under_invariant_globalization(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            code, calls = self.run_bundle(root, "--bundle", "sjl-17-001", "--invariant-globalization")
+            self.assertEqual(2, code)
+            self.assertEqual([], calls)
+            self.assertFalse((root / "out").exists())
 
     def test_invariant_globalization_sets_the_variable_for_the_shell_and_says_so(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:

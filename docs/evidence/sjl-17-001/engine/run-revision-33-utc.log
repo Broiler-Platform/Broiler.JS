@@ -1,0 +1,101 @@
+# Broiler.JS engine-level run: run-revision-33-utc
+# tree: a scratch tree written by git archive d85da2008e2e82a8dc57eea787e19d65b7449a5b (Broiler.JS), built once beforehand:
+#   dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers
+# corpus: conformance/vectors/ of that tree, revision 33
+# host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v185 x86_64; 4 logical CPUs; dotnet SDK 10.0.401
+# zone: TZ=UTC; culture: invariant (no LANG, LC_ALL or LANGUAGE)
+# command: env -u LANG -u LANGUAGE -u LC_ALL  BROILER_VECTORS_WORKERS=4 TZ=UTC BROILER_VECTORS_REPORT=<report> dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --logger "console;verbosity=normal"
+# started: 2026-11-02T05:45:34Z
+Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r33/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.44]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.89]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:01.29]   Starting:    Broiler.JavaScript.Vectors.Tests
+111157 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 27 min 5.9 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 4.547 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001.
+[xUnit.net 00:27:10.73]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+[xUnit.net 00:27:10.73]       205 of 111157 vectors differ and nothing classifies them:
+[xUnit.net 00:27:10.73]       intl/collation/options/sensitivity/0010: expected value: str:"=", rendered value: str:"<"
+[xUnit.net 00:27:10.74]       intl/collation/options/sensitivity/0026: expected value: str:"=", rendered value: str:"<"
+[xUnit.net 00:27:10.74]       intl/collation/options/sensitivity/0041: expected value: str:"=", rendered value: str:"<"
+[xUnit.net 00:27:10.74]       intl/collation/options/sensitivity/0057: expected value: str:"=", rendered value: str:"<"
+[xUnit.net 00:27:10.74]       intl/collation/options/sensitivity/0073: expected value: str:"=", rendered value: str:"<"
+[xUnit.net 00:27:10.74]       intl/collation/options/sensitivity/0089: expected value: str:"=", rendered value: str:"<"
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0023: expected value: str:" <   < - < a b = a\u00A0b < a_b < a-b < a\u2010b < a.b < a+b < a$b < a\u20ACb < ab = aB", rendered value: str:" <   < - < a b < a\u00A0b < a_b < a-b < a\u2010b < a.b < a+b < a$b < a\u20ACb < ab = aB"
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0029: expected value: str:"=", rendered value: str:"<"
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0045: expected value: str:" =   = - < a+b < a$b < a\u20ACb < ab = a b = a-b = a_b = a.b = a\u00A0b = a\u2010b < aB", rendered value: str:" =   = - < ab = a b = a-b = a_b = a.b = a\u00A0b = a\u2010b = a$b = a+b = a\u20ACb < aB"
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0053: expected value: str:">", rendered value: str:"="
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0054: expected value: str:">", rendered value: str:"="
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0055: expected value: str:">", rendered value: str:"="
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0056: expected value: str:">", rendered value: str:"="
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0057: expected value: str:"<", rendered value: str:"="
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0067: expected value: str:" =   = - < a+b < a$b < a\u20ACb < ab = a b = a-b = a_b = a.b = a\u00A0b = aB = a\u2010b", rendered value: str:" =   = - < ab = a b = a-b = a_b = a.b = a\u00A0b = aB = a\u2010b = a$b = a+b = a\u20ACb"
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0075: expected value: str:">", rendered value: str:"="
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0076: expected value: str:">", rendered value: str:"="
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0077: expected value: str:">", rendered value: str:"="
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0078: expected value: str:">", rendered value: str:"="
+[xUnit.net 00:27:10.74]       intl/collation/options/ignore-punctuation/0079: expected value: str:"<", rendered value: str:"="
+[xUnit.net 00:27:10.74]       intl/collation/options/numeric/0001: expected value: str:"1.5 < 1.10 < 9 < 10 < a < a1 = a01 = a001 < a2 = a02 = a\u0662 = a\uFF12 < a9 < a10 = a\u0661\u0660 < b1", rendered value: str:"1.10 < 1.5 < 10 < 9 < a < a001 < a01 < a02 < a1 < a10 = a\u0661\u0660 < a2 = a\u0662 < a\uFF12 < a9 < b1"
+[xUnit.net 00:27:10.74]       intl/collation/options/numeric/0003: expected value: str:"<", rendered value: str:">"
+[xUnit.net 00:27:10.74]       intl/collation/options/numeric/0004: expected value: str:"=", rendered value: str:"<"
+[xUnit.net 00:27:10.74]       intl/collation/options/numeric/0005: expected value: str:"=", rendered value: str:"<"
+[xUnit.net 00:27:10.74]       intl/collation/options/numeric/0006: expected value: str:"=", rendered value: str:"<"
+[xUnit.net 00:27:10.74]       Stack Trace:
+[xUnit.net 00:27:10.74]         /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r33/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(58,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
+[xUnit.net 00:27:10.74]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:27:10.74]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:27:10.74]       Output:
+[xUnit.net 00:27:10.74]         111157 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 27 min 5.9 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 4.547 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001.
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [27 m 9 s]
+  Error Message:
+   205 of 111157 vectors differ and nothing classifies them:
+intl/collation/options/sensitivity/0010: expected value: str:"=", rendered value: str:"<"
+intl/collation/options/sensitivity/0026: expected value: str:"=", rendered value: str:"<"
+intl/collation/options/sensitivity/0041: expected value: str:"=", rendered value: str:"<"
+intl/collation/options/sensitivity/0057: expected value: str:"=", rendered value: str:"<"
+intl/collation/options/sensitivity/0073: expected value: str:"=", rendered value: str:"<"
+intl/collation/options/sensitivity/0089: expected value: str:"=", rendered value: str:"<"
+intl/collation/options/ignore-punctuation/0023: expected value: str:" <   < - < a b = a\u00A0b < a_b < a-b < a\u2010b < a.b < a+b < a$b < a\u20ACb < ab = aB", rendered value: str:" <   < - < a b < a\u00A0b < a_b < a-b < a\u2010b < a.b < a+b < a$b < a\u20ACb < ab = aB"
+intl/collation/options/ignore-punctuation/0029: expected value: str:"=", rendered value: str:"<"
+intl/collation/options/ignore-punctuation/0045: expected value: str:" =   = - < a+b < a$b < a\u20ACb < ab = a b = a-b = a_b = a.b = a\u00A0b = a\u2010b < aB", rendered value: str:" =   = - < ab = a b = a-b = a_b = a.b = a\u00A0b = a\u2010b = a$b = a+b = a\u20ACb < aB"
+intl/collation/options/ignore-punctuation/0053: expected value: str:">", rendered value: str:"="
+intl/collation/options/ignore-punctuation/0054: expected value: str:">", rendered value: str:"="
+intl/collation/options/ignore-punctuation/0055: expected value: str:">", rendered value: str:"="
+intl/collation/options/ignore-punctuation/0056: expected value: str:">", rendered value: str:"="
+intl/collation/options/ignore-punctuation/0057: expected value: str:"<", rendered value: str:"="
+intl/collation/options/ignore-punctuation/0067: expected value: str:" =   = - < a+b < a$b < a\u20ACb < ab = a b = a-b = a_b = a.b = a\u00A0b = aB = a\u2010b", rendered value: str:" =   = - < ab = a b = a-b = a_b = a.b = a\u00A0b = aB = a\u2010b = a$b = a+b = a\u20ACb"
+intl/collation/options/ignore-punctuation/0075: expected value: str:">", rendered value: str:"="
+intl/collation/options/ignore-punctuation/0076: expected value: str:">", rendered value: str:"="
+intl/collation/options/ignore-punctuation/0077: expected value: str:">", rendered value: str:"="
+intl/collation/options/ignore-punctuation/0078: expected value: str:">", rendered value: str:"="
+intl/collation/options/ignore-punctuation/0079: expected value: str:"<", rendered value: str:"="
+intl/collation/options/numeric/0001: expected value: str:"1.5 < 1.10 < 9 < 10 < a < a1 = a01 = a001 < a2 = a02 = a\u0662 = a\uFF12 < a9 < a10 = a\u0661\u0660 < b1", rendered value: str:"1.10 < 1.5 < 10 < 9 < a < a001 < a01 < a02 < a1 < a10 = a\u0661\u0660 < a2 = a\u0662 < a\uFF12 < a9 < b1"
+intl/collation/options/numeric/0003: expected value: str:"<", rendered value: str:">"
+intl/collation/options/numeric/0004: expected value: str:"=", rendered value: str:"<"
+intl/collation/options/numeric/0005: expected value: str:"=", rendered value: str:"<"
+intl/collation/options/numeric/0006: expected value: str:"=", rendered value: str:"<"
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r33/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 58
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 111157 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 27 min 5.9 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 4.547 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001.
+
+
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [18 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [587 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 1) [10 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 3) [4 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [5 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [13 s]
+[xUnit.net 00:27:49.69]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = 'b2f17b712312d6ade9e9a7637c36f7056e076ddc1acbed72965d4383a928a943')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [5 s]
+
+Test Run Failed.
+Total tests: 8
+     Passed: 7
+     Failed: 1
+ Total time: 27.8433 Minutes
+# exit: 1
+# ended: 2026-11-02T06:13:26Z

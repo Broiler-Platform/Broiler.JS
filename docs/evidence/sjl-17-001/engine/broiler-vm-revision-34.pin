@@ -1,0 +1,15 @@
+# broiler-js-conformance retained suite pin 1
+#
+# A scratch pin (SJL-17.2), not a record: Broiler.VM's run on corpus revision 34, which classifies both engines' first
+# runs on the collation vectors, read from a scratch archive of that Broiler.JS commit, written twice by the command
+# below, byte for byte the same, the second hashed for this pin. Never committed to Broiler.VM: its vectors pin is not
+# moved by SJL-17.2 (a later task).
+
+suite broiler-js-vectors
+upstream Broiler-Platform/broiler.js
+revision 60fc3a5b14098e53181a8422d62c159b1e6fb701
+archive git archive --format=tar.gz 60fc3a5b14098e53181a8422d62c159b1e6fb701 -- conformance/vectors :(exclude)conformance/vectors/controls
+archive-sha256 4dec3deb440c30adfa16e5da49b705254ab1b66395f802d26baadf14ff4c863f
+content-sha256 31d7b12d1cf80e5a43538f22f80cc80293d8c2964c838a037ab19a96199a1806
+files 81
+archived no

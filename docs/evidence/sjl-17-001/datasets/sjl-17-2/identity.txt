@@ -1,0 +1,26 @@
+harness: scripts/conformance/run_reference_datasets.py, format 3, for docs/evidence/sjl-17-001/decision-rule.md, part B
+bundle: sjl-17-001; programs: orderings
+label: sjl-17-2
+started (UTC): 2026-11-02T06:32:05+00:00
+shell tree: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34
+shell commit: unknown
+shell commit subject: unknown
+shell tree clean (git status --porcelain --untracked-files=all is empty): no
+shell: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+shell BroilerJS.dll SHA-256: cb0fdfea109ea667c3b3ce98c23285bc731e66ebaac454a054a900aac6bdd68f
+shell binaries: shell-binaries.sha256, every *.dll beside it
+shell built by the harness: yes, `dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release` in the shell tree
+dotnet SDK: 10.0.401
+dotnet runtime: Microsoft.NETCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.NETCore.App]
+machine: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v185 x86_64; Intel(R) Xeon(R) Processor @ 2.10GHz; 4 logical CPUs
+child environment: TZ=UTC; LANG, LANGUAGE and every LC_ variable removed; DOTNET_SYSTEM_GLOBALIZATION_INVARIANT removed
+harness environment: TZ=UTC, LANG=(unset), LC_ALL=(unset), DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=(unset)
+host ICU: libicuuc.so.74
+host tzdata: 2026c
+harness commit: unknown
+harness, driver and copies unchanged from that commit: no
+harness SHA-256: 5465858904a9a6e504373060095eb089e690a1eac165eeadca187c9536fa00f1
+driver template SHA-256: 18aad752c1bc164639cc696b5f8472a11d79c547d13b8770cf5f326d0b4b542a
+datasets (intl): /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/conformance/datasets/intl, every copy equal to its datasets.pin; the run's population there, copies of Broiler.VM at the commits it names:
+  orderings.js 3051 d3c968d64f7809eb90219d1452db27ad6a022715bc96c0c4922634f371c6cab8 (Broiler.VM 4e6a41e:src/tests/cldr/orderings/orderings.js)
+  orderings.icu-77.1.txt 23105 c21e6ef4292a2b2308d7a8c99e558a41a8ee00bfddbe4b9c2e3fc3b33adbed1e (Broiler.VM 4e6a41e:src/tests/cldr/orderings/orderings.icu-77.1.txt)

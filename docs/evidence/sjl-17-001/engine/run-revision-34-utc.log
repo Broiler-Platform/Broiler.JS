@@ -1,0 +1,32 @@
+# Broiler.JS engine-level run: run-revision-34-utc
+# tree: a scratch tree written by git archive 60fc3a5b14098e53181a8422d62c159b1e6fb701 (Broiler.JS), built once beforehand:
+#   dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers
+# corpus: conformance/vectors/ of that tree, revision 34
+# host: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v185 x86_64; 4 logical CPUs; dotnet SDK 10.0.401
+# zone: TZ=UTC; culture: invariant (no LANG, LC_ALL or LANGUAGE)
+# command: env -u LANG -u LANGUAGE -u LC_ALL  BROILER_VECTORS_WORKERS=4 TZ=UTC BROILER_VECTORS_REPORT=<report> dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --logger "console;verbosity=normal"
+# started: 2026-11-02T06:29:24Z
+Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl17-2/js-tree-r34/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.26]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.56]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.83]   Starting:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [5 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [792 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [20 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [20 s]
+111157 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 38 min 17.8 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 5.004 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001.
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [38 m 18 s]
+[xUnit.net 00:39:06.70]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = '589235c94a4f0a89e12707da5de3f88c83f8e79e862c19dbf02351efd9a5cf2d')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [20 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 3) [15 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 1) [1 ms]
+
+Test Run Successful.
+Total tests: 8
+     Passed: 8
+ Total time: 39.1248 Minutes
+# exit: 0
+# ended: 2026-11-02T07:08:33Z
