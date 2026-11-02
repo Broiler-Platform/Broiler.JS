@@ -27,10 +27,13 @@ namespace Broiler.ECMAScript.Runners;
 /// library-level status (the schema's section 4), since a parse knows that a source is accepted and not what it completes
 /// with; and a parse the library cannot make yet <c>status: not-implemented</c>. <see cref="MatchesAtTheParse"/> then reads a
 /// vector's expected outcome as the home's rule reads it (part B): <c>error: SyntaxError</c> as a refusal, any other outcome
-/// as an acceptance. Until stage 4c gives the library a parser, a syntax vector is <c>error: SyntaxError</c> where the
-/// tokenizer (stage 4b) refuses its source, and <c>status: not-implemented</c> everywhere else; no vector is accepted.
-/// <i>(Revised 2026-11-01, at stage SJL-13.2b, when the tokenizer began to refuse a source; the sentence read "Until stage
-/// 4c gives the library a parser, every syntax vector is <c>status: not-implemented</c>.")</i>
+/// as an acceptance. From stage 4c the library's parser answers every syntax vector: <c>error: SyntaxError</c> where the
+/// tokenizer or the grammar refuses its source, <c>status: accepted</c> everywhere else, a vector only a static-semantic
+/// early error refuses among them until stage 4d reports those. <i>(Revised 2026-11-01, at stage SJL-13.2c, when the parser
+/// was added; the sentence read "Until stage 4c gives the library a parser, a syntax vector is <c>error: SyntaxError</c>
+/// where the tokenizer (stage 4b) refuses its source, and <c>status: not-implemented</c> everywhere else; no vector is
+/// accepted.")</i> <i>(Revised 2026-11-01, at stage SJL-13.2b, when the tokenizer began to refuse a source; the sentence read
+/// "Until stage 4c gives the library a parser, every syntax vector is <c>status: not-implemented</c>.")</i>
 /// </para>
 /// <para>
 /// <b>The operation names collide with no other area's</b>: no vector outside <c>syntax/</c> names <c>ParseScript</c> or
@@ -43,7 +46,7 @@ namespace Broiler.ECMAScript.Runners;
 /// (<see cref="UnicodeDataHome"/>, from stage 4b, whose tokenizer reads it): both engines embed tables from the same pinned
 /// files. The home holds neither engine's validator, and <see cref="RunnerRegularExpressions"/> carries nothing and throws if
 /// asked, so that the stage that first asks it (4d) must give the runner a real provider rather than have a parse silently
-/// read an empty one. <i>(Revised 2026-11-01, at stage SJL-13.2b, whose tokenizer reads the Unicode provider; the paragraph
+/// read an empty one; the parser of stage 4c asks it nothing. <i>(Revised 2026-11-01, at stage SJL-13.2b, whose tokenizer reads the Unicode provider; the paragraph
 /// read "<b>Its providers are placeholders until the stages that read them.</b> The home holds neither engine's tables nor
 /// either engine's validator. <c>RunnerUnicodeTables</c> and <see cref="RunnerRegularExpressions"/> carry nothing and throw
 /// if read, so that the stage that first reads one (4b for the tables, 4d for the validator) must give the runner a real

@@ -21,9 +21,13 @@ namespace Broiler.ECMAScript.Probe;
 /// answers, whose vectors it reads whole (<c>IVectorRecordLibrary</c>), and from stage SJL-9.3c on those of sub-area (c), read
 /// whole the same way. From milestone SJL-13.2a it also runs
 /// <c>Broiler.ECMAScript.Frontend</c>, through the runner's frontend adapter, on the <c>syntax</c> area, whose outcomes it
-/// records and does not judge until the library parses (<see cref="IsRecordedArea"/>): from stage SJL-13.2b a vector whose
-/// source the tokenizer refuses is refused, and is counted among the matches, and every other is not implemented; a refusal
-/// of a vector that expects an acceptance would be counted among those that differ. What the probe proves is that the library, the reader, the validator, the
+/// records and does not judge until stage SJL-13.2d (<see cref="IsRecordedArea"/>): from stage SJL-13.2c the parser answers
+/// every vector, a refusal counted among the matches where the vector expects one and an acceptance among them where it
+/// expects any other outcome, and a vector only a static-semantic early error refuses, accepted until stage 4d, counted
+/// among those that differ. <i>(Revised 2026-11-01, at stage SJL-13.2c; it read "records and does not judge until the
+/// library parses (<see cref="IsRecordedArea"/>): from stage SJL-13.2b a vector whose source the tokenizer refuses is
+/// refused, and is counted among the matches, and every other is not implemented; a refusal of a vector that expects an
+/// acceptance would be counted among those that differ.")</i> What the probe proves is that the library, the reader, the validator, the
 /// runner and the report compile into a Native AOT image under Broiler.VM's root settings and give
 /// there, over the whole corpus, the answers they give under the JIT. Until SJL-3 it ran the empty
 /// library, whose every answer was <c>status: not-implemented</c>.
@@ -32,8 +36,10 @@ internal static class Program
 {
     /// <summary>
     /// The areas whose vectors the probe runs and records but does not judge (milestone SJL-13.2a; the plan's stage 4a:
-    /// "the probe runs the syntax vectors (all expected to fail until 4c, recorded, not judged)"). From stage 4b the
-    /// tokenizer refuses some of them, which the line of their verdicts shows as matches, and the rest stay not implemented.
+    /// "the probe runs the syntax vectors (all expected to fail until 4c, recorded, not judged)"). From stage 4c the parser
+    /// answers all of them, and the line of their verdicts shows how many match, how many differ, and how many agree at the
+    /// parse. <i>(Revised 2026-11-01, at stage SJL-13.2c; the sentence read "From stage 4b the tokenizer refuses some of them,
+    /// which the line of their verdicts shows as matches, and the rest stay not implemented.")</i>
     /// </summary>
     /// <remarks>
     /// <para>
@@ -48,8 +54,13 @@ internal static class Program
     /// before: each vector must pass, or be "not implemented" where the library does not answer it.
     /// </para>
     /// <para>
-    /// The syntax area leaves this set at the stage whose parser answers it (4c, or the stage the plan names then), and is
-    /// judged from there by <see cref="AlgorithmsLibrary.MatchesAtTheParse"/>.
+    /// The syntax area leaves this set at stage 4d, and is judged from there by <see cref="AlgorithmsLibrary.MatchesAtTheParse"/>:
+    /// the plan's check for stage 4d is "Every syntax row's vectors pass", and for stage 4c "Corpus outcomes at the syntax half
+    /// against the classification, locally", so at stage 4c, whose parser accepts what only a static-semantic early error
+    /// refuses, the area stays recorded and the Conformance tests list, by id, every vector the library refuses and every one
+    /// it accepts against its expected refusal, so that a regression stays visible. <i>(Revised 2026-11-01, at stage
+    /// SJL-13.2c; it read "The syntax area leaves this set at the stage whose parser answers it (4c, or the stage the plan
+    /// names then), and is judged from there by <see cref="AlgorithmsLibrary.MatchesAtTheParse"/>.")</i>
     /// </para>
     /// </remarks>
     internal static bool IsRecordedArea(string? area) => area is RecordedAreas;
@@ -96,8 +107,8 @@ internal static class Program
         // values-and-plurals' format and formatToParts, but the engine-level script forms (stage SJL-9.3c). Every other Intl
         // vector is not implemented.
         // The syntax area's vectors are the frontend's, through the runner's frontend adapter, and are recorded, not judged
-        // (IsRecordedArea; milestone SJL-13.2a): from stage 4b a vector the tokenizer refuses is a match, every other not
-        // implemented, until the parser (4c) answers them.
+        // (IsRecordedArea; milestone SJL-13.2a): from stage 4c the parser answers every one, and the area is judged from stage
+        // 4d, which reports the static-semantic early errors.
         var library = new AlgorithmsLibrary();
         var results = LibraryRun.Run(corpus.Records, library);
         var recorded = new int[5];

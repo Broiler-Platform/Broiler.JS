@@ -31,9 +31,14 @@ namespace Broiler.ECMAScript.Syntax;
 /// than <see cref="MaximumTreeDepth"/> with its tree-depth diagnostic (row EX0012), each a refusal, never a lost process.
 /// </para>
 /// <para>
-/// <b>The parse charges no limit at this stage</b>: the tokenizer and the parser that check them are stages 4b and 4c's,
-/// and stage 4e derives the stack the tree-depth bound requires, as Broiler.VM's JSD-0022 derived Broiler.VM's, and states
-/// it beside the constant (decision D14).
+/// <b>From stage 4c the parser charges both limits before the stack</b>: the nesting depth at each site Broiler.VM's
+/// <c>JsParser</c> charges, and also at each right operand of <c>**</c> and each class heritage; the tree depth for each
+/// node a binary chain or a member or call chain adds, from the spine of the chain's first operand. Stage 4e derives the
+/// stack the tree-depth bound requires, as Broiler.VM's JSD-0022 derived Broiler.VM's, and states it beside the constant
+/// (decision D14). <i>(Revised 2026-11-01, at stage SJL-13.2c, when the parser was added; it read "<b>The parse charges no
+/// limit at this stage</b>: the tokenizer and the parser that check them are stages 4b and 4c's, and stage 4e derives the
+/// stack the tree-depth bound requires, as Broiler.VM's JSD-0022 derived Broiler.VM's, and states it beside the constant
+/// (decision D14).")</i>
 /// </para>
 /// </remarks>
 // Broiler-AI:           Origin=AI; Spec=JSD-0080 D27, JSD-0083 D11 D14 limits; IP=Low; Security=Medium; Resources=0; Fingerprint=8281B1

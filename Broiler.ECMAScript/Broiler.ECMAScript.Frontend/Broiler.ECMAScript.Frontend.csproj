@@ -10,8 +10,10 @@
     context of eval code, proposal flags, the lexer extension, limits and providers) and the diagnostics' types.
     Stage SJL-13.2b adds the tokenizer, internal to the library: the lexical grammar of ECMA-262 clause 12 under the
     goal its caller names, and a parse entry that refuses a source the lexical grammar refuses and answers "not
-    implemented" for every other. The tree and the parser are stage 4c's, the diagnostics' identifiers and the
-    parse-time early errors stage 4d's, the limits' derivation, determinism and fuzzing stage 4e's, and the done-when
+    implemented" for every other. Stage SJL-13.2c adds the tree, public and immutable, and the parser, internal: the
+    syntactic grammar of every goal, with cover grammars converted and the two limits checked before the stack is;
+    the parse entry answers accepted, with the tree, or refused. The diagnostics' identifiers and the
+    parse-time early errors are stage 4d's, the limits' derivation, determinism and fuzzing stage 4e's, and the done-when
     stage 4f's.
 
     References (decision D6; rule SL1's row Frontend -> [Algorithms, Broiler.Unicode.Algorithms]):
@@ -28,7 +30,7 @@
     <RootNamespace>Broiler.ECMAScript.Syntax</RootNamespace>
     <AssemblyName>Broiler.ECMAScript.Frontend</AssemblyName>
     <PackageId>Broiler.ECMAScript.Frontend</PackageId>
-    <Description>The shared syntax library of the Broiler JavaScript engines (ECMA-262): an immutable parse request with goals, switches, the inherited context of eval code, proposal flags, a lexer extension, limits and providers (Broiler.Unicode's tables, a regular-expression validator each engine supplies, an optional work meter), and diagnostics with shared codes, message identifiers, phases and spans. The tokenizer reads the lexical grammar; the tree and the parser follow in later stages.</Description>
+    <Description>The shared syntax library of the Broiler JavaScript engines (ECMA-262): an immutable parse request with goals, switches, the inherited context of eval code, proposal flags, a lexer extension, limits and providers (Broiler.Unicode's tables, a regular-expression validator each engine supplies, an optional work meter), an immutable syntax tree with full spans and raw facts, and diagnostics with shared codes, message identifiers, phases and spans. The tokenizer reads the lexical grammar and the parser the syntactic grammar; the static-semantic early errors follow in a later stage.</Description>
     <PackageTags>broiler;ecmascript;javascript;shared;frontend;parser;syntax;ecma-262</PackageTags>
     <IsPackable>false</IsPackable>
     <EnablePackageValidation>true</EnablePackageValidation>
