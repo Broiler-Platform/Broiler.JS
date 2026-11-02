@@ -114,7 +114,7 @@ DIVERGENCES = SCRIPTS / "collation-divergences.txt"
 # THE ONE CONSTANT. The corpus revision that adds the area, which every vector's `since` names. It is the next free
 # revision after origin/main's when the change merges (revision 30 there on 2026-11-01), and moves with it if another
 # area's revisions merge first. The revision that classifies the first runs is the one after it.
-SINCE = 31
+SINCE = 33
 CORPUS_REVISION = SINCE  # the corpus revision this generator writes: REVISIONS.md's last row
 
 ECMA402 = "spec:ecma402@3d4c558#"

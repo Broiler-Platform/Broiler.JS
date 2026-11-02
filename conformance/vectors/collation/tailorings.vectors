@@ -19,7 +19,7 @@ class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("und"),["Ab","Ae","\u00C4b","Af","Od","\u00D6b","Oe","Ub","\u00DCb","Ue","ss","\u00DF","st","a","\u00E4","ae","b","\u00C4","AE","o","\u00F6","oe","u","\u00FC","ue","n","\u00F1","o","nz","\u00F1a","ch"])
 note: 31 strings sorted under und, each neighbour's relation written between them: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0002
 area: intl
@@ -30,7 +30,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("\u00E4","ae"))+1]
 note: U+00E4 against ae under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0003
 area: intl
@@ -41,7 +41,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("\u00C4","AE"))+1]
 note: U+00C4 against AE under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0004
 area: intl
@@ -52,7 +52,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("\u00E4","af"))+1]
 note: U+00E4 against af under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0005
 area: intl
@@ -63,7 +63,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("\u00F6","oe"))+1]
 note: U+00F6 against oe under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0006
 area: intl
@@ -74,7 +74,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("\u00FC","ue"))+1]
 note: U+00FC against ue under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0007
 area: intl
@@ -85,7 +85,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("\u00C4b","Ae"))+1]
 note: U+00C4b against Ae under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0008
 area: intl
@@ -96,7 +96,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("\u00C4b","Af"))+1]
 note: U+00C4b against Af under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0009
 area: intl
@@ -107,7 +107,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("\u00DF","ss"))+1]
 note: U+00DF against ss under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0010
 area: intl
@@ -118,7 +118,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("\u00DF","st"))+1]
 note: U+00DF against st under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0011
 area: intl
@@ -129,7 +129,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("a","\u00E4"))+1]
 note: a against U+00E4 under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0012
 area: intl
@@ -140,7 +140,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("n","\u00F1"))+1]
 note: n against U+00F1 under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0013
 area: intl
@@ -151,7 +151,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("nz","\u00F1"))+1]
 note: nz against U+00F1 under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0014
 area: intl
@@ -162,7 +162,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("\u00F1","o"))+1]
 note: U+00F1 against o under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root/0015
 area: intl
@@ -173,7 +173,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und").compare("ll","lz"))+1]
 note: ll against lz under und: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): the root collation, und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/en/0001
 area: intl
@@ -184,7 +184,7 @@ class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en"),["Ab","Ae","\u00C4b","Af","Od","\u00D6b","Oe","Ub","\u00DCb","Ue","ss","\u00DF","st","a","\u00E4","ae","b","\u00C4","AE","o","\u00F6","oe","u","\u00FC","ue"])
 note: 25 strings sorted under en, each neighbour's relation written between them: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): en, whose CLDR 48.2.0 tailoring is empty: the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/en/0002
 area: intl
@@ -195,7 +195,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00E4","ae"))+1]
 note: U+00E4 against ae under en: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): en, whose CLDR 48.2.0 tailoring is empty: the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/en/0003
 area: intl
@@ -206,7 +206,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00C4","AE"))+1]
 note: U+00C4 against AE under en: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): en, whose CLDR 48.2.0 tailoring is empty: the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/en/0004
 area: intl
@@ -217,7 +217,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00E4","af"))+1]
 note: U+00E4 against af under en: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): en, whose CLDR 48.2.0 tailoring is empty: the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/en/0005
 area: intl
@@ -228,7 +228,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00F6","oe"))+1]
 note: U+00F6 against oe under en: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): en, whose CLDR 48.2.0 tailoring is empty: the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/en/0006
 area: intl
@@ -239,7 +239,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00FC","ue"))+1]
 note: U+00FC against ue under en: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): en, whose CLDR 48.2.0 tailoring is empty: the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/en/0007
 area: intl
@@ -250,7 +250,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00C4b","Ae"))+1]
 note: U+00C4b against Ae under en: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): en, whose CLDR 48.2.0 tailoring is empty: the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/en/0008
 area: intl
@@ -261,7 +261,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00C4b","Af"))+1]
 note: U+00C4b against Af under en: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): en, whose CLDR 48.2.0 tailoring is empty: the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/en/0009
 area: intl
@@ -272,7 +272,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00DF","ss"))+1]
 note: U+00DF against ss under en: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): en, whose CLDR 48.2.0 tailoring is empty: the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/en/0010
 area: intl
@@ -283,7 +283,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("\u00DF","st"))+1]
 note: U+00DF against st under en: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): en, whose CLDR 48.2.0 tailoring is empty: the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/en/0011
 area: intl
@@ -294,7 +294,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en").compare("a","\u00E4"))+1]
 note: a against U+00E4 under en: rows O1 and O16 (O1 data policy, C5; O16 data policy, C5): en, whose CLDR 48.2.0 tailoring is empty: the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de/0001
 area: intl
@@ -305,7 +305,7 @@ class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("de"),["Ab","Ae","\u00C4b","Af","Od","\u00D6b","Oe","Ub","\u00DCb","Ue","ss","\u00DF","st","a","\u00E4","ae","b","\u00C4","AE","o","\u00F6","oe","u","\u00FC","ue"])
 note: 25 strings sorted under de, each neighbour's relation written between them: row O16 (data policy, C5): de's standard collation, the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de/0002
 area: intl
@@ -316,7 +316,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de").compare("\u00E4","ae"))+1]
 note: U+00E4 against ae under de: row O16 (data policy, C5): de's standard collation, the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de/0003
 area: intl
@@ -327,7 +327,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de").compare("\u00C4","AE"))+1]
 note: U+00C4 against AE under de: row O16 (data policy, C5): de's standard collation, the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de/0004
 area: intl
@@ -338,7 +338,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de").compare("\u00E4","af"))+1]
 note: U+00E4 against af under de: row O16 (data policy, C5): de's standard collation, the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de/0005
 area: intl
@@ -349,7 +349,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de").compare("\u00F6","oe"))+1]
 note: U+00F6 against oe under de: row O16 (data policy, C5): de's standard collation, the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de/0006
 area: intl
@@ -360,7 +360,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de").compare("\u00FC","ue"))+1]
 note: U+00FC against ue under de: row O16 (data policy, C5): de's standard collation, the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de/0007
 area: intl
@@ -371,7 +371,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de").compare("\u00C4b","Ae"))+1]
 note: U+00C4b against Ae under de: row O16 (data policy, C5): de's standard collation, the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de/0008
 area: intl
@@ -382,7 +382,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de").compare("\u00C4b","Af"))+1]
 note: U+00C4b against Af under de: row O16 (data policy, C5): de's standard collation, the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de/0009
 area: intl
@@ -393,7 +393,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de").compare("\u00DF","ss"))+1]
 note: U+00DF against ss under de: row O16 (data policy, C5): de's standard collation, the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de/0010
 area: intl
@@ -404,7 +404,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de").compare("\u00DF","st"))+1]
 note: U+00DF against st under de: row O16 (data policy, C5): de's standard collation, the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de/0011
 area: intl
@@ -415,7 +415,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de").compare("a","\u00E4"))+1]
 note: a against U+00E4 under de: row O16 (data policy, C5): de's standard collation, the root
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0001
 area: intl
@@ -426,7 +426,7 @@ class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("de-u-co-phonebk"),["Ab","Ae","\u00C4b","Af","Od","\u00D6b","Oe","Ub","\u00DCb","Ue","ss","\u00DF","st","a","\u00E4","ae","b","\u00C4","AE","o","\u00F6","oe","u","\u00FC","ue"])
 note: 25 strings sorted under de-u-co-phonebk, each neighbour's relation written between them: row O16 (data policy, C5): German phonebook (de-u-co-phonebk), a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0002
 area: intl
@@ -437,7 +437,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk").compare("\u00E4","ae"))+1]
 note: U+00E4 against ae under de-u-co-phonebk: row O16 (data policy, C5): German phonebook (de-u-co-phonebk), a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0003
 area: intl
@@ -448,7 +448,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk").compare("\u00C4","AE"))+1]
 note: U+00C4 against AE under de-u-co-phonebk: row O16 (data policy, C5): German phonebook (de-u-co-phonebk), a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0004
 area: intl
@@ -459,7 +459,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk").compare("\u00E4","af"))+1]
 note: U+00E4 against af under de-u-co-phonebk: row O16 (data policy, C5): German phonebook (de-u-co-phonebk), a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0005
 area: intl
@@ -470,7 +470,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk").compare("\u00F6","oe"))+1]
 note: U+00F6 against oe under de-u-co-phonebk: row O16 (data policy, C5): German phonebook (de-u-co-phonebk), a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0006
 area: intl
@@ -481,7 +481,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk").compare("\u00FC","ue"))+1]
 note: U+00FC against ue under de-u-co-phonebk: row O16 (data policy, C5): German phonebook (de-u-co-phonebk), a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0007
 area: intl
@@ -492,7 +492,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk").compare("\u00C4b","Ae"))+1]
 note: U+00C4b against Ae under de-u-co-phonebk: row O16 (data policy, C5): German phonebook (de-u-co-phonebk), a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0008
 area: intl
@@ -503,7 +503,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk").compare("\u00C4b","Af"))+1]
 note: U+00C4b against Af under de-u-co-phonebk: row O16 (data policy, C5): German phonebook (de-u-co-phonebk), a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0009
 area: intl
@@ -514,7 +514,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk").compare("\u00DF","ss"))+1]
 note: U+00DF against ss under de-u-co-phonebk: row O16 (data policy, C5): German phonebook (de-u-co-phonebk), a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0010
 area: intl
@@ -525,7 +525,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk").compare("\u00DF","st"))+1]
 note: U+00DF against st under de-u-co-phonebk: row O16 (data policy, C5): German phonebook (de-u-co-phonebk), a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0011
 area: intl
@@ -536,7 +536,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk").compare("a","\u00E4"))+1]
 note: a against U+00E4 under de-u-co-phonebk: row O16 (data policy, C5): German phonebook (de-u-co-phonebk), a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0012
 area: intl
@@ -547,7 +547,7 @@ class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("de",{collation:"phonebk"}),["Ab","Ae","\u00C4b","Af","Od","\u00D6b","Oe","Ub","\u00DCb","Ue","ss","\u00DF","st","a","\u00E4","ae","b","\u00C4","AE","o","\u00F6","oe","u","\u00FC","ue"])
 note: 25 strings sorted under de {collation:"phonebk"}, each neighbour's relation written between them: row O16 (data policy, C5): German phonebook by the collation option
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0013
 area: intl
@@ -558,7 +558,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{collation:"phonebk"}).compare("\u00E4","ae"))+1]
 note: U+00E4 against ae under de {collation:"phonebk"}: row O16 (data policy, C5): German phonebook by the collation option
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0014
 area: intl
@@ -569,7 +569,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{collation:"phonebk"}).compare("\u00C4","AE"))+1]
 note: U+00C4 against AE under de {collation:"phonebk"}: row O16 (data policy, C5): German phonebook by the collation option
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0015
 area: intl
@@ -580,7 +580,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{collation:"phonebk"}).compare("\u00E4","af"))+1]
 note: U+00E4 against af under de {collation:"phonebk"}: row O16 (data policy, C5): German phonebook by the collation option
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0016
 area: intl
@@ -591,7 +591,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{collation:"phonebk"}).compare("\u00F6","oe"))+1]
 note: U+00F6 against oe under de {collation:"phonebk"}: row O16 (data policy, C5): German phonebook by the collation option
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0017
 area: intl
@@ -602,7 +602,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{collation:"phonebk"}).compare("\u00FC","ue"))+1]
 note: U+00FC against ue under de {collation:"phonebk"}: row O16 (data policy, C5): German phonebook by the collation option
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0018
 area: intl
@@ -613,7 +613,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{collation:"phonebk"}).compare("\u00C4b","Ae"))+1]
 note: U+00C4b against Ae under de {collation:"phonebk"}: row O16 (data policy, C5): German phonebook by the collation option
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0019
 area: intl
@@ -624,7 +624,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{collation:"phonebk"}).compare("\u00C4b","Af"))+1]
 note: U+00C4b against Af under de {collation:"phonebk"}: row O16 (data policy, C5): German phonebook by the collation option
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0020
 area: intl
@@ -635,7 +635,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{collation:"phonebk"}).compare("\u00DF","ss"))+1]
 note: U+00DF against ss under de {collation:"phonebk"}: row O16 (data policy, C5): German phonebook by the collation option
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0021
 area: intl
@@ -646,7 +646,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{collation:"phonebk"}).compare("\u00DF","st"))+1]
 note: U+00DF against st under de {collation:"phonebk"}: row O16 (data policy, C5): German phonebook by the collation option
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-phonebook/0022
 area: intl
@@ -657,7 +657,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{collation:"phonebk"}).compare("a","\u00E4"))+1]
 note: a against U+00E4 under de {collation:"phonebk"}: row O16 (data policy, C5): German phonebook by the collation option
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0001
 area: intl
@@ -668,7 +668,7 @@ class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("de",{usage:"search"}),["Ab","Ae","\u00C4b","Af","Od","\u00D6b","Oe","Ub","\u00DCb","Ue","ss","\u00DF","st","a","\u00E4","ae","b","\u00C4","AE","o","\u00F6","oe","u","\u00FC","ue"])
 note: 25 strings sorted under de {usage:"search"}, each neighbour's relation written between them: rows O16 and O6 (O16 data policy, C5; O6 same): German search, a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0002
 area: intl
@@ -679,7 +679,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search"}).compare("\u00E4","ae"))+1]
 note: U+00E4 against ae under de {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search, a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0003
 area: intl
@@ -690,7 +690,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search"}).compare("\u00C4","AE"))+1]
 note: U+00C4 against AE under de {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search, a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0004
 area: intl
@@ -701,7 +701,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search"}).compare("\u00E4","af"))+1]
 note: U+00E4 against af under de {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search, a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0005
 area: intl
@@ -712,7 +712,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search"}).compare("\u00F6","oe"))+1]
 note: U+00F6 against oe under de {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search, a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0006
 area: intl
@@ -723,7 +723,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search"}).compare("\u00FC","ue"))+1]
 note: U+00FC against ue under de {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search, a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0007
 area: intl
@@ -734,7 +734,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search"}).compare("\u00C4b","Ae"))+1]
 note: U+00C4b against Ae under de {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search, a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0008
 area: intl
@@ -745,7 +745,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search"}).compare("\u00C4b","Af"))+1]
 note: U+00C4b against Af under de {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search, a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0009
 area: intl
@@ -756,7 +756,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search"}).compare("\u00DF","ss"))+1]
 note: U+00DF against ss under de {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search, a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0010
 area: intl
@@ -767,7 +767,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search"}).compare("\u00DF","st"))+1]
 note: U+00DF against st under de {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search, a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0011
 area: intl
@@ -778,7 +778,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search"}).compare("a","\u00E4"))+1]
 note: a against U+00E4 under de {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search, a tailoring both engines' data carry
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0012
 area: intl
@@ -789,7 +789,7 @@ class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("de",{usage:"search",sensitivity:"base"}),["Ab","Ae","\u00C4b","Af","Od","\u00D6b","Oe","Ub","\u00DCb","Ue","ss","\u00DF","st","a","\u00E4","ae","b","\u00C4","AE","o","\u00F6","oe","u","\u00FC","ue"])
 note: 25 strings sorted under de {usage:"search",sensitivity:"base"}, each neighbour's relation written between them: rows O16 and O6 (O16 data policy, C5; O6 same): German search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0013
 area: intl
@@ -800,7 +800,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search",sensitivity:"base"}).compare("\u00E4","ae"))+1]
 note: U+00E4 against ae under de {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0014
 area: intl
@@ -811,7 +811,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search",sensitivity:"base"}).compare("\u00C4","AE"))+1]
 note: U+00C4 against AE under de {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0015
 area: intl
@@ -822,7 +822,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search",sensitivity:"base"}).compare("\u00E4","af"))+1]
 note: U+00E4 against af under de {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0016
 area: intl
@@ -833,7 +833,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search",sensitivity:"base"}).compare("\u00F6","oe"))+1]
 note: U+00F6 against oe under de {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0017
 area: intl
@@ -844,7 +844,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search",sensitivity:"base"}).compare("\u00FC","ue"))+1]
 note: U+00FC against ue under de {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0018
 area: intl
@@ -855,7 +855,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search",sensitivity:"base"}).compare("\u00C4b","Ae"))+1]
 note: U+00C4b against Ae under de {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0019
 area: intl
@@ -866,7 +866,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search",sensitivity:"base"}).compare("\u00C4b","Af"))+1]
 note: U+00C4b against Af under de {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0020
 area: intl
@@ -877,7 +877,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search",sensitivity:"base"}).compare("\u00DF","ss"))+1]
 note: U+00DF against ss under de {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0021
 area: intl
@@ -888,7 +888,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search",sensitivity:"base"}).compare("\u00DF","st"))+1]
 note: U+00DF against st under de {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/de-search/0022
 area: intl
@@ -899,7 +899,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{usage:"search",sensitivity:"base"}).compare("a","\u00E4"))+1]
 note: a against U+00E4 under de {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): German search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0001
 area: intl
@@ -910,7 +910,7 @@ class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{usage:"search"}),["Ab","Ae","\u00C4b","Af","Od","\u00D6b","Oe","Ub","\u00DCb","Ue","ss","\u00DF","st","a","\u00E4","ae","b","\u00C4","AE","o","\u00F6","oe","u","\u00FC","ue","\u0627","\u0623","\u0622","\uFE8E","\u2260","="])
 note: 31 strings sorted under en {usage:"search"}, each neighbour's relation written between them: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0002
 area: intl
@@ -921,7 +921,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u00E4","ae"))+1]
 note: U+00E4 against ae under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0003
 area: intl
@@ -932,7 +932,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u00C4","AE"))+1]
 note: U+00C4 against AE under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0004
 area: intl
@@ -943,7 +943,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u00E4","af"))+1]
 note: U+00E4 against af under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0005
 area: intl
@@ -954,7 +954,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u00F6","oe"))+1]
 note: U+00F6 against oe under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0006
 area: intl
@@ -965,7 +965,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u00FC","ue"))+1]
 note: U+00FC against ue under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0007
 area: intl
@@ -976,7 +976,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u00C4b","Ae"))+1]
 note: U+00C4b against Ae under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0008
 area: intl
@@ -987,7 +987,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u00C4b","Af"))+1]
 note: U+00C4b against Af under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0009
 area: intl
@@ -998,7 +998,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u00DF","ss"))+1]
 note: U+00DF against ss under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0010
 area: intl
@@ -1009,7 +1009,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u00DF","st"))+1]
 note: U+00DF against st under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0011
 area: intl
@@ -1020,7 +1020,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("a","\u00E4"))+1]
 note: a against U+00E4 under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0012
 area: intl
@@ -1031,7 +1031,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u0627","\u0623"))+1]
 note: U+0627 against U+0623 under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0013
 area: intl
@@ -1042,7 +1042,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u0627","\uFE8E"))+1]
 note: U+0627 against U+FE8E under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0014
 area: intl
@@ -1053,7 +1053,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("=","\u2260"))+1]
 note: = against U+2260 under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0015
 area: intl
@@ -1064,7 +1064,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search"}).compare("\u0622","\u0627"))+1]
 note: U+0622 against U+0627 under en {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under en
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0016
 area: intl
@@ -1075,7 +1075,7 @@ class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("und",{usage:"search"}),["Ab","Ae","\u00C4b","Af","Od","\u00D6b","Oe","Ub","\u00DCb","Ue","ss","\u00DF","st","a","\u00E4","ae","b","\u00C4","AE","o","\u00F6","oe","u","\u00FC","ue","\u0627","\u0623","\u0622","\uFE8E","\u2260","="])
 note: 31 strings sorted under und {usage:"search"}, each neighbour's relation written between them: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0017
 area: intl
@@ -1086,7 +1086,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u00E4","ae"))+1]
 note: U+00E4 against ae under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0018
 area: intl
@@ -1097,7 +1097,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u00C4","AE"))+1]
 note: U+00C4 against AE under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0019
 area: intl
@@ -1108,7 +1108,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u00E4","af"))+1]
 note: U+00E4 against af under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0020
 area: intl
@@ -1119,7 +1119,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u00F6","oe"))+1]
 note: U+00F6 against oe under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0021
 area: intl
@@ -1130,7 +1130,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u00FC","ue"))+1]
 note: U+00FC against ue under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0022
 area: intl
@@ -1141,7 +1141,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u00C4b","Ae"))+1]
 note: U+00C4b against Ae under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0023
 area: intl
@@ -1152,7 +1152,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u00C4b","Af"))+1]
 note: U+00C4b against Af under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0024
 area: intl
@@ -1163,7 +1163,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u00DF","ss"))+1]
 note: U+00DF against ss under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0025
 area: intl
@@ -1174,7 +1174,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u00DF","st"))+1]
 note: U+00DF against st under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0026
 area: intl
@@ -1185,7 +1185,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("a","\u00E4"))+1]
 note: a against U+00E4 under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0027
 area: intl
@@ -1196,7 +1196,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u0627","\u0623"))+1]
 note: U+0627 against U+0623 under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0028
 area: intl
@@ -1207,7 +1207,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u0627","\uFE8E"))+1]
 note: U+0627 against U+FE8E under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0029
 area: intl
@@ -1218,7 +1218,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("=","\u2260"))+1]
 note: = against U+2260 under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0030
 area: intl
@@ -1229,7 +1229,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("und",{usage:"search"}).compare("\u0622","\u0627"))+1]
 note: U+0622 against U+0627 under und {usage:"search"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search under und
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0031
 area: intl
@@ -1240,7 +1240,7 @@ class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{usage:"search",sensitivity:"base"}),["Ab","Ae","\u00C4b","Af","Od","\u00D6b","Oe","Ub","\u00DCb","Ue","ss","\u00DF","st","a","\u00E4","ae","b","\u00C4","AE","o","\u00F6","oe","u","\u00FC","ue","\u0627","\u0623","\u0622","\uFE8E","\u2260","="])
 note: 31 strings sorted under en {usage:"search",sensitivity:"base"}, each neighbour's relation written between them: rows O16, O6 and O5b (O16 data policy, C5; O6 same; O5b a correction of Broiler.JS): root search at base (base folds width and compatibility differences, row O5b)
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0032
 area: intl
@@ -1251,7 +1251,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u00E4","ae"))+1]
 note: U+00E4 against ae under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0033
 area: intl
@@ -1262,7 +1262,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u00C4","AE"))+1]
 note: U+00C4 against AE under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0034
 area: intl
@@ -1273,7 +1273,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u00E4","af"))+1]
 note: U+00E4 against af under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0035
 area: intl
@@ -1284,7 +1284,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u00F6","oe"))+1]
 note: U+00F6 against oe under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0036
 area: intl
@@ -1295,7 +1295,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u00FC","ue"))+1]
 note: U+00FC against ue under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0037
 area: intl
@@ -1306,7 +1306,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u00C4b","Ae"))+1]
 note: U+00C4b against Ae under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0038
 area: intl
@@ -1317,7 +1317,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u00C4b","Af"))+1]
 note: U+00C4b against Af under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0039
 area: intl
@@ -1328,7 +1328,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u00DF","ss"))+1]
 note: U+00DF against ss under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0040
 area: intl
@@ -1339,7 +1339,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u00DF","st"))+1]
 note: U+00DF against st under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0041
 area: intl
@@ -1350,7 +1350,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("a","\u00E4"))+1]
 note: a against U+00E4 under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0042
 area: intl
@@ -1361,7 +1361,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u0627","\u0623"))+1]
 note: U+0627 against U+0623 under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0043
 area: intl
@@ -1372,7 +1372,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u0627","\uFE8E"))+1]
 note: U+0627 against U+FE8E under en {usage:"search",sensitivity:"base"}: rows O16, O6 and O5b (O16 data policy, C5; O6 same; O5b a correction of Broiler.JS): root search at base (base folds width and compatibility differences, row O5b)
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0044
 area: intl
@@ -1383,7 +1383,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("=","\u2260"))+1]
 note: = against U+2260 under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/root-search/0045
 area: intl
@@ -1394,7 +1394,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{usage:"search",sensitivity:"base"}).compare("\u0622","\u0627"))+1]
 note: U+0622 against U+0627 under en {usage:"search",sensitivity:"base"}: rows O16 and O6 (O16 data policy, C5; O6 same): root search at base
-since: 31
+since: 33
 
 id: intl/collation/tailorings/es/0001
 area: intl
@@ -1407,7 +1407,7 @@ per-engine.broiler-vm: value: str:"a\u00F1o < anzuelo < c < ch < chico < cuna < 
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("es"),["n","\u00F1","o","nz","\u00F1a","ch","cz","d","ll","lz","m","c","l","\u00D1","N","a\u00F1o","anzuelo","llama","luz","chico","cuna"])
 note: 21 strings sorted under es, each neighbour's relation written between them: row O16 (data policy, C5): es, CLDR 48.2.0's Spanish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/es/0002
 area: intl
@@ -1420,7 +1420,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("es").compare("n","\u00F1"))+1]
 note: n against U+00F1 under es: row O16 (data policy, C5): es, CLDR 48.2.0's Spanish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/es/0003
 area: intl
@@ -1433,7 +1433,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("es").compare("nz","\u00F1"))+1]
 note: nz against U+00F1 under es: row O16 (data policy, C5): es, CLDR 48.2.0's Spanish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/es/0004
 area: intl
@@ -1446,7 +1446,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("es").compare("\u00F1","o"))+1]
 note: U+00F1 against o under es: row O16 (data policy, C5): es, CLDR 48.2.0's Spanish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/es/0005
 area: intl
@@ -1459,7 +1459,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("es").compare("ll","lz"))+1]
 note: ll against lz under es: row O16 (data policy, C5): es, CLDR 48.2.0's Spanish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/es/0006
 area: intl
@@ -1472,7 +1472,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("es").compare("llama","luz"))+1]
 note: llama against luz under es: row O16 (data policy, C5): es, CLDR 48.2.0's Spanish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/es/0007
 area: intl
@@ -1485,7 +1485,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("es").compare("ch","cz"))+1]
 note: ch against cz under es: row O16 (data policy, C5): es, CLDR 48.2.0's Spanish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/es/0008
 area: intl
@@ -1498,7 +1498,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("es").compare("chico","cuna"))+1]
 note: chico against cuna under es: row O16 (data policy, C5): es, CLDR 48.2.0's Spanish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/es/0009
 area: intl
@@ -1511,7 +1511,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("es").compare("\u00D1","\u00F1"))+1]
 note: U+00D1 against U+00F1 under es: row O16 (data policy, C5): es, CLDR 48.2.0's Spanish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/es/0010
 area: intl
@@ -1524,7 +1524,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("es").compare("N","\u00D1"))+1]
 note: N against U+00D1 under es: row O16 (data policy, C5): es, CLDR 48.2.0's Spanish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/es/0011
 area: intl
@@ -1537,7 +1537,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("es").compare("a\u00F1o","anzuelo"))+1]
 note: aU+00F1o against anzuelo under es: row O16 (data policy, C5): es, CLDR 48.2.0's Spanish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0001
 area: intl
@@ -1550,7 +1550,7 @@ per-engine.broiler-vm: value: str:"a < \u00E5 < \u00C5 < \u00E4 < \u00C4 < aa < 
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("sv"),["z","\u00E5","\u00E4","\u00F6","\u00E6","\u00F8","v","w","y","\u00FC","a","o","\u00C5","\u00C4","\u00D6","aa","\u00E9","e","th","\u00FE","\u0111","d"])
 note: 22 strings sorted under sv, each neighbour's relation written between them: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0002
 area: intl
@@ -1563,7 +1563,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("z","\u00E5"))+1]
 note: z against U+00E5 under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0003
 area: intl
@@ -1576,7 +1576,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("\u00E5","\u00E4"))+1]
 note: U+00E5 against U+00E4 under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0004
 area: intl
@@ -1589,7 +1589,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("\u00E4","\u00F6"))+1]
 note: U+00E4 against U+00F6 under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0005
 area: intl
@@ -1602,7 +1602,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("\u00E6","\u00E4"))+1]
 note: U+00E6 against U+00E4 under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0006
 area: intl
@@ -1615,7 +1615,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("\u00F8","\u00F6"))+1]
 note: U+00F8 against U+00F6 under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0007
 area: intl
@@ -1628,7 +1628,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("v","w"))+1]
 note: v against w under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0008
 area: intl
@@ -1641,7 +1641,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("y","\u00FC"))+1]
 note: y against U+00FC under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0009
 area: intl
@@ -1654,7 +1654,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("aa","\u00E5"))+1]
 note: aa against U+00E5 under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0010
 area: intl
@@ -1667,7 +1667,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("\u00C5","\u00E5"))+1]
 note: U+00C5 against U+00E5 under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0011
 area: intl
@@ -1680,7 +1680,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("\u00E9","e"))+1]
 note: U+00E9 against e under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0012
 area: intl
@@ -1693,7 +1693,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("th","\u00FE"))+1]
 note: th against U+00FE under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0013
 area: intl
@@ -1706,7 +1706,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("d","\u0111"))+1]
 note: d against U+0111 under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/sv/0014
 area: intl
@@ -1719,7 +1719,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("sv").compare("z","\u00F6"))+1]
 note: z against U+00F6 under sv: row O16 (data policy, C5): sv, CLDR 48.2.0's Swedish tailoring (decision E3); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0001
 area: intl
@@ -1732,7 +1732,7 @@ per-engine.broiler-vm: value: str:" <   < * < \u0E50 < 1 < a < a b < ab < \u0E01
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("th"),["\u0E01","\u0E40\u0E01","\u0E02","\u0E41\u0E01","\u0E01\u0E48","\u0E01\u0E32",""," ","\u0E2F","a","a b","ab","\u0E50","1","\u0E01\u0E4C","*","\u0E40\u0E02","\u0E2E"])
 note: 18 strings sorted under th, each neighbour's relation written between them: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0002
 area: intl
@@ -1745,7 +1745,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare(""," "))+1]
 note: (empty) against U+0020 under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0003
 area: intl
@@ -1758,7 +1758,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare("","*"))+1]
 note: (empty) against * under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0004
 area: intl
@@ -1771,7 +1771,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare(" ","*"))+1]
 note: U+0020 against * under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0005
 area: intl
@@ -1784,7 +1784,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare("a b","ab"))+1]
 note: aU+0020b against ab under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0006
 area: intl
@@ -1797,7 +1797,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare("a-b","ab"))+1]
 note: a-b against ab under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0007
 area: intl
@@ -1810,7 +1810,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare("a.b","ab"))+1]
 note: a.b against ab under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0008
 area: intl
@@ -1823,7 +1823,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare("\u0E40\u0E01","\u0E01"))+1]
 note: U+0E40U+0E01 against U+0E01 under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0009
 area: intl
@@ -1836,7 +1836,7 @@ per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare("\u0E40\u0E01","\u0E01\u0E40"))+1]
 note: U+0E40U+0E01 against U+0E01U+0E40 under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0010
 area: intl
@@ -1849,7 +1849,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare("\u0E01\u0E48","\u0E01"))+1]
 note: U+0E01U+0E48 against U+0E01 under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0011
 area: intl
@@ -1862,7 +1862,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare("\u0E01\u0E32","\u0E01"))+1]
 note: U+0E01U+0E32 against U+0E01 under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0012
 area: intl
@@ -1875,7 +1875,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare("\u0E2F","\u0E01"))+1]
 note: U+0E2F against U+0E01 under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0013
 area: intl
@@ -1888,7 +1888,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare("\u0E50","1"))+1]
 note: U+0E50 against 1 under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0014
 area: intl
@@ -1901,7 +1901,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th").compare("\u0E01\u0E4C","\u0E01"))+1]
 note: U+0E01U+0E4C against U+0E01 under th: rows O16, O5c and O19 (O16 data policy, C5; O5c data policy, C5; O19 same): th, CLDR 48.2.0's Thai tailoring with its [alternate shifted] (decisions E3 and E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0015
 area: intl
@@ -1914,7 +1914,7 @@ per-engine.broiler-vm: value: bool:false
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.resolvedoptions spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: new Intl.Collator("th").resolvedOptions().ignorePunctuation
 note: row O5c (data policy, C5): th's default ignorePunctuation is locale data, CLDR 48.2.0's Thai [alternate shifted] (decision E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0016
 area: intl
@@ -1927,7 +1927,7 @@ per-engine.broiler-vm: value: bool:false
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.resolvedoptions spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: new Intl.Collator("th-TH").resolvedOptions().ignorePunctuation
 note: row O5c (data policy, C5): th-TH's default ignorePunctuation is locale data, CLDR 48.2.0's Thai [alternate shifted] (decision E5); decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th-TH to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0017
 area: intl
@@ -1940,7 +1940,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare(""," "))+1]
 note: (empty) against U+0020 under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0018
 area: intl
@@ -1953,7 +1953,7 @@ per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare(""," "))+1]
 note: (empty) against U+0020 under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0019
 area: intl
@@ -1966,7 +1966,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare("","*"))+1]
 note: (empty) against * under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0020
 area: intl
@@ -1979,7 +1979,7 @@ per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare("","*"))+1]
 note: (empty) against * under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0021
 area: intl
@@ -1992,7 +1992,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare(" ","*"))+1]
 note: U+0020 against * under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0022
 area: intl
@@ -2005,7 +2005,7 @@ per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare(" ","*"))+1]
 note: U+0020 against * under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0023
 area: intl
@@ -2018,7 +2018,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare("a b","ab"))+1]
 note: aU+0020b against ab under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0024
 area: intl
@@ -2031,7 +2031,7 @@ per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare("a b","ab"))+1]
 note: aU+0020b against ab under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0025
 area: intl
@@ -2044,7 +2044,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare("a-b","ab"))+1]
 note: a-b against ab under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0026
 area: intl
@@ -2057,7 +2057,7 @@ per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare("a-b","ab"))+1]
 note: a-b against ab under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0027
 area: intl
@@ -2070,7 +2070,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:false}).compare("a.b","ab"))+1]
 note: a.b against ab under th {ignorePunctuation:false}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation false, where punctuation and spaces count, over the tailoring's default; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/th/0028
 area: intl
@@ -2083,7 +2083,7 @@ per-engine.broiler-vm: value: str:"="
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("th",{ignorePunctuation:true}).compare("a.b","ab"))+1]
 note: a.b against ab under th {ignorePunctuation:true}: rows O19 and O5c (O19 same; O5c data policy, C5): Thai with ignorePunctuation true; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves th to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0001
 area: intl
@@ -2096,7 +2096,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("n".localeCompare("\u00F1","es"))+1]
 note: n against U+00F1 under es: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0002
 area: intl
@@ -2109,7 +2109,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("n".localeCompare("\u00F1","sv"))+1]
 note: n against U+00F1 under sv: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0003
 area: intl
@@ -2120,7 +2120,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("n".localeCompare("\u00F1","de-u-co-phonebk"))+1]
 note: n against U+00F1 under de-u-co-phonebk: row O16 (data policy, C5): a tailoring through localeCompare
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0004
 area: intl
@@ -2133,7 +2133,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("nz".localeCompare("\u00F1","es"))+1]
 note: nz against U+00F1 under es: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0005
 area: intl
@@ -2146,7 +2146,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("nz".localeCompare("\u00F1","sv"))+1]
 note: nz against U+00F1 under sv: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0006
 area: intl
@@ -2157,7 +2157,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("nz".localeCompare("\u00F1","de-u-co-phonebk"))+1]
 note: nz against U+00F1 under de-u-co-phonebk: row O16 (data policy, C5): a tailoring through localeCompare
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0007
 area: intl
@@ -2170,7 +2170,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00F1".localeCompare("o","es"))+1]
 note: U+00F1 against o under es: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0008
 area: intl
@@ -2183,7 +2183,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00F1".localeCompare("o","sv"))+1]
 note: U+00F1 against o under sv: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0009
 area: intl
@@ -2194,7 +2194,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00F1".localeCompare("o","de-u-co-phonebk"))+1]
 note: U+00F1 against o under de-u-co-phonebk: row O16 (data policy, C5): a tailoring through localeCompare
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0010
 area: intl
@@ -2207,7 +2207,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("ll".localeCompare("lz","es"))+1]
 note: ll against lz under es: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0011
 area: intl
@@ -2220,7 +2220,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("ll".localeCompare("lz","sv"))+1]
 note: ll against lz under sv: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0012
 area: intl
@@ -2231,7 +2231,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("ll".localeCompare("lz","de-u-co-phonebk"))+1]
 note: ll against lz under de-u-co-phonebk: row O16 (data policy, C5): a tailoring through localeCompare
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0013
 area: intl
@@ -2244,7 +2244,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("z".localeCompare("\u00E5","es"))+1]
 note: z against U+00E5 under es: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0014
 area: intl
@@ -2257,7 +2257,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("z".localeCompare("\u00E5","sv"))+1]
 note: z against U+00E5 under sv: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0015
 area: intl
@@ -2268,7 +2268,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("z".localeCompare("\u00E5","de-u-co-phonebk"))+1]
 note: z against U+00E5 under de-u-co-phonebk: row O16 (data policy, C5): a tailoring through localeCompare
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0016
 area: intl
@@ -2281,7 +2281,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E5".localeCompare("\u00E4","es"))+1]
 note: U+00E5 against U+00E4 under es: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0017
 area: intl
@@ -2294,7 +2294,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E5".localeCompare("\u00E4","sv"))+1]
 note: U+00E5 against U+00E4 under sv: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0018
 area: intl
@@ -2305,7 +2305,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E5".localeCompare("\u00E4","de-u-co-phonebk"))+1]
 note: U+00E5 against U+00E4 under de-u-co-phonebk: row O16 (data policy, C5): a tailoring through localeCompare
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0019
 area: intl
@@ -2318,7 +2318,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E4".localeCompare("\u00F6","es"))+1]
 note: U+00E4 against U+00F6 under es: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0020
 area: intl
@@ -2331,7 +2331,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E4".localeCompare("\u00F6","sv"))+1]
 note: U+00E4 against U+00F6 under sv: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0021
 area: intl
@@ -2342,7 +2342,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E4".localeCompare("\u00F6","de-u-co-phonebk"))+1]
 note: U+00E4 against U+00F6 under de-u-co-phonebk: row O16 (data policy, C5): a tailoring through localeCompare
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0022
 area: intl
@@ -2355,7 +2355,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E6".localeCompare("\u00E4","es"))+1]
 note: U+00E6 against U+00E4 under es: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0023
 area: intl
@@ -2368,7 +2368,7 @@ per-engine.broiler-vm: value: str:">"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E6".localeCompare("\u00E4","sv"))+1]
 note: U+00E6 against U+00E4 under sv: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0024
 area: intl
@@ -2379,7 +2379,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E6".localeCompare("\u00E4","de-u-co-phonebk"))+1]
 note: U+00E6 against U+00E4 under de-u-co-phonebk: row O16 (data policy, C5): a tailoring through localeCompare
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0025
 area: intl
@@ -2392,7 +2392,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E4".localeCompare("ae","es"))+1]
 note: U+00E4 against ae under es: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0026
 area: intl
@@ -2405,7 +2405,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E4".localeCompare("ae","sv"))+1]
 note: U+00E4 against ae under sv: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0027
 area: intl
@@ -2416,7 +2416,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E4".localeCompare("ae","de-u-co-phonebk"))+1]
 note: U+00E4 against ae under de-u-co-phonebk: row O16 (data policy, C5): a tailoring through localeCompare
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0028
 area: intl
@@ -2429,7 +2429,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00C4".localeCompare("AE","es"))+1]
 note: U+00C4 against AE under es: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0029
 area: intl
@@ -2442,7 +2442,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00C4".localeCompare("AE","sv"))+1]
 note: U+00C4 against AE under sv: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0030
 area: intl
@@ -2453,7 +2453,7 @@ class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00C4".localeCompare("AE","de-u-co-phonebk"))+1]
 note: U+00C4 against AE under de-u-co-phonebk: row O16 (data policy, C5): a tailoring through localeCompare
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0031
 area: intl
@@ -2466,7 +2466,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E4".localeCompare("af","es"))+1]
 note: U+00E4 against af under es: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves es to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0032
 area: intl
@@ -2479,7 +2479,7 @@ per-engine.broiler-vm: value: str:"<"
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E4".localeCompare("af","sv"))+1]
 note: U+00E4 against af under sv: row O16 (data policy, C5): a tailoring through localeCompare; decision E3 and rule N28: Broiler.VM's Collator locales stay de, de-DE, en and en-US, so it resolves sv to en-US (LookupMatcher over its list, row O16) and its expectation is the reference's answer for that locale; Broiler.JS's shared data carries the tailoring (decision E3), so its expectation is out
-since: 31
+since: 33
 
 id: intl/collation/tailorings/locale-compare/0033
 area: intl
@@ -2490,4 +2490,4 @@ class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("\u00E4".localeCompare("af","de-u-co-phonebk"))+1]
 note: U+00E4 against af under de-u-co-phonebk: row O16 (data policy, C5): a tailoring through localeCompare
-since: 31
+since: 33
