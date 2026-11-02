@@ -1,0 +1,5 @@
+# run 3: dotnet /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll --digest-corpus conformance/parse --test262 /home/user/tc39/test262 --two-threads
+# start 2026-11-02T18:44:21Z
+Broiler.ECMAScript.Probe: digest of 295795 parses, 0 problems
+# exit 0
+# end 2026-11-02T18:47:12Z

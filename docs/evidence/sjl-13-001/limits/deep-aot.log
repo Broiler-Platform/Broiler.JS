@@ -1,0 +1,59 @@
+# bundle sjl-13-001, part G: the deep-nesting corpus, each source parsed alone in its own process
+# tree-depth-bound	10000
+id	file	kind	nesting-parameter	charge	expect	expected-exit	got	line	holds
+G001	brackets-62.js	nesting	64	64	accepted	0	exit 0	accepted - - -	yes
+G002	brackets-63.js	nesting	64	65	refused	10	exit 10	refused JSE9201 64 1:72	yes
+G003	brackets-100000.js	nesting	64	100002	refused	10	exit 10	refused JSE9201 64 1:72	yes
+G004	parentheses-62.js	nesting	64	64	accepted	0	exit 0	accepted - - -	yes
+G005	parentheses-63.js	nesting	64	65	refused	10	exit 10	refused JSE9201 64 1:72	yes
+G006	parentheses-100000.js	nesting	64	100002	refused	10	exit 10	refused JSE9201 64 1:72	yes
+G007	templates-62.js	nesting	64	64	accepted	0	exit 0	accepted - - -	yes
+G008	templates-63.js	nesting	64	65	refused	10	exit 10	refused JSE9201 64 1:198	yes
+G009	templates-100000.js	nesting	64	100002	refused	10	exit 10	refused JSE9201 64 1:198	yes
+G010	blocks-64.js	nesting	64	64	accepted	0	exit 0	accepted - - -	yes
+G011	blocks-65.js	nesting	64	65	refused	10	exit 10	refused JSE9201 64 1:65	yes
+G012	blocks-100000.js	nesting	64	100000	refused	10	exit 10	refused JSE9201 64 1:65	yes
+G013	functions-64.js	nesting	64	64	accepted	0	exit 0	accepted - - -	yes
+G014	functions-65.js	nesting	64	65	refused	10	exit 10	refused JSE9201 64 1:833	yes
+G015	functions-100000.js	nesting	64	100000	refused	10	exit 10	refused JSE9201 64 1:833	yes
+G016	substitutions-31-30.js	nesting	64	64	accepted	0	exit 0	accepted - - -	yes
+G017	substitutions-31-31.js	nesting	64	65	refused	10	exit 10	refused JSE9201 64 1:74	yes
+G018	substitutions-50000-50000.js	nesting	64	100003	refused	10	exit 10	refused JSE9201 64 1:72	yes
+G019	brackets-510.js	nesting	512	512	accepted	0	exit 0	accepted - - -	yes
+G020	brackets-511.js	nesting	512	513	refused	10	exit 10	refused JSE9201 512 1:520	yes
+G021	brackets-100000.js	nesting	512	100002	refused	10	exit 10	refused JSE9201 512 1:520	yes
+G022	parentheses-510.js	nesting	512	512	accepted	0	exit 0	accepted - - -	yes
+G023	parentheses-511.js	nesting	512	513	refused	10	exit 10	refused JSE9201 512 1:520	yes
+G024	parentheses-100000.js	nesting	512	100002	refused	10	exit 10	refused JSE9201 512 1:520	yes
+G025	templates-510.js	nesting	512	512	accepted	0	exit 0	accepted - - -	yes
+G026	templates-511.js	nesting	512	513	refused	10	exit 10	refused JSE9201 512 1:1542	yes
+G027	templates-100000.js	nesting	512	100002	refused	10	exit 10	refused JSE9201 512 1:1542	yes
+G028	blocks-512.js	nesting	512	512	accepted	0	exit 0	accepted - - -	yes
+G029	blocks-513.js	nesting	512	513	refused	10	exit 10	refused JSE9201 512 1:513	yes
+G030	blocks-100000.js	nesting	512	100000	refused	10	exit 10	refused JSE9201 512 1:513	yes
+G031	functions-512.js	nesting	512	512	accepted	0	exit 0	accepted - - -	yes
+G032	functions-513.js	nesting	512	513	refused	10	exit 10	refused JSE9201 512 1:6657	yes
+G033	functions-100000.js	nesting	512	100000	refused	10	exit 10	refused JSE9201 512 1:6657	yes
+G034	substitutions-255-254.js	nesting	512	512	accepted	0	exit 0	accepted - - -	yes
+G035	substitutions-255-255.js	nesting	512	513	refused	10	exit 10	refused JSE9201 512 1:522	yes
+G036	substitutions-50000-50000.js	nesting	512	100003	refused	10	exit 10	refused JSE9201 512 1:520	yes
+G037	binary-chain-10000.js	tree-depth	64	10000	accepted	0	exit 0	accepted - - -	yes
+G038	binary-chain-10001.js	tree-depth	64	10001	refused	11	exit 11	refused JSE9202 10000 1:9	yes
+G039	binary-chain-100000.js	tree-depth	64	100000	refused	11	exit 11	refused JSE9202 10000 1:9	yes
+G040	member-chain-10000.js	tree-depth	64	10000	accepted	0	exit 0	accepted - - -	yes
+G041	member-chain-10001.js	tree-depth	64	10001	refused	11	exit 11	refused JSE9202 10000 1:21	yes
+G042	member-chain-100000.js	tree-depth	64	100000	refused	11	exit 11	refused JSE9202 10000 1:21	yes
+G043	left-parenthesised-chain-5000-5000.js	tree-depth	64	10000	accepted	0	exit 0	accepted - - -	yes
+G044	left-parenthesised-chain-5000-5001.js	tree-depth	64	10001	refused	11	exit 11	refused JSE9202 10000 1:9	yes
+G045	left-parenthesised-chain-50000-50000.js	tree-depth	64	100000	refused	11	exit 11	refused JSE9202 10000 1:10	yes
+G046	left-template-chain-5000-5000.js	tree-depth	64	10000	accepted	0	exit 0	accepted - - -	yes
+G047	left-template-chain-5000-5001.js	tree-depth	64	10001	refused	11	exit 11	refused JSE9202 10000 1:9	yes
+G048	left-template-chain-50000-50000.js	tree-depth	64	100000	refused	11	exit 11	refused JSE9202 10000 1:12	yes
+G049	left-member-chain-5000-5000.js	tree-depth	64	10000	accepted	0	exit 0	accepted - - -	yes
+G050	left-member-chain-5000-5001.js	tree-depth	64	10001	refused	11	exit 11	refused JSE9202 10000 1:21	yes
+G051	left-member-chain-50000-50000.js	tree-depth	64	100000	refused	11	exit 11	refused JSE9202 10000 1:21	yes
+G052	object-parenthesised-chain-5000-5000.js	tree-depth	64	10000	accepted	0	exit 0	accepted - - -	yes
+G053	object-parenthesised-chain-5000-5001.js	tree-depth	64	10001	refused	11	exit 11	refused JSE9202 10000 1:9	yes
+G054	object-parenthesised-chain-50000-50000.js	tree-depth	64	100000	refused	11	exit 11	refused JSE9202 10000 1:10	yes
+# 54 of 54 rows held
+exit 0

@@ -1,0 +1,317 @@
+# start 2026-11-02T19:06:31Z
+finding	T000728	V	25	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000728	V	47	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	-1	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	3	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	6	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	7	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	10	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	11	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	13	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	14	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	15	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	16	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	18	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	19	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	20	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	23	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	24	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	26	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	27	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	32	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	33	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	34	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	35	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	36	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	38	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	40	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	41	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	42	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	43	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	44	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	45	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	46	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	48	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	49	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	53	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	54	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	55	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	56	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	59	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	60	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	61	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	V	62	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	-1	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	0	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	1	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	5	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	7	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	8	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	9	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	10	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	11	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	13	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	14	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	16	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	19	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	20	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	21	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	23	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	25	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	26	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	27	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	28	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	29	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	30	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	31	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	32	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	33	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	35	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	37	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	38	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	39	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	41	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	42	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	43	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	45	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	47	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	48	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	49	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	50	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	51	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	52	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	54	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	55	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	56	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	57	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	58	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	59	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	60	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	61	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000729	J	63	exception	part F control: the parser throws on a ConditionalExpression
+finding	T000731	V	14	exception	part F control: the parser throws on a ConditionalExpression
+finding	T001079	J	30	exception	part F control: the parser throws on a ConditionalExpression
+finding	T028465	V	52	exception	part F control: the parser throws on a ConditionalExpression
+finding	T035416	V	5	exception	part F control: the parser throws on a ConditionalExpression
+finding	T035416	V	52	exception	part F control: the parser throws on a ConditionalExpression
+finding	T035905	J	4	exception	part F control: the parser throws on a ConditionalExpression
+finding	T039633	V	56	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	-1	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	0	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	2	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	4	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	5	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	8	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	10	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	12	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	13	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	15	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	16	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	17	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	20	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	21	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	24	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	25	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	29	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	31	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	33	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	36	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	37	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	39	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	40	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	41	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	43	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	44	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	45	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	46	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	47	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	48	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	49	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	50	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	51	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	53	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	54	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	57	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	58	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	59	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	60	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	V	61	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	-1	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	0	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	2	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	4	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	7	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	10	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	12	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	13	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	15	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	18	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	19	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	20	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	22	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	24	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	26	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	28	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	30	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	31	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	34	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	35	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	37	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	39	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	41	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	42	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	43	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	48	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	49	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	52	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	53	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	54	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	56	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	57	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	59	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	60	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	61	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042342	J	62	exception	part F control: the parser throws on a ConditionalExpression
+finding	T042847	V	55	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000001	J	34	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000005	V	41	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	-1	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	0	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	4	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	8	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	15	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	16	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	17	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	19	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	24	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	25	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	27	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	28	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	30	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	31	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	32	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	33	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	35	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	36	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	38	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	47	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	48	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	54	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	59	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	V	62	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	-1	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	1	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	4	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	5	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	8	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	10	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	13	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	14	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	15	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	16	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	17	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	19	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	20	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	21	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	23	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	25	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	26	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	30	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	31	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	33	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	38	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	40	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	43	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	44	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	45	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	48	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	50	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	52	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	53	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	55	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	58	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	59	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000006	J	63	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000028	V	49	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000030	J	2	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000035	J	31	exception	part F control: the parser throws on a ConditionalExpression
+finding	V000062	V	0	exception	part F control: the parser throws on a ConditionalExpression
+finding	J002124	V	22	exception	part F control: the parser throws on a ConditionalExpression
+tally	J	accepted	6830
+tally	J	refused	JSE1201	17
+tally	J	refused	JSE1202	13
+tally	J	refused	JSE1203	8
+tally	J	refused	JSE1301	7
+tally	J	refused	JSE1302	1
+tally	J	refused	JSE1303	7
+tally	J	refused	JSE1321	45
+tally	J	refused	JSE1323	12
+tally	J	refused	JSE1324	3
+tally	J	refused	JSE1325	3
+tally	J	refused	JSE1328	1
+tally	J	refused	JSE1329	57
+tally	J	refused	JSE1330	8
+tally	J	refused	JSE1335	1
+tally	J	refused	JSE1405	31
+tally	J	refused	JSE1412	5
+tally	J	refused	JSE1520	2
+tally	J	refused	JSE1601	12
+tally	J	refused	JSE1602	10
+tally	J	refused	JSE1604	1
+tally	J	refused	JSE1605	1
+tally	J	refused	JSE1622	1
+tally	J	refused	JSE7303	36
+tally	J	refused	JSE8106	103
+tally	J	refused	JSE9101	715
+tally	J	refused	JSE9102	1159
+tally	J	refused	JSE9103	366
+tally	J	refused	JSE9104	785
+tally	J	refused	JSE9105	234
+tally	J	refused	JSE9106	164
+tally	J	refused	JSE9107	48
+tally	J	refused	JSE9108	2021
+tally	J	refused	JSE9109	4520
+tally	J	refused	JSE9110	96
+tally	J	refused	JSE9111	12
+tally	J	refused	JSE9112	9
+tally	J	refused	JSE9201	140
+tally	J	refused	JSE9202	204
+tally	V	accepted	6743
+tally	V	refused	JSE1201	22
+tally	V	refused	JSE1202	17
+tally	V	refused	JSE1203	6
+tally	V	refused	JSE1301	8
+tally	V	refused	JSE1303	8
+tally	V	refused	JSE1313	1
+tally	V	refused	JSE1315	1
+tally	V	refused	JSE1321	19
+tally	V	refused	JSE1323	12
+tally	V	refused	JSE1324	3
+tally	V	refused	JSE1325	2
+tally	V	refused	JSE1329	37
+tally	V	refused	JSE1330	4
+tally	V	refused	JSE1335	1
+tally	V	refused	JSE1405	29
+tally	V	refused	JSE1412	9
+tally	V	refused	JSE1601	7
+tally	V	refused	JSE1602	9
+tally	V	refused	JSE7201	7
+tally	V	refused	JSE7303	35
+tally	V	refused	JSE8106	105
+tally	V	refused	JSE9101	686
+tally	V	refused	JSE9102	1121
+tally	V	refused	JSE9103	363
+tally	V	refused	JSE9104	757
+tally	V	refused	JSE9105	238
+tally	V	refused	JSE9106	160
+tally	V	refused	JSE9107	32
+tally	V	refused	JSE9108	1735
+tally	V	refused	JSE9109	4354
+tally	V	refused	JSE9110	113
+tally	V	refused	JSE9111	12
+tally	V	refused	JSE9112	13
+tally	V	refused	JSE9201	820
+tally	V	refused	JSE9202	205
+fuzz: 548 seed lines, 548 seeds read, 35620 parses, 238 findings
+# exit 1
+# end 2026-11-02T19:07:13Z

@@ -1,0 +1,15 @@
+Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/ctl-tree/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.37]     Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state [FAIL]
+  Failed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state [710 ms]
+  Error Message:
+   Assert.Empty() Failure: Collection was not empty
+Collection: ["Broiler.ECMAScript.Frontend: Broiler.ECMAScript.Sy"···]
+  Stack Trace:
+     at Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state() in /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/ctl-tree/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/SharedRuleTests.cs:line 79
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+
+Failed!  - Failed:     1, Passed:     1, Skipped:     0, Total:     2, Duration: 4 s - Broiler.ECMAScript.Architecture.Tests.dll (net10.0)
+sl2 exit 1

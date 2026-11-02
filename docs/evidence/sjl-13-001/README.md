@@ -236,6 +236,68 @@ the corpus at the branch's head is the one they read *(added 2026-10-27, after r
 corpus that a later commit's rewording of `REVISIONS.md`'s row 29 changed)* *(revised 2026-10-27, under decisions
 D-asi and D-t24; read "The runs read the corpus at `535b9e34`;")*.
 
+## The rule's parts at stage SJL-13.2f's head, 2026-11-02
+
+SJL-13.2's last stage, 4f (the done-when), took every part of [`decision-rule.md`](decision-rule.md) locally at its
+branch's head, `920f18f4579d729819bfcf3c02d18b75c78fd7b5` (branch `sjl-13-2f-done`), from a clean tree written by
+`git archive` of that commit, built in Release with `--disable-build-servers`, with no `LANG` and `TZ=UTC`, on one host
+(Linux 6.18.44, x86_64, 4 logical CPUs; .NET SDK 10.0.401), on 2026-11-02. The commits after it on the branch add this
+section and the runs' files under this bundle and change no other path.
+
+**These runs are not the rule's verdict.** The rule judges every part at **the library commit**, "the default-branch
+merge that completes SJL-13.2 (its done-when)", run there from a clean checkout, and "a part run at any other commit ...
+is void". The library commit is this stage's merge into the default branch: it does not exist yet, and this README names
+it by all forty digits when it lands, as the bundle has named each commit by its merge. Each part is then taken again at
+it. What follows is each part as its text reads the runs at the branch's head; nothing here is a verdict.
+
+| Part | Configuration as run | Outcome at the head, by the rule's text |
+|---|---|---|
+| A, the parse corpus and test262's syntax tests as classified | [`tools/frontend-corpus/`](tools/frontend-corpus/README.md), the library's corpus runner, and [`tools/compare_corpus.py`](tools/compare_corpus.py), both committed in `920f18f4` before any run of this part; every input, variant and configuration (V and J) and every eval request under E0 to E7 in V, test262 at `ccaac100` checked against the manifest's SHA-256; the provider answering from the classification (decision D26) | **Not met.** The run is complete (no input absent or crashed; the manifest's and the classification's digests equal the rule commit's) and the control is reported (two more failures); but 1,916 inputs, variants and configurations have no admitted outcome (below) |
+| B, the `syntax` vectors (template T3) | the Native AOT probe under the JIT, whose library-level runner parses each vector through the frontend adapter under the library's default request; the vectors at corpus revision 34, whose `syntax` area is the vectors commit's (`ed494b2e`, unchanged since) | **Met**: every one of the 549 vectors agrees at the parse; the control (`syntax/statements/ee0040/0002`'s expected refusal changed to an acceptance in a copy of the corpus) is reported as the one failure |
+| C, determinism (L13, SL9) | rule SL9's test (the architecture tests); the probe's dump mode `--digest-corpus` in three processes: run 1 in the manifest's order, run 2 reversed, run 3 on two threads, each parse twice at once; controls K1 and K2 as scratch patches | **Not met.** SL9 passes, and every input gives one hash in all four parses (the three files are the same bytes); K1 behaves as stated (run 2 differs from run 1 in 194,361 lines; SL2 refuses the patched library) and agrees again after its revert; **K2 does not**: run 2 differs from run 1 in 132,685 lines, but rule SL9 passes, so "rule SL9 must fail" does not hold. SL9 compares its runs inside one process, where a string-hash seed is one, over the vector corpus, whose `syntax` vectors read an outcome and no side table; a patch of this kind cannot make it fail. K2 agrees again after its revert |
+| D, the Native AOT probe (L10) | `dotnet publish -c Release -r linux-x64` with Broiler.VM's root settings, and the JIT build, each running the vector corpus | **Not met**, as configured: both local publications succeed with no warning, both runs pass and their reports are the same bytes, but the configuration's run by `.github/workflows/shared-libraries.yml` at the library commit is not taken (it is the merge's, an orchestration step) |
+| E, the shared libraries' rules | the architecture tests in Release (SL1 to SL10 with their witnesses, the API baseline in both directions, the register); package validation by a bash rendering of `eng/pack.ps1 -ProjectSet Shared`; the assurance check as the shared workflow runs it | **Met**: 32 of 32 architecture tests pass, every witness refused, the frontend in scope of every rule and of SL1's row; four packages packed and validated at `0.1.0-preview.9`, `Broiler.ECMAScript.Frontend` among them; "no violations" |
+| F, fuzzing (L9) | the probe's `--fuzz` over [`inputs/fuzz-seeds.txt`](inputs/fuzz-seeds.txt) (548 lines, 64 mutants each, 2,000 ms a parse) on a thread of `ParseLimits.StackBytes`, under the JIT and as the Native AOT image; the control a scratch copy whose parser throws on a ConditionalExpression | **Met**: no finding under either runtime; the control reports 238 findings, and the reverted copy's run is the run's, line for line |
+| G, the limits | [`tools/deep_nesting.py`](tools/deep_nesting.py) `run` over [`inputs/deep/`](inputs/deep/manifest.tsv), each of the 54 sources alone in its own process, under the JIT and as the image; the derivation, [`Broiler.ECMAScript/docs/frontend/limits/derivation.md`](../../../Broiler.ECMAScript/docs/frontend/limits/derivation.md), with its frames per level measured again five ways (`limits/frames-*.tsv`) | **Met**: 54 of 54 rows hold under both runtimes, every exit its row's; the measurement gives the costliest construct at 512 levels the same stack as the derivation states (its section 4's margins stand) |
+| H, the contract's checklist | [`tools/contract_check.py`](tools/contract_check.py), committed in `920f18f4` before any run of this part, over the library's `PublicAPI.txt`, its project file, `Rows.cs` and the stage table, and JSD-0080 as Broiler.VM `d1c56275aa787f71a1f5ad0fa21e0a8cc3b07207` holds it (`contract/jsd-0080.sha256`); two scratch controls | **Met**: every row and item of JSD-0080's input and output tables, limits and providers has a member, but the caller's lexical names, listed absent with decision D16's reason; no public type or reference names an engine; none of the stage table's 17 `engine` rows has a producer; control 1 (`ParseLimits.DiagnosticCap` removed) and control 2 (a public `Broiler.VM.Witness.EngineStub`) are each reported |
+
+Read by clause, as the rule reads them: clause 1 (parts H and E, with G) would read met at the head; clause 2 (A and B)
+and clause 3 (C and D) would not.
+
+**Part A's failures, by cause** (`corpus/failure-groups.tsv` groups every one by reason, configuration, the rows the
+classification names and the row of the library's first code; `corpus/comparison.tsv.gz` lists every input, variant and
+configuration with its reason, and `corpus/comparison-summary.txt` the tallies by reason):
+- **710 regular-expression literals whose refusal the classification records under rows the stage table does not base
+  on the provider**, so that the provider, which the rule has refuse a literal only "naming the first row the
+  classification names that the stage table bases on the provider", admits them and the library accepts: in
+  configuration J, 255 test262 inputs (510 variants) whose rows are Broiler.JS's scanner codes alone (EX0001 or
+  EX0008), and in both configurations 50 inputs of Broiler.JS's corpus (200 variants), regular-expression literals both
+  engines' validators refuse, whose rows are every `syntax` row of Broiler.VM's first registry code, 2101. A
+  classification of the provider's answer, which only a new dated rule file may correct.
+- **26 refusals the library does not make**: an `import.meta`, a `this` or a parenthesised non-target as a `for`-`in`,
+  `for`-`of` or `for await` head's target (T037840 to T037842, T048863, T048869, T049556, T049562), and a module that
+  exports a name it does not declare (T041636, T041638). Library defects, fixed before the library commit.
+- **1,180 refusals whose first code is not one the classification's rows allow**: the library refuses where the
+  classification expects it to, but with another row's code, most often EX0001's where it names EX0009 or EX0008, EX0009's
+  where it names EX0008, and EX0008's where it names a cover's rows (EE0087, EE0155); the groups name each pair. Each is
+  a library defect (a site that reports the wrong row) or a classification error, decided per group.
+
+Part A's admitted outcomes include L in configuration J (two inputs refused at the nesting parameter and one at the
+tree-depth constant, each reported with its bound), all of them in Broiler.JS's corpus.
+
+**What stage 4f changed that the runs read.** The tree-depth charge of every shape of the tree (the owner's decision of
+2026-11-02 on decision D14; the derivation's section 5): the probe's report of the vector corpus at the head is the same
+bytes as at `origin/main` (`6d9ded70`) (`probe/sha256.txt`), and the dump of every one of the parse corpus's 295,795
+parses in configuration V is the same as stage 4e's (its verifier's dump): no parse of the corpus in configuration V moves, and part A's
+L in configuration J is a chain past the constant, which stage 4e refused too.
+
+**The files.** `corpus/` (part A: the runner's report, the comparison, its control), `vectors/` (B), `determinism/` (C:
+run 1's dump, the three runs' digests and logs, SL2 and SL9 from the architecture tests, and K1 and K2 each with its
+patch, its runs' digests, the first lines where they differ, the rule its patch must fail and its revert), `probe/` (D),
+`rules/` (E: the architecture tests, the assurance check, the pack and the pristine consumer), `fuzz/` (F, with the
+control's findings by name), `limits/` (G), `contract/` (H). The dump files of run 2, run 3 and the controls' runs are
+not kept, only their SHA-256: run 2's and run 3's are run 1's bytes.
+
 ## State
 
 **2026-10-26, at SJL-13.1: rules only. Nothing here is a verdict, and nothing has been taken.**
@@ -277,7 +339,11 @@ The `syntax` vectors' commits on this change's branch are named in the section a
 after review by `535b9e3469a0d74a0c23244e3271c7853785f00c` *(the last clause added 2026-10-27)* and completed under
 the owner's decisions D-asi and D-t24 by `dc9e09e5ae9583552f8f42a3879527fec7396f3d` *(this clause added 2026-10-27)*. The vectors
 commit, the default-branch merge that carries them, is named here, by all forty digits, when that change has merged.
-No other commit is named yet. *(Revised 2026-10-27, at the `syntax` vectors; read "No other commit is named yet.")*
+No other commit is named yet. *(Revised 2026-10-27, at the `syntax` vectors; read "No other commit is named yet.")* *(Added 2026-11-02, at SJL-13.2f: **the library commit** is
+the default-branch merge of SJL-13.2f, the done-when, branch `sjl-13-2f-done`; it is named here by all forty digits when
+that merge lands, and every part is taken there. The parts were taken at the branch's head before it, at
+`920f18f4579d729819bfcf3c02d18b75c78fd7b5` (the section "The rule's parts at stage SJL-13.2f's head"), which the rule
+counts as no run of a part.)*
 
 **What the bundle will hold:**
 - `corpus/`: part A's report in both configurations, the comparison's output with every admitted outcome listed by
@@ -293,7 +359,8 @@ No other commit is named yet. *(Revised 2026-10-27, at the `syntax` vectors; rea
 - `engine/`: both engines' engine-level runs on the `syntax` vectors, the basis of revision 30's fields, which no part
   reads *(added 2026-10-27, at the `syntax` vectors; the item before ended with a full stop)*.
 
-**It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them.
+**It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them. *(Noted 2026-11-02, at SJL-13.2f: the runs at the branch's head are taken, and the folders above hold them; the
+section "The rule's parts at stage SJL-13.2f's head" reads them.)*
 A test262 suite total is never quoted (rule H5): part A is decided per input, variant and configuration, and totals
 decide nothing.
 

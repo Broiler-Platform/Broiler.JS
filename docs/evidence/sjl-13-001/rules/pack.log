@@ -1,0 +1,34 @@
+packable: Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj -> Broiler.ECMAScript.Algorithms 0.1.0-preview.9
+  Determining projects to restore...
+  Restored /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 437 ms).
+  Broiler.ECMAScript.Algorithms -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/pack2/Broiler.ECMAScript.Algorithms.0.1.0-preview.9.nupkg'.
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/pack2/Broiler.ECMAScript.Algorithms.0.1.0-preview.9.snupkg'.
+packable: Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj -> Broiler.ECMAScript.Frontend 0.1.0-preview.9
+  Determining projects to restore...
+  Restored /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 502 ms).
+  1 of 2 projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/pack2/Broiler.ECMAScript.Frontend.0.1.0-preview.9.nupkg'.
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/pack2/Broiler.ECMAScript.Frontend.0.1.0-preview.9.snupkg'.
+packable: Broiler.ECMAScript/Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj -> Broiler.ECMAScript.Generation 0.1.0-preview.9
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Generation -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Generation/bin/Release/net10.0/Broiler.ECMAScript.Generation.dll
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/pack2/Broiler.ECMAScript.Generation.0.1.0-preview.9.nupkg'.
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/pack2/Broiler.ECMAScript.Generation.0.1.0-preview.9.snupkg'.
+packable: Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj -> Broiler.ECMAScript.Intl 0.1.0-preview.9
+  Determining projects to restore...
+  Restored /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj (in 1.25 sec).
+  1 of 2 projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Intl -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/pack2/Broiler.ECMAScript.Intl.0.1.0-preview.9.nupkg'.
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/pack2/Broiler.ECMAScript.Intl.0.1.0-preview.9.snupkg'.
+Broiler.ECMAScript.Algorithms 0.1.0-preview.9: dependencies []
+Broiler.ECMAScript.Frontend 0.1.0-preview.9: dependencies [('Broiler.ECMAScript.Algorithms', '0.1.0-preview.9'), ('Broiler.Unicode.Algorithms', '0.1.0-preview.6')]
+Broiler.ECMAScript.Generation 0.1.0-preview.9: dependencies []
+Broiler.ECMAScript.Intl 0.1.0-preview.9: dependencies [('Broiler.ECMAScript.Algorithms', '0.1.0-preview.9'), ('Broiler.Unicode.Algorithms', '0.1.0-preview.6')]
+Verified 4 Shared packages at 0.1.0-preview.9.
+exit 0
