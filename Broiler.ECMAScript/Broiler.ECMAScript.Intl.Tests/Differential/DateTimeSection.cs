@@ -34,7 +34,9 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// <b>Two readings classify a difference.</b> Where the arms differ, the library is asked again, first with the zone named by its
 /// primary identifier, Broiler.VM's [[TimeZone]] (row Z8, decision D15): a difference that removes is row Z8's, the correction of
 /// Broiler.VM. Then as Broiler.VM reads the data as well: at the data locale's language, with Broiler.VM's <c>nu</c> values,
-/// <c>latn</c> first (decisions D5 and D13). A difference that removes is the data policy of rows T10, T15, T16, T22 and T37,
+/// <c>latn</c> first (decisions D5 and D13), and a region's time data by its preferred hour format alone, so that <c>hour12</c>
+/// takes <c>h12</c> or <c>h23</c> where the library takes the first cycle of its kind the region allows (row T10, from stage
+/// SJL-9.3f). A difference that removes is the data policy of rows T10, T15, T16, T22 and T37,
 /// Broiler.JS's embedding read at the data locale with its own numbering-system defaults; Broiler.VM's tables hold their locales'
 /// languages alone and no default numbering system but <c>latn</c>, so in its embedding that reading is the library's own and
 /// only row Z8 can classify a difference.
@@ -641,7 +643,10 @@ internal static class DateTimeSection
 
         public bool TryExtensionType(char singleton, string key, string type, out string preferred) => inner.TryExtensionType(singleton, key, type, out preferred);
 
-        public RegionHourCycles? HourCycles(string region) => inner.HourCycles(region);
+        // Broiler.VM reads a region's preferred hour format alone (its JsDateData.PreferredHourChar), and its hour12 takes h12 or
+        // h23 where the preferred is of the other kind; the library takes the first of that kind the region allows (row T10,
+        // settled at stage SJL-9.3f). So the allowed formats are read here as the preferred alone, which gives Broiler.VM's.
+        public RegionHourCycles? HourCycles(string region) => inner.HourCycles(region) is { } cycles ? cycles with { Allowed = cycles.Preferred } : null;
 
         public RegionWeek? Week(string region) => inner.Week(region);
 

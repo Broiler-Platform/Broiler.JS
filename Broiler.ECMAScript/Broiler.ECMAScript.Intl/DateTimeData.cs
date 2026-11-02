@@ -189,4 +189,31 @@ internal sealed class DateData
 
         return cycles.Preferred.Length != 0 ? cycles.Preferred[0] : 'H';
     }
+
+    /// <summary>
+    /// The hour character of a region's 12-hour cycle (<c>h</c> or <c>K</c>) or 24-hour cycle (<c>H</c> or <c>k</c>), its
+    /// [[hourCycle12]] or [[hourCycle24]] where the region prefers a cycle of the other kind: the first of that kind among
+    /// CLDR's allowed formats for the region, the world's where the region has no time data, and <c>h</c> or <c>H</c> where
+    /// none of them is of that kind (row T10). CLDR allows Japan's <c>H K h</c>, so <c>ja</c>'s 12-hour cycle is <c>h11</c>,
+    /// as test262's <c>intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js</c> asks; every other region of
+    /// CLDR 48.2.0's time data allows <c>h</c> before any <c>K</c>, and none allows <c>k</c>.
+    /// </summary>
+    /// <param name="region">The region whose time data applies.</param>
+    /// <param name="twelveHour">Whether the 12-hour cycle is asked for, else the 24-hour one.</param>
+    internal char AllowedHourChar(string region, bool twelveHour)
+    {
+        if ((data.HourCycles(region) ?? data.HourCycles("001")) is { } cycles)
+        {
+            foreach (var format in cycles.Allowed.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var c = format[0];
+                if (twelveHour ? c is 'h' or 'K' : c is 'H' or 'k')
+                {
+                    return c;
+                }
+            }
+        }
+
+        return twelveHour ? 'h' : 'H';
+    }
 }
