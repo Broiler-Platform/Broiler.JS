@@ -187,7 +187,12 @@ public sealed class ParserTests
             Refuse("return 1;", goal);
             Refuse("import x from 'm';", goal);
             Refuse("export var a;", goal);
-            Accept("import('m'); import.meta; new.target; super.x;", goal);
+            Accept("import('m'); super.x;", goal);
+
+            // From stage 4d the early errors refuse `import.meta` outside a module and `new.target` outside a function
+            // (catalogue rows EE0027, EE0163 and EA0002).
+            Refuse("import.meta;", goal);
+            Refuse("new.target;", goal);
         }
     }
 
@@ -208,14 +213,16 @@ public sealed class ParserTests
     {
         var off = Request("await x;", ParseGoal.Module);
         Refuse(new ParseRequest(off.Source, ParseGoal.Module, off.UnicodeTables, off.RegularExpressions) { Switches = ParseSwitches.For(ParseGoal.Module) with { TopLevelAwait = false } });
-        Accept(new ParseRequest(new SourceText("var await = 1; await;"), ParseGoal.Module, off.UnicodeTables, off.RegularExpressions) { Switches = ParseSwitches.For(ParseGoal.Module) with { TopLevelAwait = false } });
+        // A module's `await` is a reserved word whatever the switch (catalogue row EE0007, from stage 4d).
+        Refuse(new ParseRequest(new SourceText("var await = 1; await;"), ParseGoal.Module, off.UnicodeTables, off.RegularExpressions) { Switches = ParseSwitches.For(ParseGoal.Module) with { TopLevelAwait = false } });
 
-        var script = new ParseRequest(new SourceText("for await (x of y); await using r = s;"), ParseGoal.Script, off.UnicodeTables, off.RegularExpressions) { Switches = ParseSwitches.For(ParseGoal.Script) with { TopLevelAwait = true } };
+        var script = new ParseRequest(new SourceText("for await (x of y); { await using r = s; }"), ParseGoal.Script, off.UnicodeTables, off.RegularExpressions) { Switches = ParseSwitches.For(ParseGoal.Script) with { TopLevelAwait = true } };
         Assert.True(Accept(script).HasTopLevelAwait);
         Refuse("await x;");
         Assert.False(Accept("async function f() { await x; } (async () => await y);", ParseGoal.Module).HasTopLevelAwait);
         Assert.True(Accept("class C { [await x] = 1; }", ParseGoal.Module).HasTopLevelAwait);
-        Assert.False(Accept("class C { static { await x; } }", ParseGoal.Module).HasTopLevelAwait);
+        Assert.False(Accept("class C { static { (async () => await x); } }", ParseGoal.Module).HasTopLevelAwait);
+        Assert.Equal("JSE1573", Refuse("class C { static { await x; } }", ParseGoal.Module).Code);
     }
 
     [Theory]
@@ -224,8 +231,8 @@ public sealed class ParserTests
     [InlineData(DynamicFunctionKind.Normal, "...c, d", false)]
     [InlineData(DynamicFunctionKind.Normal, "a) { (", false)]
     [InlineData(DynamicFunctionKind.Normal, "a = yield", true)]
-    [InlineData(DynamicFunctionKind.Generator, "a = yield", true)]
-    [InlineData(DynamicFunctionKind.Async, "a = await b", true)]
+    [InlineData(DynamicFunctionKind.Generator, "a = yield", false)]
+    [InlineData(DynamicFunctionKind.Async, "a = await b", false)]
     [InlineData(DynamicFunctionKind.Normal, "a = await b", false)]
     [InlineData(DynamicFunctionKind.Normal, "", true)]
     public void The_dynamic_function_s_parameters_are_a_FormalParameters_of_its_kind(DynamicFunctionKind kind, string text, bool accepted)
@@ -284,7 +291,7 @@ public sealed class ParserTests
     [InlineData("debugger;", "(DebuggerStatement)")]
     [InlineData("function* g(a, ...b) { yield* a; }", "(FunctionDeclaration (Function generator (BindingIdentifier g) (BindingIdentifier a) (RestElement (BindingIdentifier b)) (ExpressionStatement (YieldExpression delegate (Identifier a)))))")]
     [InlineData("async function f() { await a; }", "(FunctionDeclaration (Function async (BindingIdentifier f) (ExpressionStatement (AwaitExpression (Identifier a)))))")]
-    [InlineData("using a = b;", "(VariableDeclaration Using (VariableDeclarator (BindingIdentifier a) (Identifier b)))")]
+    [InlineData("{ using a = b; }", "(BlockStatement (VariableDeclaration Using (VariableDeclarator (BindingIdentifier a) (Identifier b))))")]
     public void Each_statement_has_its_node(string text, string tree) => Assert.Equal(tree, First(text));
 
     [Theory]
@@ -346,7 +353,7 @@ public sealed class ParserTests
     [InlineData("a = b += c", "(AssignmentExpression Assign (Identifier a) (AssignmentExpression AddAssign (Identifier b) (Identifier c)))")]
     [InlineData("a, b", "(SequenceExpression (Identifier a) (Identifier b))")]
     [InlineData("!typeof -a", "(UnaryExpression LogicalNot (UnaryExpression Typeof (UnaryExpression Minus (Identifier a))))")]
-    [InlineData("++a--", null)]
+    [InlineData("++(a.b)", null)]
     [InlineData("(-a) ** 2", "(BinaryExpression Exponent (ParenthesizedExpression (UnaryExpression Minus (Identifier a))) (NumericLiteral 2))")]
     [InlineData("#x in o", null)]
     [InlineData("a?.b.c", "(ChainExpression (MemberExpression dot (MemberExpression dot optional (Identifier a) (IdentifierName b)) (IdentifierName c)))")]
@@ -358,14 +365,14 @@ public sealed class ParserTests
     [InlineData("a`\\unicode`", "(TaggedTemplateExpression (Identifier a) (TemplateLiteral (TemplateElement `<invalid>|\\unicode`)))")]
     [InlineData("`a${`b${c}`}`", "(TemplateLiteral (TemplateElement `a|a`) (TemplateLiteral (TemplateElement `b|b`) (Identifier c) (TemplateElement `|`)) (TemplateElement `|`))")]
     [InlineData("x = /a/g / b / c", "(AssignmentExpression Assign (Identifier x) (BinaryExpression Divide (BinaryExpression Divide (RegularExpressionLiteral /a/g) (Identifier b)) (Identifier c)))")]
-    [InlineData("import.meta", "(MetaProperty (IdentifierName import) (IdentifierName meta))")]
+    [InlineData("this", null)]
     [InlineData("import(a, b,)", "(ImportCall Evaluation (Identifier a) (Identifier b))")]
     [InlineData("super.a(super[b])", "(CallExpression (MemberExpression dot (SuperExpression) (IdentifierName a)) (MemberExpression computed (SuperExpression) (Identifier b)))")]
     [InlineData("super(...a)", "(CallExpression (SuperExpression) (SpreadElement (Identifier a)))")]
     [InlineData("[a, , ...b,]", "(ArrayLiteral trailing (Identifier a) (SpreadElement (Identifier b)))")]
     [InlineData("({ a, b: c, [d]: e, f() {}, get g() {}, set g(v) {}, async *h() {}, ...i, 1: 2, 'j': 3, 4n: 5 })", null)]
     [InlineData("({ get, set, async, get: 1, async() {} })", null)]
-    [InlineData("({ #m() {}, get #g() {}, async *#a() {} })", null)]
+    [InlineData("({ m() {}, get g() {}, async *a() {} })", null)]
     [InlineData("x = function* () { yield\n1 }", null)]
     [InlineData("x = class extends (a, b) {}", null)]
     public void Each_expression_has_its_node(string text, string? tree)
@@ -504,8 +511,13 @@ public sealed class ParserTests
 
     /// <summary>
     /// An <c>await</c> an async arrow's own parameters bind is a BindingIdentifier, which the grammar admits under [+Await]
-    /// (its refusal is an early error, stage 4d's); one inside a nested function, or in a non-async arrow's body, is read
-    /// under that function's own [Await]; and a cover no <c>=&gt;</c> follows is a call.
+    /// and the early errors refuse from stage 4d (catalogue row EE0009); one inside a nested function, or in a non-async
+    /// arrow's body, is read under that function's own [Await]; and a cover no <c>=&gt;</c> follows is a call.
+    /// <i>(Revised 2026-11-02, at stage SJL-13.2d, which refuses the first six; they were accepted here, "its refusal is an
+    /// early error, stage 4d's".)</i>
+    /// <i>(Revised 2026-11-02, at stage SJL-13.2d: four sources the grammar admits are refused from stage 4d by their early
+    /// errors, P15b's parenthesised patterns (EE0039), P25's <c>using</c> at a script's top level (EP0008) and P35's
+    /// <c>0++</c> (EE0028), and P08's two meta properties are read where they are allowed; they were all accepted here.)</i>
     /// </summary>
     [Theory]
     [InlineData("async(await) => {}")]
@@ -514,11 +526,15 @@ public sealed class ParserTests
     [InlineData("async([await] = []) => {}")]
     [InlineData("async(...await) => {}")]
     [InlineData("async(a = await => 1) => {}")]
+    public void An_await_an_async_arrow_head_binds_is_refused_by_the_early_errors(string text) =>
+        Assert.Equal("JSE1305", Refuse(text).Code);
+
+    [Theory]
     [InlineData("async(a = function () { await; }) => {}")]
     [InlineData("async(a = () => await) => {}")]
     [InlineData("async(x = await)")]
     [InlineData("(x = await) => {}")]
-    public void An_await_an_async_arrow_head_binds_or_does_not_read_is_left_to_the_early_errors(string text) => Accept(text);
+    public void An_await_a_nested_function_or_a_call_reads_is_read_under_its_own_Await(string text) => Accept(text);
 
     [Theory]
     [InlineData("[a, [b], {c}, ...d] = e", "(ArrayPattern (TargetPattern (Identifier a)) (ArrayPattern (TargetPattern (Identifier b))) (ObjectPattern (PatternProperty shorthand (TargetPattern (Identifier c)))) (RestElement (TargetPattern (Identifier d))))")]
@@ -672,7 +688,7 @@ public sealed class ParserTests
     [InlineData("async function f() { class C { x = await; } }", true)]
     [InlineData("async function f() { class C { x = await 1; } }", false)]
     [InlineData("async function f() { class C { [await 1] = 1; } }", true)]
-    [InlineData("class C { static { await 1; } }", true)]
+    [InlineData("class C { static { await 1; } }", false)]
     [InlineData("class C { static { return; } }", false)]
     [InlineData("function f() { class C { static { return; } } }", false)]
     [InlineData("class C { accessor x = 1; }", false)]
@@ -819,8 +835,8 @@ public sealed class ParserTests
     [InlineData("P07", "new import(a)", ParseGoal.Script, false)]
     [InlineData("P07", "import(...a)", ParseGoal.Script, false)]
     // P08's refusals are early errors (catalogue rows EE0027 and EA0002), stage 4d's: the grammar admits both.
-    [InlineData("P08", "import.meta;", ParseGoal.Script, true)]
-    [InlineData("P08", "new.target", ParseGoal.Script, true)]
+    [InlineData("P08", "import.meta;", ParseGoal.Module, true)]
+    [InlineData("P08", "function f() { new.target }", ParseGoal.Script, true)]
     [InlineData("P09", "({ async\nm() {} })", ParseGoal.Script, false)]
     [InlineData("P09", "function f() { let\nawait 0; }", ParseGoal.Script, false)]
     [InlineData("P10", "do {}; while (false)", ParseGoal.Script, false)]
@@ -836,8 +852,8 @@ public sealed class ParserTests
     [InlineData("P15a", "({...a, b} = c)", ParseGoal.Script, false)]
     // P15b's refusal of a parenthesised nested target that is no simple target is an early error (catalogue row EE0039),
     // stage 4d's; a parenthesised simple target is valid.
-    [InlineData("P15b", "var b; ({ a: (b = 7) } = {});", ParseGoal.Script, true)]
-    [InlineData("P15b", "var b; ({ a: ([b]) } = { a: [1] });", ParseGoal.Script, true)]
+    [InlineData("P15b", "var b; ({ a: (b = 7) } = {});", ParseGoal.Script, false)]
+    [InlineData("P15b", "var b; ({ a: ([b]) } = { a: [1] });", ParseGoal.Script, false)]
     [InlineData("P15b", "var b; ({ a: (b) } = { a: 8 }); b", ParseGoal.Script, true)]
     [InlineData("P16", "a\nb", ParseGoal.Script, true)]
     [InlineData("P16b", "for (var i = 0\ni < 1; i++) ;", ParseGoal.Script, false)]
@@ -859,13 +875,13 @@ public sealed class ParserTests
     [InlineData("P24", "function f() { class C { static { return; } } }", ParseGoal.Script, false)]
     // P25's refusal of `using` at the top level of a Script or of eval code is an early error (catalogue row EP0008), stage
     // 4d's: the grammar admits the declaration there, and in a block.
-    [InlineData("P25", "using x = null;", ParseGoal.Script, true)]
-    [InlineData("P25", "using x = null;", ParseGoal.Eval, true)]
+    [InlineData("P25", "using x = null;", ParseGoal.Script, false)]
+    [InlineData("P25", "using x = null;", ParseGoal.Eval, false)]
     [InlineData("P25", "var r; { using x = null; r = 3; } r", ParseGoal.Script, true)]
     [InlineData("P31", "({...{a}} = o)", ParseGoal.Script, false)]
     [InlineData("P31", "({...[a]} = o)", ParseGoal.Script, false)]
     [InlineData("P31", "[...[a]] = []", ParseGoal.Script, true)]
-    [InlineData("P35", "0++;", ParseGoal.Script, true)]
+    [InlineData("P35", "0++;", ParseGoal.Script, false)]
     [InlineData("D40", "import { if } from 'm';", ParseGoal.Module, false)]
     [InlineData("EX0010", "export var a;", ParseGoal.Script, false)]
     [InlineData("EX0032", "return;", ParseGoal.Script, false)]
@@ -882,7 +898,7 @@ public sealed class ParserTests
     [InlineData("var a = [1, {b: c}, ...d], e = (f, g) => f`x${g}y`;\nclass C extends D { static #p = 1; m() { return super.m?.(this.#p); } }")]
     [InlineData("for await (const [a, {b = 1}] of c) { label: if (a) b; else { c?.d; } }")]
     [InlineData("import a, { b as c } from 'm' with { type: 'json' };\nexport default async function* () { yield* [await a]; }")]
-    [InlineData("x = function f(a, [b], {c}, ...d) { 'use strict'; switch (a) { case 1: break; default: } try {} catch ({e}) {} finally {} };")]
+    [InlineData("x = function f(a, [b], {c}, ...d) { 'use strict!'; switch (a) { case 1: break; default: } try {} catch ({e}) {} finally {} };")]
     public void Every_node_s_span_lies_in_its_parent_s_after_its_preceding_sibling_and_names_its_text(string text)
     {
         var goal = text.StartsWith("import", StringComparison.Ordinal) || text.StartsWith("for await", StringComparison.Ordinal) ? ParseGoal.Module : ParseGoal.Script;

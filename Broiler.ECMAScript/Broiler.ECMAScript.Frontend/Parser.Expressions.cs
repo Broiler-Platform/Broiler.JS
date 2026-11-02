@@ -64,7 +64,7 @@ internal sealed partial class Parser
     /// pattern, or a ConditionalExpression. With <paramref name="defer"/>, a CoverInitializedName read here and not
     /// converted is left to the caller, whose literal may yet become a pattern.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=07ED58
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=3D0257
     // Broiler-Falsified-If: an arrow is read where its cover was not the whole left operand, a target that is no LeftHandSideExpression is admitted, or a CoverInitializedName no conversion takes is admitted
     // Broiler-Human:        PENDING
     private Expression ParseAssignment(bool noIn, bool defer = false)
@@ -117,11 +117,18 @@ internal sealed partial class Parser
             {
                 SyntaxNode target;
                 if (op == AssignmentOperator.Assign && left is ArrayLiteral or ObjectLiteral)
-                    target = ToAssignmentPattern(left);
+                    target = Converting(Rows.EE0032, () => ToAssignmentPattern(left));
                 else if (IsLeftHandSide(left))
                     target = left;
                 else
-                    throw Unexpected(next);
+                {
+                    // An operand that is no LeftHandSideExpression: its AssignmentTargetType is ~invalid~ (catalogue rows
+                    // EE0033, EE0034 and EE0035, by the operator), as both engines' parsers refuse it.
+                    var row = op == AssignmentOperator.Assign ? Rows.EE0033
+                        : op is AssignmentOperator.AndAssign or AssignmentOperator.OrAssign or AssignmentOperator.CoalesceAssign ? Rows.EE0035
+                        : Rows.EE0034;
+                    throw Refuse(row, left.Span, Spelling(next));
+                }
 
                 Advance();
                 var value = ParseAssignment(noIn);
@@ -142,13 +149,17 @@ internal sealed partial class Parser
     }
 
     /// <summary>Refuses the first CoverInitializedName read since <paramref name="mark"/> that no conversion took (catalogue row EE0017 at stage 4d).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.5 CoverInitializedName; IP=Low; Security=High; Resources=2; Fingerprint=BD658C
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.5 CoverInitializedName; IP=Low; Security=High; Resources=2; Fingerprint=6736EC
     // Broiler-Falsified-If: a CoverInitializedName that no conversion took is admitted
     // Broiler-Human:        PENDING
     private void CheckCoverInitialized(int mark)
     {
+        // A CoverInitializedName that no conversion took into a pattern (catalogue row EE0017).
         if (coverInitialized.Count > mark)
-            throw Unexpected(coverInitializedAt[coverInitialized[mark]]);
+        {
+            var at = coverInitializedAt[coverInitialized[mark]];
+            throw Refuse(Rows.EE0017, SpanOf(at), Spelling(at));
+        }
     }
 
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=E308C4
@@ -505,7 +516,7 @@ internal sealed partial class Parser
     /// <paramref name="asyncHead"/>, a first argument list on the same line as <c>async</c> is read as the
     /// CoverCallExpressionAndAsyncArrowHead, which a following <c>=&gt;</c> converts.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=486255
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=F4ECE4
     // Broiler-Falsified-If: a link the grammar refuses is admitted, or a chain is charged without its first expression's spine
     // Broiler-Human:        PENDING
     private Expression ParseChainLinks(Expression current, bool allowCalls, bool asyncHead = false)
@@ -550,8 +561,8 @@ internal sealed partial class Parser
                         }
                         else if (after.Kind is TokenKind.NoSubstitutionTemplate or TokenKind.TemplateHead)
                         {
-                            var quasi = ParseTemplate();
-                            current = new TaggedTemplateExpression(SpanFrom(start), current, quasi);
+                            // OptionalChain : ?. TemplateLiteral matches a production only to be refused (catalogue row EE0026).
+                            throw Refuse(Rows.EE0026, SpanOf(after), Spelling(after));
                         }
                         else
                         {
@@ -605,6 +616,10 @@ internal sealed partial class Parser
                     case TokenKind.NoSubstitutionTemplate:
                     case TokenKind.TemplateHead:
                     {
+                        // An OptionalChain followed by a TemplateLiteral matches a production only to be refused (catalogue
+                        // row EE0026).
+                        if (optional)
+                            throw Refuse(Rows.EE0026, SpanOf(token), Spelling(token));
                         var quasi = ParseTemplate();
                         current = new TaggedTemplateExpression(SpanFrom(start), current, quasi);
                         Fix(current, start);
@@ -766,7 +781,7 @@ internal sealed partial class Parser
     /// An ImportCall or <c>import.meta</c> (clauses 13.3.10 and 13.3.12), and the import phases' call forms under their flags
     /// (decision D17): an ImportCall is a CallExpression, never a <c>new</c> expression's constructor.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=E8E138
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=3448D2
     // Broiler-Human:        PENDING
     private Expression ParseImportExpression(bool allowCalls)
     {
@@ -786,6 +801,11 @@ internal sealed partial class Parser
             var phase = IsWord(name, Word.Source) && (proposals & ProposalFlags.ImportSourceCalls) != 0 ? ImportPhase.Source
                 : IsWord(name, Word.Defer) && (proposals & ProposalFlags.ImportDeferCalls) != 0 ? ImportPhase.Defer
                 : ImportPhase.Evaluation;
+            // An import phase's call form whose proposal the request does not admit (catalogue rows EP0012 and EP0014).
+            if (phase == ImportPhase.Evaluation && allowCalls && IsWord(name, Word.Source) && PeekAfter(LexicalGoal.Div, LexicalGoal.Div).Kind == TokenKind.LeftParen)
+                throw Refuse(Rows.EP0012, SpanOf(name), "source");
+            if (phase == ImportPhase.Evaluation && allowCalls && IsWord(name, Word.Defer) && PeekAfter(LexicalGoal.Div, LexicalGoal.Div).Kind == TokenKind.LeftParen)
+                throw Refuse(Rows.EP0014, SpanOf(name), "defer");
             if (phase == ImportPhase.Evaluation || !allowCalls)
                 throw Unexpected(name);
             Advance();
@@ -1041,7 +1061,7 @@ internal sealed partial class Parser
     /// <c>=&gt;</c> follows on the same line, the cover an AssignmentExpression converts into ArrowFormalParameters. The
     /// forms only parameters have (<c>()</c>, a trailing comma, a rest element) are refused without the arrow.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList; IP=Low; Security=High; Resources=2; Fingerprint=30764D
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList; IP=Low; Security=High; Resources=2; Fingerprint=D6E336
     // Broiler-Falsified-If: a form only parameters have is admitted without the arrow, or an arrow head is read again rather than converted
     // Broiler-Human:        PENDING
     private Expression ParseParenthesized()
@@ -1063,7 +1083,7 @@ internal sealed partial class Parser
                 var target = ParseBindingTarget();
                 rest = new RestElement(SpanFrom(StartOf(token)), target);
                 if (Op.Kind != TokenKind.RightParen)
-                    throw Missing(Op, ")");
+                    throw Unexpected(Op);
                 break;
             }
 
@@ -1088,8 +1108,9 @@ internal sealed partial class Parser
             return cover;
         }
 
+        // The cover covers no ParenthesizedExpression (catalogue row EE0025).
         if (items.Count == 0 || rest is not null || trailing)
-            throw Unexpected(next);
+            throw Refuse(Rows.EE0025, SpanOf(next), Spelling(next));
         CheckCoverInitialized(mark);
         var inner = items.Count == 1 ? items[0] : new SequenceExpression(SpanFromTo(items[0].Span, items[^1].Span), Lists.Freeze(items));
         var node = new ParenthesizedExpression(SpanFrom(start), inner);

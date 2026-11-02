@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   6
 // Annotated:        6/6
-// Exempt:           8
+// Exempt:           9
 // Human-reviewed:   0/6
 // IP risk:          Low
 // Security risk:    High
@@ -63,12 +63,13 @@ public enum ParseOutcome
 // Broiler-Human:        PENDING
 public sealed class ParseResult
 {
-    private ParseResult(ParseOutcome outcome, ProgramNode? tree, IReadOnlyList<Token> tokens, IReadOnlyList<SyntaxDiagnostic> diagnostics)
+    private ParseResult(ParseOutcome outcome, ProgramNode? tree, IReadOnlyList<Token> tokens, IReadOnlyList<SyntaxDiagnostic> diagnostics, Semantics.DeclarationTables? declarations)
     {
         Outcome = outcome;
         Tree = tree;
         Tokens = tokens;
         Diagnostics = diagnostics;
+        Declarations = declarations;
     }
 
     /// <summary>How the parse ended.</summary>
@@ -86,17 +87,24 @@ public sealed class ParseResult
     /// <summary>The tokens the parse consumed, in source order, each read under the goal the parser named; empty for a refused source.</summary>
     internal IReadOnlyList<Token> Tokens { get; }
 
-    /// <summary>The answer of a parse that accepts the source.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=EBE6F7
-    // Broiler-Human:        PENDING
-    internal static ParseResult Accepted(ProgramNode tree, List<Token> tokens) =>
-        new(ParseOutcome.Accepted, tree, tokens.AsReadOnly(), Array.Empty<SyntaxDiagnostic>());
+    /// <summary>
+    /// The declarations walk's side tables (stage SJL-13.2d; Broiler.VM's JSD-0083, decision D10), ordered by source position:
+    /// every scope's kind and declarations, and the program's and every function's strictness and parameter names; null for a
+    /// refused source.
+    /// </summary>
+    public Semantics.DeclarationTables? Declarations { get; }
 
-    /// <summary>The answer of a parse that refuses the source with one diagnostic, under the first error (decision D11).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=96A2E2
+    /// <summary>The answer of a parse that accepts the source.</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=F137FE
     // Broiler-Human:        PENDING
-    internal static ParseResult Refused(SyntaxDiagnostic diagnostic) =>
-        new(ParseOutcome.Refused, null, Array.Empty<Token>(), Array.AsReadOnly(new[] { diagnostic }));
+    internal static ParseResult Accepted(ProgramNode tree, List<Token> tokens, Semantics.DeclarationTables declarations) =>
+        new(ParseOutcome.Accepted, tree, tokens.AsReadOnly(), Array.Empty<SyntaxDiagnostic>(), declarations);
+
+    /// <summary>The answer of a parse that refuses the source, with the diagnostics the request asks for, in the library's order (decision D11).</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2d parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=398E8C
+    // Broiler-Human:        PENDING
+    internal static ParseResult Refused(List<SyntaxDiagnostic> diagnostics) =>
+        new(ParseOutcome.Refused, null, Array.Empty<Token>(), diagnostics.AsReadOnly(), null);
 }
 
 /// <summary>

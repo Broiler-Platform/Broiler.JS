@@ -112,7 +112,9 @@ public sealed class ContractTests
     /// The parse entry at stage 4c (the 4b test it replaces asserted that a text the tokenizer does not refuse was answered
     /// not implemented): the meter is charged the text's length once, before the parse reads it, and nothing for an empty
     /// text; the regular-expression provider is never asked, the literal's validity being stage 4d's; and every text is
-    /// answered accepted or refused, with a diagnostic exactly for a refusal, for every goal.
+    /// answered accepted or refused, with a diagnostic exactly for a refusal, for every goal. <i>(Revised 2026-11-02, at stage
+    /// SJL-13.2d: <c>let let = 1;</c>, which only an early error refuses (catalogue row EE0042), is refused from stage 4d, and
+    /// the provider, asked about every literal from stage 4d, admits <c>/(/</c> here.)</i>
     /// </summary>
     [Theory]
     [InlineData(ParseGoal.Script)]
@@ -127,7 +129,7 @@ public sealed class ContractTests
             var charges = new System.Collections.Generic.List<ulong>();
             var request = new ParseRequest(new SourceText(text), goal, Runners.UnicodeDataHome.Tables, NoValidator.Instance) { Meter = charges.Add };
             var result = SyntaxParser.Parse(request);
-            var accepted = goal != ParseGoal.FormalParameters || text.Length == 0;
+            var accepted = (goal != ParseGoal.FormalParameters || text.Length == 0) && !(text == "let let = 1;" && goal != ParseGoal.FormalParameters);
             Assert.Equal(accepted ? ParseOutcome.Accepted : ParseOutcome.Refused, result.Outcome);
             Assert.Equal(accepted ? 0 : 1, result.Diagnostics.Count);
             Assert.Equal(accepted, result.Tree is not null);
