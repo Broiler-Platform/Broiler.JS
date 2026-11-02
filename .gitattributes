@@ -96,6 +96,10 @@ conformance/datasets/intl/zone-names.divergences.txt -text
 docs/evidence/sjl-8-001/datasets/** -text
 # And bundle sjl-10-001's, from milestone SJL-10.2, the same way.
 docs/evidence/sjl-10-001/datasets/** -text
+# Bundle sjl-13-001's inputs (milestone SJL-13.1) are held by their SHA-256: the deep-nesting corpus by its
+# manifest.tsv, which LimitsTests and the part G runner check before parsing, and the fuzz seeds by the corpus
+# manifest the fuzz target checks. A Windows checkout that converted them to CRLF would change every digest.
+docs/evidence/sjl-13-001/inputs/** -text
 
 # CI job logs retained in an evidence bundle are kept byte for byte as GitHub Actions served them;
 # the Windows jobs' logs have CRLF line endings.

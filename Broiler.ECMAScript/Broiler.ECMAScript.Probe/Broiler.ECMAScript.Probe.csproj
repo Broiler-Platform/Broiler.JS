@@ -8,7 +8,8 @@
     JIT. The reference arms stay in the JIT test projects and are never part of it.
 
     Rule SL5 evaluates these properties; the shared-libraries workflow publishes and runs it on
-    every change to the folder.
+    every change to the folder. From stage SJL-13.2e it also carries the frontend's limits, fuzzing and determinism
+    modes (Program.Main's first argument), which the workflow does not run.
   -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -45,6 +46,10 @@
     <Compile Include="..\runners\AlgorithmsLibrary.Collation.cs" Link="AlgorithmsLibrary.Collation.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.Syntax.cs" Link="AlgorithmsLibrary.Syntax.cs" />
     <Compile Include="..\runners\UnicodeDataHome.cs" Link="UnicodeDataHome.cs" />
+    <!-- The canonical dump of a parse, for the corpus digest mode that compares the JIT and Native AOT parses (stage
+         SJL-13.2e). It reads the tree's children and the token stream, internal to the frontend, which grants this
+         probe its internals for it. -->
+    <Compile Include="..\runners\SyntaxDump.cs" Link="SyntaxDump.cs" />
     <Compile Include="..\runners\TemporalAdapter.cs" Link="TemporalAdapter.cs" />
     <Compile Include="..\runners\TemporalAdapter.Methods.cs" Link="TemporalAdapter.Methods.cs" />
   </ItemGroup>

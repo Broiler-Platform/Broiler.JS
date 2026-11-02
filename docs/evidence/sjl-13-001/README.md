@@ -256,7 +256,15 @@ parts, and nothing here is a verdict; the line above stands for the rule's parts
   retained with its output. Each reads what the library writes: part A's the corpus runner's report, in the fields
   part A's configuration lists, with the classification and the catalogue, and no expectation of its own; part H's the
   library's `PublicAPI.txt`. Part A's corpus runner, its dump mode for part C and part F's fuzz target are the
-  library's, written by SJL-13.2 (stages 4a and 4e).
+  library's, written by SJL-13.2 (stages 4a and 4e). *(2026-11-02, at SJL-13.2e:* part G's runner,
+  [`tools/deep_nesting.py`](tools/deep_nesting.py), is committed here before any run of part G: it starts one process
+  per row of [`inputs/deep/manifest.tsv`](inputs/deep/manifest.tsv), the Native AOT probe's `--parse-one` mode under the
+  JIT or as its image, and reads each process's exit code; its `stack` mode measures the least stack each source needs,
+  for the tree-depth derivation, retained in
+  [`Broiler.ECMAScript/docs/frontend/limits/`](../../../Broiler.ECMAScript/docs/frontend/limits/derivation.md). The
+  dump mode part C reads is the probe's `--digest-corpus`, and part F's fuzz target the probe's `--fuzz`; both are the
+  library's stage 4e's, in `Broiler.ECMAScript/Broiler.ECMAScript.Probe/`. Nothing run with them at stage 4e is a run of
+  a part: the parts are run at the library commit.)*
 
 **The commits named so far:**
 - **The classification's commit**, `684667e20ab73de68364eb0289dfc59c818e95a3`, whose stage table and classification revise those first

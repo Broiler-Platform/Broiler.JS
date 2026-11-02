@@ -31,7 +31,10 @@ namespace Broiler.ECMAScript.Probe;
 /// library parses (<see cref="IsRecordedArea"/>): from stage SJL-13.2b a vector whose source the tokenizer refuses is
 /// refused, and is counted among the matches, and every other is not implemented; a refusal of a vector that expects an
 /// acceptance would be counted among those that differ.")</i> <i>(Revised 2026-11-02, at stage SJL-13.2d; it read "records and
-/// does not judge until stage SJL-13.2d (<see cref="IsRecordedArea"/>)".)</i> What the probe proves is that the library, the reader, the validator, the
+/// does not judge until stage SJL-13.2d (<see cref="IsRecordedArea"/>)".)</i> From stage SJL-13.2e it also has four
+/// frontend modes, each its own run, chosen by its first argument, which leave the corpus run as it was: <c>--parse-one</c>
+/// (<see cref="Limits.ParseOne"/>), <c>--measure-frames</c> (<see cref="Limits.MeasureFrames"/>), <c>--fuzz</c>
+/// (<see cref="Fuzzing"/>) and <c>--digest-corpus</c> (<see cref="CorpusDigest"/>). What the probe proves is that the library, the reader, the validator, the
 /// runner and the report compile into a Native AOT image under Broiler.VM's root settings and give
 /// there, over the whole corpus, the answers they give under the JIT. Until SJL-3 it ran the empty
 /// library, whose every answer was <c>status: not-implemented</c>.
@@ -61,6 +64,23 @@ internal static class Program
 
     internal static int Main(string[] args)
     {
+        // The frontend's limits, fuzzing and determinism modes (stage SJL-13.2e), each its own run; with none of them, the
+        // probe runs the vector corpus as it always has.
+        if (args.Length > 0)
+        {
+            switch (args[0])
+            {
+                case "--parse-one":
+                    return Limits.ParseOne(args);
+                case "--measure-frames":
+                    return Limits.MeasureFrames();
+                case "--fuzz":
+                    return Fuzzing.Run(args);
+                case "--digest-corpus":
+                    return CorpusDigest.Run(args);
+            }
+        }
+
         string? root = null;
         string? reportPath = null;
         for (var i = 0; i < args.Length; i++)
@@ -180,7 +200,11 @@ internal static class Program
 
     private static int Usage()
     {
-        Console.Error.Write("usage: Broiler.ECMAScript.Probe [corpus-root] [--report path]\n");
+        Console.Error.Write("usage: Broiler.ECMAScript.Probe [corpus-root] [--report path]\n"
+            + "       Broiler.ECMAScript.Probe --parse-one file [--nesting n] [--goal script|module] [--stack-kib k]\n"
+            + "       Broiler.ECMAScript.Probe --measure-frames\n"
+            + "       Broiler.ECMAScript.Probe --fuzz seeds [--test262 root] [--test262-json root] [--lines first:last] [--findings dir]\n"
+            + "       Broiler.ECMAScript.Probe --digest-corpus corpus-root --out file [--test262 root] [--test262-json root] [--reverse] [--two-threads]\n");
         return 2;
     }
 }

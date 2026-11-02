@@ -41,5 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Broiler.ECMAScript.Frontend.Tests" />
+    <!-- The Native AOT probe reads the tree's children and the token stream for the canonical dump that compares the JIT
+         and Native AOT parses (stage SJL-13.2e, runners/SyntaxDump.cs); it calls nothing else internal. -->
+    <InternalsVisibleTo Include="Broiler.ECMAScript.Probe" />
   </ItemGroup>
 </Project>

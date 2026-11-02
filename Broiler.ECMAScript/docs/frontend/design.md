@@ -66,7 +66,7 @@ From the area design's section 4, with decision D41's specifics.
 | Inherited evaluation context | Broiler.VM's evaluation flags (`JsFormat.EvalRequestFlags`): `Strict`, `InFunction`, `InMethod`, `InDerivedConstructor`, `InClassFieldInitializer` and `InClassBody`; an optional set of the visible private names, whose absence leaves the check to the engine, and which Broiler.VM does not pass at SJL-13, since its executor checks an eval program's private names at run time; **no caller's lexical names at SJL-13 or SJL-14**: the conflict they serve is EvalDeclarationInstantiation's, a run-time `SyntaxError` each engine raises today, until SJL-15's model *(revised 2026-10-26, at SJL-13.1, decision D16; read "Broiler.VM's evaluation flags (`JsFormat.EvalRequestFlags`): `Strict`, `InFunction`, `InMethod`, `InDerivedConstructor`, `InClassFieldInitializer` and `InClassBody`; the visible private names; the caller's lexical names, which Broiler.JS needs for direct `eval`")* |
 | Proposal flags | Off by default, **one flag per form**, each its own catalogue row: decorators; `accessor`; the import phases' declaration forms `import source x from` and `import defer * as ns from` and their call forms `import.source(…)` and `import.defer(…)`. An engine admits what its own manifest admits: Broiler.VM none (a decorator is refused where the parse reaches it); Broiler.JS what it parses today, decorators, `accessor` and the two call forms *(revised 2026-10-26, at SJL-13.1, decision D17, which refines JSD-0080's single "import phases" parameter; read "Decorators, `accessor`, import phases. Off by default; an engine admits what its own manifest admits")* |
 | Lexer extensions | A narrow parameter for non-standard literal suffixes. Broiler.JS's `m` is the only one, and decision SJL-D-17 keeps its `Decimal` meaning in Broiler.JS |
-| Limits | The nesting depth, a bounded parameter; the tree depth, a constant of the library; a diagnostic cap; first-error or all-errors. Broiler.VM's today are `SliceParseOptions.DefaultMaximumNestingDepth` within `MaximumSupportedNestingDepth`, the constant `SliceParseOptions.MaximumTreeDepth`, and the cap its wide parser, its numeric admission and its lowering apply. SJL-13 derives the library's tree depth as Broiler.VM's JSD-0022 derives Broiler.VM's. *(Noted 2026-10-26, at SJL-13.1, decisions D11 and D14: the derivation, at SJL-13.2's stage 4e, must admit Broiler.VM's bound on the stack Broiler.VM's `CompilationStack` declares, or the library is reworked with explicit stacks, and `SliceParseOptions.MaximumTreeDepth` stays equal to the library's constant; the nesting depth keeps each engine's default, Broiler.JS passing the library's supported maximum; both engines ask for the first error at SJL-13 and SJL-14.)* |
+| Limits | The nesting depth, a bounded parameter; the tree depth, a constant of the library; a diagnostic cap; first-error or all-errors. Broiler.VM's today are `SliceParseOptions.DefaultMaximumNestingDepth` within `MaximumSupportedNestingDepth`, the constant `SliceParseOptions.MaximumTreeDepth`, and the cap its wide parser, its numeric admission and its lowering apply. SJL-13 derives the library's tree depth as Broiler.VM's JSD-0022 derives Broiler.VM's. *(Noted 2026-10-26, at SJL-13.1, decisions D11 and D14: the derivation, at SJL-13.2's stage 4e, must admit Broiler.VM's bound on the stack Broiler.VM's `CompilationStack` declares, or the library is reworked with explicit stacks, and `SliceParseOptions.MaximumTreeDepth` stays equal to the library's constant; the nesting depth keeps each engine's default, Broiler.JS passing the library's supported maximum; both engines ask for the first error at SJL-13 and SJL-14.)* *(Noted 2026-11-02, at SJL-13.2e: "SJL-13 derives the library's tree depth as Broiler.VM's JSD-0022 derives Broiler.VM's" is done, in [`limits/derivation.md`](limits/derivation.md): the library spends no stack per level of tree depth, so the constant is Broiler.VM's bound, 10,000; the stack it documents, `ParseLimits.StackBytes`, is `CompilationStack`'s sixteen mebibytes, which the nesting bound is what pays for.)* |
 | Providers | Unicode lexical classes, from Broiler.Unicode (SJL-7); regular-expression syntax validation through a seam, the engine's own matcher until SJL-11's Broiler.Regex. *(Noted 2026-10-26, at SJL-13.1, decisions D7, D8 and D32: the Unicode provider is Broiler.Unicode's `IUnicodeTables`, required, with no default; the seam is a validator interface with no package edge, each engine supplying its own; and the request also takes an optional `WorkCharge`. Section 9 says what each answers.)* |
 
 ### Output
@@ -79,11 +79,19 @@ From the area design's section 4, with decision D41's specifics.
 
 ### Properties
 
-- **Deterministic:** the same request gives the same output, across runs and threads.
+- **Deterministic:** the same request gives the same output, across runs and threads. *(Noted 2026-11-02, at
+  SJL-13.2e: held by tests over the parse corpus's stored inputs, a canonical dump of the tree, the token stream, the
+  diagnostics and the side tables compared across repeated parses, threads, the reverse order and the cultures tr-TR,
+  lt-LT and the invariant culture, and by the Native AOT probe's `--digest-corpus` mode over the whole corpus under the
+  JIT and Native AOT; section 9.3's note of this stage.)*
 - **No ambient state and no mutable statics** (rule SL2, the shape of Broiler.VM's rule N12; Broiler.VM's JSD-0014
   decision 4, a requirement on the shared front end).
 - **Limits are checked before the stack is.** No unbounded recursion: explicit stacks, or depth checks with the large
-  thread the caller supplies (`CompilationStack` in Broiler.VM).
+  thread the caller supplies (`CompilationStack` in Broiler.VM). *(Noted 2026-11-02, at SJL-13.2e: the library takes
+  both: depth checks for the parser's recursion, which the nesting bound charges, and loops and an explicit stack where
+  the tree is deep or the grammar would recurse between two charged levels, the chain builders, the precedence climb
+  and the declarations walk. The thread the caller supplies is of
+  `ParseLimits.StackBytes`, `CompilationStack`'s sixteen mebibytes.)*
 - **Native AOT compatible** and trimmable; no reflection, no dynamic code.
 - **Never a source-to-verified-artifact path.** The frontend produces trees, never artifacts; Broiler.VM's ADR 0010
   forbids such members there.
@@ -298,7 +306,8 @@ them onto it:
 - **The tree-depth constant's value**, which SJL-13.2's stage 4e derives, as Broiler.VM's JSD-0022 derived
   Broiler.VM's, and which must admit Broiler.VM's bound; the nesting depth stays each engine's parameter (JSD-0083's
   decision D14) *(revised 2026-10-26, at SJL-13.1; read "**The nesting bound's value**, which is SJL-13's
-  measurement.")*.
+  measurement.")*. *(Noted 2026-11-02, at SJL-13.2e: stage 4e has derived it, [`limits/derivation.md`](limits/derivation.md):
+  10,000, Broiler.VM's bound, admitted on `CompilationStack`'s stack.)*
 
 ## 9. The library at SJL-13
 
@@ -368,6 +377,38 @@ types follow it.)*
   too, the Module goal included, which is the library's own choice beyond D17's words. ECMA-262 applies Annex B's
   regular-expression grammar (B.1.2) in every goal, and the strict-only exclusions (the sloppy-code relaxations, which
   a module's code, being strict, does not take) follow from strictness, whatever the switch.
+
+*(Noted 2026-11-02, at SJL-13.2e, on the table's "Limits" row, "the tree depth, a constant of the library derived at
+stage 4e, with the stack it requires stated beside it, which admits Broiler.VM's bound on Broiler.VM's
+`CompilationStack`", and on the note above's "stage 4e derives the stack it requires and states it beside it" and
+"stage 4e's measurement confirms or raises it".)*
+- **The derivation** is [`limits/derivation.md`](limits/derivation.md), with its measurements beside it, taken as
+  JSD-0022 took Broiler.VM's: the frames and the bytes each level of the parser's recursion costs, under the JIT and
+  under Native AOT, observed at the refusal that ends it, and the least stack each source of the home rule's
+  deep-nesting corpus needs, each of its 54 sources parsed alone in its own process. A level of tree depth costs the
+  library no frame: the chain builders (binary, member and call, and a decorator's member chain) are loops, charging
+  each node before it is built, and the declarations walk keeps its own stack, so every tree of the corpus is parsed and
+  walked on 64 KiB. A level of nesting costs from 1 to 10 frames and from 303 to 5,168 bytes, by construct, at the JIT's
+  first tier, its optimised tier and under Native AOT. The precedence climb, which read each right operand of a higher
+  precedence by an uncharged recursion, up to ten frame pairs between two levels of nesting, reads them with an explicit
+  stack since this stage's review, which measured it (the derivation's section 3).
+- **The tree-depth constant**, `ParseLimits.MaximumTreeDepth`, stays **10,000**, Broiler.VM's bound, now derived and not
+  provisional: nothing in the library bounds it, and decision D14 holds it equal to Broiler.VM's, a test Broiler.VM
+  writes when it references the library.
+- **The stack the library documents** is a new constant beside it, `ParseLimits.StackBytes`, **16 MiB**, the stack
+  `CompilationStack` declares: at the supported maximum nesting the costliest construct measured, alone or after the
+  grammar's ten binary precedences, needs 3,416,352 bytes under the JIT (every method at its optimised tier with
+  profile-guided optimisation; 2,638,720 at its first tier and in its default runs) and 1,682,944 under Native AOT, a
+  margin of about 4.9 and 10.0. Every engine parses on a thread of it,
+  as decision D47 has Broiler.JS do at SJL-14.
+- **The supported maximum nesting**, `ParseLimits.MaximumSupportedNestingDepth`, is confirmed at **512** and not raised.
+- **The left-operand charge** is stage 4c's, in decision D14's four shapes, now tested on the documented stack. The
+  derivation's section 5 records what it does not reach: the charge counts the depth along a chain and its left
+  operands' spines, not the depth at which a right operand's subtree hangs, so a chain read as the right operand of a
+  chain's early nodes (`1 + 2*...*2 + 3+...+3`, or parenthesised, which multiplies with nesting), a chain that begins with
+  a prefix operator's operand, an array literal's element or a call's argument, and a parenthesised sequence or
+  conditional as a left operand each reach past the constant; Broiler.VM's base does not charge them either, and the
+  decision is D14's.
 
 ### 9.3 The result
 
@@ -451,6 +492,24 @@ answer are stage 4d's".)*
 - **The `request` row** (EX0023) is the top level's [Await] parameter, as the parser reads it from stage 4c; the walk
   reads it the same way and reports nothing of its own for it.
 
+*(Noted 2026-11-02, at SJL-13.2e, on the contract's "Deterministic" property and on the evidence the home rule's parts C,
+F and G read.)*
+- **Determinism.** The library's tests compare a canonical dump of each parse (`runners/SyntaxDump.cs`: every node's
+  kind, span, raw facts and children in tree order, the token stream, the ordered diagnostics and the side tables) over
+  every input the parse corpus stores, under each variant in both of the home rule's configurations and as eval code:
+  the same bytes in a repeated parse, on another thread, in the reverse order, on two threads at once, and under the
+  cultures tr-TR, lt-LT and the invariant culture. The Native AOT probe's `--digest-corpus` mode writes the dump's
+  SHA-256 for every parse of the whole corpus, test262 included, and its output under the JIT and from the Native AOT
+  image are the same bytes, in the manifest's order, the reverse order and on two threads. The dump reads the tree's
+  children and the token stream, which stay internal: the library grants the probe its internals, as it grants its
+  tests, for this alone.
+- **The home's fuzz target** (decision D22) is the probe's `--fuzz` mode, no new project: it reads the seeds the home
+  rule's bundle commits, makes each line's mutants from a fixed deterministic stream, parses each under its request on a
+  thread of `ParseLimits.StackBytes`, and reports as a finding an exception escaping the library, a parse past the seeds
+  file's time bound, a result with neither a tree nor a diagnostic, or a diagnostic whose code no catalogue row carries.
+- **The deep-nesting corpus's runner** is the probe's `--parse-one` mode, one source parsed alone in its process with
+  an exit code for its outcome, driven per row by `docs/evidence/sjl-13-001/tools/deep_nesting.py`.
+
 ### 9.4 What the syntax half reports (decision D10, the union)
 
 - **The grammar, and every early error either engine's parser reports at parse time today**: Broiler.VM's `JsParser`
@@ -477,6 +536,12 @@ The stage table [`stages.tsv`](stages.tsv) records the assignment for every cata
 - sections 3, 4 and 5 gain notes; section 7 gains SJL-13's records; section 8's first, second and last items are
   revised;
 - section 9 is new.
+
+*(Added 2026-11-02, at SJL-13.2e.)* Section 1's limits row, its "Deterministic" and "Limits are checked before the stack
+is" properties and section 8's last item gain notes that the derivation is made; section 9.2 a note on the derivation,
+the tree-depth constant, the documented stack, the supported maximum nesting and the left-operand charge; section 9.3 a
+note on determinism, the fuzz target and the deep-nesting corpus's runner. The derivation is new,
+[`limits/derivation.md`](limits/derivation.md), with its measurements.
 
 *(Added 2026-11-02, at SJL-13.2d.)* "Why there is no project yet" gains the note that the parse entry reports the early
 errors, and section 9.3 a note on the diagnostics' codes, identifiers and phases, the library's order, the side tables,

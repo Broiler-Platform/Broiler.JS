@@ -4,7 +4,9 @@
     defaults for each goal and the preconditions it refuses, the limits and their constants, the providers' shapes, the
     diagnostics' forms, and the parse entry's answer for every goal. At stage SJL-13.2b: the tokenizer, production by
     production, and the parse entry's lexical answer. At stage SJL-13.2c: the parser, production by production, the
-    correspondence's rows P, cover grammars, automatic semicolon insertion, the limits and the tree's spans. Each later
+    correspondence's rows P, cover grammars, automatic semicolon insertion, the limits and the tree's spans. At stage
+    SJL-13.2e: the limits on the documented stack (the deep-nesting corpus, the left-operand charge, each recursive
+    construct at the supported maximum) and determinism over the parse corpus's stored inputs. Each later
     stage adds its own. JIT only: the Native
     AOT probe runs the vectors, not these.
   -->
@@ -39,5 +41,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\runners\UnicodeDataHome.cs" Link="UnicodeDataHome.cs" />
+    <Compile Include="..\runners\SyntaxDump.cs" Link="SyntaxDump.cs" />
   </ItemGroup>
 </Project>
