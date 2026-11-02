@@ -76,7 +76,9 @@ internal sealed partial class AlgorithmsLibrary : IVectorRecordLibrary
                     ? IntlDateTimesArea(vector)
                     : IsLibraryIntlDurations(vector)
                         ? IntlDurationsArea(vector)
-                        : Call(vector["op"] ?? string.Empty, LibraryRun.Inputs(vector));
+                        : IsLibraryIntlDefaultLocaleScript(vector)
+                            ? IntlNumbersArea(vector)
+                            : Call(vector["op"] ?? string.Empty, LibraryRun.Inputs(vector));
     }
 
     /// <summary>Whether a vector is sub-area (b)'s and one this runner answers: of the file, and of an operation it answers.</summary>

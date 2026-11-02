@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   13
-// Annotated:        13/13
+// Relevant units:   14
+// Annotated:        14/14
 // Exempt:           8
-// Human-reviewed:   0/13
+// Human-reviewed:   0/14
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  2/10 max
-// Unverified:       13
+// Unverified:       14
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -188,5 +188,34 @@ internal sealed class DateData
         }
 
         return cycles.Preferred.Length != 0 ? cycles.Preferred[0] : 'H';
+    }
+
+    /// <summary>
+    /// The hour character of a region's 12-hour cycle (<c>h</c> or <c>K</c>) or 24-hour cycle (<c>H</c> or <c>k</c>), its
+    /// [[hourCycle12]] or [[hourCycle24]] where the region prefers a cycle of the other kind: the first of that kind among
+    /// CLDR's allowed formats for the region, the world's where the region has no time data, and <c>h</c> or <c>H</c> where
+    /// none of them is of that kind (row T10). CLDR allows Japan's <c>H K h</c>, so <c>ja</c>'s 12-hour cycle is <c>h11</c>,
+    /// as test262's <c>intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js</c> asks; every other region of
+    /// CLDR 48.2.0's time data allows <c>h</c> before any <c>K</c>, and none allows <c>k</c>.
+    /// </summary>
+    /// <param name="region">The region whose time data applies.</param>
+    /// <param name="twelveHour">Whether the 12-hour cycle is asked for, else the 24-hour one.</param>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots hourCycle12 and hourCycle24 over UTS #35 Time Data allowed formats, JSD-0082 row T10 (C5); IP=Low; Security=Low; Resources=1; Fingerprint=41C730
+    // Broiler-Human:        PENDING
+    internal char AllowedHourChar(string region, bool twelveHour)
+    {
+        if ((data.HourCycles(region) ?? data.HourCycles("001")) is { } cycles)
+        {
+            foreach (var format in cycles.Allowed.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var c = format[0];
+                if (twelveHour ? c is 'h' or 'K' : c is 'H' or 'k')
+                {
+                    return c;
+                }
+            }
+        }
+
+        return twelveHour ? 'h' : 'H';
     }
 }
