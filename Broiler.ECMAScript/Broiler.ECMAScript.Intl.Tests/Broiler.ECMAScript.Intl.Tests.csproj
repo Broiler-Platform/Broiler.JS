@@ -42,9 +42,13 @@
          Intl vectors, as the corpus reader reads them. -->
     <ProjectReference Include="..\Broiler.ECMAScript.Generation\Broiler.ECMAScript.Generation.csproj" />
     <ProjectReference Include="..\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj" />
+    <!-- The collator's normalization (milestone SJL-17.3): Broiler.Unicode's, over the tables the owner's generator writes from
+         this repository's pin, as the runner's Unicode provider reads them. -->
+    <PackageReference Include="Broiler.Unicode.Generation" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\runners\IntlDataHome.cs" Link="Differential\IntlDataHome.cs" />
     <Compile Include="..\runners\CorpusDirectory.cs" Link="Differential\CorpusDirectory.cs" />
+    <Compile Include="..\runners\UnicodeDataHome.cs" Link="UnicodeDataHome.cs" />
   </ItemGroup>
 </Project>

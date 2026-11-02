@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   3
 // Annotated:        3/3
-// Exempt:           30
+// Exempt:           31
 // Human-reviewed:   0/3
 // IP risk:          Low
 // Security risk:    Medium
@@ -69,10 +69,11 @@ public interface IIntlDataSet
 /// <para>
 /// The time zone and calendar tables (26 to 29 and 31) are read by <c>Broiler.ECMAScript.Algorithms</c>' decoders, and the
 /// collation tables (5 and 6) by milestone SJL-17's; they keep their numbers here so that one enumeration names every
-/// table Broiler.VM's data hands in.
+/// table Broiler.VM's data hands in. <i>(Extended 2026-11-02, at milestone SJL-17.3: the collation tables, 5, 6 and the
+/// appended 32, are read by this library's <see cref="UcaCollationData"/>.)</i>
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 table numbers; IP=Low; Security=Low; Resources=0; Fingerprint=6972CA
+// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 table numbers; IP=Low; Security=Low; Resources=0; Fingerprint=6DF252
 // Broiler-Human:        PENDING
 public enum IntlTable
 {
@@ -199,4 +200,12 @@ public enum IntlTable
 
     /// <summary>The IANA Time Zone Database release the three time zone tables were compiled from, ASCII, for example <c>2026e</c>.</summary>
     TimeZoneRelease = 31,
+
+    /// <summary>
+    /// The settings a collation tailoring states (milestone SJL-17.3), a table Broiler.VM's data never carries:
+    /// <c>tailoring</c>, <c>alternate</c>, <c>shifted</c> where its rules state <c>[alternate shifted]</c>; and <c>tailoring</c>,
+    /// <c>reorder</c>, <c>first</c>, <c>last</c>, <c>before</c> where they state <c>[reorder script]</c>, the script's root
+    /// primaries from <c>first</c> to <c>last</c> moved before the root primary <c>before</c>, each four hexadecimal digits.
+    /// </summary>
+    CollationSettings = 32,
 }

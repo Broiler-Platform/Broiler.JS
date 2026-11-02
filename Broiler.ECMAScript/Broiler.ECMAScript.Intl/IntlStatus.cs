@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   1
 // Annotated:        1/1
-// Exempt:           30
+// Exempt:           31
 // Human-reviewed:   0/1
 // IP risk:          Low
 // Security risk:    Low
@@ -41,13 +41,15 @@ namespace Broiler.ECMAScript.Intl;
 /// no field of, a ZonedDateTime outside its own <c>toLocaleString</c>, and a range of two types.)</i>
 /// <i>(Extended 2026-11-02, at stage SJL-9.3e, which appends sub-area (e)'s three, each a <c>RangeError</c> of
 /// ValidateDurationUnitStyle: a fractional unit displayed always, and a unit's style after a fractional or a numeric unit.)</i>
+/// <i>(Extended 2026-11-02, at milestone SJL-17.3, which appends the collator's one, a <c>RangeError</c>: a string whose
+/// canonical decomposition passes the engine's string-length ceiling.)</i>
 /// </para>
 /// <para>
 /// <b>The numbers are stable.</b> Each stage of milestone SJL-9.3 appends the statuses its sub-area's operations answer,
 /// and no number is reused.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 X3 statuses; IP=Low; Security=Low; Resources=0; Fingerprint=04C904
+// Broiler-AI:           Origin=AI; Spec=JSD-0082 X3 statuses; IP=Low; Security=Low; Resources=0; Fingerprint=B63582
 // Broiler-Human:        PENDING
 public enum IntlStatus
 {
@@ -201,4 +203,11 @@ public enum IntlStatus
     /// (ValidateDurationUnitStyle, <c>sec-validatedurationunitstyle</c>, step 3): a <c>RangeError</c>.
     /// </summary>
     DurationUnitAfterNumeric = 29,
+
+    /// <summary>
+    /// A string's canonical decomposition, which a collator compares (<c>sec-collator-comparestrings</c>), is longer than the
+    /// caller's string-length ceiling: Broiler.VM's <c>RangeError</c> "Invalid string length", as its <c>normalize</c> throws it
+    /// (milestone SJL-17.3).
+    /// </summary>
+    NormalizedStringTooLong = 30,
 }
