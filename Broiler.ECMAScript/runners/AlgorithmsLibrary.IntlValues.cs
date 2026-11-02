@@ -68,7 +68,9 @@ internal sealed partial class AlgorithmsLibrary : IVectorRecordLibrary
     public string Call(VectorRecord vector)
     {
         ArgumentNullException.ThrowIfNull(vector);
-        return IsLibraryIntlValues(vector)
+        return IsLibraryIntlCollation(vector)
+            ? IntlCollationArea(vector)
+            : IsLibraryIntlValues(vector)
             ? IntlValuesArea(vector["op"]!, vector.Script)
             : IsLibraryIntlNumbers(vector)
                 ? IntlNumbersArea(vector)

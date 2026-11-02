@@ -114,7 +114,9 @@ internal static class Program
         // AlgorithmsLibrary.IsEngineLevelDurationsScript names (stage SJL-9.3e). From stage SJL-9.3f, the integration, so are
         // sub-area (a)'s two scripts of the default locale (AlgorithmsLibrary.IsLibraryIntlDefaultLocaleScript), and every Intl
         // vector reads Broiler.JS's tables compiled into this image (the project's IntlTables.g.cs), never the disk's; every other
-        // Intl vector, each of which needs an engine or is a collation vector (intl/collation/, SJL-17's), is not implemented.
+        // Intl vector, each of which needs an engine, is not implemented. From milestone SJL-17.3 the collation vectors
+        // (intl/collation/, AlgorithmsLibrary.IsLibraryIntlCollation) are the library's too, through its shared collator over
+        // the same embedded tables and the Unicode tables the runner's provider writes; until then each was not implemented.
         // The syntax area's vectors are the frontend's, through the runner's frontend adapter, and are recorded, not judged
         // (IsRecordedArea; milestone SJL-13.2a): from stage 4c the parser answers every one, and the area is judged from stage
         // 4d, which reports the static-semantic early errors.

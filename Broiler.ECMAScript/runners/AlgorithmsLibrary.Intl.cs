@@ -52,7 +52,9 @@ internal sealed partial class AlgorithmsLibrary
     /// <summary>The identifier prefix of the Intl area's sub-area (a) vectors, the file <c>intl/locales.vectors</c>.</summary>
     internal const string IntlLocalesPrefix = "intl/locales/";
 
-    private static readonly Lazy<TableLocaleData> IntlTables = new(LoadIntlTables);
+    private static readonly Lazy<DiskIntlData> IntlDataSet = new(LoadIntlTables);
+
+    private static readonly Lazy<TableLocaleData> IntlTables = new(static () => new TableLocaleData(IntlDataSet.Value));
 
     /// <summary>The locale data every Intl vector reads.</summary>
     private static TableLocaleData IntlData => IntlTables.Value;
@@ -131,7 +133,9 @@ internal sealed partial class AlgorithmsLibrary
     /// (from stage SJL-9.3d), and sub-area (e)'s of <c>AlgorithmsLibrary.IntlDurations.cs</c> (from stage SJL-9.3e). From stage
     /// SJL-9.3f, the integration, it is every Intl vector but those whose outcome needs an engine, which the Conformance tests list
     /// by identifier, and the collation vectors (<c>intl/collation/</c>, milestone SJL-17's): sub-area (a)'s two default-locale
-    /// scripts are answered too (<see cref="IsLibraryIntlDefaultLocaleScript"/>).
+    /// scripts are answered too (<see cref="IsLibraryIntlDefaultLocaleScript"/>). <i>(Revised 2026-11-02, at milestone SJL-17.3,
+    /// which answers the collation vectors too (<see cref="IsLibraryIntlCollation"/>, <c>AlgorithmsLibrary.Collation.cs</c>); the
+    /// sentence read "and the collation vectors (<c>intl/collation/</c>, milestone SJL-17's)" among those it did not answer.)</i>
     /// </summary>
     internal static bool IsLibraryIntl(VectorRecord vector) =>
         (vector.Id.StartsWith(IntlLocalesPrefix, StringComparison.Ordinal)
@@ -139,7 +143,8 @@ internal sealed partial class AlgorithmsLibrary
         || IsLibraryIntlValues(vector)
         || IsLibraryIntlNumbers(vector)
         || IsLibraryIntlDateTimes(vector)
-        || IsLibraryIntlDurations(vector);
+        || IsLibraryIntlDurations(vector)
+        || IsLibraryIntlCollation(vector);
 
     /// <summary>
     /// Whether a difference is the answer Broiler.VM's plan commits it to, the engine whose parameters this runner takes: an
@@ -410,7 +415,7 @@ internal sealed partial class AlgorithmsLibrary
     /// The data home's Broiler.JS tables, each file held to its manifest's length and SHA-256: from the image where the build
     /// compiled them into it, and otherwise from disk.
     /// </summary>
-    private static TableLocaleData LoadIntlTables()
+    private static DiskIntlData LoadIntlTables()
     {
         Func<string, byte[]> read;
         if (EmbeddedIntlFile("tables.manifest") is not null)
@@ -450,7 +455,7 @@ internal sealed partial class AlgorithmsLibrary
             }
         }
 
-        return new TableLocaleData(new DiskIntlData(cldrVersion ?? throw new InvalidDataException("the Intl tables' manifest names no CLDR version"), tables));
+        return new DiskIntlData(cldrVersion ?? throw new InvalidDataException("the Intl tables' manifest names no CLDR version"), tables);
     }
 
     /// <summary>A table's file name as the generator writes it, without its extension: <c>LikelySubtags</c> as <c>likely-subtags</c>.</summary>
