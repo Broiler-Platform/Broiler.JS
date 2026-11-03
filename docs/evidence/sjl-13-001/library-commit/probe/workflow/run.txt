@@ -1,0 +1,82 @@
+# run 41553360489 of Shared libraries: https://github.com/Broiler-Platform/Broiler.JS/actions/runs/41553360489
+head	d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318
+branch	main
+event	push
+status	completed
+conclusion	success
+created	2026-11-03T00:30:37Z
+updated	2026-11-03T00:35:38Z
+# job	name	conclusion	started	completed
+job	125646152473	Assurance check (SL8)	success	2026-11-03T00:30:42Z	2026-11-03T00:31:30Z
+step	125646152473	1	Set up job	success
+step	125646152473	2	Check out Broiler.JS	success
+step	125646152473	3	Check out Broiler.Code	success
+step	125646152473	4	Set up .NET	success
+step	125646152473	5	Check the shared folder against its generated artefacts	success
+step	125646152473	8	Post Set up .NET	success
+step	125646152473	9	Post Check out Broiler.Code	success
+step	125646152473	10	Post Check out Broiler.JS	success
+step	125646152473	11	Complete job	success
+job	125646152864	Native AOT probe (linux-x64)	success	2026-11-03T00:30:40Z	2026-11-03T00:32:17Z
+step	125646152864	1	Set up job	success
+step	125646152864	2	Check out	success
+step	125646152864	3	Set up .NET	success
+step	125646152864	4	Publish with Native AOT	success
+step	125646152864	5	Run the corpus under Native AOT	success
+step	125646152864	6	Run the corpus under the JIT, and compare	success
+step	125646152864	7	Keep the logs	success
+step	125646152864	13	Post Set up .NET	success
+step	125646152864	14	Post Check out	success
+step	125646152864	15	Complete job	success
+job	125646152893	Build and SL rules (ubuntu-24.04)	success	2026-11-03T00:30:40Z	2026-11-03T00:34:59Z
+step	125646152893	1	Set up job	success
+step	125646152893	2	Check out	success
+step	125646152893	3	Set up .NET	success
+step	125646152893	4	Set up Python	success
+step	125646152893	5	Time-zone data for zoneinfo (Windows)	skipped
+step	125646152893	6	Build	success
+step	125646152893	7	Test, the SL rules among them	success
+step	125646152893	8	The corpus generator's own tests	success
+step	125646152893	9	The zone table against zic (Linux)	success
+step	125646152893	16	Post Set up Python	success
+step	125646152893	17	Post Set up .NET	success
+step	125646152893	18	Post Check out	success
+step	125646152893	19	Complete job	success
+job	125646152898	Native AOT probe (win-x64)	success	2026-11-03T00:30:40Z	2026-11-03T00:33:27Z
+step	125646152898	1	Set up job	success
+step	125646152898	2	Check out	success
+step	125646152898	3	Set up .NET	success
+step	125646152898	4	Publish with Native AOT	success
+step	125646152898	5	Run the corpus under Native AOT	success
+step	125646152898	6	Run the corpus under the JIT, and compare	success
+step	125646152898	7	Keep the logs	success
+step	125646152898	13	Post Set up .NET	success
+step	125646152898	14	Post Check out	success
+step	125646152898	15	Complete job	success
+job	125646153016	Build and SL rules (windows-latest)	success	2026-11-03T00:30:40Z	2026-11-03T00:35:37Z
+step	125646153016	1	Set up job	success
+step	125646153016	2	Check out	success
+step	125646153016	3	Set up .NET	success
+step	125646153016	4	Set up Python	success
+step	125646153016	5	Time-zone data for zoneinfo (Windows)	success
+step	125646153016	6	Build	success
+step	125646153016	7	Test, the SL rules among them	success
+step	125646153016	8	The corpus generator's own tests	success
+step	125646153016	9	The zone table against zic (Linux)	skipped
+step	125646153016	16	Post Set up Python	success
+step	125646153016	17	Post Set up .NET	success
+step	125646153016	18	Post Check out	success
+step	125646153016	19	Complete job	success
+job	125646153157	Pack, validate and restore the shared stream (dry run)	success	2026-11-03T00:30:40Z	2026-11-03T00:32:09Z
+step	125646153157	1	Set up job	success
+step	125646153157	2	Check out	success
+step	125646153157	3	Set up .NET	success
+step	125646153157	4	Set up Python	success
+step	125646153157	5	Pack the shared stream	success
+step	125646153157	6	Restore the set in an isolated cache, nuget.org for everything else	success
+step	125646153157	7	Restore and run a pristine consumer from a local feed alone	success
+step	125646153157	8	Upload packages	success
+step	125646153157	14	Post Set up Python	success
+step	125646153157	15	Post Set up .NET	success
+step	125646153157	16	Post Check out	success
+step	125646153157	17	Complete job	success

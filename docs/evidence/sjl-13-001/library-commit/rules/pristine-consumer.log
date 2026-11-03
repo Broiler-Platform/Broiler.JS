@@ -1,0 +1,29 @@
++ dotnet pack <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj -c Release -p:IncludeSymbols=false --output /tmp/broiler-pristine-shared-kgwdexps/feed
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Successfully created package '/tmp/broiler-pristine-shared-kgwdexps/feed/Broiler.ECMAScript.Algorithms.0.1.0-preview.8.nupkg'.
++ dotnet pack <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj -c Release -p:IncludeSymbols=false --output /tmp/broiler-pristine-shared-kgwdexps/feed
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Successfully created package '/tmp/broiler-pristine-shared-kgwdexps/feed/Broiler.ECMAScript.Frontend.0.1.0-preview.8.nupkg'.
++ dotnet pack <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj -c Release -p:IncludeSymbols=false --output /tmp/broiler-pristine-shared-kgwdexps/feed
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Generation -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Generation/bin/Release/net10.0/Broiler.ECMAScript.Generation.dll
+  Successfully created package '/tmp/broiler-pristine-shared-kgwdexps/feed/Broiler.ECMAScript.Generation.0.1.0-preview.8.nupkg'.
++ dotnet pack <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj -c Release -p:IncludeSymbols=false --output /tmp/broiler-pristine-shared-kgwdexps/feed
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Intl -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Successfully created package '/tmp/broiler-pristine-shared-kgwdexps/feed/Broiler.ECMAScript.Intl.0.1.0-preview.8.nupkg'.
++ dotnet restore --configfile /tmp/broiler-pristine-shared-kgwdexps/NuGet.Config --no-http-cache
+  Determining projects to restore...
+  Restored /tmp/broiler-pristine-shared-kgwdexps/consumer/Consumer.csproj (in 1.51 sec).
++ dotnet run -c Release --no-restore
+pristine-consumer: Broiler.ECMAScript contract types
+Validated Broiler.ECMAScript.Algorithms 0.1.0-preview.8, Broiler.ECMAScript.Frontend 0.1.0-preview.8, Broiler.ECMAScript.Generation 0.1.0-preview.8, Broiler.ECMAScript.Intl 0.1.0-preview.8 from a local feed in an isolated cache
+exit 0

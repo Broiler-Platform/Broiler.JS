@@ -1,0 +1,8 @@
+# part G: the most stack used at the nesting parameter's 512 in each measurement (the baseline row's remaining bytes less the row's),
+# ParseLimits.StackBytes over it, and the derivation's stated figure and margin (Broiler.ECMAScript/docs/frontend/limits/derivation.md, sections 3 and 4)
+file	costliest construct at 512	used bytes	margin	derivation's used bytes	derivation's margin	used within the derivation's	tree-depth rows	their most used bytes
+frames-jit-first-tier.tsv	ladder-computed-keys	2614400	6.4	2638720	6.4	yes	9	7296
+frames-jit-tiered.tsv	ladder-computed-keys	2614400	6.4	2638720	6.4	yes	9	8512
+frames-jit-promoted.tsv	ladder-computed-keys	3408144	4.9	3416352	4.9	yes	9	10032
+frames-jit-optimised.tsv	ladder-computed-keys	2360976	7.1	2393700	7.0	yes	9	5454
+frames-native-aot.tsv	ladder-computed-keys	1650112	10.2	1682944	10.0	yes	9	4256

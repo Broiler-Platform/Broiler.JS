@@ -1,0 +1,13 @@
+  Determining projects to restore...
+  Restored D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj (in 11.75 sec).
+  Restored D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj (in 11.75 sec).
+  Restored D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Intl\Broiler.ECMAScript.Intl.csproj (in 11.75 sec).
+  Restored D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj (in 5 ms).
+  Restored D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Probe\Broiler.ECMAScript.Probe.csproj (in 12.19 sec).
+  Broiler.ECMAScript.Conformance -> D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Conformance\bin\Release\net10.0\Broiler.ECMAScript.Conformance.dll
+  Broiler.ECMAScript.Algorithms -> D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\bin\Release\net10.0\Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\bin\Release\net10.0\Broiler.ECMAScript.Frontend.dll
+  Broiler.ECMAScript.Intl -> D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Intl\bin\Release\net10.0\Broiler.ECMAScript.Intl.dll
+  Broiler.ECMAScript.Probe -> D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Probe\bin\Release\net10.0\win-x64\Broiler.ECMAScript.Probe.dll
+  Generating native code
+  Broiler.ECMAScript.Probe -> D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Probe\bin\Release\net10.0\win-x64\publish\

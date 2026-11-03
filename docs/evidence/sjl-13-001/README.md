@@ -5,7 +5,10 @@
 frontend's syntax half is implemented under the contract and the conventions."), 2 ("The parse corpus and test262's
 syntax tests pass at library level, as classified.") and 3 ("Rule SL9 (determinism) and the Native AOT probe pass.").
 
-**Rules only. Nothing here is a verdict.**
+**The rule's verdicts are in the section "The rule's parts at the library commit, 2026-11-03", taken at the library
+commit `d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318`: parts A, B, C, E, F, G and H met, part D not met; clauses 1 and 2
+met, clause 3 not met. Nothing else here is a verdict.** *(Revised 2026-11-03, at the library commit; read "Rules only.
+Nothing here is a verdict.")*
 
 **Rule:** [`decision-rule.md`](decision-rule.md), committed at SJL-13.1 before any code of the library exists:
 - part A is the parse corpus and test262's syntax tests at library level, against the classification, in the
@@ -267,9 +270,11 @@ section and the runs' files under this bundle and change no other path.
 
 **These runs are not the rule's verdict.** The rule judges every part at **the library commit**, "the default-branch
 merge that completes SJL-13.2 (its done-when)", run there from a clean checkout, and "a part run at any other commit ...
-is void". The library commit is this stage's merge into the default branch: it does not exist yet, and this README names
-it by all forty digits when it lands, as the bundle has named each commit by its merge. Each part is then taken again at
-it. What follows is each part as its text reads the runs at the branch's head; nothing here is a verdict.
+is void". The library commit is this stage's merge into the default branch, `d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318`,
+and every part was taken again at it (the section "The rule's parts at the library commit, 2026-11-03") *(revised
+2026-11-03, at the library commit; read "The library commit is this stage's merge into the default branch: it does not
+exist yet, and this README names it by all forty digits when it lands, as the bundle has named each commit by its merge.
+Each part is then taken again at it.")*. What follows is each part as its text reads the runs at the branch's head; nothing here is a verdict.
 
 | Part | Configuration as run | Outcome at the head, by the rule's text |
 |---|---|---|
@@ -441,6 +446,66 @@ The conformance scripts' tests pass (428, 15 skipped). Not taken again: parts B,
 this round moves but the library's two sites, whose tests run with the Frontend's; part D needs the shared workflow's
 run at the library commit.
 
+## The rule's parts at the library commit, 2026-11-03
+
+*(Added 2026-11-03, after the library commit's merge.)* **The library commit** is
+`d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318`, the default-branch merge of Broiler-Platform/Broiler.JS#1096 (SJL-13.2f, the
+done-when; its parents `6d9ded70a008a07884612a543177d8a674baaf8a` and `c9ab088ab092d74f4ec49d9fcd947f790829b56c`). Every
+part of the rule was taken there, **as the rule reads it: [`decision-rule.md`](decision-rule.md) as revised by
+[`decision-rule-revised-2026-11-02.md`](decision-rule-revised-2026-11-02.md) and
+[`decision-rule-revised-2026-11-02-second.md`](decision-rule-revised-2026-11-02-second.md)**. Both revisions were filed
+before these runs, in `803371021cb75ea219127f0a0ae744f10f9a4fdd` and `7aff49a2396223bd70172854f5684c30cf0eee07`, each
+an ancestor of the library commit; neither changes between its commit and the library commit, nor does `readings/`
+between the second's commit and the library commit; the
+bundle's `tools/` is unchanged since `1c6a3f2b55cb3e10580ed7d09113706aee669a0f`. The decisions the revisions change are
+weaker evidence, as the rule's section "Revisions" says, and this section reads them as they are written. The rule's
+commits hold as it names them: the rule commit `238069ab` is an ancestor of the vectors commit `ed494b2e`, which is an
+ancestor of `61cb15b5`, the first default-branch merge that adds a file under
+`Broiler.ECMAScript/Broiler.ECMAScript.Frontend/`; `conformance/vectors/syntax/` is the same at the vectors commit and
+the library commit; and `decision-rule.md`, the classification, `inputs/` and the parse corpus's manifest are the rule
+commit's.
+
+**How they were taken.** From a clean tree written by `git archive` of the library commit, built in Release with
+`--disable-build-servers`, with no `LANG` and `TZ=UTC`, one build at a time, on one host (Linux 6.18.44, x86_64, 4
+logical CPUs; .NET SDK 10.0.401), on 2026-11-03; test262 at `ccaac100`. The solution filter builds with no warning and
+every test project passes, the Frontend's 982 tests among them (`library-commit/checks/`). The commands are in
+[`library-commit/commands.txt`](library-commit/commands.txt), and every file named below is under
+[`library-commit/`](library-commit/commands.txt); in the retained logs the scratch folder that held the tree is written
+`<scratch>`, the tree `<tree>` and the test262 checkout `<test262>`.
+
+| Part | Configuration as run | Verdict, by the rule's text |
+|---|---|---|
+| A, the parse corpus and test262's syntax tests as classified | [`tools/frontend-corpus/`](tools/frontend-corpus/README.md) and [`tools/compare_corpus.py`](tools/compare_corpus.py) as committed (`1c6a3f2b`), in Release on one thread of `ParseLimits.StackBytes`; every input, variant and configuration (V and J) and every eval request under E0 to E7 in V, test262 inputs checked against the manifest's SHA-256; the provider answering from the classification and from `readings/provider-readings.tsv` (decision (a)); the comparison reading `readings/classification-readings.tsv` (b), `readings/limit-readings.tsv` (f') and `readings/grammar-readings.tsv` (e'), as "How part A's comparison reads the decisions, as revised twice" orders them | **Met.** The run is complete: no input, variant or configuration is absent or crashed, and the summary's expected and reported counts agree; the manifest's and the classification's digests equal the rule commit's (`manifest-agrees yes`, `classification-agrees yes`), the report read the provider list the comparison reads (`provider-readings-agree yes`), and the three readings lists rebuild byte for byte from their scripts (`corpus/readings-check.log`). The control (one outcome flipped, one first code changed to JSE0000) is reported as the two unexplained inputs (`corpus/control/`). **No failure**: every input in both configurations has an admitted outcome, each listed by its reason in `corpus/comparison.tsv.gz` and tallied in `corpus/comparison-summary.txt`. Beyond the classification's own rows: 710 by the provider reading (a), 626 by a classification reading and 26 read as semantics-only (b), 442 by the grammar reading (e'), and 6 limits at their bound by the measured reading (f'), J000243 and J000799 (nesting) and J000451 (tree depth), strict and sloppy, in J. The report's lines are those of the run at `1c6a3f2b` but its commit line |
+| B, the `syntax` vectors (template T3) | the Native AOT probe under the JIT (the solution filter's build), whose library-level runner parses each vector through the frontend adapter under the library's default request; the vectors at corpus revision 34, whose `syntax` area is the vectors commit's | **Met**: every one of the 549 vectors agrees at the parse; the control (`syntax/statements/ee0040/0002`'s out changed to `value: undefined` in a copy of the corpus, `vectors/control-vector.diff`) is reported as the one failure (`vectors/control.log`, `vectors/control-report.diff`) |
+| C, determinism (L13, SL9) | rule SL9's test (the architecture tests, `determinism/sl2-sl9.log`); the probe's dump mode `--digest-corpus` over part A's population in V, in three processes: run 1 in the manifest's order, run 2 reversed, run 3 on two threads, each input parsed twice at once; K1 (`determinism/K1/control.patch`: a process-wide counter in a numeric literal's raw text) and K2 as decision (c) restates it (`determinism/K2/control.patch`: a side table in the order of a HashSet<string>'s hash codes), each on a scratch archive of the library commit, never merged, then reverted; every dump retained whole, gzipped | **Met.** SL9 passes; runs 1, 2 and 3 have one SHA-256, `5b8cd282…`, the three files the same bytes, and run 3 reports no difference between its two concurrent parses: every input gives one hash in all four parses. K1: run 2 differs from run 1 in 194,361 lines, and rule SL2 refuses the patched library (`SL2_No_shared_library_holds_mutable_static_state` fails, `K1/sl2.log`). K2: run 2 differs from run 1 in 136,646 lines, so the comparison of the runs' hashes, taken in separate processes, reports the difference, as K2 now reads; SL9 passes under it (`K2/sl9.log`), which the restated K2 does not ask to fail. Each reverted: `Broiler.ECMAScript/` equals the run tree's and run 1 taken again is the run's bytes (`K1/revert-check.txt`, `K2/revert-check.txt`) |
+| D, the Native AOT probe (L10) | locally on linux-x64: `dotnet publish -c Release -r linux-x64` (Native AOT) and `dotnet publish -c Release -p:PublishAot=false` (JIT), the probe's project carrying Broiler.VM's root settings (`PublishAot`, `TrimMode` full, invariant globalization, system resource keys; warnings as errors from `Broiler.ECMAScript/Directory.Build.props`), each run over the vector corpus beside the JIT build's run (`probe/`); and the shared workflow's run at the library commit, [run 41553360489](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/41553360489) of `.github/workflows/shared-libraries.yml`, on the push of the library commit to `main` (`probe/workflow/`: its jobs and steps, every job's log, gzipped, and its artifacts' publish logs and reports' SHA-256) | **Not met.** The configuration has the probe "published with Native AOT and with JIT ... by .github/workflows/shared-libraries.yml at the library commit, and the same locally on linux-x64", and the MET line asks that "both publications succeed". The workflow at the library commit publishes the probe with Native AOT only: its job "Native AOT probe" runs `dotnet publish ... -r <rid>` and then, in the step "Run the corpus under the JIT, and compare", `dotnet build ... -c Release` and the built assembly, so its JIT run is a build's output and no JIT publication is taken by the workflow; the workflow's half of the configuration cannot be taken as written. Everything else the part names holds: the run's six jobs succeeded; its Native AOT publications for linux-x64 and win-x64 report no warning, and each job's Native AOT and JIT reports are the same bytes (its `cmp`), `86166c99…`, with no failure; locally both publications succeed with no warning (`probe/warnings.txt`), and the Native AOT image's, the JIT publication's and the JIT build's reports are the same bytes, `86166c99…`, with no failure, the same as the workflow's. The same gap was read at the stage's head (the section "The rule's parts at stage SJL-13.2f's head": "the JIT run is the solution build's output, as the shared workflow's is") |
+| E, the shared libraries' rules | the architecture tests in Release (`rules/architecture-tests.log`); `eng/pack.ps1 -ProjectSet Shared` rendered in bash ([`library-commit/rules/pack-shared.sh`](library-commit/rules/pack-shared.sh), as at `920f18f4`; the host has no PowerShell), every packable project packed with package validation into one empty folder and each package checked as `pack.ps1` checks it, and the pristine consumer; the assurance check as the shared workflow runs it, `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript`, Broiler.Code `origin/main` (`2c1ad0640aa52f7e996a1daa4fc19a251e43681c`) beside the clean tree | **Met**: 32 of 32 architecture tests pass, SL1 to SL10 with the frontend in scope (`The_rules_read_every_shared_library_and_the_probe`, SL1's layering row among SL1's), every witness refused, the public API equal to `PublicAPI.txt` in both directions (`SL6_The_public_API_matches_the_baseline_in_both_directions`); four packages packed and validated at `0.1.0-preview.8`, `Broiler.ECMAScript.Frontend` among them, and the pristine consumer passes (`rules/pack.log`, `rules/pristine-consumer.log`); the assurance check: "Broiler.ECMAScript: no violations." (`rules/assurance-check.log`). The workflow's run at the library commit also ran `eng/pack.ps1 -ProjectSet Shared` itself, the pristine consumer and the assurance check, each job succeeding with the same answers (`probe/workflow/`) |
+| F, fuzzing (L9) | the probe's `--fuzz` over [`inputs/fuzz-seeds.txt`](inputs/fuzz-seeds.txt) (548 lines, its mutants and time bound per parse) on a thread of `ParseLimits.StackBytes`, under the JIT and as the Native AOT image; the control a scratch archive whose parser throws on a ConditionalExpression (`fuzz/control/control.patch`), then reverted | **Met**: no finding under either runtime, and the two runs' tallies are the same (`fuzz/fuzz-jit.txt`, `fuzz/fuzz-aot.txt`), as at `25678837` (`review/fuzz-*.txt`); the control reports 238 findings, each the control's exception (`fuzz/control/`), and the reverted copy's run is the run's, line for line, with no finding (`fuzz/control/revert/`) |
+| G, the limits | [`tools/deep_nesting.py`](tools/deep_nesting.py) `run` over [`inputs/deep/`](inputs/deep/manifest.tsv), each of the 54 sources alone in its own process, under the JIT and as the image; the derivation, [`Broiler.ECMAScript/docs/frontend/limits/derivation.md`](../../../Broiler.ECMAScript/docs/frontend/limits/derivation.md), with its frames per level measured again five ways (`limits/frames-*.tsv`) and the stack each measurement uses at the supported maximum against the derivation's (`limits/margins.txt`) | **Met**: 54 of 54 rows hold under both runtimes, every process ending with its row's exit code, the same lines as at `25678837` (`review/deep-*.tsv`); the costliest construct at 512 levels uses 2,614,400 bytes at the JIT's first tier and in its default run, 3,408,144 promoted, 2,360,976 optimised and 1,650,112 under Native AOT, each within the derivation's figures (2,638,720, 3,416,352, 2,393,700 and 1,682,944), margins of 6.4, 6.4, 4.9, 7.1 and 10.2 on 16 MiB against its 6.4, 6.4, 4.9, 7.0 and 10.0; every tree row is refused at 10,000 with at most 10,032 bytes of stack used. The derivation admits the constant the library states, 10,000, on the stack it documents |
+| H, the contract's checklist | [`tools/contract_check.py`](tools/contract_check.py) as committed, over the library's `PublicAPI.txt`, its project file, `Rows.cs` and the stage table, and JSD-0080 as Broiler.VM `d1c56275aa787f71a1f5ad0fa21e0a8cc3b07207` holds it (`contract/jsd-0080.sha256`, the digest recorded at `920f18f4`); two controls on scratch archives of the library commit | **Met**: every row and item of JSD-0080's tables, limits and providers has a member, but the caller's lexical names, listed absent with decision D16's reason; no public type or reference names an engine; none of the stage table's 17 `engine` rows has a producer (`contract/listing.txt`, the same bytes as at `920f18f4`); control 1 (`ParseLimits.DiagnosticCap` removed from the code and from `PublicAPI.txt`) is reported, the cap listed absent, and control 2 (a public `Broiler.VM.Witness.EngineStub` in the code and in `PublicAPI.txt`) is reported as an engine line (`contract/control-1.txt`, `contract/control-2.txt`) |
+
+**The clauses, read as the rule reads them** ("A clause is met when every part it is read from is MET"):
+- **Clause 1**, "The frontend's syntax half is implemented under the contract and the conventions.", read from parts H
+  and E, with part G for the contract's limits: H, E and G are met, so **clause 1 is met**.
+- **Clause 2**, "The parse corpus and test262's syntax tests pass at library level, as classified.", read from parts A
+  and B: both are met, so **clause 2 is met**. Part A is met by the rule as revised twice, whose decisions (a), (b),
+  (e') and (f') admit outcomes the rule as first written would not, and are weaker evidence for that.
+- **Clause 3**, "Rule SL9 (determinism) and the Native AOT probe pass.", read from parts C and D: C is met and D is not,
+  so **clause 3 is not met**. Its cause is part D's, above: the shared workflow at the library commit takes no JIT
+  publication. The rule names no other commit, and a part run at any other commit is void; a reading of part D other
+  than this one would be a new dated rule file, quoting the rule and its revisions whole, written after this run was
+  seen.
+
+**The files**, under [`library-commit/`](library-commit/commands.txt): `env.txt` and `checks/` (the host, the build and
+the tests); `corpus/` (A: the runner's report, gzipped, its log, the comparison's summary and its per-line list, the
+readings' check, and the control); `vectors/` (B: the run's log and the reports' SHA-256, the control vector and the
+control's report against the run's); `determinism/` (C: the three runs' dumps, whole and gzipped, their logs and
+SHA-256, SL2 and SL9, and K1 and K2 each with its patch, its runs' dumps whole, the first lines where they differ, the rule
+its patch is tested against, and its revert); `probe/` (D: the two local publications' logs, the three runs' logs and
+SHA-256, the Native AOT report, gzipped, and `workflow/`, the shared workflow's run); `rules/` (E); `fuzz/` (F, with the
+control's findings by name); `limits/` (G); `contract/` (H, with its two controls). No test262 suite total is quoted
+(rule H5): part A is decided per input, variant and configuration.
+
 ## State
 
 **2026-10-26, at SJL-13.1: rules only. Nothing here is a verdict, and nothing has been taken.**
@@ -450,6 +515,11 @@ engine-level runs on them are taken and classified (the section above) *(revised
 taken and classified (the section above)")* *(revised again 2026-10-27, decision D-asi; read "are taken, and
 classified but one difference (the section above)")*. None of those runs is a run of the rule's
 parts, and nothing here is a verdict; the line above stands for the rule's parts.
+
+*2026-11-03, at the library commit:* every part of the rule, as revised twice, is taken at the library commit,
+`d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318` (the section "The rule's parts at the library commit, 2026-11-03"): parts A,
+B, C, E, F, G and H are met and part D is not, so clauses 1 and 2 are met and clause 3 is not. Those are the rule's
+verdicts; the line at the head of this section, and every run before the library commit, stand as they were.
 
 - The vectors commit adds the `syntax` area to [`conformance/vectors/`](../../../conformance/vectors/README.md) at its
   corpus revision, before the first file under `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` (the rule's
@@ -488,8 +558,10 @@ after review by `535b9e3469a0d74a0c23244e3271c7853785f00c` *(the last clause add
 the owner's decisions D-asi and D-t24 by `dc9e09e5ae9583552f8f42a3879527fec7396f3d` *(this clause added 2026-10-27)*. The vectors
 commit, the default-branch merge that carries them, is named here, by all forty digits, when that change has merged.
 No other commit is named yet. *(Revised 2026-10-27, at the `syntax` vectors; read "No other commit is named yet.")* *(Added 2026-11-02, at SJL-13.2f: **the library commit** is
-the default-branch merge of SJL-13.2f, the done-when, branch `sjl-13-2f-done`; it is named here by all forty digits when
-that merge lands, and every part is taken there. The parts were taken at the branch's head before it, at
+the default-branch merge of SJL-13.2f, the done-when, branch `sjl-13-2f-done`; it is
+`d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318`, the merge of Broiler.JS#1096 on 2026-11-03, and every part is taken there
+(the section "The rule's parts at the library commit, 2026-11-03") *(revised 2026-11-03, at the library commit; read "it
+is named here by all forty digits when that merge lands, and every part is taken there.")*. The parts were taken at the branch's head before it, at
 `920f18f4579d729819bfcf3c02d18b75c78fd7b5` (the section "The rule's parts at stage SJL-13.2f's head"), which the rule
 counts as no run of a part.)* *(Added 2026-11-02, at SJL-13.2f, after review: the two commits this
 section names "when the change has merged" have merged, and are named here. **The rule commit** is
@@ -503,7 +575,13 @@ file under `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/`, `61cb15b5472955079
 SJL-13.2a, whose first such commit is `7b96d43e8cda306afefd0cfd6c0117e82f4b5c0c`); and `git diff` of
 `conformance/vectors/syntax/` from the vectors commit to `origin/main` (`6d9ded70`) is empty. The sentence "No other
 commit is named yet." above no longer holds: the rule commit and the vectors commit are named here, and the library
-commit is named when it lands.)*
+commit is named above, `d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318` *(revised 2026-11-03, at the library commit; read
+"and the library commit is named when it lands.")*.)* *(Added 2026-11-03, at the library commit: **the library commit**
+is `d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318`, the default-branch merge of Broiler.JS#1096, SJL-13.2f, the done-when,
+whose parents are `6d9ded70a008a07884612a543177d8a674baaf8a` (the default branch) and
+`c9ab088ab092d74f4ec49d9fcd947f790829b56c` (the stage's branch). The rule's conditions hold at it: the rule commit is an
+ancestor of the vectors commit, the vectors commit of `61cb15b5`, and `61cb15b5` of the library commit, and `git diff`
+of `conformance/vectors/syntax/` from the vectors commit to the library commit is empty.)*
 
 **What the bundle will hold:**
 - `corpus/`: part A's report in both configurations, the comparison's output with every admitted outcome listed by
@@ -523,6 +601,10 @@ commit is named when it lands.)*
   2026-11-02, at SJL-13.2f)*.
 - `second-revision-runs/`: parts A and C taken again under the rule's second revision of 2026-11-02 at `1c6a3f2b`, void
   as every run before the library commit is *(added 2026-11-02, at SJL-13.2f, after review)*.
+- `library-commit/`: every part taken at the library commit, `d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318`, in folders of
+  the names above (`corpus/` to `contract/`), with its `commands.txt`: the rule's verdicts *(added 2026-11-03, at the
+  library commit: the folders above it, `corpus/` to `contract/`, hold the runs at the stage's head, `920f18f4`, which
+  are no run of a part, so the runs at the library commit are kept apart from them)*.
 
 **It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them. *(Noted 2026-11-02, at SJL-13.2f: the runs at the branch's head are taken, and the folders above hold them; the
 section "The rule's parts at stage SJL-13.2f's head" reads them.)*

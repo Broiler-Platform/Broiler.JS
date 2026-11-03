@@ -1,0 +1,5 @@
+# run 1: dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll --digest-corpus conformance/parse --test262 <test262>  (tree: git archive of d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318)
+# start 2026-11-03T05:42:50Z
+Broiler.ECMAScript.Probe: digest of 295795 parses, 0 problems
+# exit 0
+# end 2026-11-03T05:44:12Z

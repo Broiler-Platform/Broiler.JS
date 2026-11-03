@@ -1,0 +1,4 @@
+349d348
+< Broiler.ECMAScript.Syntax.ParseLimits.get_DiagnosticCap() method System.Int32
+352d350
+< Broiler.ECMAScript.Syntax.ParseLimits.set_DiagnosticCap(System.Int32) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)

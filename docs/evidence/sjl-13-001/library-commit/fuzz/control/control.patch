@@ -1,0 +1,5 @@
+299a300,301
+>         throw new InvalidOperationException("part F control: the parser throws on a ConditionalExpression");
+> #pragma warning disable CS0162
+303a306
+> #pragma warning restore CS0162

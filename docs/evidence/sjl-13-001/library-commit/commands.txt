@@ -1,0 +1,117 @@
+# Bundle sjl-13-001: every part of the rule taken at the library commit, 2026-11-03.
+# The library commit: d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318, the default-branch merge of Broiler.JS#1096 (SJL-13.2f).
+# The rule: decision-rule.md as revised by decision-rule-revised-2026-11-02.md and decision-rule-revised-2026-11-02-second.md.
+# Tree: git archive of d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 into an empty folder (a clean tree, <tree> in the logs);
+# every command from that folder's root, PATH and DOTNET_ROOT at .NET SDK 10.0.401, no LANG, TZ=UTC, one build at a time.
+# test262 at ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e is a checkout at <test262>. Host: Linux 6.18.44, x86_64, 4 logical
+# CPUs (env.txt). In the retained logs the scratch folder that held the tree is written <scratch>, the tree <tree>.
+
+# Build (no warning) and every test project (checks/)
+dotnet build Broiler.ECMAScript.slnf -c Release --disable-build-servers
+dotnet test Broiler.ECMAScript.slnf -c Release --no-build --disable-build-servers
+
+# Part A: corpus/ (report.tsv.gz and comparison.tsv.gz written with gzip -n -9)
+dotnet build docs/evidence/sjl-13-001/tools/frontend-corpus -c Release --disable-build-servers
+dotnet docs/evidence/sjl-13-001/tools/frontend-corpus/bin/Release/net10.0/frontend-corpus.dll --corpus conformance/parse \
+  --test262 <test262> --classification docs/evidence/sjl-13-001/classification/classification.tsv.gz \
+  --catalogue Broiler.ECMAScript/docs/frontend/early-errors.tsv --stages Broiler.ECMAScript/docs/frontend/stages.tsv \
+  --out report.tsv --commit d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 \
+  --provider-readings docs/evidence/sjl-13-001/readings/provider-readings.tsv
+python3 -I docs/evidence/sjl-13-001/tools/compare_corpus.py compare --report report.tsv \
+  --classification docs/evidence/sjl-13-001/classification/classification.tsv.gz \
+  --catalogue Broiler.ECMAScript/docs/frontend/early-errors.tsv --nesting V=64,J=512 --tree-depth 10000 --out comparison \
+  --provider-readings docs/evidence/sjl-13-001/readings/provider-readings.tsv \
+  --classification-readings docs/evidence/sjl-13-001/readings/classification-readings.tsv \
+  --limit-readings docs/evidence/sjl-13-001/readings/limit-readings.tsv \
+  --grammar-readings docs/evidence/sjl-13-001/readings/grammar-readings.tsv
+python3 -I docs/evidence/sjl-13-001/tools/compare_corpus.py control --report report.tsv \
+  --classification docs/evidence/sjl-13-001/classification/classification.tsv.gz --out control-report.tsv
+python3 -I docs/evidence/sjl-13-001/tools/compare_corpus.py compare --report control-report.tsv ... (the same options)
+# The three readings lists rebuilt by their scripts' check modes (corpus/readings-check.log), as readings/README.md gives them:
+python3 -I docs/evidence/sjl-13-001/tools/limit_readings.py check --manifest conformance/parse/corpus.manifest --corpus conformance/parse \
+  --test262 <test262> --classification docs/evidence/sjl-13-001/classification/classification.tsv.gz --nesting V=64,J=512 \
+  --tree-depth 10000 --out docs/evidence/sjl-13-001/readings/limit-readings.tsv
+python3 -I docs/evidence/sjl-13-001/tools/grammar_readings.py check --report docs/evidence/sjl-13-001/corpus/report.tsv.gz \
+  --classification docs/evidence/sjl-13-001/classification/classification.tsv.gz \
+  --catalogue Broiler.ECMAScript/docs/frontend/early-errors.tsv --out docs/evidence/sjl-13-001/readings/grammar-readings.tsv
+python3 -I docs/evidence/sjl-13-001/tools/provider_readings.py check --classification docs/evidence/sjl-13-001/classification/classification.tsv.gz \
+  --stages Broiler.ECMAScript/docs/frontend/stages.tsv --catalogue Broiler.ECMAScript/docs/frontend/early-errors.tsv \
+  --js-baseline docs/evidence/sjl-12-001/after/parse-corpus-c.tsv.gz --out docs/evidence/sjl-13-001/readings/provider-readings.tsv
+
+# Part B: vectors/ (the JIT build of the probe from the solution filter's build)
+dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit.tsv
+#   control: the same over a copy of conformance/vectors in which syntax/statements/ee0040/0002's out reads
+#   "value: undefined" (control-vector.diff); control-report.diff is the control's report against the run's
+#   The syntax area is the vectors commit's: git diff --quiet ed494b2e3953b03eae305dc736b8be23dcff3cf9 d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 -- conformance/vectors/syntax/
+
+# Part C: determinism/ (every dump kept whole, gzip -n -9)
+dotnet <probe dll> --digest-corpus conformance/parse --out run-1.tsv --test262 <test262>
+dotnet <probe dll> --digest-corpus conformance/parse --out run-2.tsv --test262 <test262> --reverse
+dotnet <probe dll> --digest-corpus conformance/parse --out run-3.tsv --test262 <test262> --two-threads
+dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests -c Release --no-build --disable-build-servers \
+  --filter "FullyQualifiedName~SL2|FullyQualifiedName~SL9" --logger "console;verbosity=normal"     (sl2-sl9.log)
+#   K1, K2: a second git archive of the same commit, the patch (K1/control.patch to Parser.Expressions.cs, K2/control.patch
+#   to DeclarationsWalk.cs) applied, the probe and the architecture tests built there; run 1 and run 2 as above;
+#   dotnet test ... --filter "FullyQualifiedName~SL2" (K1) or "FullyQualifiedName~SL9" (K2); the file restored from the run
+#   tree, Broiler.ECMAScript/ compared with the run tree's (bin, obj, TestResults aside), the probe built again and run 1
+#   taken again (revert-run-1), compared with the run's run-1.tsv byte for byte (revert-check.txt)
+
+# Part D: probe/ (the local publications on linux-x64) and probe/workflow/ (the shared workflow's run at the library commit)
+dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -r linux-x64 --disable-build-servers
+Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/Broiler.ECMAScript.Probe conformance/vectors --report probe-aot.tsv
+dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -p:PublishAot=false --disable-build-servers
+dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/publish/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit-published.tsv
+sha256sum probe-aot.tsv probe-jit-published.tsv probe-jit.tsv
+#   the workflow: run 41553360489 of .github/workflows/shared-libraries.yml ("Shared libraries"), on the push of
+#   d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 to main; read with
+gh run view 41553360489 -R Broiler-Platform/Broiler.JS --json databaseId,workflowName,headSha,headBranch,event,status,conclusion,createdAt,updatedAt,url,jobs
+gh run view 41553360489 -R Broiler-Platform/Broiler.JS --log --job <job id>        (each job; jobs/<job id>.log.gz)
+gh run download 41553360489 -R Broiler-Platform/Broiler.JS                         (the artifacts; their reports' SHA-256 and publish logs)
+
+# Part E: rules/
+dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests -c Release --no-build --disable-build-servers --logger "console;verbosity=normal"
+#   eng/pack.ps1 -ProjectSet Shared, rendered in bash (pack-shared.sh, as at 920f18f4: no pwsh on the host): each project of
+#   Broiler.ECMAScript.slnf evaluated, every packable one packed (package validation on) into one empty folder, and each
+#   package checked as pack.ps1 checks it; the workflow's own pack job ran eng/pack.ps1 -ProjectSet Shared (probe/workflow/)
+python3 -I scripts/packaging/test_pristine_consumer.py --set shared
+#   the assurance check as the shared workflow runs it, from a folder holding Broiler.Code (origin/main, git archive) and a
+#   link to the clean tree as Broiler.JS side by side:
+dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript
+
+# Part F: fuzz/
+dotnet <probe dll> --fuzz docs/evidence/sjl-13-001/inputs/fuzz-seeds.txt --test262 <test262> --findings findings-jit
+<probe image> --fuzz docs/evidence/sjl-13-001/inputs/fuzz-seeds.txt --test262 <test262> --findings findings-aot
+#   control: a second archive with control/control.patch applied to Parser.Expressions.cs (the parser throws on a
+#   ConditionalExpression), the probe built there and the JIT run taken; then the file restored, the folder compared with
+#   the run tree's, the probe built again and the JIT run taken again (control/revert/)
+
+# Part G: limits/
+python3 -I docs/evidence/sjl-13-001/tools/deep_nesting.py run --probe "dotnet <probe dll>" --out deep-jit.tsv
+python3 -I docs/evidence/sjl-13-001/tools/deep_nesting.py run --probe "<probe image>" --out deep-aot.tsv
+DOTNET_TC_CallCounting=0 dotnet <probe dll> --measure-frames > frames-jit-first-tier.tsv
+dotnet <probe dll> --measure-frames > frames-jit-tiered.tsv
+DOTNET_TC_CallCountingDelayMs=0 dotnet <probe dll> --measure-frames > frames-jit-promoted.tsv
+DOTNET_TieredCompilation=0 dotnet <probe dll> --measure-frames > frames-jit-optimised.tsv
+<probe image> --measure-frames > frames-native-aot.tsv
+#   margins.txt: for each file, the most stack used at the nesting parameter's 512 (the baseline row's remaining bytes less
+#   the row's), and ParseLimits.StackBytes over it, against the figures of the derivation's sections 3 and 4
+
+# Part H: contract/
+git -C <Broiler.VM> show d1c56275aa787f71a1f5ad0fa21e0a8cc3b07207:src/Broiler.VM.Profile.JavaScript/docs/decisions/0080-the-shared-frontend-contract-and-the-in-place-preparation.md > jsd-0080.md
+python3 -I docs/evidence/sjl-13-001/tools/contract_check.py --jsd0080 jsd-0080.md \
+  --public-api Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt \
+  --project Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj \
+  --rows Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Rows.cs --stages Broiler.ECMAScript/docs/frontend/stages.tsv --out listing.txt
+#   controls 1 and 2: the same over scratch archives of the library commit with the changes in control-1-*.diff
+#   (ParseLimits.DiagnosticCap removed from the code and from PublicAPI.txt) and control-2-* (a public
+#   Broiler.VM.Witness.EngineStub added to the code and to PublicAPI.txt)
+
+# The rule's commits, as the rule names them:
+git merge-base --is-ancestor 238069ab8150858a112461b42b95c1f49c1f4eb1 ed494b2e3953b03eae305dc736b8be23dcff3cf9
+git merge-base --is-ancestor ed494b2e3953b03eae305dc736b8be23dcff3cf9 61cb15b5472955079f3b0bf98c600f4128094614
+git diff --quiet 238069ab8150858a112461b42b95c1f49c1f4eb1 d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 -- \
+  docs/evidence/sjl-13-001/decision-rule.md docs/evidence/sjl-13-001/classification/ docs/evidence/sjl-13-001/inputs/ conformance/parse/corpus.manifest
+git diff --quiet 803371021cb75ea219127f0a0ae744f10f9a4fdd d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 -- docs/evidence/sjl-13-001/decision-rule-revised-2026-11-02.md
+git diff --quiet 7aff49a2396223bd70172854f5684c30cf0eee07 d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 -- \
+  docs/evidence/sjl-13-001/decision-rule-revised-2026-11-02-second.md docs/evidence/sjl-13-001/readings/
+git diff --quiet 1c6a3f2b55cb3e10580ed7d09113706aee669a0f d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 -- docs/evidence/sjl-13-001/tools/

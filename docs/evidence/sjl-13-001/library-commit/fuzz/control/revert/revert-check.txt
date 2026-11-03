@@ -1,0 +1,3 @@
+revert: Broiler.ECMAScript/ of the control tree equals the run tree's (bin, obj and TestResults aside)
+the reverted run's output equals the run's, line for line (start and end times aside)
+reverted run's findings: 0
