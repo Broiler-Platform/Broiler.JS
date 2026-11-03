@@ -15,7 +15,9 @@ namespace Broiler.JavaScript.Parser.Bridge;
 /// <b>Kept texts.</b> The texts hosts and this engine's tests read are kept: "Unexpected await", which the shell's
 /// script host reads to run a script again with top-level <c>await</c> (<c>Broiler.JavaScript/Program.cs</c>), is
 /// what a refusal at an <c>await</c> of a script parsed without that permission renders; "is already defined in
-/// current scope", which tests read for a redeclaration; "Invalid attribute key", the import attribute this engine
+/// current scope", which tests read for a redeclaration, and in a module "has already been declared" and "Duplicate
+/// export name", which the compiler's module checks gave; the old parser's texts for a unary operator before
+/// <c>**</c> and for an unexpected character with its code point; "Invalid attribute key", the import attribute this engine
 /// cannot honour (catalogue row EX0021), which the bridge refuses itself. Every other text differs from the old
 /// parser's where the old parser's differs from this table: class M of bundle <c>sjl-14-001</c>'s rule, listed in
 /// the generated message table the side-by-side run writes, and stated once in the changelog.
@@ -103,7 +105,7 @@ internal static class BridgeMessages
         "class.private-name.undeclared" => "Private field '{0}' must be declared in an enclosing class",
         "class.initializer.arguments" => "'arguments' is not allowed in class field initializer or static initialization block",
         "class.static-block.await" => "Unexpected await in a class static block",
-        "module.export.duplicate" => "Duplicate export of '{0}'",
+        "module.export.duplicate" => "Duplicate export name '{0}'",
         "module.export.string-local-name" => "A string literal cannot be used as an exported binding without 'from'",
         "module.export.reserved-local-name" => "'{0}' is not a valid exported binding name",
         "module.export-name.ill-formed" => "A module export name must be well-formed Unicode",
@@ -128,7 +130,7 @@ internal static class BridgeMessages
     /// The text this engine gives <paramref name="diagnostic"/>, at the line and column its span begins at, over
     /// <paramref name="text"/> (the parse's text, whose offset 0 is <paramref name="baseOffset"/> in the spans).
     /// </summary>
-    internal static string Render(SyntaxDiagnostic diagnostic, string text, int baseOffset, bool scriptWithoutTopLevelAwait)
+    internal static string Render(SyntaxDiagnostic diagnostic, string text, int baseOffset, bool scriptWithoutTopLevelAwait, bool module = false)
     {
         var span = diagnostic.Span;
         var position = $"{span.Line.ToString(CultureInfo.InvariantCulture)}, {span.Column.ToString(CultureInfo.InvariantCulture)}";
@@ -142,6 +144,9 @@ internal static class BridgeMessages
         if (diagnostic.MessageId == "syntax.token.unexpected" && argument.Length == 0)
             argument = relative >= 0 && relative < text.Length ? text[relative].ToString() : "EOF";
 
+        if (Kept(diagnostic.MessageId, argument, text, relative, module) is { } kept)
+            return diagnostic.MessageId.StartsWith("syntax.", System.StringComparison.Ordinal) ? kept + " at " + position : kept;
+
         var template = Text(diagnostic.MessageId)
             ?? (diagnostic.MessageId.StartsWith("regexp.", System.StringComparison.Ordinal)
                 ? "Invalid regular expression: {0}"
@@ -150,6 +155,44 @@ internal static class BridgeMessages
         return diagnostic.MessageId.StartsWith("syntax.", System.StringComparison.Ordinal)
             ? message + " at " + position
             : message;
+    }
+
+    // The other kept texts (decision D46), each one a test of this engine reads: a module's second declaration of a
+    // name and its second default export, as the compiler's module checks worded them (ModuleDuplicateBindingTests);
+    // a unary operator or await before `**`, as the old parser worded it (Issue761Tests); and an unexpected
+    // character with its code point, as the old scanner described it (MinifiedSourceTests).
+    private static string? Kept(string messageId, string argument, string text, int relative, bool module)
+    {
+        if (messageId.StartsWith("scope.", System.StringComparison.Ordinal) && argument == "*default*")
+            return "Duplicate export name 'default'";
+        if (module && messageId is "scope.lexical.duplicate" or "scope.lexical.var-collision")
+            return "Identifier '" + argument + "' has already been declared";
+        if (messageId == "syntax.token.unexpected" && argument == "**")
+            return "Unary operator used immediately before exponentiation expression; parentheses must be used to disambiguate operator precedence";
+        if (messageId == "syntax.character.unexpected" && relative >= 0 && relative < text.Length)
+            return "Unexpected character " + Describe(text, relative);
+        return null;
+    }
+
+    // As FastScanner.Unexpected describes a character: a surrogate pair's code point, U+FFFD's likely cause, a control
+    // character or a lone surrogate by its code point, and any other character with its code point.
+    private static string Describe(string text, int offset)
+    {
+        var c = text[offset];
+        if (char.IsHighSurrogate(c) && offset + 1 < text.Length && char.IsLowSurrogate(text[offset + 1]))
+        {
+            var pair = char.ConvertToUtf32(c, text[offset + 1]);
+            return "'" + char.ConvertFromUtf32(pair) + "' (U+" + pair.ToString("X4", CultureInfo.InvariantCulture) + ")";
+        }
+
+        var code = "U+" + ((int)c).ToString("X4", CultureInfo.InvariantCulture);
+        return c == '\uFFFD'
+            ? "U+FFFD (the replacement character \u2014 the source is not valid text in the encoding it was decoded with)"
+            : char.IsControl(c)
+                ? code + " (a control character)"
+                : char.IsSurrogate(c)
+                    ? code + " (an unpaired surrogate)"
+                    : "'" + c + "' (" + code + ")";
     }
 
     private static bool StartsWithWord(string text, int offset, string word)

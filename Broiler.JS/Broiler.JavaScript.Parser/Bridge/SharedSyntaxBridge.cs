@@ -162,7 +162,7 @@ internal static class SharedSyntaxBridge
         var diagnostic = result.Diagnostics[0];
         var text = code.Value ?? string.Empty;
         var scriptWithoutAwait = request.Goal is BridgeGoal.Script or BridgeGoal.Eval && !request.AllowTopLevelAwait;
-        var message = BridgeMessages.Render(diagnostic, text, code.Offset, scriptWithoutAwait);
+        var message = BridgeMessages.Render(diagnostic, text, code.Offset, scriptWithoutAwait, request.Goal == BridgeGoal.Module);
         return new FastParseException(tokens.At(diagnostic.Span.Offset), message);
     }
 

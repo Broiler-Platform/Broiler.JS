@@ -251,6 +251,21 @@ public class SharedSyntaxBridgeTests
     public void A_redeclaration_keeps_the_text_tests_read()
         => Assert.Contains("already defined", Assert.Throws<FastParseException>(() => Bridged("let a; let a;")).Message);
 
+    [Theory]
+    [InlineData("import { a, a } from 'm';", "Identifier 'a' has already been declared")]
+    [InlineData("import { a } from 'm'; var a = 1;", "Identifier 'a' has already been declared")]
+    [InlineData("export default 1; export default 2;", "Duplicate export name 'default'")]
+    public void A_modules_redeclaration_keeps_the_text_its_tests_read(string source, string expected)
+        => Assert.Contains(expected, Assert.Throws<FastParseException>(() => Bridged(source, BridgeRequest.Module)).Message);
+
+    [Fact]
+    public void A_unary_operator_before_exponentiation_keeps_the_old_parsers_text()
+        => Assert.Contains("exponentiation", Assert.Throws<FastParseException>(() => Bridged("async function f(){ return await 2 ** 2; }")).Message);
+
+    [Fact]
+    public void An_unexpected_character_is_named_by_its_code_point()
+        => Assert.Contains("U+FFFF", Assert.Throws<FastParseException>(() => Bridged("var a = 1; \uFFFF var b = 2;")).Message);
+
     [Fact]
     public void A_refusal_is_at_the_token_its_diagnostic_names()
     {
