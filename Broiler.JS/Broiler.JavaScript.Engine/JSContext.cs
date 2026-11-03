@@ -2739,7 +2739,8 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
     /// <summary>
     /// Evaluates the given code, waits for the promise and returns task that
-    /// completes till all timeouts/intervals are completed.
+    /// completes till all timeouts/intervals are completed, and until every promise job the
+    /// script queued on the pump has run, including the jobs of chains it does not return.
     /// </summary>
     /// <remarks>
     /// The JavaScript job loop (promise reactions and async-function continuations)
@@ -2808,7 +2809,15 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
     /// <summary>
     /// Evaluates the given code, waits for the promise and also
-    /// waits synchronously (by running and AsyncPump) for timeouts/intervals to finish
+    /// waits synchronously (by running and AsyncPump) for timeouts/intervals to finish, and until
+    /// every promise job the script queued on the pump has run, including the jobs of chains it
+    /// does not return.
     /// </summary>
+    /// <remarks>
+    /// A chain of jobs that keeps queueing another (an endless promise or <c>setImmediate</c> loop)
+    /// keeps <see cref="Execute"/> from returning, as it keeps a browser's or Node's event loop
+    /// running. A promise a host task settles after the jobs have run out, when the script did not
+    /// return it, is not waited for: see <see cref="AsyncPump.Run(System.Func{Task})"/>.
+    /// </remarks>
     public JSValue Execute(string code, string codeFilePath = null) => AsyncPump.Run(() => ExecuteScriptAsync(code, codeFilePath));
 }
