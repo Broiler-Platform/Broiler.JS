@@ -22,6 +22,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Broiler.JavaScript.Parser\Broiler.JavaScript.Parser.csproj" />
+    <!-- The bridge's library, which the parser references privately (milestone SJL-14.2): these tests run the bridge. -->
+    <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

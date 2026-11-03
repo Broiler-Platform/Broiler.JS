@@ -1046,9 +1046,16 @@ public class FastScanner
     // untouched. The body has already been validated by the source scanner, so any
     // `\u{` here is a well-formed escape with at least one hex digit and a closing `}`.
     private string DecodeBracedUnicodeEscapes(string pattern)
+        => TryDecodeBracedUnicodeEscapes(pattern, out var decoded) ? decoded : throw Unexpected();
+
+    // The same rewrite, answering false where the escape is malformed (the scanner throws Unexpected there). Static so that
+    // the bridge's regular-expression provider gives the compiler the pattern this scanner gives it (milestone SJL-14.2,
+    // decision D51: the decoding stays until SJL-11.5 deletes it, or SJL-14 relocates it behind the provider).
+    internal static bool TryDecodeBracedUnicodeEscapes(string pattern, out string decoded)
     {
+        decoded = pattern;
         if (pattern.IndexOf("\\u{", StringComparison.Ordinal) < 0)
-            return pattern;
+            return true;
 
         var t = new StringBuilder(pattern.Length);
         int i = 0;
@@ -1077,11 +1084,11 @@ public class FastScanner
                     {
                         int hexValue = HexDigitValue(pattern[j]);
                         if (hexValue < 0)
-                            throw Unexpected();
+                            return false;
 
                         codePoint = codePoint * 16 + hexValue;
                         if (codePoint > 0x10FFFF)
-                            throw Unexpected();
+                            return false;
 
                         digitCount++;
                         j++;
@@ -1090,7 +1097,7 @@ public class FastScanner
                     // Reject an empty `\u{}` and an unterminated `\u{…` (ran off the end
                     // without a closing `}`).
                     if (digitCount == 0 || j >= pattern.Length)
-                        throw Unexpected();
+                        return false;
 
                     // A braced escape naming a lone surrogate (`\u{D83D}`) is its OWN
                     // single code point and must never combine with an adjacent surrogate:
@@ -1141,7 +1148,8 @@ public class FastScanner
             i++;
         }
 
-        return t.ToString();
+        decoded = t.ToString();
+        return true;
     }
 
     private FastToken ReadTemplateString(State state, TokenTypes part = TokenTypes.TemplateBegin)

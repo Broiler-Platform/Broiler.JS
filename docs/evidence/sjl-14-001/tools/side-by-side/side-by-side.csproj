@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Bundle SJL-14-001's side-by-side tool (decision rule part C; milestone SJL-14.2): every input and variant of the
+    parse corpus at entry points P (the old parser), B (the bridge to the shared syntax library) and K (the whole
+    compile, with the compiler's test-only switch off and on), with the canonical dump of bundle sjl-12-001's tool
+    applied to P's and B's trees. It references the product projects by relative path, so a build at a commit runs
+    that commit's parser, bridge and compiler. It names only members that exist at W1's first parent and at W1: the
+    bridge and the switch, which only W1 declares, are found by reflection when it runs, as sjl-12-001's tool finds
+    the for-loop pass, so the tool builds and answers P and K at the first parent too. See README.md beside this file.
+
+    It reuses sjl-12-001's tool's sources by link (the manifest reader, the field escapes, the dump writer, the
+    canonical dump and the entry points P and K), unchanged, so that P, K and the dumps are that tool's, byte for byte.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>side-by-side</AssemblyName>
+    <RootNamespace>SideBySide</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../sjl-12-001/tools/parse-corpus/CanonicalDump.cs" Link="sjl-12-001/CanonicalDump.cs" />
+    <Compile Include="../../../sjl-12-001/tools/parse-corpus/DumpWriter.cs" Link="sjl-12-001/DumpWriter.cs" />
+    <Compile Include="../../../sjl-12-001/tools/parse-corpus/Entries.cs" Link="sjl-12-001/Entries.cs" />
+    <Compile Include="../../../sjl-12-001/tools/parse-corpus/Manifest.cs" Link="sjl-12-001/Manifest.cs" />
+    <Compile Include="../../../sjl-12-001/tools/parse-corpus/Text.cs" Link="sjl-12-001/Text.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
+    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
+    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj" />
+    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj" />
+    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj" />
+    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
+    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
+    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
+    <!-- The bridge's library, which the parser references privately (milestone SJL-14.2): entry points B and K-on run
+         the bridge. At W1's first parent the library exists too, so the tool still builds there. -->
+    <ProjectReference Include="../../../../../Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj" />
+  </ItemGroup>
+</Project>

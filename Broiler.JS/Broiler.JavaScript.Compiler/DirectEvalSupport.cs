@@ -89,11 +89,16 @@ public static class DirectEvalSupport
         }
     }
 
-    // directEvalDepth is the direct-eval depth the eval code is validated and compiled at, the d of the
-    // for-loop pass's temporaries (Broiler.VM's JSD-0080, decision D22): one more than the depth the code
-    // that calls eval was compiled at, which the compiler passes as a constant in the call it emits, so it
-    // holds however late that code runs. 1, the default, is eval called from code compiled outside any
-    // direct eval. tailCall stays the last parameter: the IL generator re-emits a call in tail position
+    // directEvalDepth is the direct-eval depth the eval code is validated at, and compiled at where the current
+    // engine is a JSContext, the d of the for-loop pass's temporaries (Broiler.VM's JSD-0080, decision D22): one
+    // more than the depth the code that calls eval was compiled at, which the compiler passes as a constant in the
+    // call it emits, so it holds however late that code runs. 1, the default, is eval called from code compiled
+    // outside any direct eval. Two paths differ: where the current engine is not a JSContext the eval code is
+    // compiled by CoreScript.Evaluate, at 0 (the end of this method); and eval code that is exactly one call of the
+    // intrinsic eval with a constant string is not compiled at all, its constant being validated and run in its
+    // place at this depth, not one deeper (TryGetNestedDirectEvalText). No script sees a temporary's name, so
+    // neither is observable. (Corrected at milestone SJL-14.2, decision D55: the remark said "validated and compiled
+    // at" without the two paths.) tailCall stays the last parameter: the IL generator re-emits a call in tail position
     // with one more argument, true, after all the others.
     public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, FrameToken activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, string[] evalVarEnvNames = null, JSValue directEvalNewTarget = null, string[] catchParameterNames = null, int directEvalDepth = 1, bool tailCall = false)
     {
@@ -706,10 +711,33 @@ public static class DirectEvalSupport
 
         try
         {
-            var pool = new FastPool();
-            var parser = new FastParser(new FastTokenStream(pool, text, null, options), options);
+            // With the test-only switch of milestone SJL-14.2 on (decision D43), the bridge parses the eval code as eval
+            // code, with the context it inherits from its caller (decision D44): the caller's strictness (the directive
+            // above it carries it too), the function, method, derived-constructor and field-initialiser flags, and the
+            // private names visible at the call, which this engine checks at the parse of eval code.
+            AstProgram parsed;
+            if ((JSEngine.Current as JSContext)?.CompilationOptions.ParsesThroughBridge ?? JSCompilationOptions.BridgeByDefault)
+            {
+                parsed = Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.Parse(text, new Broiler.JavaScript.Parser.Bridge.BridgeRequest
+                {
+                    Goal = Broiler.JavaScript.Parser.Bridge.BridgeGoal.Eval,
+                    ForcedStrict = inheritStrictMode,
+                    InFunction = !rejectNewTarget,
+                    InMethod = allowSuperProperty,
+                    InDerivedConstructor = allowSuperCall,
+                    InClassFieldInitializer = rejectArguments,
+                    VisiblePrivateNames = privateNamesInScope,
+                });
+            }
+            else
+            {
+                var pool = new FastPool();
+                var parser = new FastParser(new FastTokenStream(pool, text, null, options), options);
+                parsed = parser.ParseProgram();
+            }
+
             // The for-loop pass prepares the tree before any check reads it, as FastCompiler does.
-            var program = ForLoopPreparation.Prepare(parser.ParseProgram(), directEvalDepth);
+            var program = ForLoopPreparation.Prepare(parsed, directEvalDepth);
             ValidateDirectEvalEarlyErrors(program, allowSuperProperty, allowSuperCall, rejectArguments, rejectNewTarget);
             SyntaxValidation.ValidateProgram(program, text, options, inheritStrictMode, lexicalBindings, privateNamesInScope);
             if (parameterBindings?.Length > 0

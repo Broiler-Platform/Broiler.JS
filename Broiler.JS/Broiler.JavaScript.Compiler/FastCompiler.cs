@@ -115,6 +115,35 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
     };
 
     /// <summary>
+    /// The bridge's request for a compilation (milestone SJL-14.2, decision D44): the goal and the permission to
+    /// await at the top level the parser's options carry, and, for direct eval code, the context it inherits from
+    /// its caller as the running direct eval pushed it: the function, method and derived-constructor flags and the
+    /// visible private names. The caller's strictness reaches the code as the "use strict" directive
+    /// <see cref="DirectEvalSupport"/> puts before it, as it does for the parser; the field-initialiser flag is
+    /// DirectEvalSupport's to check before this compile, as it is today.
+    /// </summary>
+    private static Broiler.JavaScript.Parser.Bridge.BridgeRequest BridgeRequestFor(in JSCompilationOptions options, JSContext context, bool isDirectEval, string[] privateNames)
+    {
+        if (isDirectEval && context != null)
+        {
+            return new Broiler.JavaScript.Parser.Bridge.BridgeRequest
+            {
+                Goal = Broiler.JavaScript.Parser.Bridge.BridgeGoal.Eval,
+                InFunction = !context.DirectEvalRejectsNewTarget,
+                InMethod = context.HasDirectEvalSuper,
+                InDerivedConstructor = context.HasDirectEvalSuperCall,
+                VisiblePrivateNames = privateNames,
+            };
+        }
+
+        return new Broiler.JavaScript.Parser.Bridge.BridgeRequest
+        {
+            Goal = options.IsModule ? Broiler.JavaScript.Parser.Bridge.BridgeGoal.Module : Broiler.JavaScript.Parser.Bridge.BridgeGoal.Script,
+            AllowTopLevelAwait = options.AllowTopLevelAwait,
+        };
+    }
+
+    /// <summary>
     /// Compiles <paramref name="code"/> as a script without top-level <c>await</c>.
     /// </summary>
     public FastCompiler(in StringSpan code, string location = null, IList<string> argsList = null, ICodeCache codeCache = null)
@@ -161,10 +190,20 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
 
         // add top level...
 
-        var parserPool = new FastPool();
-        var parser = new FastParser(new FastTokenStream(parserPool, code, null, parserOptions), parserOptions);
-        var jScript = parser.ParseProgram();
-        parserPool.Dispose();
+        AstProgram jScript;
+        if (options.ParsesThroughBridge)
+        {
+            // The test-only switch of milestone SJL-14.2 (decision D43): the bridge parses with the shared syntax
+            // library and builds the tree the parser below builds. Off by default.
+            jScript = Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.Parse(code, BridgeRequestFor(options, context, isDirectEvalCompilation, directEvalPrivateNames));
+        }
+        else
+        {
+            var parserPool = new FastPool();
+            var parser = new FastParser(new FastTokenStream(parserPool, code, null, parserOptions), parserOptions);
+            jScript = parser.ParseProgram();
+            parserPool.Dispose();
+        }
         // The parser builds every loop as written; the for-loop pass rewrites the let/const/using
         // heads into the shapes the rest of the compiler lowers, before validation reads the tree. Its
         // temporaries are named by the direct-eval depth this compilation is at (decision D22).

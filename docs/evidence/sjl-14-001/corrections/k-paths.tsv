@@ -897,3 +897,8 @@ K10	IC4	-	-	none
 K10	IC5	-	-	none
 K10	IC6	-	-	none
 K10	IC7	-	-	none
+K10	W1a	T042384	test/language/rest-parameters/object-pattern.js	cited
+K10	W1b	T052945	test/staging/sm/class/superCallBadNewTargetPrototype.js	cited
+K10	W1c	T047171	test/language/statements/class/static-init-scope-var-close.js	cited
+K10	W1c	T047173	test/language/statements/class/static-init-scope-var-open.js	cited
+K10	W1c	T031800	test/language/expressions/class/decorator/syntax/class-valid/decorator-member-expr-private-identifier.js	cited

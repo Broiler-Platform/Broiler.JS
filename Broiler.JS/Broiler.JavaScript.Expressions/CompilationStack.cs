@@ -120,6 +120,16 @@ public static class CompilationStack
     /// </summary>
     public static bool IsInCompilation => inCompilation;
 
+    [ThreadStatic]
+    private static int workerStackBytes;
+
+    /// <summary>
+    /// The stack size of the compile worker the calling thread is, or 0 on any other thread: a thread this class
+    /// started, whose stack is known. The shared syntax library's bridge reads it to skip its hop to a thread of the
+    /// library's documented stack where the calling thread already has one (milestone SJL-14.2, decision D47).
+    /// </summary>
+    internal static int CurrentWorkerStackBytes => workerStackBytes;
+
     // Parked workers, reused across compilations. Reserving a large stack is a kernel
     // mapping, not a bookkeeping entry: measured on this engine, a thread per compilation
     // costs ~300 µs at the default size, which is 27% of a compile-bound workload — the
@@ -160,7 +170,28 @@ public static class CompilationStack
         // default size; disabling it is BROILER_JS_VISITOR_SEGMENT_BYTES's job. Keeping the two
         // separate is also what lets the deeply-nested fixtures prove which mechanism saved them.
         var size = sizeBytes != 0 ? sizeBytes : DefaultSizeBytes;
+        return RunOnWorker(work, size, size);
+    }
 
+    /// <summary>
+    /// <see cref="RunOnFreshStack{T}(Func{T})"/> on a worker whose stack is at least <paramref name="minimumStackBytes"/>:
+    /// the configured size where it is that large, and otherwise a worker of the minimum, made for the call and retired
+    /// after it. The shared syntax library's bridge parses on it so that its parse has the stack the library documents
+    /// however small the configured size is (milestone SJL-14.2, decision D47).
+    /// </summary>
+    internal static T RunOnFreshStack<T>(Func<T> work, int minimumStackBytes)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+        ArgumentOutOfRangeException.ThrowIfNegative(minimumStackBytes);
+
+        var configured = sizeBytes != 0 ? sizeBytes : DefaultSizeBytes;
+        return RunOnWorker(work, Math.Max(configured, minimumStackBytes), configured);
+    }
+
+    // A parked worker of `size` where one is idle, otherwise a new one; parked again after the call when its size is
+    // `parked`, the configured size, and retired otherwise.
+    private static T RunOnWorker<T>(Func<T> work, int size, int parked)
+    {
         if (!idle.TryTake(out var worker) || worker.StackSize != size)
         {
             worker?.Retire();
@@ -173,7 +204,7 @@ public static class CompilationStack
         }
         finally
         {
-            if (worker.StackSize == size)
+            if (worker.StackSize == parked)
                 idle.Add(worker);
             else
                 worker.Retire();
@@ -300,6 +331,7 @@ public static class CompilationStack
         private void Loop()
         {
             inCompilation = true;
+            workerStackBytes = StackSize;
 
             while (true)
             {

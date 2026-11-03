@@ -615,6 +615,25 @@ class RunTest262Tests(unittest.TestCase):
             command[3:],
         )
 
+    def test_shell_args_follow_the_host_option(self) -> None:
+        fake_os = mock.Mock()
+        fake_os.name = "nt"
+        with mock.patch.object(run_test262, "os", fake_os):
+            command = run_test262.build_test_process_command(
+                "BroilerJS.dll",
+                "test.js",
+                12.5,
+                256,
+                shell_args=("--parse-through-bridge",),
+            )
+            default = run_test262.build_test_process_command("BroilerJS.dll", "test.js", 12.5, 256)
+
+        self.assertEqual(
+            ["dotnet", "BroilerJS.dll", "--script-host", "--parse-through-bridge", "test.js"],
+            command,
+        )
+        self.assertEqual(["dotnet", "BroilerJS.dll", "--script-host", "test.js"], default)
+
     def test_list_paths_uses_local_suite_root(self) -> None:
         file_path = self.write_test("test/language/example.js", "1 + 1;\n")
         repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))

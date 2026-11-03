@@ -9,4 +9,26 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <!-- Milestone SJL-14.2 (decision D43): building with -p:BroilerParseThroughBridge=true turns the compiler's test-only
+       switch on for every compile (JSCompilationOptions.BridgeByDefault), so that the test projects run with the
+       compiler parsing through the bridge to the shared syntax library, and the bridge's library flows to every project
+       (Broiler.JavaScript.Parser.csproj). Without the property nothing changes. Only a property given to the build
+       counts: MSBuild reads an environment variable of the same name as a property too, and one set by accident would
+       turn the switch on in every shipped assembly without a word, so a build that finds the variable set ignores the
+       property and says so. A departure from D43's "set by tests through the internals grant, no environment read",
+       recorded in docs/roadmap/SharedLibraries.md (D43's note of 2026-11-03). Window W2 removes it. -->
+  <PropertyGroup>
+    <BroilerParseThroughBridgeFromEnvironment>$([System.Environment]::GetEnvironmentVariable('BroilerParseThroughBridge'))</BroilerParseThroughBridgeFromEnvironment>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BroilerParseThroughBridge)' == 'true' and '$(BroilerParseThroughBridgeFromEnvironment)' == ''">
+    <BroilerBridgeBuild>true</BroilerBridgeBuild>
+    <DefineConstants>$(DefineConstants);BROILER_PARSE_THROUGH_BRIDGE</DefineConstants>
+  </PropertyGroup>
+  <Target Name="BroilerReportBridgeBuild" BeforeTargets="CoreCompile">
+    <Message Importance="high" Condition="'$(BroilerBridgeBuild)' == 'true'"
+             Text="$(MSBuildProjectName): built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build." />
+    <Message Importance="high" Condition="'$(BroilerParseThroughBridgeFromEnvironment)' != ''"
+             Text="$(MSBuildProjectName): the environment variable BroilerParseThroughBridge is set and ignored; the compiler's test-only switch stays off. Pass -p:BroilerParseThroughBridge=true to the build instead." />
+  </Target>
+
 </Project>

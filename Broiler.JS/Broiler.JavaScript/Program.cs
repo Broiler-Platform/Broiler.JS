@@ -30,6 +30,12 @@ namespace BroilerJS
             return DisposableAction.Empty;
         }
 
+        // The hidden test-only flag of milestone SJL-14.2 (decision D43): every context the script and module hosts make
+        // compiles through the bridge to the shared syntax library, as the side-by-side run's test262 pass asks
+        // (bundle sjl-14-001's rule, part C). Undocumented on purpose; window W2 removes it.
+        private const string ParseThroughBridgeFlag = "--parse-through-bridge";
+        private static bool parseThroughBridge;
+
         public static async Task Main(string[] args)
         {
 
@@ -43,11 +49,13 @@ namespace BroilerJS
             var recognizedOptions = new HashSet<string>(StringComparer.Ordinal)
             {
                 "--script-host",
-                "--module-host"
+                "--module-host",
+                ParseThroughBridgeFlag
             };
 
             var scriptHostMode = args.Contains("--script-host");
             var moduleHostMode = args.Contains("--module-host");
+            parseThroughBridge = args.Contains(ParseThroughBridgeFlag);
             // `--preload FILE` runs FILE as a script before the main file, in the same realm.
             // A module's own declarations are module-scoped, so a test262 module test cannot be
             // handed its harness by concatenation the way a script test is: `assert` and `$DONE`
@@ -107,6 +115,7 @@ namespace BroilerJS
             }
 
             var yc = new BroilerJSContext(file.DirectoryName);
+            yc.ParseThroughBridge = parseThroughBridge;
             var r = await yc.RunAsync(
                 file.DirectoryName, "./" + file.Name, 
                 new string[] { 
@@ -207,6 +216,7 @@ namespace BroilerJS
         private static void RunModuleHost(FileInfo file, string inbuiltModules, string preloadPath)
         {
             using var context = new BroilerJSContext(file.DirectoryName);
+            context.ParseThroughBridge = parseThroughBridge;
             DefineScriptHostGlobals(context);
             if (preloadPath != null)
             {
@@ -243,6 +253,7 @@ namespace BroilerJS
                     ScriptHostMode = true,
                     MaxStackUsageBytes = ScriptHostStackBytes - ScriptHostStackReserveBytes,
                 });
+            context.ParseThroughBridge = parseThroughBridge;
             DefineScriptHostGlobals(context);
             // Read synchronously: an `await` here could resume the rest of this method on a
             // thread-pool thread, whose stack is neither this size nor under our control, and
@@ -369,6 +380,7 @@ namespace BroilerJS
                         // Kept alive for the life of the process: the realm's objects outlive
                         // this call — the test holds them — and disposing it here would tear
                         // down the globals under values the caller is still using.
+                        realm.ParseThroughBridge = parseThroughBridge;
                         CreatedRealms.Add(realm);
                         DefineScriptHostGlobals(realm);
                         return realm[Broiler.JavaScript.Storage.KeyStrings.GetOrCreate("$262")];

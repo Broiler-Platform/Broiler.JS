@@ -98,6 +98,22 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
 next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
 
+## Milestone SJL-14.2, window W1: the bridge behind a test-only switch (2026-11-03)
+
+**No public member is added, removed or changed.** The bridge to the shared syntax library
+(`Broiler.JavaScript.Parser/Bridge/`), the compiler's switch (`JSCompilationOptions.ParseThroughBridge`,
+`ParsesThroughBridge`, `BridgeByDefault`), `JSContext.ParseThroughBridge` and `CompilationStack`'s minimum-stack
+overload are internal. Two things a consumer could notice, neither a contract:
+
+- **Package dependencies are unchanged.** `Broiler.JavaScript.Parser` references `Broiler.ECMAScript.Frontend`
+  privately (`PrivateAssets="all"`), so its package, and every package that depends on it, the portable compiler's
+  closure included, carries no dependency on `Broiler.ECMAScript.Frontend`, which has no published version yet
+  (decision D30). No product path loads that assembly while the switch is off. A release whose package depends on it
+  waits for a published Frontend: that is W2's.
+- **`JSCompilationOptions`, a public record struct, gains an internal property.** Its synthesized `GetHashCode` folds
+  in one more `bool`, so hash values differ from the previous release's for every instance; equality, `ToString` and
+  the code cache's keys are unchanged while the switch is off.
+
 ## Milestone SJL-12.5's public API: the closing record (2026-10-25)
 
 Milestone SJL-12.5's five items (Broiler.VM's JSD-0080, decisions D19 to D29) are merged, the last of them in

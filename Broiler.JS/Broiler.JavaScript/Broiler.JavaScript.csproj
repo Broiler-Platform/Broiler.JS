@@ -47,6 +47,9 @@
     <ProjectReference Include="..\Broiler.JavaScript.ExpressionCompiler\Broiler.JavaScript.ExpressionCompiler.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Modules\Broiler.JavaScript.Modules.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj" />
+    <!-- The bridge's library, which the parser references privately: the shell's hidden parse-through-bridge flag runs the
+         bridge (milestone SJL-14.2). -->
+    <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Broiler.JavaScript.Compiler.Tests" />

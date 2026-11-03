@@ -9,6 +9,9 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Network")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Compiler")]
 
+// The shell's hidden --parse-through-bridge flag sets JSContext.ParseThroughBridge (milestone SJL-14.2, decision D43).
+[assembly: InternalsVisibleTo("BroilerJS")]
+
 #if !WEB_ATOMS
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Core.Tests")]
 
