@@ -45,6 +45,13 @@ this engine did not (SJL-D-16). Each names its rows in `corrections/k-rows.tsv`,
 | **K9** | The regular-expression rows EE0186 to EE0190 and EE0208, **only if the provider wraps Broiler.Regex's validate entry** | R20 |
 | **K10** | The rows SJL-14's correspondence adds | N11, N25, N26, R24, R36, T24a to T24f, D40, D42, D63, P02, P05c, P06a (the call forms' negatives under the flag), P16b (decision D-asi), P26 and D61 (Broiler.JS's half), R12 and R13 (Broiler.JS's tests and corpus inputs that assert acceptance past the limits: class C3, or revised at SJL-14), D11 (the scope-close timing of a declared-name conflict), and this bundle's probe rows IC1 to IC7 |
 
+*(Noted 2026-11-03, at SJL-14.2 (W1), before W1 merges: the side-by-side run of the bridge found three defects of this
+engine's old parser that the correspondence did not list, each a tree difference outside spans where the bridge's tree
+follows the text and the old parser's does not. They are added to K10's rows in `corrections/k-rows.tsv` as W1a (a
+destructuring property takes the initializer of the property before it), W1b (`new new X(a)()`) and W1c (a static
+block's `var` hoisted out of the block), with the corpus inputs that show them, so that part C classes them C1. K10
+stays "the rows SJL-14's correspondence adds" as filed; these three are SJL-14's own, found by its first run.)*
+
 **Not corrections.** JSD-0080's decision D27's listed refusals are an implementation limit, class C3, enumerated by
 differencing the corpus outcomes on the 256 MiB thread the SJL-12 baselines used (decision D47). The rows the
 correspondence classes "same in outcome, Broiler.JS refusing only in its compiler" (T15, T27, P08, D12-2, D12-7, D31,

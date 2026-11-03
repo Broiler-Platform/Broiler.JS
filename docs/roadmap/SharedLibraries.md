@@ -2431,6 +2431,35 @@ which is a reading; and D48, which SJL-D-23's note of 2026-10-20 reserves to the
 | D56 | **Each SJL-14 and SJL-15 Broiler.JS bundle has a `manifest.json`** by the bundle-manifest script. *Applied at SJL-14.1 with a finding:* this repository has no bundle-manifest script (the one Broiler.VM's `validation.md` section 6 describes is Broiler.VM's), so each bundle's manifest is written at its evidence step by that bundle's own script, as earlier bundles of this repository wrote theirs | Broiler.VM's `validation.md` section 6; bundle `sjl-12-001` recorded the exception |
 | D64 | Class T (an error raised before evaluation that the base raised later, or not at all), listed, **at SJL-14 for the rows D10 moves into the parse** (the rule's parts A, C and D, by [`corrections.md`](../evidence/sjl-14-001/corrections.md)) **and at SJL-15 for the rest**. SJL-13's plan numbers it with SJL-15's decisions; it is taken here, with D40 to D56, because its SJL-14 half binds this milestone's rule, and SJL-15's records read its other half | Broiler.VM's `areas/static-semantics.md`'s acceptance; from SJL-14's W1 the library refuses at the parse some rows this engine checked lazily |
 
+*(Noted 2026-11-03, at SJL-14.2 (window W1), before W1 merges, where W1's code departs from the decisions above or
+leaves part of one to W2. **D43:** the switch is the internal `JSCompilationOptions.ParseThroughBridge`, set by tests
+and by the shell's hidden flag as D43 says; in addition, the switch-on pass over the test projects is a build given
+`-p:BroilerParseThroughBridge=true`, which defines `BROILER_PARSE_THROUGH_BRIDGE` and so turns
+`JSCompilationOptions.BridgeByDefault` on for every compile. This is no environment read in the parse path, but
+MSBuild reads an environment variable of the same name as a property, so `Broiler.JS/Directory.Build.props` ignores the
+property when the variable is set, and the architecture test `BridgeSwitchTests` fails a build with the switch on.
+W1 adds three internals grants: Engine to the shell (`BroilerJS`, for the flag), Expressions to Parser (the bridge
+reads the compile worker's stack), and Parser to the compiler, BuiltIns and Parser.Tests. **D30:** the parser
+references `Broiler.ECMAScript.Frontend` privately, so the `Broiler.JavaScript.Parser` package carries no dependency on
+it at W1 and a consumer's restore from nuget.org is unchanged; W2's package waits for a published Frontend. **D46:**
+"Unexpected await" is not one of the bridge's texts. The old parser never read a script's `await` as an expression, so
+`SyntaxValidation`'s "Unexpected await" never came from a script's parse, and the shell's retry never fired on one;
+keeping the text would have given the retry a behaviour the old path never had (a script awaiting at its top level
+run with the switch on and refused with it off). The bridge renders the library's diagnostic, with its position.
+**D44:** left to W2, with the reasons recorded: the direct-eval code compiled with the switch on still carries
+`DirectEvalSupport`'s `"use strict";` prefix, and so does the text its validation parses (with `ForcedStrict` set
+there, not in the compile's request): the compiler reads the code's strictness from that directive, so the prefix, its
+two skip sites and the reserved-word re-scan go together at W2, and N25, N26 and R36 stay uncorrected at W1; the derived-constructor
+flag is computed as today (`allowSuperCall`, from `MemberInits`), not from the class's heritage (R24), because the
+library does not read it at this pin and the heritage would reach `DirectEvalSupport.Execute` only through a new
+parameter of that public method, which W1 must not move; a class static block's flags have no slot in the library's
+`InheritedContext`, so none is passed, with no observable effect at this pin; and the token facts are made from the
+tree's spans, since the library does not publish its token stream (`ParseResult.Tokens`), which only the parenthesis
+check reads and which a library dark merge (D52) would add. **D41 and R35:** `PortableCompiler` and
+`ModuleSourceAnalysis` still parse with `FastParser` with the switch on; D41 has them read the shared tree directly,
+which is W2's change. **K10** gains three rows SJL-14's own side-by-side run found, W1a to W1c, in
+[`corrections.md`](../evidence/sjl-14-001/corrections.md).)*
+
 **D48, the owner's own choice: clause 6 while no controlled lane exists.** SJL-D-23's note of 2026-10-20 reserves the
 like choice for SJL-3's clause 7: "That choice is the owner's own when it comes, not one taken under the owner's
 direction of 2026-10-18." The question is put to the owner with two alternatives: **(i) keep clause 6** ("Broiler.JS's

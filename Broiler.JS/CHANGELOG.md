@@ -12,9 +12,12 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ### The bridge to the shared syntax library, behind a test-only switch (2026-11-03)
 
-Milestone SJL-14.2, window W1 (Broiler.VM's JSD-0083, decisions D41 to D47, D51 and D52). Nothing a consumer can
-observe changes: the product path parses with the old parser exactly as before, and no public member moves
-(`docs/public-api.md` is unchanged).
+Milestone SJL-14.2, window W1 (Broiler.VM's JSD-0083, decisions D41 to D47, D51 and D52). No public member or
+behaviour changes: the product path parses with the old parser exactly as before, and no public member moves
+(`docs/public-api.md`, section "Milestone SJL-14.2, window W1"). The packages' dependencies are unchanged: the parser
+references `Broiler.ECMAScript.Frontend` privately, so no package depends on it until a version of it is published
+(decision D30). `JSCompilationOptions`'s synthesized hash code folds in its new internal property, so its values
+differ from the previous release's; equality and the code cache's keys do not change.
 
 - **The bridge.** `Broiler.JavaScript.Parser/Bridge/` parses with the shared syntax library
   (`Broiler.ECMAScript.Frontend`) and builds this engine's `AstProgram` from the library's tree, its declaration
@@ -24,19 +27,29 @@ observe changes: the product path parses with the old parser exactly as before, 
   carries the goal, the top-level-await permission, eval code's inherited context (strictness, function, method,
   derived-constructor and field-initialiser flags, visible private names), the dynamic function's goals and kind,
   this engine's proposals, its Unicode tables, its regular-expression validator and the library's limits; the parse
-  runs on a thread with the library's documented stack. A refusal is today's `FastParseException`, with texts from
-  the bridge's message table.
+  runs on a thread with the library's documented stack, whatever compile stack is configured (a minimum-stack form of
+  `CompilationStack.RunOnFreshStack`, internal). A refusal is today's `FastParseException`, with texts from the
+  bridge's message table; a script's top-level `await` is refused with the library's diagnostic, so the shell's
+  top-level-`await` retry, which reads "Unexpected await", fires with the switch on exactly where it fires with it off.
+  Each node's span is its text (a block from its `{`, a program from offset 0), where the old parser's spans differ.
 - **The switch.** The internal `JSCompilationOptions.ParseThroughBridge`, off by default, sends the compiler, direct
   eval's validation and `Function`'s two piece parses through the bridge. The shell's hidden flag
-  `--parse-through-bridge` and the build property `BroilerParseThroughBridge=true` turn it on for tests. With it
-  off no product path reaches the bridge.
+  `--parse-through-bridge` (in every mode) and the build property `BroilerParseThroughBridge=true` turn it on for tests;
+  an environment variable of that name is ignored, and `BridgeSwitchTests` (Architecture.Tests) fails a build with the
+  switch on. With it off no product path reaches the bridge. `scripts/compliance/run_test262.py` gains `--shell-arg`,
+  which passes the flag to the shell for every test.
 - `FastScanner`'s decoding of `\u{…}` escapes in a regular expression's body gains a non-throwing form the bridge's
   validator shares; its behaviour is unchanged.
 - The remarks in `ForLoopPreparation.cs` and `DirectEvalSupport.cs` on the depth eval code is validated and compiled
   at now name the two paths that differ (decision D55).
 - `SharedSyntaxBridgeTests` (Parser.Tests) hold each fact against the old parser's, and the context, goals, regular
   expressions, messages and limits by name. Bundle sjl-14-001's side-by-side tool
-  (`docs/evidence/sjl-14-001/tools/side-by-side`) compares the two parsers and the two compiles over the parse corpus.
+  (`docs/evidence/sjl-14-001/tools/side-by-side`) compares the two parsers and the two compiles over the parse corpus,
+  writes class M's message table and checks class S's spans against the text.
+- The side-by-side run found three defects of the old parser, recorded as corrections W1a to W1c under K10 (bundle
+  sjl-14-001's `corrections.md`); with the switch off they are unchanged, and with it on: `var {a: r = 0, b: s} = {}`
+  leaves `s` undefined (the old parser carried `r`'s initializer onto `s`); `new new X(a)()` constructs the result of
+  `new X(a)` (the old parser called it); and a class static block's `var` stays in the block.
 
 ### `Execute` runs every job a script queued on its own thread before it returns (2026-11-03)
 
