@@ -1,0 +1,5 @@
+control: line 6343's outcome flipped to accepted, line 6345's first code changed to JSE0000
+compare_corpus: 402758 expected, 402758 reported, 2 failures
+failure	T000740	E1	V	refused	EE0003;EE0004	accepted	-	-	expected-refusal-accepted
+failure	T000740	E3	V	refused	EE0003;EE0004	refused	JSE0000	-	first-code-not-allowed
+exit 1

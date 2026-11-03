@@ -324,7 +324,7 @@ correspondence's findings changed it.
 | Namespaces | `Broiler.ECMAScript.Syntax`: the request, the tokenizer, the tree, the parser and the diagnostics. `Broiler.ECMAScript.Semantics`: the declarations walk from SJL-13.2, the model from SJL-15 |
 | References | `Broiler.ECMAScript.Algorithms` and `Broiler.Unicode.Algorithms` only: rule SL1's layering row `Frontend → [Algorithms, Broiler.Unicode.Algorithms]`. No `Broiler.Regex` edge (decision D7) |
 | Public API | `PublicAPI.txt`, held by the API baseline in both directions, and assurance from the first commit |
-| Packing | `IsPackable` false until SJL-13.2's done-when; then published in the shared stream with the owner's approval (decision D30) |
+| Packing | `IsPackable` false until SJL-13.2's done-when; then published in the shared stream with the owner's approval (decision D30). *(Noted 2026-11-02, at SJL-13.2f, the done-when: `IsPackable` is true, on the shared stream's `0.1.0-preview.N` scheme, the owner's words of 2026-11-01, with package validation as the other shared packages run it; nothing is published.)* |
 | `Broiler.ECMAScript.Algorithms` | Unchanged at SJL-13, an added member included: a helper the library needs is internal to it. Literal values come from `NumericLiterals.Evaluate`, of unbounded length; an engine applies its own ceilings |
 
 ### 9.2 The request
@@ -409,6 +409,38 @@ stage 4e, with the stack it requires stated beside it, which admits Broiler.VM's
   a prefix operator's operand, an array literal's element or a call's argument, and a parenthesised sequence or
   conditional as a left operand each reach past the constant; Broiler.VM's base does not charge them either, and the
   decision is D14's.
+
+*(Noted 2026-11-02, at SJL-13.2f, on the note above's last item, "each reach past the constant; Broiler.VM's base does
+not charge them either, and the decision is D14's".)* **The owner's decision of 2026-11-02**, taken as recommended under
+the direction of 2026-10-18 quoted above: every such shape is charged against the tree depth, so that a tree deeper than
+`ParseLimits.MaximumTreeDepth` is refused with the contract's tree-depth diagnostic (EX0012) wherever it is built. The
+plan's decision D14 reads "the left-operand gap is closed in the library", because keeping it "would put a known hole in
+a shared library"; JSD-0083's decision D14 as filed names four shapes, which the charge still refuses past the constant.
+Each chain node is now charged its height, one more than the highest of all its children, and refused when that height
+passes the constant; nothing else is charged, so the answer is the tree's depth against the constant: every tree deeper
+is refused, wherever it is built, and every tree within it is accepted. Any other node's height is its highest child's,
+computed once with an explicit stack, so the charge adds no frame per level. The shapes it reaches beyond the four, each
+read from the parser and tested at the bound, one past and far past on the documented stack, are listed in the
+derivation's section 5 as revised that day: a right operand of a chain's early node, a prefix operator's, `await`'s or
+`yield`'s operand, an update's operand, an array or object literal's element, value, spread or computed key, a call's,
+`new`'s or `import(…)`'s argument, a computed member's key, a tagged template's substitution, a decorator's expression, a
+parenthesised sequence, conditional or assignment, an arrow's or a function's body, a class's heritage or field
+initialiser, and `#x in`'s right operand. Chains side by side are charged their deepest, not their sum, and so are a
+chain node's own children, a left operand beside a right operand, an argument or a key. **What moves**: a source whose
+tree passes the constant in one of these shapes, accepted at stage 4e, is refused; and a source whose tree is within the
+constant, which stage 4e refused because it summed a right operand's height with the depth its chain had reached
+(`x = a+...+a + (b+...+b)`, 5,001 operands on each side, 5,002 deep), is accepted. No source of the parse corpus moves.
+**The effect on Broiler.VM** (its bundle `sjl-13-001`'s part B class L and part A's C3): its base does not charge these
+shapes, so an input of one of them past the bound, accepted at its base, moves to refused at SJL-13's step 1, an
+implementation limit of class L, never a correction; and its base sums a right operand with its chain's depth as stage
+4e did, so an input whose tree is within the bound and which the base refuses for that sum moves to accepted.
+Broiler.VM's area rule names the four shapes alone in C3, L and part C's fifth row and admits no move to accepted, and
+its JSD-0083 decision D14 takes a dated note of this decision. *(Revised 2026-11-02, after review; the note as first
+written read "which the charge still refuses where it did. Each chain node is now charged its height, one more than the
+highest of all its children, and a chain begins at its first operand's height;" and "No source within the constant
+changes its answer.", and gave Broiler.VM only the move to refused: a chain began at the depth the parse had reached, so
+an argument or a right operand beside a deep left operand was charged both, and trees within the constant were
+refused.)*
 
 ### 9.3 The result
 
@@ -523,6 +555,27 @@ F and G read.)*
 The stage table [`stages.tsv`](stages.tsv) records the assignment for every catalogue row (`syntax`, `request`,
 `engine` or `semantics`), with each engine's current stage and site.
 
+*(Noted 2026-11-02, at SJL-13.2f, after the triage of part A's first codes in bundle `sjl-13-001`, on the rows two
+sites report; no row's stage moves.)* An `await` BindingIdentifier in a class static block, whatever declares it, is
+refused by EE0009, the row of a BindingIdentifier under [+Await], which the block's statements are read under; an escaped
+one by EE0011, or EE0013 in a module; EE0140, "ClassStaticBlockStatementList Contains `await`", is the row of an `await`
+expression or an unescaped reference there. The walk refused every `await` name in a static block by EE0140, which
+looks into no function (`function await() {}` there) and finds no `await` terminal in an escaped name. And an
+assignment inside an arrow's head whose array or object literal covers no AssignmentPattern is refused by the arrow's
+cover row, EE0087, or EE0155 at an async head: the literal's refusal waits for the cover around it, as a
+CoverInitializedName's does (EE0017), and is EE0032's where no arrow's head takes it. The parser refused it by EE0032
+when the assignment was read, before `=>` was seen, though an arrow's parameters are no AssignmentExpression.
+
+*(Noted 2026-11-02, at SJL-13.2f, after review of the note above, which quotes as it stands: "and is EE0032's where no
+arrow's head takes it".)* That held only where a cover around the literal resolves. A class heritage, which no assignment
+encloses at a statement's level, now makes its literals' deferred refusals when it has been read: EE0032 for a literal
+target (`class C extends [[...x, y] = 1] {}`, which the walk refused by EE0033, whose condition does not hold of a
+literal) and EE0017 for a CoverInitializedName (`class C extends {a = 1} {}`, which was accepted). And an enclosing
+literal that the parse converts to an assignment pattern takes a deferred literal as a DestructuringAssignmentTarget,
+whose row is EE0038 (`[[...x, y] = 1] = 2;`, `for ([[...x, y] = 1] of []);`, `({ a: [...x, y] = 1 } = 2);`): the inner
+literal is no AssignmentExpression's target in the pattern, so EE0032 does not hold of it. EE0032 stays the row where
+nothing converts the outer literal.
+
 ## Corrections
 
 *(Revised 2026-10-26, at SJL-13.1; it read "None.")* Each revision of 2026-10-26 above quotes what it replaced:
@@ -536,6 +589,17 @@ The stage table [`stages.tsv`](stages.tsv) records the assignment for every cata
 - sections 3, 4 and 5 gain notes; section 7 gains SJL-13's records; section 8's first, second and last items are
   revised;
 - section 9 is new.
+
+*(Added 2026-11-02, at SJL-13.2f, after part A's first codes were triaged.)* Section 9.4 gains the note on the rows of an
+`await` binding in a static block (EE0009, EE0011, EE0013 for EE0140) and of an arrow head's literal that covers no
+AssignmentPattern (EE0087 or EE0155 for EE0032).
+
+*(Added 2026-11-02, at SJL-13.2f, after review.)* Section 9.4 gains a second note: a class heritage's deferred literal
+refusals (EE0032, EE0017) and a deferred literal an assignment pattern takes (EE0038).
+
+*(Added 2026-11-02, at SJL-13.2f.)* Section 9.1's packing row gains the note that the library is packable; section 9.2
+gains the note on the owner's decision of 2026-11-02 on decision D14's residual shapes, each chain node charged its whole
+height, and its effect on Broiler.VM's class L. The derivation's section 5 is revised the same day.
 
 *(Added 2026-11-02, at SJL-13.2e.)* Section 1's limits row, its "Deterministic" and "Limits are checked before the stack
 is" properties and section 8's last item gain notes that the derivation is made; section 9.2 a note on the derivation,

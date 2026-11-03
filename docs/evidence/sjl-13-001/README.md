@@ -22,6 +22,27 @@ Clause 1 is read from parts H and E, with part G for the contract's limits; clau
 parts C and D. There is no base and no measurement part: the library is new, and every part is judged at one commit,
 the library commit.
 
+*(Noted 2026-11-02, at SJL-13.2f, after the runs at the stage's heads were seen: the rule is revised by
+[`decision-rule-revised-2026-11-02.md`](decision-rule-revised-2026-11-02.md), which quotes it whole, the owner's
+decisions of that day taken as recommended under the direction of 2026-10-18 - (a) part A's provider also refuses a
+literal the classification refuses for a regular-expression reason whatever row it names, by the list
+[`readings/provider-readings.tsv`](readings/provider-readings.tsv) that [`tools/provider_readings.py`](tools/provider_readings.py)
+writes; (b) the classification's errors are read by the listed mapping
+[`readings/classification-readings.tsv`](readings/classification-readings.tsv), the classification unedited; (c) part
+C's control K2 is expected to make the cross-process comparison of the runs' hashes report a difference, not rule SL9 to
+fail; (d) parts A and G read decision D14 as stage 4f decided it; (e) EX0008 and EX0009 are admitted for each other
+where the classification names either; (f) a limit's refusal reported at its bound is read as past it. `decision-rule.md`
+is unchanged; the revision is weaker evidence for the decisions it changes, as the rule's section "Revisions" says.)*
+
+*(Noted 2026-11-02, at SJL-13.2f, after review of that revision and before any run it judges: the rule is revised a
+second time by [`decision-rule-revised-2026-11-02-second.md`](decision-rule-revised-2026-11-02-second.md), which quotes
+the first revision whole. (f') replaces (f): a limit's refusal reported at its bound is L only for an input
+[`readings/limit-readings.tsv`](readings/limit-readings.tsv) lists, whose own source
+[`tools/limit_readings.py`](tools/limit_readings.py) measures past the bound; (e') replaces (e): EX0008 and EX0009 are
+read for each other only for the lines [`readings/grammar-readings.tsv`](readings/grammar-readings.tsv) lists. It also
+corrects the first revision's text, and records that (e) and (f) were the stage's own proposals, not decisions the
+brief recommended. Neither earlier rule file is edited.)*
+
 **Area verdict:** [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "Area verdicts", "The frontend's syntax
 half (SJL-13.1)", with Broiler.VM's JSD-0083,
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0083-the-shared-syntax-library-and-the-wide-path.md`,
@@ -236,6 +257,190 @@ the corpus at the branch's head is the one they read *(added 2026-10-27, after r
 corpus that a later commit's rewording of `REVISIONS.md`'s row 29 changed)* *(revised 2026-10-27, under decisions
 D-asi and D-t24; read "The runs read the corpus at `535b9e34`;")*.
 
+## The rule's parts at stage SJL-13.2f's head, 2026-11-02
+
+SJL-13.2's last stage, 4f (the done-when), took every part of [`decision-rule.md`](decision-rule.md) locally at its
+branch's head, `920f18f4579d729819bfcf3c02d18b75c78fd7b5` (branch `sjl-13-2f-done`), from a clean tree written by
+`git archive` of that commit, built in Release with `--disable-build-servers`, with no `LANG` and `TZ=UTC`, on one host
+(Linux 6.18.44, x86_64, 4 logical CPUs; .NET SDK 10.0.401), on 2026-11-02. The commits after it on the branch add this
+section and the runs' files under this bundle and change no other path.
+
+**These runs are not the rule's verdict.** The rule judges every part at **the library commit**, "the default-branch
+merge that completes SJL-13.2 (its done-when)", run there from a clean checkout, and "a part run at any other commit ...
+is void". The library commit is this stage's merge into the default branch: it does not exist yet, and this README names
+it by all forty digits when it lands, as the bundle has named each commit by its merge. Each part is then taken again at
+it. What follows is each part as its text reads the runs at the branch's head; nothing here is a verdict.
+
+| Part | Configuration as run | Outcome at the head, by the rule's text |
+|---|---|---|
+| A, the parse corpus and test262's syntax tests as classified | [`tools/frontend-corpus/`](tools/frontend-corpus/README.md), the library's corpus runner, and [`tools/compare_corpus.py`](tools/compare_corpus.py), both committed in `920f18f4` before any run of this part; every input, variant and configuration (V and J) and every eval request under E0 to E7 in V, test262 at `ccaac100` checked against the manifest's SHA-256; the provider answering from the classification (decision D26) | **Not met.** The run is complete (no input absent or crashed; the manifest's and the classification's digests equal the rule commit's, which the comparison pins) and the control is reported (two more failures); but 1,922 inputs, variants and configurations have no admitted outcome (below). *(Revised 2026-11-02, after review; it read "the manifest's and the classification's digests equal the rule commit's) ... but 1,916 inputs": the comparison first committed admitted L at a reported depth equal to the bound, and compared the classification with the report's record of it, not with the rule commit's; both are corrected, and the comparison is taken again over the same report, below)* |
+| B, the `syntax` vectors (template T3) | the Native AOT probe under the JIT, whose library-level runner parses each vector through the frontend adapter under the library's default request; the vectors at corpus revision 34, whose `syntax` area is the vectors commit's (`ed494b2e`, unchanged since) | **Met**: every one of the 549 vectors agrees at the parse; the control (`syntax/statements/ee0040/0002`'s expected refusal changed to an acceptance in a copy of the corpus) is reported as the one failure |
+| C, determinism (L13, SL9) | rule SL9's test (the architecture tests); the probe's dump mode `--digest-corpus` in three processes: run 1 in the manifest's order, run 2 reversed, run 3 on two threads, each parse twice at once; controls K1 and K2 as scratch patches | **Not met.** SL9 passes, and every input gives one hash in all four parses (the three files are the same bytes); K1 behaves as stated (run 2 differs from run 1 in 194,361 lines; SL2 refuses the patched library) and agrees again after its revert; **K2 does not**: run 2 differs from run 1 in 132,685 lines, but rule SL9 passes, so "rule SL9 must fail" does not hold. SL9 compares its runs inside one process, where a string-hash seed is one, over the vector corpus, whose `syntax` vectors read an outcome and no side table; a patch of this kind cannot make it fail. K2 agrees again after its revert |
+| D, the Native AOT probe (L10) | `dotnet publish -c Release -r linux-x64` with Broiler.VM's root settings, and the JIT build, each running the vector corpus | **Not met**, as configured: the Native AOT publication and the JIT build succeed with no warning, both runs pass and their reports are the same bytes, but the configuration's run by `.github/workflows/shared-libraries.yml` at the library commit is not taken (it is the merge's, an orchestration step), and at this head the JIT publication was not taken: the JIT run is the solution build's output, as the shared workflow's is. *(Revised 2026-11-02, after review; it read "both local publications succeed with no warning", where one publication and one build were taken. The JIT publication is taken after review, with the fix, in the section below)* |
+| E, the shared libraries' rules | the architecture tests in Release (SL1 to SL10 with their witnesses, the API baseline in both directions, the register); package validation by a bash rendering of `eng/pack.ps1 -ProjectSet Shared`; the assurance check as the shared workflow runs it | **Met**: 32 of 32 architecture tests pass, every witness refused, the frontend in scope of every rule and of SL1's row; four packages packed and validated at `0.1.0-preview.9`, `Broiler.ECMAScript.Frontend` among them; "no violations" |
+| F, fuzzing (L9) | the probe's `--fuzz` over [`inputs/fuzz-seeds.txt`](inputs/fuzz-seeds.txt) (548 lines, 64 mutants each, 2,000 ms a parse) on a thread of `ParseLimits.StackBytes`, under the JIT and as the Native AOT image; the control a scratch copy whose parser throws on a ConditionalExpression | **Met**: no finding under either runtime; the control reports 238 findings, and the reverted copy's run is the run's, line for line |
+| G, the limits | [`tools/deep_nesting.py`](tools/deep_nesting.py) `run` over [`inputs/deep/`](inputs/deep/manifest.tsv), each of the 54 sources alone in its own process, under the JIT and as the image; the derivation, [`Broiler.ECMAScript/docs/frontend/limits/derivation.md`](../../../Broiler.ECMAScript/docs/frontend/limits/derivation.md), with its frames per level measured again five ways (`limits/frames-*.tsv`) | **Met**: 54 of 54 rows hold under both runtimes, every exit its row's; the measurement gives the costliest construct at 512 levels the same stack as the derivation states (its section 4's margins stand) |
+| H, the contract's checklist | [`tools/contract_check.py`](tools/contract_check.py), committed in `920f18f4` before any run of this part, over the library's `PublicAPI.txt`, its project file, `Rows.cs` and the stage table, and JSD-0080 as Broiler.VM `d1c56275aa787f71a1f5ad0fa21e0a8cc3b07207` holds it (`contract/jsd-0080.sha256`); two scratch controls | **Met**: every row and item of JSD-0080's input and output tables, limits and providers has a member, but the caller's lexical names, listed absent with decision D16's reason; no public type or reference names an engine; none of the stage table's 17 `engine` rows has a producer; control 1 (`ParseLimits.DiagnosticCap` removed) and control 2 (a public `Broiler.VM.Witness.EngineStub`) are each reported |
+
+Read by clause, as the rule reads them: clause 1 (parts H and E, with G) would read met at the head; clause 2 (A and B)
+and clause 3 (C and D) would not.
+
+**Part A's failures, by cause** (`corpus/failure-groups.tsv` groups every one by reason, configuration, the rows the
+classification names and the row of the library's first code; `corpus/comparison.tsv.gz` lists every input, variant and
+configuration with its reason, and `corpus/comparison-summary.txt` the tallies by reason):
+- **710 regular-expression literals whose refusal the classification records under rows the stage table does not base
+  on the provider**, so that the provider, which the rule has refuse a literal only "naming the first row the
+  classification names that the stage table bases on the provider", admits them and the library accepts: in
+  configuration J, 255 test262 inputs (510 variants) whose rows are Broiler.JS's scanner codes alone (EX0001 or
+  EX0008), and in both configurations 50 inputs of Broiler.JS's corpus (200 variants), regular-expression literals both
+  engines' validators refuse, whose rows are every `syntax` row of Broiler.VM's first registry code, 2101. A
+  classification of the provider's answer, which only a new dated rule file may correct.
+- **26 refusals the library does not make**: an `import.meta`, a `this` or a parenthesised non-target as a `for`-`in`,
+  `for`-`of` or `for await` head's target (T037840 to T037842, T048863, T048869, T049556, T049562), and a module that
+  exports a name it does not declare (T041636, T041638). Library defects, fixed before the library commit.
+- **1,180 refusals whose first code is not one the classification's rows allow**: the library refuses where the
+  classification expects it to, but with another row's code, most often EX0001's where it names EX0009 or EX0008, EX0009's
+  where it names EX0008, and EX0008's where it names a cover's rows (EE0087, EE0155); the groups name each pair. Each is
+  a library defect (a site that reports the wrong row) or a classification error, decided per group.
+- **6 refusals at a limit reported at the bound, not past it**: in configuration J, J000243 and J000799 refused with
+  JSE9201 at 512, the nesting parameter, and J000451 with JSE9202 at 10,000, the tree-depth constant, strict and sloppy,
+  all of Broiler.JS's corpus. Part A admits L "at a reported depth past" the bound; the library reports the bound it
+  refused past (the diagnostic's argument), not the depth it reached, so as the rule is written no refusal at a limit
+  can be admitted. Before the library commit, either the runner reports the depth the parse reached (the library
+  refuses a level of nesting, or a chain node's height, one past its bound), or a new dated rule file reads the
+  reported bound as the rule's "past"; until one of them, these six stand as failures.
+
+*(Revised 2026-11-02, after review; the paragraph that stood here read "Part A's admitted outcomes include L in
+configuration J (two inputs refused at the nesting parameter and one at the tree-depth constant, each reported with its
+bound), all of them in Broiler.JS's corpus.", counting the six as admitted by a reading of "past" as "equal to the bound
+refused past", which the rule's text does not give. The corrected comparison, [`tools/compare_corpus.py`](tools/compare_corpus.py)
+as revised, taken again over the same report, counts them as failures: `corpus/comparison.tsv.gz`,
+`corpus/comparison-summary.txt`, `corpus/failure-groups.tsv` and `corpus/control/` are its output, 1,922 failures and
+the control's 1,924.)*
+
+**What stage 4f changed that the runs read.** The tree-depth charge of every shape of the tree (the owner's decision of
+2026-11-02 on decision D14; the derivation's section 5): the probe's report of the vector corpus at the head is the same
+bytes as at `origin/main` (`6d9ded70`) (`probe/sha256.txt`), and the dump of every one of the parse corpus's 295,795
+parses in configuration V is the same as stage 4e's (`determinism/stage-4e-6d9ded70.sha256` and its log: run 1 of
+the dump mode taken the same way with the probe built at `6d9ded70`, the same SHA-256 as this head's run 1): no parse of
+the corpus in configuration V moves, and part A's refusal of J000451 in configuration J is of a chain past the constant,
+which stage 4e refused too. *(Revised 2026-11-02, after review; it read "is the same as stage 4e's (its verifier's
+dump)", which the bundle did not retain, and "part A's L in configuration J is a chain past the constant".)*
+
+**The files.** `corpus/` (part A: the runner's report, the comparison, its control), `vectors/` (B), `determinism/` (C:
+run 1's dump, the three runs' digests and logs, SL2 and SL9 from the architecture tests, and K1 and K2 each with its
+patch, its runs' digests, the first lines where they differ, the rule its patch must fail and its revert), `probe/` (D),
+`rules/` (E: the architecture tests, the assurance check, the pack and the pristine consumer), `fuzz/` (F, with the
+control's findings by name), `limits/` (G), `contract/` (H), and `review/` (the checks taken again after review, the
+section below). The dump files of run 2, run 3 and the controls' runs are not kept, only their SHA-256: run 2's and run
+3's are run 1's bytes. *(Noted 2026-11-02, after review: for K1 and K2 this departs from part C's "retained with their
+output": each control keeps its runs' SHA-256 and the first lines where they differ, not its runs' dumps, which were not
+kept and cannot be retaken at this head as they were. At the library commit each control's runs are retained whole,
+gzipped as `determinism/run-1.tsv.gz` is.)*
+
+### After review, 2026-11-02: the charge by height alone, and the checks it touches
+
+*(Added 2026-11-02, at SJL-13.2f, after review.)* The review of the branch found that the tree-depth charge as first made
+refused trees within the constant (a chain began at the depth the parse had reached, so an argument, a key or a right
+operand beside a deep left operand was charged both), and stage 4e's charge some too. Commit
+`25678837cab780edf4cb166b40eacdf9c3e01b56` refuses a chain node by its height alone (the derivation's section 5, revised
+the same day), so the commits after `920f18f4` change the library's parser and tests as well as this bundle: the
+sentence above, "The commits after it on the branch add this section and the runs' files under this bundle and change no
+other path", no longer holds. The parts taken at `920f18f4` stand as they were taken, none a verdict; the checks the
+change touches were taken again at `25678837`, from the branch's worktree (uncommitted edits to records only), built in
+Release with `--disable-build-servers`, no `LANG`, `TZ=UTC`, and retained in [`review/`](review/):
+
+| Check | What it gives at `25678837` |
+|---|---|
+| The solution filter's build and every test project | no warning; every test passes, the Frontend's 946 among them (`review/build.txt`, `review/tests.txt`) |
+| The probe over the vector corpus (part B's and D's runs) | the JIT build, the Native AOT image and, taken now, the JIT publication (`dotnet publish -c Release -p:PublishAot=false`), each with no warning and exit 0; the three reports are the same bytes, and the same as at `origin/main` and at `920f18f4` (`review/probe-sha256.txt` against `probe/sha256.txt`) |
+| Part A's runner, and the comparison as revised | the report is the same as at `920f18f4` but its commit line (`review/report.tsv.gz`); the comparison over it gives the same tallies as over `920f18f4`'s, 1,922 failures (`review/comparison-summary.txt`) |
+| Part C's dump mode, run 1 | the same SHA-256 as at `920f18f4` and at stage 4e (`review/digest-sha256.txt`, `determinism/sha256.txt`, `determinism/stage-4e-6d9ded70.sha256`): no parse of the corpus moves in configuration V |
+| Part G's runner over the deep-nesting corpus | 54 of 54 rows hold under the JIT and as the image, every line as at `920f18f4` (`review/deep-*.tsv`) |
+| The first tier's frames per level | every row the same frames; every nesting row a little more stack left, none less (`review/frames-jit-first-tier.tsv` against `limits/frames-jit-first-tier.tsv`) |
+| `--parse-one` over the derivation's probes and the review's sources | stage 4e's seven probes past the constant refused, its control refused; the sources within the constant that stage 4e or the first charge refused accepted, and one past them refused (`review/probes.tsv`, at stage 4e, at `197b204b` and at `25678837`; the sources from `review/probe-sources.py`) |
+| Part F's fuzzing, under the JIT and as the image | no finding under either runtime; the two tallies are the same, and differ from `920f18f4`'s in four mutants, each refused at the tree-depth constant there and by another row now (in J one by JSE9108 and two by JSE9109, in V one by JSE9201): the first charge refused a summed depth before the parse reached that row's error, and the charge by height refuses only a chain node, once built, whose height passes the constant (`review/fuzz-*.txt` against `fuzz/fuzz-*.txt`) |
+| Packing, the pristine consumer, the assurance check | four packages validated at `0.1.0-preview.9`; the consumer passes; the assurance check (Broiler.Code `afd4ffb2`, from a folder holding it and this tree side by side) finds no violations (`review/pack.log`, `review/pristine.log`, `review/assurance-check.log`) |
+
+Not taken again: part C's runs 2 and 3 and its controls, part F's control, and part H's check, which reads the public
+API, the project file, `Rows.cs` and the stage table, none of which the change moves; part E's architecture tests ran
+with every test project.
+
+### Part A's first codes, triaged, 2026-11-02
+
+*(Added 2026-11-02, at SJL-13.2f, after the runs above were seen.)* Every one of the 1,922 failures of part A's
+comparison at `920f18f4` was read: the input, the library's refusing site, the catalogue's and the stage table's rows,
+and the rows the classification names. [`readings/triage.tsv`](readings/triage.tsv) gives each group of
+`corpus/failure-groups.tsv` with what answers it:
+
+| Outcome | Parses | What |
+|---|---|---|
+| (i) a library site reporting the wrong row, fixed | 112 | 40 refusals of an `await` binding in a class static block, refused by EE0140 where EE0009 holds (EE0140 looks into no function); 72 of an arrow head's literal that covers no AssignmentPattern, refused by EE0032 where EE0087 holds. Commit `9d4c7ef323eb5184412379d15a0b087f4f2abe78`, with tests that failed before it (design.md section 9.4's note, the CHANGELOG) |
+| (ii) the classification naming rows that do not hold | 652 | readings H1 to H9 (626 first codes: a `#` that begins no token, EX0001, 562; EX0010 for `import`/`export` in a script, 20; EE0033, EE0047, EE0155, EE0009 and EX0008 where the rows named do not hold, 44) and S1, S2 (26 refusals the library does not make, which stage 4f's records called library defects: the rule that holds is EE0054 or EE0171, both `semantics`, and the row named, EG0008 or EE0182, does not hold); listed in [`readings/classification-readings.tsv`](readings/classification-readings.tsv) |
+| (iii) EX0008 for EX0009, or the reverse | 442 | the catalogue's two generic grammar rows at a token the grammar does not admit where the parser stands |
+| the provider's reading | 710 | regular-expression literals the classification refuses under non-provider rows: in J, 255 test262 inputs under Broiler.JS's scanner codes; in V and J, 50 Broiler.JS inputs under Broiler.VM's code-2101 rows |
+| a limit reported at its bound | 6 | J000243, J000799 (nesting, 512) and J000451 (tree depth, 10,000), strict and sloppy, in J |
+
+None of (ii), (iii), the provider's reading or the limits is a library defect, and none is answered by editing the
+classification: [`decision-rule-revised-2026-11-02.md`](decision-rule-revised-2026-11-02.md) decides how each is read,
+its decisions (b), (e), (a) and (f). Of the 1,180 first codes no row allowed, 112 are (i), 626 (ii) and 442 (iii).
+
+### Parts A and C taken again under the revised rule, 2026-11-02
+
+*(Added 2026-11-02, at SJL-13.2f.)* After the library change of `9d4c7ef3`, the rule's revision
+([`decision-rule-revised-2026-11-02.md`](decision-rule-revised-2026-11-02.md), commit `803371021cb75ea219127f0a0ae744f10f9a4fdd`)
+and the runner's and comparison's revision under it (commit `a321cd7eed4652d72d931bd7cef41abd52ba35d7`, before any run it
+judges), parts A and C were taken again at `a321cd7e`, from a clean tree written by `git archive` of that commit, built
+in Release with `--disable-build-servers`, no `LANG`, `TZ=UTC`, on the same host, as part A's and part C's configurations
+read under the revision. **These runs are void under the rule, as every run before the library commit is: they are not
+at the library commit, and they show only what the parts would read there if nothing moves.** Files in
+[`revised-runs/`](revised-runs/commands.txt), with its `commands.txt`.
+
+| Part | What the runs give at `a321cd7e` | As the revised rule reads it |
+|---|---|---|
+| A | 402,758 parses, none crashed or absent; the manifest's and the classification's digests equal the rule commit's, and the report read the provider list the comparison reads (`provider-readings-agree yes`); **no failure**. Admitted beyond the classification's rows: 710 by the provider reading (decision (a)), 626 by a classification reading and 26 read as semantics-only (decision (b)), 442 by the grammar pair (decision (e)), 6 limits at their bound (decision (f)). The control (one outcome flipped, one first code changed to JSE0000) is reported as two failures (`corpus/control/`) | would be **met** |
+| C | Rule SL9 passes (`determinism/sl2-sl9.log`); runs 1, 2 (reversed) and 3 (two threads, each parse twice at once) give the same SHA-256 for every parse, `5b8cd282…`, and the three files are the same bytes. K1 (a process-wide counter in a numeric literal's raw text): run 2 differs from run 1 in 194,361 lines and rule SL2 refuses the patched library; reverted, the tree equals the run tree's and run 1 is the run's bytes. K2 (a side table in string-hash order): run 2 differs from run 1 in 127,806 lines, so the comparison of the runs' hashes reports the difference, as decision (c) restates K2; rule SL9 passes under it, which the revised K2 no longer asks to fail; reverted, the tree and run 1 are the run's | would be **met** |
+
+Run 1's dump differs from the one taken at `920f18f4` in 80 lines, each a parse in configuration V of an input the
+library change of `9d4c7ef3` moves (`determinism/moved-from-920f18f4.txt`): its first diagnostic is EE0009's where it was
+EE0140's, or EE0087's where it was EE0032's. The dumps of run 1, of runs 2 and 3, and of the controls' runs are not kept,
+only their SHA-256 and the first lines where a control's runs differ, as at `920f18f4`; at the library commit each is
+retained whole, gzipped (the departure the section above records stands for these runs too).
+
+Taken with them, in the same tree: the solution filter builds with no warning, and every test project passes, the
+Frontend's 969 tests among them (`checks/`); the probe over the vector corpus, under the JIT and as the Native AOT image
+(published with no warning), gives byte-identical reports, the same bytes as at `origin/main` and `920f18f4`
+(`86166c99…`): the library change moves no probe line, the probe judging a vector at the parse by its outcome. Not taken
+again: parts B, D, E, F, G and H, whose runs at `920f18f4` and `25678837` stand as they were taken, none a verdict. Part D
+needs the shared workflow's run at the library commit, which is the merge's.
+
+### Parts A and C taken again under the second revision, 2026-11-02
+
+*(Added 2026-11-02, at SJL-13.2f, after review.)* After the library change of `295e61ead1a3bea8bb1b6684eb7957df506db9f1`
+(a class heritage's deferred literal refusals, EE0032 and EE0017, and EE0038 for a literal an assignment pattern takes;
+CHANGELOG, design.md section 9.4), the rule's second revision
+([`decision-rule-revised-2026-11-02-second.md`](decision-rule-revised-2026-11-02-second.md), commit
+`7aff49a2`, with its two lists and their scripts) and the comparison's revision under it (commit
+`1c6a3f2b55cb3e10580ed7d09113706aee669a0f`, before any run it judges), parts A and C were taken again at `1c6a3f2b`, from
+a clean tree written by `git archive` of that commit, as the section above took them. **These runs are void under the
+rule, as every run before the library commit is: they are not at the library commit, and they show only what the parts
+would read there if nothing moves.** Files in [`second-revision-runs/`](second-revision-runs/commands.txt).
+
+| Part | What the runs give at `1c6a3f2b` | As the rule revised twice reads it |
+|---|---|---|
+| A | 402,758 parses, none crashed or absent; the report's lines are the same as at `a321cd7e` (the library change of `295e61ea` moves no parse of the corpus); the manifest's and the classification's digests equal the rule commit's, the report read the provider list the comparison reads, and the three readings lists rebuild byte for byte from their scripts (`corpus/readings-check.log`); **no failure**. Admitted beyond the classification's rows: 710 by the provider reading (a), 626 by a classification reading and 26 read as semantics-only (b), 442 by the grammar reading (e'), and 6 limits at their bound by the measured reading (f'), J000243 and J000799 (nesting 25,001 and 15,001, past 512) and J000451 (a chain of 20,000, past 10,000). The control is reported as two failures (`corpus/control/`) | would be **met** |
+| C | Rule SL9 passes (`determinism/sl2-sl9.log`); runs 1, 2 (reversed) and 3 (two threads) give the same SHA-256 for every parse, `5b8cd282…`, the bytes of the run at `a321cd7e`. K1: run 2 differs from run 1 in 194,361 lines and rule SL2 refuses the patched library; K2: run 2 differs from run 1 in 123,745 lines, so the comparison of the runs' hashes reports the difference (decision (c)); SL9 passes under it. Each reverted: the tree equals the run tree's and run 1 is the run's bytes | would be **met** |
+
+A refusal at a limit at its bound of an input the list does not name is now a failure: a copy of the report with one
+accepted parse in J made refused by EX0011's code at depth 512 was reported as one failure
+(`expected-acceptance-refused`; `corpus/control/limit-control.log`). The dumps themselves are not kept, as at `a321cd7e` (the departure recorded above stands).
+Taken with them, in the same tree: the solution filter builds with no warning, and every test project passes, the
+Frontend's 982 tests among them (`checks/`); the probe over the vector corpus under the JIT and as the Native AOT image
+(published with no warning) gives byte-identical reports, `86166c99…`, the bytes of `origin/main`'s: no probe line moves.
+The conformance scripts' tests pass (428, 15 skipped). Not taken again: parts B, D, E, F, G and H, which read nothing
+this round moves but the library's two sites, whose tests run with the Frontend's; part D needs the shared workflow's
+run at the library commit.
+
 ## State
 
 **2026-10-26, at SJL-13.1: rules only. Nothing here is a verdict, and nothing has been taken.**
@@ -256,7 +461,12 @@ parts, and nothing here is a verdict; the line above stands for the rule's parts
   retained with its output. Each reads what the library writes: part A's the corpus runner's report, in the fields
   part A's configuration lists, with the classification and the catalogue, and no expectation of its own; part H's the
   library's `PublicAPI.txt`. Part A's corpus runner, its dump mode for part C and part F's fuzz target are the
-  library's, written by SJL-13.2 (stages 4a and 4e). *(2026-11-02, at SJL-13.2e:* part G's runner,
+  library's, written by SJL-13.2 (stages 4a and 4e). *(Noted 2026-11-02, at SJL-13.2f: "Part A's corpus runner, its dump
+  mode for part C and part F's fuzz target are the library's, written by SJL-13.2 (stages 4a and 4e)" held of part C's
+  dump mode and part F's fuzz target, the probe's, and not of part A's runner, which no stage had written: stage 4f
+  commits it, [`tools/frontend-corpus/`](tools/frontend-corpus/README.md), the second place the rule names, with part A's
+  comparison, [`tools/compare_corpus.py`](tools/compare_corpus.py), and part H's check,
+  [`tools/contract_check.py`](tools/contract_check.py), in `920f18f4`, before any run of either part.)* *(2026-11-02, at SJL-13.2e:* part G's runner,
   [`tools/deep_nesting.py`](tools/deep_nesting.py), is committed here before any run of part G: it starts one process
   per row of [`inputs/deep/manifest.tsv`](inputs/deep/manifest.tsv), the Native AOT probe's `--parse-one` mode under the
   JIT or as its image, and reads each process's exit code; its `stack` mode measures the least stack each source needs,
@@ -277,7 +487,23 @@ The `syntax` vectors' commits on this change's branch are named in the section a
 after review by `535b9e3469a0d74a0c23244e3271c7853785f00c` *(the last clause added 2026-10-27)* and completed under
 the owner's decisions D-asi and D-t24 by `dc9e09e5ae9583552f8f42a3879527fec7396f3d` *(this clause added 2026-10-27)*. The vectors
 commit, the default-branch merge that carries them, is named here, by all forty digits, when that change has merged.
-No other commit is named yet. *(Revised 2026-10-27, at the `syntax` vectors; read "No other commit is named yet.")*
+No other commit is named yet. *(Revised 2026-10-27, at the `syntax` vectors; read "No other commit is named yet.")* *(Added 2026-11-02, at SJL-13.2f: **the library commit** is
+the default-branch merge of SJL-13.2f, the done-when, branch `sjl-13-2f-done`; it is named here by all forty digits when
+that merge lands, and every part is taken there. The parts were taken at the branch's head before it, at
+`920f18f4579d729819bfcf3c02d18b75c78fd7b5` (the section "The rule's parts at stage SJL-13.2f's head"), which the rule
+counts as no run of a part.)* *(Added 2026-11-02, at SJL-13.2f, after review: the two commits this
+section names "when the change has merged" have merged, and are named here. **The rule commit** is
+`238069ab8150858a112461b42b95c1f49c1f4eb1`, the merge of Broiler.JS#1081; its `classification/classification.tsv.gz`
+has SHA-256 `753b54fee1a530a91d2c58400eb52e700221fddbb4ed9670d4362f6d268a512f` and `conformance/parse/corpus.manifest`
+`1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc`, which part A's comparison pins. **The vectors
+commit** is `ed494b2e3953b03eae305dc736b8be23dcff3cf9`, the merge of Broiler.JS#1082, which adds the `syntax` area at
+its corpus revision. The rule's conditions hold, by `git merge-base --is-ancestor`: the rule commit is an ancestor of
+the vectors commit (its first parent), and the vectors commit an ancestor of the first default-branch merge that adds a
+file under `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/`, `61cb15b5472955079f3b0bf98c600f4128094614` (Broiler.JS#1085,
+SJL-13.2a, whose first such commit is `7b96d43e8cda306afefd0cfd6c0117e82f4b5c0c`); and `git diff` of
+`conformance/vectors/syntax/` from the vectors commit to `origin/main` (`6d9ded70`) is empty. The sentence "No other
+commit is named yet." above no longer holds: the rule commit and the vectors commit are named here, and the library
+commit is named when it lands.)*
 
 **What the bundle will hold:**
 - `corpus/`: part A's report in both configurations, the comparison's output with every admitted outcome listed by
@@ -292,8 +518,14 @@ No other commit is named yet. *(Revised 2026-10-27, at the `syntax` vectors; rea
 - `tools/`: the scripts parts A and H name, and part A's corpus runner if it is kept here;
 - `engine/`: both engines' engine-level runs on the `syntax` vectors, the basis of revision 30's fields, which no part
   reads *(added 2026-10-27, at the `syntax` vectors; the item before ended with a full stop)*.
+- `readings/`: the lists the rule's revision of 2026-11-02 reads for part A, and the triage behind them; `revised-runs/`:
+  parts A and C taken again under that revision at `a321cd7e`, void as every run before the library commit is *(added
+  2026-11-02, at SJL-13.2f)*.
+- `second-revision-runs/`: parts A and C taken again under the rule's second revision of 2026-11-02 at `1c6a3f2b`, void
+  as every run before the library commit is *(added 2026-11-02, at SJL-13.2f, after review)*.
 
-**It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them.
+**It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them. *(Noted 2026-11-02, at SJL-13.2f: the runs at the branch's head are taken, and the folders above hold them; the
+section "The rule's parts at stage SJL-13.2f's head" reads them.)*
 A test262 suite total is never quoted (rule H5): part A is decided per input, variant and configuration, and totals
 decide nothing.
 

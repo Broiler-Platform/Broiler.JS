@@ -1,0 +1,20 @@
+source	stage 4e (6d9ded70)	first charge (197b204b)	this change (25678837)
+n-1-yield	accepted - - -	refused JSE9202 10000 1:21	refused JSE9202 10000 1:21
+n-2-postfix	accepted - - -	refused JSE9202 10000 1:5	refused JSE9202 10000 1:5
+n-3-prefix-update	accepted - - -	refused JSE9202 10000 1:5	refused JSE9202 10000 1:5
+s5-1-right-by-precedence	accepted - - -	refused JSE9202 10000 1:5	refused JSE9202 10000 1:5
+s5-2-right-parenthesised	accepted - - -	refused JSE9202 10000 1:5	refused JSE9202 10000 1:5
+s5-3-prefix	accepted - - -	refused JSE9202 10000 1:5	refused JSE9202 10000 1:5
+s5-4-array	accepted - - -	refused JSE9202 10000 1:5	refused JSE9202 10000 1:5
+s5-5-call-argument	accepted - - -	refused JSE9202 10000 1:5	refused JSE9202 10000 1:5
+s5-6-sequence	accepted - - -	refused JSE9202 10000 1:5	refused JSE9202 10000 1:5
+s5-7-conditional	accepted - - -	refused JSE9202 10000 1:5	refused JSE9202 10000 1:5
+s5-8-control	refused JSE9202 10000 1:5	refused JSE9202 10000 1:5	refused JSE9202 10000 1:5
+w-1-member-plus-call	accepted - - -	refused JSE9202 10000 1:10009	accepted - - -
+w-2-array-plus-paren	accepted - - -	refused JSE9202 10000 1:18012	accepted - - -
+w-3-chain-plus-paren	refused JSE9202 10000 1:10010	refused JSE9202 10000 1:10010	accepted - - -
+w-4-both-at-bound	refused JSE9202 10000 1:20010	refused JSE9202 10000 1:20010	accepted - - -
+w-5-right-past	refused JSE9202 10000 1:20010	refused JSE9202 10000 1:20010	refused JSE9202 10000 1:5
+w-6-left-past	refused JSE9202 10000 1:20012	refused JSE9202 10000 1:20012	refused JSE9202 10000 1:5
+w-7-key-arg-at-bound	refused JSE9202 10000 1:10007	refused JSE9202 10000 1:10007	accepted - - -
+w-8-key-arg-past	refused JSE9202 10000 1:10007	refused JSE9202 10000 1:10007	refused JSE9202 10000 1:5

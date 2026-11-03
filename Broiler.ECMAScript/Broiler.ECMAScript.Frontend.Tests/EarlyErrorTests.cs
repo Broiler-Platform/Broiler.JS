@@ -255,7 +255,7 @@ public sealed class EarlyErrorTests
         { "EE0133", "", "class C { static { let a; } static { let a; } }", "class C { static { let a; let a; } }", "EE0133" },
         { "EE0134", "", "class C { static { let a; } static { var a; } }", "class C { static { let a; var a; } }", "EE0134" },
         { "EE0135", "", "class C { static { L: ; } }", "class C { static { L: L: ; } }", "EE0135" },
-        { "EE0140", "", "class C { static { (function () { var await; }); } }", "class C { static { var await; } }", "EE0140" },
+        { "EE0140", "", "class C { static { (function () { var await; }); } }", "class C { static { await 0; } }", "EE0140" }, // an await binding there is EE0009's (2026-11-02)
         { "EE0141", "", "({ async m(a) { \"use strict\"; } });", "({ async m(a = 1) { \"use strict\"; } });", "EE0141" },
         { "EE0143", "", "({ async m(a = 1) {} });", "({ async m(a = await 1) {} });", "EE0143" },
         { "EE0144", "", "({ async m(a) { var a; } });", "({ async m(a) { let a; } });", "EE0144" },
@@ -425,6 +425,104 @@ public sealed class EarlyErrorTests
         Assert.Equal(ParseOutcome.Accepted, Parse("-tla", "var await; await;").Outcome);
         Assert.Equal(CodeOf("EE0007"), Parse("m -tla", "var await;").Diagnostics[0].Code);
         Assert.Equal(CodeOf("EE0009"), Parse("tla", "var await;").Diagnostics[0].Code);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Two sites the triage of part A's first codes found reporting another row than the one whose condition holds
+    // (stage SJL-13.2f, 2026-11-02; bundle sjl-13-001's README, "Part A's first codes, triaged").
+
+    /// <summary>
+    /// A class static block reads its statements under [+Await] (ECMA-262 15.7.1): an <c>await</c> BindingIdentifier there is
+    /// EE0009's, whatever declares it, and an escaped one EE0011's (EE0013's in a module); EE0140, "ClassStaticBlockStatementList
+    /// Contains <c>await</c>", is the AwaitExpression's, since Contains looks into no function and an escaped name holds no
+    /// <c>await</c> terminal.
+    /// </summary>
+    public static TheoryData<string, string, string> StaticBlockAwait => new()
+    {
+        { "", "class C { static { var await; } }", "EE0009" },
+        { "", "class C { static { let await = 0; } }", "EE0009" },
+        { "", "class C { static { function await() {} } }", "EE0009" },
+        { "", "class C { static { class await {} } }", "EE0009" },
+        { "", "class C { static { try {} catch (await) {} } }", "EE0009" },
+        { "", "class C { static { var [await] = []; } }", "EE0009" },
+        { "", "class C { static { var { x: await } = {}; } }", "EE0009" },
+        { "m", "class C { static { var await; } }", "EE0009" },
+        { "", @"class C { static { var \u0061wait; } }", "EE0011" },
+        { "m", @"class C { static { var \u0061wait; } }", "EE0013" },
+        { "", "class C { static { await 0; } }", "EE0140" },
+        { "m", "class C { static { await 0; } }", "EE0140" },
+    };
+
+    [Theory]
+    [MemberData(nameof(StaticBlockAwait))]
+    public void An_await_binding_in_a_static_block_is_refused_by_the_binding_row_and_an_await_expression_by_the_block_s(string options, string text, string row)
+    {
+        var result = Parse(options, text);
+        Assert.Equal(ParseOutcome.Refused, result.Outcome);
+        Assert.Equal(CodeOf(row), result.Diagnostics[0].Code);
+    }
+
+    /// <summary>
+    /// An assignment inside an arrow's cover whose array or object literal covers no AssignmentPattern: where <c>=&gt;</c>
+    /// follows, the cover covers no ArrowFormalParameters (EE0087, or EE0155 at an async head), since an arrow's parameters
+    /// are no AssignmentExpression and EE0032 holds of none (ECMA-262 15.3.1); where none follows, the expression stands and
+    /// EE0032 is its row.
+    /// </summary>
+    public static TheoryData<string, string> CoverAssignmentPatterns => new()
+    {
+        { "([...[x], y] = [1]) => 0;", "EE0087" },
+        { "([...x = []] = []) => 0;", "EE0087" },
+        { "({ a: [...x, y] = 1 }) => 0;", "EE0087" },
+        { "(a, [...x, y] = []) => 0;", "EE0087" },
+        { "async ([...x, y] = []) => 0;", "EE0155" },
+        { "([...[x], y] = [1]);", "EE0032" },
+        { "[...[x], y] = [1];", "EE0032" },
+        { "({ a: [...x, y] = 1 });", "EE0032" },
+        { "f([...x, y] = 1);", "EE0032" },
+        { "async([...x, y] = 1);", "EE0032" },
+        { "x = [[...y, z] = 1];", "EE0032" },
+    };
+
+    [Theory]
+    [MemberData(nameof(CoverAssignmentPatterns))]
+    public void A_literal_that_covers_no_assignment_pattern_is_refused_by_the_arrow_s_cover_row_inside_an_arrow_s_head_and_by_EE0032_elsewhere(string text, string row)
+    {
+        var result = Parse("", text);
+        Assert.Equal(ParseOutcome.Refused, result.Outcome);
+        Assert.Equal(CodeOf(row), result.Diagnostics[0].Code);
+    }
+
+    /// <summary>
+    /// A literal's refusal that waits for the cover around it is made where no cover takes the literal: a class heritage,
+    /// which no assignment encloses at a statement's level, makes it after the heritage is read (EE0032 for an assignment's
+    /// literal target, EE0017 for a CoverInitializedName); and a literal assignment inside a literal that the parse converts to
+    /// an assignment pattern (an assignment's target or a for-in/of head) is refused by EE0038, the DestructuringAssignmentTarget's
+    /// row, when the conversion reaches it (stage SJL-13.2f, 2026-11-02, after review).
+    /// </summary>
+    public static TheoryData<string, string, string> DeferredLiteralRefusals => new()
+    {
+        { "", "class C extends [[...x, y] = 1] {}", "EE0032" },
+        { "m", "export default class extends { a: [...x, y] = 1 } {}", "EE0032" },
+        { "", "(class extends [[...x, y] = 1] {});", "EE0032" },
+        { "", "class C extends {a = 1} {}", "EE0017" },
+        { "", "class C extends [{a = 1}] {}", "EE0017" },
+        { "m", "export default class extends {a = 1} {}", "EE0017" },
+        { "", "class C extends ({a = 1}) {}", "EE0017" },
+        { "", "[[...x, y] = 1] = 2;", "EE0038" },
+        { "", "for ([[...x, y] = 1] of []);", "EE0038" },
+        { "", "({ a: [...x, y] = 1 } = 2);", "EE0038" },
+        { "", "([[...x, y] = 1] = 2);", "EE0038" },
+        { "", "x = { a: [...x, y] = 1 } = 2;", "EE0038" },
+        { "", "({ a: [...x, y] = 1 });", "EE0032" },
+    };
+
+    [Theory]
+    [MemberData(nameof(DeferredLiteralRefusals))]
+    public void A_deferred_literal_refusal_is_made_where_no_cover_takes_the_literal(string options, string text, string row)
+    {
+        var result = Parse(options, text);
+        Assert.Equal(ParseOutcome.Refused, result.Outcome);
+        Assert.Equal(CodeOf(row), result.Diagnostics[0].Code);
     }
 
     // ---------------------------------------------------------------------------------------------------------------

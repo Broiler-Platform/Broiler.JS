@@ -1,0 +1,6 @@
+Passed!  - Failed:     0, Passed:  1296, Skipped:     0, Total:  1296, Duration: 32 s - Broiler.ECMAScript.Algorithms.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    32, Skipped:     0, Total:    32, Duration: 1 m 6 s - Broiler.ECMAScript.Architecture.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   153, Skipped:     0, Total:   153, Duration: 15 s - Broiler.ECMAScript.Conformance.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   946, Skipped:     0, Total:   946, Duration: 1 m 3 s - Broiler.ECMAScript.Frontend.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    50, Skipped:     0, Total:    50, Duration: 39 s - Broiler.ECMAScript.Generation.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   263, Skipped:     0, Total:   263, Duration: 1 m 15 s - Broiler.ECMAScript.Intl.Tests.dll (net10.0)

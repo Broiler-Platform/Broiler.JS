@@ -1,0 +1,11 @@
+181,190d180
+<     public int DiagnosticCap
+<     {
+<         get => diagnosticCap;
+<         init
+<         {
+<             ArgumentOutOfRangeException.ThrowIfLessThan(value, 1, nameof(DiagnosticCap));
+<             diagnosticCap = value;
+<         }
+<     }
+< 

@@ -421,6 +421,68 @@ Not yet packed under a version of its own: the stream's next version is set when
 
   No parse within the limits changes its answer; a decorator's member chain past the tree-depth constant, under the
   decorators proposal's flag, is refused where it was built.
+- `Broiler.ECMAScript.Frontend`, stage SJL-13.2f: **done** (Broiler.VM's JSD-0083, decisions D6, D14 and D30; design
+  [`docs/frontend/design.md`](docs/frontend/design.md), sections 9.1's and 9.2's notes of this stage):
+  - **every shape of the tree charged against the tree depth**, by the owner's decision of 2026-11-02 on what the
+    derivation's section 5 recorded at stage 4e: each chain node is charged its height, one more than the highest of all
+    its children, and refused when that height passes `ParseLimits.MaximumTreeDepth`, with the tree-depth diagnostic
+    (JSE9202, catalogue row EX0012), so that every tree deeper than the constant is refused wherever it is built - under
+    a right operand of a chain's early node, a prefix operator's, `await`'s or `yield`'s operand, an update's operand, an
+    array or object literal's element, value, spread or computed key, a call's, `new`'s or `import(…)`'s argument, a
+    computed member's key, a tagged template's substitution, a decorator's expression, a parenthesised sequence,
+    conditional or assignment, an arrow's or a function's body, a class's heritage or field initialiser, or `#x in`'s
+    right operand - as along a chain's left spine, where the four shapes JSD-0083's decision D14 names are refused past
+    the constant as before; and every tree within the constant is accepted, however its chains stand beside or below one
+    another. A node's height is computed once, with an explicit stack, so the charge adds no frame per level of the
+    tree. The derivation's section 5 is revised
+    ([`docs/frontend/limits/derivation.md`](docs/frontend/limits/derivation.md)), and its figures stand;
+  - **packed**: `IsPackable` is true, on the shared stream's `0.1.0-preview.N` scheme (the owner's words of 2026-11-01)
+    with the other shared packages, whose next version is `0.1.0-preview.9`, with package validation as they run it (a
+    first version, validated without a baseline). The package depends on `Broiler.ECMAScript.Algorithms` at the stream's
+    version and on `Broiler.Unicode.Algorithms`, and carries no data. Publishing it is the owner's, with the owner's
+    approval (decision D30).
+
+  A source whose tree passes the constant in one of the shapes above, accepted at stage 4e, is refused; a source whose tree
+  is within the constant, which stage 4e refused because it charged a right operand from the depth its chain had reached
+  (`x = a+...+a + (b+...+b)`, 5,001 operands on each side, a tree 5,002 deep), is accepted. No source of the parse corpus
+  changes its answer. No public API changes.
+
+  *(Added 2026-11-02, at SJL-13.2f, after part A's first codes were triaged; bundle `sjl-13-001`'s README, "Part A's first
+  codes, triaged".)* Two sites reported a row whose condition does not hold where another's does; each now reports the
+  row that holds, and no source changes its outcome:
+  - **an `await` binding in a class static block** is refused by EE0009 (JSE1305, `identifier.await.in-async`), the
+    BindingIdentifier's row under the block's [+Await], and an escaped one by EE0011 (JSE1307) or, in a module, EE0013
+    (JSE1309), where every `await` name in a static block was refused by EE0140 (JSE1573,
+    `class.static-block.await`). EE0140, "ClassStaticBlockStatementList Contains `await`", looks into no function and finds
+    no `await` terminal in an escaped name, so `class C { static { function await() {} } }` was refused by a row that
+    does not reach it; EE0140 stays the row of an `await` expression and of an unescaped reference in the block;
+  - **an assignment inside an arrow's head whose array or object literal covers no AssignmentPattern**
+    (`([...[x], y] = [1]) => 0`, `({ a: [...x, y] = 1 }) => 0`) is refused by the arrow's cover row, EE0087 (JSE1520), or
+    at an async head EE0155 (JSE1588), where it was refused by EE0032 (JSE1328) when the assignment was read: an arrow's
+    parameters are no AssignmentExpression, so EE0032 holds of none of them. The literal's refusal now waits for the cover
+    around it, as a CoverInitializedName's does, and is EE0032's where no arrow's head takes it (`([...[x], y] = [1]);`).
+
+  In the parse corpus 112 refusals change their first code and none its outcome: 40 from JSE1573 to JSE1305 and 72 from
+  JSE1328 to JSE1520 (both configurations).
+
+  *(Added 2026-11-02, at SJL-13.2f, after review of the change above.)* The second item said that the deferred literal
+  refusal "is EE0032's where no arrow's head takes it (`([...[x], y] = [1]);`)". That held only where a cover around the
+  literal resolves, and two other cases now report the row whose condition holds:
+  - **a deferred literal in a class heritage** (`class C extends [[...x, y] = 1] {}`,
+    `export default class extends { a: [...x, y] = 1 } {}`) is refused by EE0032 (JSE1328) when the heritage has been read.
+    No assignment encloses a heritage at a statement's level, so the deferred refusal was never made, and the walk
+    refused the literal target by EE0033 (JSE1329), whose condition ("neither an ObjectLiteral nor an ArrayLiteral") does
+    not hold of it. The same check closes an older gap: a CoverInitializedName in a heritage (`class C extends {a = 1} {}`,
+    `class C extends [{a = 1}] {}`) was accepted, and is now refused by EE0017 (JSE1313);
+  - **a literal assignment nested in a literal that the parse converts to an assignment pattern** (an assignment's target or
+    a for-in/of head: `[[...x, y] = 1] = 2;`, `for ([[...x, y] = 1] of []);`, `({ a: [...x, y] = 1 } = 2);`) is refused
+    by EE0038 (JSE1334), the DestructuringAssignmentTarget's row. Before the change above it was refused by EE0032
+    (JSE1328) when the inner assignment was read; after it, by EE0038 unparenthesised and still by EE0032 within
+    parentheses. In the pattern the inner literal is no AssignmentExpression's target, so EE0032 does not hold of it,
+    and the outer literal does cover an AssignmentPattern; the conversion now takes the deferred literal and drops its
+    EE0032 refusal. EE0032 stays the row where nothing converts the outer literal (`({ a: [...x, y] = 1 });`).
+
+  No source of the parse corpus changes its outcome or its first code.
 
 - `Broiler.ECMAScript.Intl`: **collation** (milestone SJL-17.3; Broiler.VM's JSD-0084, the area verdict "Collation (SJL-17.1)"
   of this repository's plan), in `Broiler.ECMAScript.Intl/Collation/`. `UcaCollator`, ECMA-402's CompareStrings over the

@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2969 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2974 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 168 |
-| Code units | 4617 |
-| Relevant | 2969 |
-| Exempt | 1648 |
-| Assessed | 2969 of 2969 (100%) |
-| Human reviewed | 0 of 2969 (0%) |
-| Unverified | 2969 |
+| Code units | 4625 |
+| Relevant | 2974 |
+| Exempt | 1651 |
+| Assessed | 2974 of 2974 (100%) |
+| Human reviewed | 0 of 2974 (0%) |
+| Unverified | 2974 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2969 |
+| HUMAN_PENDING | 2974 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1648 |
+| EXEMPT | 1651 |
 
 ## 5. Aliases In The Tree
 
@@ -175,22 +175,22 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Frontend/ParseLimits.cs` | 14 | 9 | 5 | 9 | Low | High | 4/4 |
 | `Broiler.ECMAScript.Frontend/ParseRequest.cs` | 19 | 8 | 11 | 8 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/ParseSwitches.cs` | 6 | 2 | 4 | 2 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` | 63 | 54 | 9 | 54 | Low | High | 6/6 |
+| `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` | 64 | 55 | 9 | 55 | Low | High | 7/7 |
 | `Broiler.ECMAScript.Frontend/Parser.Functions.cs` | 32 | 32 | 0 | 32 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Frontend/Parser.Modules.cs` | 10 | 10 | 0 | 10 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/Parser.Statements.cs` | 38 | 37 | 1 | 37 | Low | High | 1/1 |
-| `Broiler.ECMAScript.Frontend/Parser.cs` | 70 | 38 | 32 | 38 | Low | High | 5/5 |
+| `Broiler.ECMAScript.Frontend/Parser.cs` | 77 | 42 | 35 | 42 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Frontend/ProposalFlags.cs` | 11 | 2 | 9 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/Rows.cs` | 212 | 212 | 0 | 212 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SourceText.cs` | 7 | 2 | 5 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxDiagnostic.cs` | 20 | 7 | 13 | 7 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxParser.cs` | 15 | 6 | 9 | 6 | Low | High | 1/1 |
-| `Broiler.ECMAScript.Frontend/SyntaxTree.Expressions.cs` | 272 | 128 | 144 | 128 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Frontend/SyntaxTree.Expressions.cs` | 271 | 128 | 143 | 128 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Functions.cs` | 42 | 16 | 26 | 16 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Modules.cs` | 46 | 21 | 25 | 21 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Patterns.cs` | 36 | 23 | 13 | 23 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Statements.cs` | 124 | 75 | 49 | 75 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Frontend/SyntaxTree.cs` | 102 | 11 | 91 | 11 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Frontend/SyntaxTree.cs` | 103 | 11 | 92 | 11 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/Token.cs` | 82 | 8 | 74 | 8 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/TokenKind.cs` | 88 | 3 | 85 | 3 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/Tokenizer.cs` | 77 | 57 | 20 | 57 | Low | High | 15/15 |
@@ -483,23 +483,25 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a source within the limits, parsed on a thread of this stack, ends the process rather than answering
 - `Broiler.ECMAScript.Syntax.ParseLimits.NestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, Spec=JSD-0080 D27, JSD-0083 D14 nesting parameter, `32674F`, PENDING
   - Falsified if: a nesting depth below 1 or above MaximumSupportedNestingDepth is admitted
-- `Broiler.ECMAScript.Syntax.Parser.ParseAssignment(bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.15 s15.3 arrows by conversion, `5AC280`, PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseAssignment(bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.15 s15.3 arrows by conversion, `8DDDD0`, PENDING
   - Falsified if: an arrow is read where its cover was not the whole left operand, a target that is no LeftHandSideExpression is admitted, or a CoverInitializedName no conversion takes is admitted
-- `Broiler.ECMAScript.Syntax.Parser.CheckCoverInitialized(int)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.2.5 CoverInitializedName, `EB5FEA`, PENDING
+- `Broiler.ECMAScript.Syntax.Parser.CheckCoverInitialized(int)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.2.5 CoverInitializedName, `BCA969`, PENDING
   - Falsified if: a CoverInitializedName that no conversion took is admitted
-- `Broiler.ECMAScript.Syntax.Parser.ParseBinary(int, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge and nesting bound, `75D4D2`, PENDING
-  - Falsified if: an operator binds with another precedence or associativity than the grammar's, a chain is charged without its left operand's spine, or a right operand of a higher precedence adds a frame to the parser's stack
-- `Broiler.ECMAScript.Syntax.Parser.CombineBinary(Expression, Token, Expression, int)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.6-s13.13 precedence, s13.13 coalesce, JSD-0083 D14 left-operand charge, `537C99`, PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ToAssignmentTargetOrDeferred(Expression, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.15.1 EE0032, s15.3.1 ArrowParameters cover early errors, `722F78`, PENDING
+  - Falsified if: a literal that covers no AssignmentPattern is admitted outside an arrow's head, or an arrow's head that covers it is refused by EE0032
+- `Broiler.ECMAScript.Syntax.Parser.ParseBinary(int, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge and nesting bound, `C1A259`, PENDING
+  - Falsified if: an operator binds with another precedence or associativity than the grammar's, a chain is charged without its left operand's height or a node without its right operand's, or a right operand of a higher precedence adds a frame to the parser's stack
+- `Broiler.ECMAScript.Syntax.Parser.CombineBinary(Expression, Token, Expression)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.6-s13.13 precedence, s13.13 coalesce, JSD-0083 D14 left-operand charge, `74F764`, PENDING
   - Falsified if: a CoalesceExpression mixed with a LogicalOR or LogicalAND operand is built, or a chain node is built without its charge
-- `Broiler.ECMAScript.Syntax.Parser.ParseChainLinks(Expression, bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14, `6FF1E5`, PENDING
-  - Falsified if: a link the grammar refuses is admitted, or a chain is charged without its first expression's spine
-- `Broiler.ECMAScript.Syntax.Parser.ParseParenthesized()` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList, `D8DAB8`, PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseChainLinks(Expression, bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14, `6DE43D`, PENDING
+  - Falsified if: a link the grammar refuses is admitted, or a chain is charged without its first expression's height or a link without its arguments' or key's
+- `Broiler.ECMAScript.Syntax.Parser.ParseParenthesized()` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList, `4D6B21`, PENDING
   - Falsified if: a form only parameters have is admitted without the arrow, or an arrow head is read again rather than converted
-- `Broiler.ECMAScript.Syntax.Parser.ToBindingTarget(SyntaxNode)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, Spec=ECMA-262 s15.3 ArrowFormalParameters by conversion, `C25A33`, PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ToBindingTarget(SyntaxNode)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, Spec=ECMA-262 s15.3 ArrowFormalParameters by conversion, `402371`, PENDING
   - Falsified if: a cover element that covers no binding is converted, or one that does is refused
 - `Broiler.ECMAScript.Syntax.Parser.ToAssignmentPattern(Expression)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, Spec=ECMA-262 s13.15.5 AssignmentPattern by conversion, `BCA81B`, PENDING
   - Falsified if: a literal that covers no AssignmentPattern is converted, or one that does is refused
-- `Broiler.ECMAScript.Syntax.Parser.ParseClassTail(SourceSpan, IReadOnlyList<Decorator>, BindingIdentifier?)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, Spec=ECMA-262 s15.7 ClassHeritage, JSD-0083 D14 nesting bound, `735E95`, PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ParseClassTail(SourceSpan, IReadOnlyList<Decorator>, BindingIdentifier?)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, Spec=ECMA-262 s15.7 ClassHeritage, JSD-0083 D14 nesting bound, `20ED93`, PENDING
   - Falsified if: a chain of class heritages nested past the request's bound reaches the stack rather than being refused with the nesting diagnostic
 - `Broiler.ECMAScript.Syntax.Parser.ParseFor()` in `Broiler.ECMAScript.Frontend/Parser.Statements.cs` - Security=High, Spec=ECMA-262 s14.7.4 s14.7.5 for heads, row P16b, `0BE270`, PENDING
   - Falsified if: a semicolon is inserted in a for head, or a head the lookahead restrictions exclude is admitted
@@ -511,8 +513,10 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a semicolon is inserted where no rule of clause 12.10 inserts one, or refused where one does
 - `Broiler.ECMAScript.Syntax.Parser.EnterNesting(Token)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, Spec=JSD-0083 D14 nesting bound, JSD-0080 D27, `68FB67`, PENDING
   - Falsified if: a recursion the nesting bound charges reaches the stack past the request's bound, or a source within the bound is refused
-- `Broiler.ECMAScript.Syntax.Parser.Deepen(SourceSpan)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, Spec=JSD-0083 D14 tree-depth constant, `190E1C`, PENDING
-  - Falsified if: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused
+- `Broiler.ECMAScript.Syntax.Parser.Charge(SyntaxNode, SourceSpan)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02, `3FA06F`, PENDING
+  - Falsified if: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused, a node's height misses a child's, or a tree within the constant is refused
+- `Broiler.ECMAScript.Syntax.Parser.HeightOf(SyntaxNode)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02, `DD2A62`, PENDING
+  - Falsified if: a node's height differs from the most chain nodes on a path below it, or its computation recurses per level of the tree
 - `Broiler.ECMAScript.Syntax.SyntaxParser.Parse(ParseRequest)` in `Broiler.ECMAScript.Frontend/SyntaxParser.cs` - Security=High, Spec=ECMA-262 s16.1 s16.2 s19.2.1.1 s20.2.1.1.1 goals, JSD-0083 SJL-13.2c parse entry D32, `6F6645`, PENDING
   - Falsified if: a source the grammar or a syntax row's early error refuses is answered Accepted, a source neither refuses is answered Refused, or the meter is charged after a code unit of the source is read or for other than the text's length
 - `Broiler.ECMAScript.Syntax.Tokenizer.NewLinePending` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, Spec=ECMA-262 s12.10 automatic semicolon insertion line terminator, `941A34`, PENDING
@@ -751,5 +755,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1665 of the 2969 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1670 of the 2974 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

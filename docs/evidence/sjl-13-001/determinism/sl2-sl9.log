@@ -1,0 +1,4 @@
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_The_witness_is_refused_for_each_kind_of_state 
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL9_Two_runs_and_two_threads_over_the_corpus_give_identical_output 
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL9_The_witness_library_is_refused 
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state 

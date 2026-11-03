@@ -1,0 +1,17 @@
+  Determining projects to restore...
+  Restored /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 2.25 sec).
+  Restored /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj (in 2.24 sec).
+  Restored /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 2.23 sec).
+  Restored /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj (in 2.25 sec).
+  Restored /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj (in 157 ms).
+  Broiler.ECMAScript.Algorithms -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Conformance -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+  Broiler.ECMAScript.Intl -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.ECMAScript.Frontend -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.ECMAScript.Probe -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/Broiler.ECMAScript.Probe.dll
+  Generating native code
+  Broiler.ECMAScript.Probe -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/sjl13-4f/tree/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/
+
+real	3m2.665s
+user	1m16.223s
+sys	0m5.678s

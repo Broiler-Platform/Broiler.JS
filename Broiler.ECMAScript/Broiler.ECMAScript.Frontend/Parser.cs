@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   38
-// Annotated:        38/38
-// Exempt:           32
-// Human-reviewed:   0/38
+// Relevant units:   42
+// Annotated:        42/42
+// Exempt:           35
+// Human-reviewed:   0/42
 // IP risk:          Low
 // Security risk:    High
-// Criteria:         5/5
+// Criteria:         6/6
 // Resource impact:  2/10 max
-// Unverified:       38
+// Unverified:       42
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -58,8 +58,12 @@ namespace Broiler.ECMAScript.Syntax;
 /// statement, assignment expression, binding pattern, recursing prefix operator and nested <c>new</c>, as Broiler.VM's
 /// <c>JsParser</c> charges it, and for each right operand of <c>**</c>, the one right-recursive binary operator, and for
 /// each class heritage, through which a class expression recurses, both of which Broiler.VM's parser leaves uncharged;
-/// the tree depth is charged once for each node a binary chain or a member or call chain adds, from the spine of the
-/// chain's first operand, which closes the left-operand gap in all four of its shapes.
+/// the tree depth is charged once for each node a binary chain or a member or call chain adds, each charged its whole
+/// height, the most chain nodes on any path from it to a leaf, so that a tree deeper than
+/// <see cref="ParseLimits.MaximumTreeDepth"/> is refused wherever it is built, and no tree within it is. <i>(Revised
+/// 2026-11-02, at stage SJL-13.2f, by the owner's decision of that day on decision D14's residual left-operand shapes;
+/// it read "the tree depth is charged once for each node a binary chain or a member or call chain adds, from the spine of
+/// the chain's first operand, which closes the left-operand gap in all four of its shapes.")</i>
 /// </para>
 /// </remarks>
 // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=130766
@@ -116,7 +120,6 @@ internal sealed partial class Parser
 
     // The limits' counters.
     private int nesting;
-    private int treeDepth;
 
     // The row a conversion of a cover refuses by when what was read covers nothing the conversion admits (stage 4d: EE0087 or
     // EE0155 at an arrow's head, EE0032 or EE0053 at an assignment's or a for head's pattern, EE0038 inside one), or null
@@ -130,11 +133,24 @@ internal sealed partial class Parser
     // refusal come first (decision D11, the library's order).
     private List<Statement>? topLevel;
 
-    // The object literals holding a CoverInitializedName that no conversion has taken yet, in source order.
-    private readonly List<ObjectLiteral> coverInitialized = new();
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=B90EB2
+    // The literals whose refusal waits for the cover around them: an object literal holding a CoverInitializedName, and an
+    // assignment's array or object literal target that covers no AssignmentPattern, read where an arrow's head may yet
+    // convert it (deferredPatterns), each until a conversion takes it, in the order read. (Revised 2026-11-02, at stage
+    // SJL-13.2f, by part A's triage; it read "The object literals holding a CoverInitializedName that no conversion has
+    // taken yet, in source order.", and an assignment target's refusal was made where the assignment was read.)
+    private readonly List<Expression> coverInitialized = new();
+
+    // The refusal of each deferred assignment target in coverInitialized: EE0032's, or a nested literal's row, made when
+    // no conversion takes the literal: an arrow's head refuses it by its own row, and an enclosing literal converted to an
+    // assignment pattern takes it as a DestructuringAssignmentTarget, EE0038's (stage SJL-13.2f; revised 2026-11-02, after
+    // review, from "made when no arrow's head takes the literal").
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.1 EE0032, s15.3.1 ArrowParameters cover early errors; IP=Low; Security=Low; Resources=0; Fingerprint=4E23F0
     // Broiler-Human:        PENDING
-    private readonly Dictionary<ObjectLiteral, (Token At, string Name)> coverInitializedAt = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<Expression, ParseAbort> deferredPatterns = new(ReferenceEqualityComparer.Instance);
+
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=ABA2F0
+    // Broiler-Human:        PENDING
+    private readonly Dictionary<Expression, (Token At, string Name)> coverInitializedAt = new(ReferenceEqualityComparer.Instance);
 
     // The cover the primary expression just read, which an arrow's => may convert: a parenthesised list, or an async call.
     private Expression? arrowCover;
@@ -516,16 +532,106 @@ internal sealed partial class Parser
     // Broiler-Human:        PENDING
     private void ExitNesting() => nesting--;
 
-    /// <summary>Charges one level of tree depth for a chain node, refusing the source past the library's constant (catalogue row EX0012).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant; IP=Low; Security=High; Resources=2; Fingerprint=190E1C
-    // Broiler-Falsified-If: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused
+    /// <summary>
+    /// Charges a chain node: its height is one more than its highest child's (<see cref="HeightOf"/>); past the library's
+    /// constant the source is refused (catalogue row EX0012) before the node is used.
+    /// </summary>
+    /// <remarks>
+    /// Every child counts, not the left operand's spine alone (decision D14, as the owner decided on 2026-11-02): a right
+    /// operand, a call's argument, a computed key, a template's substitution, and through a prefix operator, an array or
+    /// object literal, a sequence, a conditional or a function the chains inside them, so that a tree deeper than the
+    /// constant is refused wherever it is built. The check is the node's height alone: the parse builds a tree from its
+    /// leaves, so every chain node of a tree deeper than the constant has a descendant, or is one, whose height passes it
+    /// first, and a tree within the constant, however its chains stand beside or below one another, is accepted.
+    /// <i>(Revised 2026-11-02, at stage SJL-13.2f; it was <c>Deepen</c>, "Charges one level of tree depth for a chain
+    /// node, refusing the source past the library's constant (catalogue row EX0012).", which added one to the depth
+    /// whatever the node's right operand or arguments held, and which charged a chain from the depth the parse had reached
+    /// when the chain began, so that a right operand or an argument read inside a chain was charged that depth and its own
+    /// together and a tree within the constant could be refused.)</i>
+    /// </remarks>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=High; Resources=2; Fingerprint=3FA06F
+    // Broiler-Falsified-If: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused, a node's height misses a child's, or a tree within the constant is refused
     // Broiler-Human:        PENDING
-    private void Deepen(SourceSpan at)
+    private void Charge(SyntaxNode node, SourceSpan at)
     {
-        treeDepth++;
-        if (treeDepth > ParseLimits.MaximumTreeDepth)
+        var height = ChildrenHeight(node) + 1;
+        node.Height = height;
+        if (height > ParseLimits.MaximumTreeDepth)
             throw Refuse(TreeTooDeep, at, ParseLimits.MaximumTreeDepth.ToString(NumberFormatInfo.InvariantInfo));
     }
+
+    // The scratch lists of the height computation, which keeps its own stack (no recursion per level of the tree).
+    private readonly List<SyntaxNode> heightChildren = new();
+    private readonly List<SyntaxNode> heightOrder = new();
+    private readonly List<SyntaxNode> heightStack = new();
+    private readonly List<SyntaxNode> chainChildren = new();
+
+    /// <summary>The highest of a node's children's heights (<see cref="HeightOf"/>), 0 for a node with no child.</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=Medium; Resources=1; Fingerprint=BD6764
+    // Broiler-Human:        PENDING
+    private int ChildrenHeight(SyntaxNode node)
+    {
+        chainChildren.Clear();
+        node.AddChildren(chainChildren);
+        var height = 0;
+        for (var i = 0; i < chainChildren.Count; i++)
+            height = Math.Max(height, HeightOf(chainChildren[i]));
+        chainChildren.Clear();
+        return height;
+    }
+
+    /// <summary>
+    /// A node's height in tree depth (<see cref="SyntaxNode.Height"/>): set already for a chain node the parser charged;
+    /// otherwise computed once, from its children's, with an explicit stack, and kept on the node, so that the whole parse
+    /// computes each node's height at most once and adds no frame per level of the tree.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=High; Resources=2; Fingerprint=DD2A62
+    // Broiler-Falsified-If: a node's height differs from the most chain nodes on a path below it, or its computation recurses per level of the tree
+    // Broiler-Human:        PENDING
+    private int HeightOf(SyntaxNode node)
+    {
+        if (node.Height >= 0)
+            return node.Height;
+
+        // The nodes whose height is not known, parents before their children; then each from its children's, in reverse.
+        heightOrder.Clear();
+        heightStack.Clear();
+        heightStack.Add(node);
+        while (heightStack.Count > 0)
+        {
+            var next = heightStack[^1];
+            heightStack.RemoveAt(heightStack.Count - 1);
+            heightOrder.Add(next);
+            heightChildren.Clear();
+            next.AddChildren(heightChildren);
+            foreach (var child in heightChildren)
+            {
+                if (child.Height < 0)
+                    heightStack.Add(child);
+            }
+        }
+
+        for (var i = heightOrder.Count - 1; i >= 0; i--)
+        {
+            var current = heightOrder[i];
+            heightChildren.Clear();
+            current.AddChildren(heightChildren);
+            var height = 0;
+            foreach (var child in heightChildren)
+                height = Math.Max(height, child.Height);
+            current.Height = IsChainNode(current) ? height + 1 : height;
+        }
+
+        heightChildren.Clear();
+        heightOrder.Clear();
+        return node.Height;
+    }
+
+    /// <summary>Whether a node is one a chain adds, which the tree depth counts: a binary or logical operator's, a member's, a call's or a tagged template's.</summary>
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant; IP=Low; Security=Low; Resources=0; Fingerprint=83F3D4
+    // Broiler-Human:        PENDING
+    private static bool IsChainNode(SyntaxNode node) => node.Kind is SyntaxKind.BinaryExpression or SyntaxKind.LogicalExpression
+        or SyntaxKind.MemberExpression or SyntaxKind.CallExpression or SyntaxKind.TaggedTemplateExpression;
 
     /// <summary>A refusal the parse unwinds with: the first in the library's order (decision D11).</summary>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=E526A5

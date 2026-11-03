@@ -16,12 +16,12 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Files scanned | 168 |
 | Files not covered | 0 |
 | Files carrying an annotation | 168 |
-| Code units | 4617 |
-| Relevant | 2969 |
-| Exempt by predicate | 1648 |
-| Annotated | 2969 of 2969 (100%) |
-| Human reviewed | 0 of 2969 (0%) |
-| Unverified | 2969 |
+| Code units | 4625 |
+| Relevant | 2974 |
+| Exempt by predicate | 1651 |
+| Annotated | 2974 of 2974 (100%) |
+| Human reviewed | 0 of 2974 (0%) |
+| Unverified | 2974 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2969 |
+| HUMAN_PENDING | 2974 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1648 |
+| EXEMPT | 1651 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 2966 |
+| Low | 2971 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,9 +51,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 1879 |
-| Medium | 836 |
-| High | 233 |
+| Low | 1881 |
+| Medium | 837 |
+| High | 235 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.0 / 10 |
-| Units scored | 2969 |
+| Units scored | 2974 |
 
 ## High-security review areas
 
@@ -176,8 +176,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Syntax.ParseLimits.NestingDepth` in `Broiler.ECMAScript.Frontend/ParseLimits.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ParseAssignment(bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.CheckCoverInitialized(int)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.ToAssignmentTargetOrDeferred(Expression, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ParseBinary(int, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Syntax.Parser.CombineBinary(Expression, Token, Expression, int)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.CombineBinary(Expression, Token, Expression)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ParseChainLinks(Expression, bool, bool)` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ParseParenthesized()` in `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ToBindingTarget(SyntaxNode)` in `Broiler.ECMAScript.Frontend/Parser.Functions.cs` - Security=High, human line PENDING
@@ -188,7 +189,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Syntax.Parser.Peek(LexicalGoal)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.ConsumeSemicolon()` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Parser.EnterNesting(Token)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Syntax.Parser.Deepen(SourceSpan)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.Charge(SyntaxNode, SourceSpan)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Syntax.Parser.HeightOf(SyntaxNode)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.SyntaxParser.Parse(ParseRequest)` in `Broiler.ECMAScript.Frontend/SyntaxParser.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Tokenizer.NewLinePending` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Syntax.Tokenizer.Next(LexicalGoal)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
@@ -305,8 +307,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 233 |
-| Units required to carry one | 233 |
+| Units carrying a criterion | 235 |
+| Units required to carry one | 235 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -333,7 +335,7 @@ that the rule is reviewable in one place rather than in several hundred.
 | CompilerSuppliedRecordOrEnumMember | 119 |
 | DelegatingOverrideOrOperator | 4 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 213 |
+| FieldDeclaringStorage | 216 |
 | EnumMemberOfADeclaredVocabulary | 756 |
 | DeclaredInSource | 0 |
 
@@ -358,7 +360,7 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 5 covered assemblies -
-4617 of them, exempt and relevant alike - with the fingerprint of its declaration.
+4625 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as

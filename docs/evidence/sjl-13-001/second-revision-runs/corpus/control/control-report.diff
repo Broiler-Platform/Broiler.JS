@@ -1,0 +1,8 @@
+6343c6343
+< T000740	E1	V	refused	JSE1204	Semantics	426+5@13:21	-
+---
+> T000740	E1	V	accepted	-	-	-	-
+6345c6345
+< T000740	E3	V	refused	JSE1204	Semantics	426+5@13:21	-
+---
+> T000740	E3	V	refused	JSE0000	Semantics	426+5@13:21	-

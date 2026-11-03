@@ -1,0 +1,12 @@
+1881a1882,1892
+>         // Part C control K2: the side table taken from a HashSet<string> of the names, in the order of their string hash
+>         // codes, which follow the process's string-hash seed.
+>         var names = new HashSet<string>(StringComparer.Ordinal);
+>         foreach (var declaration in all)
+>             names.Add(declaration.Name);
+>         var byHash = new List<string>(names);
+>         byHash.Sort(static (a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));
+>         var rank = new Dictionary<string, int>(StringComparer.Ordinal);
+>         for (var i = 0; i < byHash.Count; i++)
+>             rank[byHash[i]] = i;
+>         all.Sort((a, b) => rank[a.Name] != rank[b.Name] ? rank[a.Name].CompareTo(rank[b.Name]) : a.Node.Span.Offset.CompareTo(b.Node.Span.Offset));

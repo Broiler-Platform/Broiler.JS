@@ -1,0 +1,10 @@
+# Part A's limit readings, decision (f') of decision-rule-revised-2026-11-02-second.md; written by
+# tools/limit_readings.py from the manifest's inputs and the classification, measured from each input's
+# source and not from the library. Never edited by hand. Inputs measured past a floor: 2839; unmeasured: none.
+id	variant	config	measure	bound	limit
+J000243	strict	J	25001	512	nesting
+J000243	sloppy	J	25001	512	nesting
+J000451	strict	J	20000	10000	tree
+J000451	sloppy	J	20000	10000	tree
+J000799	strict	J	15001	512	nesting
+J000799	sloppy	J	15001	512	nesting

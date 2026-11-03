@@ -1,0 +1,12 @@
+4c4
+< # match: 69870
+---
+> # match: 69869
+6c6
+< # difference: 1871
+---
+> # difference: 1872
+38235c38235
+< syntax/statements/ee0040/0002	normative	error: SyntaxError	error: SyntaxError	match
+---
+> syntax/statements/ee0040/0002	normative	value: undefined	error: SyntaxError	difference

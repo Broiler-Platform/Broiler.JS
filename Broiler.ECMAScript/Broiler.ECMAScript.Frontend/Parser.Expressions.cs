@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   54
-// Annotated:        54/54
+// Relevant units:   55
+// Annotated:        55/55
 // Exempt:           9
-// Human-reviewed:   0/54
+// Human-reviewed:   0/55
 // IP risk:          Low
 // Security risk:    High
-// Criteria:         6/6
+// Criteria:         7/7
 // Resource impact:  2/10 max
-// Unverified:       54
+// Unverified:       55
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -65,7 +65,7 @@ internal sealed partial class Parser
     /// pattern, or a ConditionalExpression. With <paramref name="defer"/>, a CoverInitializedName read here and not
     /// converted is left to the caller, whose literal may yet become a pattern.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=5AC280
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=8DDDD0
     // Broiler-Falsified-If: an arrow is read where its cover was not the whole left operand, a target that is no LeftHandSideExpression is admitted, or a CoverInitializedName no conversion takes is admitted
     // Broiler-Human:        PENDING
     private Expression ParseAssignment(bool noIn, bool defer = false)
@@ -118,7 +118,7 @@ internal sealed partial class Parser
             {
                 SyntaxNode target;
                 if (op == AssignmentOperator.Assign && left is ArrayLiteral or ObjectLiteral)
-                    target = Converting(Rows.EE0032, () => ToAssignmentPattern(left));
+                    target = ToAssignmentTargetOrDeferred(left, defer);
                 else if (IsLeftHandSide(left))
                     target = left;
                 else
@@ -150,16 +150,62 @@ internal sealed partial class Parser
     }
 
     /// <summary>Refuses the first CoverInitializedName read since <paramref name="mark"/> that no conversion took (catalogue row EE0017 at stage 4d).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.5 CoverInitializedName; IP=Low; Security=High; Resources=2; Fingerprint=EB5FEA
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.5 CoverInitializedName; IP=Low; Security=High; Resources=2; Fingerprint=BCA969
     // Broiler-Falsified-If: a CoverInitializedName that no conversion took is admitted
     // Broiler-Human:        PENDING
     private void CheckCoverInitialized(int mark)
     {
-        // A CoverInitializedName that no conversion took into a pattern (catalogue row EE0017).
-        if (coverInitialized.Count > mark)
+        // A CoverInitializedName that no conversion took into a pattern (catalogue row EE0017), or an assignment's literal
+        // target that covers no AssignmentPattern and that no arrow's head took (EE0032's refusal, deferred): the first in
+        // source order. (Revised 2026-11-02, at stage SJL-13.2f; it refused the first CoverInitializedName alone.)
+        ParseAbort? first = null;
+        for (var i = mark; i < coverInitialized.Count; i++)
         {
-            var (at, name) = coverInitializedAt[coverInitialized[mark]];
-            throw Refuse(Rows.EE0017, SpanOf(at), name);
+            var literal = coverInitialized[i];
+            ParseAbort refusal;
+            if (deferredPatterns.TryGetValue(literal, out var deferred))
+            {
+                refusal = deferred;
+            }
+            else
+            {
+                var (at, name) = coverInitializedAt[literal];
+                refusal = Refuse(Rows.EE0017, SpanOf(at), name);
+            }
+
+            if (first is null || refusal.Diagnostic.Span.Offset < first.Diagnostic.Span.Offset)
+                first = refusal;
+        }
+
+        if (first is not null)
+            throw first;
+    }
+
+    /// <summary>
+    /// An assignment's array or object literal target converted to an AssignmentPattern; where the assignment stands inside
+    /// a cover an arrow's head may yet convert (<paramref name="defer"/>), a literal that covers none is kept as read and its
+    /// refusal deferred: the head converts it into ArrowFormalParameters and refuses it by its own row (EE0087 or EE0155),
+    /// since an arrow's parameters are no AssignmentExpression; an enclosing literal converted to an AssignmentPattern takes
+    /// it as a DestructuringAssignmentTarget, which EE0038 refuses; and otherwise the refusal is made when the cover, or a
+    /// class heritage, resolves.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.1 EE0032, s15.3.1 ArrowParameters cover early errors; IP=Low; Security=High; Resources=2; Fingerprint=722F78
+    // Broiler-Falsified-If: a literal that covers no AssignmentPattern is admitted outside an arrow's head, or an arrow's head that covers it is refused by EE0032
+    // Broiler-Human:        PENDING
+    private SyntaxNode ToAssignmentTargetOrDeferred(Expression left, bool defer)
+    {
+        if (!defer)
+            return Converting(Rows.EE0032, () => ToAssignmentPattern(left));
+        try
+        {
+            return Converting(Rows.EE0032, () => ToAssignmentPattern(left));
+        }
+        catch (ParseAbort refusal)
+        {
+            coverInitialized.Remove(left);
+            coverInitialized.Add(left);
+            deferredPatterns[left] = refusal;
+            return left;
         }
     }
 
@@ -259,11 +305,13 @@ internal sealed partial class Parser
 
     /// <summary>
     /// An operator the precedence climb has read and whose right operand it is reading: the left operand, the operator, and
-    /// the chain the operator extends - the tree depth before the chain began and the chain's least precedence.
+    /// the chain's least precedence. <i>(Revised 2026-11-02, at stage SJL-13.2f, after review: a chain node is charged its
+    /// own height alone, so no depth is kept; it read "the chain the operator extends - the tree depth before the chain
+    /// began and the chain's least precedence.")</i>
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=0; Fingerprint=80E5F0
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=0; Fingerprint=8C8644
     // Broiler-Human:        PENDING
-    private readonly record struct PendingOperator(Expression Left, Token Operator, int Saved, int Minimum);
+    private readonly record struct PendingOperator(Expression Left, Token Operator, int Minimum);
 
     // The precedence climb's explicit stack, shared by every ParseBinary on the parser's stack: each uses the entries above
     // the count it found, and leaves the list at that count.
@@ -274,7 +322,9 @@ internal sealed partial class Parser
     /// <c>#x in o</c> where a RelationalExpression may begin: a precedence climb whose right operands of a higher precedence
     /// are read with an explicit stack (<see cref="pendingOperators"/>), not by recursion, so that a source climbing the
     /// grammar's ten precedences between two levels of nesting adds no frame (decision D14; the derivation's section 3).
-    /// Each chain of one precedence is charged one level of tree depth for each node from its left operand's spine. An
+    /// Each node is charged its own height, the most chain nodes on a path below it, its left operand's included (decision
+    /// D14, as the owner decided on 2026-11-02; it read "Each chain of one precedence is charged one level of tree depth for
+    /// each node from its left operand's spine."). An
     /// async arrow read whole as a primary is no operand (clause 15.9: an AsyncArrowFunction is only an
     /// AssignmentExpression), so nothing extends it: the operator after it is left to the statement's end, where a line
     /// terminator before it inserts a semicolon (clause 12.10).
@@ -286,31 +336,26 @@ internal sealed partial class Parser
     /// right operand of <c>#x in</c> is read by one recursion, which cannot repeat. The method holds no token: what reads
     /// one is a method of its own, out of line, so that the frame each level of nesting leaves here stays small.
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge and nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=75D4D2
-    // Broiler-Falsified-If: an operator binds with another precedence or associativity than the grammar's, a chain is charged without its left operand's spine, or a right operand of a higher precedence adds a frame to the parser's stack
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge and nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=C1A259
+    // Broiler-Falsified-If: an operator binds with another precedence or associativity than the grammar's, a chain is charged without its left operand's height or a node without its right operand's, or a right operand of a higher precedence adds a frame to the parser's stack
     // Broiler-Human:        PENDING
     private Expression ParseBinary(int minimum, bool noIn)
     {
         var bottom = pendingOperators.Count;
-        var entry = treeDepth;
         try
         {
             Expression? left = null;
-            var saved = 0;
             var open = false;
             var operand = true;
             while (true)
             {
                 if (operand)
                 {
-                    // An operand, a UnaryExpression or #x in o; then a chain begins with it, charged from its spine, unless
-                    // it is an async arrow, which nothing extends (the chain is then not open, and nothing was charged).
+                    // An operand, a UnaryExpression or #x in o; then a chain begins with it, unless it is an async arrow,
+                    // which nothing extends (the chain is then not open).
                     left = AtPrivateIdentifier() ? ParsePrivateIn(minimum, noIn) : ParseUnary();
                     operand = false;
-                    saved = treeDepth;
                     open = !ReferenceEquals(left, primaryArrow);
-                    if (open)
-                        treeDepth += left.Spine;
                 }
 
                 if (open)
@@ -320,33 +365,30 @@ internal sealed partial class Parser
                     {
                         if (precedence == Exponent)
                         {
-                            left = ParseExponentOperand(left!, saved, noIn);
+                            left = ParseExponentOperand(left!, noIn);
                             continue;
                         }
 
                         // A right operand of a higher precedence: the chain waits on the explicit stack while a chain of
                         // the next precedence begins with the operand.
-                        PushOperator(left!, saved, minimum);
+                        PushOperator(left!, minimum);
                         minimum = precedence + 1;
                         operand = true;
                         continue;
                     }
 
-                    // The chain ends: its charge is released.
-                    treeDepth = saved;
                 }
 
                 if (pendingOperators.Count == bottom)
                     return left!;
 
                 // The chain that ended is the right operand of the operator that waits.
-                left = PopOperator(left!, out saved, out minimum);
+                left = PopOperator(left!, out minimum);
                 open = true;
             }
         }
         finally
         {
-            treeDepth = entry;
             pendingOperators.RemoveRange(bottom, pendingOperators.Count - bottom);
         }
     }
@@ -384,36 +426,36 @@ internal sealed partial class Parser
     }
 
     /// <summary>Reads the operator ahead onto the precedence climb's stack, its left operand and its chain's state with it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=0; Fingerprint=44645B
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=0; Fingerprint=027D3C
     // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void PushOperator(Expression left, int saved, int minimum)
+    private void PushOperator(Expression left, int minimum)
     {
         var token = Op;
         Advance();
-        pendingOperators.Add(new PendingOperator(left, token, saved, minimum));
+        pendingOperators.Add(new PendingOperator(left, token, minimum));
     }
 
     /// <summary>Takes the operator that waits off the precedence climb's stack and builds its node over <paramref name="right"/>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge; IP=Low; Security=Medium; Resources=0; Fingerprint=65B78A
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge; IP=Low; Security=Medium; Resources=0; Fingerprint=E59278
     // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private Expression PopOperator(Expression right, out int saved, out int minimum)
+    private Expression PopOperator(Expression right, out int minimum)
     {
         var pending = pendingOperators[^1];
         pendingOperators.RemoveAt(pendingOperators.Count - 1);
-        (saved, minimum) = (pending.Saved, pending.Minimum);
-        return CombineBinary(pending.Left, pending.Operator, right, saved);
+        minimum = pending.Minimum;
+        return CombineBinary(pending.Left, pending.Operator, right);
     }
 
     /// <summary>
     /// The operator <c>**</c> ahead and its right operand, which recurses at the same precedence: charged as nesting, which
     /// bounds the recursion. Its left operand is an UpdateExpression, never a bare UnaryExpression (clause 13.6).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6 exponentiation, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=2; Fingerprint=71A753
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6 exponentiation, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=2; Fingerprint=B9D0DD
     // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private Expression ParseExponentOperand(Expression left, int saved, bool noIn)
+    private Expression ParseExponentOperand(Expression left, bool noIn)
     {
         var token = Op;
         if (left.Kind is SyntaxKind.UnaryExpression or SyntaxKind.AwaitExpression)
@@ -431,17 +473,18 @@ internal sealed partial class Parser
             ExitNesting();
         }
 
-        return CombineBinary(left, token, power, saved);
+        return CombineBinary(left, token, power);
     }
 
     /// <summary>
-    /// The node of a binary or logical operator over two operands, charged one level of tree depth from the tree depth
-    /// <paramref name="saved"/> its chain began at (decision D14).
+    /// The node of a binary or logical operator over two operands, charged its height (decision D14). <i>(Revised
+    /// 2026-11-02, at stage SJL-13.2f; it read "charged one level of tree depth from the tree depth <c>saved</c> its chain
+    /// began at (decision D14).")</i>
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, s13.13 coalesce, JSD-0083 D14 left-operand charge; IP=Low; Security=High; Resources=2; Fingerprint=537C99
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, s13.13 coalesce, JSD-0083 D14 left-operand charge; IP=Low; Security=High; Resources=2; Fingerprint=74F764
     // Broiler-Falsified-If: a CoalesceExpression mixed with a LogicalOR or LogicalAND operand is built, or a chain node is built without its charge
     // Broiler-Human:        PENDING
-    private Expression CombineBinary(Expression left, Token token, Expression right, int saved)
+    private Expression CombineBinary(Expression left, Token token, Expression right)
     {
         Expression node;
         var span = SpanFrom(left.Span);
@@ -457,8 +500,7 @@ internal sealed partial class Parser
             node = new BinaryExpression(span, BinaryOperatorOf(token), left, right);
         }
 
-        Deepen(span);
-        node.Spine = treeDepth - saved;
+        Charge(node, span);
         return node;
     }
 
@@ -612,144 +654,134 @@ internal sealed partial class Parser
 
     /// <summary>
     /// The links of a member, call or optional chain after its first expression (clauses 13.3.2 to 13.3.9 and 13.3.11),
-    /// each charged one level of tree depth from the first expression's spine (decision D14). Without
+    /// each charged its height, its first expression's, its arguments' and its key's included (decision D14, as the owner
+    /// decided on 2026-11-02, so that a call's arguments and a computed key count; it read "each charged one level of tree
+    /// depth from the first expression's spine (decision D14)."). Without
     /// <paramref name="allowCalls"/> the chain is a MemberExpression, a <c>new</c> expression's constructor. With
     /// <paramref name="asyncHead"/>, a first argument list on the same line as <c>async</c> is read as the
     /// CoverCallExpressionAndAsyncArrowHead, which a following <c>=&gt;</c> converts.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=6FF1E5
-    // Broiler-Falsified-If: a link the grammar refuses is admitted, or a chain is charged without its first expression's spine
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=6DE43D
+    // Broiler-Falsified-If: a link the grammar refuses is admitted, or a chain is charged without its first expression's height or a link without its arguments' or key's
     // Broiler-Human:        PENDING
     private Expression ParseChainLinks(Expression current, bool allowCalls, bool asyncHead = false)
     {
-        var saved = treeDepth;
-        treeDepth += current.Spine;
         var start = current.Span;
         var optional = false;
-        try
+        while (true)
         {
-            while (true)
+            var token = Op;
+            switch (token.Kind)
             {
-                var token = Op;
-                switch (token.Kind)
-                {
-                    case TokenKind.Dot:
-                        Advance();
-                        if (current is SuperExpression && Op.Kind == TokenKind.PrivateIdentifier)
-                            throw Unexpected(cur); // SuperProperty : super . IdentifierName (clause 13.3.7)
-                        var name = ParseMemberName();
-                        current = new MemberExpression(SpanFrom(start), current, name, isComputed: false, isOptional: false);
-                        current = Fix(current, start);
-                        break;
+                case TokenKind.Dot:
+                    Advance();
+                    if (current is SuperExpression && Op.Kind == TokenKind.PrivateIdentifier)
+                        throw Unexpected(cur); // SuperProperty : super . IdentifierName (clause 13.3.7)
+                    var name = ParseMemberName();
+                    current = new MemberExpression(SpanFrom(start), current, name, isComputed: false, isOptional: false);
+                    current = Fix(current, start);
+                    break;
 
-                    case TokenKind.QuestionDot:
-                        if (!allowCalls)
-                            throw Unexpected(token);
-                        optional = true;
-                        Advance();
-                        var after = Op;
-                        if (after.Kind == TokenKind.LeftParen)
-                        {
-                            var (arguments, trailing) = ParseArguments(defer: false);
-                            current = new CallExpression(SpanFrom(start), current, arguments, trailing, isOptional: true);
-                        }
-                        else if (after.Kind == TokenKind.LeftBracket)
-                        {
-                            Advance();
-                            var key = ParseExpression(noIn: false);
-                            Expect(TokenKind.RightBracket);
-                            current = new MemberExpression(SpanFrom(start), current, key, isComputed: true, isOptional: true);
-                        }
-                        else if (after.Kind is TokenKind.NoSubstitutionTemplate or TokenKind.TemplateHead)
-                        {
-                            // OptionalChain : ?. TemplateLiteral matches a production only to be refused (catalogue row EE0026).
-                            throw Refuse(Rows.EE0026, SpanOf(after), string.Empty);
-                        }
-                        else
-                        {
-                            var optionalName = ParseMemberName();
-                            current = new MemberExpression(SpanFrom(start), current, optionalName, isComputed: false, isOptional: true);
-                        }
-
-                        Fix(current, start);
-                        break;
-
-                    case TokenKind.LeftBracket:
+                case TokenKind.QuestionDot:
+                    if (!allowCalls)
+                        throw Unexpected(token);
+                    optional = true;
+                    Advance();
+                    var after = Op;
+                    if (after.Kind == TokenKind.LeftParen)
+                    {
+                        var (arguments, trailing) = ParseArguments(defer: false);
+                        current = new CallExpression(SpanFrom(start), current, arguments, trailing, isOptional: true);
+                    }
+                    else if (after.Kind == TokenKind.LeftBracket)
                     {
                         Advance();
                         var key = ParseExpression(noIn: false);
                         Expect(TokenKind.RightBracket);
-                        current = new MemberExpression(SpanFrom(start), current, key, isComputed: true, isOptional: false);
-                        Fix(current, start);
-                        break;
+                        current = new MemberExpression(SpanFrom(start), current, key, isComputed: true, isOptional: true);
                     }
-
-                    case TokenKind.LeftParen when allowCalls:
+                    else if (after.Kind is TokenKind.NoSubstitutionTemplate or TokenKind.TemplateHead)
                     {
-                        if (asyncHead && !token.NewLineBefore)
-                        {
-                            asyncHead = false;
-                            var mark = coverInitialized.Count;
-                            var awaitMark = awaitReferences.Count;
-                            var (arguments, trailing) = ParseArguments(defer: true);
-                            var call = new CallExpression(SpanFrom(start), current, arguments, trailing, isOptional: false);
-                            var arrow = Op;
-                            if (arrow.Kind == TokenKind.Arrow && !arrow.NewLineBefore)
-                            {
-                                var head = new AsyncArrowHead(call, mark, awaitMark);
-                                arrowCover = head;
-                                return head;
-                            }
-
-                            CheckCoverInitialized(mark);
-                            current = call;
-                        }
-                        else
-                        {
-                            var (arguments, trailing) = ParseArguments(defer: false);
-                            current = new CallExpression(SpanFrom(start), current, arguments, trailing, isOptional: false);
-                        }
-
-                        Fix(current, start);
-                        break;
+                        // OptionalChain : ?. TemplateLiteral matches a production only to be refused (catalogue row EE0026).
+                        throw Refuse(Rows.EE0026, SpanOf(after), string.Empty);
                     }
-
-                    case TokenKind.NoSubstitutionTemplate:
-                    case TokenKind.TemplateHead:
+                    else
                     {
-                        // An OptionalChain followed by a TemplateLiteral matches a production only to be refused (catalogue
-                        // row EE0026).
-                        if (optional)
-                            throw Refuse(Rows.EE0026, SpanOf(token), string.Empty);
-                        var quasi = ParseTemplate();
-                        current = new TaggedTemplateExpression(SpanFrom(start), current, quasi);
-                        Fix(current, start);
-                        break;
+                        var optionalName = ParseMemberName();
+                        current = new MemberExpression(SpanFrom(start), current, optionalName, isComputed: false, isOptional: true);
                     }
 
-                    default:
-                        if (optional)
-                        {
-                            var chain = new ChainExpression(current.Span, current);
-                            chain.Spine = current.Spine;
-                            return chain;
-                        }
+                    Fix(current, start);
+                    break;
 
-                        return current;
+                case TokenKind.LeftBracket:
+                {
+                    Advance();
+                    var key = ParseExpression(noIn: false);
+                    Expect(TokenKind.RightBracket);
+                    current = new MemberExpression(SpanFrom(start), current, key, isComputed: true, isOptional: false);
+                    Fix(current, start);
+                    break;
                 }
 
-                asyncHead = false;
+                case TokenKind.LeftParen when allowCalls:
+                {
+                    if (asyncHead && !token.NewLineBefore)
+                    {
+                        asyncHead = false;
+                        var mark = coverInitialized.Count;
+                        var awaitMark = awaitReferences.Count;
+                        var (arguments, trailing) = ParseArguments(defer: true);
+                        var call = new CallExpression(SpanFrom(start), current, arguments, trailing, isOptional: false);
+                        var arrow = Op;
+                        if (arrow.Kind == TokenKind.Arrow && !arrow.NewLineBefore)
+                        {
+                            var head = new AsyncArrowHead(call, mark, awaitMark);
+                            arrowCover = head;
+                            return head;
+                        }
+
+                        CheckCoverInitialized(mark);
+                        current = call;
+                    }
+                    else
+                    {
+                        var (arguments, trailing) = ParseArguments(defer: false);
+                        current = new CallExpression(SpanFrom(start), current, arguments, trailing, isOptional: false);
+                    }
+
+                    Fix(current, start);
+                    break;
+                }
+
+                case TokenKind.NoSubstitutionTemplate:
+                case TokenKind.TemplateHead:
+                {
+                    // An OptionalChain followed by a TemplateLiteral matches a production only to be refused (catalogue
+                    // row EE0026).
+                    if (optional)
+                        throw Refuse(Rows.EE0026, SpanOf(token), string.Empty);
+                    var quasi = ParseTemplate();
+                    current = new TaggedTemplateExpression(SpanFrom(start), current, quasi);
+                    Fix(current, start);
+                    break;
+                }
+
+                default:
+                    if (optional)
+                    {
+                        return new ChainExpression(current.Span, current);
+                    }
+
+                    return current;
             }
-        }
-        finally
-        {
-            treeDepth = saved;
+
+            asyncHead = false;
         }
 
         Expression Fix(Expression link, SourceSpan at)
         {
-            Deepen(at);
-            link.Spine = treeDepth - saved;
+            Charge(link, at);
             return link;
         }
     }
@@ -812,7 +844,7 @@ internal sealed partial class Parser
     /// A <c>new</c> expression or <c>new.target</c> (clauses 13.3.5 and 13.3.12), each <c>new</c> charged one level of nesting
     /// as Broiler.VM's parser charges it: the constructor is a MemberExpression, with no call and no optional link.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=3CA657
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=6920F7
     // Broiler-Human:        PENDING
     private Expression ParseNew()
     {
@@ -856,9 +888,7 @@ internal sealed partial class Parser
                 (arguments, trailing) = ParseArguments(defer: false);
             }
 
-            var node = new NewExpression(SpanFrom(start), callee, arguments, hasArguments, trailing);
-            node.Spine = callee.Spine;
-            return node;
+            return new NewExpression(SpanFrom(start), callee, arguments, hasArguments, trailing);
         }
         finally
         {
@@ -1122,9 +1152,11 @@ internal sealed partial class Parser
 
     /// <summary>
     /// A TemplateLiteral (clause 13.2.8), read in place: the tokenizer's head, middles and tail, each substitution's end read
-    /// under the template goal. Its spine is its substitutions' deepest, so a chain it begins is charged through them.
+    /// under the template goal. Its height is its substitutions' highest (<see cref="HeightOf"/>), so a chain it begins is
+    /// charged through them. <i>(Revised 2026-11-02, at stage SJL-13.2f; it read "Its spine is its substitutions' deepest,
+    /// so a chain it begins is charged through them.")</i>
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=7A485B
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=082B23
     // Broiler-Human:        PENDING
     private TemplateLiteral ParseTemplate()
     {
@@ -1134,13 +1166,11 @@ internal sealed partial class Parser
         var expressions = new List<Expression>();
         Advance();
         quasis.Add(new TemplateElement(SpanOf(first), first.Value, first.Raw!));
-        var spine = 0;
         if (first.Kind == TokenKind.TemplateHead)
         {
             while (true)
             {
                 var substitution = ParseExpression(noIn: false);
-                spine = Math.Max(spine, substitution.Spine);
                 expressions.Add(substitution);
                 var piece = Peek(LexicalGoal.TemplateTail);
                 if (piece.Kind is not (TokenKind.TemplateMiddle or TokenKind.TemplateTail))
@@ -1152,9 +1182,7 @@ internal sealed partial class Parser
             }
         }
 
-        var node = new TemplateLiteral(SpanFrom(start), Lists.Freeze(quasis), Lists.Freeze(expressions));
-        node.Spine = spine;
-        return node;
+        return new TemplateLiteral(SpanFrom(start), Lists.Freeze(quasis), Lists.Freeze(expressions));
     }
 
     /// <summary>
@@ -1162,7 +1190,7 @@ internal sealed partial class Parser
     /// <c>=&gt;</c> follows on the same line, the cover an AssignmentExpression converts into ArrowFormalParameters. The
     /// forms only parameters have (<c>()</c>, a trailing comma, a rest element) are refused without the arrow.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList; IP=Low; Security=High; Resources=2; Fingerprint=D8DAB8
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList; IP=Low; Security=High; Resources=2; Fingerprint=4D6B21
     // Broiler-Falsified-If: a form only parameters have is admitted without the arrow, or an arrow head is read again rather than converted
     // Broiler-Human:        PENDING
     private Expression ParseParenthesized()
@@ -1214,9 +1242,7 @@ internal sealed partial class Parser
             throw Refuse(Rows.EE0025, SpanOf(next), string.Empty);
         CheckCoverInitialized(mark);
         var inner = items.Count == 1 ? items[0] : new SequenceExpression(SpanFromTo(items[0].Span, items[^1].Span), Lists.Freeze(items));
-        var node = new ParenthesizedExpression(SpanFrom(start), inner);
-        node.Spine = inner.Spine;
-        return node;
+        return new ParenthesizedExpression(SpanFrom(start), inner);
     }
 
     /// <summary>The span from <paramref name="first"/>'s start to <paramref name="last"/>'s end.</summary>
