@@ -73,10 +73,12 @@ public class AsyncGeneratorAwaitTests
 
     [Fact]
     public void ForAwaitTwoIterationsThenDone()
-        // The steps are chained into the script's completion value: Execute pumps jobs only until
-        // that value settles, so nested `.then` calls whose promises it does not wait for could be
-        // cut off, depending on how many jobs each step takes (an await now takes one, as in the
-        // specification, where the async-generator driver used to resume some synchronously).
+        // The steps are chained into the script's completion value. Execute used to pump jobs only
+        // until that value settled, so nested `.then` calls whose promises it did not wait for could
+        // be cut off, depending on how many jobs each step took (an await now takes one, as in the
+        // specification, where the async-generator driver used to resume some synchronously). It
+        // now runs every queued job before it returns (ExecuteDrainsJobQueueTests); the chained
+        // shape is kept as written.
         => Assert.Equal("A,B|done=true", Drive(
             "var out = []; async function* g(){ for await (var z of ['a','b']) { yield z.toUpperCase(); } }"
             + " var it = g();"
