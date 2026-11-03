@@ -61,8 +61,8 @@ the first merge in `git rev-list --first-parent --merges --reverse` from the lib
 `.github/workflows/shared-libraries.yml` has, in job `native-aot-probe`, a `dotnet publish` of the probe with
 `-p:PublishAot=false`, a run of that publication over `conformance/vectors` and a `cmp` of `probe-aot.tsv` against its
 report; provided that `git diff --name-only` from the library commit to it names no path under `Broiler.ECMAScript/`,
-`conformance/vectors/` or `data/unicode/`, not `eng/Broiler.Packaging.props`, and no build or checkout configuration
-file the revision names (`.gitattributes`, `.editorconfig`, `Directory.Build.props` and the others), at any depth and
+`conformance/vectors/` or `data/unicode/`, not `eng/Broiler.Packaging.props` (each in any letter case), and no build
+or checkout configuration file the revision names (`.gitattributes`, `.editorconfig`, `Directory.Build.props` and the others), at any depth and
 in any letter case, and that every line its `git diff -U0` of the workflow file removes or adds is a comment, the
 concurrency group's line, or a line of the JIT publication's two steps and two artifact paths; else part D is not met.
 The local half stays the one taken at the library commit; clause 3 is read from part C at the library commit and
@@ -528,8 +528,8 @@ which quotes the second revision whole. It revises part D alone. Part D's workfl
 `dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe` with `-p:PublishAot=false`, a step running that
 publication over `conformance/vectors`, and `cmp probe-aot.tsv` against its report, in that merge's push run of the
 workflow, with the same no-warning check; provided that `git diff --name-only` from the library commit to it names no
-path under `Broiler.ECMAScript/`, `conformance/vectors/` or `data/unicode/`, not `eng/Broiler.Packaging.props`, and no
-file, at any depth and in any letter case, of the build and checkout configuration names the revision lists
+path under `Broiler.ECMAScript/`, `conformance/vectors/` or `data/unicode/`, not `eng/Broiler.Packaging.props` (each
+in any letter case), and no file, at any depth and in any letter case, of the build and checkout configuration names the revision lists
 (`.gitattributes` among them, a deeper one of which would override the root's), and that the workflow file's own
 diff from the library commit changes nothing but comments, the concurrency group's line and the JIT publication's
 steps and kept files; else part D is not met. Part D's local half stays the one taken here (`library-commit/probe/`).
