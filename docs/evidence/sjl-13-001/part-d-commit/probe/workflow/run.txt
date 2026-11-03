@@ -1,0 +1,87 @@
+# run 41602811670 of Shared libraries: https://github.com/Broiler-Platform/Broiler.JS/actions/runs/41602811670
+head	9da8feb9ed0daf97c2e4ae91672cc998121a481d
+branch	main
+event	push
+attempt	1
+status	completed
+conclusion	success
+created	2026-11-03T08:22:36Z
+updated	2026-11-03T08:26:49Z
+# job	name	conclusion	started	completed
+job	125805340254	Pack, validate and restore the shared stream (dry run)	success	2026-11-03T08:22:39Z	2026-11-03T08:24:03Z
+step	125805340254	1	Set up job	success
+step	125805340254	2	Check out	success
+step	125805340254	3	Set up .NET	success
+step	125805340254	4	Set up Python	success
+step	125805340254	5	Pack the shared stream	success
+step	125805340254	6	Restore the set in an isolated cache, nuget.org for everything else	success
+step	125805340254	7	Restore and run a pristine consumer from a local feed alone	success
+step	125805340254	8	Upload packages	success
+step	125805340254	14	Post Set up Python	success
+step	125805340254	15	Post Set up .NET	success
+step	125805340254	16	Post Check out	success
+step	125805340254	17	Complete job	success
+job	125805340386	Assurance check (SL8)	success	2026-11-03T08:22:39Z	2026-11-03T08:23:40Z
+step	125805340386	1	Set up job	success
+step	125805340386	2	Check out Broiler.JS	success
+step	125805340386	3	Check out Broiler.Code	success
+step	125805340386	4	Set up .NET	success
+step	125805340386	5	Check the shared folder against its generated artefacts	success
+step	125805340386	8	Post Set up .NET	success
+step	125805340386	9	Post Check out Broiler.Code	success
+step	125805340386	10	Post Check out Broiler.JS	success
+step	125805340386	11	Complete job	success
+job	125805340446	Native AOT probe (win-x64)	success	2026-11-03T08:22:39Z	2026-11-03T08:25:31Z
+step	125805340446	1	Set up job	success
+step	125805340446	2	Check out	success
+step	125805340446	3	Set up .NET	success
+step	125805340446	4	Publish with Native AOT	success
+step	125805340446	5	Run the corpus under Native AOT	success
+step	125805340446	6	Publish with the JIT	success
+step	125805340446	7	Run the corpus under the JIT publication, and compare	success
+step	125805340446	8	Run the corpus under the JIT, and compare	success
+step	125805340446	9	Keep the logs	success
+step	125805340446	17	Post Set up .NET	success
+step	125805340446	18	Post Check out	success
+step	125805340446	19	Complete job	success
+job	125805340473	Build and SL rules (ubuntu-24.04)	success	2026-11-03T08:22:39Z	2026-11-03T08:26:48Z
+step	125805340473	1	Set up job	success
+step	125805340473	2	Check out	success
+step	125805340473	3	Set up .NET	success
+step	125805340473	4	Set up Python	success
+step	125805340473	5	Time-zone data for zoneinfo (Windows)	skipped
+step	125805340473	6	Build	success
+step	125805340473	7	Test, the SL rules among them	success
+step	125805340473	8	The corpus generator's own tests	success
+step	125805340473	9	The zone table against zic (Linux)	success
+step	125805340473	16	Post Set up Python	success
+step	125805340473	17	Post Set up .NET	success
+step	125805340473	18	Post Check out	success
+step	125805340473	19	Complete job	success
+job	125805340508	Build and SL rules (windows-latest)	success	2026-11-03T08:22:39Z	2026-11-03T08:26:01Z
+step	125805340508	1	Set up job	success
+step	125805340508	2	Check out	success
+step	125805340508	3	Set up .NET	success
+step	125805340508	4	Set up Python	success
+step	125805340508	5	Time-zone data for zoneinfo (Windows)	success
+step	125805340508	6	Build	success
+step	125805340508	7	Test, the SL rules among them	success
+step	125805340508	8	The corpus generator's own tests	success
+step	125805340508	9	The zone table against zic (Linux)	skipped
+step	125805340508	16	Post Set up Python	success
+step	125805340508	17	Post Set up .NET	success
+step	125805340508	18	Post Check out	success
+step	125805340508	19	Complete job	success
+job	125805340518	Native AOT probe (linux-x64)	success	2026-11-03T08:22:39Z	2026-11-03T08:24:05Z
+step	125805340518	1	Set up job	success
+step	125805340518	2	Check out	success
+step	125805340518	3	Set up .NET	success
+step	125805340518	4	Publish with Native AOT	success
+step	125805340518	5	Run the corpus under Native AOT	success
+step	125805340518	6	Publish with the JIT	success
+step	125805340518	7	Run the corpus under the JIT publication, and compare	success
+step	125805340518	8	Run the corpus under the JIT, and compare	success
+step	125805340518	9	Keep the logs	success
+step	125805340518	17	Post Set up .NET	success
+step	125805340518	18	Post Check out	success
+step	125805340518	19	Complete job	success

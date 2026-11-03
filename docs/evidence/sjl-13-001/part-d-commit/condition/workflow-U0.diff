@@ -1,0 +1,40 @@
+diff --git a/.github/workflows/shared-libraries.yml b/.github/workflows/shared-libraries.yml
+index bc116411..db58d047 100644
+--- a/.github/workflows/shared-libraries.yml
++++ b/.github/workflows/shared-libraries.yml
+@@ -8 +8,5 @@ name: Shared libraries
+-#     vector corpus, and gives the report the same probe gives under the JIT;
++#     vector corpus, and gives the report the same probe gives under the JIT; the probe is also
++#     published with the JIT (PublishAot off, framework-dependent, its own folder) with no
++#     warning, and that publication's report is compared with the Native AOT image's, line for
++#     line, as is the build's (bundle sjl-13-001's part D, as its rule's revisions of 2026-11-03
++#     read it);
+@@ -28,0 +33,3 @@ permissions:
++# A later run on the same ref cancels a pull request's or a dispatch's run. A push has a group of
++# its own, its commit's, so that no later push or dispatch cancels it: bundle sjl-13-001's part D
++# reads the first attempt of the push run at its part D commit.
+@@ -30 +37 @@ concurrency:
+-  group: shared-${{ github.workflow }}-${{ github.ref }}-${{ inputs.package-version }}
++  group: shared-${{ github.workflow }}-${{ github.ref }}-${{ inputs.package-version }}${{ github.event_name == 'push' && format('-{0}', github.sha) || '' }}
+@@ -111,0 +119,18 @@ jobs:
++      # The JIT publication: the same project and settings with PublishAot off, framework-dependent
++      # and portable (no runtime identifier), into a folder of its own beside the Native AOT
++      # image's. The command is the one bundle sjl-13-001 took locally for its rule's part D but
++      # for that folder, and it is the same on both legs: without a runtime identifier the
++      # publication does not depend on the runner's, and each leg runs it on its own runtime.
++      - name: Publish with the JIT
++        run: |
++          set -o pipefail
++          dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -p:PublishAot=false -o Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/jit-publish --nologo 2>&1 | tee probe-publish-jit.log
++          # Warnings are errors already; this states the zero the exit clause asks for.
++          if grep -E "warning [A-Z]+[0-9]+" probe-publish-jit.log; then
++            echo "::error::the JIT publish reported a warning"
++            exit 1
++          fi
++      - name: Run the corpus under the JIT publication, and compare
++        run: |
++          dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/jit-publish/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit-published.tsv
++          cmp probe-aot.tsv probe-jit-published.tsv
+@@ -124,0 +150,2 @@ jobs:
++            probe-publish-jit.log
++            probe-jit-published.tsv

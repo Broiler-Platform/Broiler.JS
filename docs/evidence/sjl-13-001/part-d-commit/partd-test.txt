@@ -1,0 +1,56 @@
+git rev-list --first-parent --merges --reverse d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318..origin/main: 2 merges
+  90b5790dc73ef9d791efe1c5ec0c26ac6cf4eb65: test fails (no JIT publish step)
+  9da8feb9ed0daf97c2e4ae91672cc998121a481d: test passes (publish -o Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/jit-publish; run over conformance/vectors --report probe-jit-published.tsv; cmp probe-aot.tsv probe-jit-published.tsv)
+the part D commit: 9da8feb9ed0daf97c2e4ae91672cc998121a481d
+commit 9da8feb9ed0daf97c2e4ae91672cc998121a481d
+  test: passes (publish -o Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/jit-publish; run over conformance/vectors --report probe-jit-published.tsv; cmp probe-aot.tsv probe-jit-published.tsv)
+  git diff --name-only d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 9da8feb9ed0daf97c2e4ae91672cc998121a481d: 106 paths; held paths named: 0
+  git diff -U0 of .github/workflows/shared-libraries.yml: 31 lines removed or added; outside the admitted set: 0
+    - comment | job None step None | #     vector corpus, and gives the report the same probe gives under the JIT;
+    + comment | job None step None | #     vector corpus, and gives the report the same probe gives under the JIT; the probe is also
+    + comment | job None step None | #     published with the JIT (PublishAot off, framework-dependent, its own folder) with no
+    + comment | job None step None | #     warning, and that publication's report is compared with the Native AOT image's, line for
+    + comment | job None step None | #     line, as is the build's (bundle sjl-13-001's part D, as its rule's revisions of 2026-11-03
+    + comment | job None step None | #     read it);
+    + comment | job None step None | # A later run on the same ref cancels a pull request's or a dispatch's run. A push has a group of
+    + comment | job None step None | # its own, its commit's, so that no later push or dispatch cancels it: bundle sjl-13-001's part D
+    + comment | job None step None | # reads the first attempt of the push run at its part D commit.
+    - the group line under concurrency:, removed | job None step None |   group: shared-${{ github.workflow }}-${{ github.ref }}-${{ inputs.package-version }}
+    + the group line under concurrency:, added | job None step None |   group: shared-${{ github.workflow }}-${{ github.ref }}-${{ inputs.package-version }}${{ github.event_name == 'push' && format('-{0}', github.sha) || '' }}
+    + comment | job native-aot-probe step Run the corpus under Native AOT |       # The JIT publication: the same project and settings with PublishAot off, framework-dependent
+    + comment | job native-aot-probe step Run the corpus under Native AOT |       # and portable (no runtime identifier), into a folder of its own beside the Native AOT
+    + comment | job native-aot-probe step Run the corpus under Native AOT |       # image's. The command is the one bundle sjl-13-001 took locally for its rule's part D but
+    + comment | job native-aot-probe step Run the corpus under Native AOT |       # for that folder, and it is the same on both legs: without a runtime identifier the
+    + comment | job native-aot-probe step Run the corpus under Native AOT |       # publication does not depend on the runner's, and each leg runs it on its own runtime.
+    + a line of step "Publish with the JIT" in job native-aot-probe | job native-aot-probe step Publish with the JIT |       - name: Publish with the JIT
+    + a line of step "Publish with the JIT" in job native-aot-probe | job native-aot-probe step Publish with the JIT |         run: |
+    + a line of step "Publish with the JIT" in job native-aot-probe | job native-aot-probe step Publish with the JIT |           set -o pipefail
+    + a line of step "Publish with the JIT" in job native-aot-probe | job native-aot-probe step Publish with the JIT |           dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -p:PublishAot=false -o Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/jit-publish --nologo 2>&1 | tee probe-publish-jit.log
+    + comment | job native-aot-probe step Publish with the JIT |           # Warnings are errors already; this states the zero the exit clause asks for.
+    + a line of step "Publish with the JIT" in job native-aot-probe | job native-aot-probe step Publish with the JIT |           if grep -E "warning [A-Z]+[0-9]+" probe-publish-jit.log; then
+    + a line of step "Publish with the JIT" in job native-aot-probe | job native-aot-probe step Publish with the JIT |             echo "::error::the JIT publish reported a warning"
+    + a line of step "Publish with the JIT" in job native-aot-probe | job native-aot-probe step Publish with the JIT |             exit 1
+    + a line of step "Publish with the JIT" in job native-aot-probe | job native-aot-probe step Publish with the JIT |           fi
+    + a line of step "Run the corpus under the JIT publication, and compare" in job native-aot-probe | job native-aot-probe step Run the corpus under the JIT publication, and compare |       - name: Run the corpus under the JIT publication, and compare
+    + a line of step "Run the corpus under the JIT publication, and compare" in job native-aot-probe | job native-aot-probe step Run the corpus under the JIT publication, and compare |         run: |
+    + a line of step "Run the corpus under the JIT publication, and compare" in job native-aot-probe | job native-aot-probe step Run the corpus under the JIT publication, and compare |           dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/jit-publish/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit-published.tsv
+    + a line of step "Run the corpus under the JIT publication, and compare" in job native-aot-probe | job native-aot-probe step Run the corpus under the JIT publication, and compare |           cmp probe-aot.tsv probe-jit-published.tsv
+    + a kept path in step "Keep the logs" of job native-aot-probe | job native-aot-probe step Keep the logs |             probe-publish-jit.log
+    + a kept path in step "Keep the logs" of job native-aot-probe | job native-aot-probe step Keep the logs |             probe-jit-published.tsv
+  condition: holds
+path predicate, checked on names that are and are not held:
+  conformance/.gitattributes: held
+  data/.gitattributes: held
+  Broiler.JS/Directory.Build.props: held
+  x/y/nuget.CONFIG: held
+  GLOBAL.JSON: held
+  docs/a/.editorconfig: held
+  src/.GlobalConfig: held
+  Directory.Build.rsp: held
+  ENG/broiler.packaging.PROPS: held
+  data/unicode/pins/unicode.pin: held
+  broiler.ecmascript/Broiler.ECMAScript.Probe/Extra.cs: held
+  conformance/Vectors/x.vectors: held
+  docs/evidence/sjl-13-001/README.md: not held
+  docs/publishing.md: not held
+  eng/other.props: not held

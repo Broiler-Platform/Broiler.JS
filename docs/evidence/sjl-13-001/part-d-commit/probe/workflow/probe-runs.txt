@@ -1,0 +1,13 @@
+# The probe's own summary lines in each native-aot-probe job of run 41602811670 (from jobs/<job id>.log.gz): job, step, line
+Native AOT probe (linux-x64)	Run the corpus under Native AOT	Broiler.ECMAScript.Probe: corpus revision 34, 72 files, 111175 vectors, 0 failures
+Native AOT probe (linux-x64)	Run the corpus under Native AOT	Broiler.ECMAScript.Probe: judged at the parse (syntax): 549 vectors, 230 match, 319 differ, 0 not implemented, 549 agree at the parse
+Native AOT probe (linux-x64)	Run the corpus under the JIT publication, and compare	Broiler.ECMAScript.Probe: corpus revision 34, 72 files, 111175 vectors, 0 failures
+Native AOT probe (linux-x64)	Run the corpus under the JIT publication, and compare	Broiler.ECMAScript.Probe: judged at the parse (syntax): 549 vectors, 230 match, 319 differ, 0 not implemented, 549 agree at the parse
+Native AOT probe (linux-x64)	Run the corpus under the JIT, and compare	Broiler.ECMAScript.Probe: corpus revision 34, 72 files, 111175 vectors, 0 failures
+Native AOT probe (linux-x64)	Run the corpus under the JIT, and compare	Broiler.ECMAScript.Probe: judged at the parse (syntax): 549 vectors, 230 match, 319 differ, 0 not implemented, 549 agree at the parse
+Native AOT probe (win-x64)	Run the corpus under Native AOT	Broiler.ECMAScript.Probe: corpus revision 34, 72 files, 111175 vectors, 0 failures
+Native AOT probe (win-x64)	Run the corpus under Native AOT	Broiler.ECMAScript.Probe: judged at the parse (syntax): 549 vectors, 230 match, 319 differ, 0 not implemented, 549 agree at the parse
+Native AOT probe (win-x64)	Run the corpus under the JIT publication, and compare	Broiler.ECMAScript.Probe: corpus revision 34, 72 files, 111175 vectors, 0 failures
+Native AOT probe (win-x64)	Run the corpus under the JIT publication, and compare	Broiler.ECMAScript.Probe: judged at the parse (syntax): 549 vectors, 230 match, 319 differ, 0 not implemented, 549 agree at the parse
+Native AOT probe (win-x64)	Run the corpus under the JIT, and compare	Broiler.ECMAScript.Probe: corpus revision 34, 72 files, 111175 vectors, 0 failures
+Native AOT probe (win-x64)	Run the corpus under the JIT, and compare	Broiler.ECMAScript.Probe: judged at the parse (syntax): 549 vectors, 230 match, 319 differ, 0 not implemented, 549 agree at the parse

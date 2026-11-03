@@ -1,0 +1,36 @@
+# Bundle sjl-13-001: part D's workflow half taken at the part D commit, 2026-11-03, under the rule's third revision
+# (decision-rule-revised-2026-11-03-third.md). Part D's local half is the one taken at the library commit
+# (library-commit/probe/, library-commit/commands.txt's part D lines), not taken again.
+# The library commit: d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318. The part D commit: 9da8feb9ed0daf97c2e4ae91672cc998121a481d,
+# the default-branch merge of Broiler.JS#1098 (a merge commit; parents 90b5790dc73ef9d791efe1c5ec0c26ac6cf4eb65 and
+# 916d89a96937057b5b6eb98026395d6c2d4340b8). Every git command from a checkout of the repository with origin/main at
+# the part D commit (git fetch on 2026-11-03).
+
+# The part D commit, by the revision's test (condition/merges.txt; partd-test.txt):
+git rev-list --first-parent --merges --reverse d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318..origin/main
+git show <merge>:.github/workflows/shared-libraries.yml        (each merge in that order, until one passes the test)
+
+# The condition at the part D commit (condition/name-only.txt, condition/workflow-U0.diff):
+git diff --name-only d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 9da8feb9ed0daf97c2e4ae91672cc998121a481d
+git diff -U0 d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 9da8feb9ed0daf97c2e4ae91672cc998121a481d -- .github/workflows/shared-libraries.yml
+#   both read by partd.py (kept here beside its output, as library-commit/rules/pack-shared.sh is beside its own; the
+#   bundle's tools/ holds the scripts the rule and its revisions name, committed before the runs they judge, and the
+#   third revision names none):
+python3 -I docs/evidence/sjl-13-001/part-d-commit/partd.py .                                         (partd-test.txt)
+#   the same names with rename detection off are the same list:
+git diff --no-renames --name-only d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318 9da8feb9ed0daf97c2e4ae91672cc998121a481d
+
+# Its run: run 41602811670 of .github/workflows/shared-libraries.yml ("Shared libraries"), on the push of
+# 9da8feb9ed0daf97c2e4ae91672cc998121a481d to main, attempt 1 (the only attempt); found and read with
+gh run list -R Broiler-Platform/Broiler.JS -w shared-libraries.yml -e push -c 9da8feb9ed0daf97c2e4ae91672cc998121a481d --json databaseId,status,conclusion,attempt,createdAt,headBranch
+gh run view 41602811670 -R Broiler-Platform/Broiler.JS --json databaseId,workflowName,headSha,headBranch,event,status,conclusion,createdAt,updatedAt,url,attempt,jobs   (probe/workflow/run.txt)
+gh api repos/Broiler-Platform/Broiler.JS/actions/runs/41602811670/attempts/1 --jq '.run_attempt,.conclusion'                          (1, success)
+gh run view 41602811670 -R Broiler-Platform/Broiler.JS --log --job <job id>        (each of the six jobs; probe/workflow/jobs/<job id>.log.gz, gzip -n -9)
+gh run download 41602811670 -R Broiler-Platform/Broiler.JS                         (the artifacts, into an empty folder)
+#   probe/workflow/artifacts/: each native-aot-probe artifact's probe-publish.log (as probe-publish-<rid>.log) and
+#   probe-publish-jit.log (as probe-publish-jit-<rid>.log); sha256.txt, the SHA-256 of every report and package:
+sha256sum native-aot-probe-*/probe-aot.tsv native-aot-probe-*/probe-jit-published.tsv native-aot-probe-*/probe-jit.tsv shared-packages/*
+#   probe/workflow/warnings.txt: each publication's log (the artifact's, and the job log's step without the echoed script)
+grep -cE "warning [A-Z]+[0-9]+" <log>; grep -ci warning <log>; grep -cE "IL[0-9]{4}" <log>
+#   probe/workflow/probe-runs.txt: the probe's summary lines in each native-aot-probe job's log
+grep -E "Broiler.ECMAScript.Probe: " <job log>
