@@ -46,8 +46,14 @@ namespace Broiler.JavaScript.Compiler;
 /// <para>
 /// <c>d</c> is a compile-time depth. Direct eval code is at one more than the depth the code that calls
 /// <c>eval</c> was compiled at: <see cref="FastCompiler"/> passes its own depth + 1 as a constant of every
-/// direct eval call it emits, and <see cref="DirectEvalSupport"/> validates and compiles the eval code at
-/// that depth. Every other compilation - a script, a module, an indirect eval, a <c>Function</c>
+/// direct eval call it emits, and <see cref="DirectEvalSupport"/> validates the eval code at that depth and,
+/// where the current engine is a <c>JSContext</c>, compiles it at that depth. Two paths differ, neither
+/// observable since no script sees a temporary's name: where the current engine is not a <c>JSContext</c> the
+/// eval code is compiled by <c>CoreScript.Evaluate</c>, at 0; and eval code that is exactly one call of the
+/// intrinsic <c>eval</c> with a constant string is not compiled, its constant being validated and run in its
+/// place at the outer eval code's depth, not one deeper. (Corrected at milestone SJL-14.2, decision D55: the
+/// remark said "validates and compiles the eval code at that depth" without the two paths.) Every other
+/// compilation - a script, a module, an indirect eval, a <c>Function</c>
 /// constructor's body, even one compiled while a direct eval runs - is at 0, since no direct eval
 /// encloses it. Along a chain of direct evals, then, each eval code's <c>d</c> is greater than that of the
 /// code that calls it and of every compilation enclosing that, so the names differ from an enclosing

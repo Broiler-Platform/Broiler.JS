@@ -89,11 +89,16 @@ public static class DirectEvalSupport
         }
     }
 
-    // directEvalDepth is the direct-eval depth the eval code is validated and compiled at, the d of the
-    // for-loop pass's temporaries (Broiler.VM's JSD-0080, decision D22): one more than the depth the code
-    // that calls eval was compiled at, which the compiler passes as a constant in the call it emits, so it
-    // holds however late that code runs. 1, the default, is eval called from code compiled outside any
-    // direct eval. tailCall stays the last parameter: the IL generator re-emits a call in tail position
+    // directEvalDepth is the direct-eval depth the eval code is validated at, and compiled at where the current
+    // engine is a JSContext, the d of the for-loop pass's temporaries (Broiler.VM's JSD-0080, decision D22): one
+    // more than the depth the code that calls eval was compiled at, which the compiler passes as a constant in the
+    // call it emits, so it holds however late that code runs. 1, the default, is eval called from code compiled
+    // outside any direct eval. Two paths differ: where the current engine is not a JSContext the eval code is
+    // compiled by CoreScript.Evaluate, at 0 (the end of this method); and eval code that is exactly one call of the
+    // intrinsic eval with a constant string is not compiled at all, its constant being validated and run in its
+    // place at this depth, not one deeper (TryGetNestedDirectEvalText). No script sees a temporary's name, so
+    // neither is observable. (Corrected at milestone SJL-14.2, decision D55: the remark said "validated and compiled
+    // at" without the two paths.) tailCall stays the last parameter: the IL generator re-emits a call in tail position
     // with one more argument, true, after all the others.
     public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, FrameToken activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, string[] evalVarEnvNames = null, JSValue directEvalNewTarget = null, string[] catchParameterNames = null, int directEvalDepth = 1, bool tailCall = false)
     {
