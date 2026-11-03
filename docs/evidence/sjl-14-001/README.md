@@ -20,6 +20,7 @@ Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch
 | [`inherited-context/`](inherited-context/README.md) | The inherited-context probes of decision D44, run on both engines with every answer recorded |
 | [`inputs/`](inputs/README.md) | Part I's workloads (the real corpora, named by revision and SHA-256) and part J's seeds |
 | [`tools/records/`](tools/records/write_records.py) | The script that writes `corrections/`'s generated tables and `dispositions.tsv`, with a `check` mode |
+| [`tools/side-by-side/`](tools/side-by-side/README.md) | Part C's tool, with entry points P, B, K and K-on and sjl-12-001's canonical dump; `compare.py` (outcome pairs, part B's identity, class M's message table) and `spancheck.py` (class S's span check); landed with W1 (SJL-14.2) |
 
 ## What it will hold
 
@@ -27,7 +28,7 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
 - `bridge/` - part B's identity runs at W1 and its first parent, and at each dark commit and its first parent, with
   their switch-on outputs (decision D52);
 - `side-by-side/w1/` and `side-by-side/w2-base/` - part C's runs, every difference classified, with the generated
-  message table of class M (decision D46); the side-by-side tool, `tools/side-by-side/`, lands with W1;
+  message table of class M (decision D46), written by the side-by-side tool, `tools/side-by-side/`, which W1 adds;
 - `base/` and `after/` - part A's hosted runs (UTC, negative tests), imported unchanged with their digests, and the
   comparison; parts D, E, F, G, H and K's local runs;
 - `measurement/` - part I's runs, void on a lane that is not controlled (decision D48);

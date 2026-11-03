@@ -12,6 +12,14 @@ thread, and writes one report row for each input, variant and entry point.
 | K | The whole compile with the compiler's test-only switch off (bundle sjl-12-001's K, by link) | no |
 | K-on | The whole compile with `JSCompilationOptions.ParseThroughBridge` on (decision D43) | no |
 
+**What B does not run.** B parses each input as a Script or a Module (`BridgeRequest.Script` and `.Module`), the
+variants part C's population names. It never runs the Eval, FormalParameters or FunctionBody goals, nor any inherited
+context (the manifest's `eval-flags` E0 to E7): the old parser has no entry point for them that B could be set beside,
+since this engine checks eval code's context and `Function`'s pieces partly in its compiler. Those paths are covered
+instead by the bundle's inherited-context probes (`../../inherited-context/`), run with the shell's switch off and on,
+and by `SharedSyntaxBridgeTests` (Parser.Tests). K and K-on compile every input whole, so a direct eval or a `Function`
+call an input makes at its top level is not run either: neither entry runs the code it compiles.
+
 B and K-on are found by reflection when the tool runs, as sjl-12-001's tool finds the for-loop pass, so the tool builds
 at W1's first parent too; there both answer `absent`, and the report's `#% bridge` and `#% switch` lines say so. The
 canonical dump, the manifest reader, the field escapes and P and K are sjl-12-001's sources, linked unchanged
@@ -65,7 +73,21 @@ python3 -I compare.py report.tsv P B
 python3 -I compare.py report.tsv K K-on refused/refused\ message-differs 20
 # Part B: P's and K's rows at W1's first parent and at W1, switch off, byte for byte (exit 1 when not).
 python3 -I compare.py --same base.tsv head.tsv P,K
+# Class M's generated message table (decision D46): every refusal at both entries with the same type and another text.
+python3 -I compare.py --messages report.tsv P B messages-p-b.tsv
+python3 -I compare.py --messages report.tsv K K-on messages-k.tsv
+# Class S: every dump difference of P and B, each differing span checked against the source text.
+python3 -I spancheck.py --manifest conformance/parse/corpus.manifest --test262 <suite root> dumps.txt.gz spans.tsv
 ```
 
-A P and B pair whose dumps differ is read with `--text` and a line diff of the two dumps; sjl-12-001's dump names
-every field, so the first differing line names the node, the field and the token.
+The counts split refused/refused pairs by exception type first (`type-differs`, which class M does not admit), then by
+message. `spancheck.py` reads the `--text` dumps of P and B. A line pair that differs only in spans is a span
+difference, and each differing span is checked against the node's source text: it agrees when it is the whole text of
+one construct (not inverted, no leading or trailing white space or comment, brackets balanced outside strings,
+templates and comments; a program from offset 0 to the end). A span difference is class S when P's span disagrees and
+B's agrees; any other dump difference is listed as `unclassified` or `not-span`, with both texts, for reading. The check
+is mechanical and conservative: a span that breaks a bracket pair is never S, and each row carries both texts.
+
+**Spans the AST type fixes.** An `AstNewExpression` ends where its callee ends (its constructor takes the callee's
+end), in both trees; the bridge begins it at `new`, where its text begins. Its span therefore leaves out the argument
+list in both trees, and the check reads `new C` (the callee's text after `new`) as agreeing.

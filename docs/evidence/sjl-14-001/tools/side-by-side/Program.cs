@@ -327,7 +327,8 @@ internal static class Program
             if (@switch == null)
                 return new Outcome("absent", null, null);
 
-            object boxed = context.CompilationOptions;
+            // The options K's compile takes (CoreScript's AsScript of the context's), with the switch on.
+            object boxed = context.CompilationOptions with { IsModule = false, AllowTopLevelAwait = false };
             @switch.SetValue(boxed, true);
             var options = (JSCompilationOptions)boxed;
             try
