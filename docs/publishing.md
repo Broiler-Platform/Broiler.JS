@@ -35,8 +35,11 @@ variable.)*
 
 - **Its dry run is [`Shared libraries`](../.github/workflows/shared-libraries.yml)**, on every push
   and pull request: it builds the folder and runs its rules, publishes and runs the Native AOT probe,
-  runs the assurance check, packs the stream with package validation, restores it in an isolated
-  cache as `eng/verify-feed.ps1` does, and runs a pristine consumer
+  publishes the probe with the JIT as well and compares that publication's report with the image's,
+  line for line *(revised 2026-11-03, at SJL-13.2f, for bundle sjl-13-001's part D: the clause read
+  "publishes and runs the Native AOT probe, runs the assurance check,")*, runs the assurance check,
+  packs the stream with package validation, restores it in an isolated cache as
+  `eng/verify-feed.ps1` does, and runs a pristine consumer
   (`scripts/packaging/test_pristine_consumer.py --set shared`) from a local feed alone.
 - **A probe pre-release is packed, never published.** `eng/pack.ps1 -ProjectSet Shared` also accepts
   `X.Y.Z-probe.N`, which the resolver never produces, so `Publish shared libraries` cannot push one.
