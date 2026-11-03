@@ -39,7 +39,8 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
   and the nested pump a synchronous `require` runs inside a job, are affected.
 - No test262 verdict changes at `ccaac100`: the 821 `flags: [module]` tests, run through `--module-host`
   (the only test262 path that uses the pump), give the same 679 passed and 142 failed, with the same status
-  and stderr for every test, before and after; script tests run through `Eval`, not the pump.
+  and stdout for every test, before and after, and the same stderr apart from the `AsyncPump.cs` line numbers
+  in 13 stack traces; script tests run through `Eval`, not the pump.
 - `AsyncPumpTests` (Runtime.Tests) and `ExecuteDrainsJobQueueTests` (Integration.Tests) hold the cases. No
   public member's signature changes; what `AsyncPump.Run`, `JSContext.Execute`, `ExecuteAsync` and
   `CoreScript.EvaluateWithTasks` wait for does, as their documentation now says.
