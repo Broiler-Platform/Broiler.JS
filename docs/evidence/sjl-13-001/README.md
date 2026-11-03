@@ -8,7 +8,11 @@ syntax tests pass at library level, as classified.") and 3 ("Rule SL9 (determini
 **The rule's verdicts are in the section "The rule's parts at the library commit, 2026-11-03", taken at the library
 commit `d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318`: parts A, B, C, E, F, G and H met, part D not met; clauses 1 and 2
 met, clause 3 not met. Nothing else here is a verdict.** *(Revised 2026-11-03, at the library commit; read "Rules only.
-Nothing here is a verdict.")*
+Nothing here is a verdict.")* *(Noted 2026-11-03, after part D's run at the library commit was seen: the rule is
+revised a third time, for part D alone, by [`decision-rule-revised-2026-11-03-third.md`](decision-rule-revised-2026-11-03-third.md),
+which reads part D's workflow half at the part D commit, found by a stated test of the workflow file and expected to be
+the merge of the change that carries it, when it lands. The verdicts above stand as recorded under the rule as revised
+twice; the section "The rule's parts at the library commit, 2026-11-03" says more.)*
 
 **Rule:** [`decision-rule.md`](decision-rule.md), committed at SJL-13.1 before any code of the library exists:
 - part A is the parse corpus and test262's syntax tests at library level, against the classification, in the
@@ -23,7 +27,9 @@ Nothing here is a verdict.")*
 
 Clause 1 is read from parts H and E, with part G for the contract's limits; clause 2 from parts A and B; clause 3 from
 parts C and D. There is no base and no measurement part: the library is new, and every part is judged at one commit,
-the library commit.
+the library commit. *(Noted 2026-11-03, after part D's run at the library commit was seen: under the rule's third
+revision part D's workflow half is judged at the part D commit; the text read "... every part is judged at one commit,
+the library commit.")*
 
 *(Noted 2026-11-02, at SJL-13.2f, after the runs at the stage's heads were seen: the rule is revised by
 [`decision-rule-revised-2026-11-02.md`](decision-rule-revised-2026-11-02.md), which quotes it whole, the owner's
@@ -45,6 +51,24 @@ the first revision whole. (f') replaces (f): a limit's refusal reported at its b
 read for each other only for the lines [`readings/grammar-readings.tsv`](readings/grammar-readings.tsv) lists. It also
 corrects the first revision's text, and records that (e) and (f) were the stage's own proposals, not decisions the
 brief recommended. Neither earlier rule file is edited.)*
+
+*(Noted 2026-11-03, after every part had been taken at the library commit and part D's run there seen: the rule is
+revised a third time by [`decision-rule-revised-2026-11-03-third.md`](decision-rule-revised-2026-11-03-third.md), the
+owner's decision of that day taken as recommended under the direction of 2026-10-18, which quotes the second revision
+whole. It revises part D alone (its population, its configuration, a new condition, and its MET and NOT MET lines),
+and the rule's "void" line for part D's workflow half: the shared workflow's half is read at **the part D commit**,
+the first merge in `git rev-list --first-parent --merges --reverse` from the library commit to `origin/main` whose
+`.github/workflows/shared-libraries.yml` has, in job `native-aot-probe`, a `dotnet publish` of the probe with
+`-p:PublishAot=false`, a run of that publication over `conformance/vectors` and a `cmp` of `probe-aot.tsv` against its
+report; provided that `git diff --name-only` from the library commit to it names no path under `Broiler.ECMAScript/`,
+`conformance/vectors/` or `data/unicode/`, not `eng/Broiler.Packaging.props` (each in any letter case), and no build
+or checkout configuration file the revision names (`.gitattributes`, `.editorconfig`, `Directory.Build.props` and the others), at any depth and
+in any letter case, and that every line its `git diff -U0` of the workflow file removes or adds is a comment, the
+concurrency group's line, or a line of the JIT publication's two steps and two artifact paths; else part D is not met.
+The local half stays the one taken at the library commit; clause 3 is read from part C at the library commit and
+part D as revised. The revision also records that the gap was known before the library commit (part D's row in the
+section "The rule's parts at stage SJL-13.2f's head", commit `c20898fd`). It is weaker evidence for part D. No
+earlier rule file is edited.)*
 
 **Area verdict:** [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "Area verdicts", "The frontend's syntax
 half (SJL-13.1)", with Broiler.VM's JSD-0083,
@@ -496,6 +520,28 @@ every test project passes, the Frontend's 982 tests among them (`library-commit/
   than this one would be a new dated rule file, quoting the rule and its revisions whole, written after this run was
   seen.
 
+*(Noted 2026-11-03, after part D's run above was seen, at the owner's decision of that day under the direction of
+2026-10-18: that new dated rule file is [`decision-rule-revised-2026-11-03-third.md`](decision-rule-revised-2026-11-03-third.md),
+which quotes the second revision whole. It revises part D alone. Part D's workflow half is read at
+**the part D commit**, the first merge in the default branch's first-parent history after the library commit whose
+`.github/workflows/shared-libraries.yml` has, in job `native-aot-probe`, a step running
+`dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe` with `-p:PublishAot=false`, a step running that
+publication over `conformance/vectors`, and `cmp probe-aot.tsv` against its report, in that merge's push run of the
+workflow, with the same no-warning check; provided that `git diff --name-only` from the library commit to it names no
+path under `Broiler.ECMAScript/`, `conformance/vectors/` or `data/unicode/`, not `eng/Broiler.Packaging.props` (each
+in any letter case), and no file, at any depth and in any letter case, of the build and checkout configuration names the revision lists
+(`.gitattributes` among them, a deeper one of which would override the root's), and that the workflow file's own
+diff from the library commit changes nothing but comments, the concurrency group's line and the JIT publication's
+steps and kept files; else part D is not met. Part D's local half stays the one taken here (`library-commit/probe/`).
+The part D commit is expected to be the merge of the change that carries the revision and the workflow's JIT
+publication (branch `sjl-13-2f-partd2`): part D, and clause 3 with it, will be taken at the part D commit under the
+third revision when that merge lands and its push run completes, its run retained under
+`part-d-commit/probe/workflow/`. The gap this remedies was known before the library commit: part D's row in the
+section "The rule's parts at stage SJL-13.2f's head" recorded it (commit `c20898fd`), and the workflow was not
+changed before the library commit merged. The revision was written after this run was seen and is weaker evidence
+for part D. Nothing above changes: at the library commit, under the rule as revised twice, part D is not met and
+clause 3 is not met, as recorded.)*
+
 **The files**, under [`library-commit/`](library-commit/commands.txt): `env.txt` and `checks/` (the host, the build and
 the tests); `corpus/` (A: the runner's report, gzipped, its log, the comparison's summary and its per-line list, the
 readings' check, and the control); `vectors/` (B: the run's log and the reports' SHA-256, the control vector and the
@@ -521,11 +567,28 @@ parts, and nothing here is a verdict; the line above stands for the rule's parts
 B, C, E, F, G and H are met and part D is not, so clauses 1 and 2 are met and clause 3 is not. Those are the rule's
 verdicts; the line at the head of this section, and every run before the library commit, stand as they were.
 
+*2026-11-03, after part D's run at the library commit was seen:* the rule is revised a third time, for part D alone
+([`decision-rule-revised-2026-11-03-third.md`](decision-rule-revised-2026-11-03-third.md)); part D, and clause 3 with
+it, will be taken under that revision at the part D commit, expected to be the merge of the change that carries it, when
+it lands. The verdicts in the paragraph above, recorded at the library commit under the rule as revised twice, are
+unchanged; the third revision is weaker evidence for part D. Its part D commit is expected to be the merge of the
+branch `sjl-13-2f-partd2`, and its first push run decides part D, so that branch is merged only when: its pull
+request's run of `Shared libraries` shows both `Native AOT probe` legs (linux-x64 and win-x64) green on the steps
+"Publish with the JIT" and "Run the corpus under the JIT publication, and compare", each leg's artifact holding a
+`probe-publish-jit.log` with no `warning` code line and a `probe-jit-published.tsv` the same bytes as its
+`probe-aot.tsv`; it is merged by a merge commit, not a squash or a rebase; and neither the pull request's title nor
+the merge commit's message carries `[skip ci]`, `[ci skip]`, `[no ci]`, `[skip actions]`, `[actions skip]` or a
+`skip-checks: true` trailer, any of which suppresses the push run. A later push to `main` does not cancel that run: a
+push now has a concurrency group of its own.
+
 - The vectors commit adds the `syntax` area to [`conformance/vectors/`](../../../conformance/vectors/README.md) at its
   corpus revision, before the first file under `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` (the rule's
   conditions).
 - SJL-13.2 builds the library in stages, one merge each; the merge that completes it (its done-when) is the library
-  commit, where every part is run from a clean checkout.
+  commit, where every part is run from a clean checkout. *(Noted 2026-11-03, after part D's run at the library commit
+  was seen: under the rule's third revision part D's workflow half is run at the part D commit, and its local half
+  stays the one taken at the library commit; the text read "the library commit, where every part is run from a clean
+  checkout.")*
 - **Part A's comparison script and part H's record-consistency script** are committed to this bundle's `tools/`
   after the rule commit and before any run of their parts is taken, as the rule's parts A and H say, and each is
   retained with its output. Each reads what the library writes: part A's the corpus runner's report, in the fields
@@ -581,7 +644,10 @@ is `d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318`, the default-branch merge of Broil
 whose parents are `6d9ded70a008a07884612a543177d8a674baaf8a` (the default branch) and
 `c9ab088ab092d74f4ec49d9fcd947f790829b56c` (the stage's branch). The rule's conditions hold at it: the rule commit is an
 ancestor of the vectors commit, the vectors commit of `61cb15b5`, and `61cb15b5` of the library commit, and `git diff`
-of `conformance/vectors/syntax/` from the vectors commit to the library commit is empty.)*
+of `conformance/vectors/syntax/` from the vectors commit to the library commit is empty.)* *(Added 2026-11-03, after
+part D's run at the library commit was seen: **the part D commit**, which the rule's third revision names for part D's
+workflow half, is the first default-branch merge after the library commit that the revision's test finds; it is named
+here, by all forty digits, when that merge lands.)*
 
 **What the bundle will hold:**
 - `corpus/`: part A's report in both configurations, the comparison's output with every admitted outcome listed by
@@ -605,6 +671,11 @@ of `conformance/vectors/syntax/` from the vectors commit to the library commit i
   the names above (`corpus/` to `contract/`), with its `commands.txt`: the rule's verdicts *(added 2026-11-03, at the
   library commit: the folders above it, `corpus/` to `contract/`, hold the runs at the stage's head, `920f18f4`, which
   are no run of a part, so the runs at the library commit are kept apart from them)*.
+- `part-d-commit/`: part D's workflow half at the part D commit, under the rule's third revision: the shared workflow's
+  push run there in `probe/workflow/`, as `library-commit/probe/workflow/` holds the library commit's, with the output
+  of the condition's `git diff --name-only` and of its `git diff -U0` of `.github/workflows/shared-libraries.yml`
+  *(added 2026-11-03, after part D's run at the library commit was seen; it holds nothing until the part D commit
+  lands)*.
 
 **It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them. *(Noted 2026-11-02, at SJL-13.2f: the runs at the branch's head are taken, and the folders above hold them; the
 section "The rule's parts at stage SJL-13.2f's head" reads them.)*

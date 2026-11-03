@@ -5,7 +5,11 @@ name: Shared libraries
 #   - the folder builds under its conventions and its tests pass, the SL rules among them, and on
 #     Linux the time data home's zone table agrees with the host's zic (milestone SJL-8.2);
 #   - the Native AOT probe publishes with Broiler.VM's root settings and no warning, runs the whole
-#     vector corpus, and gives the report the same probe gives under the JIT;
+#     vector corpus, and gives the report the same probe gives under the JIT; the probe is also
+#     published with the JIT (PublishAot off, framework-dependent, its own folder) with no
+#     warning, and that publication's report is compared with the Native AOT image's, line for
+#     line, as is the build's (bundle sjl-13-001's part D, as its rule's revisions of 2026-11-03
+#     read it);
 #   - the Broiler Code Assurance check holds the folder to its generated artefacts (rule SL8);
 #   - the shared version stream packs, passes package validation, and restores in a pristine
 #     consumer from an isolated cache.
@@ -26,8 +30,11 @@ on:
 permissions:
   contents: read
 
+# A later run on the same ref cancels a pull request's or a dispatch's run. A push has a group of
+# its own, its commit's, so that no later push or dispatch cancels it: bundle sjl-13-001's part D
+# reads the first attempt of the push run at its part D commit.
 concurrency:
-  group: shared-${{ github.workflow }}-${{ github.ref }}-${{ inputs.package-version }}
+  group: shared-${{ github.workflow }}-${{ github.ref }}-${{ inputs.package-version }}${{ github.event_name == 'push' && format('-{0}', github.sha) || '' }}
   cancel-in-progress: true
 
 jobs:
@@ -109,6 +116,24 @@ jobs:
           fi
       - name: Run the corpus under Native AOT
         run: ./Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/${{ matrix.rid }}/publish/${{ matrix.executable }} conformance/vectors --report probe-aot.tsv
+      # The JIT publication: the same project and settings with PublishAot off, framework-dependent
+      # and portable (no runtime identifier), into a folder of its own beside the Native AOT
+      # image's. The command is the one bundle sjl-13-001 took locally for its rule's part D but
+      # for that folder, and it is the same on both legs: without a runtime identifier the
+      # publication does not depend on the runner's, and each leg runs it on its own runtime.
+      - name: Publish with the JIT
+        run: |
+          set -o pipefail
+          dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -p:PublishAot=false -o Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/jit-publish --nologo 2>&1 | tee probe-publish-jit.log
+          # Warnings are errors already; this states the zero the exit clause asks for.
+          if grep -E "warning [A-Z]+[0-9]+" probe-publish-jit.log; then
+            echo "::error::the JIT publish reported a warning"
+            exit 1
+          fi
+      - name: Run the corpus under the JIT publication, and compare
+        run: |
+          dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/jit-publish/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit-published.tsv
+          cmp probe-aot.tsv probe-jit-published.tsv
       - name: Run the corpus under the JIT, and compare
         run: |
           dotnet build Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release --nologo
@@ -122,6 +147,8 @@ jobs:
           path: |
             probe-publish.log
             probe-aot.tsv
+            probe-publish-jit.log
+            probe-jit-published.tsv
             probe-jit.tsv
           if-no-files-found: warn
 
