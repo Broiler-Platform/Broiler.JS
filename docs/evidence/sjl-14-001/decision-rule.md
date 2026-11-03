@@ -34,12 +34,13 @@ baselines used (decision D47).
 - **E, early-error stage** - an input accepted at entry point P (the parser alone) at the side the base stands for,
   and refused at P or B on the other side with a SyntaxError whose shared code is a `syntax` row of the stage table,
   K refusing on both sides, where either the row's catalogue `js_stage` names only compiler sites
-  (`SyntaxValidation`, `FastCompiler.EarlyErrors`, `Visit*`, `DirectEvalSupport`; [`corrections/class-e.tsv`](corrections/class-e.tsv)),
-  or bundle `sjl-13-001`'s classification expects the input refused in configuration J with that row among the rows
-  whose codes may come first (a row this engine checks partly in its parser and partly in its compiler,
-  [`corrections/partly.tsv`](corrections/partly.tsv), or a parser row its parser missed for that input; decision D45 as
-  revised on 2026-11-03, finding S14-F1 in [`corrections.md`](corrections.md)); listed with its row. The library
-  checks at the parse what this engine checked only in its compiler.
+  (`SyntaxValidation`, `FastCompiler.EarlyErrors`, `Visit*`, `DirectEvalSupport`; the stage table's
+  `js_compiler_only` `yes`, [`corrections/class-e.tsv`](corrections/class-e.tsv)), or the row's `js_compiler_only` is
+  `partly` ([`corrections/partly.tsv`](corrections/partly.tsv)) or `no`, and bundle `sjl-13-001`'s classification
+  expects the input refused in configuration J with that row among the rows whose codes may come first (decision D45
+  as revised on 2026-11-03, finding S14-F1 in [`corrections.md`](corrections.md)); a row the stage table marks
+  `not-checked` is never class E; listed with its row. The library checks at the parse what this engine checked only
+  in its compiler.
 - **T, timing** - for those of the E rows whose check ran lazily or after other code ran (a `Visit*` check at a
   function's first call), an input or test262 row whose SyntaxError this engine raised later than the specification's
   early-error point, or not at all when the function was never called, and raises before evaluation after; listed with
