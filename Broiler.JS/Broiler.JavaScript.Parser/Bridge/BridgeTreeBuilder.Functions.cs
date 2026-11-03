@@ -188,8 +188,10 @@ internal sealed partial class BridgeTreeBuilder
 
             case ArrayPattern array:
             {
-                // The old parser began the pattern at the token after `[`, and an elision at its comma.
-                var begin = tokens.After(array.Span.Offset + 1);
+                // The pattern begins at its `[`, where its text begins (the old parser began it at the token after
+                // the bracket, a line terminator's where one follows); an elision is at its comma, as the old parser
+                // had it.
+                var begin = Start(array);
                 var cursor = array.Span.Offset + 1;
                 var list = new Sequence<AstExpression>(array.Elements.Count);
                 foreach (var element in array.Elements)
@@ -213,7 +215,7 @@ internal sealed partial class BridgeTreeBuilder
 
             case ObjectPattern @object:
             {
-                var begin = tokens.After(@object.Span.Offset + 1);
+                var begin = Start(@object);
                 var list = new Sequence<ObjectProperty>(@object.Properties.Count);
                 foreach (var property in @object.Properties)
                 {

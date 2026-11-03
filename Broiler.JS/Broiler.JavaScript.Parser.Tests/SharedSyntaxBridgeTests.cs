@@ -330,6 +330,19 @@ public class SharedSyntaxBridgeTests
     public void A_functions_body_begins_at_its_brace(string source, string body)
         => Assert.Equal(body, SpanText(source, First<AstBlock>(Bridged(source), b => b is not AstProgram)));
 
+    [Theory]
+    [InlineData("var {\n  a, b\n} = o;", "{\n  a, b\n}")]
+    [InlineData("var [\n  a\n] = o;", "[\n  a\n]")]
+    public void A_binding_pattern_begins_at_its_bracket(string source, string pattern)
+        => Assert.Equal(pattern, SpanText(source, First<AstExpression>(Bridged(source), e => e is Broiler.JavaScript.Ast.Patterns.AstObjectPattern or Broiler.JavaScript.Ast.Patterns.AstArrayPattern)));
+
+    [Fact]
+    public void A_bodys_brace_is_found_past_an_html_like_comment()
+    {
+        const string source = "function f(<!--\n){ return 1; }";
+        Assert.Equal("{ return 1; }", SpanText(source, First<AstBlock>(Bridged(source), b => b is not AstProgram)));
+    }
+
     [Fact]
     public void An_await_and_a_field_end_where_their_text_ends()
     {

@@ -84,7 +84,10 @@ The counts split refused/refused pairs by exception type first (`type-differs`, 
 message. `spancheck.py` reads the `--text` dumps of P and B. A line pair that differs only in spans is a span
 difference, and each differing span is checked against the node's source text: it agrees when it is the whole text of
 one construct (not inverted, no leading or trailing white space or comment, brackets balanced outside strings,
-templates and comments; a program from offset 0 to the end). A span difference is class S when P's span disagrees and
+templates, comments and regular-expression literals; a program from offset 0 to the end). Where the two spans share an
+edge, only the other is judged, and a node whose end the AST type takes from a child (a call, a member, a new
+expression, an import call) may leave its closing bracket out, and one whose start it takes from a child (a binary,
+conditional, call or member expression) may begin inside that child's parenthesis. A span difference is class S when P's span disagrees and
 B's agrees; a span difference where both pass is listed as `both-agree` (two readings of one construct's extent, such
 as a statement with or without its semicolon, which a reader decides from the two texts), and any other dump
 difference as `unclassified` or `not-span`, with both texts. The check

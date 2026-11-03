@@ -14,7 +14,10 @@ written to <listing> with both spans, both texts and both checks:
   literals and comments skipped); a program's span agrees when it begins at offset 0 and ends at the end of the
   source. Where the two spans share one edge, only the other is judged: brackets the shared end leaves open, or the
   shared start leaves unopened, are admitted, since the AST type fixes that edge for both trees (a new expression
-  ends where its callee ends);
+  ends where its callee ends); a node whose end the AST type takes from a child (a call, a member, a new expression,
+  an import call) may leave its closing bracket out, and one whose start it takes from a child (a binary,
+  conditional, call or member expression) may begin inside that child's parenthesis. A regular-expression literal is skipped where a / follows an
+  operator or an opening bracket, so its brackets are not counted;
 - the pair is class S when P's span disagrees and B's agrees; "both-agree" when both pass the check (two readings of
   one construct's extent, such as a statement with and without its semicolon, which the check cannot tell apart and a
   reader decides from the two texts); "unclassified" otherwise.
@@ -86,6 +89,10 @@ class Source:
         return self.units[2 * a:2 * b].decode("utf-16-le", errors="replace")
 
 
+CHILD_END_KINDS = {"CallExpression", "MemberExpression", "NewExpression", "OptionalChain", "ImportCall"}
+CHILD_START_KINDS = {"BinaryExpression", "ConditionalExpression", "CallExpression", "MemberExpression", "OptionalChain",
+                     "TaggedTemplateExpression"}
+
 TRIVIA = set(" \t\v\f\r\n ﻿  ")
 
 
@@ -94,8 +101,25 @@ def balanced(text, open_ok=False, close_ok=False):
     open at the end, close_ok closing brackets with no opener."""
     stack, i, n = [], 0, len(text)
     pairs = {")": "(", "]": "[", "}": "{"}
+    last = ""  # the last significant character, to tell a regular expression's / from a division
     while i < n:
         c = text[i]
+        if c == "/" and not text.startswith("//", i) and not text.startswith("/*", i) and (last == "" or last in "(,=:[!&|?{};+-*%<>~^"):
+            j, in_class = i + 1, False
+            while j < n and text[j] not in "\r\n":
+                if text[j] == "\\":
+                    j += 2
+                    continue
+                if text[j] == "[":
+                    in_class = True
+                elif text[j] == "]":
+                    in_class = False
+                elif text[j] == "/" and not in_class:
+                    break
+                j += 1
+            i = j + 1
+            last = "/"
+            continue
         if c in "'\"":
             j = i + 1
             while j < n and text[j] != c and text[j] not in "\r\n":
@@ -118,6 +142,8 @@ def balanced(text, open_ok=False, close_ok=False):
             j = text.find("*/", i + 2)
             i = n if j < 0 else j + 2
             continue
+        if not c.isspace():
+            last = c
         if c in "([{":
             stack.append(c)
         elif c in ")]}":
@@ -143,8 +169,15 @@ def agrees(source, kind, start, end, shared=None):
         return False
     # Where only one edge differs, the other is shared by both trees and may be fixed by the AST type (a new
     # expression ends where its callee ends, a call begins where its callee begins): only the differing edge is
-    # judged, so brackets the shared edge leaves open (shared end) or unopened (shared start) are admitted.
-    return balanced(text, open_ok=shared == "end", close_ok=shared == "start")
+    # judged, so brackets the shared edge leaves open (shared end) or unopened (shared start) are admitted. A node
+    # whose end the AST type takes from a child (a call's from its last argument, a member's from its property, a new
+    # expression's from its callee, an import call's from its source) may leave its closing bracket out whichever
+    # edge differs.
+    # Likewise a node whose start the AST type takes from a child (a binary, conditional, call or member expression
+    # begins where its first operand begins) may begin inside that operand's parenthesis.
+    open_ok = shared == "end" or kind in CHILD_END_KINDS
+    close_ok = shared == "start" or kind in CHILD_START_KINDS
+    return balanced(text, open_ok=open_ok, close_ok=close_ok)
 
 
 def blocks(path):

@@ -251,12 +251,30 @@ internal sealed class BridgeTokens
     {
         var i = offset;
         var end = EndOffset;
+        var lineStart = i == baseOffset;
         while (i < end)
         {
             var c = source[i];
-            if (JSUnicode.IsWhiteSpace(c) || c is '\n' or '\r' or '\u2028' or '\u2029')
+            if (c is '\n' or '\r' or '\u2028' or '\u2029')
+            {
+                lineStart = true;
+                i++;
+                continue;
+            }
+
+            if (JSUnicode.IsWhiteSpace(c))
             {
                 i++;
+                continue;
+            }
+
+            // Annex B's HTML-like comments, which the library admits in a script: `<!--` anywhere and `-->` at the start
+            // of a line, each to the end of its line (a module refuses both, so its tree never has one).
+            if ((c == '<' && string.CompareOrdinal(source, i, "<!--", 0, 4) == 0 && i + 4 <= end)
+                || (lineStart && c == '-' && string.CompareOrdinal(source, i, "-->", 0, 3) == 0 && i + 3 <= end))
+            {
+                while (i < end && source[i] is not ('\n' or '\r' or '\u2028' or '\u2029'))
+                    i++;
                 continue;
             }
 
@@ -271,7 +289,10 @@ internal sealed class BridgeTokens
             if (c == '/' && i + 1 < end && source[i + 1] == '*')
             {
                 var close = source.IndexOf("*/", i + 2, end - i - 2, StringComparison.Ordinal);
-                i = close < 0 ? end : close + 2;
+                var stop = close < 0 ? end : close + 2;
+                if (source.AsSpan(i, stop - i).IndexOfAny("\n\r\u2028\u2029") >= 0)
+                    lineStart = true;
+                i = stop;
                 continue;
             }
 
