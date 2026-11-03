@@ -1,0 +1,940 @@
+# Bundle sjl-14-001 (Broiler.JS): every public type and member of Broiler.JavaScript.Ast and
+# Broiler.JavaScript.Parser at 33d3093b (api/, PublicApiGenerator 11.4.6), with its disposition (decision D50).
+# Written by tools/records/write_records.py; never edited by hand. dispositions.md defines each disposition.
+assembly	namespace	type	member	disposition	removal	home_after
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstBlock	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstBlock	public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan>? AnnexBFunctionNames	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstBlock	public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan>? HoistingScope	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstBlock	public bool IsSyntheticFunctionStatementBlock	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstBlock	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> Statements	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstBlock	public AstBlock(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> list)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstBlock	protected AstBlock(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastNodeType type, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> statements)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstBlock	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public readonly bool Computed	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Init	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public readonly bool IsAutoAccessor	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public readonly bool IsPrivate	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public readonly bool IsStatic	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Key	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public readonly Broiler.JavaScript.Ast.AstPropertyKind Kind	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public readonly bool UsesAssign	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public readonly bool UsesColon	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public AstClassProperty(Broiler.JavaScript.Ast.Misc.FastToken begin, Broiler.JavaScript.Ast.Misc.FastToken last, Broiler.JavaScript.Ast.AstPropertyKind propertyKind, bool isPrivate, bool isStatic, Broiler.JavaScript.Ast.Expressions.AstExpression propertyName, bool computed, Broiler.JavaScript.Ast.Expressions.AstExpression init, bool usesColon = false, bool usesAssign = false, bool isAutoAccessor = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public Broiler.JavaScript.Ast.AstClassProperty Reduce(Broiler.JavaScript.Ast.Expressions.AstExpression key, Broiler.JavaScript.Ast.Expressions.AstExpression init)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstClassProperty	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	public static Broiler.JavaScript.Ast.Misc.StringSpan AccessCode(this Broiler.JavaScript.Ast.Expressions.AstMemberExpression member)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	public static Broiler.JavaScript.Ast.Expressions.AstExpression Computed(this Broiler.JavaScript.Ast.Expressions.AstExpression left, Broiler.JavaScript.Ast.Expressions.AstExpression right)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	public static bool IsBinaryExpression(this Broiler.JavaScript.Ast.AstNode exp, out Broiler.JavaScript.Ast.Expressions.AstBinaryExpression binary)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	public static bool IsExpressionStatement(this Broiler.JavaScript.Ast.AstNode exp, out Broiler.JavaScript.Ast.Statements.AstExpressionStatement value)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	public static bool IsFunction(this Broiler.JavaScript.Ast.AstNode exp, out Broiler.JavaScript.Ast.Expressions.AstFunctionExpression value)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	public static bool IsNumberLiteral(this Broiler.JavaScript.Ast.AstNode exp, out double value)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	public static bool IsSpreadElement(this Broiler.JavaScript.Ast.AstNode node, out Broiler.JavaScript.Ast.AstSpreadElement value)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	public static bool IsStringLiteral(this Broiler.JavaScript.Ast.AstNode exp, out string value)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	public static bool IsUIntLiteral(this Broiler.JavaScript.Ast.AstNode exp, out uint value)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	public static bool IsUnaryExpression(this Broiler.JavaScript.Ast.AstNode exp, out Broiler.JavaScript.Ast.Expressions.AstUnaryExpression unary)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstExpressionExtensions	public static Broiler.JavaScript.Ast.Expressions.AstExpression Member(this Broiler.JavaScript.Ast.Expressions.AstExpression left, Broiler.JavaScript.Ast.Expressions.AstExpression right, bool computed = false, bool coalesce = false, bool inOptionalChain = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstIdentifier	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstIdentifier	public readonly Broiler.JavaScript.Ast.Misc.StringSpan Name	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstIdentifier	public AstIdentifier(Broiler.JavaScript.Ast.Misc.FastToken identifier)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstIdentifier	public AstIdentifier(Broiler.JavaScript.Ast.Misc.FastToken token, string id)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstIdentifier	public string InferenceName	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstIdentifier	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstIdentifierReplacer	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstIdentifierReplacer	protected override Broiler.JavaScript.Ast.AstNode VisitIdentifier(Broiler.JavaScript.Ast.AstIdentifier identifier)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstIdentifierReplacer	public static Broiler.JavaScript.Ast.AstNode Replace(Broiler.JavaScript.Ast.AstNode node, [System.Runtime.CompilerServices.TupleElementNames(new string[] {	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstLiteral	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstLiteral	public readonly Broiler.JavaScript.Ast.Misc.TokenTypes TokenType	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstLiteral	public AstLiteral(Broiler.JavaScript.Ast.Misc.TokenTypes tokenType, Broiler.JavaScript.Ast.Misc.FastToken token)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstLiteral	public double NumericValue	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstLiteral	public System.ValueTuple<string, string> Regex	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstLiteral	public string StringValue	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstLiteral	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected AstMapVisitor()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	public bool Debug	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	public bool IsStrictMode	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	public T Visit(Broiler.JavaScript.Ast.AstNode node)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitArrayExpression(Broiler.JavaScript.Ast.Expressions.AstArrayExpression arrayExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitArrayPattern(Broiler.JavaScript.Ast.Patterns.AstArrayPattern arrayPattern)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitAwaitExpression(Broiler.JavaScript.Ast.Expressions.AstAwaitExpression node)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitBinaryExpression(Broiler.JavaScript.Ast.Expressions.AstBinaryExpression binaryExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitBlock(Broiler.JavaScript.Ast.AstBlock block)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitBreakStatement(Broiler.JavaScript.Ast.Statements.AstBreakStatement breakStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitCallExpression(Broiler.JavaScript.Ast.Expressions.AstCallExpression callExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected virtual T VisitClassProperty(Broiler.JavaScript.Ast.AstClassProperty property)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitClassStatement(Broiler.JavaScript.Ast.Statements.AstClassExpression classStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitConditionalExpression(Broiler.JavaScript.Ast.Expressions.AstConditionalExpression conditionalExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitContinueStatement(Broiler.JavaScript.Ast.Statements.AstContinueStatement continueStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitDebuggerStatement(Broiler.JavaScript.Ast.Statements.AstDebuggerStatement debuggerStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitDoWhileStatement(Broiler.JavaScript.Ast.Statements.AstDoWhileStatement doWhileStatement, string label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitEmptyExpression(Broiler.JavaScript.Ast.Expressions.AstEmptyExpression emptyExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitExportStatement(Broiler.JavaScript.Ast.Statements.AstExportStatement astExportStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitExpressionStatement(Broiler.JavaScript.Ast.Statements.AstExpressionStatement expressionStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitForInStatement(Broiler.JavaScript.Ast.Statements.AstForInStatement forInStatement, string label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitForOfStatement(Broiler.JavaScript.Ast.Statements.AstForOfStatement forOfStatement, string label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitForStatement(Broiler.JavaScript.Ast.Statements.AstForStatement forStatement, string label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitFunctionExpression(Broiler.JavaScript.Ast.Expressions.AstFunctionExpression functionExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitIdentifier(Broiler.JavaScript.Ast.AstIdentifier identifier)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitIfStatement(Broiler.JavaScript.Ast.Statements.AstIfStatement ifStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitImportCall(Broiler.JavaScript.Ast.Expressions.AstImportCall node)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitImportStatement(Broiler.JavaScript.Ast.Statements.AstImportStatement astImportStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitLabeledStatement(Broiler.JavaScript.Ast.Statements.AstLabeledStatement labeledStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitLiteral(Broiler.JavaScript.Ast.AstLiteral literal)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitMemberExpression(Broiler.JavaScript.Ast.Expressions.AstMemberExpression memberExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitMeta(Broiler.JavaScript.Ast.AstMeta astMeta)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitNewExpression(Broiler.JavaScript.Ast.Expressions.AstNewExpression newExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitObjectLiteral(Broiler.JavaScript.Ast.AstObjectLiteral objectLiteral)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitObjectPattern(Broiler.JavaScript.Ast.Patterns.AstObjectPattern objectPattern)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitOptionalChain(Broiler.JavaScript.Ast.Expressions.AstOptionalChain node)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitProgram(Broiler.JavaScript.Ast.AstProgram program)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitReturnStatement(Broiler.JavaScript.Ast.Statements.AstReturnStatement returnStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitSequenceExpression(Broiler.JavaScript.Ast.Expressions.AstSequenceExpression sequenceExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitSpreadElement(Broiler.JavaScript.Ast.AstSpreadElement spreadElement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitSuper(Broiler.JavaScript.Ast.AstSuper super)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitSwitchStatement(Broiler.JavaScript.Ast.Statements.AstSwitchStatement switchStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitTaggedTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstTaggedTemplateExpression astTaggedTemplateExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstTemplateExpression templateExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitThrowStatement(Broiler.JavaScript.Ast.Statements.AstThrowStatement throwStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitTryStatement(Broiler.JavaScript.Ast.Statements.AstTryStatement tryStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitUnaryExpression(Broiler.JavaScript.Ast.Expressions.AstUnaryExpression unaryExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitVariableDeclaration(Broiler.JavaScript.Ast.AstVariableDeclaration variableDeclaration)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitWhileStatement(Broiler.JavaScript.Ast.Statements.AstWhileStatement whileStatement, string label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitWithStatement(Broiler.JavaScript.Ast.Statements.AstWithStatement withStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMapVisitor	protected abstract T VisitYieldExpression(Broiler.JavaScript.Ast.Expressions.AstYieldExpression yieldExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMeta	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMeta	public readonly Broiler.JavaScript.Ast.AstIdentifier Identifier	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMeta	public readonly Broiler.JavaScript.Ast.AstIdentifier Property	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstMeta	public AstMeta(Broiler.JavaScript.Ast.AstIdentifier id, Broiler.JavaScript.Ast.AstIdentifier property)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstNode	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstNode	public readonly Broiler.JavaScript.Ast.Misc.FastToken End	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstNode	public readonly bool IsBinding	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstNode	public readonly bool IsStatement	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstNode	public readonly Broiler.JavaScript.Ast.Misc.FastToken Start	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstNode	public readonly Broiler.JavaScript.Ast.Misc.FastNodeType Type	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstNode	protected AstNode(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastNodeType type, Broiler.JavaScript.Ast.Misc.FastToken end, bool isStatement = false, bool isBinding = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstNode	public Broiler.JavaScript.Ast.Misc.StringSpan Code	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstNode	public bool WasParenthesized	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstObjectLiteral	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstObjectLiteral	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.AstNode> Properties	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstObjectLiteral	public AstObjectLiteral(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.AstNode> objectProperties)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstProgram	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstProgram	public readonly bool IsAsync	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstProgram	public AstProgram(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> statements, bool isAsync)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstPropertyKind	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstPropertyKind	Get = 0,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstPropertyKind	Set = 1,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstPropertyKind	Data = 2,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstPropertyKind	Init = 3,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstPropertyKind	Constructor = 4,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstPropertyKind	Method = 5,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstPropertyKind	None = 6,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected AstReduce()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitArrayExpression(Broiler.JavaScript.Ast.Expressions.AstArrayExpression arrayExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitArrayPattern(Broiler.JavaScript.Ast.Patterns.AstArrayPattern arrayPattern)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitAwaitExpression(Broiler.JavaScript.Ast.Expressions.AstAwaitExpression node)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitBinaryExpression(Broiler.JavaScript.Ast.Expressions.AstBinaryExpression binaryExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitBlock(Broiler.JavaScript.Ast.AstBlock block)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitBreakStatement(Broiler.JavaScript.Ast.Statements.AstBreakStatement breakStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitCallExpression(Broiler.JavaScript.Ast.Expressions.AstCallExpression callExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected virtual Broiler.JavaScript.Ast.Misc.Case VisitCase(Broiler.JavaScript.Ast.Misc.Case property)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitClassProperty(Broiler.JavaScript.Ast.AstClassProperty property)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitClassStatement(Broiler.JavaScript.Ast.Statements.AstClassExpression classStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitConditionalExpression(Broiler.JavaScript.Ast.Expressions.AstConditionalExpression conditionalExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitContinueStatement(Broiler.JavaScript.Ast.Statements.AstContinueStatement continueStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitDebuggerStatement(Broiler.JavaScript.Ast.Statements.AstDebuggerStatement debuggerStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitDoWhileStatement(Broiler.JavaScript.Ast.Statements.AstDoWhileStatement doWhileStatement, string label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitEmptyExpression(Broiler.JavaScript.Ast.Expressions.AstEmptyExpression emptyExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitExportStatement(Broiler.JavaScript.Ast.Statements.AstExportStatement astExportStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitExpressionStatement(Broiler.JavaScript.Ast.Statements.AstExpressionStatement expressionStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitForInStatement(Broiler.JavaScript.Ast.Statements.AstForInStatement forInStatement, string label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitForOfStatement(Broiler.JavaScript.Ast.Statements.AstForOfStatement forOfStatement, string label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitForStatement(Broiler.JavaScript.Ast.Statements.AstForStatement forStatement, string label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitFunctionExpression(Broiler.JavaScript.Ast.Expressions.AstFunctionExpression functionExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitIdentifier(Broiler.JavaScript.Ast.AstIdentifier identifier)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitIfStatement(Broiler.JavaScript.Ast.Statements.AstIfStatement ifStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitImportCall(Broiler.JavaScript.Ast.Expressions.AstImportCall node)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitImportStatement(Broiler.JavaScript.Ast.Statements.AstImportStatement astImportStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitLabeledStatement(Broiler.JavaScript.Ast.Statements.AstLabeledStatement labeledStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitLiteral(Broiler.JavaScript.Ast.AstLiteral literal)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitMemberExpression(Broiler.JavaScript.Ast.Expressions.AstMemberExpression memberExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitMeta(Broiler.JavaScript.Ast.AstMeta astMeta)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitNewExpression(Broiler.JavaScript.Ast.Expressions.AstNewExpression newExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitObjectLiteral(Broiler.JavaScript.Ast.AstObjectLiteral objectLiteral)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitObjectPattern(Broiler.JavaScript.Ast.Patterns.AstObjectPattern objectPattern)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected virtual Broiler.JavaScript.Ast.ObjectProperty VisitObjectProperty(Broiler.JavaScript.Ast.ObjectProperty property)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitOptionalChain(Broiler.JavaScript.Ast.Expressions.AstOptionalChain node)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitProgram(Broiler.JavaScript.Ast.AstProgram program)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitReturnStatement(Broiler.JavaScript.Ast.Statements.AstReturnStatement returnStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitSequenceExpression(Broiler.JavaScript.Ast.Expressions.AstSequenceExpression sequenceExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitSpreadElement(Broiler.JavaScript.Ast.AstSpreadElement spreadElement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitSuper(Broiler.JavaScript.Ast.AstSuper super)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitSwitchStatement(Broiler.JavaScript.Ast.Statements.AstSwitchStatement switchStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitTaggedTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstTaggedTemplateExpression taggedTemplateExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstTemplateExpression templateExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitThrowStatement(Broiler.JavaScript.Ast.Statements.AstThrowStatement throwStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitTryStatement(Broiler.JavaScript.Ast.Statements.AstTryStatement tryStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitUnaryExpression(Broiler.JavaScript.Ast.Expressions.AstUnaryExpression unaryExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitVariableDeclaration(Broiler.JavaScript.Ast.AstVariableDeclaration variableDeclaration)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected virtual Broiler.JavaScript.Ast.VariableDeclarator VisitVariableDeclarator(Broiler.JavaScript.Ast.VariableDeclarator property)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitWhileStatement(Broiler.JavaScript.Ast.Statements.AstWhileStatement whileStatement, string label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitWithStatement(Broiler.JavaScript.Ast.Statements.AstWithStatement withStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstReduce	protected override Broiler.JavaScript.Ast.AstNode VisitYieldExpression(Broiler.JavaScript.Ast.Expressions.AstYieldExpression yieldExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstSpreadElement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstSpreadElement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Argument	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstSpreadElement	public AstSpreadElement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression element)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstSuper	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstSuper	public readonly Broiler.JavaScript.Ast.Misc.TokenTypes TokenType	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstSuper	public AstSuper(Broiler.JavaScript.Ast.Misc.FastToken token)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstSuper	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstVariableDeclaration	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstVariableDeclaration	public readonly bool AwaitUsing	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstVariableDeclaration	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.VariableDeclarator> Declarators	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstVariableDeclaration	public readonly Broiler.JavaScript.Ast.FastVariableKind Kind	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstVariableDeclaration	public readonly bool Using	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstVariableDeclaration	public AstVariableDeclaration(Broiler.JavaScript.Ast.Misc.FastToken begin, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.VariableDeclarator> declarators, Broiler.JavaScript.Ast.FastVariableKind kind = 3, bool using = false, bool await = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstVariableDeclaration	public AstVariableDeclaration(Broiler.JavaScript.Ast.Misc.FastToken begin, Broiler.JavaScript.Ast.Misc.FastToken previousToken, in Broiler.JavaScript.Ast.VariableDeclarator declarator, Broiler.JavaScript.Ast.FastVariableKind kind = 3, bool using = false, bool await = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AstVariableDeclaration	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AwaitYieldParameterDetector	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AwaitYieldParameterDetector	public AwaitYieldParameterDetector()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AwaitYieldParameterDetector	protected override Broiler.JavaScript.Ast.AstNode VisitAwaitExpression(Broiler.JavaScript.Ast.Expressions.AstAwaitExpression node)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AwaitYieldParameterDetector	protected override Broiler.JavaScript.Ast.AstNode VisitClassStatement(Broiler.JavaScript.Ast.Statements.AstClassExpression classStatement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AwaitYieldParameterDetector	protected override Broiler.JavaScript.Ast.AstNode VisitFunctionExpression(Broiler.JavaScript.Ast.Expressions.AstFunctionExpression functionExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AwaitYieldParameterDetector	protected override Broiler.JavaScript.Ast.AstNode VisitYieldExpression(Broiler.JavaScript.Ast.Expressions.AstYieldExpression yieldExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	AwaitYieldParameterDetector	public static bool Contains(Broiler.JavaScript.Ast.AstNode node)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ClosureDetector	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ClosureDetector	public ClosureDetector()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ClosureDetector	public bool Found	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ClosureDetector	protected override Broiler.JavaScript.Ast.AstNode VisitFunctionExpression(Broiler.JavaScript.Ast.Expressions.AstFunctionExpression functionExpression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ExpressionPatternExtensions	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ExpressionPatternExtensions	public static Broiler.JavaScript.Ast.Expressions.AstExpression ToPattern(this Broiler.JavaScript.Ast.Expressions.AstExpression exp)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	FastVariableKind	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	FastVariableKind	None = 0,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	FastVariableKind	Let = 1,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	FastVariableKind	Const = 2,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	FastVariableKind	Var = 3,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	FastVariableKind	Function = 4,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	IdentifierNameCollector	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	IdentifierNameCollector	public IdentifierNameCollector()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	IdentifierNameCollector	protected override Broiler.JavaScript.Ast.AstNode VisitIdentifier(Broiler.JavaScript.Ast.AstIdentifier identifier)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	IdentifierNameCollector	public static System.Collections.Generic.HashSet<string> Collect(params Broiler.JavaScript.Ast.AstNode?[] nodes)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ObjectProperty	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ObjectProperty	public readonly bool Computed	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ObjectProperty	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Init	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ObjectProperty	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Key	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ObjectProperty	public readonly bool Spread	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ObjectProperty	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Value	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	ObjectProperty	public ObjectProperty(Broiler.JavaScript.Ast.Expressions.AstExpression left, Broiler.JavaScript.Ast.Expressions.AstExpression right, Broiler.JavaScript.Ast.Expressions.AstExpression init, bool spread = false, bool computed = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	VariableDeclarator	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	VariableDeclarator	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Identifier	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	VariableDeclarator	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression? Init	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	VariableDeclarator	public VariableDeclarator(Broiler.JavaScript.Ast.Expressions.AstExpression identifier, Broiler.JavaScript.Ast.Expressions.AstExpression? init = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	VariableDeclarator	public bool Equals(Broiler.JavaScript.Ast.VariableDeclarator d)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	VariableDeclarator	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	VariableDeclarator	public static Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.VariableDeclarator> From(Broiler.JavaScript.Ast.Expressions.AstExpression node)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast	VariableDeclarator	public static Broiler.JavaScript.ExpressionCompiler.Core.Sequence<Broiler.JavaScript.Ast.VariableDeclarator> From(in Broiler.JavaScript.Ast.Misc.ArraySpan<Broiler.JavaScript.Ast.Expressions.AstExpression> nodes)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstArrayExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstArrayExpression	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Elements	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstArrayExpression	public AstArrayExpression(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> nodes)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstArrayExpression	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstAwaitExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstAwaitExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Argument	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstAwaitExpression	public AstAwaitExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.Expressions.AstExpression target)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstBinaryExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstBinaryExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Left	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstBinaryExpression	public readonly Broiler.JavaScript.Ast.Misc.TokenTypes Operator	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstBinaryExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Right	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstBinaryExpression	public AstBinaryExpression(Broiler.JavaScript.Ast.Expressions.AstExpression node, Broiler.JavaScript.Ast.Misc.TokenTypes type, Broiler.JavaScript.Ast.Expressions.AstExpression right)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstBinaryExpression	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstCallExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstCallExpression	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Arguments	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstCallExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Callee	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstCallExpression	public readonly bool Coalesce	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstCallExpression	public readonly bool InOptionalChain	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstCallExpression	public AstCallExpression(Broiler.JavaScript.Ast.Expressions.AstExpression previous, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> plist, bool coalesce = false, bool inOptionalChain = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstCallExpression	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstConditionalExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstConditionalExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression False	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstConditionalExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstConditionalExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression True	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstConditionalExpression	public AstConditionalExpression(Broiler.JavaScript.Ast.Expressions.AstExpression previous, Broiler.JavaScript.Ast.Expressions.AstExpression @true, Broiler.JavaScript.Ast.Expressions.AstExpression @false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstConditionalExpression	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstEmptyExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstEmptyExpression	public AstEmptyExpression(Broiler.JavaScript.Ast.Misc.FastToken start, bool isBinding = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstEmptyExpression	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstExpression	public AstExpression(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastNodeType type, Broiler.JavaScript.Ast.Misc.FastToken end, bool isBinding = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstFunctionExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstFunctionExpression	public bool Async	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstFunctionExpression	public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstFunctionExpression	public bool Generator	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstFunctionExpression	public readonly Broiler.JavaScript.Ast.AstIdentifier? Id	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstFunctionExpression	public readonly bool IsArrowFunction	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstFunctionExpression	public readonly bool IsStatement	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstFunctionExpression	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.VariableDeclarator> Params	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstFunctionExpression	public AstFunctionExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, bool isArrow, bool isAsync, bool generator, Broiler.JavaScript.Ast.AstIdentifier? id, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.VariableDeclarator> declarators, Broiler.JavaScript.Ast.Statements.AstStatement body, bool isStatement = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstFunctionExpression	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstImportCall	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstImportCall	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Options	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstImportCall	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Source	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstImportCall	public AstImportCall(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Expressions.AstExpression source, Broiler.JavaScript.Ast.Expressions.AstExpression options, Broiler.JavaScript.Ast.Misc.FastToken end)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstMemberExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstMemberExpression	public readonly bool Coalesce	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstMemberExpression	public readonly bool Computed	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstMemberExpression	public readonly bool InOptionalChain	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstMemberExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Object	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstMemberExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Property	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstMemberExpression	public AstMemberExpression(Broiler.JavaScript.Ast.Expressions.AstExpression target, Broiler.JavaScript.Ast.Expressions.AstExpression node, bool computed = false, bool coalesce = false, bool inOptionalChain = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstMemberExpression	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstNewExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstNewExpression	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Arguments	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstNewExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Callee	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstNewExpression	public AstNewExpression(Broiler.JavaScript.Ast.Misc.FastToken begin, Broiler.JavaScript.Ast.Expressions.AstExpression node, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> arguments)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstNewExpression	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstOptionalChain	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstOptionalChain	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Expression	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstOptionalChain	public AstOptionalChain(Broiler.JavaScript.Ast.Expressions.AstExpression expression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstOptionalChain	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstSequenceExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstSequenceExpression	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Expressions	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstSequenceExpression	public AstSequenceExpression(Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> expressions)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstSequenceExpression	public AstSequenceExpression(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> expressions)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstSequenceExpression	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstTaggedTemplateExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstTaggedTemplateExpression	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Arguments	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstTaggedTemplateExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Tag	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstTaggedTemplateExpression	public AstTaggedTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstExpression tag, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> arguments)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstTemplateExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstTemplateExpression	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Parts	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstTemplateExpression	public AstTemplateExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> astExpressions)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstUnaryExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstUnaryExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Argument	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstUnaryExpression	public readonly Broiler.JavaScript.Ast.Misc.UnaryOperator Operator	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstUnaryExpression	public readonly bool Prefix	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstUnaryExpression	public AstUnaryExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Expressions.AstExpression argument, Broiler.JavaScript.Ast.Misc.UnaryOperator tokenType, bool prefix = true)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstUnaryExpression	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstYieldExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstYieldExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Argument	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstYieldExpression	public readonly bool Delegate	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions	AstYieldExpression	public AstYieldExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.Expressions.AstExpression target, bool delegate = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public readonly int Length	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public static Broiler.JavaScript.Ast.Misc.ArraySpan<T> Empty	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public ArraySpan(T[] items, int length)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public int Count	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public T& this[int index]	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public bool Any()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public T FirstOrDefault()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public Broiler.JavaScript.Ast.Misc.ArraySpan<T>.Enumerator GetEnumerator()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public string Join(string separator = ", ")	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public T LastOrDefault()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public T[] ToArray()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan	public static Broiler.JavaScript.Ast.Misc.ArraySpan<T> From(params T[] items)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan.Enumerator	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan.Enumerator	public Enumerator(T[] items, int length)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan.Enumerator	public T Current	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan.Enumerator	public void Dispose()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan.Enumerator	public bool MoveNext()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan.Enumerator	public bool MoveNext(out T item)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan.Enumerator	public bool MoveNext(out T item, out int i)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	ArraySpan.Enumerator	public void Reset()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	Case	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	Case	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> Statements	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	Case	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	Case	public Case(Broiler.JavaScript.Ast.Expressions.AstExpression test, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> last)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	none = 0,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@break = 1,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@do = 2,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	instanceof = 3,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@typeof = 4,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@case = 5,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@else = 6,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@new = 7,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	var = 8,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@catch = 9,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@finally = 10,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@return = 11,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@void = 12,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@continue = 13,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@for = 14,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@switch = 15,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@while = 16,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	debugger = 17,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	function = 18,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@this = 19,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	with = 20,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@default = 21,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@if = 22,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@throw = 23,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	delete = 24,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@in = 25,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@try = 26,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@class = 27,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@enum = 28,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	extends = 29,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	super = 30,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@const = 31,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	export = 32,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	import = 33,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	implements = 34,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	let = 35,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@private = 36,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@public = 37,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@interface = 38,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	package = 39,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@protected = 40,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@static = 41,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@yield = 42,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	async = 43,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@using = 44,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	await = 45,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@null = 46,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@true = 47,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@false = 48,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	get = 49,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	set = 50,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	of = 51,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	constructor = 52,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	from = 53,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	@as = 54,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastKeywords	accessor = 55,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	Node = 0,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	Block = 1,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	Program = 2,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	BinaryExpression = 3,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	VariableDeclaration = 4,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ExpressionStatement = 5,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	FunctionExpression = 6,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	Identifier = 7,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ObjectPattern = 8,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	SpreadElement = 9,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	IfStatement = 10,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	WhileStatement = 11,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	DoWhileStatement = 12,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	SequenceExpression = 13,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ForStatement = 14,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ForInStatement = 15,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ForOfStatement = 16,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ContinueStatement = 17,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ThrowStatement = 18,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	TryStatement = 19,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	WithStatement = 20,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	DebuggerStatement = 21,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	Literal = 22,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	MemberExpression = 23,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ClassStatement = 24,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	SwitchStatement = 25,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	EmptyExpression = 26,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ArrayExpression = 27,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ObjectLiteral = 28,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	TemplateExpression = 29,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	UnaryExpression = 30,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	CallExpression = 31,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ConditionalExpression = 32,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	YieldExpression = 33,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	LabeledStatement = 34,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ArrayPattern = 35,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	Super = 36,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	BreakStatement = 37,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	NewExpression = 38,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ClassProperty = 39,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ReturnStatement = 40,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ExportStatement = 41,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ImportStatement = 42,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	Meta = 43,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	TaggedTemplateExpression = 44,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	AwaitExpression = 45,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	ImportCall = 46,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastNodeType	OptionalChain = 47,	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastParseException	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastParseException	public readonly Broiler.JavaScript.Ast.Misc.FastToken Token	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastParseException	public FastParseException(Broiler.JavaScript.Ast.Misc.FastToken token, string message)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly Broiler.JavaScript.Ast.Misc.FastKeywords ContextualKeyword	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly bool CookedInvalid	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly string? CookedText	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly Broiler.JavaScript.Ast.Misc.SpanLocation End	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly string? Flags	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly bool IsEscapedReservedWord	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly bool IsKeyword	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly Broiler.JavaScript.Ast.Misc.FastKeywords Keyword	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public Broiler.JavaScript.Ast.Misc.FastToken? Next	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly double Number	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public Broiler.JavaScript.Ast.Misc.FastToken? Previous	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly Broiler.JavaScript.Ast.Misc.StringSpan Span	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly Broiler.JavaScript.Ast.Misc.SpanLocation Start	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public readonly Broiler.JavaScript.Ast.Misc.TokenTypes Type	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public static Broiler.JavaScript.Ast.Misc.FastToken? Empty	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public FastToken(Broiler.JavaScript.Ast.Misc.TokenTypes type, string? source = null, string? cooked = null, string? flags = null, int start = 0, int length = 0, in Broiler.JavaScript.Ast.Misc.SpanLocation startLocation = null, in Broiler.JavaScript.Ast.Misc.SpanLocation endLocation = null, double number = 0, bool isKeyword = false, Broiler.JavaScript.Ast.Misc.FastKeywords keyword = 0, Broiler.JavaScript.Ast.Misc.FastKeywords contextualKeyword = 0, bool isEscapedReservedWord = false, bool cookedInvalid = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public Broiler.JavaScript.Ast.Misc.FastToken AsString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	FastToken	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	IPropertyAccessor	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	IPropertyValue	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	SpanLocation	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	SpanLocation	public readonly int Column	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	SpanLocation	public readonly int Line	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	SpanLocation	public SpanLocation(int line, int column)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	SpanLocation	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public readonly int Length	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public readonly int Offset	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public readonly string? Source	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public static readonly Broiler.JavaScript.Ast.Misc.StringSpan Empty	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public StringSpan(string? source)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public StringSpan(string? buffer, int offset, int length)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public bool IsEmpty	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public char this[int index]	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public string? Value	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public System.ReadOnlySpan<char> AsSpan()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public int CompareTo(in Broiler.JavaScript.Ast.Misc.StringSpan other)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public byte[] Encode(System.Text.Encoding encoding)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public bool Equals(Broiler.JavaScript.Ast.Misc.StringSpan other)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public override bool Equals(object? obj)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public bool Equals(string? other)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public bool Equals(in Broiler.JavaScript.Ast.Misc.StringSpan other, System.StringComparison comparisonType)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public bool Equals(string? text, System.StringComparison comparisonType)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public Broiler.JavaScript.Ast.Misc.StringSpan.CharEnumerator GetEnumerator()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public override int GetHashCode()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public bool IsNullOrWhiteSpace()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public Broiler.JavaScript.Ast.Misc.StringSpanReader Reader()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public bool StartsWith(Broiler.JavaScript.Ast.Misc.StringSpan other)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public Broiler.JavaScript.Ast.Misc.StringSpan Substring(int index)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public string ToCamelCase()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public string ToLower()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public override string ToString()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public Broiler.JavaScript.Ast.Misc.StringSpan Trim()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public Broiler.JavaScript.Ast.Misc.StringSpan TrimEnd()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public Broiler.JavaScript.Ast.Misc.StringSpan TrimStart()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public static int Compare(in Broiler.JavaScript.Ast.Misc.StringSpan a, in Broiler.JavaScript.Ast.Misc.StringSpan b, System.StringComparison comparisonType)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public static string Concat(in Broiler.JavaScript.Ast.Misc.StringSpan a, in Broiler.JavaScript.Ast.Misc.StringSpan b)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public static string Concat(in Broiler.JavaScript.Ast.Misc.StringSpan a, string value)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public static bool Equals(in Broiler.JavaScript.Ast.Misc.StringSpan a, in Broiler.JavaScript.Ast.Misc.StringSpan b, System.StringComparison comparisonType)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public static Broiler.JavaScript.Ast.Misc.StringSpan op_Implicit(string source)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public static bool operator !=(in Broiler.JavaScript.Ast.Misc.StringSpan left, in Broiler.JavaScript.Ast.Misc.StringSpan right)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public static Broiler.JavaScript.Ast.Misc.StringSpan operator +(double left, in Broiler.JavaScript.Ast.Misc.StringSpan right)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public static Broiler.JavaScript.Ast.Misc.StringSpan operator +(in Broiler.JavaScript.Ast.Misc.StringSpan left, in Broiler.JavaScript.Ast.Misc.StringSpan right)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan	public static bool operator ==(in Broiler.JavaScript.Ast.Misc.StringSpan left, in Broiler.JavaScript.Ast.Misc.StringSpan right)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan.CharEnumerator	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan.CharEnumerator	public CharEnumerator(Broiler.JavaScript.Ast.Misc.StringSpan span)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan.CharEnumerator	public char Current	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan.CharEnumerator	public void Dispose()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan.CharEnumerator	public bool MoveNext()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan.CharEnumerator	public bool MoveNext(out char ch)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpan.CharEnumerator	public void Reset()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpanReader	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpanReader	public StringSpanReader(Broiler.JavaScript.Ast.Misc.StringSpan span)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpanReader	public override int Peek()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpanReader	public override int Read()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	StringSpanReader	public override string ReadToEnd()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Empty = 0,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	SquareBracketStart = 1,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	SquareBracketEnd = 2,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	CurlyBracketStart = 3,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	CurlyBracketEnd = 4,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	TemplateBegin = 5,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	TemplatePart = 6,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	TemplateEnd = 7,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	LineTerminator = 8,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	None = 9,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	SemiColon = 10,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	EOF = 11,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Identifier = 12,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Number = 13,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	BigInt = 14,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Decimal = 15,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	String = 16,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	BracketEnd = 17,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	BracketStart = 18,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Lambda = 19,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	BeginAssignTokens = 20,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Assign = 21,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignMultiply = 22,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignDivide = 23,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignMod = 24,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignAdd = 25,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignXor = 26,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignSubtract = 27,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignUnsignedRightShift = 28,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignBitwideAnd = 29,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignBitwideOr = 30,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignRightShift = 31,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignLeftShift = 32,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignCoalesce = 33,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignBooleanAnd = 34,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignBooleanOr = 35,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	AssignPower = 36,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	EndAssignTokens = 37,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	BeginOperators = 38,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Negate = 39,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Power = 40,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Multiply = 41,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Divide = 42,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Mod = 43,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Plus = 44,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Minus = 45,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	LeftShift = 46,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	RightShift = 47,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	UnsignedRightShift = 48,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Less = 49,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	LessOrEqual = 50,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Greater = 51,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	GreaterOrEqual = 52,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	In = 53,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	InstanceOf = 54,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Equal = 55,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	NotEqual = 56,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	StrictlyEqual = 57,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	StrictlyNotEqual = 58,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Coalesce = 59,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	BitwiseAnd = 60,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Xor = 61,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	BitwiseOr = 62,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	BooleanAnd = 63,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	BooleanOr = 64,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	QuestionMark = 65,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Colon = 66,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	BitwiseNot = 67,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	QuestionDot = 68,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Dot = 69,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	TripleDots = 70,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	EndOperators = 71,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Increment = 72,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Decrement = 73,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Comma = 74,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Null = 75,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	False = 76,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	True = 77,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	Hash = 78,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	RegExLiteral = 79,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	OptionalCall = 80,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	OptionalIndex = 81,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypes	At = 82,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypesExtensions	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypesExtensions	public static bool IsAssignmentOperator(this Broiler.JavaScript.Ast.Misc.TokenTypes type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	TokenTypesExtensions	public static bool IsOperator(this Broiler.JavaScript.Ast.Misc.TokenTypes type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	Plus = 0,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	Minus = 1,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	Increment = 2,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	Decrement = 3,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	Negate = 4,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	BitwiseNot = 5,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	@typeof = 6,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	delete = 7,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	@void = 8,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	@new = 9,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc	UnaryOperator	None = 10,	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns	AstArrayPattern	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns	AstArrayPattern	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Elements	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns	AstArrayPattern	public AstArrayPattern(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> elements)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns	AstArrayPattern	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns	AstBindingPattern	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns	AstBindingPattern	public AstBindingPattern(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastNodeType type, Broiler.JavaScript.Ast.Misc.FastToken end)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns	AstObjectPattern	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns	AstObjectPattern	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.ObjectProperty> Properties	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns	AstObjectPattern	public AstObjectPattern(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.ObjectProperty> properties)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstBreakStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstBreakStatement	public readonly Broiler.JavaScript.Ast.AstIdentifier? Label	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstBreakStatement	public AstBreakStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstIdentifier? label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstBreakStatement	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstClassExpression	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstClassExpression	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression? Base	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstClassExpression	public readonly Broiler.JavaScript.Ast.AstIdentifier? Identifier	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstClassExpression	public readonly bool IsDeclaration	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstClassExpression	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.AstClassProperty> Members	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstClassExpression	public AstClassExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstIdentifier? identifier, Broiler.JavaScript.Ast.Expressions.AstExpression? @base, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.AstClassProperty> astClassProperties, bool isDeclaration = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstClassExpression	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstContinueStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstContinueStatement	public readonly Broiler.JavaScript.Ast.AstIdentifier? Label	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstContinueStatement	public AstContinueStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstIdentifier? label = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstContinueStatement	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstDebuggerStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstDebuggerStatement	public AstDebuggerStatement(Broiler.JavaScript.Ast.Misc.FastToken token)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstDebuggerStatement	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstDoWhileStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstDoWhileStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstDoWhileStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstDoWhileStatement	public AstDoWhileStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression test, Broiler.JavaScript.Ast.Statements.AstStatement statement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstDoWhileStatement	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExportStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExportStatement	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.AstLiteral>>? Attributes	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExportStatement	public readonly Broiler.JavaScript.Ast.AstNode? Declaration	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExportStatement	public readonly bool ExportAll	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExportStatement	public readonly bool IsDefault	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExportStatement	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.Misc.StringSpan>>? Members	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExportStatement	public readonly Broiler.JavaScript.Ast.AstNode? Source	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExportStatement	public AstExportStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.AstNode argument, bool IsDefault = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExportStatement	public AstExportStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.AstNode? argument, Broiler.JavaScript.Ast.AstNode source, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.AstLiteral>>? attributes = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExportStatement	public AstExportStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.Misc.StringSpan>> members, Broiler.JavaScript.Ast.AstLiteral? source, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.AstLiteral>>? attributes = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExpressionStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExpressionStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Expression	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExpressionStatement	public AstExpressionStatement(Broiler.JavaScript.Ast.Expressions.AstExpression expression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstExpressionStatement	public AstExpressionStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression expression)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForInStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForInStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForInStatement	public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan>? HeadTdzNames	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForInStatement	public readonly Broiler.JavaScript.Ast.AstNode Init	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForInStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Target	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForInStatement	public AstForInStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstNode beginNode, Broiler.JavaScript.Ast.Expressions.AstExpression target, Broiler.JavaScript.Ast.Statements.AstStatement statement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForInStatement	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForOfStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForOfStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForOfStatement	public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan>? HeadTdzNames	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForOfStatement	public readonly Broiler.JavaScript.Ast.AstNode Init	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForOfStatement	public readonly bool IsAwait	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForOfStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Target	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForOfStatement	public AstForOfStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstNode beginNode, Broiler.JavaScript.Ast.Expressions.AstExpression target, Broiler.JavaScript.Ast.Statements.AstStatement statement, bool isAwait = false)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForOfStatement	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForStatement	public readonly Broiler.JavaScript.Ast.AstNode Init	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Update	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForStatement	public AstForStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstNode beginNode, Broiler.JavaScript.Ast.Expressions.AstExpression test, Broiler.JavaScript.Ast.Expressions.AstExpression preTest, Broiler.JavaScript.Ast.Statements.AstStatement statement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstForStatement	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstIfStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstIfStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement? False	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstIfStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstIfStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement True	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstIfStatement	public AstIfStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression test, Broiler.JavaScript.Ast.Statements.AstStatement @true, Broiler.JavaScript.Ast.Statements.AstStatement? false = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstIfStatement	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstImportStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstImportStatement	public readonly Broiler.JavaScript.Ast.AstIdentifier? All	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstImportStatement	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.AstLiteral>>? Attributes	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstImportStatement	public readonly Broiler.JavaScript.Ast.AstIdentifier? Default	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstImportStatement	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.Misc.StringSpan>>? Members	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstImportStatement	public readonly Broiler.JavaScript.Ast.AstLiteral Source	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstImportStatement	public AstImportStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.AstIdentifier? defaultIdentifier, Broiler.JavaScript.Ast.AstIdentifier? all, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.Misc.StringSpan>>? members, Broiler.JavaScript.Ast.AstLiteral source, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.AstLiteral>>? attributes = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstLabeledStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstLabeledStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstLabeledStatement	public readonly Broiler.JavaScript.Ast.Misc.FastToken Label	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstLabeledStatement	public AstLabeledStatement(Broiler.JavaScript.Ast.Misc.FastToken id, Broiler.JavaScript.Ast.Statements.AstStatement statement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstLabeledStatement	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstReturnStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstReturnStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression? Argument	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstReturnStatement	public AstReturnStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.Expressions.AstExpression? target = null)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstReturnStatement	public override string ToString()	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstStatement	public AstStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastNodeType type, Broiler.JavaScript.Ast.Misc.FastToken end)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstSwitchStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstSwitchStatement	public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.Case> Cases	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstSwitchStatement	public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan>? HoistingScope	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstSwitchStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Target	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstSwitchStatement	public AstSwitchStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression target, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.Case> astCases)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstThrowStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstThrowStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Argument	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstThrowStatement	public AstThrowStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.Expressions.AstExpression target)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstTryStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstTryStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement Block	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstTryStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement Catch	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstTryStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression CatchParam	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstTryStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement Finally	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstTryStatement	public AstTryStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.Statements.AstStatement body, Broiler.JavaScript.Ast.Expressions.AstExpression catchParam, Broiler.JavaScript.Ast.Statements.AstStatement @catch, Broiler.JavaScript.Ast.Statements.AstStatement @finally)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstWhileStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstWhileStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstWhileStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstWhileStatement	public AstWhileStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression test, Broiler.JavaScript.Ast.Statements.AstStatement statement)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstWithStatement	(type)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstWithStatement	public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstWithStatement	public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Object	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements	AstWithStatement	public AstWithStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression @object, Broiler.JavaScript.Ast.Statements.AstStatement body)	obsolete	1.0.0	Broiler.JavaScript.Ast
+Broiler.JavaScript.Ast	Broiler.JavaScript.Runtime	CancellableDisposableAction	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Runtime	CancellableDisposableAction	public CancellableDisposableAction(System.Action action)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Runtime	CancellableDisposableAction	public void Cancel()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Runtime	CancellableDisposableAction	public bool Commit()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Runtime	CancellableDisposableAction	public T Commit<T>(T value)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Runtime	CancellableDisposableAction	public void Dispose()	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Runtime	RegExpUnicodeValidator	(type)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Ast	Broiler.JavaScript.Runtime	RegExpUnicodeValidator	public static bool IsValidUnicodePattern(string pattern)	moved-forwarded	-	Broiler.JavaScript.Expressions (Ast forwards it)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	CharExtensions	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	DisposableList	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	DisposableList	public DisposableList()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	DisposableList	public void Dispose()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	DisposableList	public void Register(System.IDisposable d)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	Error	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	Error	public int Column	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	Error	public string Description	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	Error	public int Index	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	Error	public int LineNumber	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	Error	public string Name	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	Error	public Error(string message)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	ErrorHandler	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	ErrorHandler	public readonly System.Collections.Generic.List<Broiler.JavaScript.Parser.Error> Errors	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	ErrorHandler	public bool Tolerant	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	ErrorHandler	public ErrorHandler()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	ErrorHandler	public void TolerateError(int index, int line, int col, string description)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	ErrorHandler	public static void ThrowError(int index, int line, int col, string description)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastKeywordMap	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastKeywordMap	protected FastKeywordMap()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastKeywordMap	public static Broiler.JavaScript.Parser.FastKeywordMap Instance	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastKeywordMap	public virtual bool IsKeyword(in Broiler.JavaScript.Ast.Misc.StringSpan key, out Broiler.JavaScript.Ast.Misc.FastKeywords keyword)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public FastList(Broiler.JavaScript.Parser.FastPool pool)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public FastList(Broiler.JavaScript.Parser.FastPool pool, int size)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public int Count	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public bool IsReadOnly	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public T this[int index]	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public void Add(T item)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public bool Any()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public void Clear()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public bool Contains(T item)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public void CopyTo(T[] array, int arrayIndex)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public void Dispose()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public Broiler.JavaScript.Parser.FastList<T>.FastEnumerator GetEnumerator()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public Broiler.JavaScript.Parser.FastList<T>.ReverseEnumerator GetReverseEnumerator()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public int IndexOf(T item)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public void Insert(int index, T item)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public T[] Release()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public bool Remove(T item)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public void RemoveAt(int index)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList	public Broiler.JavaScript.Ast.Misc.ArraySpan<T> ToSpan()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList.FastEnumerator	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList.FastEnumerator	public FastEnumerator(Broiler.JavaScript.Parser.FastList<T> list)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList.FastEnumerator	public T Current	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList.FastEnumerator	public void Dispose()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList.FastEnumerator	public bool MoveNext()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList.FastEnumerator	public bool MoveNext(out T item)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList.FastEnumerator	public void Reset()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList.ReverseEnumerator	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList.ReverseEnumerator	public ReverseEnumerator(Broiler.JavaScript.Parser.FastList<T> list)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastList.ReverseEnumerator	public bool MoveNext(out T item)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public readonly Broiler.JavaScript.Parser.FastScope variableScope	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public FastParser(Broiler.JavaScript.Parser.FastTokenStream stream)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public FastParser(Broiler.JavaScript.Parser.FastTokenStream stream, Broiler.JavaScript.Parser.FastParserOptions options)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public Broiler.JavaScript.Parser.FastParser.StreamLocation Location	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public Broiler.JavaScript.Parser.FastParserOptions Options	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public Broiler.JavaScript.Ast.Misc.FastToken PreviousToken	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public Broiler.JavaScript.Parser.FastParser.StreamLocation BeginUndo()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public Broiler.JavaScript.Ast.Expressions.AstExpression Combine(Broiler.JavaScript.Ast.Expressions.AstExpression left, Broiler.JavaScript.Ast.Misc.TokenTypes type, Broiler.JavaScript.Ast.Expressions.AstExpression right, Broiler.JavaScript.Ast.Misc.TokenTypes next = 10)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public Broiler.JavaScript.Ast.AstLiteral ExpectStringLiteral()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public bool Export(Broiler.JavaScript.Ast.Misc.FastToken start, out Broiler.JavaScript.Ast.Statements.AstStatement statement)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public bool NonDeclarativeStatement(out Broiler.JavaScript.Ast.Statements.AstStatement statement)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public Broiler.JavaScript.Ast.AstProgram ParseProgram()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public static Broiler.JavaScript.Ast.AstProgram ParseModule(in Broiler.JavaScript.Ast.Misc.StringSpan code)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser	public static Broiler.JavaScript.Ast.AstProgram ParseModule(in Broiler.JavaScript.Ast.Misc.StringSpan code, Broiler.JavaScript.Parser.FastParserOptions options)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser.StreamLocation	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser.StreamLocation	public readonly Broiler.JavaScript.Ast.Misc.FastToken Token	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser.StreamLocation	public StreamLocation(Broiler.JavaScript.Parser.FastParser parser, Broiler.JavaScript.Ast.Misc.FastToken token)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParser.StreamLocation	public bool Reset()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserGoal	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserGoal	Script = 0,	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserGoal	Module = 1,	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserGoal	Eval = 2,	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserGoal	FormalParameters = 3,	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserGoal	FunctionBody = 4,	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserOptions	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserOptions	public FastParserOptions()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserOptions	public bool AllowTopLevelAwait	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserOptions	public Broiler.JavaScript.Parser.FastParserGoal Goal	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserOptions	public Broiler.Unicode.Algorithms.IUnicodeTables? UnicodeTables	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserOptions	public static Broiler.JavaScript.Parser.FastParserOptions Module	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserOptions	public static Broiler.JavaScript.Parser.FastParserOptions Script	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserOptions	public bool Equals(Broiler.JavaScript.Parser.FastParserOptions? other)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastParserOptions	public override int GetHashCode()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool	public FastPool()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool	public T[] AllocateArray<T>(int size)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool	public Broiler.JavaScript.Parser.FastList<T> AllocateList<T>()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool	public Broiler.JavaScript.Parser.FastList<T> AllocateList<T>(int size)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool	public Broiler.JavaScript.Parser.FastStack<T> AllocateStack<T>()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool	public void Dispose()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool	public Broiler.JavaScript.Parser.FastPool.Scope NewScope()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool	public void ReleaseArray<T>(T[] item)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool	public static void Free<T>(Broiler.JavaScript.Parser.FastList<T> list)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool.Scope	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool.Scope	public Scope(Broiler.JavaScript.Parser.FastPool pool)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool.Scope	public Broiler.JavaScript.Parser.FastList<T> AllocateList<T>(int size = 0)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastPool.Scope	public Broiler.JavaScript.Parser.FastPool.Scope NewScope()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner	public readonly Broiler.JavaScript.Ast.Misc.StringSpan Text	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner	public bool YieldIsKeyword	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner	public FastScanner(Broiler.JavaScript.Parser.FastPool pool, in Broiler.JavaScript.Ast.Misc.StringSpan text, Broiler.JavaScript.Parser.FastKeywordMap keywords = null)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner	public FastScanner(Broiler.JavaScript.Parser.FastPool pool, in Broiler.JavaScript.Ast.Misc.StringSpan text, Broiler.JavaScript.Parser.FastKeywordMap keywords, Broiler.JavaScript.Parser.FastParserOptions options)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner	public Broiler.JavaScript.Ast.Misc.SpanLocation Location	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner	public Broiler.JavaScript.Parser.FastParserOptions Options	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner	public Broiler.JavaScript.Ast.Misc.FastToken Token	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner	public void ConsumeToken()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner	public Broiler.JavaScript.Parser.FastScanner.State Push()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner	public System.Exception Unexpected()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner.State	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner.State	public State(Broiler.JavaScript.Parser.FastScanner scanner, int position)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner.State	public Broiler.JavaScript.Ast.Misc.FastToken Commit(Broiler.JavaScript.Ast.Misc.TokenTypes type, double number)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner.State	public Broiler.JavaScript.Ast.Misc.FastToken Commit(Broiler.JavaScript.Ast.Misc.TokenTypes type, System.Text.StringBuilder builder = null, bool cookedInvalid = false)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner.State	public Broiler.JavaScript.Ast.Misc.FastToken Commit(Broiler.JavaScript.Ast.Misc.TokenTypes type, string cooked, string flags)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner.State	public void Dispose()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner.State	public void Reset()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScanner.State	public System.ReadOnlySpan<char> Scanned()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScope	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScope	public FastScope()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScope	public Broiler.JavaScript.Parser.FastScopeItem Push(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastNodeType nodeType)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	public bool IsArrow	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	public readonly Broiler.JavaScript.Ast.Misc.FastNodeType NodeType	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	public FastScopeItem(Broiler.JavaScript.Ast.Misc.FastNodeType nodeType)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	public void AddAnnexBName(in Broiler.JavaScript.Ast.Misc.StringSpan name)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	public void AddVariable(Broiler.JavaScript.Ast.Misc.FastToken token, in Broiler.JavaScript.Ast.Misc.StringSpan name, Broiler.JavaScript.Ast.FastVariableKind kind = 3, bool throwError = true)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	public bool DeclaresVariable(in Broiler.JavaScript.Ast.Misc.StringSpan name)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan> GetAnnexBNames()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan> GetVariables()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	public bool HasLexicalBinding(in Broiler.JavaScript.Ast.Misc.StringSpan name)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	public bool HasVarDeclaredName(string name)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastScopeItem	public void MarkVarDeclaredName(string name)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStack	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStack	public FastStack(Broiler.JavaScript.Parser.FastPool pool)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStack	public int Count	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStack	public bool IsEmpty	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStack	public T Peek	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStack	public void Clear()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStack	public T Pop()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStack	public void Push(T item)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStringBuilder	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStringBuilder	public readonly System.Text.StringBuilder Builder	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStringBuilder	public FastStringBuilder(Broiler.JavaScript.Parser.FastPool pool, System.Text.StringBuilder sb)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStringBuilder	public void Clear()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastStringBuilder	public override string ToString()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public readonly Broiler.JavaScript.Parser.FastKeywordMap Keywords	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public readonly Broiler.JavaScript.Parser.FastPool Pool	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public FastTokenStream(in Broiler.JavaScript.Ast.Misc.StringSpan text, Broiler.JavaScript.Parser.FastKeywordMap keywords = null)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public FastTokenStream(Broiler.JavaScript.Parser.FastPool pool, in Broiler.JavaScript.Ast.Misc.StringSpan text, Broiler.JavaScript.Parser.FastKeywordMap keywords = null)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public FastTokenStream(in Broiler.JavaScript.Ast.Misc.StringSpan text, Broiler.JavaScript.Parser.FastKeywordMap keywords, Broiler.JavaScript.Parser.FastParserOptions options)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public FastTokenStream(Broiler.JavaScript.Parser.FastPool pool, in Broiler.JavaScript.Ast.Misc.StringSpan text, Broiler.JavaScript.Parser.FastKeywordMap keywords, Broiler.JavaScript.Parser.FastParserOptions options)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public Broiler.JavaScript.Ast.Misc.FastToken Current	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public Broiler.JavaScript.Ast.Misc.FastToken Next	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public Broiler.JavaScript.Parser.FastParserOptions Options	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public Broiler.JavaScript.Ast.Misc.FastToken Previous	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool YieldIsKeyword	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool CheckAndConsume(Broiler.JavaScript.Ast.Misc.FastKeywords keyword)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool CheckAndConsume(Broiler.JavaScript.Ast.Misc.TokenTypes type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool CheckAndConsume(Broiler.JavaScript.Ast.Misc.TokenTypes type, out Broiler.JavaScript.Ast.Misc.FastToken token)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool CheckAndConsume(Broiler.JavaScript.Ast.Misc.TokenTypes type1, Broiler.JavaScript.Ast.Misc.TokenTypes type2, out Broiler.JavaScript.Ast.Misc.FastToken token1, out Broiler.JavaScript.Ast.Misc.FastToken token2)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool CheckAndConsumeAny(Broiler.JavaScript.Ast.Misc.TokenTypes type1, Broiler.JavaScript.Ast.Misc.TokenTypes type2)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool CheckAndConsumeAny(Broiler.JavaScript.Ast.Misc.TokenTypes type1, Broiler.JavaScript.Ast.Misc.TokenTypes type2, Broiler.JavaScript.Ast.Misc.TokenTypes type3)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool CheckAndConsumeAny(Broiler.JavaScript.Ast.Misc.TokenTypes type1, Broiler.JavaScript.Ast.Misc.TokenTypes type2, Broiler.JavaScript.Ast.Misc.TokenTypes type3, Broiler.JavaScript.Ast.Misc.TokenTypes type4)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool CheckAndConsumeContextualKeyword(Broiler.JavaScript.Ast.Misc.FastKeywords keyword)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool CheckAndConsumeNoLineTerminator(Broiler.JavaScript.Ast.Misc.TokenTypes type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool CheckAndConsumeWithLineTerminator(Broiler.JavaScript.Ast.Misc.TokenTypes type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool CheckAndConsumeWithLineTerminator(Broiler.JavaScript.Ast.Misc.TokenTypes type1, Broiler.JavaScript.Ast.Misc.TokenTypes type2)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public Broiler.JavaScript.Ast.Misc.FastToken Consume()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public Broiler.JavaScript.Ast.Misc.FastToken Expect(Broiler.JavaScript.Ast.Misc.FastKeywords type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public Broiler.JavaScript.Ast.Misc.FastToken Expect(Broiler.JavaScript.Ast.Misc.TokenTypes type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public Broiler.JavaScript.Ast.Misc.FastToken ExpectContextualKeyword(Broiler.JavaScript.Ast.Misc.FastKeywords type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public bool Reset(Broiler.JavaScript.Ast.Misc.FastToken position)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public Broiler.JavaScript.Parser.FastTokenStream.Marker SkipNewLines()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public override string ToString()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream	public Broiler.JavaScript.Runtime.CancellableDisposableAction UndoMark()	kept-obsolete-no-version	-	Broiler.JavaScript.Parser (facade)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream.Marker	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream.Marker	public readonly bool LinesSkipped	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream.Marker	public Marker(Broiler.JavaScript.Parser.FastTokenStream stream, Broiler.JavaScript.Ast.Misc.FastToken index, bool linesSkipped)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	FastTokenStream.Marker	public void Undo()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	IParser	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	IParser	Broiler.JavaScript.Ast.AstProgram ParseProgram()	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	QueueExtensions	(type)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	QueueExtensions	public static TValue GetOrCreate<TKey, TValue>(this System.Collections.Generic.IDictionary<TKey, TValue> dictionary, TKey key, System.Func<TKey, TValue> factory)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser	QueueExtensions	public static bool TryDequeue<T>(this System.Collections.Generic.Queue<T> queue, out T value)	facade-obsolete	1.0.0	Broiler.JavaScript.Parser (facade over the bridge)

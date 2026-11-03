@@ -1,0 +1,7 @@
+# Bundle sjl-14-001: the files whose bytes a SHA-256 or a byte-for-byte check names are checked out exactly as
+# committed (LF), on every platform: the seeds and seed list, the probes and their runs, and the generated tables.
+inputs/** -text
+inherited-context/** -text
+corrections/** -text
+api/** -text
+dispositions.tsv -text

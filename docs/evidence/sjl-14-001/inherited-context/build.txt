@@ -1,0 +1,26 @@
+# The builds the inherited-context probes ran on (SJL-14.1, task 1.1; decision D44), 2026-11-03.
+# Each engine was built from a clean `git archive` of its default branch, unpacked in a scratch folder of its own
+# (no checkout, no worktree), one build at a time, with the .NET SDK 10.0.401 on Linux 6.18 x64 (four processors).
+
+Broiler.JS  origin/main 33d3093be9b3903049a7b08421443a9a7de1919f
+  git archive origin/main | tar -x -C <js>
+  dotnet build -c Release --disable-build-servers -nologo <js>/Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj
+  Build succeeded. 0 Warning(s). 0 Error(s).
+  The shell: <js>/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+
+Broiler.VM  origin/main c5bde2b395d00bc43a9876fee257d2e896c66e29
+  git archive origin/main | tar -x -C <vm>
+  dotnet build -c Release --disable-build-servers -nologo <vm>/src/compositions/Broiler.VM.Composition.JavaScript.Conformance/Broiler.VM.Composition.JavaScript.Conformance.csproj
+  Build succeeded. 0 Warning(s). 0 Error(s).
+  The conformance root: <vm>/src/compositions/Broiler.VM.Composition.JavaScript.Conformance/bin/Release/net10.0/Broiler.VM.Composition.JavaScript.Conformance.dll
+  Its test262 root: harness/ and features.txt extracted from <vm>/src/tests/conformance/pins/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e.tar.gz,
+  SHA-256 f58ce79141529c9fa33592e22ff3ff0d83b83830ac8e372ecd32e1623db1c040 (the pin's), and the probe program under test/sjl14ic/.
+  The conformance root reports each run as one failing test with configuration failure MissingSuiteRevision (the root
+  holds no suite revision file); the program still runs, and its answers are the lines between OUT<< and >>OUT.
+
+The four runs, each `bash run_probes.sh` from this folder:
+  js-direct   bash run_probes.sh js <BroilerJS.dll> runs/js-direct
+  js-in-eval  PROGRAM=ic-values-in-eval.js bash run_probes.sh js <BroilerJS.dll> runs/js-in-eval
+  vm-direct   bash run_probes.sh vm <Conformance.dll> runs/vm-direct <test262 root>
+  vm-in-eval  PROGRAM=ic-values-in-eval.js bash run_probes.sh vm <Conformance.dll> runs/vm-in-eval <test262 root>
+Then `python3 -I merge_answers.py` wrote answers.tsv. Paths of the scratch folders are written <js>, <vm> and <scratch>.

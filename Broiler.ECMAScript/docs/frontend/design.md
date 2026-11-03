@@ -114,7 +114,12 @@ wide design**, because it already meets the properties above and its side tables
 Broiler.JS's public `Ast` and `Parser` packages become adapter packages that build the old tree from the new one,
 marked obsolete and removed in a later major version. Their disposition is SJL-14.4's, in this repository's
 [`docs/public-api.md`](../../../docs/public-api.md). Broiler.JS's feature coverage (`accessor`, decorator parsing)
-and its cooked template tokens inform the new tree.
+and its cooked template tokens inform the new tree. *(Noted 2026-11-03, at SJL-14.1: the disposition is decided, type by type and member
+by member, in bundle `sjl-14-001`'s [`dispositions.md`](../../../docs/evidence/sjl-14-001/dispositions.md) by
+decision D50 of 2026-11-03 (`docs/roadmap/SharedLibraries.md`, "Broiler.JS on the shared syntax library (SJL-14)"):
+`Parser` a facade over the bridge, `Ast`'s tree types obsolete, both with removal version `1.0.0`, and the non-tree
+types moved to `Broiler.JavaScript.Expressions` with forwarders. SJL-14.4 applies it, and records it in
+`docs/public-api.md`.)*
 
 **What the tree leaves raw.** Broiler.JS's parser rewrites three things while it parses today (decision D23):
 - `for (let …)` and `for (const …)` loops, desugared into blocks with temporaries. SJL-12.5 moves this into a
@@ -301,7 +306,8 @@ them onto it:
   contract and the conventions.")*.
 - **The registry revision**, which is Broiler.VM's: revision 19, at its step 1's registry commit (JSD-0083's decision
   D12) *(revised 2026-10-26, at SJL-13.1; read "**The registry revision**, which is SJL-13's.")*.
-- **The `Ast` and `Parser` disposition**, which is SJL-14.4's.
+- **The `Ast` and `Parser` disposition**, which SJL-14.1 decides and SJL-14.4 applies *(revised 2026-11-03, at
+  SJL-14.1; read "**The `Ast` and `Parser` disposition**, which is SJL-14.4's.")*.
 - **The semantic model's implementation**, which is SJL-15's.
 - **The tree-depth constant's value**, which SJL-13.2's stage 4e derives, as Broiler.VM's JSD-0022 derived
   Broiler.VM's, and which must admit Broiler.VM's bound; the nesting depth stays each engine's parameter (JSD-0083's

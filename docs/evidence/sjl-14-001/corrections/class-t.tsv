@@ -1,0 +1,28 @@
+# Bundle sjl-14-001 (Broiler.JS): class T, the class E rows checked lazily or after other code ran (decision D64)
+# Written by tools/records/write_records.py from
+# Broiler.ECMAScript/docs/frontend/stages.tsv; never edited by hand. corrections.md says how it is read.
+id	shared_code	js_stage	js_lazy	js_site	rows
+EE0003	JSE1203	SyntaxValidation+FastCompiler.EarlyErrors	partly	Broiler.JavaScript.Compiler/SyntaxValidation.cs:36; Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:22	D39
+EE0004	JSE1204	SyntaxValidation+FastCompiler.EarlyErrors	partly	Broiler.JavaScript.Compiler/SyntaxValidation.cs:36; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1044; Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:22	D44, D63
+EE0017	JSE1313	SyntaxValidation+Visit*	partly	Broiler.JavaScript.Compiler/SyntaxValidation.cs:899; Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitObjectLiteral.cs:151	B15, D63
+EE0020	JSE1316	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTemplateExpression.cs:31	D45
+EE0022	JSE1318	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTemplateExpression.cs:31	D45
+EE0023	JSE1319	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTemplateExpression.cs:31	D45
+EE0024	JSE1320	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTemplateExpression.cs:31	D45
+EE0027	JSE1323	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs:63	B11
+EE0072	JSE1505	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D31, D54
+EE0085	JSE1518	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0088	JSE1521	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0091	JSE1524	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0095	JSE1528	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0099	JSE1532	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0109	JSE1542	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0113	JSE1546	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0141	JSE1574	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0145	JSE1578	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0159	JSE1592	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0163	JSE1604	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs:25	D12-2, B10
+EE0173	JSE1614	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs:25	D12-2, B10
+EA0001	JSE1901	DirectEvalSupport	yes	Broiler.JavaScript.Compiler/DirectEvalSupport.cs:739	R03
+EA0002	JSE1902	DirectEvalSupport	yes	Broiler.JavaScript.Compiler/DirectEvalSupport.cs:313	D12-2, B10, R22
+EP0016	JSE7402	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs:25	D12-2, B10
