@@ -1,0 +1,74 @@
+# Bundle sjl-14-001 (Broiler.JS): every correction of this engine, by row, with the correction K1 to K10 that names it.
+# Written by hand at SJL-14.1 (2026-11-03) from Broiler.VM's docs/evidence/sjl-13-001/correspondence.md at c5bde2b
+# (its section "The rows by class" and each row's table), JSD-0083's decisions D44, D45, D-asi and D-t24, and this
+# bundle's inherited-context probes (inherited-context/, rows IC1 to IC7). tools/records/write_records.py reads it.
+# side: js = a correction of Broiler.JS; both = a correction of both engines, Broiler.JS's half here.
+#% format	sjl-14-001-k-rows	1
+row	k	side	what	broiler_js_at_the_base	evidence
+T16	K1	both	Strict refusal of a NonOctalDecimalIntegerLiteral (08, 09, 08.5) and of a legacy octal literal in an object key or class element name	strict 08 and 08.5 accepted; a strict object key 010 accepted at P and refused at K (stage E)	correspondence T16 (T16A to T16F; baseline T041126, T041204, T041212); vectors numbers/literal/0082, 0084, 0088, 0090 (hand-off H12); probes X08, X09
+T19	K2	js	The decimal-digit lookahead after ?. and . reads an ASCII digit only	char.IsDigit admits non-ASCII digits (.U+0663 read as a number the library refuses)	correspondence T19 (T19A, T19B; value T19a); hand-off H6
+T28	K3	js	The raw strings of a tagged template keep every character	the tagged-template path trims a raw segment (}}x read as x)	correspondence T28 (values T28a to T28d); hand-off H8
+T2	K4	js	Line terminators in the lexer (LF, CR, LS, PS; CRLF one)	the same in outcome; the scanner's eight lines and CharExtensions.IsLineTerminator move to the library	correspondence T2 (class same); hand-off H7
+T24i	K5	js	An invalid regular-expression literal is refused, not read as division (JSD-0081's row S9)	the scanner's division fallback reads it as division and the parse fails later ("Unexpected token")	correspondence T24i (baseline T041390 to T041392, T041418, T041420); hand-off H9
+T26	K6	js	The source of a u or v literal keeps a braced escape as written	DecodeBracedUnicodeEscapes rewrites the pattern text (\u{1F600} read as 😀)	correspondence T26 (values T26a to T26c); hand-off H9; only if SJL-11.5 has not landed
+T25	K6	js	A literal's parentheses are balanced by the pattern grammar	the parenthesis-balance patch refuses an unbalanced pattern before the validator (the same in outcome)	correspondence T25 (class same); hand-off H9; only if SJL-11.5 has not landed
+T23	K7	js	Escaped reserved words and contextual keywords are refused where they are keywords	accepted	correspondence T23 and D33 (buckets EE0010 to EE0014; baseline T030364, T030976)
+D33	K7	js	Escaped reserved words and contextual keywords as names	accepted	correspondence D33 (T23 holds the sites)
+D34	K7	js	delete of a private reference	accepted	correspondence D34 (bucket EE0030, EE0031)
+D35	K7	js	Lexical redeclarations Broiler.JS misses (async functions and generators in blocks, catch and others)	accepted	correspondence D35
+D36	K7	js	Declarations and labelled functions where a single statement stands (the early-error half; P11 holds the grammar)	accepted	correspondence D36
+D37	K7	js	yield and await as names, strict reserved words, a static block's await	accepted	correspondence D37
+D38	K7	js	yield and await expressions in parameters	accepted	correspondence D38
+D39	K7	js	#constructor; a parameter and lexical name collision; let bound by a using head; assignment and update targets	accepted	correspondence D39
+D41	K7	js	A super property in a function-valued property that is not a method	accepted	correspondence D41 (J000011)
+D46	K7	js	A declared name conflict Broiler.JS misses (PD21)	accepted on PD21's input; the same in outcome elsewhere	correspondence D46 (second class)
+D55	K7	js	A rule Broiler.JS checks only outside a case clause (PD29)	accepted on PD29's input; the same in outcome elsewhere	correspondence D55 (second class); D63
+B06	K7	js	The private half of a delete check (binder check B06, 2205)	accepted	correspondence B06
+P31	K7	both	An AssignmentRestProperty whose target is an object or array literal (EE0037)	accepted at P; the compile throws NotImplementedException	correspondence P31 (PP08 to PP10)
+P07	K8	js	Dynamic import grammar: no new import(x), no spread argument, no bare import, yield as an identifier argument in strict code	accepted at P; import(...a) throws NotImplementedException at K	correspondence P07
+P09	K8	js	[no LineTerminator here] after async and after let before await	accepted	correspondence P09
+P10	K8	js	do Statement while (...) needs its ; or a line break	accepted	correspondence P10
+P11	K8	js	A declaration where a single Statement stands; L: async function f() {}	accepted	correspondence P11
+P12	K8	js	One default clause at most; nothing before the first clause	accepted	correspondence P12
+P13	K8	js	~ is unary only	accepted	correspondence P13
+P14	K8	js	A reserved word is no ArrowParameters	accepted	correspondence P14
+P15a	K8	js	Cover grammars to patterns: a rest element not last, with an initialiser or before an elision; an object rest not last; strict yield; ...import.meta	accepted at P; several throw at K	correspondence P15a; D49 (Broiler.JS's half)
+D49	K8	both	EE0032, EE0038: a literal on the left must cover an AssignmentPattern (Broiler.JS's rest positions)	accepted at P and K; T029711 throws at K	correspondence D49 (P15a's half)
+P18	K8	js	# x, super.#x, for (#x in ...), ClassHeritage a LeftHandSideExpression	accepted	correspondence P18
+P21	K8	js	using declarations: a pattern after the first binding; in a case clause; as a single-statement body; await using binding await in a static block	accepted	correspondence P21
+P22	K8	js	Reserved words where an IdentifierReference or a LabelIdentifier stands	accepted	correspondence P22
+P23	K8	js	A rest parameter is last, with no trailing comma	accepted	correspondence P23
+P24	K8	js	return in a class static block inside a function (EX0033)	accepted	correspondence P24
+T21	K8	js	A private name #x is one token	# x accepted	correspondence T21 (baseline T034993 to T035010, T046794 to T046811)
+T12	K8	js	_ among an escape's hexadecimal digits	accepted (\u{0_41} is A)	correspondence T12 (baseline T040667); hand-off H5
+R20	K9	js	The validator's missed early errors (EE0186 to EE0190, EE0208)	accepted	correspondence R20 (baseline T041332 to T041412, T014939 to T014966, T041423 to T041426); only if the provider wraps Broiler.Regex's validate entry
+N11	K10	js	A refusal at the end of input is anchored at the end	anchored at 0, 0	correspondence N11 (baseline T028428); probes X03, X04
+N25	K10	js	A strict caller's eval text is positioned in its own text	one line below (the "use strict"; prefix)	correspondence N25 (NP16, NP17, NR02); class M for the message, decision D46
+N26	K10	js	A hashbang may begin a strict caller's eval text	refused ("Unexpected token Negate")	correspondence N26 (NR02 case C); probe X05
+R24	K10	js	A super call in a base-class constructor's eval is an early SyntaxError	admitted at the parse; TypeError at run time	correspondence R24 (RE19; baseline T030387); probe IC94
+R36	K10	js	A strict caller's eval admits a class element named by a strict reserved word	refused by the reserved-word re-scan	correspondence R36 (RE43, RE44, RE47); probe X07
+T24a	K10	js	A regular expression or a division after a line terminator or a line comment	a/b/g across a line break read as a; /b/g	correspondence T24a
+T24b	K10	js	A regular expression after a } that closes an expression	P accepts; K refuses "Undefined binary operation RegExLiteral" (stage E), or completes with the left operand before ; or the end (decision D-t24)	correspondence T24b
+T24c	K10	js	A regular expression after of in a for-of head, after extends, after export default	read as division and refused	correspondence T24c
+T24d	K10	both	A regular expression after a for await (...) head	refused	correspondence T24d
+T24e	K10	both	A regular expression after a prefix ++ or --	refused	correspondence T24e
+T24f	K10	both	A regular expression after await used as an identifier (Script)	P accepts; K refuses (stage E), or completes with the left operand (decision D-t24)	correspondence T24f
+D40	K10	both	A reserved word as an import specifier without as	accepted at P and K	correspondence D40 (PD14)
+D42	K10	js	Duplicate parameters in a sloppy async function or generator	refused, where only some lists are early errors (completeness.md section 7)	correspondence D42 (J000072, J001979)
+D63	K10	js	The rows Broiler.JS checks in StrictModeValidator, which never enters a case or default clause	accepted at P and K inside a case clause (class F on this side, not E)	correspondence D63 (PD29, PD30)
+P02	K10	js	using and await using at a module's top level are allowed	refused ("'using' is not allowed at the top level of a script")	correspondence P02
+P05c	K10	js	A line break before an import attribute's string key	refused	correspondence P05c (PP03)
+P06a	K10	js	The import phases' call forms under their flag: the negatives	new import.defer(x) accepted; import.defer(...a) throws NotImplementedException at K	correspondence P06a (second class)
+P16b	K10	js	No semicolon is inserted for either of a for statement's head semicolons	a line break after a var, let or const declaration accepted at P and K	correspondence P16b (PP11 to PP19, PE01 to PE09); decision D-asi
+P26	K10	both	The dynamic function's parameters and body parsed alone	Function('/*', '*/){') and Function('a', '}); (function(){') accepted	correspondence P26 and D61 (PR01, PR02); probes Y06, Y07
+D61	K10	both	EA0010 to EA0012: the dynamic function's parameters, body and assembled source	SyntaxError at run time only	correspondence D61 (P26's class; T000031, T006715 and T006548 parse as programs in both)
+R12	K10	js	Tests that assert acceptance past the nesting bound	accepted (stack segmentation)	correspondence R12 (baseline T050099); DeeplyNestedSourceTests.cs:26, :42, :66, :101, :138; corpus J000243, J000799, J001976; class C3 or revised at SJL-14 (decisions D27, D47)
+R13	K10	js	Tests that assert acceptance past the tree-depth bound	accepted	correspondence R13; corpus J000451; class C3 or revised at SJL-14
+D11	K10	js	The scope-close timing of a declared-name conflict (JSD-0083 decision D11)	refused when the scope closes, after later tokens	JSD-0083 D11 and D45
+IC1	K10	js	Eval in a function that is itself eval code keeps the function's context	every direct eval of new.target inside a function compiled by eval refused; Function's super checks skipped inside eval code	inherited-context probes, the in-eval form: IC15 and every *-NT probe, X01, Y02, Y08, Y09
+IC2	K10	js	Eval in a class field initialiser (instance, static, or an arrow in one) is strict (class code is strict)	sloppy: var public admitted	probes IC119, IC126, IC133, IC140
+IC3	K10	js	new.target in an arrow in a field initialiser is undefined	the constructor	probe IC127
+IC4	K10	js	A static field initialiser's and a computed key's eval sees the class's private names	refused "Private name is not declared"	probes IC138, IC152
+IC5	K10	js	A computed key's eval sees the enclosing function's arguments	typeof arguments is "undefined"	probe IC151
+IC6	K10	js	A super call in a derived constructor's eval, after super(), in a class with fields, is admitted at the parse (and throws ReferenceError)	refused at the parse ("Unexpected super call in eval code")	probes IC101, IC108
+IC7	K10	both	Eval in a class element's computed key is strict (class code is strict)	sloppy: var public admitted (Broiler.VM answers the same)	probe IC154

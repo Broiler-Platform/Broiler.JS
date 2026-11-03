@@ -1,0 +1,65 @@
+# Bundle sjl-14-001 (Broiler.JS): class E, the syntax rows Broiler.JS checks only in its compiler (decision D45)
+# Written by tools/records/write_records.py from
+# Broiler.ECMAScript/docs/frontend/stages.tsv; never edited by hand. corrections.md says how it is read.
+id	shared_code	js_stage	js_lazy	js_site	rows
+EE0003	JSE1203	SyntaxValidation+FastCompiler.EarlyErrors	partly	Broiler.JavaScript.Compiler/SyntaxValidation.cs:36; Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:22	D39
+EE0004	JSE1204	SyntaxValidation+FastCompiler.EarlyErrors	partly	Broiler.JavaScript.Compiler/SyntaxValidation.cs:36; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1044; Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:22	D44, D63
+EE0010	JSE1306	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:797	D12-9, D33, D63
+EE0016	JSE1312	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:730	D46, D63
+EE0017	JSE1313	SyntaxValidation+Visit*	partly	Broiler.JavaScript.Compiler/SyntaxValidation.cs:899; Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitObjectLiteral.cs:151	B15, D63
+EE0020	JSE1316	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTemplateExpression.cs:31	D45
+EE0022	JSE1318	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTemplateExpression.cs:31	D45
+EE0023	JSE1319	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTemplateExpression.cs:31	D45
+EE0024	JSE1320	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTemplateExpression.cs:31	D45
+EE0027	JSE1323	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs:63	B11
+EE0030	JSE1326	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:998	D-b adjacent, B06, D34, D63
+EE0031	JSE1327	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:998	D-b adjacent, B06, D34, D63
+EE0036	JSE1332	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1031	B20, D39, D63
+EE0045	JSE1406	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1127; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1289	D36, D63
+EE0046	JSE1407	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1128; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1289	D36, D63
+EE0047	JSE1408	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1127; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1289	D36, D63
+EE0048	JSE1409	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1149; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1289	D36, D63
+EE0049	JSE1410	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1139; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1289	D36, D63
+EE0060	JSE1421	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1053	D36, D63
+EE0064	JSE1425	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1208; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1271; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1094; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1289	D36, D63
+EE0068	JSE1501	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:813	D51, D63
+EE0069	JSE1502	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:813	D51, D63
+EE0070	JSE1503	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:813	D51, D63
+EE0071	JSE1504	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:791	D52, D63
+EE0072	JSE1505	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D31, D54
+EE0080	JSE1513	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:568	D53
+EE0085	JSE1518	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0088	JSE1521	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0090	JSE1523	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:813	D51, D63
+EE0091	JSE1524	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0095	JSE1528	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0097	JSE1530	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:813	D51, D63
+EE0098	JSE1531	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:791	D52, D63
+EE0099	JSE1532	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0109	JSE1542	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0111	JSE1544	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:813	D51, D63
+EE0112	JSE1545	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:791	D52, D63
+EE0113	JSE1546	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0122	JSE1555	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1319	D55, D63
+EE0123	JSE1556	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1374	D55, D63
+EE0127	JSE1560	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1336	D55, D63
+EE0128	JSE1561	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1342	D55, D63
+EE0129	JSE1562	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1336; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1342	D55, D63
+EE0135	JSE1568	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:568	D53
+EE0141	JSE1574	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0145	JSE1578	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0147	JSE1580	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:813	D51, D63
+EE0148	JSE1581	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:791	D52, D63
+EE0159	JSE1592	FastCompiler.EarlyErrors	yes	Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:19	D54
+EE0163	JSE1604	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs:25	D12-2, B10
+EE0164	JSE1605	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:568	D53
+EE0173	JSE1614	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs:25	D12-2, B10
+EE0174	JSE1615	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:568	D53
+EE0179	JSE1620	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:267	B27
+EA0001	JSE1901	DirectEvalSupport	yes	Broiler.JavaScript.Compiler/DirectEvalSupport.cs:739	R03
+EA0002	JSE1902	DirectEvalSupport	yes	Broiler.JavaScript.Compiler/DirectEvalSupport.cs:313	D12-2, B10, R22
+EG0003	JSE8301	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1208; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1271	D36, D63
+EG0005	JSE8303	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1122; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1123; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1271	D36, D63
+EG0007	JSE8305	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1181	D59, D63
+EG0008	JSE8306	SyntaxValidation	no	Broiler.JavaScript.Compiler/SyntaxValidation.cs:991	B07, B18, B21, D39, D63
+EP0016	JSE7402	Visit*	yes	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs:25	D12-2, B10

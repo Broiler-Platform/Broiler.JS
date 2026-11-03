@@ -1,0 +1,13 @@
+# Bundle sjl-14-001 (Broiler.JS), rule part I: the workloads, the real corpora of
+# Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks' CompilePhaseMetrics, as CompileProfileMetrics.LoadCorpora
+# at 33d3093b takes them from an Octane checkout. Written by hand on 2026-11-03 from chromium/octane at the revision
+# below (a shallow clone in a scratch folder; no Octane file is copied here). README.md says how each is read.
+#% format	sjl-14-001-workloads	1
+#% octane	https://github.com/chromium/octane	570ad1ccfe86e3eecba0636c8f932ac08edec517
+workload	file	sha256	how
+codeload-closure	code-load.js	32fd38d49bb8794b40e947c70c0c51276bfc2588833a8451a25b1b2bfccad96c	the Closure library payload CodeLoad evaluates, recovered by CompileProfileMetrics.ExtractCodeLoadPayloads
+codeload-jquery	code-load.js	32fd38d49bb8794b40e947c70c0c51276bfc2588833a8451a25b1b2bfccad96c	the jQuery 1.7.2 payload CodeLoad evaluates, recovered by CompileProfileMetrics.ExtractCodeLoadPayloads
+mandreel	mandreel.js	fc4a9516e8899bb33df63a69db30797959a138d33233e9fb1ccc57cb91dcd164	the whole file
+pdfjs	pdfjs.js	ced89e66a178a4b63a69ea33fc6f47d405bf9bd379817be25f060a4b2dcce351	the whole file
+typescript	typescript-compiler.js	9e99fe0ddfe48a2462eca622ade1e1ddd13bf49f8e461a6c53463bbbc1d5363a	the whole file
+box2d	box2d.js	83b10c280f004e7b156a9e04d09ce4109892ea92788f7c6c963f7fadf29c7bd4	the whole file
