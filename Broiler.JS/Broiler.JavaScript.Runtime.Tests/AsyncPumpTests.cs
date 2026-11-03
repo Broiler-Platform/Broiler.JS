@@ -3,22 +3,18 @@ using Broiler.JavaScript.Runtime;
 namespace Broiler.JavaScript.Runtime.Tests;
 
 // AsyncPump.Run ends its loop when the function's task has completed and nothing is left queued.
-//
-// It used to end the loop as soon as a thread-pool continuation saw the task complete: that
-// continuation called CompleteAdding on the queue, and a job still running on the pump that posted
-// another one then had its Post refused. In the engine the refusal was swallowed by the promise
-// reaction that posted, so a promise chain the script did not return stopped wherever the pump
-// thread happened to be when the pool thread got there — AsyncGeneratorAwaitTests
-// .YieldStarOverAsyncIterable failed that way on a loaded CI runner, about 1% of runs locally under
-// parallel load, and an unreturned five-step chain lost its tail every time.
+// Work a job queues on the pump after the task's completion has been seen on the thread pool still
+// runs. The old pump refused it, which is how an unreturned promise chain lost its tail under
+// JSContext.Execute (ExecuteDrainsJobQueueTests, AsyncGeneratorAwaitTests.YieldStarOverAsyncIterable).
 public sealed class AsyncPumpTests
 {
     // The job waits until the task's completion has been seen on the thread pool, and only then
     // queues more work, which is the interleaving that lost it. The wait is for a continuation the
     // job registers after AsyncPump.Run registered its own, plus one more hop through the pool, so
-    // by the time the job posts, the pump's continuation has run. Before the fix the Post threw
-    // InvalidOperationException ("The collection has been marked as complete with regards to
-    // additions") out of Run.
+    // by the time the job posts, the pump's continuation has almost always run (continuations on
+    // one task are not guaranteed to run in order, so the old pump could rarely pass; the fixed one
+    // cannot fail). With the old pump the Post threw InvalidOperationException ("The collection has
+    // been marked as complete with regards to additions") out of Run.
     [Fact]
     public void Run_runs_work_queued_after_the_task_completed()
     {

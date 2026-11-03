@@ -2,16 +2,10 @@ using Broiler.JavaScript.Engine;
 
 namespace Broiler.JavaScript.Integration.Tests;
 
-// JSContext.Execute returns after every job the script queued has run, including jobs of a promise
-// chain the script does not return.
-//
-// Execute pumps jobs on AsyncPump. The pump used to stop as soon as a thread-pool continuation saw
-// the script's completion value settle, and a job still running on the pump that queued the next
-// one then had it refused — silently, inside the promise reaction that posted it. How much of an
-// unreturned chain ran was decided by a race between the pump thread and the pool thread: the
-// five-step chain below lost its tail in every run, and AsyncGeneratorAwaitTests
-// .YieldStarOverAsyncIterable, whose second next() is not returned, lost it in about 1% of runs
-// under parallel load and on a loaded CI runner.
+// JSContext.Execute returns after every job the script queued on the pump has run, including jobs of
+// a promise chain the script does not return. The pump used to stop when a thread-pool continuation
+// saw the script's completion value settle and refuse the jobs queued after that, so how much of an
+// unreturned chain ran was decided by a race (AsyncPumpTests hold the pump-level cases).
 public sealed class ExecuteDrainsJobQueueTests
 {
     private static string Drive(string body)

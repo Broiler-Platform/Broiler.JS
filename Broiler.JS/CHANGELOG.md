@@ -10,15 +10,18 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
-### `Execute` runs every job a script queued before it returns (2026-11-03)
+### `Execute` runs every job a script queued on its own thread before it returns (2026-11-03)
 
-- **A promise chain the script does not return now runs to its end under `JSContext.Execute`.** `Execute`
-  (and `ExecuteAsync`, and the module context's `RunAsync` and `RunScriptAsync`, which pump the same way)
-  runs the script's jobs on `AsyncPump`. The pump stopped as soon as a thread-pool continuation saw the
-  script's completion value settle: it marked its queue complete there and then, and a job still running on
-  the pump that queued the next one had it refused. The refusal surfaced inside the promise reaction that
-  posted it, which swallowed it, so the rest of the chain silently never ran. How far the chain got depended
-  on how far the pump thread had got when the pool thread arrived. For
+- **A promise chain the script does not return now runs to its end under `JSContext.Execute`.** `Execute`,
+  `ExecuteAsync`, `CoreScript.EvaluateWithTasks` and `AsyncPump.Run` itself run the script's jobs on
+  `AsyncPump`. The pump stopped as soon as a thread-pool continuation saw the script's completion value
+  settle: it marked its queue complete there and then, and a job still running on the pump that queued the
+  next one had it refused with an `InvalidOperationException`. The promise reaction that posted it usually
+  swallowed the refusal, so the rest of the chain silently never ran; when the reaction had a derived promise
+  to reject, that rejection's own post was refused too and the exception escaped `Execute`, and a job that
+  threw after the queue was marked complete could surface as that `InvalidOperationException` instead of its
+  own exception. How far the chain got depended on how far the pump thread had got when the pool thread
+  arrived. For
   `Promise.resolve(1).then(a => { Promise.resolve(2).then(x => x).then(x => x).then(b => { … }); })` the
   inner chain's tail was lost in every run; for an async generator whose second `next()` is not returned
   (`AsyncGeneratorAwaitTests.YieldStarOverAsyncIterable`) it was lost in about 1% of runs under parallel
@@ -27,8 +30,19 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
   check behind the work already queued, and the check ends the loop when nothing is left, or queues itself
   again behind what is. A script that queues nothing returns as before; a chain that never stops queueing
   keeps `Execute` running, as it keeps a browser's or Node's event loop running.
+- The guarantee covers work queued from the pump's own thread. Work posted from another thread after the loop
+  has ended is still refused, as before: a promise a host task settles (a Task-backed promise or a dynamic
+  import) when the script did not return it, or a timer of a context constructed on the pump thread.
+  `Execute` does not wait for host work the script does not return.
+- The module context's `RunAsync` and `RunScriptAsync` pump on `AsyncPump` too, but already drained their
+  jobs with a quiet turn of the pump before completing; for them only work queued after that last quiet turn,
+  and the nested pump a synchronous `require` runs inside a job, are affected.
+- No test262 verdict changes at `ccaac100`: the 821 `flags: [module]` tests, run through `--module-host`
+  (the only test262 path that uses the pump), give the same 679 passed and 142 failed, with the same status
+  and stderr for every test, before and after; script tests run through `Eval`, not the pump.
 - `AsyncPumpTests` (Runtime.Tests) and `ExecuteDrainsJobQueueTests` (Integration.Tests) hold the cases. No
-  public member changes.
+  public member's signature changes; what `AsyncPump.Run`, `JSContext.Execute`, `ExecuteAsync` and
+  `CoreScript.EvaluateWithTasks` wait for does, as their documentation now says.
 
 ### A label of a C-style `for (await using …)` loop labels the loop (2026-10-26)
 

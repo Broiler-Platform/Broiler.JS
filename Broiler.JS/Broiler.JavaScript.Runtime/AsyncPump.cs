@@ -11,6 +11,14 @@ public static class AsyncPump
 {
     /// <summary>Runs the specified asynchronous function.</summary>
     /// <param name="func">The asynchronous function to execute.</param>
+    /// <remarks>
+    /// Runs <paramref name="func"/> with a single-threaded <see cref="SynchronizationContext"/> on the
+    /// calling thread, and returns once the task it returns has completed and every item posted to
+    /// that context from the calling thread has run, including the items those queue in turn. A chain
+    /// of items that keeps queueing another keeps <c>Run</c> from returning. Work posted from another
+    /// thread after <c>Run</c> has ended its loop is refused: <see cref="SynchronizationContext.Post"/>
+    /// throws <see cref="InvalidOperationException"/> on that thread.
+    /// </remarks>
     public static T Run<T>(Func<Task<T>> func)
     {
         ArgumentNullException.ThrowIfNull(func);
@@ -39,6 +47,14 @@ public static class AsyncPump
 
     /// <summary>Runs the specified asynchronous function.</summary>
     /// <param name="func">The asynchronous function to execute.</param>
+    /// <remarks>
+    /// Runs <paramref name="func"/> with a single-threaded <see cref="SynchronizationContext"/> on the
+    /// calling thread, and returns once the task it returns has completed and every item posted to
+    /// that context from the calling thread has run, including the items those queue in turn. A chain
+    /// of items that keeps queueing another keeps <c>Run</c> from returning. Work posted from another
+    /// thread after <c>Run</c> has ended its loop is refused: <see cref="SynchronizationContext.Post"/>
+    /// throws <see cref="InvalidOperationException"/> on that thread.
+    /// </remarks>
     public static void Run(Func<Task> func)
     {
         ArgumentNullException.ThrowIfNull(func);
@@ -67,27 +83,17 @@ public static class AsyncPump
 
     /// <summary>Provides a SynchronizationContext that's single-threaded.</summary>
     /// <remarks>
-    /// <para>
-    /// <b>The loop ends when the function's task has completed AND nothing is left queued, not when
-    /// the task completes.</b> The task's completion is observed by a continuation on the thread
-    /// pool, which runs beside this loop. It used to end the loop by calling
-    /// <see cref="BlockingCollection{T}.CompleteAdding()"/> there and then, and the loop went on to
-    /// drain only what had already been queued at that instant. A job still running on this thread
-    /// that queued another — a promise reaction settling the next promise of a chain the script did
-    /// not return, an async generator's step resolving its <c>next()</c> promise — then had its
-    /// <see cref="Post"/> refused with an <see cref="InvalidOperationException"/>, which the
-    /// reaction's own error handling swallowed, and the rest of the chain silently never ran. How
-    /// much of it ran depended on how far this thread got before the pool thread did, so the same
-    /// program gave different results run to run and machine to machine.
-    /// </para>
-    /// <para>
-    /// <see cref="Complete"/> now only queues a check behind the work already queued. Run on this
+    /// The loop ends when the function's task has completed and nothing is left queued, not when the
+    /// task completes. The completion is seen by a continuation on the thread pool, which calls
+    /// <see cref="Complete"/>; that only queues a check behind the work already queued. Run on this
     /// thread, the check ends the loop when the queue is empty and otherwise queues itself again
-    /// behind what is there. Everything a job queues from this thread it queues while it runs, so
-    /// once the check finds the queue empty no job of this loop can queue another, and the loop ends
-    /// rather than waiting. A chain that never stops queueing never lets the check through, which is
-    /// what a JavaScript host does with the same program.
-    /// </para>
+    /// behind what is there. A job running on this thread queues its successors while it runs, so
+    /// once the check finds the queue empty no job running on this thread can queue another, and the
+    /// loop ends rather than waiting. A chain that never stops queueing never lets the check through,
+    /// which is what a JavaScript host does with the same program. Work posted from another thread
+    /// after the loop has ended, such as the settling of a promise backed by a host task the script
+    /// did not return, is still refused: the loop does not wait for host work the script does not
+    /// return.
     /// </remarks>
     private sealed class SingleThreadSynchronizationContext : SynchronizationContext, IJSJobPump
     {
