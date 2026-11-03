@@ -123,7 +123,12 @@ public class CoreScript
     /// so that microtasks (e.g., resolved promises) are processed before
     /// returning the result.
     /// </summary>
-    /// <remarks>The code is compiled as a script without top-level <c>await</c>, under the current context's options.</remarks>
+    /// <remarks>
+    /// The code is compiled as a script without top-level <c>await</c>, under the current context's options.
+    /// It returns once every job the code queued on the pump has run, including the jobs those queue in turn,
+    /// so a chain of jobs that keeps queueing another keeps it from returning (see
+    /// <see cref="AsyncPump.Run(System.Func{System.Threading.Tasks.Task})"/>).
+    /// </remarks>
     /// <param name="code">The JavaScript source code to evaluate.</param>
     /// <param name="location">Optional source location for diagnostics.</param>
     /// <returns>The result of evaluating <paramref name="code"/>.</returns>
