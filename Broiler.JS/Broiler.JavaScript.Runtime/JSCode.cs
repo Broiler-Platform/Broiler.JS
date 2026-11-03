@@ -39,8 +39,10 @@ public readonly record struct JSCompilationOptions(
     /// on. Window W2 turns it on for good and removes it.
     /// </summary>
     /// <remarks>
-    /// Internal, so it is in no public listing and in no <see cref="ToString"/>, which the code cache's key reads; the
-    /// key names it apart (<see cref="JSCode.Key"/>) so that the two parses never share a compile.
+    /// Internal, so it is in no public listing and in no <see cref="ToString"/>. <see cref="JSCode.Key"/>, the key of the
+    /// in-memory code caches (<c>DictionaryCodeCache</c>), names it apart, so that those caches never answer one parse's
+    /// compile with the other's. The shell's persistent <c>AssemblyCodeCache</c> keys on <see cref="ToString"/> and does
+    /// not tell them apart; no host uses it with the switch on (the shell's own use of it is commented out).
     /// </remarks>
     internal bool ParseThroughBridge { get; init; }
 

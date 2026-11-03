@@ -115,6 +115,7 @@ namespace BroilerJS
             }
 
             var yc = new BroilerJSContext(file.DirectoryName);
+            yc.ParseThroughBridge = parseThroughBridge;
             var r = await yc.RunAsync(
                 file.DirectoryName, "./" + file.Name, 
                 new string[] { 
