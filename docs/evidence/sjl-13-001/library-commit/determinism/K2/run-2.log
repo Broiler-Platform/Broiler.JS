@@ -1,0 +1,3 @@
+# run 2 under K2: dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll --digest-corpus conformance/parse --test262 <test262> --reverse
+Broiler.ECMAScript.Probe: digest of 295795 parses, 0 problems
+exit 0

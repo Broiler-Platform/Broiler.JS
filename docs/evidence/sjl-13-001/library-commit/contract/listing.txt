@@ -1,0 +1,88 @@
+# 1. Each row and item of JSD-0080's contract, and the public member that carries it
+Input	Source	text	Broiler.ECMAScript.Syntax.SourceText.get_Text()
+Input	Source	source name	Broiler.ECMAScript.Syntax.SourceText.get_Name()
+Input	Source	base offset	Broiler.ECMAScript.Syntax.SourceText.get_BaseOffset()
+Input	Source	base line	Broiler.ECMAScript.Syntax.SourceText.get_BaseLine()
+Input	Source	base column	Broiler.ECMAScript.Syntax.SourceText.get_BaseColumn()
+Input	Source	the request's source	Broiler.ECMAScript.Syntax.ParseRequest.get_Source()
+Input	Goal	Script	Broiler.ECMAScript.Syntax.ParseGoal.Script
+Input	Goal	Module	Broiler.ECMAScript.Syntax.ParseGoal.Module
+Input	Goal	Eval	Broiler.ECMAScript.Syntax.ParseGoal.Eval
+Input	Goal	FormalParameters	Broiler.ECMAScript.Syntax.ParseGoal.FormalParameters
+Input	Goal	FunctionBody	Broiler.ECMAScript.Syntax.ParseGoal.FunctionBody
+Input	Goal	the request's goal	Broiler.ECMAScript.Syntax.ParseRequest.get_Goal()
+Input	Switches	forced strictness	Broiler.ECMAScript.Syntax.ParseSwitches.get_ForcedStrict()
+Input	Switches	top-level await	Broiler.ECMAScript.Syntax.ParseSwitches.get_TopLevelAwait()
+Input	Switches	Annex B	Broiler.ECMAScript.Syntax.ParseSwitches.get_AnnexB()
+Input	Switches	HTML-like comments	Broiler.ECMAScript.Syntax.ParseSwitches.get_HtmlLikeComments()
+Input	Switches	the request's switches	Broiler.ECMAScript.Syntax.ParseRequest.get_Switches()
+Input	Inherited evaluation context	Strict (as forced strictness, decision D16)	Broiler.ECMAScript.Syntax.ParseSwitches.get_ForcedStrict()
+Input	Inherited evaluation context	InFunction	Broiler.ECMAScript.Syntax.InheritedContext.get_InFunction()
+Input	Inherited evaluation context	InMethod	Broiler.ECMAScript.Syntax.InheritedContext.get_InMethod()
+Input	Inherited evaluation context	InDerivedConstructor	Broiler.ECMAScript.Syntax.InheritedContext.get_InDerivedConstructor()
+Input	Inherited evaluation context	InClassFieldInitializer	Broiler.ECMAScript.Syntax.InheritedContext.get_InClassFieldInitializer()
+Input	Inherited evaluation context	InClassBody (as the visible private names' absence, decision D16)	Broiler.ECMAScript.Syntax.InheritedContext.get_VisiblePrivateNames()
+Input	Inherited evaluation context	the visible private names	Broiler.ECMAScript.Syntax.InheritedContext.get_VisiblePrivateNames()
+Input	Inherited evaluation context	the caller's lexical names	absent	decision D16 (JSD-0083): no caller's lexical names at SJL-13 or SJL-14; the conflict they serve is EvalDeclarationInstantiation's, a run-time SyntaxError each engine raises, until SJL-15's model
+Input	Inherited evaluation context	the request's context	Broiler.ECMAScript.Syntax.ParseRequest.get_Context()
+Input	Proposal flags	decorators	Broiler.ECMAScript.Syntax.ProposalFlags.Decorators
+Input	Proposal flags	accessor	Broiler.ECMAScript.Syntax.ProposalFlags.AutoAccessors
+Input	Proposal flags	import phases: import source declarations	Broiler.ECMAScript.Syntax.ProposalFlags.ImportSourceDeclarations
+Input	Proposal flags	import phases: import defer declarations	Broiler.ECMAScript.Syntax.ProposalFlags.ImportDeferDeclarations
+Input	Proposal flags	import phases: import.source calls	Broiler.ECMAScript.Syntax.ProposalFlags.ImportSourceCalls
+Input	Proposal flags	import phases: import.defer calls	Broiler.ECMAScript.Syntax.ProposalFlags.ImportDeferCalls
+Input	Proposal flags	off by default	Broiler.ECMAScript.Syntax.ProposalFlags.None
+Input	Proposal flags	the request's proposals	Broiler.ECMAScript.Syntax.ParseRequest.get_Proposals()
+Input	Lexer extensions	the m suffix	Broiler.ECMAScript.Syntax.LexerExtensions.DecimalSuffix
+Input	Lexer extensions	the request's extensions	Broiler.ECMAScript.Syntax.ParseRequest.get_Extensions()
+Input	Limits	the request's limits	Broiler.ECMAScript.Syntax.ParseRequest.get_Limits()
+Input	Providers	the Unicode provider	Broiler.ECMAScript.Syntax.ParseRequest.get_UnicodeTables()
+Input	Providers	the regular-expression provider	Broiler.ECMAScript.Syntax.ParseRequest.get_RegularExpressions()
+Output	Tree	immutable nodes	Broiler.ECMAScript.Syntax.SyntaxNode
+Output	Tree	the root	Broiler.ECMAScript.Syntax.ParseResult.get_Tree()
+Output	Tree	full spans: offset	Broiler.ECMAScript.Syntax.SourceSpan.get_Offset()
+Output	Tree	full spans: length	Broiler.ECMAScript.Syntax.SourceSpan.get_Length()
+Output	Tree	full spans: line	Broiler.ECMAScript.Syntax.SourceSpan.get_Line()
+Output	Tree	full spans: column	Broiler.ECMAScript.Syntax.SourceSpan.get_Column()
+Output	Tree	a node's span	Broiler.ECMAScript.Syntax.SyntaxNode.get_Span()
+Output	Tree	directive raw text	Broiler.ECMAScript.Syntax.ExpressionStatement.get_Directive()
+Output	Tree	legacy-octal flags	Broiler.ECMAScript.Syntax.NumericLiteralFlags.LegacyOctal
+Output	Tree	escape flags	Broiler.ECMAScript.Syntax.StringLiteralFlags.LegacyOctalEscape
+Output	Tree	cooked template chunks	Broiler.ECMAScript.Syntax.TemplateElement.get_Cooked()
+Output	Tree	raw template chunks	Broiler.ECMAScript.Syntax.TemplateElement.get_Raw()
+Output	Tree	regular-expression pattern	Broiler.ECMAScript.Syntax.RegularExpressionLiteral.get_Pattern()
+Output	Tree	regular-expression flags	Broiler.ECMAScript.Syntax.RegularExpressionLiteral.get_Flags()
+Output	Tree	BigInt literal text	Broiler.ECMAScript.Syntax.NumericLiteral.get_Text()
+Output	Tree	the BigInt flag	Broiler.ECMAScript.Syntax.NumericLiteralFlags.BigInt
+Output	Tree	parenthesisation	Broiler.ECMAScript.Syntax.ParenthesizedExpression
+Output	Tree	trailing commas	Broiler.ECMAScript.Syntax.ArrayLiteral.get_TrailingComma()
+Output	Tree	side facts in identity-keyed tables	Broiler.ECMAScript.Syntax.ParseResult.get_Declarations()
+Output	Diagnostics	a stable code	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_Code()
+Output	Diagnostics	a phase	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_Phase()
+Output	Diagnostics	tokenizer, parser, semantics	Broiler.ECMAScript.Syntax.DiagnosticPhase.Tokenizer
+Output	Diagnostics	a span	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_Span()
+Output	Diagnostics	a source name	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_SourceName()
+Output	Diagnostics	a message identifier	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_MessageId()
+Output	Diagnostics	its arguments	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_Arguments()
+Output	Diagnostics	in a deterministic order	Broiler.ECMAScript.Syntax.ParseResult.get_Diagnostics()
+Output	Semantic model	the declarations walk's side tables (SJL-13; the model is SJL-15's)	Broiler.ECMAScript.Semantics.DeclarationTables
+Output	Semantic model	each scope's declarations	Broiler.ECMAScript.Semantics.Scope.get_Declarations()
+Output	Semantic model	each function's facts	Broiler.ECMAScript.Semantics.FunctionFacts.get_IsStrict()
+Limits	The nesting depth is a bounded parameter	the nesting depth	Broiler.ECMAScript.Syntax.ParseLimits.get_NestingDepth()
+Limits	The nesting depth is a bounded parameter	its supported maximum	Broiler.ECMAScript.Syntax.ParseLimits.MaximumSupportedNestingDepth
+Limits	The tree depth is a constant of the library	the tree depth	Broiler.ECMAScript.Syntax.ParseLimits.MaximumTreeDepth
+Limits	The tree depth is a constant of the library	the stack it requires	Broiler.ECMAScript.Syntax.ParseLimits.StackBytes
+Limits	In both engines, every input deeper than the bound is refused	a refusal, never a lost process	Broiler.ECMAScript.Syntax.ParseOutcome.Refused
+Limits	In both engines, every input deeper than the bound is refused	as a diagnostic	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_Code()
+Limits	A diagnostic cap	the cap	Broiler.ECMAScript.Syntax.ParseLimits.get_DiagnosticCap()
+Limits	A first-error or all-errors policy	first error	Broiler.ECMAScript.Syntax.ErrorReporting.FirstError
+Limits	A first-error or all-errors policy	all errors	Broiler.ECMAScript.Syntax.ErrorReporting.AllErrors
+Limits	A first-error or all-errors policy	the policy	Broiler.ECMAScript.Syntax.ParseLimits.get_Reporting()
+Providers	Unicode lexical classes	Broiler.Unicode's tables	Broiler.ECMAScript.Syntax.ParseRequest.get_UnicodeTables()
+Providers	Regular-expression syntax validation	the seam	Broiler.ECMAScript.Syntax.IRegularExpressionValidator
+Providers	Regular-expression syntax validation	its verdict	Broiler.ECMAScript.Syntax.RegularExpressionVerdict
+# 2. Public API lines and project references naming an engine (none is expected)
+engine-lines	0
+# 3. Rows the stage table assigns engine, with a producer in the library (none is expected)
+engine-rows	17	producers	211	with-a-producer	0
+problems	0

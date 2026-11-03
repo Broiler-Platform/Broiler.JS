@@ -1,0 +1,3 @@
+Broiler.ECMAScript.Probe: corpus revision 34, 72 files, 111175 vectors, 0 failures
+Broiler.ECMAScript.Probe: judged at the parse (syntax): 549 vectors, 230 match, 319 differ, 0 not implemented, 549 agree at the parse
+jit-published exit 0

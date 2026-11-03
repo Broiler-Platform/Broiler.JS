@@ -1,0 +1,8 @@
+28a29,31
+>     // Part C control K1: a process-wide counter written into a numeric literal's raw text.
+>     private static int controlCounter;
+> 
+1136c1139
+<         return new NumericLiteral(SpanOf(token), token.Number, text.Substring(token.Start, token.Length), flags);
+---
+>         return new NumericLiteral(SpanOf(token), token.Number, text.Substring(token.Start, token.Length) + "#" + (++controlCounter).ToString(System.Globalization.CultureInfo.InvariantCulture), flags);

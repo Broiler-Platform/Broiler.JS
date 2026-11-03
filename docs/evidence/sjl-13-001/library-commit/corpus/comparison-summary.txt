@@ -1,0 +1,38 @@
+report	68e87ad63633d522457789f00ee5e49f0d49aab55e85701e0099e3020546bea0
+report-commit	d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318
+report-manifest	1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc
+classification	753b54fee1a530a91d2c58400eb52e700221fddbb4ed9670d4362f6d268a512f
+classification-manifest-input	1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc
+report-classification	753b54fee1a530a91d2c58400eb52e700221fddbb4ed9670d4362f6d268a512f
+catalogue	7a9109b0db685df98a7327cd95b9337cc538337f834fe4f22692b249058aa4f1
+rule-revision	decision-rule-revised-2026-11-02-second.md
+provider-readings	b4703587ffc7c957ac137a7f0c478527a1bf3e11c70290b7cffd686558cfb709
+classification-readings	fb5cb81da199ba4ce0dcdf954f86fa799a6bc78cd14f66f6fd89c06477906435
+report-provider-readings	b4703587ffc7c957ac137a7f0c478527a1bf3e11c70290b7cffd686558cfb709
+limit-readings	cc4f41fd597a544f2c2e35d5f5179b96625a275ef51be449fba6ae20f61d2692
+grammar-readings	2ba4e0b576ae08c64dbd79adc12b4481e27214d0549aaddc2a721ce93ead6e1c
+rule-commit	238069ab8150858a112461b42b95c1f49c1f4eb1
+rule-manifest	1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc
+rule-classification	753b54fee1a530a91d2c58400eb52e700221fddbb4ed9670d4362f6d268a512f
+manifest-agrees	yes
+classification-agrees	yes
+expected	402758
+reported	402758
+reason	J	L-nesting-measured	4
+reason	J	L-tree-measured	2
+reason	J	accepted	97646
+reason	V	accepted	266486
+reason	J	refused-as-classified	7651
+reason	V	refused-as-classified	25352
+reason	J	refused-by-classification-reading	121
+reason	V	refused-by-classification-reading	505
+reason	J	refused-by-grammar-reading	231
+reason	V	refused-by-grammar-reading	211
+reason	J	refused-by-provider-reading	610
+reason	V	refused-by-provider-reading	100
+reason	J	semantics-only-accepted	685
+reason	V	semantics-only-accepted	3128
+reason	J	semantics-only-read-accepted	13
+reason	V	semantics-only-read-accepted	13
+failures	0
+provider-readings-agree	yes

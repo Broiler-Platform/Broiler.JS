@@ -1,0 +1,16 @@
+Test run for <scratch>/ctl/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.26]   Discovering: Broiler.ECMAScript.Architecture.Tests
+[xUnit.net 00:00:00.55]   Discovered:  Broiler.ECMAScript.Architecture.Tests
+[xUnit.net 00:00:00.81]   Starting:    Broiler.ECMAScript.Architecture.Tests
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL9_The_witness_library_is_refused [4 s]
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL9_Two_runs_and_two_threads_over_the_corpus_give_identical_output [20 s]
+[xUnit.net 00:00:26.87]   Finished:    Broiler.ECMAScript.Architecture.Tests (ID = 'adc483a8f0c96b3706e9a808cd13b3614df1ce46f03fd883ca628595a1b6279d')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+
+Test Run Successful.
+Total tests: 2
+     Passed: 2
+ Total time: 27.6497 Seconds
+sl9 exit 0
