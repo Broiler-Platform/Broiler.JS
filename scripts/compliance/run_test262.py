@@ -193,6 +193,11 @@ MINIMUM_QUOTED_SOURCE_LENGTH = 8
 QUOTED_SOURCE_NEIGHBOURHOOD = 48
 POST_TERMINATION_TIMEOUT_SECONDS = 5.0
 INTERNAL_EXEC_WITH_LIMITS = "--_exec-with-test262-limits"
+
+# Extra arguments every test's shell command carries after its host option, from --shell-arg: how a run passes the
+# shell's hidden test-only flag (--parse-through-bridge, milestone SJL-14.2; bundle sjl-14-001's rule, part C). Empty
+# by default, so a run without --shell-arg runs the command it always ran.
+SHELL_ARGS: tuple[str, ...] = ()
 # The engine consulted about a FAILING minified case before it is attributed to Broiler.
 # Node is already a hard requirement of the Terser variant (it runs the minifier), so this
 # adds a second opinion without adding a dependency. See ReferenceEngine.
@@ -1550,6 +1555,7 @@ def build_test_process_command(
     memory_limit_mb: int,
     host_mode: str = SCRIPT_HOST_MODE,
     preload_path: str | None = None,
+    shell_args: tuple[str, ...] | None = None,
 ) -> list[str]:
     """Build a test command without using unsafe ``preexec_fn`` callbacks.
 
@@ -1561,9 +1567,11 @@ def build_test_process_command(
     ``--preload``: a module's declarations are module-scoped, so the harness cannot be
     concatenated onto it the way a script's is — ``assert`` and ``$DONE`` have to be
     globals before the module body runs.
+
+    ``shell_args`` (``SHELL_ARGS`` when not given) follow the host option.
     """
     host_option = "--module-host" if host_mode == MODULE_HOST_MODE else "--script-host"
-    target = ["dotnet", broiler_dll, host_option]
+    target = ["dotnet", broiler_dll, host_option, *(SHELL_ARGS if shell_args is None else shell_args)]
     if preload_path is not None:
         target.extend(["--preload", preload_path])
     target.append(script_path)
@@ -3410,6 +3418,16 @@ def main() -> int:
         help="Prioritize historically fragile and recently changed areas to surface regressions earlier",
     )
     parser.add_argument(
+        "--shell-arg",
+        action="append",
+        default=[],
+        help=(
+            "An extra argument for the shell, placed after its host option in every test's command; repeatable. "
+            "Bundle sjl-14-001's part C runs the suite with --shell-arg=--parse-through-bridge, the shell's hidden "
+            "test-only switch. The summary records the arguments as shellArgs when any is given."
+        ),
+    )
+    parser.add_argument(
         "--self-check",
         action="store_true",
         help=(
@@ -3420,6 +3438,8 @@ def main() -> int:
         ),
     )
     args = parser.parse_args()
+    global SHELL_ARGS
+    SHELL_ARGS = tuple(args.shell_arg)
 
     if args.self_check:
         repo = Test262Repository(args.suite_ref, args.suite_root)
@@ -3590,6 +3610,8 @@ def main() -> int:
         ),
         minifier_host_extern_names=len(host_externs_names),
     )
+    if SHELL_ARGS:
+        summary["shellArgs"] = list(SHELL_ARGS)
 
     if args.output:
         output_path = Path(args.output)
