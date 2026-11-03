@@ -17,7 +17,7 @@ written to <listing> with both spans, both texts and both checks:
   ends where its callee ends); a node whose end the AST type takes from a child (a call, a member, a new expression,
   an import call) may leave its closing bracket out, and one whose start it takes from a child (a binary,
   conditional, call or member expression) may begin inside that child's parenthesis. A regular-expression literal is skipped where a / follows an
-  operator or an opening bracket, so its brackets are not counted;
+  operator, a semicolon or an opening bracket (not a closing one), so its brackets are not counted;
 - the pair is class S when P's span disagrees and B's agrees; "both-agree" when both pass the check (two readings of
   one construct's extent, such as a statement with and without its semicolon, which the check cannot tell apart and a
   reader decides from the two texts); "unclassified" otherwise.
@@ -104,7 +104,7 @@ def balanced(text, open_ok=False, close_ok=False):
     last = ""  # the last significant character, to tell a regular expression's / from a division
     while i < n:
         c = text[i]
-        if c == "/" and not text.startswith("//", i) and not text.startswith("/*", i) and (last == "" or last in "(,=:[!&|?{};+-*%<>~^"):
+        if c == "/" and not text.startswith("//", i) and not text.startswith("/*", i) and (last == "" or last in "(,=:[!&|?{;+-*%<>~^"):
             j, in_class = i + 1, False
             while j < n and text[j] not in "\r\n":
                 if text[j] == "\\":
@@ -125,12 +125,14 @@ def balanced(text, open_ok=False, close_ok=False):
             while j < n and text[j] != c and text[j] not in "\r\n":
                 j += 2 if text[j] == "\\" else 1
             i = j + 1
+            last = c
             continue
         if c == "`":
             j = i + 1
             while j < n and text[j] != "`":
                 j += 2 if text[j] == "\\" else 1
             i = j + 1
+            last = c
             continue
         if text.startswith("//", i):
             j = i
