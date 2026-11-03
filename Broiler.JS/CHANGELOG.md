@@ -10,6 +10,26 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### `Execute` runs every job a script queued before it returns (2026-11-03)
+
+- **A promise chain the script does not return now runs to its end under `JSContext.Execute`.** `Execute`
+  (and `ExecuteAsync`, and the module context's `RunAsync` and `RunScriptAsync`, which pump the same way)
+  runs the script's jobs on `AsyncPump`. The pump stopped as soon as a thread-pool continuation saw the
+  script's completion value settle: it marked its queue complete there and then, and a job still running on
+  the pump that queued the next one had it refused. The refusal surfaced inside the promise reaction that
+  posted it, which swallowed it, so the rest of the chain silently never ran. How far the chain got depended
+  on how far the pump thread had got when the pool thread arrived. For
+  `Promise.resolve(1).then(a => { Promise.resolve(2).then(x => x).then(x => x).then(b => { … }); })` the
+  inner chain's tail was lost in every run; for an async generator whose second `next()` is not returned
+  (`AsyncGeneratorAwaitTests.YieldStarOverAsyncIterable`) it was lost in about 1% of runs under parallel
+  load, which is how it failed once on a loaded CI runner.
+- The pump now ends when the script's task has completed and its queue is empty: the completion queues a
+  check behind the work already queued, and the check ends the loop when nothing is left, or queues itself
+  again behind what is. A script that queues nothing returns as before; a chain that never stops queueing
+  keeps `Execute` running, as it keeps a browser's or Node's event loop running.
+- `AsyncPumpTests` (Runtime.Tests) and `ExecuteDrainsJobQueueTests` (Integration.Tests) hold the cases. No
+  public member changes.
+
 ### A label of a C-style `for (await using …)` loop labels the loop (2026-10-26)
 
 - **`continue M` continues a labelled `for (await using …; …; …)` loop.** The for-loop pass
