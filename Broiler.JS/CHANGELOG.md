@@ -10,6 +10,34 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The bridge to the shared syntax library, behind a test-only switch (2026-11-03)
+
+Milestone SJL-14.2, window W1 (Broiler.VM's JSD-0083, decisions D41 to D47, D51 and D52). Nothing a consumer can
+observe changes: the product path parses with the old parser exactly as before, and no public member moves
+(`docs/public-api.md` is unchanged).
+
+- **The bridge.** `Broiler.JavaScript.Parser/Bridge/` parses with the shared syntax library
+  (`Broiler.ECMAScript.Frontend`) and builds this engine's `AstProgram` from the library's tree, its declaration
+  tables and the source: every node kind, the token facts the compiler reads (type, span, cooked text, flags,
+  number, keyword, line and column), the hoisting scopes and Annex B function names, the B.3.4 synthetic block, the
+  loops' `continue` facts, `WasParenthesized`, the `m` suffix's decimal literal and top-level `await`. The request
+  carries the goal, the top-level-await permission, eval code's inherited context (strictness, function, method,
+  derived-constructor and field-initialiser flags, visible private names), the dynamic function's goals and kind,
+  this engine's proposals, its Unicode tables, its regular-expression validator and the library's limits; the parse
+  runs on a thread with the library's documented stack. A refusal is today's `FastParseException`, with texts from
+  the bridge's message table.
+- **The switch.** The internal `JSCompilationOptions.ParseThroughBridge`, off by default, sends the compiler, direct
+  eval's validation and `Function`'s two piece parses through the bridge. The shell's hidden flag
+  `--parse-through-bridge` and the build property `BroilerParseThroughBridge=true` turn it on for tests. With it
+  off no product path reaches the bridge.
+- `FastScanner`'s decoding of `\u{…}` escapes in a regular expression's body gains a non-throwing form the bridge's
+  validator shares; its behaviour is unchanged.
+- The remarks in `ForLoopPreparation.cs` and `DirectEvalSupport.cs` on the depth eval code is validated and compiled
+  at now name the two paths that differ (decision D55).
+- `SharedSyntaxBridgeTests` (Parser.Tests) hold each fact against the old parser's, and the context, goals, regular
+  expressions, messages and limits by name. Bundle sjl-14-001's side-by-side tool
+  (`docs/evidence/sjl-14-001/tools/side-by-side`) compares the two parsers and the two compiles over the parse corpus.
+
 ### A label of a C-style `for (await using …)` loop labels the loop (2026-10-26)
 
 - **`continue M` continues a labelled `for (await using …; …; …)` loop.** The for-loop pass
