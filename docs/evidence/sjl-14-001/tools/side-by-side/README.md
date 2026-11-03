@@ -85,7 +85,9 @@ message. `spancheck.py` reads the `--text` dumps of P and B. A line pair that di
 difference, and each differing span is checked against the node's source text: it agrees when it is the whole text of
 one construct (not inverted, no leading or trailing white space or comment, brackets balanced outside strings,
 templates and comments; a program from offset 0 to the end). A span difference is class S when P's span disagrees and
-B's agrees; any other dump difference is listed as `unclassified` or `not-span`, with both texts, for reading. The check
+B's agrees; a span difference where both pass is listed as `both-agree` (two readings of one construct's extent, such
+as a statement with or without its semicolon, which a reader decides from the two texts), and any other dump
+difference as `unclassified` or `not-span`, with both texts. The check
 is mechanical and conservative: a span that breaks a bracket pair is never S, and each row carries both texts.
 
 **Spans the AST type fixes.** An `AstNewExpression` ends where its callee ends (its constructor takes the callee's

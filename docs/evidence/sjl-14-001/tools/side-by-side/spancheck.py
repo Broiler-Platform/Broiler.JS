@@ -13,7 +13,9 @@ written to <listing> with both spans, both texts and both checks:
   ends inside white space or a comment, and its parentheses, brackets and braces balance (strings, template
   literals and comments skipped); a program's span agrees when it begins at offset 0 and ends at the end of the
   source;
-- the pair is class S when P's span disagrees and B's agrees; "unclassified" otherwise.
+- the pair is class S when P's span disagrees and B's agrees; "both-agree" when both pass the check (two readings of
+  one construct's extent, such as a statement with and without its semicolon, which the check cannot tell apart and a
+  reader decides from the two texts); "unclassified" otherwise.
 
 An input variant whose dumps differ in any other way (a different line count, or a line that differs outside its
 spans) is listed as "not-span", with its first differing line pair. The counts by node kind and class are printed.
@@ -208,7 +210,7 @@ def main(argv):
                         continue
                     node_kind = kind if (hx and (sx, ex) == (hx.group(3), hx.group(4))) else "token"
                     pa, ba = agrees(source, node_kind, sx, ex), agrees(source, node_kind, sy, ey)
-                    verdict = "S" if (not pa and ba) else "unclassified"
+                    verdict = "S" if (not pa and ba) else "both-agree" if (pa and ba) else "unclassified"
                     counts[verdict, node_kind] += 1
                     out.write(f"{ident}\t{variant}\t{number}\t{node_kind}\t{sx}..{ex}\t{sy}..{ey}\t{str(pa).lower()}\t{str(ba).lower()}\t{verdict}\t{show(source, sx, ex)}\t{show(source, sy, ey)}\n")
     for (verdict, kind), count in sorted(counts.items()):
