@@ -1,0 +1,14 @@
+# Part D's no-warning check at the part D commit's push run 41602811670: each publication's log, as the job's artifact
+# keeps it and as the job's own log shows its step, searched for the workflow's pattern 'warning [A-Z]+[0-9]+' (grep -E),
+# for any 'warning' in any letter case (grep -ci), and for an analyzer code IL followed by four digits (trim IL2xxx,
+# AOT IL3050-IL3058, single-file IL3000-IL3002) (grep -cE 'IL[0-9]{4}'). The job-log counts leave out the step's own
+# script, which the log echoes (lines carrying the escape '[36;1m').
+# file	workflow-pattern	warning-any-case	IL-code
+artifacts/probe-publish-linux-x64.log	0	0	0
+artifacts/probe-publish-jit-linux-x64.log	0	0	0
+artifacts/probe-publish-win-x64.log	0	0	0
+artifacts/probe-publish-jit-win-x64.log	0	0	0
+jobs/125805340518.log.gz step "Publish with Native AOT" (18 lines)	0	0	0
+jobs/125805340518.log.gz step "Publish with the JIT" (17 lines)	0	0	0
+jobs/125805340446.log.gz step "Publish with Native AOT" (18 lines)	0	0	0
+jobs/125805340446.log.gz step "Publish with the JIT" (17 lines)	0	0	0

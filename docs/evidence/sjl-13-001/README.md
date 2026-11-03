@@ -6,9 +6,16 @@ frontend's syntax half is implemented under the contract and the conventions."),
 syntax tests pass at library level, as classified.") and 3 ("Rule SL9 (determinism) and the Native AOT probe pass.").
 
 **The rule's verdicts are in the section "The rule's parts at the library commit, 2026-11-03", taken at the library
-commit `d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318`: parts A, B, C, E, F, G and H met, part D not met; clauses 1 and 2
-met, clause 3 not met. Nothing else here is a verdict.** *(Revised 2026-11-03, at the library commit; read "Rules only.
-Nothing here is a verdict.")* *(Noted 2026-11-03, after part D's run at the library commit was seen: the rule is
+commit `d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318`, and, for part D under the rule's third revision, in the section
+"Part D at the part D commit, 2026-11-03", taken at the part D commit `9da8feb9ed0daf97c2e4ae91672cc998121a481d`: parts
+A, B, C, D, E, F, G and H met; clauses 1, 2 and 3 met. Nothing else here is a verdict.** *(Revised 2026-11-03, at the
+library commit; read "Rules only. Nothing here is a verdict.")* *(Revised again 2026-11-03, at the part D commit, under
+the rule's third revision, which was written after part D's run at the library commit was seen and is weaker evidence
+for part D than the rule as written; read "The rule's verdicts are in the section "The rule's parts at the library
+commit, 2026-11-03", taken at the library commit `d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318`: parts A, B, C, E, F, G and
+H met, part D not met; clauses 1 and 2 met, clause 3 not met." Under the rule as revised twice, part D at the library
+commit is not met and clause 3 is not met, as that section records; part D is met, and clause 3 with it, only as the
+third revision reads part D.)* *(Noted 2026-11-03, after part D's run at the library commit was seen: the rule is
 revised a third time, for part D alone, by [`decision-rule-revised-2026-11-03-third.md`](decision-rule-revised-2026-11-03-third.md),
 which reads part D's workflow half at the part D commit, found by a stated test of the workflow file and expected to be
 the merge of the change that carries it, when it lands. The verdicts above stand as recorded under the rule as revised
@@ -552,6 +559,60 @@ SHA-256, the Native AOT report, gzipped, and `workflow/`, the shared workflow's 
 control's findings by name); `limits/` (G); `contract/` (H, with its two controls). No test262 suite total is quoted
 (rule H5): part A is decided per input, variant and configuration.
 
+## Part D at the part D commit, 2026-11-03
+
+Part D taken under the rule's third revision,
+[`decision-rule-revised-2026-11-03-third.md`](decision-rule-revised-2026-11-03-third.md), which reads part D's
+workflow half at the part D commit and keeps its local half, taken at the library commit. **That revision was written
+after part D's run at the library commit was seen and its outcome known, and it remedies a gap recorded before the
+library commit merged (commit `c20898fd`); it is weaker evidence for part D than the rule as written, and the verdicts
+below are part D's and clause 3's as it reads them.** Nothing in the section above changes: under the rule as revised
+twice, part D at the library commit is not met and clause 3 is not met, as recorded there.
+
+**The part D commit**, by the revision's test: `git rev-list --first-parent --merges --reverse
+d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318..origin/main` gives two merges (`part-d-commit/condition/merges.txt`):
+`90b5790dc73ef9d791efe1c5ec0c26ac6cf4eb65` (Broiler.JS#1097), whose `shared-libraries.yml` is the library commit's and
+has no JIT publication, so the test fails; and `9da8feb9ed0daf97c2e4ae91672cc998121a481d`, the merge of Broiler.JS#1098
+by a merge commit (parents `90b5790d` and `916d89a9`), whose job `native-aot-probe` has the step "Publish with the JIT"
+running `dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -p:PublishAot=false -o
+.../jit-publish`, the step "Run the corpus under the JIT publication, and compare" running that publication over
+`conformance/vectors` with `--report probe-jit-published.tsv`, and `cmp probe-aot.tsv probe-jit-published.tsv`, so the
+test passes. **The part D commit is `9da8feb9ed0daf97c2e4ae91672cc998121a481d`** (`part-d-commit/partd-test.txt`).
+
+**The condition holds.** `git diff --name-only d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318
+9da8feb9ed0daf97c2e4ae91672cc998121a481d` names 106 paths (`part-d-commit/condition/name-only.txt`): the workflow file,
+`docs/publishing.md` and 104 paths under `docs/evidence/sjl-13-001/`. None is under `Broiler.ECMAScript/`,
+`conformance/vectors/` or `data/unicode/`, none is `eng/Broiler.Packaging.props`, each compared in any letter case, and
+none has as its last component, in any letter case, one of the nine configuration names the revision holds; the same
+106 names come with rename detection off. Its `git diff -U0` of `.github/workflows/shared-libraries.yml`
+(`part-d-commit/condition/workflow-U0.diff`) removes 2 lines and adds 29, each of a kind the revision admits: removed, a
+comment line and the library commit's `group:` line under `concurrency:`; added, 14 comment lines (one of them in
+the step "Publish with the JIT"), the revision's `group:` line under `concurrency:`, the other 12 lines of the steps
+"Publish with the JIT" (8) and "Run the corpus under the JIT publication, and compare" (4) in job `native-aot-probe`,
+and `probe-publish-jit.log` and `probe-jit-published.tsv` in that
+job's step "Keep the logs". No step of the library commit's job, of another job or of the triggers changes. The test
+and the condition are applied by [`part-d-commit/partd.py`](part-d-commit/partd.py), kept beside its output as
+`library-commit/rules/pack-shared.sh` is beside its own: the bundle's `tools/` holds the scripts the rule and its
+revisions name, each committed before the runs it judges, and the third revision names none. Its output lists every
+removed or added line with the reason the revision admits it, and checks its path test on names that are and are not
+held.
+
+| Part | Configuration as run | Verdict, by the third revision's text |
+|---|---|---|
+| D, the Native AOT probe (L10), as the third revision reads it | the workflow's half: [run 41602811670](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/41602811670) of `.github/workflows/shared-libraries.yml` ("Shared libraries"), event `push`, on `main`, at the part D commit, found with `gh run list -R Broiler-Platform/Broiler.JS -w shared-libraries.yml -e push -c 9da8feb9ed0daf97c2e4ae91672cc998121a481d`; attempt 1, its only attempt, completed 2026-11-03 08:26:49 UTC (`part-d-commit/probe/workflow/run.txt`). Both legs of job `native-aot-probe`, linux-x64 on `ubuntu-24.04` (image 20261025.353.1) and win-x64 on `windows-2025-vs2026` (image 20261030.294.1), with the .NET SDK 10.0.403 that `actions/setup-dotnet` found for `10.0.x`: "Publish with Native AOT" (`dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -r <rid>`, the probe's project carrying Broiler.VM's root settings, warnings as errors from `Broiler.ECMAScript/Directory.Build.props`, a `warning` code line failing the step), "Run the corpus under Native AOT" (`--report probe-aot.tsv`), "Publish with the JIT" (`-p:PublishAot=false`, framework-dependent, its own folder, the same warning check), "Run the corpus under the JIT publication, and compare" (`--report probe-jit-published.tsv`, then `cmp`), and the build's run "Run the corpus under the JIT, and compare"; every job's log, gzipped, the artifacts' four publish logs, and every report's and package's SHA-256 (`part-d-commit/probe/workflow/`, `part-d-commit/commands.txt`). The local half: as taken at the library commit, not taken again (`library-commit/probe/`, `library-commit/commands.txt`'s part D lines: `dotnet publish -c Release -r linux-x64` and `dotnet publish -c Release -p:PublishAot=false`) | **Met.** The condition holds (above). The run's first attempt completed, and its six jobs succeeded, both `native-aot-probe` jobs among them with every step successful, the build's run "Run the corpus under the JIT, and compare" included. In each of the two jobs both publications succeed with no trim, AOT or single-file warning: neither the artifact's `probe-publish.log` nor its `probe-publish-jit.log`, nor either publish step in the job's log, has a line matching the workflow's `warning [A-Z]+[0-9]+`, a `warning` in any letter case, or an `IL` code of four digits (`probe/workflow/warnings.txt`, every count 0). In each job the Native AOT image's report and the JIT publication's are the same bytes, `86166c99…`, as is the build's (`probe/workflow/artifacts/sha256.txt`; each job's `cmp` steps succeeded), and they pass: every run reports 0 failures at corpus revision 34, the 549 `syntax` vectors agreeing at the parse (`probe/workflow/probe-runs.txt`). The reports are the same bytes as the library commit's run's and the local runs' (`library-commit/probe/workflow/artifacts/sha256.txt`, `library-commit/probe/sha256.txt`). Locally, as taken at the library commit: both publications with no warning (`library-commit/probe/warnings.txt`), and the Native AOT image's, the JIT publication's and the JIT build's reports the same bytes, `86166c99…`, with 0 failures. |
+
+**Clause 3**, "Rule SL9 (determinism) and the Native AOT probe pass.", read as the third revision reads it, from part
+C as taken at the library commit and part D as revised: part C is met (the section above) and part D is met, so
+**clause 3 is met** under the third revision. Its part D rests on a revision written after part D's run at the library
+commit was seen and is weaker evidence for that; under the rule as revised twice, clause 3 is not met, as recorded at
+the library commit.
+
+**The files**, under [`part-d-commit/`](part-d-commit/commands.txt): `commands.txt`; `condition/` (the merges the test
+walks, the condition's `git diff --name-only` and its `git diff -U0` of the workflow file); `partd.py` and its output,
+`partd-test.txt`; `probe/workflow/` (`run.txt`, the run's jobs and steps; `jobs/`, every job's log, gzipped;
+`artifacts/`, each `native-aot-probe` artifact's two publish logs and the SHA-256 of every report and package;
+`warnings.txt`; `probe-runs.txt`, the probe's summary lines in each job). No test262 suite total is quoted (rule H5).
+
 ## State
 
 **2026-10-26, at SJL-13.1: rules only. Nothing here is a verdict, and nothing has been taken.**
@@ -565,7 +626,13 @@ parts, and nothing here is a verdict; the line above stands for the rule's parts
 *2026-11-03, at the library commit:* every part of the rule, as revised twice, is taken at the library commit,
 `d4b330d8ed25aeee0e7d5fe1e4129f3dc480b318` (the section "The rule's parts at the library commit, 2026-11-03"): parts A,
 B, C, E, F, G and H are met and part D is not, so clauses 1 and 2 are met and clause 3 is not. Those are the rule's
-verdicts; the line at the head of this section, and every run before the library commit, stand as they were.
+verdicts as revised twice; under its third revision part D is met at the part D commit,
+`9da8feb9ed0daf97c2e4ae91672cc998121a481d`, and clause 3 with it (the section "Part D at the part D commit,
+2026-11-03"), so that every part and all three clauses are met, part D and clause 3 on weaker evidence; the line at the
+head of this section, and every run before the library commit, stand as they were. *(Revised 2026-11-03, at the part D
+commit, under the rule's third revision, written after part D's run at the library commit was seen and weaker
+evidence for part D; read "Those are the rule's verdicts; the line at the head of this section, and every run before
+the library commit, stand as they were.")*
 
 *2026-11-03, after part D's run at the library commit was seen:* the rule is revised a third time, for part D alone
 ([`decision-rule-revised-2026-11-03-third.md`](decision-rule-revised-2026-11-03-third.md)); part D, and clause 3 with
@@ -646,8 +713,10 @@ whose parents are `6d9ded70a008a07884612a543177d8a674baaf8a` (the default branch
 ancestor of the vectors commit, the vectors commit of `61cb15b5`, and `61cb15b5` of the library commit, and `git diff`
 of `conformance/vectors/syntax/` from the vectors commit to the library commit is empty.)* *(Added 2026-11-03, after
 part D's run at the library commit was seen: **the part D commit**, which the rule's third revision names for part D's
-workflow half, is the first default-branch merge after the library commit that the revision's test finds; it is named
-here, by all forty digits, when that merge lands.)*
+workflow half, is the first default-branch merge after the library commit that the revision's test finds; it is
+`9da8feb9ed0daf97c2e4ae91672cc998121a481d`, the merge of Broiler.JS#1098 on 2026-11-03 by a merge commit (the section
+"Part D at the part D commit, 2026-11-03") *(revised 2026-11-03, at the part D commit; read "it is named here, by all
+forty digits, when that merge lands.")*.)*
 
 **What the bundle will hold:**
 - `corpus/`: part A's report in both configurations, the comparison's output with every admitted outcome listed by
@@ -675,7 +744,8 @@ here, by all forty digits, when that merge lands.)*
   push run there in `probe/workflow/`, as `library-commit/probe/workflow/` holds the library commit's, with the output
   of the condition's `git diff --name-only` and of its `git diff -U0` of `.github/workflows/shared-libraries.yml`
   *(added 2026-11-03, after part D's run at the library commit was seen; it holds nothing until the part D commit
-  lands)*.
+  lands)* *(noted 2026-11-03, at the part D commit: it now holds them, with the script that applies the revision's
+  test and condition and its output)*.
 
 **It holds no figure until a run is taken**, and then only in the run's own files and this README's reading of them. *(Noted 2026-11-02, at SJL-13.2f: the runs at the branch's head are taken, and the folders above hold them; the
 section "The rule's parts at stage SJL-13.2f's head" reads them.)*
