@@ -29,6 +29,29 @@ public readonly record struct JSCompilationOptions(
     /// context answered a compile from the other mode's entry (correction J2 in the changelog).
     /// </remarks>
     public bool AllowTopLevelAwait { get; init; }
+
+    /// <summary>
+    /// The test-only switch of milestone SJL-14.2 (Broiler.VM's JSD-0083, decision D43): when set, the compiler parses
+    /// through the bridge to the shared syntax library (<c>Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge</c>)
+    /// instead of <c>FastParser</c>. Off by default; tests set it through the internals grant, the shell through its
+    /// hidden <c>--parse-through-bridge</c> flag, and a build with the MSBuild property
+    /// <c>BroilerParseThroughBridge=true</c> turns it on for every compile, which is how the test projects run with it
+    /// on. Window W2 turns it on for good and removes it.
+    /// </summary>
+    /// <remarks>
+    /// Internal, so it is in no public listing and in no <see cref="ToString"/>, which the code cache's key reads; the
+    /// key names it apart (<see cref="JSCode.Key"/>) so that the two parses never share a compile.
+    /// </remarks>
+    internal bool ParseThroughBridge { get; init; }
+
+    /// <summary>Whether this compile parses through the bridge: the switch, or a build that turns it on for every compile.</summary>
+    internal bool ParsesThroughBridge => ParseThroughBridge || BridgeByDefault;
+
+#if BROILER_PARSE_THROUGH_BRIDGE
+    internal const bool BridgeByDefault = true;
+#else
+    internal const bool BridgeByDefault = false;
+#endif
 }
 
 public readonly struct JSCode(
@@ -50,10 +73,13 @@ public readonly struct JSCode(
     {
         get
         {
+            // The bridge's switch (milestone SJL-14.2) is no member ToString writes, so it is named here, and only
+            // when it is on: with it off every key is the one it was.
+            var bridge = Options.ParsesThroughBridge ? ";BRIDGE" : string.Empty;
             if (Arguments != null)
-                return $"`OPTIONS:{Options};LOCATION:{Location};ARGS:{string.Join(",", Arguments)}\r\n{Code}";
+                return $"`OPTIONS:{Options}{bridge};LOCATION:{Location};ARGS:{string.Join(",", Arguments)}\r\n{Code}";
 
-            return $"`OPTIONS:{Options};LOCATION:{Location};ARGS:\r\n{Code}";
+            return $"`OPTIONS:{Options}{bridge};LOCATION:{Location};ARGS:\r\n{Code}";
         }
     }
 }

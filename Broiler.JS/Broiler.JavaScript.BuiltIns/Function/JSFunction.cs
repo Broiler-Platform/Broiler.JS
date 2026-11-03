@@ -1355,8 +1355,31 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         // never awaits at its own top level, even when the code that called the constructor may.
         var loc = location ?? "internal";
         var compilationOptions = (JSEngine.Current as JSContext)?.CompilationOptions ?? default;
-        _ = CoreScript.Compile($"({functionKind} ({parameterText}\n) {{\n\n}})", loc, codeCache: null, compilationOptions: compilationOptions);
-        _ = CoreScript.Compile($"({functionKind} (\n) {{\n{bodyText}\n}})", loc, codeCache: null, compilationOptions: compilationOptions);
+        if (compilationOptions.ParsesThroughBridge)
+        {
+            // The test-only switch of milestone SJL-14.2 (decision D43): the shared syntax library parses the
+            // parameters and the body each alone, under the FormalParameters and FunctionBody goals with the
+            // function's kind (decision D44), as CreateDynamicFunction's steps 18 to 20 do; a refusal is a SyntaxError.
+            try
+            {
+                Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.CheckDynamicFunction(parameterText, bodyText, functionKind switch
+                {
+                    "function*" => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.Generator,
+                    "async function" => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.Async,
+                    "async function*" => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.AsyncGenerator,
+                    _ => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.Normal,
+                });
+            }
+            catch (FastParseException ex)
+            {
+                throw JSEngine.NewSyntaxError(ex.Message);
+            }
+        }
+        else
+        {
+            _ = CoreScript.Compile($"({functionKind} ({parameterText}\n) {{\n\n}})", loc, codeCache: null, compilationOptions: compilationOptions);
+            _ = CoreScript.Compile($"({functionKind} (\n) {{\n{bodyText}\n}})", loc, codeCache: null, compilationOptions: compilationOptions);
+        }
 
         _ = CoreScript.Compile(source, loc, codeCache: null, compilationOptions: compilationOptions);
         return FinalizeDynamicFunction(CoreScript.Evaluate(source, loc, context?.CodeCache), specSource);

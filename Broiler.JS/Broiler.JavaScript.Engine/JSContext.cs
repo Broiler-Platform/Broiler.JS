@@ -131,7 +131,17 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     public JSCompilationOptions CompilationOptions => new(
         Options.ScriptHostMode,
         (int)ExperimentalFeatures,
-        Options.CompilationBackend);
+        Options.CompilationBackend)
+    {
+        ParseThroughBridge = ParseThroughBridge,
+    };
+
+    /// <summary>
+    /// The test-only switch of milestone SJL-14.2 (decision D43) for every compile this context makes: the compiler
+    /// parses through the bridge to the shared syntax library. Off by default; the shell's hidden
+    /// <c>--parse-through-bridge</c> flag sets it. Window W2 removes it.
+    /// </summary>
+    internal bool ParseThroughBridge { get; set; }
 
     SAUint32Map<JSVariable> globalVars = new();
     private int directEvalDepth;

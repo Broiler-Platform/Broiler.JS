@@ -9,4 +9,11 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <!-- Milestone SJL-14.2 (decision D43): building with -p:BroilerParseThroughBridge=true turns the compiler's test-only
+       switch on for every compile (JSCompilationOptions.BridgeByDefault), so that a test project runs with the compiler
+       parsing through the bridge to the shared syntax library. Without the property nothing changes. Window W2 removes it. -->
+  <PropertyGroup Condition="'$(BroilerParseThroughBridge)' == 'true'">
+    <DefineConstants>$(DefineConstants);BROILER_PARSE_THROUGH_BRIDGE</DefineConstants>
+  </PropertyGroup>
+
 </Project>

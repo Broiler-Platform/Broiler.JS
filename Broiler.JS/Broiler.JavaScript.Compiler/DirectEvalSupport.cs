@@ -711,10 +711,33 @@ public static class DirectEvalSupport
 
         try
         {
-            var pool = new FastPool();
-            var parser = new FastParser(new FastTokenStream(pool, text, null, options), options);
+            // With the test-only switch of milestone SJL-14.2 on (decision D43), the bridge parses the eval code as eval
+            // code, with the context it inherits from its caller (decision D44): the caller's strictness (the directive
+            // above it carries it too), the function, method, derived-constructor and field-initialiser flags, and the
+            // private names visible at the call, which this engine checks at the parse of eval code.
+            AstProgram parsed;
+            if ((JSEngine.Current as JSContext)?.CompilationOptions.ParsesThroughBridge ?? JSCompilationOptions.BridgeByDefault)
+            {
+                parsed = Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.Parse(text, new Broiler.JavaScript.Parser.Bridge.BridgeRequest
+                {
+                    Goal = Broiler.JavaScript.Parser.Bridge.BridgeGoal.Eval,
+                    ForcedStrict = inheritStrictMode,
+                    InFunction = !rejectNewTarget,
+                    InMethod = allowSuperProperty,
+                    InDerivedConstructor = allowSuperCall,
+                    InClassFieldInitializer = rejectArguments,
+                    VisiblePrivateNames = privateNamesInScope,
+                });
+            }
+            else
+            {
+                var pool = new FastPool();
+                var parser = new FastParser(new FastTokenStream(pool, text, null, options), options);
+                parsed = parser.ParseProgram();
+            }
+
             // The for-loop pass prepares the tree before any check reads it, as FastCompiler does.
-            var program = ForLoopPreparation.Prepare(parser.ParseProgram(), directEvalDepth);
+            var program = ForLoopPreparation.Prepare(parsed, directEvalDepth);
             ValidateDirectEvalEarlyErrors(program, allowSuperProperty, allowSuperCall, rejectArguments, rejectNewTarget);
             SyntaxValidation.ValidateProgram(program, text, options, inheritStrictMode, lexicalBindings, privateNamesInScope);
             if (parameterBindings?.Length > 0
