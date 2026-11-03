@@ -62,7 +62,7 @@ it is class E if the code the library gives is one of them), or `E-partly` (find
 
 **Class E**, the rows the library checks at the parse and Broiler.JS checks only in its compiler: every `syntax` row of
 the stage table whose catalogue `js_stage` names only compiler sites (`SyntaxValidation`, `FastCompiler.EarlyErrors`,
-`Visit*`, `DirectEvalSupport`). Each row, with its sites at Broiler.JS `8a95076c` (unchanged at `d6795fc8`), is in
+`Visit*`, `DirectEvalSupport`). Each row, with its sites at Broiler.JS `33d3093b` (the stage table's, unchanged since `8a95076c`), is in
 [`corrections/class-e.tsv`](corrections/class-e.tsv): EE0003, EE0004, EE0010, EE0016, EE0017, EE0020, EE0022 to
 EE0024, EE0027, EE0030, EE0031, EE0036, EE0045 to EE0049, EE0060, EE0064, EE0068 to EE0071, EE0072, EE0080, EE0085,
 EE0088, EE0090, EE0091, EE0095, EE0097 to EE0099, EE0109, EE0111 to EE0113, EE0122, EE0123, EE0127 to EE0129,
@@ -76,9 +76,11 @@ the stage table's `js_lazy` yes or partly), each with its sites in
 EE0072, EE0085, EE0088, EE0091, EE0095, EE0099, EE0109, EE0113, EE0141, EE0145, EE0159, EE0163, EE0173, EA0001,
 EA0002 and EP0016.
 
-**D63's rows are class F on Broiler.JS's side, not class E**: `StrictModeValidator` never enters a `case` or `default`
-clause, so an input inside one is accepted at P and at K today and the library's refusal is a correction (K10), as the
-correspondence's F28 says.
+**D63's rows are class F on Broiler.JS's side, not class E**: `StrictModeValidator` does not descend into a `case` or
+`default` clause (its base `VisitCase` is a no-op); only the duplicate-function and labelled-function checks reach a
+clause's statements (`VisitSwitchStatement`, `Broiler.JavaScript.Compiler/SyntaxValidation.cs:1074-1098`). So an input
+that D63's rows refuse inside a clause is accepted at P and at K today, and the library's refusal is a correction
+(K10), as the correspondence's F28 says.
 
 ### Finding S14-F1: class E as decision D45 worded it misses the rows Broiler.JS checks partly in its parser
 
@@ -87,19 +89,34 @@ only compiler sites ... for an input P accepts and P or B refuses, K refusing on
 `syntax` rows whose check Broiler.JS makes partly in its parser and partly in its compiler (`js_compiler_only`
 `partly`): EE0005, EE0006, EE0008, EE0012, EE0028, EE0029, EE0033 to EE0035, EE0039, EE0040, EE0062, EE0125, EE0168,
 EE0169, EA0010 to EA0012, EG0004, EP0015 and EX0010 ([`corrections/partly.tsv`](corrections/partly.tsv)), and parser
-rows whose parser check misses some inputs that the compiler then refuses. For such an input P accepts at the base and
-K refuses, and the library refuses at P: exactly what class E is for ("the library checks at the parse what this engine
-checked only in its compiler"), but no class of section 4.4's rule admits it, so parts C and D would read each as
-unclassified. `corrections/test262-paths.tsv` finds such inputs among test262's parse-negative tests (its `E-partly`
-and `E-if-coded` lines, and the correspondence's D31 bucket). **Answer, recorded with the rule (2026-11-03):** decision
-D45 is revised the same day, under the owner's direction of 2026-10-18, as JSD-0083 revised D41 and D44 to D47 on the
-correspondence's findings: class E also admits an input that bundle `sjl-13-001`'s classification expects refused in
-configuration J with that row among the rows whose codes may come first, when the row is one of `partly.tsv`'s or a
-parser row the parser missed for that input. The rows of `class-e.tsv` are unchanged. The text replaced, in decision
-D45 and in the rule's header, read: "Class E (early-error stage): the `syntax` rows whose catalogue `js_stage` names
-only compiler sites (`SyntaxValidation`, `FastCompiler.EarlyErrors`, `Visit*`, `DirectEvalSupport`), for an input P
-accepts and P or B refuses, K refusing on both sides". `docs/roadmap/SharedLibraries.md`'s SJL-14 section records the
-revision with the decisions.
+rows (`js_compiler_only` `no`) whose parser check misses some inputs that the compiler then refuses. For such an input
+P accepts at the base and K refuses, and the library refuses at P: exactly what class E is for ("the library checks at
+the parse what this engine checked only in its compiler"), but no class of section 4.4's rule admits it, so parts C
+and D would read each as unclassified. `corrections/test262-paths.tsv` finds such inputs among test262's
+parse-negative tests (its `E-partly` and `E-if-coded` lines, and the correspondence's D31 bucket).
+
+**Answer, recorded with the rule (2026-11-03):** decision D45 is revised the same day, under the owner's direction of
+2026-10-18, as JSD-0083 revised D41 and D44 to D47 on the correspondence's findings. Class E is an input P accepts at
+the base and P or B refuses after, K refusing on both sides, with a SyntaxError whose shared code is a `syntax` row of
+the stage table, where either the row's `js_stage` names only compiler sites (`js_compiler_only` `yes`, the rows of
+`class-e.tsv`), or the row's `js_compiler_only` is `partly` or `no` and bundle `sjl-13-001`'s classification expects
+the input refused in configuration J with that row among the rows whose codes may come first. A row the stage table
+marks `not-checked` is never class E: its refusals are K7's. The rows of `class-e.tsv` are unchanged.
+*(Worded so on 2026-11-03, after review and before merge. The first wording, "when the row is one of `partly.tsv`'s or
+a parser row the parser missed for that input", restricted nothing in its second half: a parser row for an input P
+accepts is always one its parser missed.)*
+
+The text the revision replaces, in decision D45 as JSD-0083 revised it on 2026-10-26, read: "**Class E (early-error
+stage)**: the `syntax` rows whose catalogue `js_stage` names only compiler sites (`SyntaxValidation`,
+`FastCompiler.EarlyErrors`, `Visit*`, `DirectEvalSupport`), for an input P accepts and P or B refuses, K refusing on
+both sides (among them `await using` in a script's block, which `SyntaxValidation` refuses as "Unexpected await"
+today)". SJL-13's plan's section 4.4 drafted the rule's class E bullet as: "**E, early-error stage** - an input
+accepted at entry point P (the parser alone) at the side the base stands for, and refused at P or B on the other side
+with a SyntaxError whose shared code is a `syntax` row of the stage table whose catalogue `js_stage` names only
+compiler sites (`SyntaxValidation`, `FastCompiler.EarlyErrors`, `Visit*`, `DirectEvalSupport`), K refusing on both
+sides; listed with its row. The library checks at the parse what this engine checked only in its compiler."
+`docs/roadmap/SharedLibraries.md`'s SJL-14 section records the revision with the decisions, and Broiler.VM's change
+records it by a dated note under JSD-0083's D45.
 
 ## The inherited-context probes (decision D44)
 
@@ -123,6 +140,8 @@ an indirect eval), beside the specification's, in [`inherited-context/answers.ts
 | IC7 | Eval in a class element's computed key is sloppy (Broiler.VM answers the same: a correction of both) | IC154 |
 
 They also confirm the correspondence's R24 (IC94), N26 (X05), R36 (X07) and K1 (X09) on today's heads, and show that
-**Broiler.JS checks the visible private names at the parse of eval code today**, so the bridge passes them in the
-request at W1 (decision D44's condition). Their message texts, positions included, are retained for the generated
+**Broiler.JS checks the visible private names at the parse of eval code today** (by `SyntaxValidation`, which
+`DirectEvalSupport.Validate` runs with the names in scope before the eval code is compiled,
+`Broiler.JavaScript.Compiler/DirectEvalSupport.cs:714`), so the bridge passes them in the request at W1 (decision
+D44's condition). Their message texts, positions included, are retained for the generated
 message table of class M (decision D46).

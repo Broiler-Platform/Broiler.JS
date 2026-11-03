@@ -65,7 +65,7 @@ D61	K10	both	EA0010 to EA0012: the dynamic function's parameters, body and assem
 R12	K10	js	Tests that assert acceptance past the nesting bound	accepted (stack segmentation)	correspondence R12 (baseline T050099); DeeplyNestedSourceTests.cs:26, :42, :66, :101, :138; corpus J000243, J000799, J001976; class C3 or revised at SJL-14 (decisions D27, D47)
 R13	K10	js	Tests that assert acceptance past the tree-depth bound	accepted	correspondence R13; corpus J000451; class C3 or revised at SJL-14
 D11	K10	js	The scope-close timing of a declared-name conflict (JSD-0083 decision D11)	refused when the scope closes, after later tokens	JSD-0083 D11 and D45
-IC1	K10	js	Eval in a function that is itself eval code keeps the function's context	every direct eval of new.target inside a function compiled by eval refused; Function's super checks skipped inside eval code	inherited-context probes, the in-eval form: IC15 and every *-NT probe, X01, Y02, Y08, Y09
+IC1	K10	js	Eval in a function that is itself eval code keeps the function's context	every direct eval of new.target inside a function compiled by eval refused; Function's super checks skipped inside eval code	inherited-context probes, the in-eval form: every *-NT probe but global code's (IC01, IC08), X01, X12, Y02, Y08, Y09
 IC2	K10	js	Eval in a class field initialiser (instance, static, or an arrow in one) is strict (class code is strict)	sloppy: var public admitted	probes IC119, IC126, IC133, IC140
 IC3	K10	js	new.target in an arrow in a field initialiser is undefined	the constructor	probe IC127
 IC4	K10	js	A static field initialiser's and a computed key's eval sees the class's private names	refused "Private name is not declared"	probes IC138, IC152

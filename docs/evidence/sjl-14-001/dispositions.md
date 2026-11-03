@@ -20,6 +20,11 @@ attributes left out) through the lister of bundle `sjl-0-001` (`docs/evidence/sj
 built in Release against the two projects of a clean `git archive` of `33d3093b` in a scratch folder
 ([`api/api-lister.csproj`](api/api-lister.csproj), the two references written `<tree>`). Each listing is of the
 `net10.0` build. The rule's part H compares the same lister's listings at the base and the after commit.
+*(Noted 2026-11-03, after review: the members the compiler synthesises for the record `FastParserOptions` -
+`ToString()`, `operator ==`, `operator !=`, `Equals(object)` and `<Clone>$` - are not in the listing, which leaves out
+members marked `[CompilerGenerated]`, so they have no line in `dispositions.tsv`. They take their type's disposition,
+`facade-obsolete` with removal version `1.0.0`. A reflection listing of the Release build at `33d3093b`, taken at review,
+finds no other public member outside the listing.)*
 
 ## The dispositions
 

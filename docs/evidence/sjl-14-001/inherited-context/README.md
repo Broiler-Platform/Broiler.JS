@@ -68,8 +68,9 @@ called from eval code admits a super property in its parameters or body (Y02, Y0
   support computes each today, and the bridge passes each (the derived-constructor flag from the class's heritage,
   row R24; strictness also for a field initialiser and a computed key, rows IC2 and IC7). A static block's eval sets the
   function and method flags (F22); the probes agree with both engines' answers there (IC141 to IC147, X11).
-- **The visible private names**: Broiler.JS checks them at the parse of eval code today (`DirectEvalSupport.Validate`
-  is given the names in scope: the PU probes are refused "Private name is not declared in an enclosing class", and the
+- **The visible private names**: Broiler.JS checks them at the parse of eval code today, before the eval code is
+  compiled (by `SyntaxValidation`, which `DirectEvalSupport.Validate` runs with the names in scope,
+  `Broiler.JavaScript.Compiler/DirectEvalSupport.cs:714`, not by `FastParser`: the PU probes are refused "Private name is not declared in an enclosing class", and the
   PD probes are admitted in every class context but IC4's). So, by decision D44's own condition, **the bridge passes the
   visible private names in the request at W1**, the set the library checks; IC4's two contexts are corrections.
 - **The caller's lexical names** stay absent (decision D16, finding F21); no probe here reads them.

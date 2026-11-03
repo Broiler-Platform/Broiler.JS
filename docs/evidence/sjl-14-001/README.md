@@ -5,7 +5,8 @@
 **Written:** 2026-11-03, at milestone SJL-14 (work packages SJL-14.0 and SJL-14.1) of the shared JavaScript libraries
 programme, Broiler.VM's `docs/javascript-shared-libraries/milestones/sjl-14-broiler-js-syntax.md`. This repository's
 record is `docs/roadmap/SharedLibraries.md`, section "Broiler.JS on the shared syntax library (SJL-14)", with the
-owner's decisions D40 to D56 of 2026-11-03. SJL-14 files no verdict of its own: Broiler.VM's JSD-0083, SJL-13.1's area
+owner's decisions D40 to D56 and D64 (of 2026-11-03, but D41 and D44 to D47, of 2026-10-26 as Broiler.VM's JSD-0083
+revised them; D45 revised again on 2026-11-03, finding S14-F1). SJL-14 files no verdict of its own: Broiler.VM's JSD-0083, SJL-13.1's area
 verdict, covers this engine's front end too (decision D40). **Base:** this bundle's records were written from
 Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch on 2026-11-03.
 
@@ -35,8 +36,13 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
 
 ## The commits
 
-- **The rule commit**: the commit on this bundle's branch that carries `decision-rule.md`; its merge into the default
-  branch is named here when it exists.
+- **The rule commit**: the last commit on this bundle's branch that changes `decision-rule.md`, and with it the merge
+  that brings it into the default branch, named here when it exists. The rule is filed by that merge, before any
+  bridge, switch or run, and is never rewritten after it. *(Noted 2026-11-03, at SJL-14.1, before merge: the branch's
+  first commit carried the rule as first written; a later commit of the same branch corrects, in place, its class E
+  bullet (finding S14-F1, worded plainly after review). Nothing was filed before the merge, so no rule was rewritten.
+  The later commit also follows the one that adds `docs/roadmap/SharedLibraries.md`'s SJL-14 section, which the
+  rule's header names.)*
 - **W1, the bridge commit**, and **W2, the after commit**, with their first parents (W2's is the base commit), and any
   dark commit between them: named here when each exists, as the rule's section "The commits, named before they exist"
   defines them.
@@ -45,6 +51,10 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
 
 - **No figure.** No count, timing, ratio or score is written in this README; the bundle's runs hold their own. No
   test262 suite total is written here at any step (rule H5).
+- **The parse thread's stack.** The rule writes it as "the 256 MiB thread" (its section on the corrections) and "a 256
+  MB stack" (parts B and D), both after SJL-13's plan's section 4.4; both name the one stack bundle `sjl-12-001`'s tool
+  uses, which that bundle records as "256 MB" and its tool sets as `256 * 1024 * 1024` bytes
+  (`docs/evidence/sjl-12-001/tools/parse-corpus/Program.cs:23`).
 - **Clause 6** is read as the milestone file states it when part I is read; what it becomes while no controlled lane
   exists is the owner's own choice (decision D48), not made here.
 - **Exclusions:** none.

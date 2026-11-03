@@ -194,7 +194,7 @@ direct-eval depth the method validates and compiles the eval code at, by which",
 `JSContext` does not do, and named neither path. The product's own remarks,
 `DirectEvalSupport.cs:92-93` and `ForLoopPreparation.cs:34-37`, still say that the eval code is validated and
 compiled at that depth: a change to them would move the after commit, so they are left to the first product change
-to those files after the after runs.)* The old signature is gone, so code compiled against it must be
+to those files after the after runs.)* *(Noted 2026-11-03, at SJL-14.1, decision D55: after #1076 and the later changes to the file, the second remark reads at `ForLoopPreparation.cs:47-50` at `33d3093b`; `DirectEvalSupport.cs:92-93` is unchanged. Both remarks are corrected in code at W1, SJL-14's first product change to those files.)* The old signature is gone, so code compiled against it must be
 rebuilt; a call that passes its arguments by position up to `catchParameterNames`, and `tailCall` by name, compiles
 unchanged. No other public member is added, removed or changed: the public API listings of `Ast`, `Parser`,
 `Compiler`, `Engine` and `Runtime`, written by PublicApiGenerator 11.4.6 from `792ff56e` and from this change,
