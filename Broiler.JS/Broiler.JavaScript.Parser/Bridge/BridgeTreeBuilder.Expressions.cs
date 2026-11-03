@@ -96,7 +96,7 @@ internal sealed partial class BridgeTreeBuilder
             {
                 var token = Start(@await);
                 var argument = Expression(@await.Argument);
-                return new AstAwaitExpression(token, argument.End, argument);
+                return new AstAwaitExpression(token, End(@await), argument);
             }
 
             case YieldExpression @yield:
@@ -242,11 +242,12 @@ internal sealed partial class BridgeTreeBuilder
         return new AstObjectLiteral(start, End(@object), list);
     }
 
-    // An object literal's entry, as the old parser's ObjectProperty made it.
+    // An object literal's entry, as the old parser's ObjectProperty made it. The name is built first, so that the
+    // entry's first token, where the name begins it, is the name's own, with its value.
     private AstClassProperty Property(PropertyDefinition definition)
     {
-        var current = Start(definition);
         var (key, computed, isPrivate) = Key(definition.Key);
+        var current = Start(definition);
         switch (definition.PropertyKind)
         {
             case PropertyKind.Shorthand:
@@ -259,7 +260,7 @@ internal sealed partial class BridgeTreeBuilder
 
             default:
             {
-                var function = Method(((FunctionExpression)definition.Value).Function);
+                var function = Method(((FunctionExpression)definition.Value).Function, EndOf(definition.Key));
                 var kind = definition.PropertyKind switch
                 {
                     PropertyKind.Get => AstPropertyKind.Get,
@@ -295,14 +296,13 @@ internal sealed partial class BridgeTreeBuilder
         }
     }
 
+    // A new expression begins at its `new`, where its text begins; its end is its callee's (AstNewExpression's), as in
+    // the old parser, which began it at the token after the callee instead.
     private AstExpression New(NewExpression @new)
     {
+        var start = Start(@new);
         var callee = Callee(@new.Callee);
-        if (!@new.HasArgumentList)
-            return new AstNewExpression(tokens.After(EndOf(@new)), callee, Sequence<AstExpression>.Empty);
-
-        var open = tokens.After(EndOf(@new.Callee));
-        return new AstNewExpression(open, callee, Expressions(@new.Arguments));
+        return new AstNewExpression(start, callee, @new.HasArgumentList ? Expressions(@new.Arguments) : Sequence<AstExpression>.Empty);
     }
 
     private AstExpression Callee(Expression callee)
@@ -388,7 +388,7 @@ internal sealed partial class BridgeTreeBuilder
     }
 
     private FastToken Piece(TemplateElement piece, TokenTypes type)
-        => tokens.Make(type, piece.Span.Offset, piece.Span.Length, piece.Cooked ?? piece.Raw, cookedInvalid: piece.Cooked is null);
+        => tokens.Make(type, piece.Span.Offset, piece.Span.Length, piece.Cooked ?? string.Empty, cookedInvalid: piece.Cooked is null);
 
     private static TokenTypes Binary(BinaryOperator op) => op switch
     {

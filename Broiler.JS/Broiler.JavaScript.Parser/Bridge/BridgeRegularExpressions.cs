@@ -16,16 +16,13 @@ namespace Broiler.JavaScript.Parser.Bridge;
 /// </para>
 /// <para>
 /// The validator tells conditions apart by nothing but its answer, so a refusal is the library's
-/// <c>regexp.literal.invalid</c> (catalogue row EE0019) with the validator's message as its argument and code 0, at
-/// the literal's start. Where <c>FastScanner</c> read an invalid literal as a division (the fallback, row S9), the
+/// <c>regexp.literal.invalid</c> (catalogue row EE0019) with the literal as written (<c>/body/flags</c>) as its
+/// argument and code 0, at the literal's start; the message table renders it with the literal's position. Where <c>FastScanner</c> read an invalid literal as a division (the fallback, row S9), the
 /// library refuses it: correction K5.
 /// </para>
 /// </remarks>
 internal sealed class BridgeRegularExpressions : IRegularExpressionValidator
 {
-    /// <summary>The message a refusal carries as its argument.</summary>
-    internal const string InvalidMessage = "Invalid regular expression";
-
     /// <summary>The one validator: it holds no state.</summary>
     internal static BridgeRegularExpressions Instance { get; } = new();
 
@@ -37,7 +34,7 @@ internal sealed class BridgeRegularExpressions : IRegularExpressionValidator
     public RegularExpressionVerdict Validate(string pattern, string flags)
         => Cooked(pattern, flags) is { } cooked && RegExpValidator.IsValid(cooked, flags)
             ? RegularExpressionVerdict.Valid
-            : RegularExpressionVerdict.Invalid("regexp.literal.invalid", InvalidMessage, 0, 0, inFlags: false);
+            : RegularExpressionVerdict.Invalid("regexp.literal.invalid", "/" + pattern + "/" + flags, 0, 0, inFlags: false);
 
     /// <summary>
     /// The body the compiler reads from the literal's token, as <c>FastScanner</c> gives it: the body as written, its

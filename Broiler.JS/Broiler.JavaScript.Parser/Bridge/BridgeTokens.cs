@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.Runtime.Unicode;
 
 namespace Broiler.JavaScript.Parser.Bridge;
 
@@ -151,6 +152,19 @@ internal sealed class BridgeTokens
     /// <summary>The first token at or after <paramref name="offset"/>, past white space and comments, or end of file.</summary>
     internal FastToken After(int offset) => At(SkipTrivia(offset));
 
+    /// <summary>
+    /// The program's first token, at the parse's first code unit: the source's first token where nothing comes before
+    /// it, and otherwise a token over the white space and comments before it, outside the chain, as the old scanner
+    /// began a source with a leading comment at that comment.
+    /// </summary>
+    internal FastToken Leading()
+    {
+        var first = SkipTrivia(baseOffset);
+        if (first == baseOffset)
+            return At(baseOffset);
+        return new FastToken(TokenTypes.LineTerminator, source, null, null, baseOffset, first - baseOffset, Location(baseOffset), Location(first));
+    }
+
     /// <summary>Links every token made into one chain in source order.</summary>
     internal void Link()
     {
@@ -177,7 +191,7 @@ internal sealed class BridgeTokens
     private FastToken LexemeAt(int start)
     {
         var c = source[start];
-        if (IsNameStart(c) || c == '\\')
+        if (IsNameStart(start) || c == '\\')
         {
             var end = ScanName(start);
             var raw = source.Substring(start, end - start);
@@ -206,12 +220,11 @@ internal sealed class BridgeTokens
     {
         if (end <= baseOffset)
             return At(baseOffset);
-        var c = source[end - 1];
-        if (IsNamePart(c))
+        if (NamePartEndingAt(end) > 0)
         {
-            var start = end - 1;
-            while (start > baseOffset && IsNamePart(source[start - 1]))
-                start--;
+            var start = end - NamePartEndingAt(end);
+            while (start > baseOffset && NamePartEndingAt(start) > 0)
+                start -= NamePartEndingAt(start);
             if (start > baseOffset && source[start - 1] == '\\')
                 start--;
             if (char.IsAsciiDigit(source[start]) || (start > baseOffset && source[start - 1] == '.' && char.IsAsciiDigit(source[start])))
@@ -241,7 +254,7 @@ internal sealed class BridgeTokens
         while (i < end)
         {
             var c = source[i];
-            if (char.IsWhiteSpace(c) || c == '\uFEFF')
+            if (JSUnicode.IsWhiteSpace(c) || c is '\n' or '\r' or '\u2028' or '\u2029')
             {
                 i++;
                 continue;
@@ -295,9 +308,10 @@ internal sealed class BridgeTokens
                 continue;
             }
 
-            if (!IsNamePart(c))
+            var width = NamePartAt(i);
+            if (width == 0)
                 break;
-            i++;
+            i += width;
         }
 
         return Math.Min(i, EndOffset);
@@ -320,11 +334,45 @@ internal sealed class BridgeTokens
         return i;
     }
 
-    private static bool IsNameStart(char c) => c is '$' or '_' || char.IsLetter(c) || char.IsSurrogate(c) || (c > 0x7F && char.GetUnicodeCategory(c) == UnicodeCategory.LetterNumber);
+    // The engine's own identifier classes (ID_Start and ID_Continue with `$`, `_`, ZWNJ and ZWJ, as FastScanner reads
+    // them), over the code point at an offset or ending at one: its width in code units, or 0 where it is no part of a
+    // name.
+    private bool IsNameStart(int offset)
+    {
+        var codePoint = CodePointAt(offset, out _);
+        return codePoint >= 0 && JSUnicode.IsIdentifierStart(codePoint);
+    }
 
-    private static bool IsNamePart(char c) => c is '$' or '_' or '\u200C' or '\u200D' || char.IsLetterOrDigit(c) || char.IsSurrogate(c)
-        || (c > 0x7F && char.GetUnicodeCategory(c) is UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark
-            or UnicodeCategory.ConnectorPunctuation or UnicodeCategory.LetterNumber);
+    private int NamePartAt(int offset)
+    {
+        var codePoint = CodePointAt(offset, out var width);
+        return codePoint >= 0 && JSUnicode.IsIdentifierPart(codePoint) ? width : 0;
+    }
+
+    private int NamePartEndingAt(int end)
+    {
+        if (end <= baseOffset)
+            return 0;
+        var low = source[end - 1];
+        var start = char.IsLowSurrogate(low) && end - 2 >= baseOffset && char.IsHighSurrogate(source[end - 2]) ? end - 2 : end - 1;
+        return NamePartAt(start) > 0 && start + NamePartAt(start) == end ? end - start : 0;
+    }
+
+    private int CodePointAt(int offset, out int width)
+    {
+        width = 0;
+        if (offset >= EndOffset)
+            return -1;
+        var c = source[offset];
+        if (char.IsHighSurrogate(c) && offset + 1 < EndOffset && char.IsLowSurrogate(source[offset + 1]))
+        {
+            width = 2;
+            return char.ConvertToUtf32(c, source[offset + 1]);
+        }
+
+        width = 1;
+        return char.IsSurrogate(c) ? -1 : c;
+    }
 
     // A name with \u escapes, decoded; the shared tree gives every name it holds, so this serves only a boundary
     // token that is a keyword written with an escape.

@@ -71,8 +71,9 @@ internal sealed partial class BridgeTreeBuilder
         var hoisting = scopes.Hoisting(program);
         var annexB = scopes.LeaveBody();
 
-        var start = tokens.After(tokens.BaseOffset);
-        return new AstProgram(start, tokens.Eof, statements, program.HasTopLevelAwait)
+        // The program's text is the whole source, so it begins at the source's first code unit, a comment or white
+        // space there included (the old parser began it at its first token, or at a leading comment's).
+        return new AstProgram(tokens.Leading(), tokens.Eof, statements, program.HasTopLevelAwait)
         {
             HoistingScope = hoisting,
             AnnexBFunctionNames = annexB,
@@ -88,10 +89,9 @@ internal sealed partial class BridgeTreeBuilder
 
     private static int EndOf(SyntaxNode node) => node.Span.Offset + node.Span.Length;
 
-    // The first token inside a braced body, as the old parser's Block began: its first statement's, or the closing
-    // brace's where it is empty.
-    private FastToken BodyStart(IReadOnlyList<Statement> body, SyntaxNode owner)
-        => body.Count > 0 ? Start(body[0]) : End(owner);
+    // A braced body's opening brace at or after `offset`, past white space and comments: the body's text begins
+    // there, where the old parser began the block at the token after it.
+    private FastToken OpenBrace(int offset) => tokens.After(offset);
 
     // ---------------------------------------------------------------------------------------------------------------
     // Statement lists.
@@ -249,7 +249,7 @@ internal sealed partial class BridgeTreeBuilder
         scopes.EnterBlock();
         var statements = StatementList(block.Body);
         scopes.LeaveBlock();
-        return new AstBlock(BodyStart(block.Body, block), End(block), statements)
+        return new AstBlock(Start(block), End(block), statements)
         {
             HoistingScope = scopes.Hoisting(block),
             AnnexBFunctionNames = Sequence<StringSpan>.Empty,

@@ -31,8 +31,9 @@ namespace Broiler.JavaScript.Parser.Bridge;
 /// <para>
 /// <b>The parse thread</b> (decision D47 (a)): the parse and the tree's construction run on a thread whose stack is at
 /// least the library's documented <see cref="ParseLimits.StackBytes"/>: on the calling thread when it is a compile
-/// worker the engine started with such a stack, and otherwise on a reused compile worker
-/// (<see cref="CompilationStack.RunOnFreshStack{T}"/>). The parse uses no <c>StackSegment</c>.
+/// worker the engine started with such a stack, and otherwise on a compile worker of at least that stack, whatever
+/// size the engine's compile stack is configured to (<c>CompilationStack.RunOnFreshStack(work, minimumStackBytes)</c>).
+/// The parse uses no <c>StackSegment</c>.
 /// </para>
 /// <para>
 /// <b>A refusal</b> is the library's first diagnostic, thrown as today's exception type,
@@ -59,20 +60,12 @@ internal static class SharedSyntaxBridge
         {
             var tokens = new BridgeTokens(span);
             var result = SyntaxParser.Parse(Request(span, request));
+            // A script's top-level await is refused as the library refuses it, at the token where its diagnostic
+            // begins and with that diagnostic's text: the old parser never read it as an await expression, so the text
+            // the shell's top-level-await retry reads ("Unexpected await") never reached it from a script, and the
+            // bridge gives that retry nothing the old parser did not.
             if (result.Outcome != ParseOutcome.Accepted || result.Tree is null || result.Declarations is null)
-            {
-                // The old parser read a script's top-level await and the compiler refused it after the parse with the
-                // text the shell's retry reads (SyntaxValidation.ValidateProgram); the library refuses it in the parse,
-                // at whatever token follows. A script refused without the permission and admitted with it awaited at
-                // its top level, which is the only thing the permission changes.
-                if (request.Goal == BridgeGoal.Script && !request.AllowTopLevelAwait
-                    && SyntaxParser.Parse(Request(span, request with { AllowTopLevelAwait = true })).Outcome == ParseOutcome.Accepted)
-                {
-                    throw new FastParseException(tokens.After(span.Offset), "Unexpected await");
-                }
-
                 throw Refusal(result, span, request, tokens);
-            }
 
             var program = new BridgeTreeBuilder(span, tokens, result.Declarations, request).Build(result.Tree);
             tokens.Link();
@@ -161,14 +154,14 @@ internal static class SharedSyntaxBridge
 
         var diagnostic = result.Diagnostics[0];
         var text = code.Value ?? string.Empty;
-        var scriptWithoutAwait = request.Goal is BridgeGoal.Script or BridgeGoal.Eval && !request.AllowTopLevelAwait;
-        var message = BridgeMessages.Render(diagnostic, text, code.Offset, scriptWithoutAwait, request.Goal == BridgeGoal.Module);
+        var message = BridgeMessages.Render(diagnostic, text, code.Offset, request.Goal == BridgeGoal.Module);
         return new FastParseException(tokens.At(diagnostic.Span.Offset), message);
     }
 
-    // Decision D47 (a): the library's documented stack, the hop skipped on a compile worker that has it.
+    // Decision D47 (a): the library's documented stack, the hop skipped on a compile worker that has it. The hop's
+    // worker has at least that stack whatever CompilationStack.SizeBytes is configured to.
     private static T OnParseThread<T>(Func<T> parse)
         => CompilationStack.CurrentWorkerStackBytes >= ParseLimits.StackBytes
             ? parse()
-            : CompilationStack.RunOnFreshStack(parse);
+            : CompilationStack.RunOnFreshStack(parse, ParseLimits.StackBytes);
 }

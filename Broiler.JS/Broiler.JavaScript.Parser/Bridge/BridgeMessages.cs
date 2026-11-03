@@ -12,10 +12,8 @@ namespace Broiler.JavaScript.Parser.Bridge;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>Kept texts.</b> The texts hosts and this engine's tests read are kept: "Unexpected await", which the shell's
-/// script host reads to run a script again with top-level <c>await</c> (<c>Broiler.JavaScript/Program.cs</c>), is
-/// what a refusal at an <c>await</c> of a script parsed without that permission renders; "is already defined in
-/// current scope", which tests read for a redeclaration, and in a module "has already been declared" and "Duplicate
+/// <b>Kept texts.</b> The texts this engine's tests read are kept: "is already defined in current scope", which
+/// tests read for a redeclaration, and in a module "has already been declared" and "Duplicate
 /// export name", which the compiler's module checks gave; the old parser's texts for a unary operator before
 /// <c>**</c> and for an unexpected character with its code point; "Invalid attribute key", the import attribute this engine
 /// cannot honour (catalogue row EX0021), which the bridge refuses itself. Every other text differs from the old
@@ -23,8 +21,11 @@ namespace Broiler.JavaScript.Parser.Bridge;
 /// the generated message table the side-by-side run writes, and stated once in the changelog.
 /// </para>
 /// <para>
-/// A refusal of the grammar keeps the old parser's form, the position after the text ("Unexpected token ... at
-/// line, column"), so that a message read for its position still finds one.
+/// A refusal of the grammar or of a regular-expression literal keeps the old parser's form, the position after the
+/// text ("Unexpected token ... at line, column"), so that a message read for its position still finds one. A
+/// script's top-level <c>await</c> has no text of its own: the old parser never read one as an expression, so the
+/// text the shell's top-level-<c>await</c> retry reads never came from a script's parse, and the library's
+/// diagnostic is rendered as any other.
 /// </para>
 /// </remarks>
 internal static class BridgeMessages
@@ -130,31 +131,27 @@ internal static class BridgeMessages
     /// The text this engine gives <paramref name="diagnostic"/>, at the line and column its span begins at, over
     /// <paramref name="text"/> (the parse's text, whose offset 0 is <paramref name="baseOffset"/> in the spans).
     /// </summary>
-    internal static string Render(SyntaxDiagnostic diagnostic, string text, int baseOffset, bool scriptWithoutTopLevelAwait, bool module = false)
+    internal static string Render(SyntaxDiagnostic diagnostic, string text, int baseOffset, bool module = false)
     {
         var span = diagnostic.Span;
         var position = $"{span.Line.ToString(CultureInfo.InvariantCulture)}, {span.Column.ToString(CultureInfo.InvariantCulture)}";
         var relative = span.Offset - baseOffset;
-
-        // The shell's retry reads this text (decision D46).
-        if (scriptWithoutTopLevelAwait && relative >= 0 && StartsWithWord(text, relative, "await"))
-            return "Unexpected await";
+        var positioned = diagnostic.MessageId.StartsWith("syntax.", System.StringComparison.Ordinal)
+            || diagnostic.MessageId.StartsWith("regexp.", System.StringComparison.Ordinal);
 
         var argument = diagnostic.Arguments.Count > 0 ? diagnostic.Arguments[0] : string.Empty;
         if (diagnostic.MessageId == "syntax.token.unexpected" && argument.Length == 0)
             argument = relative >= 0 && relative < text.Length ? text[relative].ToString() : "EOF";
 
         if (Kept(diagnostic.MessageId, argument, text, relative, module) is { } kept)
-            return diagnostic.MessageId.StartsWith("syntax.", System.StringComparison.Ordinal) ? kept + " at " + position : kept;
+            return positioned ? kept + " at " + position : kept;
 
         var template = Text(diagnostic.MessageId)
             ?? (diagnostic.MessageId.StartsWith("regexp.", System.StringComparison.Ordinal)
                 ? "Invalid regular expression: {0}"
                 : "Unexpected token {0}");
         var message = template.Replace("{0}", argument, System.StringComparison.Ordinal);
-        return diagnostic.MessageId.StartsWith("syntax.", System.StringComparison.Ordinal)
-            ? message + " at " + position
-            : message;
+        return positioned ? message + " at " + position : message;
     }
 
     // The other kept texts (decision D46), each one a test of this engine reads: a module's second declaration of a
@@ -193,13 +190,5 @@ internal static class BridgeMessages
                 : char.IsSurrogate(c)
                     ? code + " (an unpaired surrogate)"
                     : "'" + c + "' (" + code + ")";
-    }
-
-    private static bool StartsWithWord(string text, int offset, string word)
-    {
-        if (offset + word.Length > text.Length || string.CompareOrdinal(text, offset, word, 0, word.Length) != 0)
-            return false;
-        var after = offset + word.Length;
-        return after == text.Length || !(char.IsLetterOrDigit(text[after]) || text[after] is '_' or '$');
     }
 }

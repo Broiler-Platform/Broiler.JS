@@ -36,17 +36,20 @@ internal sealed partial class BridgeTreeBuilder
 
         scopes.EnterFunction(isArrow: false);
         var parameters = Parameters(function.Parameters);
-        var body = Body(function);
+        var body = Body(function, function.Name is null ? function.Span.Offset : EndOf(function.Name));
         scopes.LeaveFunction();
         return new AstFunctionExpression(Start(function), End(function), false, function.IsAsync, function.IsGenerator, id!, parameters, body, isStatement);
     }
 
-    /// <summary>A method's function: an object literal's or a class's method, getter or setter.</summary>
-    private AstFunctionExpression Method(FunctionNode function)
+    /// <summary>
+    /// A method's function: an object literal's or a class's method, getter or setter, whose name ends at
+    /// <paramref name="keyEnd"/>.
+    /// </summary>
+    private AstFunctionExpression Method(FunctionNode function, int keyEnd)
     {
         scopes.EnterFunction(isArrow: false);
         var parameters = Parameters(function.Parameters);
-        var body = Body(function);
+        var body = Body(function, System.Math.Max(function.Span.Offset, keyEnd));
         scopes.LeaveFunction();
         return new AstFunctionExpression(Start(function), End(function), false, function.IsAsync, function.IsGenerator, null!, parameters, body);
     }
@@ -81,7 +84,7 @@ internal sealed partial class BridgeTreeBuilder
         }
         else
         {
-            body = Body(function);
+            body = Body(function, function.Span.Offset);
         }
 
         scopes.LeaveFunction();
@@ -96,16 +99,45 @@ internal sealed partial class BridgeTreeBuilder
         return at < tokens.EndOffset && text[at] == '(';
     }
 
-    private AstBlock Body(FunctionNode function)
+    // A function's body, a block that begins at its opening brace: the brace after the parameter list's `)` (and an
+    // arrow's `=>`), the list found after the last parameter or, where there is none, at the first `(` at or after
+    // `from`, an offset past anything before the list that can hold a parenthesis (a method's computed name).
+    private AstBlock Body(FunctionNode function, int from)
     {
         scopes.EnterBody();
         var statements = StatementList(function.Body);
         var annexB = scopes.LeaveBody();
-        return new AstBlock(BodyStart(function.Body, function), End(function), statements)
+        return new AstBlock(BodyOpen(function, from), End(function), statements)
         {
             HoistingScope = scopes.Hoisting(function),
             AnnexBFunctionNames = annexB,
         };
+    }
+
+    private FastToken BodyOpen(FunctionNode function, int from)
+    {
+        var end = tokens.EndOffset;
+        int at;
+        if (function.Parameters.Count > 0)
+        {
+            at = tokens.SkipTrivia(EndOf(function.Parameters[function.Parameters.Count - 1]));
+        }
+        else
+        {
+            at = tokens.SkipTrivia(from);
+            while (at < end && text[at] != '(')
+                at = tokens.SkipTrivia(at + 1);
+            if (at < end)
+                at = tokens.SkipTrivia(at + 1);
+        }
+
+        if (at < end && text[at] == ',')
+            at = tokens.SkipTrivia(at + 1);
+        if (at < end && text[at] == ')')
+            at = tokens.SkipTrivia(at + 1);
+        if (at + 1 < end && text[at] == '=' && text[at + 1] == '>')
+            at += 2;
+        return OpenBrace(at);
     }
 
     // The FormalParameters, as the old parser's Parameters read them: each a binding pattern declared in the
@@ -336,9 +368,10 @@ internal sealed partial class BridgeTreeBuilder
         {
             case MethodDefinition method:
             {
-                var current = ElementStart(method, method.Decorators);
+                // The name first, so that the element's first token, where the name begins it, is the name's own.
                 var (key, computed, isPrivate) = Key(method.Key);
-                var function = Method(method.Function);
+                var current = ElementStart(method, method.Decorators);
+                var function = Method(method.Function, EndOf(method.Key));
                 var isConstructor = !computed && !isPrivate && !method.IsStatic && method.MethodKind == MethodKind.Method
                     && method.Key is IdentifierName { Name: "constructor" } or StringLiteral { Value: "constructor" };
                 var kind = method.MethodKind switch
@@ -352,16 +385,18 @@ internal sealed partial class BridgeTreeBuilder
 
             case FieldDefinition field:
             {
-                var current = ElementStart(field, field.Decorators);
                 var (key, computed, isPrivate) = Key(field.Key);
+                var current = ElementStart(field, field.Decorators);
                 if (field.Value is null)
                     return new AstClassProperty(current, tokens.EndingAt(EndOf(field.Key)), AstPropertyKind.Data, isPrivate, field.IsStatic, key, computed, null!,
                         isAutoAccessor: field.IsAccessor);
 
+                // The element ends where its initializer's text ends, a closing parenthesis included.
                 var value = Expression(field.Value);
+                var valueEnd = End(field.Value);
                 return field.IsAccessor
-                    ? new AstClassProperty(current, value.End, AstPropertyKind.Data, isPrivate, field.IsStatic, key, computed, value, isAutoAccessor: true)
-                    : new AstClassProperty(current, value.End, AstPropertyKind.Data, isPrivate, field.IsStatic, key, computed, value, usesAssign: true);
+                    ? new AstClassProperty(current, valueEnd, AstPropertyKind.Data, isPrivate, field.IsStatic, key, computed, value, isAutoAccessor: true)
+                    : new AstClassProperty(current, valueEnd, AstPropertyKind.Data, isPrivate, field.IsStatic, key, computed, value, usesAssign: true);
             }
 
             case StaticBlock block:
@@ -371,7 +406,7 @@ internal sealed partial class BridgeTreeBuilder
                 var statements = StatementList(block.Body);
                 scopes.LeaveBlock();
                 var end = End(block);
-                var body = new AstBlock(BodyStart(block.Body, block), end, statements)
+                var body = new AstBlock(OpenBrace(tokens.SkipTrivia(block.Span.Offset) + "static".Length), end, statements)
                 {
                     HoistingScope = scopes.Hoisting(block),
                     AnnexBFunctionNames = Sequence<StringSpan>.Empty,

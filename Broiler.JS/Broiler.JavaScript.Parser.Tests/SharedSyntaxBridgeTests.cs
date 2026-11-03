@@ -229,13 +229,17 @@ public class SharedSyntaxBridgeTests
     }
 
     [Theory]
-    [InlineData("await 1;")]
-    [InlineData("var a = await f();")]
-    [InlineData("for await (const x of y) {}")]
-    public void A_scripts_await_is_refused_with_the_text_the_shells_retry_reads(string source)
+    [InlineData("await 1;", "1, 7")]
+    [InlineData("var a = await f();", "1, 15")]
+    public void A_scripts_top_level_await_is_refused_as_the_library_refuses_it(string source, string position)
     {
+        // The old parser never read a script's await as an expression, so the text the shell's top-level-await retry
+        // reads ("Unexpected await") never came from a script's parse; the bridge gives the library's diagnostic, with
+        // its position, and the retry never fires on it.
         var refusal = Assert.Throws<FastParseException>(() => Bridged(source));
-        Assert.Equal("Unexpected await", refusal.Message);
+        Assert.DoesNotContain("Unexpected await", refusal.Message);
+        Assert.EndsWith(" at " + position, refusal.Message);
+        Assert.Throws<FastParseException>(() => Old(source));
         Assert.True(Bridged(source, BridgeRequest.Script with { AllowTopLevelAwait = true }).IsAsync);
     }
 
@@ -244,8 +248,11 @@ public class SharedSyntaxBridgeTests
     {
         Assert.False(Bridged("var await = 1; await;").IsAsync);
         Assert.Throws<FastParseException>(() => Bridged("var a = 1 1;"));
-        Assert.NotEqual("Unexpected await", Assert.Throws<FastParseException>(() => Bridged("var a = 1 1;")).Message);
     }
+
+    [Fact]
+    public void An_invalid_regular_expression_is_refused_with_the_literal_and_its_position()
+        => Assert.Equal("Invalid regular expression: /(/g at 1, 9", Assert.Throws<FastParseException>(() => Bridged("var r = /(/g;")).Message);
 
     [Fact]
     public void A_redeclaration_keeps_the_text_tests_read()
@@ -272,6 +279,111 @@ public class SharedSyntaxBridgeTests
         var refusal = Assert.Throws<FastParseException>(() => Bridged("a;\n  )"));
         Assert.Equal(2, refusal.Token.Start.Line);
         Assert.Equal(3, refusal.Token.Start.Column);
+    }
+
+    // ---- Spans: each node's span is its text (bundle sjl-14-001's rule, part C, class S) ------------------------------
+
+    private static T First<T>(AstNode root, Func<T, bool>? where = null) where T : AstNode
+    {
+        T? found = null;
+        new Walker(node =>
+        {
+            if (found == null && node is T match && (where == null || where(match)))
+                found = match;
+        }).Visit(root);
+        return found ?? throw new Xunit.Sdk.XunitException("no " + typeof(T).Name);
+    }
+
+    private static string SpanText(string source, AstNode node)
+    {
+        var start = node.Start.Span.Offset;
+        var end = node.End.Type == TokenTypes.EOF ? source.Length : node.End.Span.Offset + node.End.Span.Length;
+        return source.Substring(start, end - start);
+    }
+
+    [Theory]
+    [InlineData("/* lead */ var a;")]
+    [InlineData("  // lead\nvar a;")]
+    [InlineData("var a;")]
+    public void A_program_begins_at_its_sources_first_code_unit(string source)
+    {
+        Assert.Equal(0, Bridged(source).Start.Span.Offset);
+        Assert.Equal(source, SpanText(source, Bridged(source)));
+    }
+
+    [Theory]
+    [InlineData("{\n  a;\n}", "{\n  a;\n}")]
+    [InlineData("if (x) {} else { b; }", "{ b; }")]
+    [InlineData("try { a; } catch (e) { b; } finally { c; }", "{ a; }")]
+    public void A_block_begins_at_its_brace(string source, string block)
+        => Assert.Equal(block, SpanText(source, First<AstBlock>(Bridged(source), b => b is not AstProgram && b.Statements.Count > 0)));
+
+    [Theory]
+    [InlineData("function f(a, b = (1)) { return a; }", "{ return a; }")]
+    [InlineData("function /* ( */ g() {\n}", "{\n}")]
+    [InlineData("(async () => { x; })", "{ x; }")]
+    [InlineData("((a, b,) => {})", "{}")]
+    [InlineData("(a => { a; })", "{ a; }")]
+    [InlineData("({ get [g()]() { return 1; } })", "{ return 1; }")]
+    [InlineData("({ 'm(n)'(p) { p; } })", "{ p; }")]
+    [InlineData("(class { static { s; } })", "{ s; }")]
+    public void A_functions_body_begins_at_its_brace(string source, string body)
+        => Assert.Equal(body, SpanText(source, First<AstBlock>(Bridged(source), b => b is not AstProgram)));
+
+    [Fact]
+    public void An_await_and_a_field_end_where_their_text_ends()
+    {
+        const string awaited = "async function f() { await (x); }";
+        Assert.Equal("await (x)", SpanText(awaited, First<AstAwaitExpression>(Bridged(awaited))));
+        const string field = "(class { x = (1); })";
+        Assert.Equal("x = (1)", SpanText(field, First<AstClassProperty>(Bridged(field))));
+    }
+
+    [Fact]
+    public void A_new_expression_begins_at_its_new()
+    {
+        const string source = "new new X(a)();";
+        var outer = First<AstNewExpression>(Bridged(source));
+        Assert.Equal(0, outer.Start.Span.Offset);
+        Assert.Equal(4, First<AstNewExpression>(outer.Callee).Start.Span.Offset);
+        Assert.True(outer.Start.Span.Offset <= outer.End.Span.Offset);
+        Assert.Equal("new X", SpanText("new X;", First<AstNewExpression>(Bridged("new X;"))));
+    }
+
+    // ---- Token facts at a node's edge (review findings of 2026-11-03) ---------------------------------------------------
+
+    [Fact]
+    public void An_invalid_template_pieces_value_is_the_old_parsers()
+    {
+        const string source = "tag`\\01`;";
+        Assert.Equal(First<AstLiteral>(Old(source), l => l.TokenType == TokenTypes.TemplateEnd || l.TokenType == TokenTypes.TemplatePart).StringValue,
+            First<AstLiteral>(Bridged(source), l => l.TokenType == TokenTypes.TemplateEnd || l.TokenType == TokenTypes.TemplatePart).StringValue);
+    }
+
+    [Fact]
+    public void An_object_propertys_first_token_is_its_names_own()
+    {
+        const string source = "({'g': 3, 1: 4});";
+        var properties = new List<AstClassProperty>();
+        new Walker(node =>
+        {
+            if (node is AstClassProperty property)
+                properties.Add(property);
+        }).Visit(Bridged(source));
+        Assert.Equal("g", properties[0].Start.CookedText);
+        Assert.Equal(TokenTypes.Number, properties[1].Start.Type);
+        Assert.Equal(1, properties[1].Start.Number);
+    }
+
+    [Theory]
+    [InlineData("(class { \u2118() {} })")]
+    [InlineData("(class { \u2118x = 1 })")]
+    public void A_name_is_read_by_the_engines_identifier_classes(string source)
+    {
+        var bridged = First<AstClassProperty>(Bridged(source));
+        var old = First<AstClassProperty>(Old(source));
+        Assert.Equal(old.Start.Type, bridged.Start.Type);
+        Assert.Equal(TokenTypes.Identifier, bridged.Start.Type);
     }
 
     // ---- The inherited context of eval code (decision D44; bundle sjl-14-001's probes) --------------------------------
@@ -313,8 +425,13 @@ public class SharedSyntaxBridgeTests
         // The library's stage table puts EA0003 to EA0005 at the semantics stage (no parser checks them), so at this
         // pin it reads only InFunction of the context; DirectEvalSupport's walk still refuses them after the bridge's
         // parse, as it does after the old parser's. The bridge carries the flags for the library's later stages.
+        // IC6 (probes IC101, IC108): a super call in a derived constructor's eval is admitted at the parse; its
+        // derived-constructor flag reaches the request (above), which the library does not read at this pin. IC3 and
+        // IC5 are run-time answers (new.target's value, arguments' visibility), not the parse's, so no request test
+        // holds them; the probes do, with the shell's switch off and on.
         Assert.NotNull(Bridged("super.x", Eval with { InFunction = true }));
         Assert.NotNull(Bridged("super()", Eval with { InFunction = true, InMethod = true }));
+        Assert.NotNull(Bridged("super()", Eval with { InFunction = true, InMethod = true, InDerivedConstructor = true }));
         Assert.NotNull(Bridged("arguments", Eval with { InFunction = true, InMethod = true, InClassFieldInitializer = true }));
     }
 
@@ -385,6 +502,26 @@ public class SharedSyntaxBridgeTests
 
         var tooDeep = new string('[', depth + 10) + new string(']', depth + 10);
         Assert.Contains("nested too deeply", Assert.Throws<FastParseException>(() => Bridged(tooDeep)).Message);
+    }
+
+    [Fact]
+    public void The_parse_has_the_librarys_stack_however_small_the_compile_stack_is_configured()
+    {
+        // Review finding of 2026-11-03: with the compile stack configured below ParseLimits.StackBytes the bridge's
+        // hop ran on a worker of that size, and a nesting within the supported maximum overflowed it and ended the
+        // process. The hop's worker now has at least the library's stack.
+        var depth = Broiler.ECMAScript.Syntax.ParseLimits.MaximumSupportedNestingDepth - 2;
+        var source = new string('[', depth) + new string(']', depth);
+        var configured = Broiler.JavaScript.ExpressionCompiler.CompilationStack.SizeBytes;
+        Broiler.JavaScript.ExpressionCompiler.CompilationStack.SizeBytes = 1024 * 1024;
+        try
+        {
+            Assert.NotNull(Bridged(source));
+        }
+        finally
+        {
+            Broiler.JavaScript.ExpressionCompiler.CompilationStack.SizeBytes = configured;
+        }
     }
 
     /// <summary>Every node of a tree, through its fields, in order.</summary>
