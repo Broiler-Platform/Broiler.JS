@@ -120,6 +120,16 @@ public static class CompilationStack
     /// </summary>
     public static bool IsInCompilation => inCompilation;
 
+    [ThreadStatic]
+    private static int workerStackBytes;
+
+    /// <summary>
+    /// The stack size of the compile worker the calling thread is, or 0 on any other thread: a thread this class
+    /// started, whose stack is known. The shared syntax library's bridge reads it to skip its hop to a thread of the
+    /// library's documented stack where the calling thread already has one (milestone SJL-14.2, decision D47).
+    /// </summary>
+    internal static int CurrentWorkerStackBytes => workerStackBytes;
+
     // Parked workers, reused across compilations. Reserving a large stack is a kernel
     // mapping, not a bookkeeping entry: measured on this engine, a thread per compilation
     // costs ~300 µs at the default size, which is 27% of a compile-bound workload — the
@@ -300,6 +310,7 @@ public static class CompilationStack
         private void Loop()
         {
             inCompilation = true;
+            workerStackBytes = StackSize;
 
             while (true)
             {

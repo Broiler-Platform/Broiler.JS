@@ -9,9 +9,20 @@
   <!-- No reference to Broiler.JavaScript.Runtime (milestone SJL-12.5, Broiler.VM's JSD-0080, decision
        D20): the Unicode tables and the regular-expression checks the parser reads are Ast's, and
        Broiler.Unicode.Algorithms, whose IUnicodeTables types the options' provider, comes with Ast. -->
+  <!-- The bridge (milestone SJL-14.2, window W1; Broiler.VM's JSD-0083, decisions D41 and D44) parses with the shared
+       syntax library and builds this assembly's tree from the library's. It is internal: the compiler reaches it
+       through its test-only switch (decision D43), the dynamic function's check through BuiltIns, and the tests and
+       bundle sjl-14-001's side-by-side tool through the grants below. No public member is added at W1. -->
   <ItemGroup>
+    <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj" />
     <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Ast\Broiler.JavaScript.Ast.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Broiler.JavaScript.Compiler" />
+    <InternalsVisibleTo Include="Broiler.JavaScript.BuiltIns" />
+    <InternalsVisibleTo Include="Broiler.JavaScript.Parser.Tests" />
+    <InternalsVisibleTo Include="side-by-side" />
   </ItemGroup>
 </Project>
