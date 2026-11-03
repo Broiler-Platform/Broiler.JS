@@ -37,5 +37,8 @@
     <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
     <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
     <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
+    <!-- The bridge's library, which the parser references privately (milestone SJL-14.2): entry points B and K-on run
+         the bridge. At W1's first parent the library exists too, so the tool still builds there. -->
+    <ProjectReference Include="../../../../../Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj" />
   </ItemGroup>
 </Project>
