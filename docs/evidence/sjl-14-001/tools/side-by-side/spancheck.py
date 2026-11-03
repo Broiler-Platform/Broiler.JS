@@ -12,7 +12,9 @@ written to <listing> with both spans, both texts and both checks:
 - a span agrees with the text when it is the text of one whole construct: it is not inverted, it neither begins nor
   ends inside white space or a comment, and its parentheses, brackets and braces balance (strings, template
   literals and comments skipped); a program's span agrees when it begins at offset 0 and ends at the end of the
-  source;
+  source. Where the two spans share one edge, only the other is judged: brackets the shared end leaves open, or the
+  shared start leaves unopened, are admitted, since the AST type fixes that edge for both trees (a new expression
+  ends where its callee ends);
 - the pair is class S when P's span disagrees and B's agrees; "both-agree" when both pass the check (two readings of
   one construct's extent, such as a statement with and without its semicolon, which the check cannot tell apart and a
   reader decides from the two texts); "unclassified" otherwise.
@@ -87,8 +89,9 @@ class Source:
 TRIVIA = set(" \t\v\f\r\n ﻿  ")
 
 
-def balanced(text):
-    """Whether the brackets of text balance, strings, templates and comments skipped."""
+def balanced(text, open_ok=False, close_ok=False):
+    """Whether the brackets of text balance, strings, templates and comments skipped; open_ok admits brackets left
+    open at the end, close_ok closing brackets with no opener."""
     stack, i, n = [], 0, len(text)
     pairs = {")": "(", "]": "[", "}": "{"}
     while i < n:
@@ -118,13 +121,16 @@ def balanced(text):
         if c in "([{":
             stack.append(c)
         elif c in ")]}":
-            if not stack or stack.pop() != pairs[c]:
+            if not stack:
+                if not close_ok:
+                    return False
+            elif stack.pop() != pairs[c]:
                 return False
         i += 1
-    return not stack
+    return open_ok or not stack
 
 
-def agrees(source, kind, start, end):
+def agrees(source, kind, start, end, shared=None):
     if kind == "Program":
         return start == "0" and end == "eof"
     if not (start.isdigit() and (end.isdigit() or end == "eof")):
@@ -135,7 +141,10 @@ def agrees(source, kind, start, end):
     text = source.slice(a, b)
     if text[0] in TRIVIA or text[-1] in TRIVIA or text.startswith("//") or text.startswith("/*"):
         return False
-    return balanced(text)
+    # Where only one edge differs, the other is shared by both trees and may be fixed by the AST type (a new
+    # expression ends where its callee ends, a call begins where its callee begins): only the differing edge is
+    # judged, so brackets the shared edge leaves open (shared end) or unopened (shared start) are admitted.
+    return balanced(text, open_ok=shared == "end", close_ok=shared == "start")
 
 
 def blocks(path):
@@ -209,7 +218,8 @@ def main(argv):
                     if (sx, ex) == (sy, ey):
                         continue
                     node_kind = kind if (hx and (sx, ex) == (hx.group(3), hx.group(4))) else "token"
-                    pa, ba = agrees(source, node_kind, sx, ex), agrees(source, node_kind, sy, ey)
+                    shared = "end" if ex == ey else "start" if sx == sy else None
+                    pa, ba = agrees(source, node_kind, sx, ex, shared), agrees(source, node_kind, sy, ey, shared)
                     verdict = "S" if (not pa and ba) else "both-agree" if (pa and ba) else "unclassified"
                     counts[verdict, node_kind] += 1
                     out.write(f"{ident}\t{variant}\t{number}\t{node_kind}\t{sx}..{ex}\t{sy}..{ey}\t{str(pa).lower()}\t{str(ba).lower()}\t{verdict}\t{show(source, sx, ex)}\t{show(source, sy, ey)}\n")

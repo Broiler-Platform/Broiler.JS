@@ -352,12 +352,31 @@ public class SharedSyntaxBridgeTests
 
     // ---- Token facts at a node's edge (review findings of 2026-11-03) ---------------------------------------------------
 
-    [Fact]
-    public void An_invalid_template_pieces_value_is_the_old_parsers()
+    [Theory]
+    [InlineData("tag`\\01`;")]
+    [InlineData("tag`\\1x`;")]
+    [InlineData("tag`\\xg`;")]
+    [InlineData("tag`\\xAg`;")]
+    [InlineData("tag`a\\n\\x41\\u0042\\u{43}\\8b`;")]
+    [InlineData("tag`\\u00g`;")]
+    [InlineData("tag`\\u{g}x`;")]
+    [InlineData("tag`\\u{110000}`;")]
+    [InlineData("tag`\\0\\08`;")]
+    [InlineData("tag`x\\9${1}\\xz`;")]
+    public void An_invalid_template_pieces_value_is_the_old_parsers(string source)
     {
-        const string source = "tag`\\01`;";
-        Assert.Equal(First<AstLiteral>(Old(source), l => l.TokenType == TokenTypes.TemplateEnd || l.TokenType == TokenTypes.TemplatePart).StringValue,
-            First<AstLiteral>(Bridged(source), l => l.TokenType == TokenTypes.TemplateEnd || l.TokenType == TokenTypes.TemplatePart).StringValue);
+        static string Pieces(AstProgram program)
+        {
+            var text = new StringBuilder();
+            new Walker(node =>
+            {
+                if (node is AstLiteral { TokenType: TokenTypes.TemplateEnd or TokenTypes.TemplatePart } piece)
+                    text.Append('[').Append(piece.StringValue).Append(']');
+            }).Visit(program);
+            return text.ToString();
+        }
+
+        Assert.Equal(Pieces(Old(source)), Pieces(Bridged(source)));
     }
 
     [Fact]

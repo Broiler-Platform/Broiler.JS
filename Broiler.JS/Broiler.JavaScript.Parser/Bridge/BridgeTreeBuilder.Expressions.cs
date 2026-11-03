@@ -388,7 +388,104 @@ internal sealed partial class BridgeTreeBuilder
     }
 
     private FastToken Piece(TemplateElement piece, TokenTypes type)
-        => tokens.Make(type, piece.Span.Offset, piece.Span.Length, piece.Cooked ?? string.Empty, cookedInvalid: piece.Cooked is null);
+        => tokens.Make(type, piece.Span.Offset, piece.Span.Length, piece.Cooked ?? PartiallyCooked(piece.Raw), cookedInvalid: piece.Cooked is null);
+
+    // A piece with an invalid escape has no cooked value (the tagged template reads undefined through CookedInvalid);
+    // its text is what the old scanner left in the token: every valid escape cooked, every invalid one dropped (`\1`
+    // to `\9`, `\0` and the digit after it, and the `\x`, `\u` or `\u{` of a malformed hexadecimal escape, whose
+    // digits it then read as text), so that the tree's field is the old parser's.
+    private static string PartiallyCooked(string raw)
+    {
+        var text = new System.Text.StringBuilder(raw.Length);
+        for (var i = 0; i < raw.Length; i++)
+        {
+            var c = raw[i];
+            if (c != '\\' || i + 1 >= raw.Length)
+            {
+                text.Append(c);
+                continue;
+            }
+
+            var next = raw[++i];
+            switch (next)
+            {
+                case >= '1' and <= '9':
+                    break;
+                case '0':
+                    if (i + 1 < raw.Length && char.IsAsciiDigit(raw[i + 1]))
+                        i++;
+                    else
+                        text.Append('\0');
+                    break;
+                case '\n' or '\u2028' or '\u2029':
+                    break;
+                case 'n':
+                    text.Append('\n');
+                    break;
+                case 't':
+                    text.Append('\t');
+                    break;
+                case 'r':
+                    text.Append('\r');
+                    break;
+                case 'b':
+                    text.Append('\b');
+                    break;
+                case 'f':
+                    text.Append('\f');
+                    break;
+                case 'v':
+                    text.Append('\v');
+                    break;
+                case 'x':
+                    if (i + 2 < raw.Length && char.IsAsciiHexDigit(raw[i + 1]) && char.IsAsciiHexDigit(raw[i + 2]))
+                    {
+                        text.Append((char)System.Convert.ToInt32(raw.Substring(i + 1, 2), 16));
+                        i += 2;
+                    }
+
+                    break;
+                case 'u':
+                    if (i + 1 < raw.Length && raw[i + 1] == '{')
+                    {
+                        var close = raw.IndexOf('}', i + 2);
+                        if (close > i + 2 && IsHex(raw, i + 2, close) && close - i - 2 <= 8
+                            && System.Convert.ToInt32(raw.Substring(i + 2, close - i - 2), 16) is var value and <= 0x10FFFF)
+                        {
+                            text.Append(value <= 0xFFFF ? ((char)value).ToString() : char.ConvertFromUtf32(value));
+                            i = close;
+                        }
+                        else
+                        {
+                            i++;
+                        }
+                    }
+                    else if (i + 4 < raw.Length && IsHex(raw, i + 1, i + 5))
+                    {
+                        text.Append((char)System.Convert.ToInt32(raw.Substring(i + 1, 4), 16));
+                        i += 4;
+                    }
+
+                    break;
+                default:
+                    text.Append(next);
+                    break;
+            }
+        }
+
+        return text.ToString();
+
+        static bool IsHex(string s, int from, int to)
+        {
+            for (var k = from; k < to; k++)
+            {
+                if (!char.IsAsciiHexDigit(s[k]))
+                    return false;
+            }
+
+            return true;
+        }
+    }
 
     private static TokenTypes Binary(BinaryOperator op) => op switch
     {
