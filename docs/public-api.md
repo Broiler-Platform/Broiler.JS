@@ -163,6 +163,12 @@ written before this change can serve code that calls the old signature, which th
 folder must be cleared after updating. The host is not packaged, and its `Program.cs:36` leaves the cache
 commented out, so only a host that constructs the cache itself holds such a folder. A follow-up is suggested: key
 the cache on the build. It is a product change, and so comes after the after runs.
+*(Noted 2026-11-03, at milestone SJL-14.1, decision D55: the follow-up is done. Broiler-Platform/Broiler.JS#1071,
+merged as `8dbef17f`, keys each entry of `AssemblyCodeCache` on the build of the engine's assemblies, their module
+version identifiers (`Broiler.JS/Broiler.JavaScript/AssemblyCodeCache.cs:291`, `:320-324` at `33d3093b`), so a folder
+written by an earlier build is no longer served, and "such a folder must be cleared after updating" no longer holds for
+a build from that merge on. The sentences it replaces read "A follow-up is suggested: key the cache on the build. It is
+a product change, and so comes after the after runs.")*
 
 The check of the consumers that (c) requires is not made for `UndoMark`, for the members without options, nor for
 the hosts' own `IJSCompiler` implementations, and none of them is removed.
@@ -295,6 +301,16 @@ token types (`Runtime`), which `Parser`, `Compiler`, `Engine` and `Modules` reac
 `InternalsVisibleTo`; those grants stay, since each assembly still reaches other internals of `Runtime`.
 `SyntaxValidation.ValidateProgram` (`Compiler`, internal) takes the options the program was parsed under in
 place of its `isModule` flag.
+*(Corrected 2026-11-03, at milestone SJL-14.1, decision D49: "with no public surface" holds for the compiler, not for
+every consumer. Broiler.JSeal's module adapter looks up `CoreScript.AllowTopLevelAwaitScope` and `ModuleGoalScope` by
+reflection, whatever their visibility (`Broiler.JSeal.BroilerJs/BroilerJsModuleAnalysis.cs:43-55` at Broiler.JSeal
+`ebb5e6ac`, the commit this file's consumer checks name, and unchanged at `97714fda`, its default branch on
+2026-11-03), and refuses modules when either is missing, so against an engine built from SJL-12.5's change on it refuses
+every module. The consumer checks of SJL-12.5 searched the consumers for references to the members they removed, not for
+reflection by name, and so did not find it. It is recorded as a finding of SJL-12.5's, which SJL-14 did not cause and
+does not fix: Broiler.JSeal is not changed by this programme, and SJL-14's clause 5, as revised on 2026-11-03 before
+any evidence, asks that its candidate-feed runs lose no test to the cut-over, a test that fails against both
+candidates being recorded with its cause.)*
 
 **Packages.** No reference changes. `Parser` still references `Runtime`, for the Unicode and
 regular-expression types item 4 of SJL-12.5 moves to `Ast`; the provider of `FastParserOptions` is typed by
