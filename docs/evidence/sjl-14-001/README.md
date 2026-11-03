@@ -57,7 +57,14 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
   uses, which that bundle records as "256 MB" and its tool sets as `256 * 1024 * 1024` bytes
   (`docs/evidence/sjl-12-001/tools/parse-corpus/Program.cs:23`).
 - **Clause 6** is read as the milestone file states it when part I is read; what it becomes while no controlled lane
-  exists is the owner's own choice (decision D48), not made here.
+  exists is the owner's own choice (decision D48), not made here. *(Noted 2026-11-03, later: the owner has made it.
+  On 2026-11-03 the owner wrote: "Please defer the measurement", decision D48's alternative (i), the owner's own dated
+  choice and not one taken under the owner's direction of 2026-10-18. Clause 6 is kept as written: met only by a MET
+  reading of part I on a controlled lane, and unmet until one exists. Part I's runs on a lane that is not controlled
+  go to `measurement/` as before, retained and recorded void. The choice is recorded in
+  [`docs/roadmap/SharedLibraries.md`](../../roadmap/SharedLibraries.md)'s SJL-14 section and by a dated note on
+  Broiler.VM's decision SJL-D-23; [`decision-rule.md`](decision-rule.md) is not edited, as it leaves the choice to the
+  owner and makes none.)*
 - **Exclusions:** none.
 
 | Exclusion | What | Why |
