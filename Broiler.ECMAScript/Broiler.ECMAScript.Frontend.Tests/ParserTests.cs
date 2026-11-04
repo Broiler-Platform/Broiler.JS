@@ -163,8 +163,8 @@ public sealed class ParserTests
         Assert.Equal(ParseOutcome.Accepted, result.Outcome);
         Assert.Equal(SyntaxKind.Program, result.Tree!.Kind);
         Assert.Equal([TokenKind.IdentifierName, TokenKind.IdentifierName, TokenKind.Equals, TokenKind.RegularExpressionLiteral, TokenKind.Semicolon, TokenKind.IdentifierName],
-            result.Tokens.Select(static t => t.Kind).ToArray());
-        Assert.Empty(Parse("var x = ").Tokens);
+            result.TokenStream.Select(static t => t.Kind).ToArray());
+        Assert.Empty(Parse("var x = ").TokenStream);
     }
 
     [Fact]
@@ -663,14 +663,14 @@ public sealed class ParserTests
     {
         var result = Parse(text);
         Assert.Equal(statements, Accept(text).Body.Count);
-        Assert.Equal(literals, result.Tokens.Count(static t => t.Kind == TokenKind.RegularExpressionLiteral));
+        Assert.Equal(literals, result.TokenStream.Count(static t => t.Kind == TokenKind.RegularExpressionLiteral));
     }
 
     [Fact]
     public void A_regular_expression_literal_after_a_for_await_head_and_in_a_generator_is_read_as_one()
     {
         var request = Request("async function* f() { for await (x of y) /a/; yield /b/; }");
-        var tokens = Parse(request).Tokens.Where(static t => t.Kind == TokenKind.RegularExpressionLiteral).Count();
+        var tokens = Parse(request).TokenStream.Where(static t => t.Kind == TokenKind.RegularExpressionLiteral).Count();
         Assert.Equal(2, tokens);
     }
 

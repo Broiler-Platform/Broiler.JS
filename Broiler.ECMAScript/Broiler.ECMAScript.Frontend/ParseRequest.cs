@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   8
 // Annotated:        8/8
-// Exempt:           11
+// Exempt:           12
 // Human-reviewed:   0/8
 // IP risk:          Low
 // Security risk:    Medium
@@ -207,6 +207,15 @@ public sealed class ParseRequest
 
     /// <summary>The engine's regular-expression validator, which the parse asks of every literal it reaches (decision D7).</summary>
     public IRegularExpressionValidator RegularExpressions { get; }
+
+    /// <summary>
+    /// Whether the result publishes the token stream the parse read, as <see cref="ParseResult.Tokens"/>; false by default.
+    /// The parse is the same either way: it reads the same tokens, under the same goals, makes the same tree, side tables
+    /// and diagnostics, and allocates the same objects of the same sizes as at 0.1.0-preview.9, the result holding the
+    /// stream it already kept and a flag beside its outcome; the switch decides only whether the result hands the stream
+    /// out (the owner's decision of 2026-11-04, for Broiler.VM's tokenizers-agreement row; decision D21).
+    /// </summary>
+    public bool RetainTokens { get; init; }
 
     /// <summary>
     /// The caller's meter, or null for none (decision D32; convention 4). The parse charges one unit per UTF-16 code unit

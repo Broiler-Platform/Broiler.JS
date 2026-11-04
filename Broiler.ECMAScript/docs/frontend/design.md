@@ -448,6 +448,11 @@ changes its answer.", and gave Broiler.VM only the move to refused: a chain bega
 an argument or a right operand beside a deep left operand was charged both, and trees within the constant were
 refused.)*
 
+*(Noted 2026-11-04, by the owner's decision of that day, "Expose + preview.10", on the table's parts, which name no
+switch for the result's tokens.)* The request gains `ParseRequest.RetainTokens`, false by default, which decides only
+whether the result publishes the token stream the parse read as `ParseResult.Tokens`, for Broiler.VM's
+tokenizers-agreement row (decision D21); the parse is the same either way. Section 9.3's note of 2026-11-04 records it.
+
 ### 9.3 The result
 
 | Part | What it carries | Decisions |
@@ -548,6 +553,45 @@ F and G read.)*
 - **The deep-nesting corpus's runner** is the probe's `--parse-one` mode, one source parsed alone in its process with
   an exit code for its outcome, driven per row by `docs/evidence/sjl-13-001/tools/deep_nesting.py`.
 
+*(Noted 2026-11-04, by the owner's decision of that day, "Expose + preview.10", on the note of 2026-11-01 at SJL-13.2c,
+"it is not public at stage 4c: which of its raw facts the result publishes, for Broiler.VM's tokenizers-agreement row and
+Broiler.JS's bridged token chain (decisions D21 and D44), is fixed when the first consumer reads it", and on the note of
+2026-11-02 at SJL-13.2e, "The dump reads the tree's children and the token stream, which stay internal".)* The first
+consumer is Broiler.VM's SJL-13.3 step 1, whose tokenizers-agreement row (its bundle `sjl-13-001`'s rule part F, decision
+D21) compares its slice tokenizer's stream, token by token, with the stream the library's parse of the same text under
+the same goal produced, so that each `/` is read as the parser's goal read it. The published 0.1.0-preview.9 keeps that
+stream internal, so the owner decided to publish it with the least surface the row needs, as a library change of its own
+that the shared stream's next version, 0.1.0-preview.10, carries:
+- **The switch.** `ParseRequest.RetainTokens`, false by default. The parse reads the same tokens under the same goals and
+  makes the same tree, side tables and diagnostics either way, and keeps the stream beside the tree as before; the switch
+  decides only whether the result hands it out. The result holds the stream it kept and a flag beside its outcome, where
+  its layout has room, so that it allocates the same objects of the same sizes as at 0.1.0-preview.9, switch off or on.
+- **The stream.** `ParseResult.Tokens`: with the switch on, the tokens an accepted parse consumed, in source order, each
+  read under the goal the parser named - no comment, no end-of-input token and no refusal token; empty with the switch
+  off, and empty for a refused source. A template is its run of pieces (`TemplateHead`, each substitution's tokens,
+  `TemplateMiddle`s, `TemplateTail`), or one `NoSubstitutionTemplate`.
+- **The token.** `Token`, an immutable struct whose constructor is internal (the library makes every token a result
+  holds; a default `Token`, of kind `EndOfInput` with no facts, is no token of any stream), `TokenKind`, `TokenFlags`
+  and `Word` are public, with the facts section 9.3's note of 2026-11-01 at SJL-13.2b lists: the kind, which that note
+  defines as an identifier name with the reserved or contextual word its cooked name spells, published as `Kind` with
+  `Word`, so that the library's kind the row's fixed kind map is applied to (with the escaped flag, an escaped reserved
+  word mapping to an identifier) is the whole of it, a keyword such as `if` included; `Start` and `End`, offsets into
+  the request's text without the source's base offset, unlike a node's span, whose text is the raw spelling; `Line`
+  and `Column`, 1-based with the source's base line and, on the text's first line, its base column;
+  `Value`, an identifier's or private name's StringValue, a string's SV or a template piece's TV (null where it holds a
+  `NotEscapeSequence`); `Raw`, a template piece's TRV; `Number`, a numeric literal's Number value (NaN for a BigInt or a
+  literal with the `m` suffix); and `Flags`, with `NewLineBefore` and `IsEscaped` read from them: a line terminator
+  before the token (for the first token, one before it, the terminator after a hashbang included; the text's start
+  alone marks nothing), an escape in a name, the legacy octal and non-octal decimal literals and escapes, a
+  `NotEscapeSequence`, the BigInt and `m` suffixes, and an escape or line continuation in a string. A
+  regular-expression literal's body and flags are its raw spelling's two parts, split at its last `/`, so the literal's
+  split offset stays internal: a consumer reads it from the raw spelling.
+- **The dump** reads the stream the parse read whatever the switch says, so the canonical dump of a parse, and every
+  digest of it, is the same bytes with the switch off or on; the tree's children stay internal.
+
+Broiler.JS's bridge (decision D44) still reads a boundary token's extent from the source text, as SJL-14.2 left it; that
+it may read the published stream instead is SJL-14's to decide.
+
 ### 9.4 What the syntax half reports (decision D10, the union)
 
 - **The grammar, and every early error either engine's parser reports at parse time today**: Broiler.VM's `JsParser`
@@ -595,6 +639,10 @@ nothing converts the outer literal.
 - sections 3, 4 and 5 gain notes; section 7 gains SJL-13's records; section 8's first, second and last items are
   revised;
 - section 9 is new.
+
+*(Added 2026-11-04, by the owner's decision of that day.)* Section 9.2 gains the note on the request's `RetainTokens`,
+and section 9.3 the note on the published token stream: the request's `RetainTokens`, the result's `Tokens`, the public
+`Token`, `TokenKind`, `TokenFlags` and `Word`, and the canonical dump unchanged by the switch.
 
 *(Added 2026-11-02, at SJL-13.2f, after part A's first codes were triaged.)* Section 9.4 gains the note on the rows of an
 `await` binding in a static block (EE0009, EE0011, EE0013 for EE0140) and of an arrow head's literal that covers no

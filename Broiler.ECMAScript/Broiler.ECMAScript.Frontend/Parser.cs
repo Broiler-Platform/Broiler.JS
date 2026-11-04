@@ -190,7 +190,7 @@ internal sealed partial class Parser
 
     /// <summary>Parses <paramref name="request"/>'s source under its goal.</summary>
     /// <returns>The accepted tree with the token stream the parse read, or the first refusal (decision D11).</returns>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D11 first refusal; IP=Low; Security=High; Resources=2; Fingerprint=17C381
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D11 first refusal; IP=Low; Security=High; Resources=2; Fingerprint=541F16
     // Broiler-Falsified-If: a refusal escapes as an exception other than the parse's own, or a refused parse answers a tree
     // Broiler-Human:        PENDING
     internal static ParseResult Run(ParseRequest request)
@@ -213,7 +213,7 @@ internal sealed partial class Parser
         var walk = Semantics.DeclarationsWalk.Run(request, program);
         if (walk.Diagnostics.Count > 0)
             return ParseResult.Refused(Limit(request, walk.Diagnostics));
-        return ParseResult.Accepted(program, parser.tokens, walk.Tables);
+        return ParseResult.Accepted(program, parser.tokens, request.RetainTokens, walk.Tables);
     }
 
     /// <summary>
