@@ -36,10 +36,14 @@ namespace Broiler.ECMAScript.Syntax;
 /// <b>Public from 2026-11-04</b>, by the owner's decision of that day ("Expose + preview.10"), so that Broiler.VM's
 /// tokenizers-agreement row (SJL-13.3's step 1, part F; decision D21) reads the stream a parse produced:
 /// <see cref="ParseResult.Tokens"/> holds it when the request sets <see cref="ParseRequest.RetainTokens"/>. A token is
-/// immutable, and only the library makes one. A regular-expression literal's body and flags are its raw spelling's two
-/// parts: the flags are the identifier parts after its last <c>/</c>, and the body the text between the first <c>/</c>
-/// and that one. <i>(Revised 2026-11-04; the type was internal, and its stream "is kept
-/// beside the tree inside the library and is not public".)</i>
+/// immutable and its constructor internal: the library makes every token a result holds, and a default
+/// <see cref="Token"/> (kind <see cref="TokenKind.EndOfInput"/>, offsets 0, no value, a <see cref="Number"/> of 0) is no
+/// token of any stream. An identifier name's <see cref="Word"/> is the reserved or contextual word its cooked name
+/// spells, which the kind of section 9.3 of the design includes, so that a consumer's kind map reads the kind, the word
+/// and the escaped flag. A regular-expression literal's body and flags are its raw spelling's two parts: the flags are the
+/// identifier parts after its last <c>/</c>, and the body the text between the first <c>/</c> and that one.
+/// <i>(Revised 2026-11-04; the type was internal, and its stream "is kept beside the tree inside the library and is not
+/// public".)</i>
 /// </para>
 /// </remarks>
 // Broiler-AI:           Origin=AI; Spec=JSD-0080 output raw facts, JSD-0083 D15 D21; IP=Low; Security=Low; Resources=0; Fingerprint=C18C8A
@@ -65,16 +69,25 @@ public readonly struct Token
     /// <summary>What the token is.</summary>
     public TokenKind Kind { get; }
 
-    /// <summary>The offset of its first code unit in the request's text.</summary>
+    /// <summary>
+    /// The 0-based offset of its first code unit in the request's text, without <see cref="SourceText.BaseOffset"/>, unlike
+    /// a node's <see cref="SourceSpan"/>, which adds it.
+    /// </summary>
     public int Start { get; }
 
-    /// <summary>The offset just past its last code unit.</summary>
+    /// <summary>
+    /// The offset just past its last code unit in the request's text, without <see cref="SourceText.BaseOffset"/>, unlike a
+    /// node's <see cref="SourceSpan"/>.
+    /// </summary>
     public int End { get; }
 
-    /// <summary>The 1-based line it starts on.</summary>
+    /// <summary>The 1-based line it starts on, with <see cref="SourceText.BaseLine"/> applied.</summary>
     public int Line { get; }
 
-    /// <summary>The 1-based column, in UTF-16 code units, it starts at.</summary>
+    /// <summary>
+    /// The 1-based column, in UTF-16 code units, it starts at, with <see cref="SourceText.BaseColumn"/> applied on the
+    /// text's first line.
+    /// </summary>
     public int Column { get; }
 
     /// <summary>Its facts beside its kind.</summary>
@@ -102,8 +115,13 @@ public readonly struct Token
     /// </summary>
     internal int Split { get; }
 
-    /// <summary>The reserved or contextual word an identifier name's cooked name spells, escaped or not; <see cref="Syntax.Word.None"/> otherwise.</summary>
-    internal Word Word { get; }
+    /// <summary>
+    /// The reserved or contextual word an identifier name's cooked name spells, escaped or not (an escaped <c>if</c> spells
+    /// <see cref="Syntax.Word.If"/> with <see cref="IsEscaped"/> true); <see cref="Syntax.Word.None"/> for any other name
+    /// and every other kind. <i>(Revised 2026-11-04, when the member became public, for the kind map of Broiler.VM's
+    /// tokenizers-agreement row; it was internal.)</i>
+    /// </summary>
+    public Word Word { get; }
 
     /// <summary>Whether a line terminator stands between the previous token and this one.</summary>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.10; IP=Low; Security=Low; Resources=1; Fingerprint=E3DFD4
@@ -132,12 +150,19 @@ public readonly struct Token
 /// proposals the request may admit read in place of an identifier), as an identifier name's cooked name spells them.
 /// </summary>
 /// <remarks>
+/// <para>
 /// <b>The word is a fact, and never a decision</b>: an escaped <c>if</c> spells <see cref="If"/> with the token's escaped
 /// flag set, and whether a word is a keyword, a reserved word or a name where it stands is the parser's question.
+/// </para>
+/// <para>
+/// Public from 2026-11-04, with <see cref="Token.Word"/>, by the owner's decision of that day ("Expose + preview.10"), so
+/// that Broiler.VM's tokenizers-agreement row (decision D21) maps a token's kind as the library read it. The numbers are
+/// stable. <i>(Revised 2026-11-04; the enumeration was internal.)</i>
+/// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.7.2 reserved words; IP=Low; Security=Low; Resources=0; Fingerprint=3D5B85
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.7.2 reserved words; IP=Low; Security=Low; Resources=0; Fingerprint=B56471
 // Broiler-Human:        PENDING
-internal enum Word
+public enum Word
 {
     /// <summary>No word of this list.</summary>
     None = 0,

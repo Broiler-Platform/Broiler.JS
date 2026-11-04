@@ -45,7 +45,7 @@ public enum TokenKind
     /// <summary>The end of the input: no input element is left.</summary>
     EndOfInput = 0,
 
-    /// <summary>A refusal: the tokenizer met text no input element of the goal admits, and says why (<see cref="Tokenizer.Diagnostic"/>).</summary>
+    /// <summary>A refusal: the tokenizer met text no input element of the goal admits, and says why in a diagnostic of its own; the parse refuses the source, and no token of this kind is published.</summary>
     Invalid,
 
     /// <summary><c>IdentifierName</c> (clause 12.7), reserved words included; its cooked name is <see cref="Token.Value"/>.</summary>
@@ -292,7 +292,8 @@ public enum TokenFlags
 
     /// <summary>
     /// A <c>LineTerminator</c>, or a <c>MultiLineComment</c> holding one, stands between the previous token and this one
-    /// (clause 12.10, automatic semicolon insertion and the restricted productions), the start of the text not counting.
+    /// (clause 12.10, automatic semicolon insertion and the restricted productions). For the first token, one before it
+    /// marks it, the line terminator after a hashbang included; the start of the text alone does not.
     /// </summary>
     NewLineBefore = 1,
 

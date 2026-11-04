@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2975 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2976 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 168 |
-| Code units | 4627 |
-| Relevant | 2975 |
+| Code units | 4628 |
+| Relevant | 2976 |
 | Exempt | 1652 |
-| Assessed | 2975 of 2975 (100%) |
-| Human reviewed | 0 of 2975 (0%) |
-| Unverified | 2975 |
+| Assessed | 2976 of 2976 (100%) |
+| Human reviewed | 0 of 2976 (0%) |
+| Unverified | 2976 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,7 +67,7 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2975 |
+| HUMAN_PENDING | 2976 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
@@ -184,7 +184,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Frontend/Rows.cs` | 212 | 212 | 0 | 212 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SourceText.cs` | 7 | 2 | 5 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxDiagnostic.cs` | 20 | 7 | 13 | 7 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Frontend/SyntaxParser.cs` | 16 | 7 | 9 | 7 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Frontend/SyntaxParser.cs` | 17 | 8 | 9 | 8 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Expressions.cs` | 271 | 128 | 143 | 128 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Functions.cs` | 42 | 16 | 26 | 16 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Modules.cs` | 46 | 21 | 25 | 21 | Low | Low | 0/0 |
@@ -755,5 +755,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1671 of the 2975 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1672 of the 2976 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

@@ -55,6 +55,16 @@ public sealed class TokenStreamTests
         Assert.Equal(result.TokenStream, result.Tokens);
     }
 
+    [Fact]
+    public void A_result_holds_one_list_of_tokens_and_a_flag_as_its_layout_was_before_the_switch()
+    {
+        // 0.1.0-preview.9's result held four references and its outcome; the switch adds a flag beside the outcome, where
+        // the layout has room, and no reference, so that a result is the same size switch off or on.
+        var fields = typeof(ParseResult).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+        Assert.Equal(4, fields.Count(static f => !f.FieldType.IsValueType));
+        Assert.Equal([typeof(bool), typeof(ParseOutcome)], fields.Where(static f => f.FieldType.IsValueType).Select(static f => f.FieldType).OrderBy(static t => t.Name, StringComparer.Ordinal).ToArray());
+    }
+
     [Theory]
     [InlineData("var x = ")]
     [InlineData("x = 'abc")]
@@ -209,6 +219,32 @@ public sealed class TokenStreamTests
         Assert.Equal(TokenKind.IdentifierName, tokens[0].Kind);
         var privates = tokens.Where(static t => t.Kind == TokenKind.PrivateIdentifier).ToArray();
         Assert.Equal(["#p", "#p"], privates.Select(static t => t.Value).ToArray());
+    }
+
+    [Fact]
+    public void An_identifier_name_carries_the_word_its_cooked_name_spells_escaped_or_not()
+    {
+        // The kind of section 9.3 of the design: an identifier name with the reserved or contextual word its cooked name
+        // spells, never decided a keyword, so that a kind map reads the kind, the word and the escaped flag.
+        const string text = "if (a) a.i\\u0066 = of + async + foo + \\u0061wait + this;";
+        var names = Tokens(text).Where(static t => t.Kind == TokenKind.IdentifierName).ToArray();
+        Assert.Equal(
+            [(Word.If, false), (Word.None, false), (Word.None, false), (Word.If, true), (Word.Of, false), (Word.Async, false), (Word.None, false), (Word.Await, true), (Word.This, false)],
+            names.Select(static t => (t.Word, t.IsEscaped)).ToArray());
+        Assert.All(Tokens(text).Where(static t => t.Kind != TokenKind.IdentifierName), static t => Assert.Equal(Word.None, t.Word));
+    }
+
+    [Fact]
+    public void A_default_token_is_no_token_of_any_stream()
+    {
+        // The constructor is internal; a consumer can still make a default token, which carries no facts.
+        var token = default(Token);
+        Assert.Equal(TokenKind.EndOfInput, token.Kind);
+        Assert.Equal(Word.None, token.Word);
+        Assert.Equal((0, 0, 0, 0, TokenFlags.None), (token.Start, token.End, token.Line, token.Column, token.Flags));
+        Assert.Null(token.Value);
+        Assert.Null(token.Raw);
+        Assert.Equal(0.0, token.Number);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
