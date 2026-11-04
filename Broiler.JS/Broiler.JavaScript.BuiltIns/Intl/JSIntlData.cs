@@ -22,7 +22,8 @@ namespace Broiler.JavaScript.BuiltIns.Intl;
 /// <b>Each table is read from the assembly once per process</b>, on first use, lazily and thread-safely, and kept; the
 /// library's <see cref="TableLocaleData"/> then decodes each one once (decision D23's L3 reading).
 /// <see cref="LocaleData"/> is the one <see cref="ILocaleData"/> this engine asks, the decoder in
-/// <see cref="CompositeLocaleData"/>'s order: the shared tables, then the locale's parent and root.
+/// <see cref="CompositeLocaleData"/>'s order: the shared tables, then the host-culture provider for a locale the shared data
+/// lacks (<see cref="HostCultureLocaleData"/>, decision D6), then the locale's parent and root.
 /// </para>
 /// </remarks>
 internal sealed class JSIntlData : IIntlDataSet
@@ -37,7 +38,7 @@ internal sealed class JSIntlData : IIntlDataSet
         new(static () => new TableLocaleData(Embedded), LazyThreadSafetyMode.ExecutionAndPublication);
 
     private static readonly Lazy<ILocaleData> Composite =
-        new(static () => new CompositeLocaleData(SharedData.Value), LazyThreadSafetyMode.ExecutionAndPublication);
+        new(static () => new CompositeLocaleData(SharedData.Value, HostCultureLocaleData.Host), LazyThreadSafetyMode.ExecutionAndPublication);
 
     private readonly bool cache;
 
@@ -74,8 +75,9 @@ internal sealed class JSIntlData : IIntlDataSet
     internal static TableLocaleData Shared => SharedData.Value;
 
     /// <summary>
-    /// The locale data every Intl question of this engine reads: the shared tables, then the locale's parent and root,
-    /// in <see cref="CompositeLocaleData"/>'s order. One per process.
+    /// The locale data every Intl question of this engine reads: the shared tables, then the host-culture provider at a
+    /// locale the shared data lacks, then the locale's parent and root, in <see cref="CompositeLocaleData"/>'s order. One per
+    /// process.
     /// </summary>
     internal static ILocaleData LocaleData => Composite.Value;
 
