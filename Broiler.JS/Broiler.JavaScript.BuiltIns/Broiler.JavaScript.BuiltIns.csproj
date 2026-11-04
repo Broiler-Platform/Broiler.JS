@@ -21,6 +21,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The Intl data home's tables (milestone SJL-9.5, task 8.1; Broiler.VM's JSD-0082, decisions D5, D8 and D11):
+         every file Broiler.ECMAScript.Generation writes into data/intl/generated/ for this engine's locale list, CLDR
+         48.2.0, and its manifest. They are linked from the home, never copied, as the time tables are; JSIntlData hands
+         their bytes to Broiler.ECMAScript.Intl, each table once, on first use. -->
+    <EmbeddedResource Include="..\..\Broiler.ECMAScript\data\intl\generated\*" Link="Intl\IntlData\%(Filename)%(Extension)" LogicalName="Broiler.JavaScript.BuiltIns.IntlData.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Broiler.Regex" />
     <PackageReference Include="Broiler.Unicode.Cldr.LocaleData" />
     <!-- Intl.Segmenter's boundaries and word statuses (milestone SJL-7.5), over the tables Ast embeds
@@ -30,6 +38,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
+    <!-- The shared Intl algorithms (milestone SJL-9.5; JSD-0082, decision D9: a project reference in this repository). -->
+    <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Intl\Broiler.ECMAScript.Intl.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.LinqExpressions\Broiler.JavaScript.LinqExpressions.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Extensions\Broiler.JavaScript.Extensions.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.JSClassGenerator\Broiler.JavaScript.JSClassGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" GlobalPropertiesToRemove="PublishTrimmed;PublishAot;PublishReadyToRun;RuntimeIdentifier;SelfContained" />
