@@ -448,6 +448,11 @@ changes its answer.", and gave Broiler.VM only the move to refused: a chain bega
 an argument or a right operand beside a deep left operand was charged both, and trees within the constant were
 refused.)*
 
+*(Noted 2026-11-04, by the owner's decision of that day, "Expose + preview.10", on the table's parts, which name no
+switch for the result's tokens.)* The request gains `ParseRequest.RetainTokens`, false by default, which decides only
+whether the result publishes the token stream the parse read as `ParseResult.Tokens`, for Broiler.VM's
+tokenizers-agreement row (decision D21); the parse is the same either way. Section 9.3's note of 2026-11-04 records it.
+
 ### 9.3 The result
 
 | Part | What it carries | Decisions |
@@ -559,22 +564,28 @@ stream internal, so the owner decided to publish it with the least surface the r
 that the shared stream's next version, 0.1.0-preview.10, carries:
 - **The switch.** `ParseRequest.RetainTokens`, false by default. The parse reads the same tokens under the same goals and
   makes the same tree, side tables and diagnostics either way, and keeps the stream beside the tree as before; the switch
-  decides only whether the result hands it out.
+  decides only whether the result hands it out. The result holds the stream it kept and a flag beside its outcome, where
+  its layout has room, so that it allocates the same objects of the same sizes as at 0.1.0-preview.9, switch off or on.
 - **The stream.** `ParseResult.Tokens`: with the switch on, the tokens an accepted parse consumed, in source order, each
   read under the goal the parser named - no comment, no end-of-input token and no refusal token; empty with the switch
   off, and empty for a refused source. A template is its run of pieces (`TemplateHead`, each substitution's tokens,
   `TemplateMiddle`s, `TemplateTail`), or one `NoSubstitutionTemplate`.
-- **The token.** `Token`, an immutable struct only the library makes, `TokenKind` and `TokenFlags` are public, with the
-  facts section 9.3's note of 2026-11-01 at SJL-13.2b lists: the kind; `Start` and `End`, offsets into the request's text
-  without the source's base offset, whose text is the raw spelling; `Line` and `Column`, 1-based with the source's base;
+- **The token.** `Token`, an immutable struct whose constructor is internal (the library makes every token a result
+  holds; a default `Token`, of kind `EndOfInput` with no facts, is no token of any stream), `TokenKind`, `TokenFlags`
+  and `Word` are public, with the facts section 9.3's note of 2026-11-01 at SJL-13.2b lists: the kind, which that note
+  defines as an identifier name with the reserved or contextual word its cooked name spells, published as `Kind` with
+  `Word`, so that the library's kind the row's fixed kind map is applied to (with the escaped flag, an escaped reserved
+  word mapping to an identifier) is the whole of it, a keyword such as `if` included; `Start` and `End`, offsets into
+  the request's text without the source's base offset, unlike a node's span, whose text is the raw spelling; `Line`
+  and `Column`, 1-based with the source's base line and, on the text's first line, its base column;
   `Value`, an identifier's or private name's StringValue, a string's SV or a template piece's TV (null where it holds a
   `NotEscapeSequence`); `Raw`, a template piece's TRV; `Number`, a numeric literal's Number value (NaN for a BigInt or a
   literal with the `m` suffix); and `Flags`, with `NewLineBefore` and `IsEscaped` read from them: a line terminator
-  before the token, an escape in a name, the legacy octal and non-octal decimal literals and escapes, a
+  before the token (for the first token, one before it, the terminator after a hashbang included; the text's start
+  alone marks nothing), an escape in a name, the legacy octal and non-octal decimal literals and escapes, a
   `NotEscapeSequence`, the BigInt and `m` suffixes, and an escape or line continuation in a string. A
-  regular-expression literal's body and flags are its raw spelling's two parts, split at its last `/`. The reserved or
-  contextual word a name spells and the literal's split offset stay internal: the row needs neither, and a consumer reads
-  both from the raw spelling.
+  regular-expression literal's body and flags are its raw spelling's two parts, split at its last `/`, so the literal's
+  split offset stays internal: a consumer reads it from the raw spelling.
 - **The dump** reads the stream the parse read whatever the switch says, so the canonical dump of a parse, and every
   digest of it, is the same bytes with the switch off or on; the tree's children stay internal.
 
@@ -629,9 +640,9 @@ nothing converts the outer literal.
   revised;
 - section 9 is new.
 
-*(Added 2026-11-04, by the owner's decision of that day.)* Section 9.3 gains the note on the published token stream:
-the request's `RetainTokens`, the result's `Tokens`, the public `Token`, `TokenKind` and `TokenFlags`, and the canonical
-dump unchanged by the switch.
+*(Added 2026-11-04, by the owner's decision of that day.)* Section 9.2 gains the note on the request's `RetainTokens`,
+and section 9.3 the note on the published token stream: the request's `RetainTokens`, the result's `Tokens`, the public
+`Token`, `TokenKind`, `TokenFlags` and `Word`, and the canonical dump unchanged by the switch.
 
 *(Added 2026-11-02, at SJL-13.2f, after part A's first codes were triaged.)* Section 9.4 gains the note on the rows of an
 `await` binding in a static block (EE0009, EE0011, EE0013 for EE0140) and of an arrow head's literal that covers no
