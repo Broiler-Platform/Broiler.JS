@@ -121,6 +121,20 @@ because the specification still leaves its outcome to the implementation. *(Adde
 corpus revision 3, after Broiler.VM's first run found the case; until then the field was allowed on
 `divergence` vectors only.)*
 
+**Such a field may classify a host**, when the engine's plan commits it to its `per-engine.<engine>` expectation only
+on a host that provides what the expectation needs, and the engine's record is a policy of the engine that no task
+changes: the field then names the hosts that lack it, what the engine answers there, and that record in the place of
+the plan that answers it, as a `divergence` vector's field may name the engine policy its record keeps (revision 30's
+field for row T18's `m` suffix). The field classifies any differing outcome on every host (section 8), so on a host
+that provides what the expectation needs a match is reported as the divergence no longer holding, and a later
+difference there would be classified too: the vector's leaving that report is what shows it, and the revision that
+retires the engine's other fields on such vectors reads these again. *(Added 2026-11-04, at corpus revision 35, for
+the Intl vectors whose Broiler.JS expectation is one of decision D5's extra locales' own answer, which Broiler.JS gives
+only where the host's ICU lists a culture for the locale, since its available locales are the host's cultures
+(decision D7 of Broiler.VM's JSD-0082, as the owner kept it that day). Until then the paragraph above was the whole
+rule for an `impl-defined` vector: "the plan commits the engine to it, and the engine does not do it yet", and a
+divergence field held "a link to the plan that answers it".)*
+
 A vector an engine fails is never deleted or reclassified to make it pass. A classification change
 is a dated entry in [REVISIONS.md](REVISIONS.md), in a new corpus revision.
 

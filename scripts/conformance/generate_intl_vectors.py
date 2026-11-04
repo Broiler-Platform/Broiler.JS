@@ -134,16 +134,20 @@ VM_LIST_REASON = ("decision D5: Broiler.VM's locale list stays de, de-DE, en and
 # host whose ICU lists no culture for a locale resolves it as Broiler.VM's list does: these are the extra locales the
 # ICU 74.2 of the host that classifies the area (Ubuntu 24.04.5) lists none for, in its data's res_index and to
 # Broiler.JS at SJL-9.5's 4ba95d2d alike. Each resolves there to en (the en-* ones) or to the default en-US, which is
-# vm_resolution's answer too, so where a vector's Broiler.VM expectation differs from out, Broiler.JS's answer on such
-# a host is Broiler.VM's expectation, and its note says so. Its divergence.broiler-js field, which
-# intl-divergences.txt holds, classifies that host (revision 35).
+# vm_resolution's answer too, so where a vector's Broiler.VM expectation differs from out, Broiler.JS answers on such a
+# host for Broiler.VM's resolution, which is Broiler.VM's expectation once Broiler.JS answers the rows the vector's
+# note names as they have it, and its note says so. Its divergence.broiler-js field, which intl-divergences.txt holds,
+# classifies that host (revision 35). (Until the review of 2026-11-04 the note and this comment said flatly that
+# Broiler.JS's answer there "is Broiler.VM's expectation"; at 4ba95d2d 11 of the 14 vectors answer it, and
+# families/0091, 0094 and 0152 do not yet, under rows T12, T30 and T31, and N4, which SJL-9.5 corrects.)
 HOST_LACKS = ("aa", "ab", "en-FR", "en-Shaw", "en-Shaw-GB", "jbo", "pap")
 VM_LIST_HOST_REASON = ("decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves {moves} "
                        "(LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer "
                        "for that locale; Broiler.JS's embedding carries the locale, so its expectation is out on a host "
                        "whose cultures list it (decision D7: its available locales are the host's cultures, row L28); "
                        "a host whose ICU lists no {tags} (ICU 74.2 lists none) resolves it as Broiler.VM's list does "
-                       "(row L29), and there Broiler.JS answers Broiler.VM's expectation (revision 35)")
+                       "(row L29), and there Broiler.JS answers for that locale, which is Broiler.VM's expectation "
+                       "once Broiler.JS answers the rows this note names as they have it (revision 35)")
 
 # Decision D33 (c) and row L40: each engine's Intl.Collator keeps its own data until SJL-17, and the shared
 # CollationsOfLocale reads the list of the collations that engine's Collator resolves. Broiler.JS's Collator keeps its
@@ -2265,7 +2269,7 @@ def generate(node: str, witness_node: str, cldr_dir: Path, out: Path, spec: Path
     extra = [tag for tag in locales if tag not in VM_LOCALES]
     for tag in HOST_LACKS:
         # The host's LookupMatcher reaches en for an en-* tag, which every host's ICU lists, and the default en-US
-        # otherwise: Broiler.VM's resolution, which VM_LIST_HOST_REASON says Broiler.JS's answer there is.
+        # otherwise: Broiler.VM's resolution, which VM_LIST_HOST_REASON says Broiler.JS resolves the tag to there.
         host = "en" if tag.startswith("en-") else VM_DEFAULT_LOCALE
         if tag not in extra or vm_resolution(tag) != host:
             raise GeneratorError(f"HOST_LACKS names {tag}, which is not an extra locale Broiler.VM resolves to {host}")
