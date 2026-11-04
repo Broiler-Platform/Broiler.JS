@@ -17,7 +17,9 @@ namespace Broiler.ECMAScript.Runners;
 /// <remarks>
 /// The walk over the tree keeps its own stack, so that a tree as deep as the library's tree-depth constant is dumped on
 /// any stack the parse ran on. The tree's children and the token stream are internal to the library, which grants its
-/// tests and the Native AOT probe its internals for this dump alone.
+/// tests and the Native AOT probe its internals for this dump alone. The stream dumped is the one the parse read,
+/// whether or not the request retains it for the result's public <c>Tokens</c> (2026-11-04), so a dump is the same
+/// bytes with the request's <c>RetainTokens</c> off or on.
 /// </remarks>
 internal static class SyntaxDump
 {
@@ -43,7 +45,7 @@ internal static class SyntaxDump
             text.Append('\n');
         }
 
-        foreach (var token in result.Tokens)
+        foreach (var token in result.TokenStream)
         {
             text.Append("token ").Append(Number((int)token.Kind)).Append(' ').Append(Number(token.Start)).Append(' ')
                 .Append(Number(token.End)).Append(' ').Append(Number(token.Line)).Append(' ').Append(Number(token.Column)).Append(' ')

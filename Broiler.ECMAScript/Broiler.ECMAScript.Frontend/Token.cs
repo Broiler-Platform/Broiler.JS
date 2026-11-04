@@ -32,10 +32,19 @@ namespace Broiler.ECMAScript.Syntax;
 /// <b>The raw spelling is the text between <see cref="Start"/> and <see cref="End"/></b>, for every kind: the token keeps
 /// the source's spelling, and its cooked value beside it, and takes neither engine's convention (decision D21).
 /// </para>
+/// <para>
+/// <b>Public from 2026-11-04</b>, by the owner's decision of that day ("Expose + preview.10"), so that Broiler.VM's
+/// tokenizers-agreement row (SJL-13.3's step 1, part F; decision D21) reads the stream a parse produced:
+/// <see cref="ParseResult.Tokens"/> holds it when the request sets <see cref="ParseRequest.RetainTokens"/>. A token is
+/// immutable, and only the library makes one. A regular-expression literal's body and flags are its raw spelling's two
+/// parts: the flags are the identifier parts after its last <c>/</c>, and the body the text between the first <c>/</c>
+/// and that one. <i>(Revised 2026-11-04; the type was internal, and its stream "is kept
+/// beside the tree inside the library and is not public".)</i>
+/// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0080 output raw facts, JSD-0083 D15 D21; IP=Low; Security=Low; Resources=0; Fingerprint=4C4020
+// Broiler-AI:           Origin=AI; Spec=JSD-0080 output raw facts, JSD-0083 D15 D21; IP=Low; Security=Low; Resources=0; Fingerprint=C18C8A
 // Broiler-Human:        PENDING
-internal readonly struct Token
+public readonly struct Token
 {
     /// <summary>Creates a token.</summary>
     internal Token(TokenKind kind, int start, int end, int line, int column, TokenFlags flags, string? value = null, string? raw = null, double number = double.NaN, int split = -1, Word word = Word.None)
@@ -54,37 +63,37 @@ internal readonly struct Token
     }
 
     /// <summary>What the token is.</summary>
-    internal TokenKind Kind { get; }
+    public TokenKind Kind { get; }
 
     /// <summary>The offset of its first code unit in the request's text.</summary>
-    internal int Start { get; }
+    public int Start { get; }
 
     /// <summary>The offset just past its last code unit.</summary>
-    internal int End { get; }
+    public int End { get; }
 
     /// <summary>The 1-based line it starts on.</summary>
-    internal int Line { get; }
+    public int Line { get; }
 
     /// <summary>The 1-based column, in UTF-16 code units, it starts at.</summary>
-    internal int Column { get; }
+    public int Column { get; }
 
     /// <summary>Its facts beside its kind.</summary>
-    internal TokenFlags Flags { get; }
+    public TokenFlags Flags { get; }
 
     /// <summary>
     /// Its cooked value: an identifier's or a private name's StringValue (the name its escapes spell), a string literal's
     /// SV, a template piece's TV (null where it holds a <c>NotEscapeSequence</c>); null for every other kind.
     /// </summary>
-    internal string? Value { get; }
+    public string? Value { get; }
 
     /// <summary>A template piece's TRV, its raw text with every CR and CR LF read as LF (clause 12.9.6.2); null for every other kind.</summary>
-    internal string? Raw { get; }
+    public string? Raw { get; }
 
     /// <summary>
     /// A numeric literal's Number value, from <c>NumericLiterals.Evaluate</c> (decision D9); NaN for a BigInt, whose value
     /// an engine computes under its own ceiling, for a literal with the <c>m</c> suffix, and for every other kind.
     /// </summary>
-    internal double Number { get; }
+    public double Number { get; }
 
     /// <summary>
     /// A regular-expression literal's closing slash, an offset into the text: its body is the text after
@@ -97,19 +106,19 @@ internal readonly struct Token
     internal Word Word { get; }
 
     /// <summary>Whether a line terminator stands between the previous token and this one.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.10; IP=Low; Security=Low; Resources=1; Fingerprint=D4D69A
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.10; IP=Low; Security=Low; Resources=1; Fingerprint=E3DFD4
     // Broiler-Human:        PENDING
-    internal bool NewLineBefore => (Flags & TokenFlags.NewLineBefore) != 0;
+    public bool NewLineBefore => (Flags & TokenFlags.NewLineBefore) != 0;
 
     /// <summary>Whether this is an identifier name or private name written with an escape.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.7.1; IP=Low; Security=Low; Resources=1; Fingerprint=BDE0D1
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.7.1; IP=Low; Security=Low; Resources=1; Fingerprint=FF945F
     // Broiler-Human:        PENDING
-    internal bool IsEscaped => (Flags & TokenFlags.Escaped) != 0;
+    public bool IsEscaped => (Flags & TokenFlags.Escaped) != 0;
 
     /// <summary>Its length in code units.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D15; IP=Low; Security=Low; Resources=1; Fingerprint=E2FA15
+    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D15; IP=Low; Security=Low; Resources=1; Fingerprint=F4209D
     // Broiler-Human:        PENDING
-    internal int Length => End - Start;
+    public int Length => End - Start;
 
     /// <summary>The token with the newline fact set as the trivia before it says.</summary>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.10 automatic semicolon insertion; IP=Low; Security=Medium; Resources=1; Fingerprint=C70164

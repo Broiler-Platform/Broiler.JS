@@ -367,6 +367,7 @@ Broiler.ECMAScript.Syntax.ParseRequest.get_Limits() method Broiler.ECMAScript.Sy
 Broiler.ECMAScript.Syntax.ParseRequest.get_Meter() method Broiler.ECMAScript.WorkCharge
 Broiler.ECMAScript.Syntax.ParseRequest.get_Proposals() method Broiler.ECMAScript.Syntax.ProposalFlags
 Broiler.ECMAScript.Syntax.ParseRequest.get_RegularExpressions() method Broiler.ECMAScript.Syntax.IRegularExpressionValidator
+Broiler.ECMAScript.Syntax.ParseRequest.get_RetainTokens() method System.Boolean
 Broiler.ECMAScript.Syntax.ParseRequest.get_Source() method Broiler.ECMAScript.Syntax.SourceText
 Broiler.ECMAScript.Syntax.ParseRequest.get_Switches() method Broiler.ECMAScript.Syntax.ParseSwitches
 Broiler.ECMAScript.Syntax.ParseRequest.get_UnicodeTables() method Broiler.Unicode.Algorithms.IUnicodeTables
@@ -376,11 +377,13 @@ Broiler.ECMAScript.Syntax.ParseRequest.set_FunctionKind(Broiler.ECMAScript.Synta
 Broiler.ECMAScript.Syntax.ParseRequest.set_Limits(Broiler.ECMAScript.Syntax.ParseLimits) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Syntax.ParseRequest.set_Meter(Broiler.ECMAScript.WorkCharge) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Syntax.ParseRequest.set_Proposals(Broiler.ECMAScript.Syntax.ProposalFlags) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Syntax.ParseRequest.set_RetainTokens(System.Boolean) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Syntax.ParseRequest.set_Switches(Broiler.ECMAScript.Syntax.ParseSwitches) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Syntax.ParseResult sealed class
 Broiler.ECMAScript.Syntax.ParseResult.get_Declarations() method Broiler.ECMAScript.Semantics.DeclarationTables
 Broiler.ECMAScript.Syntax.ParseResult.get_Diagnostics() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.SyntaxDiagnostic>
 Broiler.ECMAScript.Syntax.ParseResult.get_Outcome() method Broiler.ECMAScript.Syntax.ParseOutcome
+Broiler.ECMAScript.Syntax.ParseResult.get_Tokens() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.Token>
 Broiler.ECMAScript.Syntax.ParseResult.get_Tree() method Broiler.ECMAScript.Syntax.ProgramNode
 Broiler.ECMAScript.Syntax.ParseSwitches struct : System.IEquatable`1<Broiler.ECMAScript.Syntax.ParseSwitches>
 Broiler.ECMAScript.Syntax.ParseSwitches.Equals(Broiler.ECMAScript.Syntax.ParseSwitches) method System.Boolean
@@ -617,6 +620,103 @@ Broiler.ECMAScript.Syntax.TemplateLiteral.get_Quasis() method System.Collections
 Broiler.ECMAScript.Syntax.ThisExpression sealed class : Broiler.ECMAScript.Syntax.Expression
 Broiler.ECMAScript.Syntax.ThrowStatement sealed class : Broiler.ECMAScript.Syntax.Statement
 Broiler.ECMAScript.Syntax.ThrowStatement.get_Argument() method Broiler.ECMAScript.Syntax.Expression
+Broiler.ECMAScript.Syntax.Token struct
+Broiler.ECMAScript.Syntax.Token.get_Column() method System.Int32
+Broiler.ECMAScript.Syntax.Token.get_End() method System.Int32
+Broiler.ECMAScript.Syntax.Token.get_Flags() method Broiler.ECMAScript.Syntax.TokenFlags
+Broiler.ECMAScript.Syntax.Token.get_IsEscaped() method System.Boolean
+Broiler.ECMAScript.Syntax.Token.get_Kind() method Broiler.ECMAScript.Syntax.TokenKind
+Broiler.ECMAScript.Syntax.Token.get_Length() method System.Int32
+Broiler.ECMAScript.Syntax.Token.get_Line() method System.Int32
+Broiler.ECMAScript.Syntax.Token.get_NewLineBefore() method System.Boolean
+Broiler.ECMAScript.Syntax.Token.get_Number() method System.Double
+Broiler.ECMAScript.Syntax.Token.get_Raw() method System.String
+Broiler.ECMAScript.Syntax.Token.get_Start() method System.Int32
+Broiler.ECMAScript.Syntax.Token.get_Value() method System.String
+Broiler.ECMAScript.Syntax.TokenFlags enum
+Broiler.ECMAScript.Syntax.TokenFlags.BigInt = 128
+Broiler.ECMAScript.Syntax.TokenFlags.DecimalSuffix = 256
+Broiler.ECMAScript.Syntax.TokenFlags.Escaped = 2
+Broiler.ECMAScript.Syntax.TokenFlags.LegacyOctal = 4
+Broiler.ECMAScript.Syntax.TokenFlags.LegacyOctalEscape = 16
+Broiler.ECMAScript.Syntax.TokenFlags.NewLineBefore = 1
+Broiler.ECMAScript.Syntax.TokenFlags.NonOctalDecimal = 8
+Broiler.ECMAScript.Syntax.TokenFlags.NonOctalDecimalEscape = 32
+Broiler.ECMAScript.Syntax.TokenFlags.None = 0
+Broiler.ECMAScript.Syntax.TokenFlags.NotEscapeSequence = 64
+Broiler.ECMAScript.Syntax.TokenFlags.StringHasEscape = 512
+Broiler.ECMAScript.Syntax.TokenFlags.value__ field System.Int32
+Broiler.ECMAScript.Syntax.TokenKind enum
+Broiler.ECMAScript.Syntax.TokenKind.Ampersand = 40
+Broiler.ECMAScript.Syntax.TokenKind.AmpersandAmpersand = 45
+Broiler.ECMAScript.Syntax.TokenKind.AmpersandAmpersandEquals = 64
+Broiler.ECMAScript.Syntax.TokenKind.AmpersandEquals = 61
+Broiler.ECMAScript.Syntax.TokenKind.Arrow = 67
+Broiler.ECMAScript.Syntax.TokenKind.At = 68
+Broiler.ECMAScript.Syntax.TokenKind.Bang = 43
+Broiler.ECMAScript.Syntax.TokenKind.Bar = 41
+Broiler.ECMAScript.Syntax.TokenKind.BarBar = 46
+Broiler.ECMAScript.Syntax.TokenKind.BarBarEquals = 65
+Broiler.ECMAScript.Syntax.TokenKind.BarEquals = 62
+Broiler.ECMAScript.Syntax.TokenKind.Caret = 42
+Broiler.ECMAScript.Syntax.TokenKind.CaretEquals = 63
+Broiler.ECMAScript.Syntax.TokenKind.Colon = 50
+Broiler.ECMAScript.Syntax.TokenKind.Comma = 20
+Broiler.ECMAScript.Syntax.TokenKind.Dot = 17
+Broiler.ECMAScript.Syntax.TokenKind.Ellipsis = 18
+Broiler.ECMAScript.Syntax.TokenKind.EndOfInput = 0
+Broiler.ECMAScript.Syntax.TokenKind.Equals = 51
+Broiler.ECMAScript.Syntax.TokenKind.EqualsEquals = 25
+Broiler.ECMAScript.Syntax.TokenKind.EqualsEqualsEquals = 27
+Broiler.ECMAScript.Syntax.TokenKind.GreaterThan = 22
+Broiler.ECMAScript.Syntax.TokenKind.GreaterThanEquals = 24
+Broiler.ECMAScript.Syntax.TokenKind.IdentifierName = 2
+Broiler.ECMAScript.Syntax.TokenKind.Invalid = 1
+Broiler.ECMAScript.Syntax.TokenKind.LeftBrace = 11
+Broiler.ECMAScript.Syntax.TokenKind.LeftBracket = 15
+Broiler.ECMAScript.Syntax.TokenKind.LeftParen = 13
+Broiler.ECMAScript.Syntax.TokenKind.LeftShift = 37
+Broiler.ECMAScript.Syntax.TokenKind.LeftShiftEquals = 58
+Broiler.ECMAScript.Syntax.TokenKind.LessThan = 21
+Broiler.ECMAScript.Syntax.TokenKind.LessThanEquals = 23
+Broiler.ECMAScript.Syntax.TokenKind.Minus = 30
+Broiler.ECMAScript.Syntax.TokenKind.MinusEquals = 53
+Broiler.ECMAScript.Syntax.TokenKind.MinusMinus = 36
+Broiler.ECMAScript.Syntax.TokenKind.NoSubstitutionTemplate = 6
+Broiler.ECMAScript.Syntax.TokenKind.NotEquals = 26
+Broiler.ECMAScript.Syntax.TokenKind.NotEqualsEquals = 28
+Broiler.ECMAScript.Syntax.TokenKind.NumericLiteral = 4
+Broiler.ECMAScript.Syntax.TokenKind.Percent = 34
+Broiler.ECMAScript.Syntax.TokenKind.PercentEquals = 56
+Broiler.ECMAScript.Syntax.TokenKind.Plus = 29
+Broiler.ECMAScript.Syntax.TokenKind.PlusEquals = 52
+Broiler.ECMAScript.Syntax.TokenKind.PlusPlus = 35
+Broiler.ECMAScript.Syntax.TokenKind.PrivateIdentifier = 3
+Broiler.ECMAScript.Syntax.TokenKind.Question = 48
+Broiler.ECMAScript.Syntax.TokenKind.QuestionDot = 49
+Broiler.ECMAScript.Syntax.TokenKind.QuestionQuestion = 47
+Broiler.ECMAScript.Syntax.TokenKind.QuestionQuestionEquals = 66
+Broiler.ECMAScript.Syntax.TokenKind.RegularExpressionLiteral = 10
+Broiler.ECMAScript.Syntax.TokenKind.RightBrace = 12
+Broiler.ECMAScript.Syntax.TokenKind.RightBracket = 16
+Broiler.ECMAScript.Syntax.TokenKind.RightParen = 14
+Broiler.ECMAScript.Syntax.TokenKind.RightShift = 38
+Broiler.ECMAScript.Syntax.TokenKind.RightShiftEquals = 59
+Broiler.ECMAScript.Syntax.TokenKind.Semicolon = 19
+Broiler.ECMAScript.Syntax.TokenKind.Slash = 33
+Broiler.ECMAScript.Syntax.TokenKind.SlashEquals = 55
+Broiler.ECMAScript.Syntax.TokenKind.Star = 31
+Broiler.ECMAScript.Syntax.TokenKind.StarEquals = 54
+Broiler.ECMAScript.Syntax.TokenKind.StarStar = 32
+Broiler.ECMAScript.Syntax.TokenKind.StarStarEquals = 57
+Broiler.ECMAScript.Syntax.TokenKind.StringLiteral = 5
+Broiler.ECMAScript.Syntax.TokenKind.TemplateHead = 7
+Broiler.ECMAScript.Syntax.TokenKind.TemplateMiddle = 8
+Broiler.ECMAScript.Syntax.TokenKind.TemplateTail = 9
+Broiler.ECMAScript.Syntax.TokenKind.Tilde = 44
+Broiler.ECMAScript.Syntax.TokenKind.UnsignedRightShift = 39
+Broiler.ECMAScript.Syntax.TokenKind.UnsignedRightShiftEquals = 60
+Broiler.ECMAScript.Syntax.TokenKind.value__ field System.Int32
 Broiler.ECMAScript.Syntax.TryStatement sealed class : Broiler.ECMAScript.Syntax.Statement
 Broiler.ECMAScript.Syntax.TryStatement.get_Block() method Broiler.ECMAScript.Syntax.BlockStatement
 Broiler.ECMAScript.Syntax.TryStatement.get_Finalizer() method Broiler.ECMAScript.Syntax.BlockStatement

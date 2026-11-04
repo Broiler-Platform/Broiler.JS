@@ -30,11 +30,17 @@ namespace Broiler.ECMAScript.Syntax;
 /// token's <see cref="Token.Word"/>, and whether that word is a keyword where it stands is the parser's question, since
 /// only the parser knows the position, the strictness and the goal's parameters.
 /// </para>
-/// <para>Internal to the library: the parser reads these, and the token stream reaches an engine through the result.</para>
+/// <para>
+/// Public from 2026-11-04 (the owner's decision of that day, for Broiler.VM's tokenizers-agreement row; decision D21): a
+/// token of <see cref="ParseResult.Tokens"/> has one of these kinds, never <see cref="EndOfInput"/> or
+/// <see cref="Invalid"/>, which the parser reads and never consumes. The numbers are stable. <i>(Revised 2026-11-04; it
+/// read "Internal to the library: the parser reads these, and the token stream reaches an engine through the
+/// result.")</i>
+/// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 input elements; IP=Low; Security=Low; Resources=0; Fingerprint=9F1F7D
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 input elements; IP=Low; Security=Low; Resources=0; Fingerprint=2C0D5B
 // Broiler-Human:        PENDING
-internal enum TokenKind
+public enum TokenKind
 {
     /// <summary>The end of the input: no input element is left.</summary>
     EndOfInput = 0,
@@ -276,10 +282,10 @@ internal enum LexicalGoal
 }
 
 /// <summary>The facts a token carries beside its kind, span and value: what the parser needs for strict mode, templates and automatic semicolon insertion.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9 raw facts, JSD-0083 D15; IP=Low; Security=Low; Resources=0; Fingerprint=62EF37
+// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9 raw facts, JSD-0083 D15; IP=Low; Security=Low; Resources=0; Fingerprint=5BB185
 // Broiler-Human:        PENDING
 [Flags]
-internal enum TokenFlags
+public enum TokenFlags
 {
     /// <summary>None.</summary>
     None = 0,
