@@ -135,16 +135,22 @@ public class SharedUnicodeTests
     public void A_locale_list_is_canonicalized_first(string expression, string error)
         => Assert.Equal(error, ErrorName(expression));
 
-    // C8: with no locale the default is this engine's, en-US, and never the host's culture; nor does
-    // toUpperCase or toLowerCase read the culture.
+    // C8, as SJL-9.5 reads it (Broiler.VM's JSD-0082, decision D7, row L35): with no locale the default is
+    // the default-locale provider's, the one every Intl service reads, so the host's culture reaches casing
+    // only through it: under tr-TR toLocaleUpperCase() and toLocaleLowerCase() with no locale use the Turkic
+    // mappings, as tr-TR's Intl services resolve. toUpperCase and toLowerCase never read the culture.
+    // (Revised 2026-11-04, at SJL-9.5; the case read "C8: with no locale the default is this engine's,
+    // en-US, and never the host's culture; nor does toUpperCase or toLowerCase read the culture." and
+    // expected "I,I,I,i,i".)
     [Fact]
-    public void Casing_does_not_read_the_host_culture()
+    public void Casing_reads_the_host_culture_only_through_the_default_locale()
     {
         var saved = System.Globalization.CultureInfo.CurrentCulture;
         try
         {
             System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
-            Assert.Equal("I,I,I,i,i", Eval("['i'.toLocaleUpperCase(), 'i'.toLocaleUpperCase(undefined), 'i'.toUpperCase(), 'I'.toLocaleLowerCase(), 'I'.toLowerCase()].join()"));
+            Assert.Equal("\u0130,\u0130,I,\u0131,i", Eval("['i'.toLocaleUpperCase(), 'i'.toLocaleUpperCase(undefined), 'i'.toUpperCase(), 'I'.toLocaleLowerCase(), 'I'.toLowerCase()].join()"));
+            Assert.Equal("tr-TR", Eval("new Intl.Collator().resolvedOptions().locale"));
         }
         finally
         {

@@ -335,9 +335,12 @@ public class Issue751Tests
     public void LocaleWithoutExtensionUnchanged()
         => Assert.Equal("en-US", Eval("new Intl.NumberFormat('en-US').resolvedOptions().locale"));
 
+    // The resolved locale is the available locale matched, so private use is not kept (milestone SJL-9.5, sub-area (a);
+    // Broiler.VM's JSD-0082, row L29, a correction). (Revised 2026-11-04, at SJL-9.5; the case was
+    // PrivateExtensionPreserved and expected "en-US-x-priv".)
     [Fact]
-    public void PrivateExtensionPreserved()
-        => Assert.Equal("en-US-x-priv", Eval("new Intl.NumberFormat('en-US-u-cu-usd-x-priv').resolvedOptions().locale"));
+    public void PrivateUseIsNotPartOfTheResolvedLocale()
+        => Assert.Equal("en-US", Eval("new Intl.NumberFormat('en-US-u-cu-usd-x-priv').resolvedOptions().locale"));
 
     // ---- Problem 15: DateTimeFormat hourCycle resolution ----
 
