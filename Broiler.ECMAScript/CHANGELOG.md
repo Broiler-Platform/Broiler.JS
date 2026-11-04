@@ -518,6 +518,24 @@ Not yet packed under a version of its own: the stream's next version is set when
   orders every line of CLDR 48.2.0's archived CollationTest files at library level (the L4 oracle, decision E9), and the
   differential check gains sections C1 and C2, Broiler.VM's collator and `CollatorKeyData` at `4e6a41e9` against the
   library.
+- `Broiler.ECMAScript.Frontend`: **the token stream a parse read, public** (the owner's decision of 2026-11-04, "Expose +
+  preview.10", for Broiler.VM's SJL-13.3 step 1, whose tokenizers-agreement row compares its slice tokenizer's stream with
+  the library's; Broiler.VM's JSD-0083, decision D21; design [`docs/frontend/design.md`](docs/frontend/design.md),
+  section 9.3's note of 2026-11-04). A minor change under convention 16, which the stream's next version,
+  `0.1.0-preview.10`, carries:
+  - `ParseRequest.RetainTokens`, false by default: whether the result publishes the stream. The parse reads the same
+    tokens, makes the same tree, side tables and diagnostics and allocates the same either way;
+  - `ParseResult.Tokens`: with the switch on, the tokens an accepted parse consumed, in source order, each read under the
+    goal the parser named, so that each `/` is division or a regular-expression literal's start and each `}` a punctuator
+    or a template's continuation as the grammar read it; empty with the switch off and for a refused source;
+  - `Token`, an immutable struct the library alone makes - `Kind`, `Start` and `End` (offsets into the request's text,
+    whose text is the raw spelling), `Line` and `Column` (1-based, with the source's base), `Value` (a name's
+    StringValue, a string's SV, a template piece's TV), `Raw` (a template piece's TRV), `Number` (a numeric literal's
+    Number value; NaN for a BigInt), `Flags`, `NewLineBefore`, `IsEscaped` and `Length` - with `TokenKind` and
+    `TokenFlags`, whose members and numbers are the tokenizer's since stage SJL-13.2b.
+
+  The canonical dump of a parse reads the stream whatever the switch says, so every dump and digest is the same bytes
+  with it off or on. No member is removed, and nothing an engine observes changes with the switch off.
 
 ### Changed
 
