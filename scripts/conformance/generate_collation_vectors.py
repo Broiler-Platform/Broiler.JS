@@ -123,7 +123,8 @@ DIVERGENCES = SCRIPTS / "collation-divergences.txt"
 # revision after origin/main's when the change merges (revision 30 there on 2026-11-01), and moves with it if another
 # area's revisions merge first. The revision that classifies the first runs is the one after it.
 SINCE = 33
-CORPUS_REVISION = SINCE + 1  # the corpus revision this generator writes: REVISIONS.md's last row (the classification)
+CORPUS_REVISION = 35  # the corpus revision this generator writes: REVISIONS.md's last row (SINCE + 1, the
+                      # classification, until revision 35 of 2026-11-04 classified the Intl area's again)
 
 ECMA402 = "spec:ecma402@3d4c558#"
 ES2026 = "spec:es2026@0248456c#"

@@ -99,7 +99,9 @@ class CommittedFileTests(unittest.TestCase):
                 if line[:2] == "| " and line.split("|")[1].strip().isdigit()]
         self.assertEqual(list(range(1, len(rows) + 1)), rows)
         self.assertEqual(generator.CORPUS_REVISION, rows[-1])
-        self.assertIn(generator.CORPUS_REVISION, (generator.SINCE, generator.SINCE + 1))
+        # A later revision may classify another area (revision 35, 2026-11-04, the Intl area's); until then this
+        # read: self.assertIn(generator.CORPUS_REVISION, (generator.SINCE, generator.SINCE + 1)).
+        self.assertLessEqual(generator.SINCE, generator.CORPUS_REVISION)
         self.assertTrue(all(v["since"] == str(generator.SINCE) for v in self.vectors.values()))
 
     def test_four_files_and_ids_by_file(self) -> None:
