@@ -9982,6 +9982,60 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void ForIn_Visits_Every_Original_Key_When_The_Added_Key_Was_Interned_First()
+    {
+        // Regression: adding a property during for-in could end the walk early. The
+        // property-value enumerator walked a copy of the object's property map taken when it
+        // was made, and inserting a key whose interned id is smaller than one already on its
+        // trie path both grows the backing array and relocates that node — overwriting its old
+        // slot first. The stale copy then could not find the relocated key, read its Next as 0
+        // and stopped. Whether it happened depended on the order keys had been interned, so
+        // the test above failed in some full-project runs and passed alone. This one interns
+        // the added keys before the original ones on purpose, with names no other test uses,
+        // so it does not depend on what ran before it.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var failures = [];
+            for (var n = 1; n <= 8; n++)
+            for (var m = 1; m <= 8; m++)
+            for (var at = 0; at < n; at++) {
+                var prefix = 'forInAddedFirst_' + n + '_' + m + '_' + at + '_';
+                var keys = [];
+                for (var i = 0; i < n + m; i++) keys.push(prefix + i);
+
+                // Intern the keys the loop body adds before the object's own keys exist.
+                var pre = {};
+                for (var i = n; i < n + m; i++) pre[keys[i]] = 0;
+
+                var o = {};
+                for (var i = 0; i < n; i++) o[keys[i]] = i;
+
+                var visited = [];
+                for (var k in o) {
+                    if (visited.length === at)
+                        for (var i = n; i < n + m; i++) o[keys[i]] = i;
+                    visited.push(k);
+                }
+
+                if (visited.join() !== keys.slice(0, n).join())
+                    failures.push(n + '/' + m + '/' + at + ':' + visited.length);
+            }
+
+            // The reported repro, with the added key used earlier in the script.
+            var early = { forInEarlyP4: 0 };
+            var added = [];
+            var lit = { forInEarlyP1: 1, forInEarlyP2: 2, forInEarlyP3: 3 };
+            for (var k in lit) { if (k === 'forInEarlyP1') lit.forInEarlyP4 = 4; added.push(k); }
+
+            failures.join(' ') + '|' + added.join(',');
+        ");
+
+        Assert.Equal("|forInEarlyP1,forInEarlyP2,forInEarlyP3", result.ToString());
+    }
+
+    [Fact]
     public void ForIn_Continues_After_Deleting_The_Next_Property_Match_Test262()
     {
         // Regression: deleting the property that for-in is about to visit terminated

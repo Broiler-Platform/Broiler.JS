@@ -10,6 +10,24 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### A `for`-`in` body that adds a property no longer ends the loop early (2026-11-04)
+
+- **`for (k in o)` visits every key `o` had when the loop began, whatever the body adds.** `PropertyValueEnumerator`
+  (`Broiler.JavaScript.Runtime`) walked a copy of the object's property map taken when it was made. Adding a
+  property can grow the map's backing array and, when the new key's interned id is smaller than one already on its
+  trie path, move that node: its old slot is overwritten with the new key before the moved node is written to the
+  grown array. The stale copy then could not find the moved key, read its successor as none and stopped. So
+  `var o = { p1: 1, p2: 2, p3: 3 }; for (var k in o) { if (k === 'p1') o.p4 = 4; … }` visited `p1,p2`, or only
+  `p1` when `p4` had been used as a key earlier in the process. The result depended on the order keys had been
+  interned, which is why `ForIn_Does_Not_Visit_Properties_Added_During_Enumeration_Match_Test262` failed in some
+  full runs of the BuiltIns tests and passed alone. The enumerator now reads the object's map live at every step,
+  and reads the next link before it reads a value, since reading a value can run a getter that adds a property.
+  Keys added during the loop are still not visited, and deleted ones are still skipped.
+- `BuiltInsTests.ForIn_Visits_Every_Original_Key_When_The_Added_Key_Was_Interned_First` (BuiltIns.Tests) interns
+  the added keys before the object's own keys, across 1 to 8 own keys, 1 to 8 added keys and every point of
+  addition. It fails without the change. Every verdict in test262 `language/statements/for-in` at `ccaac100` is the
+  same before and after. No public member changes.
+
 ### The bridge to the shared syntax library, behind a test-only switch (2026-11-03)
 
 Milestone SJL-14.2, window W1 (Broiler.VM's JSD-0083, decisions D41 to D47, D51 and D52). No public member or
