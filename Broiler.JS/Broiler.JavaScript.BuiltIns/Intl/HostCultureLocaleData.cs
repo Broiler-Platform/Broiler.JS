@@ -49,7 +49,9 @@ namespace Broiler.JavaScript.BuiltIns.Intl;
 /// <b>It never throws for want of host data.</b> A locale the host has no culture for, or every locale under invariant
 /// globalization (where <see cref="CultureInfo.GetCultures"/> lists the invariant culture alone), is reported unavailable:
 /// <see cref="HoldsLocale"/> answers <see langword="false"/> and every question <see langword="null"/>. The host's
-/// culture list is read once, and a culture is looked up only when it is in that list.
+/// culture list is read once, and a culture is looked up only when a locale names one in that list: by .NET's name, by its
+/// canonical tag, or by one of the shorter tags .NET resolves to it (<see cref="Tags"/>; <c>zh-TW</c> for <c>zh-Hant-TW</c>),
+/// so a tag the available-locale provider lists for a host culture reads that culture.
 /// </para>
 /// <para>
 /// It is neither the default-locale nor the available-locale provider (decision D7).
@@ -66,10 +68,14 @@ internal sealed class HostCultureLocaleData : ILocaleData
 
     private readonly Lazy<IReadOnlyList<string>> locales;
 
+    // Each tag that names a host culture, canonical tags and shorter tags alike, in order, and the .NET name of its culture.
+    private readonly Lazy<(string[] Tags, Dictionary<string, string> Names)> tags;
+
     private HostCultureLocaleData()
     {
         cultures = new(ReadCultures, LazyThreadSafetyMode.ExecutionAndPublication);
         locales = new(() => [.. cultures.Value.Values], LazyThreadSafetyMode.ExecutionAndPublication);
+        tags = new(() => ReadTags(cultures.Value.Values), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
     /// <summary>The provider over this process's host cultures.</summary>
@@ -78,6 +84,13 @@ internal sealed class HostCultureLocaleData : ILocaleData
     /// <inheritdoc/>
     /// <remarks>The host's named cultures, by .NET's names, in the order .NET lists them; empty under invariant globalization.</remarks>
     public IReadOnlyList<string> Locales => locales.Value;
+
+    /// <summary>
+    /// The host's cultures by their canonical tags, in the order .NET lists them, each followed by the shorter tags .NET
+    /// resolves to it, each tag once; none under invariant globalization. The available-locale provider lists these
+    /// (<see cref="JSIntlLocaleProviders.AvailableLocales"/>), and each reads its culture here.
+    /// </summary>
+    internal IReadOnlyList<string> Tags => tags.Value.Tags;
 
     /// <inheritdoc/>
     /// <remarks>The number and date tables, for a locale the host has a culture for whose answers this provider gives.</remarks>
@@ -200,7 +213,8 @@ internal sealed class HostCultureLocaleData : ILocaleData
     /// <summary>The host culture a locale names, or <see langword="null"/> when the host has none; never throws.</summary>
     internal CultureInfo? Culture(string locale)
     {
-        if (string.IsNullOrEmpty(locale) || !cultures.Value.TryGetValue(locale, out var name))
+        if (string.IsNullOrEmpty(locale)
+            || (!cultures.Value.TryGetValue(locale, out var name) && !tags.Value.Names.TryGetValue(locale, out name)))
             return null;
 
         try
@@ -273,6 +287,40 @@ internal sealed class HostCultureLocaleData : ILocaleData
         Add("dayPeriods.format.abbreviated.am", format.AMDesignator);
         Add("dayPeriods.format.abbreviated.pm", format.PMDesignator);
         return keys;
+    }
+
+    // The host's cultures by canonical tag, each followed by the tags that name the same culture without the script its
+    // likely subtags supply: .NET lists zh-Hant-TW and sr-Cyrl-RS but not zh-TW or sr-RS, which it resolves to them, so
+    // those are the host's too (each tag X with Add Likely Subtags(X) = Add Likely Subtags(culture)): Remove Likely
+    // Subtags of the culture, and its language and region alone. A culture name that is no well-formed tag gives none.
+    private static (string[] Tags, Dictionary<string, string> Names) ReadTags(IEnumerable<string> cultureNames)
+    {
+        var names = new Dictionary<string, string>(StringComparer.Ordinal);
+        var list = new List<string>();
+        var data = JSIntlData.LocaleData;
+        foreach (var name in cultureNames)
+        {
+            if (LocaleId.TryCanonicalize(name, data, out var tag) != IntlStatus.Completed || !names.TryAdd(tag, name))
+                continue;
+
+            list.Add(tag);
+            if (LocaleId.TryParse(tag, out var id) != IntlStatus.Completed || id.Script == null || id.Variants.Count != 0)
+                continue;
+
+            var maximal = id.Maximize(data, out _).ToString();
+            var aliases = new List<string> { id.Minimize(data, out _).ToString() };
+            if (id.Region != null)
+                aliases.Add(id.Language + "-" + id.Region);
+
+            foreach (var alias in aliases)
+            {
+                if (!names.ContainsKey(alias) && LocaleId.TryParse(alias, out var aliasId) == IntlStatus.Completed
+                    && aliasId.Maximize(data, out _).ToString() == maximal && names.TryAdd(alias, name))
+                    list.Add(alias);
+            }
+        }
+
+        return ([.. list], names);
     }
 
     // The host's named cultures, by name, case-insensitively: none but the invariant culture under invariant globalization.

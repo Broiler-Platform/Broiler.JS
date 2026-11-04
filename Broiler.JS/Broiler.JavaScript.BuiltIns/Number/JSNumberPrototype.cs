@@ -265,6 +265,10 @@ partial class JSNumber
         // Number.prototype.toLocaleString(locales, options) ≡
         // Intl.NumberFormat(locales, options).format(this), so grouping, percent/currency
         // styles, alternate numbering systems, etc. all match Intl.NumberFormat.
+        // This extension reads the host's culture directly, not the default-locale provider: a .NET format
+        // string needs a .NET culture, which DefaultLocale's en-US is not under invariant globalization, and no
+        // ECMA-402 text reaches it. It is listed against JSD-0082's decision D7, one default (row L35), for
+        // task 8.7's records to name as outside that reading (listed 2026-11-04, at SJL-9.5).
         if (format.IsString)
         {
             var culture = locale.IsNullOrUndefined

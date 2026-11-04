@@ -118,6 +118,20 @@ public class SharedIntlLocaleTests
     public void The_text_direction_is_CLDR_s(string expression, string expected)
         => Assert.Equal(expected, Eval(expression));
 
+    // Two answers of the Intl.Locale constructor that row L13, classified "Same", does not name; each a correction of Broiler.JS
+    // that follows the text, recorded 2026-11-04 at SJL-9.5 for task 8.7's changelog under a dated note on row L13: a tag that
+    // is an Intl.Locale gives its [[Locale]], not its toString (sec-intl.locale step 8), where an overridden toString was
+    // called; and the options are coerced before the tag is checked (steps 10 and 11), so a malformed tag with null options
+    // is a TypeError, where it was a RangeError.
+    [Fact]
+    public void The_Locale_constructor_reads_a_Locale_s_record_and_coerces_the_options_first()
+    {
+        Assert.Equal("en", Eval("Intl.Locale.prototype.toString = () => 'fr'; new Intl.Locale(new Intl.Locale('en')).language"));
+        Assert.Equal("TypeError", Error("new Intl.Locale('$$', null)"));
+        Assert.Equal("RangeError", Error("new Intl.Locale('$$', {})"));
+        Assert.Equal("RangeError", Error("new Intl.Locale('$$')"));
+    }
+
     // L29 (a correction): the resolved locale is the available locale matched, not the request.
     [Theory]
     [InlineData("new Intl.NumberFormat('en-US-x-foo').resolvedOptions().locale", "en-US")]

@@ -191,6 +191,8 @@ public partial class JSString
     // service reads, the default-locale provider's (JSD-0082, decision D7; row L35): SJL-7.5's C8 reads
     // as "casing reads the host's culture only through that provider", so with no locale under a tr, az
     // or lt host culture the Turkic or Lithuanian mappings apply, as that culture's Intl services resolve.
+    // (Revised 2026-11-04, at SJL-9.5; the comment read "The default locale is this engine's, en-US, never the
+    // host's culture (C8), and a list of locales is read as a list (C7).")
     private static CaseLanguage TransformCaseLanguage(JSValue locales)
     {
         var requested = Intl.JSIntl.CanonicalizeLocaleList(locales);

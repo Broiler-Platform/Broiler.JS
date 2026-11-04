@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading;
 using Broiler.ECMAScript.Intl;
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
@@ -20,6 +19,20 @@ namespace Broiler.JavaScript.BuiltIns.Intl;
 /// matcher would otherwise truncate to another variety (<c>zh</c>).
 /// </para>
 /// <para>
+/// <b>A reading of decision D7 that waits on the owner</b> (2026-11-04, SJL-9.5, task 8.3): D7 names Broiler.JS's available
+/// locales "the host's cultures", and its revised text says the two readings "move Broiler.JS's answers in two places only:
+/// under invariant globalization, and with no locale under an <c>az</c>, <c>lt</c> or <c>tr</c> host culture". This class
+/// reads "the host's cultures" as each culture by its canonical tag and by the shorter tags .NET resolves to it
+/// (<see cref="HostCultureLocaleData.Tags"/>), which .NET does not list. Without the shorter tags, row L29's resolution
+/// truncates <c>zh-TW</c> to <c>zh</c>, and four test262 files passing at the base fail
+/// (<c>intl402/NumberFormat/prototype/format/notation-compact-zh-TW.js</c> and <c>unit-zh-TW.js</c>, and the same two under
+/// <c>formatToParts</c>). The home's design (<c>Broiler.ECMAScript/docs/intl/design.md</c>, the locale-parent note) asks
+/// that SJL-9.5, "before it makes such a locale available, either walks through likely subtags (<c>zh-TW</c>,
+/// <c>zh-Hant-TW</c>, <c>zh-Hant</c>) or adds a <c>parentLocales</c> table": the host-culture provider answers such a tag
+/// from its culture, and the walk for the shared data is task 8.4's, before any service reads locale-keyed shared data.
+/// Both are for the owner to confirm in JSD-0082 or this repository's plan pair.
+/// </para>
+/// <para>
 /// <b>The two readings decision D7 adds</b>, which the pinned text requires of any policy:
 /// </para>
 /// <list type="bullet">
@@ -35,9 +48,6 @@ namespace Broiler.JavaScript.BuiltIns.Intl;
 /// </remarks>
 internal static class JSIntlLocaleProviders
 {
-    // The host's cultures, each canonicalized once; read on first use.
-    private static readonly Lazy<string[]> HostLocales = new(ReadHostLocales, LazyThreadSafetyMode.ExecutionAndPublication);
-
     // The available locales for each default locale a process has seen: the host's, with the default and its prefixes.
     private static readonly ConcurrentDictionary<string, IReadOnlyList<string>> AvailableByDefault = new(StringComparer.Ordinal);
 
@@ -60,7 +70,8 @@ internal static class JSIntlLocaleProviders
     }
 
     /// <summary>
-    /// Every service's [[AvailableLocales]]: the host's cultures by their canonical tags, with <see cref="DefaultLocale"/> and
+    /// Every service's [[AvailableLocales]]: the host's cultures by their canonical tags and the shorter tags .NET resolves to
+    /// them (<see cref="HostCultureLocaleData.Tags"/>), with <see cref="DefaultLocale"/> and
     /// each less narrow tag of it the lookup reaches, in that order, each once.
     /// </summary>
     internal static IReadOnlyList<string> AvailableLocales
@@ -68,15 +79,12 @@ internal static class JSIntlLocaleProviders
         get
         {
             var defaultLocale = DefaultLocale;
-            return AvailableByDefault.GetOrAdd(defaultLocale, static locale => WithDefault(HostLocales.Value, locale));
+            return AvailableByDefault.GetOrAdd(defaultLocale, static locale => WithDefault(HostCultureLocaleData.Host.Tags, locale));
         }
     }
 
-    /// <summary>The host's cultures by their canonical tags, in the order .NET lists them, each once; none under invariant globalization.</summary>
-    internal static IReadOnlyList<string> HostCultureLocales => HostLocales.Value;
-
     // The host's list, then the default and the prefixes ECMA-402's lookup truncates it to, those the list lacks.
-    private static IReadOnlyList<string> WithDefault(string[] host, string defaultLocale)
+    private static IReadOnlyList<string> WithDefault(IReadOnlyList<string> host, string defaultLocale)
     {
         var seen = new HashSet<string>(host, StringComparer.Ordinal);
         var list = new List<string>(host);
@@ -95,40 +103,6 @@ internal static class JSIntlLocaleProviders
         }
 
         return list.AsReadOnly();
-    }
-
-    // The host's cultures by canonical tag, each followed by the tags that name the same culture without the script its
-    // likely subtags supply: .NET lists zh-Hant-TW and sr-Cyrl-RS but not zh-TW or sr-RS, which it resolves to them, so
-    // those are the host's too (each tag X with Add Likely Subtags(X) = Add Likely Subtags(culture)): Remove Likely
-    // Subtags of the culture, and its language and region alone.
-    private static string[] ReadHostLocales()
-    {
-        var seen = new HashSet<string>(StringComparer.Ordinal);
-        var list = new List<string>();
-        var data = JSIntlData.LocaleData;
-        foreach (var name in HostCultureLocaleData.Host.Locales)
-        {
-            if (Canonical(name) is not { } tag || !seen.Add(tag))
-                continue;
-
-            list.Add(tag);
-            if (LocaleId.TryParse(tag, out var id) != IntlStatus.Completed || id.Script == null || id.Variants.Count != 0)
-                continue;
-
-            var maximal = id.Maximize(data, out _).ToString();
-            var aliases = new List<string> { id.Minimize(data, out _).ToString() };
-            if (id.Region != null)
-                aliases.Add(id.Language + "-" + id.Region);
-
-            foreach (var alias in aliases)
-            {
-                if (!seen.Contains(alias) && LocaleId.TryParse(alias, out var aliasId) == IntlStatus.Completed
-                    && aliasId.Maximize(data, out _).ToString() == maximal && seen.Add(alias))
-                    list.Add(alias);
-            }
-        }
-
-        return [.. list];
     }
 
     // A culture name as a canonical Unicode locale identifier, or null when it is not a well-formed tag.

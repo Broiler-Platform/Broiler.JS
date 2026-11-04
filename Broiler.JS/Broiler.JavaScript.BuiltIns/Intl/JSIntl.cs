@@ -332,7 +332,7 @@ public static class JSIntl
         var constructor = new JSFunction(static (in Arguments a) =>
             {
                 var options = ValidateConstructorArguments("DurationFormat", in a, out var canonical, coerceOptions: false);
-                var locale = ResolveLocaleFromCanonical(canonical, NumberingSystemRelevantKeys);
+                var locale = ResolveLocaleFromCanonical(canonical, NumberFormatRelevantKeys);
                 return new JSIntlDurationFormat(locale, options);
             },
             "DurationFormat",
@@ -636,6 +636,12 @@ public static class JSIntl
     // read so that a refused one stops the reads where ECMA-402 does; LocaleRecord.TryCreate then canonicalises the tag,
     // applies UpdateLanguageId and makes the record. Every check is over ASCII alone, so a KELVIN SIGN or a dotted capital I
     // in an option is a RangeError, never folded into a letter first (row L14, a correction).
+    // Two answers move here that row L13, classified "Same", does not name; each follows the text, and each is a correction
+    // of Broiler.JS for task 8.7's changelog, under a dated note on row L13 (recorded 2026-11-04, at SJL-9.5):
+    // - a tag argument that is an Intl.Locale gives its [[Locale]] (sec-intl.locale step 8), where ToString read it, so an
+    //   overridden Intl.Locale.prototype.toString is no longer called;
+    // - the options are coerced (CoerceOptionsToObject, step 10) before the tag is checked (IsWellFormedLanguageTag, step
+    //   11), so new Intl.Locale(<a malformed tag>, null) is a TypeError, where the tag's RangeError came first.
     internal static LocaleRecord ValidateLocaleConstructorArguments(in Arguments a)
     {
         if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
@@ -1132,13 +1138,25 @@ public static class JSIntl
         return keywords.Length == 0 ? match.Locale : match.Locale + "-u" + keywords;
     }
 
+    // ResolveLocale's steps 5 to 12, each key's value against the service's data, are still this file's, by hand, until each
+    // service's sub-area moves: JSD-0082's X6 gives negotiation to sub-area (a), and the plan's rows for tasks 8.4 to 8.6 do
+    // not name these members, so each is listed here with the task whose service is its last reader, for task 8.7's
+    // deletion search (recorded 2026-11-04, at SJL-9.5). Each is replaced by LocaleNegotiation.ResolveLocale over the
+    // service's RelevantKey list and LocaleId's parts:
+    // - task 8.4: ResolveNumberingSystem (NumberFormat, RelativeTimeFormat, DurationFormat; with JSIntlDefaultNumberingSystems,
+    //   decision D13); the Collator's co, kf and kn (in JSIntlCollator's constructor, with its StripUnicodeExtension), over
+    //   the Collator's data through JSIntlCollator.LocaleData (decision D33 (c); its data and comparison stay SJL-17's),
+    //   which no plan row names and which is assigned here to task 8.4;
+    // - task 8.5: ResolveCalendar, DateTimeFormat's hc (DropHourCycleExtension, FilterUnicodeExtensionKeywords), and
+    //   DefaultHourCycle and Prefers11HourCycle with their tag parsers LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+    //   IsAllDigitSubtag (row T10);
+    // - with the last of their readers: GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword.
+
     // The relevant extension keys of the services that resolve none: ListFormat, Segmenter, DisplayNames and PluralRules.
     internal static readonly string[] NoRelevantKeys = [];
 
-    // The relevant extension key of RelativeTimeFormat and DurationFormat.
-    internal static readonly string[] NumberingSystemRelevantKeys = ["nu"];
-
-    // The Unicode-extension keys each service uses to negotiate the resolved locale.
+    // The Unicode-extension keys each service uses to negotiate the resolved locale. NumberFormat's, nu, is also
+    // RelativeTimeFormat's and DurationFormat's.
     internal static readonly string[] NumberFormatRelevantKeys = ["nu"];
     internal static readonly string[] DateTimeFormatRelevantKeys = ["ca", "hc", "nu"];
     // The relevant keys minus "hc": used to drop the locale's -u-hc- extension when an
@@ -1500,9 +1518,6 @@ public static class JSIntl
         return null;
     }
 
-    // The CLDR-derived default hour cycle for a locale: "h12" for 12-hour regions (and
-    // English without a region), "h23" otherwise. A coarse approximation of the CLDR
-    // <hours> preference data, sufficient for the common cases.
     // Regions that conventionally use a 12-hour clock; everything else defaults to the 24-hour cycle. DateTimeFormat's hand
     // table (row T10), which was Intl.Locale's until SJL-9.5's sub-area (a) moved getHourCycles onto CLDR's time data; it
     // leaves with DateTimeFormat's sub-area (d), task 8.5.
@@ -1511,6 +1526,9 @@ public static class JSIntl
         "US", "CA", "AU", "NZ", "IN", "PH", "PK", "BD", "EG", "MX", "CO", "SA",
     };
 
+    // The CLDR-derived default hour cycle for a locale: "h12" for 12-hour regions (and
+    // English without a region), "h23" otherwise. A coarse approximation of the CLDR
+    // <hours> preference data, sufficient for the common cases.
     internal static string DefaultHourCycle(string tag)
     {
         var region = RegionSubtag(tag);
@@ -1788,7 +1806,7 @@ public class JSIntlRelativeTimeFormat : JSObject
     public JSIntlRelativeTimeFormat(in Arguments a) : this()
     {
         var options = JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a, out var canonical);
-        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.NumberingSystemRelevantKeys), options);
+        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.NumberFormatRelevantKeys), options);
         style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), ["long", "short", "narrow"], false, "long");
         numeric = JSIntl.GetOption(options, KeyStrings.GetOrCreate("numeric"), ["always", "auto"], false, "always");
     }
@@ -2148,7 +2166,7 @@ public sealed class JSIntlDurationFormat : JSObject
         var args = new Arguments(JSUndefined.Value, locales, options ?? JSUndefined.Value);
         var optionsObject = JSIntl.ValidateConstructorArguments(
             "DurationFormat", in args, out var canonical, requireNew: false, coerceOptions: false);
-        var locale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.NumberingSystemRelevantKeys);
+        var locale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.NumberFormatRelevantKeys);
         var df = new JSIntlDurationFormat(locale, optionsObject);
         return CreateString(df.Format(ToDurationFormatRecord(duration)));
     }

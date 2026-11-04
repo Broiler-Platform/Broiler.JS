@@ -19,6 +19,10 @@ public class HostCultureLocaleDataTests
         (ILocaleData)BuiltIns.GetType("Broiler.JavaScript.BuiltIns.Intl.HostCultureLocaleData", throwOnError: true)!
             .GetProperty("Host", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
 
+    private static string[] Tags =>
+        [.. (System.Collections.Generic.IReadOnlyList<string>)Host.GetType()
+            .GetProperty("Tags", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(Host)!];
+
     private static ILocaleData Data(string name) =>
         (ILocaleData)BuiltIns.GetType("Broiler.JavaScript.BuiltIns.Intl.JSIntlData", throwOnError: true)!
             .GetProperty(name, BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
@@ -164,6 +168,23 @@ public class HostCultureLocaleDataTests
         Assert.Null(Host.DateValue(locale, "gregory", "months.format.wide.1"));
     }
 
+    // A tag the available-locale provider lists for a host culture reads that culture: the canonical tag, and the shorter tags
+    // .NET resolves to it, as zh-TW is to zh-Hant-TW; a tag the host has no culture for stays unavailable.
+    [Fact]
+    public void A_tag_listed_for_a_host_culture_reads_that_culture()
+    {
+        Assert.True(HasCulture("zh-Hant-TW"), "the host has no zh-Hant-TW culture");
+        Assert.Contains("zh-Hant-TW", Tags);
+        Assert.Contains("zh-TW", Tags);
+        Assert.Equal(Tags.Length, Tags.Distinct(StringComparer.Ordinal).Count());
+        var format = CultureInfo.GetCultureInfo("zh-Hant-TW").DateTimeFormat;
+        Assert.True(Host.HoldsLocale(IntlTable.DateLocales, "zh-TW"));
+        Assert.Equal(format.MonthGenitiveNames[0], Host.DateValue("zh-TW", "gregory", "months.format.wide.1"));
+        Assert.Equal(Host.NumberValue("zh-Hant-TW", "symbols.decimal"), Host.NumberValue("zh-TW", "symbols.decimal"));
+        Assert.DoesNotContain("zz-ZZ", Tags);
+        Assert.False(Host.HoldsLocale(IntlTable.NumberLocales, "zz-ZZ"));
+    }
+
     // The composite asks the host only at a locale the shared data neither lists nor holds: a host-only culture reads the
     // host's symbol, and a default-content locale the shared data lists, fr-FR, reads CLDR's fr, never the host's.
     [Fact]
@@ -192,6 +213,7 @@ public class HostCultureLocaleDataTests
         Assert.True(InvariantGlobalizationChild.IsChild);
         Assert.DoesNotContain(CultureInfo.GetCultures(CultureTypes.AllCultures), static c => c.Name.Length != 0);
         Assert.Empty(Host.Locales);
+        Assert.Empty(Tags);
         foreach (var locale in (string[])["en-US", "en", HostOnly, "de", "fr-FR", "xx", "", "und"])
         {
             Assert.False(Host.HoldsLocale(IntlTable.NumberLocales, locale));
