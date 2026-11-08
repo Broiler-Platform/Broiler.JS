@@ -13129,7 +13129,10 @@ public class BuiltInsTests
             })();
             """);
 
-        Assert.Equal("function|function|[object Intl.DisplayNames]|true|true|en-US|fr|short|language|none|standard", result.ToString());
+        // Revised 2026-11-08, at SJL-9.5 (task 8.4; row S8, data, an X1 adoption): DisplayNames.of answers CLDR's name at the
+        // data locale, the shared library's, where it answered the canonical code; the expectation read
+        // "function|function|[object Intl.DisplayNames]|true|true|en-US|fr|short|language|none|standard".
+        Assert.Equal("function|function|[object Intl.DisplayNames]|true|true|anglais (É.-U.)|fr|short|language|none|standard", result.ToString());
     }
 
     [Fact]

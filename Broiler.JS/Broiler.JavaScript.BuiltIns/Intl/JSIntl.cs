@@ -353,7 +353,7 @@ public static class JSIntl
         var constructor = new JSFunction(static (in Arguments a) =>
         {
             var options = ValidateConstructorArguments("ListFormat", in a, out var canonical, coerceOptions: false);
-            var locale = ResolveLocaleFromCanonical(canonical, NoRelevantKeys);
+            var locale = ResolveLocale(canonical, NoRelevantKey).Locale;
             var type = GetOption(options, TypeKey, ["conjunction", "disjunction", "unit"], false, "conjunction");
             var style = GetOption(options, StyleKey, ["long", "short", "narrow"], false, "long");
             return new JSIntlListFormat(locale, type, style);
@@ -1170,12 +1170,15 @@ public static class JSIntl
     //   DefaultHourCycle and Prefers11HourCycle with their tag parsers LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
     //   IsAllDigitSubtag (row T10);
     // - with the last of their readers: GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword.
-    // Noted 2026-11-08, at SJL-9.5 (task 8.4): NumberFormat and PluralRules resolve through the shared library's ResolveLocale (JSIntl.ResolveLocale, ResolveNumberingSystemLocale), each nu value
+    // Noted 2026-11-08, at SJL-9.5 (task 8.4): NumberFormat, PluralRules, RelativeTimeFormat, ListFormat and DisplayNames
+    // resolve through the shared library's ResolveLocale (JSIntl.ResolveLocale, ResolveNumberingSystemLocale), each nu value
     // the data's; ResolveNumberingSystem stays, its values now the data's (decision D13), for DateTimeFormat's (task 8.5) and
     // DurationFormat's (task 8.6) readers alone. The Collator's co, kf and kn stay where they are: the brief for task 8.4
     // gives the collator's move to SJL-17.5, so the item above assigned to task 8.4 waits on the Collator's own cut-over.
 
     // The relevant extension keys of the services that resolve none: ListFormat, Segmenter, DisplayNames and PluralRules.
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4): ListFormat, DisplayNames and PluralRules resolve through the shared
+    // library's ResolveLocale with NoRelevantKey; Segmenter, SJL-7's, still reads this list.
     internal static readonly string[] NoRelevantKeys = [];
 
     // The Unicode-extension keys each service uses to negotiate the resolved locale. NumberFormat's, nu, is also
@@ -1687,47 +1690,26 @@ public static class JSIntl
             _ = options[key];
     }
 
-    internal static bool IsWellFormedCurrencyCode(string currency)
-    {
-        if (currency.Length != 3)
-            return false;
-
-        foreach (var ch in currency)
-        {
-            if ((ch < 'A' || ch > 'Z') && (ch < 'a' || ch > 'z'))
-                return false;
-        }
-
-        return true;
-    }
 }
 
+// Intl.RelativeTimeFormat (ECMA-402 sec-relativetimeformat-objects) over the shared library's RelativeTimeFormatter
+// (SJL-9.5, task 8.4, sub-area (c); Broiler.VM's JSD-0082, decision D24): the constructor reads localeMatcher,
+// numberingSystem, style and numeric in the specification's order, ResolveLocale's nu key is the library's, and the record
+// - SingularRelativeTimeUnit, PartitionRelativeTimePattern, its inner NumberFormat with the resolved numbering system (row
+// S5, a correction) and its inner PluralRules - is the library's, over the data home's relative-time data (decision D5).
+// Deleted (2026-11-08): SingularUnit, PartitionRelativeTimePattern and FillRelativeTimePattern, and the locale, numbering
+// system, style and numeric fields. Its public members stay (decision SJL-D-25, disposition (a)).
 public class JSIntlRelativeTimeFormat : JSObject
 {
-    // ECMA-402 sanctioned units (singular and plural spellings) mapped to the
-    // singular form used to key the CLDR relative-time patterns.
-    private static readonly Dictionary<string, string> SingularUnit = new(StringComparer.Ordinal)
-    {
-        ["second"] = "second", ["seconds"] = "second",
-        ["minute"] = "minute", ["minutes"] = "minute",
-        ["hour"] = "hour", ["hours"] = "hour",
-        ["day"] = "day", ["days"] = "day",
-        ["week"] = "week", ["weeks"] = "week",
-        ["month"] = "month", ["months"] = "month",
-        ["quarter"] = "quarter", ["quarters"] = "quarter",
-        ["year"] = "year", ["years"] = "year",
-    };
+    internal RelativeTimeFormatter Formatter { get; }
 
     public JSValue Format(in Arguments args)
     {
         // ToNumber(value) precedes ToString(unit) per spec.
         var value = (args[0] ?? JSUndefined.Value).DoubleValue;
         var unit = args.GetAt(1).StringValue;
-
-        var sb = new StringBuilder();
-        foreach (var (_, partValue, _) in PartitionRelativeTimePattern(value, unit))
-            sb.Append(partValue);
-        return CreateString(sb.ToString());
+        Completed(Formatter.Format(value, unit, out var text, null), unit);
+        return CreateString(text);
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -1742,108 +1724,65 @@ public class JSIntlRelativeTimeFormat : JSObject
 
         var value = (a[0] ?? JSUndefined.Value).DoubleValue;
         var unit = a.GetAt(1).StringValue;
+        Completed(@this.Formatter.FormatToParts(value, unit, out var parts, null), unit);
 
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
         var unitKey = KeyStrings.GetOrCreate("unit");
 
-        var parts = CreateArray();
-        foreach (var (type, partValue, partUnit) in @this.PartitionRelativeTimePattern(value, unit))
+        var array = CreateArray();
+        foreach (var (type, partValue, partUnit) in parts)
         {
             var part = new JSObject();
             part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
             part.FastAddValue(valueKey, CreateString(partValue), JSPropertyAttributes.EnumerableConfigurableValue);
             if (partUnit != null)
                 part.FastAddValue(unitKey, CreateString(partUnit), JSPropertyAttributes.EnumerableConfigurableValue);
-            parts.AddArrayItem(part);
+            array.AddArrayItem(part);
         }
-        return parts;
+        return array;
     }
 
-    // PartitionRelativeTimePattern: resolves the ordered (type, value, unit) parts
-    // for a value/unit. Numeric "auto" first tries an exact phrase (e.g. "tomorrow");
-    // otherwise the future/past pattern for the value's plural category is filled with
-    // the locale's number parts (each tagged with the unit).
-    private List<(string type, string value, string unit)> PartitionRelativeTimePattern(double value, string unitArgument)
+    // The library's refusals as the RangeErrors PartitionRelativeTimePattern throws.
+    private static void Completed(IntlStatus status, string unit)
     {
-        if (double.IsNaN(value) || double.IsInfinity(value))
-            throw JSEngine.NewRangeError("Value of Intl.RelativeTimeFormat must be a finite number");
-
-        if (!SingularUnit.TryGetValue(unitArgument, out var unit))
-            throw JSEngine.NewRangeError($"Invalid unit argument for Intl.RelativeTimeFormat: {unitArgument}");
-
-        if (numeric == "auto" && value == Math.Floor(value) && value >= int.MinValue && value <= int.MaxValue)
+        switch (status)
         {
-            var exact = CldrLocaleData.GetRelativeTimeExact(locale, unit, style, (int)value);
-            if (exact != null)
-                return [("literal", exact, null)];
+            case IntlStatus.Completed:
+                return;
+            case IntlStatus.RelativeTimeValueNotFinite:
+                throw JSEngine.NewRangeError("Value of Intl.RelativeTimeFormat must be a finite number");
+            default:
+                throw JSEngine.NewRangeError($"Invalid unit argument for Intl.RelativeTimeFormat: {unit}");
         }
-
-        // -0 and negative values are "past"; +0 and positive values are "future".
-        var isPast = value < 0 || (value == 0 && double.IsNegative(value));
-        var tense = isPast ? "past" : "future";
-
-        var magnitude = Math.Abs(value);
-        var pluralCategory = CldrLocaleData.SelectPlural(locale, "cardinal", magnitude);
-        var pattern = CldrLocaleData.GetRelativeTimePattern(locale, unit, style, tense, pluralCategory);
-
-        return FillRelativeTimePattern(pattern, unit, magnitude);
     }
-
-    // Splits the pattern around the "{0}" placeholder, emitting the surrounding
-    // text as "literal" parts and the formatted number's parts (each carrying the
-    // unit) in its place.
-    private List<(string type, string value, string unit)> FillRelativeTimePattern(string pattern, string unit, double magnitude)
-    {
-        var result = new List<(string, string, string)>();
-        var placeholder = pattern.IndexOf("{0}", StringComparison.Ordinal);
-        if (placeholder < 0)
-        {
-            if (pattern.Length > 0)
-                result.Add(("literal", pattern, null));
-            return result;
-        }
-
-        var prefix = pattern[..placeholder];
-        var suffix = pattern[(placeholder + 3)..];
-        if (prefix.Length > 0)
-            result.Add(("literal", prefix, null));
-
-        var numberArgs = new Arguments(JSUndefined.Value, CreateString(locale));
-        var numberFormat = new JSIntlNumberFormat(in numberArgs);
-        foreach (var (type, value) in numberFormat.ComputeFormatParts(CreateNumber(magnitude)))
-            result.Add((type, value, unit));
-
-        if (suffix.Length > 0)
-            result.Add(("literal", suffix, null));
-
-        return result;
-    }
-
-    private readonly string locale;
-    private readonly string numberingSystem;
-    private readonly string style;
-    private readonly string numeric;
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlRelativeTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.RelativeTimeFormat.prototype.resolvedOptions called on incompatible receiver");
 
+        // Table 33, in its order.
+        var formatter = @this.Formatter;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(@this.style));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numeric"), CreateString(@this.numeric));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(@this.numberingSystem));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(formatter.Locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(JSIntl.FormatStyleNames[(int)formatter.Style]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numeric"), CreateString(formatter.Numeric == RelativeTimeNumeric.Auto ? "auto" : "always"));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(formatter.NumberingSystem));
         return result;
     }
 
     public JSIntlRelativeTimeFormat(in Arguments a) : this()
     {
         var options = JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a, out var canonical);
-        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.NumberFormatRelevantKeys), options);
-        style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), ["long", "short", "narrow"], false, "long");
-        numeric = JSIntl.GetOption(options, KeyStrings.GetOrCreate("numeric"), ["always", "auto"], false, "always");
+        var numberingSystem = JSIntl.ReadNumberingSystemOption(options);
+        var resolved = JSIntl.ResolveNumberingSystemLocale(canonical, numberingSystem);
+        var style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), JSIntl.FormatStyleNames, false, "long");
+        var numeric = JSIntl.GetOption(options, KeyStrings.GetOrCreate("numeric"), ["always", "auto"], false, "always");
+        Formatter = RelativeTimeFormatter.Create(JSIntlData.LocaleData, resolved.Locale, JSIntlLocaleProviders.DataLocale(resolved.DataLocale),
+            (FormatStyle)System.Array.IndexOf(JSIntl.FormatStyleNames, style),
+            numeric == "auto" ? RelativeTimeNumeric.Auto : RelativeTimeNumeric.Always,
+            resolved.KeyValues["nu"] ?? "latn");
     }
 
     private JSIntlRelativeTimeFormat() : base(CurrentPrototype()) { }
@@ -2574,17 +2513,24 @@ public sealed class JSIntlDurationFormat : JSObject
     }
 }
 
+// Intl.ListFormat (ECMA-402 sec-listformat-objects) over the shared library's ListFormatter (SJL-9.5, task 8.4, sub-area
+// (c); Broiler.VM's JSD-0082, decision D24): CreatePartsFromList and its templates, CLDR's list patterns for the type and
+// style at the data locale, are the library's (decision D5). The engine keeps StringListFromIterable, the parts arrays and
+// the (element, literal) parts Intl.DurationFormat reads until task 8.6. Deleted (2026-11-08): BuildParts, ExpandPattern,
+// FormatList, ApplyPattern, GetPatterns and the type and style fields. Its public members stay (decision SJL-D-25,
+// disposition (a)); the constructor's type and style are the option values, the default for any other.
 public sealed class JSIntlListFormat : JSObject
 {
-    private readonly string locale;
-    private readonly string type;
-    private readonly string style;
+    private static readonly string[] ListTypeNames = ["conjunction", "disjunction", "unit"];
+
+    internal ListFormatter Formatter { get; }
 
     public JSIntlListFormat(string locale = "en-US", string type = "conjunction", string style = "long")
     {
-        this.locale = locale;
-        this.type = type;
-        this.style = style;
+        var typeIndex = System.Array.IndexOf(ListTypeNames, type);
+        var styleIndex = System.Array.IndexOf(JSIntl.FormatStyleNames, style);
+        Formatter = ListFormatter.Create(JSIntlData.LocaleData, locale, JSIntlLocaleProviders.DataLocale(locale),
+            (ListFormatType)Math.Max(typeIndex, 0), (FormatStyle)Math.Max(styleIndex, 0));
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -2593,7 +2539,7 @@ public sealed class JSIntlListFormat : JSObject
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.format called on incompatible receiver");
 
         var items = StringListFromIterable(a.Get1());
-        return CreateString(@this.FormatList(items));
+        return CreateString(@this.Formatter.Format(items, null));
     }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
@@ -2602,89 +2548,24 @@ public sealed class JSIntlListFormat : JSObject
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.formatToParts called on incompatible receiver");
 
         var items = StringListFromIterable(a.Get1());
-        var parts = @this.BuildParts(items);
+        var parts = @this.Formatter.FormatToParts(items, null);
         var result = CreateArray();
         var arr = (JSObject)result;
         for (uint i = 0; i < (uint)parts.Count; i++)
-            arr.SetPropertyOrThrow(CreateNumber(i), MakePart(parts[(int)i].type, parts[(int)i].value));
+            arr.SetPropertyOrThrow(CreateNumber(i), MakePart(parts[(int)i].Type, parts[(int)i].Value));
         return result;
     }
 
     // Like formatToParts, but returns ("element"|"literal", value) tuples. Used by
     // Intl.DurationFormat to interleave its own per-unit parts with the list's
     // separators (the "element" entries are replaced by the caller).
-    internal List<(string type, string value)> FormatPartsForUnits(List<string> items) => BuildParts(items);
-
-    // Build the parts list directly from the CLDR start/middle/end/pair patterns.
-    // The earlier implementation formatted the full list to a single string and then
-    // recovered the separators with IndexOf against each element, which misattributed
-    // substrings when an element happened to also occur inside a separator (e.g. the
-    // "or" in `formatToParts("foo")` gets iterated to ['f','o','o'], and the second
-    // 'o' would match the 'o' in the "or " connector before reaching the actual third
-    // element). Walking the pattern templates directly produces the parts unambiguously.
-    private List<(string type, string value)> BuildParts(List<string> items)
+    internal List<(string type, string value)> FormatPartsForUnits(List<string> items)
     {
-        var count = items.Count;
-        if (count == 0)
-            return [];
-        if (count == 1)
-            return [("element", items[0])];
-
-        var (start, middle, end, pair) = GetPatterns();
-        if (count == 2)
-            return ExpandPattern(pair, [("element", items[0])], [("element", items[1])]);
-
-        var inner = ExpandPattern(end,
-            [("element", items[count - 2])],
-            [("element", items[count - 1])]);
-        for (var i = count - 3; i >= 1; i--)
-            inner = ExpandPattern(middle, [("element", items[i])], inner);
-        return ExpandPattern(start, [("element", items[0])], inner);
-    }
-
-    // Walk a "{0} … {1}" pattern emitting placeholder substitutions as the supplied
-    // sub-parts and the surrounding literal text as "literal" parts; adjacent literal
-    // parts are merged so the result has no zero-content runs.
-    private static List<(string type, string value)> ExpandPattern(string pattern,
-        List<(string type, string value)> parts0,
-        List<(string type, string value)> parts1)
-    {
-        var result = new List<(string type, string value)>();
-        var literal = new StringBuilder();
-        void FlushLiteral()
-        {
-            if (literal.Length > 0)
-            {
-                result.Add(("literal", literal.ToString()));
-                literal.Clear();
-            }
-        }
-        void Append(List<(string type, string value)> subParts)
-        {
-            foreach (var p in subParts)
-            {
-                if (p.type == "literal")
-                {
-                    literal.Append(p.value);
-                }
-                else
-                {
-                    FlushLiteral();
-                    result.Add(p);
-                }
-            }
-        }
-        for (var i = 0; i < pattern.Length; i++)
-        {
-            if (pattern[i] == '{' && i + 2 < pattern.Length && pattern[i + 2] == '}')
-            {
-                if (pattern[i + 1] == '0') { Append(parts0); i += 2; continue; }
-                if (pattern[i + 1] == '1') { Append(parts1); i += 2; continue; }
-            }
-            literal.Append(pattern[i]);
-        }
-        FlushLiteral();
-        return result;
+        var parts = Formatter.FormatToParts(items, null);
+        var list = new List<(string, string)>(parts.Count);
+        foreach (var part in parts)
+            list.Add((part.Type, part.Value));
+        return list;
     }
 
     private static JSObject MakePart(string type, string value)
@@ -2729,74 +2610,43 @@ public sealed class JSIntlListFormat : JSObject
         return result;
     }
 
-    // CLDR list-assembly: combine the elements using the (start, middle, end,
-    // pair) patterns for this list's locale/type/style.
-    internal string FormatList(List<string> items)
-    {
-        var count = items.Count;
-        if (count == 0)
-            return string.Empty;
-        if (count == 1)
-            return items[0];
-
-        var (start, middle, end, pair) = GetPatterns();
-        if (count == 2)
-            return ApplyPattern(pair, items[0], items[1]);
-
-        var result = ApplyPattern(end, items[count - 2], items[count - 1]);
-        for (var i = count - 3; i >= 1; i--)
-            result = ApplyPattern(middle, items[i], result);
-        return ApplyPattern(start, items[0], result);
-    }
-
-    // Substitute {0}/{1} in a single left-to-right pass so substituted content
-    // containing literal "{0}"/"{1}" is never re-expanded.
-    private static string ApplyPattern(string pattern, string v0, string v1)
-    {
-        var sb = new StringBuilder(pattern.Length + v0.Length + v1.Length);
-        for (var i = 0; i < pattern.Length; i++)
-        {
-            if (pattern[i] == '{' && i + 2 < pattern.Length && pattern[i + 2] == '}')
-            {
-                if (pattern[i + 1] == '0') { sb.Append(v0); i += 2; continue; }
-                if (pattern[i + 1] == '1') { sb.Append(v1); i += 2; continue; }
-            }
-            sb.Append(pattern[i]);
-        }
-        return sb.ToString();
-    }
-
-    // The (start, middle, end, pair) list-assembly patterns come from the shared
-    // CLDR data library (UnicodeCldr.LocaleData), generated from cldr-json — so the
-    // per-locale list patterns are real CLDR data rather than a hand-coded en/es
-    // approximation.
-    private (string Start, string Middle, string End, string Pair) GetPatterns()
-        => CldrLocaleData.GetListPattern(locale, type, style);
-
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlListFormat @this)
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.resolvedOptions called on incompatible receiver");
 
+        // Table 25, in its order.
+        var formatter = @this.Formatter;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(@this.type));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(@this.style));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(formatter.Locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(ListTypeNames[(int)formatter.Type]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(JSIntl.FormatStyleNames[(int)formatter.Style]));
         return result;
     }
 }
 
 internal sealed record JSIntlDisplayNamesOptions(string Style, string Type, string Fallback, string LanguageDisplay);
 
+// Intl.DisplayNames (ECMA-402 sec-intl-displaynames-objects) over the shared library's DisplayNamesCore (SJL-9.5, task 8.4,
+// sub-area (c); Broiler.VM's JSD-0082, decision D24): CanonicalCodeForDisplayNames over ASCII (row S9, a correction) and the
+// names [[Fields]] holds, CLDR's at the data locale, are the library's (row S8, data, an X1 adoption; decision D5); a code
+// with no name answers itself or undefined by the fallback option. Deleted (2026-11-08): ValidateCode and the locale and
+// options fields. Its public members stay (decision SJL-D-25, disposition (a)).
 public sealed class JSIntlDisplayNames : JSObject
 {
-    private readonly string locale;
-    private readonly JSIntlDisplayNamesOptions options;
+    private static readonly string[] DisplayNamesTypeNames = ["language", "region", "script", "currency", "calendar", "dateTimeField"];
+
+    internal DisplayNamesCore Core { get; }
 
     public JSIntlDisplayNames(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
-        options = JSIntl.ValidateDisplayNamesOptions(JSIntl.ValidateConstructorArguments("DisplayNames", in a, out var canonical, coerceOptions: false));
-        locale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.NoRelevantKeys);
+        var options = JSIntl.ValidateDisplayNamesOptions(JSIntl.ValidateConstructorArguments("DisplayNames", in a, out var canonical, coerceOptions: false));
+        var resolved = JSIntl.ResolveLocale(canonical, JSIntl.NoRelevantKey);
+        Core = DisplayNamesCore.Create(JSIntlData.LocaleData, resolved.Locale, JSIntlLocaleProviders.DataLocale(resolved.DataLocale),
+            (FormatStyle)System.Array.IndexOf(JSIntl.FormatStyleNames, options.Style),
+            (DisplayNamesType)System.Array.IndexOf(DisplayNamesTypeNames, options.Type),
+            options.Fallback == "none" ? DisplayNamesFallback.None : DisplayNamesFallback.Code,
+            options.LanguageDisplay == "standard" ? LanguageDisplay.Standard : LanguageDisplay.Dialect);
     }
 
     public static JSValue OfPrototype(in Arguments a)
@@ -2804,15 +2654,11 @@ public sealed class JSIntlDisplayNames : JSObject
         if (a.This is not JSIntlDisplayNames @this)
             throw JSEngine.NewTypeError("Intl.DisplayNames.prototype.of called on incompatible receiver");
 
-        var canonical = @this.ValidateCode(a.Get1());
+        var code = a.Get1().StringValue;
+        if (@this.Core.Of(code, out var name, null) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError($"Invalid code for Intl.DisplayNames type {DisplayNamesTypeNames[(int)@this.Core.Type]}");
 
-        // For "currency", only codes the implementation has data for (AvailableCurrencies, the same set
-        // Intl.supportedValuesOf("currency") returns) resolve to a name; an unknown but well-formed code
-        // follows the fallback option — "code" yields the code, "none" yields undefined.
-        if (@this.options.Type == "currency" && !IntlEnumerationData.CurrencySet.Contains(canonical))
-            return @this.options.Fallback == "none" ? JSUndefined.Value : CreateString(canonical);
-
-        return CreateString(canonical);
+        return name is null ? JSUndefined.Value : CreateString(name);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
@@ -2820,68 +2666,16 @@ public sealed class JSIntlDisplayNames : JSObject
         if (a.This is not JSIntlDisplayNames @this)
             throw JSEngine.NewTypeError("Intl.DisplayNames.prototype.resolvedOptions called on incompatible receiver");
 
+        // Table 18, in its order.
+        var core = @this.Core;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(@this.options.Style));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(@this.options.Type));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("fallback"), CreateString(@this.options.Fallback));
-        if (@this.options.Type == "language")
-            result.CreateDataProperty(KeyStrings.GetOrCreate("languageDisplay"), CreateString(@this.options.LanguageDisplay));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(core.Locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(JSIntl.FormatStyleNames[(int)core.Style]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(DisplayNamesTypeNames[(int)core.Type]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("fallback"), CreateString(core.Fallback == DisplayNamesFallback.Code ? "code" : "none"));
+        if (core.LanguageDisplay is { } display)
+            result.CreateDataProperty(KeyStrings.GetOrCreate("languageDisplay"), CreateString(display == LanguageDisplay.Dialect ? "dialect" : "standard"));
         return result;
-    }
-
-    private string ValidateCode(JSValue codeValue)
-    {
-        var code = codeValue.StringValue;
-        switch (options.Type)
-        {
-            case "language":
-                // Intl.DisplayNames type "language" requires the code to be matched by the
-                // unicode_language_id nonterminal, which — unlike a full unicode_locale_id —
-                // has no extension/singleton subtags. Reject any single-character subtag
-                // (e.g. the "u" in "en-u-hebrew") before structural validation.
-                foreach (var subtag in code.Split('-'))
-                    if (subtag.Length == 1)
-                        throw JSEngine.NewRangeError($"Invalid language code: {code}");
-                return JSIntl.ValidateLanguageTag(code);
-            case "region":
-                if (System.Text.RegularExpressions.Regex.IsMatch(code, "^(?:[A-Za-z]{2}|\\d{3})$", RegexOptions.CultureInvariant))
-                    return code;
-                break;
-            case "script":
-                if (System.Text.RegularExpressions.Regex.IsMatch(code, "^[A-Za-z]{4}$", RegexOptions.CultureInvariant))
-                    return code;
-                break;
-            case "currency":
-                if (JSIntl.IsWellFormedCurrencyCode(code))
-                    return code.ToUpperInvariant();
-                break;
-            case "calendar":
-                if (System.Text.RegularExpressions.Regex.IsMatch(code, "^[A-Za-z0-9]{3,8}(?:-[A-Za-z0-9]{3,8})*$", RegexOptions.CultureInvariant))
-                    return code;
-                break;
-            case "dateTimeField":
-                switch (code)
-                {
-                    case "era":
-                    case "year":
-                    case "quarter":
-                    case "month":
-                    case "weekOfYear":
-                    case "weekday":
-                    case "day":
-                    case "dayPeriod":
-                    case "hour":
-                    case "minute":
-                    case "second":
-                    case "timeZoneName":
-                        return code;
-                }
-
-                break;
-        }
-
-        throw JSEngine.NewRangeError($"Invalid code for Intl.DisplayNames type {options.Type}");
     }
 }
 
