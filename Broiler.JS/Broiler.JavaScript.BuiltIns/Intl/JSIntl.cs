@@ -47,9 +47,6 @@ public static class JSIntl
     private static readonly KeyString CurrencyKey = KeyStrings.GetOrCreate("currency");
     private static readonly KeyString CurrencyDisplayKey = KeyStrings.GetOrCreate("currencyDisplay");
     private static readonly KeyString CurrencySignKey = KeyStrings.GetOrCreate("currencySign");
-    private static readonly string[] CurrencyDisplayValues = ["code", "symbol", "narrowSymbol", "name"];
-    private static readonly string[] CurrencySignValues = ["standard", "accounting"];
-    private static readonly string[] NumberFormatStyleValues = ["decimal", "percent", "currency", "unit"];
     private static readonly KeyString UnitKey = KeyStrings.GetOrCreate("unit");
     private static readonly KeyString TypeKey = KeyStrings.GetOrCreate("type");
     private static readonly KeyString LocaleMatcherKey = KeyStrings.GetOrCreate("localeMatcher");
@@ -60,10 +57,6 @@ public static class JSIntl
     private static readonly KeyString SignDisplayKey = KeyStrings.GetOrCreate("signDisplay");
     private static readonly KeyString CompactDisplayKey = KeyStrings.GetOrCreate("compactDisplay");
     private static readonly KeyString UnitDisplayKey = KeyStrings.GetOrCreate("unitDisplay");
-    private static readonly string[] NotationValues = ["standard", "scientific", "engineering", "compact"];
-    private static readonly string[] SignDisplayValues = ["auto", "never", "always", "exceptZero", "negative"];
-    private static readonly string[] CompactDisplayValues = ["short", "long"];
-    private static readonly string[] UnitDisplayValues = ["short", "narrow", "long"];
     private static readonly KeyString RoundingIncrementKey = KeyStrings.GetOrCreate("roundingIncrement");
     private static readonly KeyString RoundingModeKey = KeyStrings.GetOrCreate("roundingMode");
     private static readonly KeyString RoundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
@@ -877,7 +870,11 @@ public static class JSIntl
             : throw JSEngine.NewRangeError("Invalid language tag");
 
     // The names of the library's enumerations in their order, which resolvedOptions reports and the options map onto
-    // (SJL-9.5, task 8.4, sub-areas (b) and (c); Broiler.VM's JSD-0082).
+    // (SJL-9.5, task 8.4, sub-areas (b) and (c); Broiler.VM's JSD-0082). GetOption reads them as the options' allowed
+    // values too, since it checks membership only.
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4, a review fix): the NumberFormat constructor read its own copies,
+    // CurrencyDisplayValues ["code", "symbol", "narrowSymbol", "name"], CurrencySignValues, NumberFormatStyleValues,
+    // NotationValues, SignDisplayValues, CompactDisplayValues and UnitDisplayValues, each the same set; they are deleted.
     internal static readonly string[] NumberStyleNames = ["decimal", "percent", "currency", "unit"];
     internal static readonly string[] CurrencyDisplayNames = ["symbol", "narrowSymbol", "code", "name"];
     internal static readonly string[] CurrencySignNames = ["standard", "accounting"];
@@ -906,7 +903,7 @@ public static class JSIntl
         var data = JSIntlData.LocaleData;
 
         // SetNumberFormatUnitOptions.
-        var style = GetOption(options, StyleKey, NumberFormatStyleValues, false, "decimal");
+        var style = GetOption(options, StyleKey, NumberStyleNames, false, "decimal");
         var currency = OptionStringValue(options, CurrencyKey);
         if (currency == null)
         {
@@ -916,8 +913,8 @@ public static class JSIntl
         else if (!NumberFormatter.IsWellFormedCurrencyCode(currency))
             throw JSEngine.NewRangeError("Invalid currency option");
 
-        var currencyDisplay = GetOption(options, CurrencyDisplayKey, CurrencyDisplayValues, false, "symbol");
-        var currencySign = GetOption(options, CurrencySignKey, CurrencySignValues, false, "standard");
+        var currencyDisplay = GetOption(options, CurrencyDisplayKey, CurrencyDisplayNames, false, "symbol");
+        var currencySign = GetOption(options, CurrencySignKey, CurrencySignNames, false, "standard");
         var unit = OptionStringValue(options, UnitKey);
         if (unit == null)
         {
@@ -927,13 +924,13 @@ public static class JSIntl
         else if (!NumberFormatter.IsWellFormedUnitIdentifier(unit))
             throw JSEngine.NewRangeError($"Invalid unit identifier: {unit}");
 
-        var unitDisplay = GetOption(options, UnitDisplayKey, UnitDisplayValues, false, "short");
-        var notation = (NumberNotation)System.Array.IndexOf(NotationNames, GetOption(options, NotationKey, NotationValues, false, "standard"));
+        var unitDisplay = GetOption(options, UnitDisplayKey, UnitDisplayNames, false, "short");
+        var notation = (NumberNotation)System.Array.IndexOf(NotationNames, GetOption(options, NotationKey, NotationNames, false, "standard"));
         var numberStyle = (NumberStyle)System.Array.IndexOf(NumberStyleNames, style);
         var digitOptions = SetNumberFormatDigitOptions(options, DigitOptionRules.NumberFormatDefaults(numberStyle, currency, notation, data), notation);
-        var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayValues, false, "short");
+        var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayNames, false, "short");
         var useGrouping = GetUseGroupingOption(options, notation == NumberNotation.Compact ? NumberGrouping.Min2 : NumberGrouping.Auto);
-        var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
+        var signDisplay = GetOption(options, SignDisplayKey, SignDisplayNames, false, "auto");
 
         var dataLocale = JSIntlLocaleProviders.DataLocale(resolved.DataLocale);
         return NumberFormatter.Create(DataLocalePluralData.For(dataLocale), resolved.Locale, dataLocale,
@@ -1181,8 +1178,11 @@ public static class JSIntl
     // library's ResolveLocale with NoRelevantKey; Segmenter, SJL-7's, still reads this list.
     internal static readonly string[] NoRelevantKeys = [];
 
-    // The Unicode-extension keys each service uses to negotiate the resolved locale. NumberFormat's, nu, is also
-    // RelativeTimeFormat's and DurationFormat's.
+    // The Unicode-extension keys each service uses to negotiate the resolved locale. NumberFormatRelevantKeys, nu, is
+    // DurationFormat's.
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4): NumberFormat and RelativeTimeFormat resolve nu through the shared
+    // library's ResolveLocale (ResolveNumberingSystemLocale) and no longer read the array; the comment read
+    // "NumberFormat's, nu, is also RelativeTimeFormat's and DurationFormat's."
     internal static readonly string[] NumberFormatRelevantKeys = ["nu"];
     internal static readonly string[] DateTimeFormatRelevantKeys = ["ca", "hc", "nu"];
     // The relevant keys minus "hc": used to drop the locale's -u-hc- extension when an
@@ -1779,7 +1779,12 @@ public class JSIntlRelativeTimeFormat : JSObject
         var resolved = JSIntl.ResolveNumberingSystemLocale(canonical, numberingSystem);
         var style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), JSIntl.FormatStyleNames, false, "long");
         var numeric = JSIntl.GetOption(options, KeyStrings.GetOrCreate("numeric"), ["always", "auto"], false, "always");
-        Formatter = RelativeTimeFormatter.Create(JSIntlData.LocaleData, resolved.Locale, JSIntlLocaleProviders.DataLocale(resolved.DataLocale),
+        // Revised 2026-11-08, at SJL-9.5 (task 8.4, a review fix): the formatter reads its locale data through
+        // DataLocalePluralData, as Intl.NumberFormat and Intl.PluralRules do, so its [[PluralRules]] select by the data
+        // locale's own rules (pt-PT's "i = 1 and v = 0", not pt's "i = 0..1"). The call read
+        // "RelativeTimeFormatter.Create(JSIntlData.LocaleData, resolved.Locale, JSIntlLocaleProviders.DataLocale(resolved.DataLocale), ...".
+        var dataLocale = JSIntlLocaleProviders.DataLocale(resolved.DataLocale);
+        Formatter = RelativeTimeFormatter.Create(DataLocalePluralData.For(dataLocale), resolved.Locale, dataLocale,
             (FormatStyle)System.Array.IndexOf(JSIntl.FormatStyleNames, style),
             numeric == "auto" ? RelativeTimeNumeric.Auto : RelativeTimeNumeric.Always,
             resolved.KeyValues["nu"] ?? "latn");
@@ -2518,7 +2523,12 @@ public sealed class JSIntlDurationFormat : JSObject
 // style at the data locale, are the library's (decision D5). The engine keeps StringListFromIterable, the parts arrays and
 // the (element, literal) parts Intl.DurationFormat reads until task 8.6. Deleted (2026-11-08): BuildParts, ExpandPattern,
 // FormatList, ApplyPattern, GetPatterns and the type and style fields. Its public members stay (decision SJL-D-25,
-// disposition (a)); the constructor's type and style are the option values, the default for any other.
+// disposition (a)); the constructor's type and style are the option values, and any other is an
+// ArgumentOutOfRangeException.
+// Revised 2026-11-08, at SJL-9.5 (task 8.4, a review fix): the constructor read "the default for any other", mapping an
+// unknown type or style to conjunction or long while resolvedOptions reported the default; the former engine stored the
+// strings and reported them verbatim. A direct .NET caller now learns of the unknown value (for task 8.7's
+// docs/public-api.md and CHANGELOG).
 public sealed class JSIntlListFormat : JSObject
 {
     private static readonly string[] ListTypeNames = ["conjunction", "disjunction", "unit"];
@@ -2528,9 +2538,15 @@ public sealed class JSIntlListFormat : JSObject
     public JSIntlListFormat(string locale = "en-US", string type = "conjunction", string style = "long")
     {
         var typeIndex = System.Array.IndexOf(ListTypeNames, type);
+        if (typeIndex < 0)
+            throw new ArgumentOutOfRangeException(nameof(type), type, "The list type is conjunction, disjunction or unit.");
+
         var styleIndex = System.Array.IndexOf(JSIntl.FormatStyleNames, style);
+        if (styleIndex < 0)
+            throw new ArgumentOutOfRangeException(nameof(style), style, "The list style is long, short or narrow.");
+
         Formatter = ListFormatter.Create(JSIntlData.LocaleData, locale, JSIntlLocaleProviders.DataLocale(locale),
-            (ListFormatType)Math.Max(typeIndex, 0), (FormatStyle)Math.Max(styleIndex, 0));
+            (ListFormatType)typeIndex, (FormatStyle)styleIndex);
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -2988,8 +3004,10 @@ public class JSIntlNumberFormat : JSObject
         return PartsArray(@this.Formatter.FormatToParts(JSIntl.ToIntlMathematicalValue(a.Get1()), null), withSource: false);
     }
 
-    // The (type, value) parts of a value, for Intl.DurationFormat and Intl.RelativeTimeFormat's callers until their
-    // own moves (task 8.6).
+    // The (type, value) parts of a value, for Intl.DurationFormat until its own move (task 8.6).
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4): Intl.RelativeTimeFormat formats through the shared library's
+    // RelativeTimeFormatter and no longer calls this; the comment read "for Intl.DurationFormat and
+    // Intl.RelativeTimeFormat's callers until their own moves (task 8.6)".
     internal List<(string type, string value)> ComputeFormatParts(JSValue value)
         => JSIntl.NumberParts(Formatter.FormatToParts(JSIntl.ToIntlMathematicalValue(value), null));
 

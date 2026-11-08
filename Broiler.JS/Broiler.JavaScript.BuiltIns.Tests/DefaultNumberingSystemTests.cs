@@ -3,11 +3,14 @@ using Broiler.JavaScript.Engine;
 
 namespace Broiler.JavaScript.BuiltIns.Tests;
 
-// A locale's default numbering system is CLDR's (JSIntlDefaultNumberingSystems, generated from CLDR
-// 47.0.0), where every locale defaulted to "latn"; and a Temporal value's digits follow the formatter's
-// numbering system, as a Date's do. Found by test262's
+// A locale's default numbering system is CLDR's (the data home's defaultNumberingSystem, or the host culture's
+// native digits for a host locale the home does not list), where every locale defaulted to "latn"; and a Temporal
+// value's digits follow the formatter's numbering system, as a Date's do. Found by test262's
 // intl402/DateTimeFormat/prototype/format/temporal-objects-no-time-clip-non-latin-numerals.js, which
 // passed before only because String.prototype.includes compared by culture (correction X2, SJL-5.5).
+// Revised 2026-11-08, at SJL-9.5 (task 8.4; decision D13, row L22): JSIntlDefaultNumberingSystems is deleted and the
+// default is the data's; the first sentence read "A locale's default numbering system is CLDR's
+// (JSIntlDefaultNumberingSystems, generated from CLDR 47.0.0), where every locale defaulted to "latn"".
 public class DefaultNumberingSystemTests
 {
     private static void Load() => RuntimeHelpers.RunClassConstructor(typeof(Clr.DefaultClrInterop).TypeHandle);

@@ -120,6 +120,14 @@ internal static class JSIntlLocaleProviders
     /// The walk through likely subtags the home's design asks for before such a locale reads locale-keyed shared data
     /// (<c>Broiler.ECMAScript/docs/intl/design.md</c>, the locale-parent note), which stage 1 of SJL-9.5 left to task 8.4
     /// (recorded 2026-11-08, at SJL-9.5, task 8.4). The resolved locale a service reports is the matched one, unchanged.
+    /// <para>
+    /// Not covered (recorded 2026-11-08, at SJL-9.5, task 8.4, a review finding): a host locale whose CLDR parent is not its
+    /// truncation and whose likely script is its language's still reads by truncation - <c>es-MX</c>, <c>es-AR</c> and the
+    /// other children of <c>es-419</c> read <c>es</c>; <c>pt-AO</c> and <c>pt-MZ</c> read <c>pt</c>, not <c>pt-PT</c>;
+    /// <c>en-SG</c> and <c>en-ZA</c> read <c>en</c>, not <c>en-001</c>. The design's other answer, a <c>parentLocales</c>
+    /// table, is data the home does not carry (decision D8); it is a change to the data home and the library, made as its
+    /// own merge, not here.
+    /// </para>
     /// </remarks>
     internal static string DataLocale(string locale)
     {

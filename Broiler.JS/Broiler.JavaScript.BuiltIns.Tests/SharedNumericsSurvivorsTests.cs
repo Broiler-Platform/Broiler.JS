@@ -309,9 +309,12 @@ public class SharedNumericsSurvivorsTests
         => Assert.Equal(expected, Eval(
             "var order = []; var v = n => ({ valueOf() { order.push(n); return 1.5; } }); " + calls + "; String(order)"));
 
-    // Scientific and engineering notation format x × 10^-e of the Number's exact value x, rounded
-    // once; e is the exact value's magnitude (the Number 9.999999999999999e22, which is also 1e23, is
-    // below 10^23). The expected digits are the exact values' (1e-30 is 1.000000000000000083336…e-30).
+    // Scientific and engineering notation format x × 10^-e of the Number's mathematical value x, rounded once; e is
+    // that value's magnitude. The expected digits are the Number's shortest round-trip digits (row M1a, below).
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4; row M1a): the comment read "Scientific and engineering notation format
+    // x × 10^-e of the Number's exact value x, rounded once; e is the exact value's magnitude (the Number
+    // 9.999999999999999e22, which is also 1e23, is below 10^23). The expected digits are the exact values' (1e-30 is
+    // 1.000000000000000083336…e-30)."
     // Revised 2026-11-08, at SJL-9.5 (task 8.4; row M1a, a correction of Broiler.JS): ECMA-402's mathematical value of a
     // Number is the value its Number::toString digits name, the shared library's IntlDecimal, not the double's binary
     // value, so each formats its shortest round-trip digits (9.999999999999999e22 is the Number 1e+23). The cases read
@@ -361,8 +364,9 @@ public class SharedNumericsSurvivorsTests
         => Assert.Equal(expected, Eval(
             "new Intl.NumberFormat('en', { notation: '" + notation + "' }).format(" + number + ")"));
 
-    // A subnormal Number's exact value is its significand × 2^-1074 (ExactRational scaled it by
-    // 2^-1075), in standard notation too.
+    // A subnormal Number's mathematical value is its Number::toString digits, in standard notation too.
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4; row M1a): ExactRational is deleted; the comment read "A subnormal
+    // Number's exact value is its significand × 2^-1074 (ExactRational scaled it by 2^-1075), in standard notation too."
     // Revised 2026-11-08, at SJL-9.5 (row M1a, as above): 5e-324's mathematical value is 5 × 10^-324, its Number::toString
     // digits; the case read [InlineData("5e-324", "^0\\.0{323}494$")].
     [Theory]
