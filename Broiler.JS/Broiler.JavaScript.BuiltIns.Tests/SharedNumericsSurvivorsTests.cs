@@ -312,20 +312,31 @@ public class SharedNumericsSurvivorsTests
     // Scientific and engineering notation format x × 10^-e of the Number's exact value x, rounded
     // once; e is the exact value's magnitude (the Number 9.999999999999999e22, which is also 1e23, is
     // below 10^23). The expected digits are the exact values' (1e-30 is 1.000000000000000083336…e-30).
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4; row M1a, a correction of Broiler.JS): ECMA-402's mathematical value of a
+    // Number is the value its Number::toString digits name, the shared library's IntlDecimal, not the double's binary
+    // value, so each formats its shortest round-trip digits (9.999999999999999e22 is the Number 1e+23). The cases read
+    // ("scientific", "1e-30", "1.00000000000000008334E-30"), ("engineering", "1e-30", "1.00000000000000008334E-30"),
+    // ("scientific", "1.2345e-300", "1.23449999999999996222E-300"), ("engineering", "1.2345e-300",
+    // "1.23449999999999996222E-300"), ("scientific", "1e300", "1.0000000000000000525E300"), ("engineering", "1e300",
+    // "1.0000000000000000525E300"), ("scientific", "9.999999999999999e22", "9.99999999999999916114E22"), ("engineering",
+    // "9.999999999999999e22", "99.99999999999999161139E21"), ("scientific", "-1e-30", "-1.00000000000000008334E-30"),
+    // ("scientific", "5e-324", "4.94065645841246544177E-324"), ("scientific", "2.2250738585072014e-308",
+    // "2.22507385850720138309E-308"), ("engineering", "1.7976931348623157e308", "179.76931348623157081453E306") and
+    // ("scientific", "0.1", "1.00000000000000005551E-1").
     [Theory]
-    [InlineData("scientific", "1e-30", "1.00000000000000008334E-30")]
-    [InlineData("engineering", "1e-30", "1.00000000000000008334E-30")]
-    [InlineData("scientific", "1.2345e-300", "1.23449999999999996222E-300")]
-    [InlineData("engineering", "1.2345e-300", "1.23449999999999996222E-300")]
-    [InlineData("scientific", "1e300", "1.0000000000000000525E300")]
-    [InlineData("engineering", "1e300", "1.0000000000000000525E300")]
-    [InlineData("scientific", "9.999999999999999e22", "9.99999999999999916114E22")]
-    [InlineData("engineering", "9.999999999999999e22", "99.99999999999999161139E21")]
-    [InlineData("scientific", "-1e-30", "-1.00000000000000008334E-30")]
-    [InlineData("scientific", "5e-324", "4.94065645841246544177E-324")]
-    [InlineData("scientific", "2.2250738585072014e-308", "2.22507385850720138309E-308")]
-    [InlineData("engineering", "1.7976931348623157e308", "179.76931348623157081453E306")]
-    [InlineData("scientific", "0.1", "1.00000000000000005551E-1")]
+    [InlineData("scientific", "1e-30", "1E-30")]
+    [InlineData("engineering", "1e-30", "1E-30")]
+    [InlineData("scientific", "1.2345e-300", "1.2345E-300")]
+    [InlineData("engineering", "1.2345e-300", "1.2345E-300")]
+    [InlineData("scientific", "1e300", "1E300")]
+    [InlineData("engineering", "1e300", "1E300")]
+    [InlineData("scientific", "9.999999999999999e22", "1E23")]
+    [InlineData("engineering", "9.999999999999999e22", "100E21")]
+    [InlineData("scientific", "-1e-30", "-1E-30")]
+    [InlineData("scientific", "5e-324", "5E-324")]
+    [InlineData("scientific", "2.2250738585072014e-308", "2.2250738585072014E-308")]
+    [InlineData("engineering", "1.7976931348623157e308", "179.76931348623157E306")]
+    [InlineData("scientific", "0.1", "1E-1")]
     [InlineData("scientific", "1e22", "1E22")]
     [InlineData("engineering", "1e22", "10E21")]
     public void Scientific_notation_formats_the_exact_value(string notation, string number, string expected)
@@ -335,7 +346,9 @@ public class SharedNumericsSurvivorsTests
     // At the default three fraction digits, the exact value rounds to what it always did.
     [Theory]
     [InlineData("scientific", "1e-30", "1E-30")]
-    [InlineData("scientific", "1.2345e-300", "1.234E-300")]
+    // Revised 2026-11-08, at SJL-9.5 (row M1a, as above): 1.2345e-300's digits tie at the third fraction digit and
+    // halfExpand rounds up; the case read [InlineData("scientific", "1.2345e-300", "1.234E-300")].
+    [InlineData("scientific", "1.2345e-300", "1.235E-300")]
     [InlineData("scientific", "1e300", "1E300")]
     [InlineData("scientific", "9.999999999999999e22", "1E23")]
     [InlineData("engineering", "9.999999999999999e22", "100E21")]
@@ -350,8 +363,10 @@ public class SharedNumericsSurvivorsTests
 
     // A subnormal Number's exact value is its significand × 2^-1074 (ExactRational scaled it by
     // 2^-1075), in standard notation too.
+    // Revised 2026-11-08, at SJL-9.5 (row M1a, as above): 5e-324's mathematical value is 5 × 10^-324, its Number::toString
+    // digits; the case read [InlineData("5e-324", "^0\\.0{323}494$")].
     [Theory]
-    [InlineData("5e-324", "^0\\.0{323}494$")]
+    [InlineData("5e-324", "^0\\.0{323}5$")]
     [InlineData("1e-310", "^0\\.0{309}1$")]
     public void A_subnormal_Number_formats_its_exact_value(string number, string pattern)
         => Assert.Equal("true", Eval(

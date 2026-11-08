@@ -105,7 +105,100 @@ internal static class JSIntlLocaleProviders
         return list.AsReadOnly();
     }
 
+    // The locales the shared data lists, for DataLocale.
+    private static readonly Lazy<HashSet<string>> SharedLocales =
+        new(static () => new HashSet<string>(JSIntlData.Shared.Locales, StringComparer.Ordinal));
+
+    /// <summary>
+    /// The locale at which a service reads the locale data for a matched available locale ([[DataLocale]]): the locale's
+    /// language identifier, except that a tag with a region and no script whose likely script differs from its language's
+    /// (<c>zh-TW</c>, whose likely subtags are <c>zh-Hant-TW</c> where <c>zh</c>'s are <c>zh-Hans-CN</c>) is read with that
+    /// script, so the parent walk by truncation (<see cref="CompositeLocaleData.Chain"/>) goes <c>zh-Hant-TW</c>,
+    /// <c>zh-Hant</c>, <c>zh</c> rather than <c>zh-TW</c>, <c>zh</c>.
+    /// </summary>
+    /// <remarks>
+    /// The walk through likely subtags the home's design asks for before such a locale reads locale-keyed shared data
+    /// (<c>Broiler.ECMAScript/docs/intl/design.md</c>, the locale-parent note), which stage 1 of SJL-9.5 left to task 8.4
+    /// (recorded 2026-11-08, at SJL-9.5, task 8.4). The resolved locale a service reports is the matched one, unchanged.
+    /// </remarks>
+    internal static string DataLocale(string locale)
+    {
+        if (LocaleId.TryParse(locale, out var id) != IntlStatus.Completed || id is null)
+            return locale;
+
+        var baseName = id.BaseName;
+        if (id.Script is not null || id.Region is null || SharedLocales.Value.Contains(baseName))
+            return baseName;
+
+        var data = JSIntlData.LocaleData;
+        var full = id.WithoutUnicodeExtension().Maximize(data, out var found);
+        if (!found || full.Script is not { } script
+            || LocaleId.TryParse(id.Language, out var language) != IntlStatus.Completed || language is null)
+            return baseName;
+
+        var languageScript = language.Maximize(data, out var languageFound).Script;
+        return languageFound && languageScript != script ? id.Language + "-" + script + "-" + id.Region : baseName;
+    }
+
     // A culture name as a canonical Unicode locale identifier, or null when it is not a well-formed tag.
     private static string Canonical(string name) =>
         LocaleId.TryCanonicalize(name, JSIntlData.LocaleData, out var canonical) == IntlStatus.Completed ? canonical : null;
+}
+
+/// <summary>
+/// The locale data a service of sub-areas (b) and (c) reads for one data locale: <see cref="JSIntlData.LocaleData"/>, except
+/// that the plural and plural-range rules of the data locale's language are read at the data locale itself, so its parent
+/// walk reaches a regional variety's own rules (<c>pt-PT</c>'s <c>i = 1 and v = 0</c>, where <c>pt</c>'s read
+/// <c>i = 0..1</c>) (SJL-9.5, task 8.4, 2026-11-08).
+/// </summary>
+/// <remarks>
+/// The shared library selects plural rules by the data locale's language (<c>Broiler.ECMAScript/docs/intl/design.md</c>,
+/// the note on plural rules), and that note asks SJL-9.5, before it makes <c>pt-PT</c> available, to "either keys the rules
+/// by the data locale's parent chain or records the choice"; this adapter keys them by the chain, as the composite walks
+/// every other locale-keyed question. Every other question is the inner data's.
+/// </remarks>
+internal sealed class DataLocalePluralData(ILocaleData inner, string dataLocale) : ILocaleData
+{
+    private readonly string language = LocaleId.TryParse(dataLocale, out var id) == IntlStatus.Completed && id is not null ? id.Language : dataLocale;
+
+    /// <summary>The adapter for a data locale, or the shared composite itself where the locale is its own language.</summary>
+    internal static ILocaleData For(string dataLocale)
+    {
+        var data = JSIntlData.LocaleData;
+        return LocaleId.TryParse(dataLocale, out var id) == IntlStatus.Completed && id is not null && id.BaseName != id.Language
+            ? new DataLocalePluralData(data, id.BaseName)
+            : data;
+    }
+
+    public IReadOnlyList<PluralRuleText>? PluralRules(string language, PluralRuleType type)
+        => language == this.language ? inner.PluralRules(dataLocale, type) : inner.PluralRules(language, type);
+
+    public string? PluralRange(string language, string start, string end)
+        => language == this.language ? inner.PluralRange(dataLocale, start, end) : inner.PluralRange(language, start, end);
+
+    public IReadOnlyList<string> Locales => inner.Locales;
+    public bool HoldsLocale(IntlTable table, string locale) => inner.HoldsLocale(table, locale);
+    public string? LikelySubtags(string source) => inner.LikelySubtags(source);
+    public string? Alias(LocaleAliasKind kind, string from) => inner.Alias(kind, from);
+    public bool IsExtensionKey(char singleton, string key) => inner.IsExtensionKey(singleton, key);
+    public bool TryExtensionType(char singleton, string key, string type, out string preferred) => inner.TryExtensionType(singleton, key, type, out preferred);
+    public RegionHourCycles? HourCycles(string region) => inner.HourCycles(region);
+    public RegionWeek? Week(string region) => inner.Week(region);
+    public bool? IsRightToLeft(string script) => inner.IsRightToLeft(script);
+    public string? NumberValue(string locale, string key) => inner.NumberValue(locale, key);
+    public CurrencyNames? Currency(string locale, string code) => inner.Currency(locale, code);
+    public IReadOnlyList<string> CurrencyCodes => inner.CurrencyCodes;
+    public int? CurrencyDigits(string code) => inner.CurrencyDigits(code);
+    public IReadOnlyList<string> NumberingSystems => inner.NumberingSystems;
+    public IReadOnlyList<string>? NumberingSystemDigits(string system) => inner.NumberingSystemDigits(system);
+    public string? UnitPattern(string locale, string width, string unit, string field) => inner.UnitPattern(locale, width, unit, field);
+    public ListPatterns? ListPattern(string locale, string type) => inner.ListPattern(locale, type);
+    public string? RelativeTime(string locale, string field, string key) => inner.RelativeTime(locale, field, key);
+    public string? DisplayName(string locale, string kind, string code) => inner.DisplayName(locale, kind, code);
+    public string? DateValue(string locale, string calendar, string key) => inner.DateValue(locale, calendar, key);
+    public IReadOnlyDictionary<string, string>? DateValues(string locale, string calendar) => inner.DateValues(locale, calendar);
+    public IReadOnlyList<DayPeriodRule>? DayPeriods(string language) => inner.DayPeriods(language);
+    public IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone) => inner.MetazonePeriods(zone);
+    public string? GoldenZone(string metazone, string region) => inner.GoldenZone(metazone, region);
+    public string? PrimaryZone(string region) => inner.PrimaryZone(region);
 }

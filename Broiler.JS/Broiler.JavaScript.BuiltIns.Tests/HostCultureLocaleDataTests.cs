@@ -65,7 +65,10 @@ public class HostCultureLocaleDataTests
         // Not a symbol: a pattern, which .NET does not state as CLDR does, and another system's symbols.
         Assert.Null(Host.NumberValue(HostOnly, "decimal.standard"));
         Assert.Null(Host.NumberValue(HostOnly, "symbols@arab.decimal"));
-        Assert.Null(Host.NumberValue(HostOnly, "defaultNumberingSystem"));
+        // Revised 2026-11-08, at SJL-9.5 (task 8.4): defaultNumberingSystem is answered from the native digits
+        // (Native_digits_answer_the_default_numbering_system); the line read
+        // Assert.Null(Host.NumberValue(HostOnly, "defaultNumberingSystem")).
+        Assert.Equal("latn", Host.NumberValue(HostOnly, "defaultNumberingSystem"));
     }
 
     // Month, day and era names and AM and PM of the Gregorian calendar, from the culture's DateTimeFormatInfo.
@@ -116,9 +119,36 @@ public class HostCultureLocaleDataTests
             Assert.Null(Host.DateValue(name, "gregory", "months.format.wide.1"));
     }
 
+    // Native digits answer the number table's defaultNumberingSystem key (decision D6; SJL-9.5, task 8.4, 2026-11-08): latn
+    // for a culture written in ASCII digits, else the shared numbering-system table's system with the culture's ten digits,
+    // which the composite reads for a locale the shared data lacks (row L22).
+    [Theory]
+    [InlineData("el", "latn")]
+    [InlineData("bn", "beng")]
+    [InlineData("ar-SA", "arab")]
+    [InlineData("mr", "deva")]
+    public void Native_digits_answer_the_default_numbering_system(string name, string expected)
+    {
+        if (!HasCulture(name))
+            return;
+
+        var digits = CultureInfo.GetCultureInfo(name).NumberFormat.NativeDigits;
+        if (expected != "latn" && digits[1] == "1")
+            return;
+
+        Assert.Equal(expected, Host.NumberValue(name, "defaultNumberingSystem"));
+        Assert.Equal(expected, Composite.NumberValue(name, "defaultNumberingSystem"));
+    }
+
+    [Fact]
+    public void A_locale_the_host_lacks_has_no_default_numbering_system()
+        => Assert.Null(Host.NumberValue("zz-ZZ", "defaultNumberingSystem"));
+
     // Every other question answers "no data": .NET has no plural, compact, unit, list, relative-time, display-name,
     // interval or day-period data, and the world questions are the shared data's. The first day of the week and native
     // digits have no question keyed as .NET gives them (decision D6, the design's notes).
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4): native digits answer defaultNumberingSystem (the test above); the first
+    // day of the week still has no question.
     [Fact]
     public void Every_other_question_answers_no_data()
     {

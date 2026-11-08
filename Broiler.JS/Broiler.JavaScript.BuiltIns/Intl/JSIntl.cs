@@ -68,9 +68,6 @@ public static class JSIntl
     private static readonly KeyString RoundingModeKey = KeyStrings.GetOrCreate("roundingMode");
     private static readonly KeyString RoundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
     private static readonly KeyString TrailingZeroDisplayKey = KeyStrings.GetOrCreate("trailingZeroDisplay");
-    // SetNumberFormatDigitOptions: roundingIncrement must be one of these values.
-    private static readonly int[] SanctionedRoundingIncrements =
-        [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
     private static readonly KeyString TimeZoneKey = KeyStrings.GetOrCreate("timeZone");
     private static readonly KeyString CollationKey = KeyStrings.GetOrCreate("collation");
     private static readonly KeyString LanguageKey = KeyStrings.GetOrCreate("language");
@@ -229,13 +226,12 @@ public static class JSIntl
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("select"),
             new JSFunction(static (in Arguments a) =>
             {
-                if (a.This is not JSIntlPluralRules pluralRules)
-                    throw JSEngine.NewTypeError("Intl.PluralRules.prototype.select called on incompatible receiver");
+                var rules = JSIntlPluralRules.Of(a.This, "select").Rules;
 
-                // ToNumber the argument (may invoke valueOf), then resolve the
-                // CLDR plural category for the number.
-                var n = a.Get1().DoubleValue;
-                return JSValue.CreateString(pluralRules.SelectCategory(n));
+                // ToIntlMathematicalValue of the argument (a BigInt's included, row P2), then ResolvePlural over
+                // FormatNumericToString's string (row P1), the shared library's.
+                var n = ToIntlMathematicalValue(a.Get1());
+                return JSValue.CreateString(rules.ResolvePlural(n, null).PluralCategory);
             }, "select", "function select() { [native code] }", createPrototype: false, length: 1),
             JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
@@ -244,21 +240,21 @@ public static class JSIntl
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("selectRange"),
             new JSFunction(static (in Arguments a) =>
             {
-                if (a.This is not JSIntlPluralRules)
-                    throw JSEngine.NewTypeError("Intl.PluralRules.prototype.selectRange called on incompatible receiver");
+                var rules = JSIntlPluralRules.Of(a.This, "selectRange").Rules;
 
                 var start = a.Get1();
                 var end = a.GetAt(1);
                 if (start.IsUndefined || end.IsUndefined)
                     throw JSEngine.NewTypeError("Intl.PluralRules.prototype.selectRange requires defined start and end values");
 
-                // ECMA-402 PluralRuleSelectRange / ResolvePluralRange: after ToNumber-coercing
-                // both endpoints, a NaN start or end is a RangeError (a range cannot be ordered).
-                var startValue = start.DoubleValue;
-                var endValue = end.DoubleValue;
-                if (double.IsNaN(startValue) || double.IsNaN(endValue))
+                // ECMA-402 ResolvePluralRange, the shared library's: both ends ToIntlMathematicalValue's, a NaN start or end
+                // the RangeError of its step 1; ends that format alike take the start's category (row P5a, a correction),
+                // and other ranges CLDR's plural ranges (row P5b, an adoption), where every range answered "other".
+                var x = ToIntlMathematicalValue(start);
+                var y = ToIntlMathematicalValue(end);
+                if (rules.ResolvePluralRange(x, y, out var category, null) != IntlStatus.Completed)
                     throw JSEngine.NewRangeError("Intl.PluralRules.prototype.selectRange called with a NaN start or end value");
-                return JSValue.CreateString("other");
+                return JSValue.CreateString(category);
             }, "selectRange", "function selectRange() { [native code] }", createPrototype: false, length: 2),
             JSPropertyAttributes.ConfigurableValue);
         SetIntlToStringTag(constructor, "PluralRules");
@@ -550,12 +546,18 @@ public static class JSIntl
             constructor.prototype.FastAddProperty(FormatKey,
                 new JSFunction(static (in Arguments a) =>
                 {
-                    if (a.This is not JSIntlNumberFormat @this)
-                        throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.format called on incompatible receiver");
+                    var @this = JSIntlNumberFormat.Of(a.This, "format");
 
-                    var format = new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
-                    format.SetNameProperty(string.Empty);
-                    return format;
+                    // [[BoundFormat]]: made once, an anonymous function of length 1 (row N11, a correction: a new
+                    // function was made at each read, so nf.format !== nf.format).
+                    if (@this.BoundFormat is null)
+                    {
+                        var format = new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
+                        format.SetNameProperty(string.Empty);
+                        @this.BoundFormat = format;
+                    }
+
+                    return @this.BoundFormat;
                 },
                     "get format",
                     "function get format() { [native code] }",
@@ -874,244 +876,261 @@ public static class JSIntl
             ? canonical
             : throw JSEngine.NewRangeError("Invalid language tag");
 
-    internal static JSIntlNumberFormatResolved ValidateNumberFormatOptions(JSObject options)
+    // The names of the library's enumerations in their order, which resolvedOptions reports and the options map onto
+    // (SJL-9.5, task 8.4, sub-areas (b) and (c); Broiler.VM's JSD-0082).
+    internal static readonly string[] NumberStyleNames = ["decimal", "percent", "currency", "unit"];
+    internal static readonly string[] CurrencyDisplayNames = ["symbol", "narrowSymbol", "code", "name"];
+    internal static readonly string[] CurrencySignNames = ["standard", "accounting"];
+    internal static readonly string[] UnitDisplayNames = ["short", "narrow", "long"];
+    internal static readonly string[] NotationNames = ["standard", "scientific", "engineering", "compact"];
+    internal static readonly string[] CompactDisplayNames = ["short", "long"];
+    internal static readonly string[] SignDisplayNames = ["auto", "never", "always", "exceptZero", "negative"];
+    internal static readonly string[] GroupingNames = ["auto", "always", "min2", null];
+    internal static readonly string[] RoundingModeNames = ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"];
+    internal static readonly string[] RoundingPriorityNames = ["auto", "morePrecision", "lessPrecision"];
+    internal static readonly string[] TrailingZeroDisplayNames = ["auto", "stripIfInteger"];
+    internal static readonly string[] FormatStyleNames = ["long", "short", "narrow"];
+
+    // Intl.NumberFormat's constructor steps after CanonicalizeLocaleList, CoerceOptionsToObject and localeMatcher
+    // (ECMA-402 sec-intl.numberformat): every option is read here, in the specification's order, each checked as it is
+    // read, and the record is the shared library's NumberFormatter (SJL-9.5, task 8.4, sub-area (c); Broiler.VM's JSD-0082,
+    // decision D24). Each option is read once, at construction (row N10, a correction): format, formatToParts, the ranges and
+    // resolvedOptions read the record. ResolveLocale's steps 5 to 12 are the library's, over the nu values the data gives the
+    // matched locale (decision D13, row L22), and so is the default numbering system.
+    // It replaces ValidateNumberFormatOptions, SnapshotDigitOptions, ReadRoundingOptions, ResolveUseGrouping, the
+    // SanctionedSingleUnits set and IsWellFormedUnitIdentifier, and JSIntlNumberFormatResolved (deleted 2026-11-08).
+    internal static NumberFormatter CreateNumberFormatter(JSValue canonicalLocales, JSObject options)
     {
-        if (options == null)
-            return new JSIntlNumberFormatResolved("standard", "auto", null, null);
+        var numberingSystem = ReadNumberingSystemOption(options);
+        var resolved = ResolveNumberingSystemLocale(canonicalLocales, numberingSystem);
+        var data = JSIntlData.LocaleData;
 
-        // GetOption validates "style" against the sanctioned set ("decimal", "percent",
-        // "currency", "unit") — a value such as "invalid" is a RangeError — and applies the
-        // "decimal" default. It is read first, matching SetNumberFormatUnitOptions order.
+        // SetNumberFormatUnitOptions.
         var style = GetOption(options, StyleKey, NumberFormatStyleValues, false, "decimal");
-
-        var currencyValue = options[CurrencyKey];
-        if (!currencyValue.IsUndefined)
+        var currency = OptionStringValue(options, CurrencyKey);
+        if (currency == null)
         {
-            var currency = currencyValue.StringValue;
-            if (!IsWellFormedCurrencyCode(currency))
-                throw JSEngine.NewRangeError("Invalid currency option");
+            if (style == "currency")
+                throw JSEngine.NewTypeError("Intl.NumberFormat currency style requires a currency option");
         }
+        else if (!NumberFormatter.IsWellFormedCurrencyCode(currency))
+            throw JSEngine.NewRangeError("Invalid currency option");
 
-        if (style == "currency" && currencyValue.IsUndefined)
-            throw JSEngine.NewTypeError("Intl.NumberFormat currency style requires a currency option");
+        var currencyDisplay = GetOption(options, CurrencyDisplayKey, CurrencyDisplayValues, false, "symbol");
+        var currencySign = GetOption(options, CurrencySignKey, CurrencySignValues, false, "standard");
+        var unit = OptionStringValue(options, UnitKey);
+        if (unit == null)
+        {
+            if (style == "unit")
+                throw JSEngine.NewTypeError("Intl.NumberFormat unit style requires a unit option");
+        }
+        else if (!NumberFormatter.IsWellFormedUnitIdentifier(unit))
+            throw JSEngine.NewRangeError($"Invalid unit identifier: {unit}");
 
-        // SetNumberFormatUnitOptions reads currencyDisplay and currencySign right
-        // after currency, unconditionally (even when style is not "currency"), and
-        // validates them against their sanctioned value lists. The resolved values
-        // are only reflected when style is "currency"; here we read them purely so
-        // the option getters fire in spec order (test262 NumberFormat
-        // constructor-option-read-order) and an invalid value is a RangeError.
-        _ = GetOption(options, CurrencyDisplayKey, CurrencyDisplayValues, false, "symbol");
-        _ = GetOption(options, CurrencySignKey, CurrencySignValues, false, "standard");
-
-        var unitValue = options[UnitKey];
-        if (style == "unit" && unitValue.IsUndefined)
-            throw JSEngine.NewTypeError("Intl.NumberFormat unit style requires a unit option");
-
-        // SetNumberFormatUnitOptions: a provided unit must be a well-formed unit identifier
-        // (a sanctioned single unit, or "<numerator>-per-<denominator>" of two such units).
-        // Anything else — including valid CLDR units that ECMA-402 does not sanction, such as
-        // "acre-foot" or "ampere" — is a RangeError.
-        if (!unitValue.IsUndefined && !IsWellFormedUnitIdentifier(unitValue.StringValue))
-            throw JSEngine.NewRangeError($"Invalid unit identifier: {unitValue.StringValue}");
-
-        // unitDisplay is read (and validated) regardless of style, but the
-        // resolved slot only exists when style is "unit".
         var unitDisplay = GetOption(options, UnitDisplayKey, UnitDisplayValues, false, "short");
-        if (style != "unit")
-            unitDisplay = null;
-
-        var notation = GetOption(options, NotationKey, NotationValues, false, "standard");
-
-        // SetNumberFormatDigitOptions: read the digit options from the bag exactly
-        // once, in spec order (minimumIntegerDigits, minimumFractionDigits,
-        // maximumFractionDigits, minimumSignificantDigits, maximumSignificantDigits),
-        // and snapshot them so later format/resolvedOptions calls reuse the values
-        // instead of re-invoking option getters.
-        var digitOptions = SnapshotDigitOptions(options);
-
-        // The rounding options follow the digit options inside SetNumberFormatDigitOptions,
-        // ahead of compactDisplay/useGrouping/signDisplay. roundingIncrement is a numeric
-        // option restricted to a sanctioned set; the string enums below are validated against
-        // their sanctioned value lists (a bad value, e.g. an empty string for
-        // trailingZeroDisplay, is a RangeError). All four always have a resolved value (their
-        // defaults) which resolvedOptions reflects.
-        var (roundingIncrement, roundingMode, roundingModeName, roundingPriority, trailingZeroDisplay) = ReadRoundingOptions(options);
-
-        // notation precedes compactDisplay (spec order; observed by the compactDisplay
-        // getter call-order tests). compactDisplay is always validated, but only
-        // reflected when notation is "compact".
+        var notation = (NumberNotation)System.Array.IndexOf(NotationNames, GetOption(options, NotationKey, NotationValues, false, "standard"));
+        var numberStyle = (NumberStyle)System.Array.IndexOf(NumberStyleNames, style);
+        var digitOptions = SetNumberFormatDigitOptions(options, DigitOptionRules.NumberFormatDefaults(numberStyle, currency, notation, data), notation);
         var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayValues, false, "short");
-        if (notation != "compact")
-            compactDisplay = null;
-
-        // GetUseGroupingOption: the default is "min2" for compact notation, "auto"
-        // otherwise; true → "always", a falsy value → boolean false, and an unrecognized
-        // string falls back to the default. Read after compactDisplay, before signDisplay.
-        var useGrouping = ResolveUseGrouping(options, notation);
-
+        var useGrouping = GetUseGroupingOption(options, notation == NumberNotation.Compact ? NumberGrouping.Min2 : NumberGrouping.Auto);
         var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
 
-        // SetNumberFormatDigitOptions: when roundingIncrement ≠ 1 the rounding strategy must be
-        // fraction-digits — not significant-digits, nor a morePrecision/lessPrecision priority (a
-        // TypeError) — and the resolved maximum and minimum fraction digits must be equal (a RangeError).
-        if (roundingIncrement != 1)
-        {
-            int? Frac(string name)
+        var dataLocale = JSIntlLocaleProviders.DataLocale(resolved.DataLocale);
+        return NumberFormatter.Create(DataLocalePluralData.For(dataLocale), resolved.Locale, dataLocale,
+            resolved.KeyValues["nu"] ?? "latn", new NumberFormatOptions
             {
-                var v = digitOptions?[KeyStrings.GetOrCreate(name)];
-                return v == null || v.IsUndefined ? null : (int)v.DoubleValue;
-            }
-            var hasSignificant = Frac("minimumSignificantDigits") != null || Frac("maximumSignificantDigits") != null;
-            if (roundingPriority != "auto" || hasSignificant)
-                throw JSEngine.NewTypeError(
-                    "roundingIncrement may only be used with fractionDigits rounding (roundingPriority \"auto\" and no significant-digit options)");
-
-            // ri ≠ 1 forces the default maximum fraction digits down to the default minimum, so an
-            // unspecified pair resolves equal; an explicitly mismatched pair is a RangeError.
-            var mnfdDefault = (style ?? "decimal") == "currency" ? 2 : 0;
-            var mnfd = Frac("minimumFractionDigits");
-            var mxfd = Frac("maximumFractionDigits");
-            int rmin, rmax;
-            if (mnfd == null && mxfd == null) { rmin = rmax = mnfdDefault; }
-            else
-            {
-                rmin = mnfd ?? Math.Min(mnfdDefault, mxfd.GetValueOrDefault());
-                rmax = mxfd ?? Math.Max(mnfdDefault, mnfd.GetValueOrDefault());
-            }
-            if (rmax != rmin)
-                throw JSEngine.NewRangeError("maximumFractionDigits is not equal to minimumFractionDigits");
-        }
-
-        return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay)
-        {
-            DigitOptions = digitOptions,
-            RoundingIncrement = roundingIncrement,
-            RoundingMode = roundingMode,
-            RoundingModeName = roundingModeName,
-            RoundingPriority = roundingPriority,
-            TrailingZeroDisplay = trailingZeroDisplay,
-            UseGrouping = useGrouping,
-        };
+                Style = numberStyle,
+                Currency = currency,
+                CurrencyDisplay = (CurrencyDisplay)System.Array.IndexOf(CurrencyDisplayNames, currencyDisplay),
+                CurrencySign = (CurrencySign)System.Array.IndexOf(CurrencySignNames, currencySign),
+                Unit = unit,
+                UnitDisplay = (UnitDisplay)System.Array.IndexOf(UnitDisplayNames, unitDisplay),
+                DigitOptions = digitOptions,
+                Notation = notation,
+                CompactDisplay = (CompactDisplay)System.Array.IndexOf(CompactDisplayNames, compactDisplay),
+                UseGrouping = useGrouping,
+                SignDisplay = (SignDisplay)System.Array.IndexOf(SignDisplayNames, signDisplay),
+            });
     }
 
-    // The ECMA-402 sanctioned single unit identifiers — the same set
-    // Intl.supportedValuesOf("unit") reports (AvailableCanonicalUnits).
-    private static readonly HashSet<string> SanctionedSingleUnits = new(IntlEnumerationData.Units, StringComparer.Ordinal);
-
-    // IsWellFormedUnitIdentifier (ECMA-402): a sanctioned single unit, or
-    // "<numerator>-per-<denominator>" where both are sanctioned single units.
-    private static bool IsWellFormedUnitIdentifier(string unit)
+    // An option's String (ToString of a defined value), or null when it is undefined.
+    private static string OptionStringValue(JSObject options, KeyString key)
     {
-        if (SanctionedSingleUnits.Contains(unit))
-            return true;
-
-        var perIndex = unit.IndexOf("-per-", StringComparison.Ordinal);
-        if (perIndex < 0)
-            return false;
-
-        var numerator = unit[..perIndex];
-        var denominator = unit[(perIndex + 5)..];
-        return SanctionedSingleUnits.Contains(numerator) && SanctionedSingleUnits.Contains(denominator);
+        var value = options == null ? JSUndefined.Value : options[key];
+        return value == null || value.IsUndefined ? null : value.StringValue;
     }
 
-    // GetBooleanOrStringNumberFormatOption(options, "useGrouping", « "min2", "auto",
-    // "always" », defaultUseGrouping): true maps to "always", any falsy value to the
-    // boolean false (returned as the "false" sentinel), and an unrecognized string
-    // (e.g. "true"/"false") to the default. The default is "min2" for compact notation.
-    private static string ResolveUseGrouping(JSObject options, string notation)
+    // ECMA-402's SetNumberFormatDigitOptions (sec-setnumberformatdigitoptions), split at its conversions as the shared
+    // library splits it (sub-area (b)): every read here, in the specification's order, each checked as it is read, the
+    // digit values read first and converted only where DigitOptionRules.Plan says they are used (row M4, a correction: a
+    // value is converted once, and never when the other pair wins); the library takes the decisions after them, and a
+    // status it answers is the error the step throws (min above max, an increment with significant digits or a priority,
+    // an increment with unequal fraction digits; rows M4, M5 and P7, corrections).
+    internal static DigitOptions SetNumberFormatDigitOptions(JSObject options, FractionDigitDefaults defaults, NumberNotation notation)
     {
-        var fallback = notation == "compact" ? "min2" : "auto";
-        if (options == null)
-            return fallback;
-        var v = options[KeyStrings.GetOrCreate("useGrouping")];
-        if (v == null || v.IsUndefined)
-            return fallback;
-        if (v.IsBoolean)
-            return v.BooleanValue ? "always" : "false";
-        // ToBoolean(value) === false (null, 0, "", NaN) resolves to boolean false.
-        if (!v.BooleanValue)
-            return "false";
-        var s = v.ToString();
-        if (s is "min2" or "auto" or "always")
-            return s;
-        // Legacy "true"/"false" strings resolve to the fallback; every other string value
-        // is unsupported and throws a RangeError (Intl.NumberFormat v3
-        // GetBooleanOrStringNumberFormatOption — e.g. "MIN2", "True", "42").
-        if (s is "true" or "false")
-            return fallback;
-        throw JSEngine.NewRangeError("useGrouping value is not supported");
-    }
-
-    // Reads the digit-related options from the bag once (in spec order) and stores
-    // them as plain data properties, so subsequent reads observe construction-time
-    // values without re-triggering option getters. Absent options are left out so
-    // callers apply their own (style-dependent) defaults.
-    // SetNumberFormatDigitOptions reads the rounding options immediately after the
-    // digit options, in order: roundingIncrement (a sanctioned numeric), roundingMode,
-    // roundingPriority, trailingZeroDisplay. Intl.PluralRules shares this step but does
-    // not otherwise consume the values, so it just needs the reads to happen (the order
-    // and per-value validation are observable — Intl.PluralRules options read order).
-    // NumberFormat reads them inline because it also applies the increment/significant
-    // cross-checks. Returns the four resolved values, the rounding mode both as the shared library's
-    // RoundingMode the formatter rounds with and as the option's name resolvedOptions reports.
-    internal static (int RoundingIncrement, RoundingMode RoundingMode, string RoundingModeName, string RoundingPriority, string TrailingZeroDisplay)
-        ReadRoundingOptions(JSObject options)
-    {
+        var mnid = GetNumberOption(options, MinimumIntegerDigitsKey, 1, 21) ?? 1;
+        var mnfd = OptionValue(options, MinimumFractionDigitsKey);
+        var mxfd = OptionValue(options, MaximumFractionDigitsKey);
+        var mnsd = OptionValue(options, MinimumSignificantDigitsKey);
+        var mxsd = OptionValue(options, MaximumSignificantDigitsKey);
         var roundingIncrement = GetNumberOption(options, RoundingIncrementKey, 1, 5000) ?? 1;
-        if (System.Array.IndexOf(SanctionedRoundingIncrements, roundingIncrement) < 0)
+        if (!DigitOptionRules.IsAdmittedRoundingIncrement(roundingIncrement))
             throw JSEngine.NewRangeError("roundingIncrement value is out of range.");
 
-        // GetOption(options, "roundingMode", string, « the nine names », "halfExpand"): the property
-        // read and its ToString are the engine's; the shared library's TryParseRoundingMode decides
-        // whether the text is one of the nine names, and any other text is GetOption's RangeError.
-        var roundingModeValue = options == null ? JSUndefined.Value : options[RoundingModeKey];
-        var roundingModeName = roundingModeValue.IsUndefined ? "halfExpand" : roundingModeValue.StringValue;
+        // GetOption(options, "roundingMode", string, « the nine names », "halfExpand"): the property read and its ToString
+        // are the engine's; the shared library's TryParseRoundingMode decides whether the text is one of the nine names.
+        var roundingModeName = OptionStringValue(options, RoundingModeKey) ?? "halfExpand";
         if (!ExactRounding.TryParseRoundingMode(roundingModeName, out var roundingMode))
             throw JSEngine.NewRangeError($"Invalid {RoundingModeKey} option");
 
-        var roundingPriority = GetOption(options, RoundingPriorityKey,
-            ["auto", "morePrecision", "lessPrecision"], false, "auto");
-        var trailingZeroDisplay = GetOption(options, TrailingZeroDisplayKey,
-            ["auto", "stripIfInteger"], false, "auto");
-        return (roundingIncrement, roundingMode, roundingModeName, roundingPriority, trailingZeroDisplay);
-    }
+        var roundingPriority = (RoundingPriority)System.Array.IndexOf(RoundingPriorityNames,
+            GetOption(options, RoundingPriorityKey, RoundingPriorityNames, false, "auto"));
+        var trailingZeroDisplay = (TrailingZeroDisplay)System.Array.IndexOf(TrailingZeroDisplayNames,
+            GetOption(options, TrailingZeroDisplayKey, TrailingZeroDisplayNames, false, "auto"));
 
-    internal static JSObject SnapshotDigitOptions(JSObject options)
-    {
-        if (options == null)
-            return null;
+        var hasSd = !mnsd.IsUndefined || !mxsd.IsUndefined;
+        var hasFd = !mnfd.IsUndefined || !mxfd.IsUndefined;
+        var plan = DigitOptionRules.Plan(hasSd, hasFd, roundingPriority, notation);
+        int? minSd = null, maxSd = null, minFd = null, maxFd = null;
 
-        // Each digit option has a sanctioned [min, max] range (SetNumberFormatDigitOptions
-        // / GetNumberOption); a NaN or out-of-range value (e.g. maximumSignificantDigits: 0)
-        // is a RangeError. The original value is still snapshotted so downstream
-        // format/resolvedOptions reads observe the construction-time value. The snapshot
-        // has a null prototype: only the digits we explicitly capture are visible, so
-        // a property planted on Object.prototype can't bleed into the formatter.
-        var snapshot = new JSObject();
-        snapshot.SetPrototypeOf(Null.JSNull.Value);
-        foreach (var (name, min, max) in new (string, int, int)[]
+        // The conversions the plan selects, the minimum before the maximum.
+        if (plan.NeedSignificantDigits && hasSd)
         {
-            ("minimumIntegerDigits", 1, 21),
-            ("minimumFractionDigits", 0, 100),
-            ("maximumFractionDigits", 0, 100),
-            ("minimumSignificantDigits", 1, 21),
-            ("maximumSignificantDigits", 1, 21),
-        })
-        {
-            var key = KeyStrings.GetOrCreate(name);
-            var value = options[key];
-            if (value != null && !value.IsUndefined)
-            {
-                var number = value.DoubleValue;
-                if (double.IsNaN(number) || number < min || number > max)
-                    throw JSEngine.NewRangeError($"Invalid {key} option");
-
-                snapshot.FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
-            }
+            minSd = DefaultNumberOption(mnsd, 1, 21, 1, MinimumSignificantDigitsKey);
+            maxSd = DefaultNumberOption(mxsd, minSd!.Value, 21, 21, MaximumSignificantDigitsKey);
         }
 
-        return snapshot;
+        if (plan.NeedFractionDigits && hasFd)
+        {
+            minFd = DefaultNumberOption(mnfd, 0, 100, null, MinimumFractionDigitsKey);
+            maxFd = DefaultNumberOption(mxfd, 0, 100, null, MaximumFractionDigitsKey);
+        }
+
+        var values = new DigitOptionValues(mnid, hasSd, minSd, maxSd, hasFd, minFd, maxFd, roundingIncrement,
+            roundingMode, roundingPriority, trailingZeroDisplay);
+
+        return DigitOptionRules.SetNumberFormatDigitOptions(values, defaults, notation, out var digits) switch
+        {
+            IntlStatus.Completed => digits!,
+            IntlStatus.RoundingIncrementNeedsFractionDigits => throw JSEngine.NewTypeError(
+                "roundingIncrement may only be used with fractionDigits rounding (roundingPriority \"auto\" and no significant-digit options)"),
+            IntlStatus.RoundingIncrementNeedsEqualFractionDigits => throw JSEngine.NewRangeError("maximumFractionDigits is not equal to minimumFractionDigits"),
+            IntlStatus.FractionDigitsOutOfOrder => throw JSEngine.NewRangeError("minimumFractionDigits is greater than maximumFractionDigits"),
+            _ => throw JSEngine.NewRangeError("roundingIncrement value is out of range."),
+        };
+    }
+
+    private static readonly KeyString MinimumIntegerDigitsKey = KeyStrings.GetOrCreate("minimumIntegerDigits");
+    private static readonly KeyString MinimumFractionDigitsKey = KeyStrings.GetOrCreate("minimumFractionDigits");
+    private static readonly KeyString MaximumFractionDigitsKey = KeyStrings.GetOrCreate("maximumFractionDigits");
+    private static readonly KeyString MinimumSignificantDigitsKey = KeyStrings.GetOrCreate("minimumSignificantDigits");
+    private static readonly KeyString MaximumSignificantDigitsKey = KeyStrings.GetOrCreate("maximumSignificantDigits");
+    private static readonly KeyString UseGroupingKey = KeyStrings.GetOrCreate("useGrouping");
+
+    // An option's value as Get reads it, undefined when the options are.
+    private static JSValue OptionValue(JSObject options, KeyString key)
+        => options == null ? JSUndefined.Value : options[key] ?? JSUndefined.Value;
+
+    // ECMA-402's DefaultNumberOption (sec-defaultnumberoption): ToNumber here, the range check and the floor the shared
+    // library's DigitOptionRules.DefaultNumberOption.
+    private static int? DefaultNumberOption(JSValue value, int minimum, int maximum, int? fallback, KeyString key)
+    {
+        if (value.IsUndefined)
+            return fallback;
+
+        if (DigitOptionRules.DefaultNumberOption(value.DoubleValue, minimum, maximum, out var result) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError($"Invalid {key} option");
+
+        return result;
+    }
+
+    // ECMA-402's GetBooleanOrStringNumberFormatOption for useGrouping (sec-getbooleanorstringnumberformatoption, and
+    // Intl.NumberFormat's step after it): true is "always", a value ToBoolean reads as false is the boolean false, the
+    // strings "true" and "false" are the default, and any other string outside « "min2", "auto", "always" » is a RangeError.
+    private static NumberGrouping GetUseGroupingOption(JSObject options, NumberGrouping fallback)
+    {
+        var value = OptionValue(options, UseGroupingKey);
+        if (value.IsUndefined)
+            return fallback;
+        if (value.IsBoolean && value.BooleanValue)
+            return NumberGrouping.Always;
+        if (!value.BooleanValue)
+            return NumberGrouping.Off;
+
+        var text = value.StringValue;
+        if (text is "true" or "false")
+            return fallback;
+
+        var index = System.Array.IndexOf(GroupingNames, text);
+        if (index < 0 || text == null)
+            throw JSEngine.NewRangeError("useGrouping value is not supported");
+
+        return (NumberGrouping)index;
+    }
+
+    // ECMA-402's ToIntlMathematicalValue (sec-tointlmathematicalvalue): ToPrimitive with the hint number here; the value is
+    // the shared library's IntlDecimal (sub-area (b)): a BigInt's digits, a String's exact decimal value (row M2a) read under
+    // this engine's unbounded BigInt policy, and a Number's Number::toString digits (row M1a, a correction: the double's
+    // binary value, ExactRational's, rounded where ECMA-402 rounds its decimal digits). A String the ToPrimitive gives is read
+    // as a String (row M1b, a correction).
+    internal static IntlDecimal ToIntlMathematicalValue(JSValue value)
+    {
+        value ??= JSUndefined.Value;
+        var primitive = value is JSObject @object ? @object.ToNumberPrimitive() : value;
+        if (primitive is BigInt.JSBigInt bigint)
+            return IntlDecimal.FromBigInt(bigint.value, null);
+        if (primitive.IsString)
+            return IntlDecimal.FromString(primitive.StringValue, BigIntPolicy.Unbounded, null);
+        if (primitive.IsSymbol)
+            throw JSEngine.NewTypeError("Cannot convert a Symbol value to a number");
+        return IntlDecimal.FromNumber(primitive.DoubleValue);
+    }
+
+    // ResolveLocale (sec-resolvelocale) over a CanonicalizeLocaleList result, wholly the shared library's: its matching
+    // steps over the available-locale provider (row L38), then its steps 5 to 12 over the service's relevant keys, each with
+    // the values the locale data gives the matched locale (SJL-9.5, task 8.4; these replace, for the services of sub-areas
+    // (b) and (c), ResolveLocaleFromCanonical's keyword filter and ResolveNumberingSystem's hand negotiation).
+    internal static ResolvedLocale ResolveLocale(JSValue canonicalLocales, Func<string, IReadOnlyList<RelevantKey>> relevantKeys)
+    {
+        var match = LocaleNegotiation.MatchLocale(
+            JSIntlLocaleProviders.AvailableLocales, RequestedLocales(canonicalLocales), JSIntlLocaleProviders.DefaultLocale);
+        return LocaleNegotiation.ResolveLocale(match, relevantKeys(match.Locale), JSIntlData.LocaleData);
+    }
+
+    // The relevant keys of the services that resolve none: ListFormat, DisplayNames and PluralRules.
+    internal static IReadOnlyList<RelevantKey> NoRelevantKey(string locale) => [];
+
+    // ResolveLocale for a service whose one relevant key is nu (NumberFormat, RelativeTimeFormat): the nu values of the
+    // matched locale's data, its default numbering system first (decision D13, row L22), with the numberingSystem option.
+    internal static ResolvedLocale ResolveNumberingSystemLocale(JSValue canonicalLocales, string numberingSystemOption)
+        => ResolveLocale(canonicalLocales, locale =>
+            [new RelevantKey("nu", NumberingSystemValues(locale)) { Option = numberingSystemOption }]);
+
+    // [[LocaleData]].[[<locale>]].[[nu]]: the locale's default numbering system from the data along its chain (latn where
+    // the data names none), then latn, then the data's others in code-unit order: the shared library's (decision D13).
+    internal static IReadOnlyList<string> NumberingSystemValues(string locale)
+        => NumberFormatter.NumberingSystemKeyValues(JSIntlData.LocaleData, JSIntlLocaleProviders.DataLocale(locale));
+
+    // The locale's default numbering system, the first of its nu values (decision D13, row L22), which replaces the
+    // JSIntlDefaultNumberingSystems table generated from CLDR 47.0.0.
+    internal static string DefaultNumberingSystem(string locale) => NumberingSystemValues(locale)[0];
+
+    // A numbering system's digit d (0 to 9) from the data's numbering-system table (ECMA-402 Table 12), or the ASCII digit
+    // for latn or a system the data does not hold; it replaces JSIntlNumberFormat's ContiguousDigitZero and AlgorithmicDigits
+    // tables and MapDigit (deleted 2026-11-08), for DateTimeFormat's digits until task 8.5 moves them.
+    internal static string NumberingSystemDigit(string numberingSystem, int d)
+        => numberingSystem is null or "latn" || JSIntlData.LocaleData.NumberingSystemDigits(numberingSystem) is not { Count: 10 } digits
+            ? ((char)('0' + d)).ToString()
+            : digits[d];
+
+    // The parts of a NumberFormat's formatToParts as (type, value) pairs, for Intl.DurationFormat's internals until task 8.6
+    // moves them onto the library's duration format.
+    internal static List<(string type, string value)> NumberParts(IReadOnlyList<NumberPart> parts)
+    {
+        var list = new List<(string, string)>(parts.Count);
+        foreach (var part in parts)
+            list.Add((part.Type, part.Value));
+        return list;
     }
 
     // ResolveLocale's matching steps (ECMA-402 sec-resolvelocale, steps 1 to 4) over a CanonicalizeLocaleList result, so the
@@ -1151,6 +1170,10 @@ public static class JSIntl
     //   DefaultHourCycle and Prefers11HourCycle with their tag parsers LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
     //   IsAllDigitSubtag (row T10);
     // - with the last of their readers: GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword.
+    // Noted 2026-11-08, at SJL-9.5 (task 8.4): NumberFormat and PluralRules resolve through the shared library's ResolveLocale (JSIntl.ResolveLocale, ResolveNumberingSystemLocale), each nu value
+    // the data's; ResolveNumberingSystem stays, its values now the data's (decision D13), for DateTimeFormat's (task 8.5) and
+    // DurationFormat's (task 8.6) readers alone. The Collator's co, kf and kn stay where they are: the brief for task 8.4
+    // gives the collator's move to SJL-17.5, so the item above assigned to task 8.4 waits on the Collator's own cut-over.
 
     // The relevant extension keys of the services that resolve none: ListFormat, Segmenter, DisplayNames and PluralRules.
     internal static readonly string[] NoRelevantKeys = [];
@@ -1248,6 +1271,9 @@ public static class JSIntl
     // ResolveLocale / reports from resolvedOptions. Algorithmic-only aliases ("native",
     // "traditio", "finance") are intentionally absent — they are not valid `-u-nu-`
     // values. Stored sorted (code-unit order) for supportedValuesOf.
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4): no service negotiates over this list any more, which also backed
+    // IsSupportedNumberingSystem and its HashSet (both deleted); a nu value is supported where the data's numbering-system
+    // table holds it (NumberingSystemValues). It stays for Intl.supportedValuesOf, which JSD-0082's X6 gives to sub-area (a).
     internal static readonly string[] SupportedNumberingSystemsSorted =
     [
         "adlm", "ahom", "arab", "arabext", "bali", "beng", "bhks", "brah", "cakm",
@@ -1261,9 +1287,6 @@ public static class JSIntl
         "telu", "thai", "tibt", "tirh", "tnsa", "tols", "vaii", "wara", "wcho",
     ];
 
-    private static readonly HashSet<string> SupportedNumberingSystems =
-        new(SupportedNumberingSystemsSorted, StringComparer.Ordinal);
-
     // AvailableCanonicalCalendars: the canonical calendar identifiers reported by
     // Intl.supportedValuesOf("calendar"), in code-unit (ascending) order. This is the set
     // required by the Intl era/monthCode additions; "islamic" and "islamic-rgsa" are
@@ -1275,9 +1298,6 @@ public static class JSIntl
         "indian", "islamic-civil", "islamic-tbla", "islamic-umalqura",
         "iso8601", "japanese", "persian", "roc",
     ];
-
-    internal static bool IsSupportedNumberingSystem(string value)
-        => value != null && SupportedNumberingSystems.Contains(value);
 
     // ResolveLocale's negotiation of the `nu` (numbering system) relevant key. Returns
     // the resolved numbering system and the resolved locale tag. Per spec: a supported
@@ -1323,25 +1343,29 @@ public static class JSIntl
         return JSIntlData.LocaleData.TryExtensionType('u', "ca", value, out var preferred) ? preferred : value;
     }
 
-    // Negotiates the resolved `nu` (numbering system) against the locale's `-u-nu-`
-    // extension, given the already-read numberingSystem option value. Per spec: a supported
-    // `-u-nu-` value is used and reflected in the locale; a supported option that DIFFERS
-    // overrides it and removes the `-u-nu-` from the locale; an unsupported value (in either
-    // place) falls through to the locale's default with `-u-nu-` removed. The default is CLDR's
-    // (JSIntlDefaultNumberingSystems): "arab" for ar-EG, "arabext" for fa, "latn" for en or ar.
+    // Negotiates the resolved `nu` (numbering system) against the locale's `-u-nu-` extension, given the already-read
+    // numberingSystem option value, for Intl.DateTimeFormat and Intl.DurationFormat until tasks 8.5 and 8.6 move them onto
+    // the library's ResolveLocale: a supported `-u-nu-` value is used and reflected in the locale; a supported option that
+    // differs overrides it and removes the `-u-nu-` from the locale; an unsupported value (in either place) falls through to
+    // the locale's default with `-u-nu-` removed.
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4; decision D13, row L22): "supported" and the default are the data's, the nu
+    // values NumberingSystemValues gives the locale, where the comment read "The default is CLDR's
+    // (JSIntlDefaultNumberingSystems): "arab" for ar-EG, "arabext" for fa, "latn" for en or ar." and the supported set was
+    // SupportedNumberingSystemsSorted.
     internal static (string NumberingSystem, string Locale) ResolveNumberingSystem(string localeTag, string optionValue)
     {
-        var value = JSIntlDefaultNumberingSystems.Of(localeTag);
+        var values = NumberingSystemValues(localeTag);
+        var value = values[0];
         var reflectInLocale = false;
 
         var ext = GetUnicodeExtensionType(localeTag, "nu");
-        if (IsSupportedNumberingSystem(ext))
+        if (ext != null && Contains(values, ext))
         {
             value = ext;
             reflectInLocale = true;
         }
 
-        if (optionValue != null && IsSupportedNumberingSystem(optionValue) &&
+        if (optionValue != null && Contains(values, optionValue) &&
             !string.Equals(optionValue, value, StringComparison.Ordinal))
         {
             value = optionValue;
@@ -1350,6 +1374,17 @@ public static class JSIntl
 
         var locale = reflectInLocale ? localeTag : RemoveUnicodeExtensionKeyword(localeTag, "nu");
         return (value, locale);
+
+        static bool Contains(IReadOnlyList<string> list, string item)
+        {
+            foreach (var candidate in list)
+            {
+                if (string.Equals(candidate, item, StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
+        }
     }
 
     // Negotiates the resolved `ca` (calendar) against the locale's `-u-ca-` extension, given the
@@ -2936,14 +2971,15 @@ public sealed class JSIntlLocale : JSObject
     public static JSValue GetHourCyclesPrototype(in Arguments a)
         => StringArray(LocaleInfo.HourCycles(RequireLocale(in a, "getHourCycles").record, JSIntlData.LocaleData));
 
-    // NumberingSystemsOfLocale: the nu keyword alone (row L15); else the default numbering system NumberFormat uses, which
-    // JSIntlDefaultNumberingSystems gives until SJL-9.5's task 8.4 moves it, and this method with it, onto the shared data
-    // (decision D13; row L22).
+    // NumberingSystemsOfLocale: the nu keyword alone (row L15); else the default numbering system of the Intl.NumberFormat
+    // locale the available locales match, from the shared data's defaultNumberingSystem along its chain, else latn: the
+    // shared library's LocaleInfo (decision D13; row L22). Revised 2026-11-08, at SJL-9.5 (task 8.4): the comment read
+    // "else the default numbering system NumberFormat uses, which JSIntlDefaultNumberingSystems gives until SJL-9.5's task
+    // 8.4 moves it, and this method with it, onto the shared data", and the method returned
+    // "locale.record.NumberingSystem ?? JSIntlDefaultNumberingSystems.Of(locale.record.Locale)".
     public static JSValue GetNumberingSystemsPrototype(in Arguments a)
-    {
-        var locale = RequireLocale(in a, "getNumberingSystems");
-        return StringArray([locale.record.NumberingSystem ?? JSIntlDefaultNumberingSystems.Of(locale.record.Locale)]);
-    }
+        => StringArray(LocaleInfo.NumberingSystems(RequireLocale(in a, "getNumberingSystems").record,
+            JSIntlLocaleProviders.AvailableLocales, JSIntlData.LocaleData));
 
     // TextDirectionOfLocale: the direction of the script or the likely script in CLDR's script metadata (row L24), and
     // undefined when none is known (row L25, a correction).
@@ -3037,32 +3073,32 @@ public sealed class JSIntlLocale : JSObject
         => value == null ? UndefinedValue : CreateString(value);
 }
 
+// Intl.PluralRules (ECMA-402 sec-pluralrules-objects) over the shared library's PluralRulesRecord (SJL-9.5, task 8.4,
+// sub-area (b); Broiler.VM's JSD-0082, decision D24). The constructor reads localeMatcher, type, notation, compactDisplay
+// and SetNumberFormatDigitOptions' options in the specification's order, each checked as it is read (rows P7 and M4,
+// corrections); ResolvePlural selects over FormatNumericToString's string (row P1, a correction), with the compact exponent
+// (decision D20), and ResolvePluralRange over CLDR's plural ranges (rows P5a and P5b); select and selectRange take
+// ToIntlMathematicalValue's value, a BigInt's included (row P2, a correction); resolvedOptions reports Table 32 in its order
+// (row P6, a correction). The categories and rules are the data home's, for every CLDR language (decision D5, row P3),
+// read along the data locale's parent chain (DataLocalePluralData), so pt-PT selects by pt-PT's rules.
+// The public members stay (decision SJL-D-25, disposition (a)); SelectCategory selects over its Number's value.
 public sealed class JSIntlPluralRules : JSObject
 {
-    private readonly string locale;
-    private readonly string type;
-    private readonly string notation;
-    private readonly JSObject digitOptions;
+    internal PluralRulesRecord Rules { get; }
 
     public JSIntlPluralRules(in Arguments a) : base(CurrentPrototype())
     {
         var options = JSIntl.ValidateConstructorArguments("PluralRules", in a, out var canonical);
-        locale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.NoRelevantKeys);
-        var typeKey = KeyStrings.GetOrCreate("type");
-        // GetOption reads the "type" getter exactly once and validates it against the sanctioned
-        // set, throwing a RangeError for any other value (e.g. "cardinal\0cookie") rather than
-        // silently accepting it (test262 sm/extensions/quote-string-for-nul-character).
-        type = JSIntl.GetOption(options, typeKey, ["cardinal", "ordinal"], false, "cardinal");
-        // notation precedes the digit options (SetNumberFormatDigitOptions) and is reported by
-        // resolvedOptions; the digit options are snapshotted once at construction.
-        notation = JSIntl.GetOption(options, KeyStrings.GetOrCreate("notation"),
-            ["standard", "scientific", "engineering", "compact"], false, "standard");
-        digitOptions = JSIntl.SnapshotDigitOptions(options);
-        // SetNumberFormatDigitOptions also reads roundingIncrement, roundingMode,
-        // roundingPriority and trailingZeroDisplay (after the digit options); reading them
-        // keeps the observable option order spec-compliant and validates each value.
-        if (options != null)
-            JSIntl.ReadRoundingOptions(options);
+        var resolved = JSIntl.ResolveLocale(canonical, JSIntl.NoRelevantKey);
+        var type = JSIntl.GetOption(options, KeyStrings.GetOrCreate("type"), ["cardinal", "ordinal"], false, "cardinal");
+        var notation = (NumberNotation)System.Array.IndexOf(JSIntl.NotationNames,
+            JSIntl.GetOption(options, KeyStrings.GetOrCreate("notation"), JSIntl.NotationNames, false, "standard"));
+        var compactDisplay = (CompactDisplay)System.Array.IndexOf(JSIntl.CompactDisplayNames,
+            JSIntl.GetOption(options, KeyStrings.GetOrCreate("compactDisplay"), JSIntl.CompactDisplayNames, false, "short"));
+        var digitOptions = JSIntl.SetNumberFormatDigitOptions(options, new FractionDigitDefaults(0, 3), notation);
+        var dataLocale = JSIntlLocaleProviders.DataLocale(resolved.DataLocale);
+        Rules = PluralRulesRecord.Create(DataLocalePluralData.For(dataLocale), resolved.Locale, dataLocale,
+            type == "ordinal" ? PluralRuleType.Ordinal : PluralRuleType.Cardinal, notation, compactDisplay, digitOptions);
     }
 
     private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.PluralRules");
@@ -3072,1467 +3108,202 @@ public sealed class JSIntlPluralRules : JSObject
     private static JSObject CurrentPrototype()
         => Intrinsics.IntlPrototype(IntrinsicKey);
 
-    // ResolvePlural: maps a number to its CLDR plural category using the per-locale
-    // rules generated from cldr-json (UnicodeCldr.LocaleData). Non-finite numbers,
-    // and locales with no rules, resolve to "other".
+    // ResolvePlural of a Number: the plural category of FormatNumericToString's string under the resolved digit options.
     public string SelectCategory(double n)
-        => CldrLocaleData.SelectPlural(locale, type, n, exponent: CompactExponent(n));
+        => Rules.ResolvePlural(IntlDecimal.FromNumber(n), null).PluralCategory;
 
-    // The c/e plural operand: the compact-notation exponent of the number (0 for every other
-    // notation). CLDR short/long compact buckets step in powers of one thousand (K=10³,
-    // M=10⁶, …); a magnitude below 1000 has exponent 0.
-    private int CompactExponent(double n)
-    {
-        if (notation != "compact")
-            return 0;
-        var abs = Math.Abs(n);
-        if (!(abs >= 1000) || !double.IsFinite(abs))
-            return 0;
-        var e = 3 * (int)Math.Floor(Math.Log10(abs) / 3);
-        return Math.Min(e, 14);
-    }
+    internal static JSIntlPluralRules Of(JSValue thisValue, string member)
+        => thisValue as JSIntlPluralRules
+            ?? throw JSEngine.NewTypeError($"Intl.PluralRules.prototype.{member} called on incompatible receiver");
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlPluralRules @this)
-            throw JSEngine.NewTypeError("Intl.PluralRules.prototype.resolvedOptions called on incompatible receiver");
-
-        var digits = @this.digitOptions;
-        JSValue Digit(string name, int fallback)
-        {
-            var v = digits?[KeyStrings.GetOrCreate(name)];
-            return v == null || v.IsUndefined ? CreateNumber(fallback) : v;
-        }
-        bool HasDigit(string name) => digits != null && !digits[KeyStrings.GetOrCreate(name)].IsUndefined;
-
-        // Spec resolvedOptions order: locale, type, notation, minimumIntegerDigits, then the
-        // fraction-digit or significant-digit pair (significant digits override when supplied),
-        // then pluralCategories.
+        var rules = Of(a.This, "resolvedOptions").Rules;
+        var digits = rules.DigitOptions;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(@this.type));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), CreateString(@this.notation));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), Digit("minimumIntegerDigits", 1));
 
-        if (HasDigit("minimumSignificantDigits") || HasDigit("maximumSignificantDigits"))
+        void PutNumber(string name, int? value)
         {
-            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumSignificantDigits"), Digit("minimumSignificantDigits", 1));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumSignificantDigits"), Digit("maximumSignificantDigits", 21));
-        }
-        else
-        {
-            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), Digit("minimumFractionDigits", 0));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), Digit("maximumFractionDigits", 3));
+            if (value is not null)
+                result.CreateDataProperty(KeyStrings.GetOrCreate(name), CreateNumber(value.Value));
         }
 
-        var pluralCategories = CreateArray();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("pluralCategories"), pluralCategories);
-        if (pluralCategories is JSObject array)
-        {
-            foreach (var category in CldrLocaleData.GetPluralCategories(@this.locale, @this.type))
-                array.AddArrayItem(CreateString(category));
-        }
+        // Table 32, in its order.
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(rules.Locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(rules.Type == PluralRuleType.Ordinal ? "ordinal" : "cardinal"));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), CreateString(JSIntl.NotationNames[(int)rules.Notation]));
+        if (rules.Notation == NumberNotation.Compact)
+            result.CreateDataProperty(KeyStrings.GetOrCreate("compactDisplay"), CreateString(JSIntl.CompactDisplayNames[(int)rules.CompactDisplay]));
+        PutNumber("minimumIntegerDigits", digits.MinimumIntegerDigits);
+        PutNumber("minimumFractionDigits", digits.MinimumFractionDigits);
+        PutNumber("maximumFractionDigits", digits.MaximumFractionDigits);
+        PutNumber("minimumSignificantDigits", digits.MinimumSignificantDigits);
+        PutNumber("maximumSignificantDigits", digits.MaximumSignificantDigits);
 
+        var categories = CreateArray();
+        foreach (var category in rules.PluralCategories)
+            categories.AddArrayItem(CreateString(category));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("pluralCategories"), categories);
+        JSIntlNumberFormat.PutDigitTail(result, digits);
         return result;
     }
 }
 
-internal sealed class JSIntlNumberFormatResolved
-{
-    public JSIntlNumberFormatResolved(string notation, string signDisplay, string compactDisplay, string unitDisplay)
-    {
-        Notation = notation;
-        SignDisplay = signDisplay;
-        CompactDisplay = compactDisplay;
-        UnitDisplay = unitDisplay;
-    }
-
-    // notation and signDisplay always have a resolved value; compactDisplay and
-    // unitDisplay are null unless the corresponding slot exists (notation is
-    // "compact" / style is "unit").
-    public string Notation { get; }
-    public string SignDisplay { get; }
-    public string CompactDisplay { get; }
-    public string UnitDisplay { get; }
-
-    // Snapshot of the fraction/integer/significant digit options, read from the
-    // options bag exactly once during construction (SetNumberFormatDigitOptions),
-    // so a getter on e.g. minimumFractionDigits fires once at construction rather
-    // than on every format/resolvedOptions call.
-    public JSObject DigitOptions { get; set; }
-
-    // SetNumberFormatDigitOptions rounding slots. These always have a resolved value
-    // (their defaults), so resolvedOptions reflects them unconditionally.
-    public int RoundingIncrement { get; set; } = 1;
-    public RoundingMode RoundingMode { get; set; } = RoundingMode.HalfExpand;
-    public string RoundingModeName { get; set; } = "halfExpand";
-    public string RoundingPriority { get; set; } = "auto";
-    public string TrailingZeroDisplay { get; set; } = "auto";
-
-    // GetUseGroupingOption: the resolved useGrouping value, always one of "auto",
-    // "always", "min2", or "false" (the sentinel for boolean false). resolvedOptions
-    // maps "false" back to the boolean and the formatter drives grouping from it.
-    public string UseGrouping { get; set; } = "auto";
-}
-
+// Intl.NumberFormat (ECMA-402 sec-numberformat-objects) over the shared library's NumberFormatter (SJL-9.5, task 8.4,
+// sub-area (c); Broiler.VM's JSD-0082, decision D24): the constructor reads every option once, in the specification's order
+// (JSIntl.CreateNumberFormatter), and the record does the rest - the digit options and FormatNumericToString (sub-area (b)),
+// compact, scientific and engineering notation in every style with ComputeExponent over the exact value, currency, unit
+// and percent patterns, currency spacing and names, sign display, the numbering system's digits and symbols, ranges with
+// their collapse, and the parts - over the data home's CLDR 48.2.0 tables (decisions D5, D13 and D21), with the host's
+// number symbols for a locale the shared data lacks (decision D6). The engine keeps ToIntlMathematicalValue's ToPrimitive,
+// a range's undefined ends, the bound format and its caching (row N11, a correction), and the parts arrays.
+// Deleted with the engine's own formatter (2026-11-08): ExactRational, ExactMagnitude, TryParseExactDecimal,
+// FormatFiniteMagnitude, FormatNumericToString, RoundFractionDigits, RoundSignificantDigits, RoundWithPriority, RoundFixed,
+// RawPrecisionDigits, ToRawPrecision, ComputeExponent, CompareToPowerOfTen, FormatScientificEngineering, FormatMantissa,
+// FormatCompact, FormatCompactMantissa, CompactMagnitude, GetCompactUnits, LocaleHasRegion and the CompactUnits* tables,
+// BuildDigitParts, AppendIntegerParts, SplitIntoGroups, AssemblePlainParts, AssembleCurrencyParts, AssemblePercentParts,
+// AssembleUnitParts, AppendUnitText, MapNumberingSystemDigits, MapDigit with ContiguousDigitZero and AlgorithmicDigits,
+// ComputeRangeParts, CoerceRangeOperand, CoerceRangeValue, ResolveFractionDigits, DefaultFractionDigits, ReadIntOption,
+// HasOption, Culture, GroupSeparator, DecimalSeparator, NanSymbol, StyleOption, CurrencySignOption, ResolveCurrency,
+// CanonicalCurrencyValue, ReadStringOption and UnsignedRounding. Its public members stay (decision SJL-D-25, disposition (a)).
 public class JSIntlNumberFormat : JSObject
 {
-    private readonly string locale;
-    private readonly string numberingSystem;
-    private JSObject options;
-    private JSIntlNumberFormatResolved resolved;
+    internal NumberFormatter Formatter { get; private set; }
+
+    // [[BoundFormat]]: made the first time the format getter reads it (row N11).
+    internal JSFunction BoundFormat { get; set; }
 
     public JSIntlNumberFormat(in Arguments a) : this()
     {
-        options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, out var canonical, requireNew: false);
-        // ECMA-402 InitializeNumberFormat reads the numberingSystem option immediately
-        // after localeMatcher and ahead of the style/currency/digit options, so its
-        // getter must fire here — before ValidateNumberFormatOptions — rather than at
-        // the locale-negotiation step below (test262 NumberFormat
-        // constructor-numberingSystem-order, constructor-option-read-order).
-        var nuOption = JSIntl.ReadNumberingSystemOption(options);
-        resolved = JSIntl.ValidateNumberFormatOptions(options);
-        var resolvedLocale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.NumberFormatRelevantKeys);
-        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(resolvedLocale, nuOption);
+        var options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, out var canonical, requireNew: false);
+        Formatter = JSIntl.CreateNumberFormatter(canonical, options);
     }
 
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
 
     public JSValue Format(in Arguments a)
-    {
-        var sb = new StringBuilder();
-        foreach (var (_, value) in ComputeFormatParts(a.Get1()))
-            sb.Append(value);
-        return CreateString(sb.ToString());
-    }
+        => CreateString(Formatter.Format(JSIntl.ToIntlMathematicalValue(a.Get1()), null));
+
+    internal static JSIntlNumberFormat Of(JSValue thisValue, string member)
+        => thisValue as JSIntlNumberFormat
+            ?? throw JSEngine.NewTypeError($"Intl.NumberFormat.prototype.{member} called on incompatible receiver");
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlNumberFormat @this)
-            throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatToParts called on incompatible receiver");
-
-        var typeKey = KeyStrings.GetOrCreate("type");
-        var valueKey = KeyStrings.GetOrCreate("value");
-        var parts = CreateArray();
-        foreach (var (type, value) in @this.ComputeFormatParts(a.Get1()))
-        {
-            var part = new JSObject();
-            part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
-            part.FastAddValue(valueKey, CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
-            parts.AddArrayItem(part);
-        }
-        return parts;
+        var @this = Of(a.This, "formatToParts");
+        return PartsArray(@this.Formatter.FormatToParts(JSIntl.ToIntlMathematicalValue(a.Get1()), null), withSource: false);
     }
 
-    // Builds the ordered sign/number parts for format / formatToParts. Implements
-    // the spec sign-display selection (auto/always/never/exceptZero/negative) over
-    // the rounded magnitude, with special handling for NaN and ±Infinity. The sign
-    // is decided from the rounded value, so a value that rounds to zero counts as a
-    // signed zero for "auto"/"always" but is treated as unsigned for "exceptZero"
-    // and "negative".
+    // The (type, value) parts of a value, for Intl.DurationFormat and Intl.RelativeTimeFormat's callers until their
+    // own moves (task 8.6).
     internal List<(string type, string value)> ComputeFormatParts(JSValue value)
-    {
-        // A BigInt operand is converted via its exact magnitude (BigIntValue truncates to Int64 and
-        // overflows for large values); ToNumber gives the nearest double.
-        var x = value != null && value.IsBigInt
-            ? Broiler.ECMAScript.Numbers.BigIntMath.ToNumber(((BigInt.JSBigInt)value).value, null)
-            : (value ?? JSUndefined.Value).DoubleValue;
-
-        // ECMA-402 ToIntlMathematicalValue: a string or BigInt operand is formatted from its
-        // exact decimal value, not from the nearest double (so format("1.15") rounds the real
-        // 1.15, and a large BigInt keeps every digit). The double above is retained only as an
-        // approximation for sign, notation exponents and plural selection.
-        var (exactNum, exactDen) = ExactMagnitude(value, x);
-
-        var style = StyleOption();
-        var isCurrency = style == "currency";
-        var isUnit = style == "unit";
-        var isPercent = style == "percent";
-        var currency = isCurrency ? ResolveCurrency() : default;
-
-        // ECMA-402 §15.5.13 PartitionNumberPattern step 13.b: when style is "percent", the
-        // mathematical value is multiplied by 100 before being formatted. The percent literal
-        // is appended by AssemblePercentParts below in the locale's pattern position.
-        if (isPercent && !double.IsNaN(x) && !double.IsInfinity(x))
-        {
-            x *= 100;
-            exactNum *= 100;
-        }
-
-        var signDisplay = resolved?.SignDisplay ?? "auto";
-        var isNaN = double.IsNaN(x);
-        var isInfinity = double.IsInfinity(x);
-        var signBit = !isNaN && double.IsNegative(x);
-
-        List<(string, string)> magnitude;
-        bool roundedIsZero;
-        if (isNaN)
-        {
-            magnitude = [("nan", NanSymbol())];
-            roundedIsZero = false;
-        }
-        else if (isInfinity)
-        {
-            magnitude = [("infinity", CldrLocaleData.InfinitySymbol)];
-            roundedIsZero = false;
-        }
-        else if (isCurrency)
-        {
-            magnitude = FormatFiniteMagnitude(exactNum, exactDen, currency.FractionDigits, currency.FractionDigits, signBit, out roundedIsZero);
-        }
-        else
-        {
-            var notation = resolved?.Notation ?? "standard";
-            if (notation == "scientific" || notation == "engineering")
-                magnitude = FormatScientificEngineering(Math.Abs(x), notation == "engineering", signBit, out roundedIsZero);
-            else if (notation == "compact")
-                magnitude = FormatCompact(Math.Abs(x), signBit, out roundedIsZero);
-            else
-                magnitude = FormatFiniteMagnitude(exactNum, exactDen, 0, 3, signBit, out roundedIsZero);
-        }
-
-        var negativeNonZero = signBit && !roundedIsZero;
-        var positiveNonZero = !signBit && !isNaN && !roundedIsZero;
-
-        var sign = signDisplay switch
-        {
-            "never" => null,
-            "always" => signBit ? "-" : "+",
-            "exceptZero" => negativeNonZero ? "-" : positiveNonZero ? "+" : null,
-            "negative" => negativeNonZero ? "-" : null,
-            _ => signBit ? "-" : null, // "auto"
-        };
-
-        List<(string, string)> assembled;
-        if (isCurrency)
-            assembled = AssembleCurrencyParts(magnitude, sign, currency);
-        else
-        {
-            var plain = AssemblePlainParts(magnitude, sign);
-            if (isUnit)
-                assembled = AssembleUnitParts(plain, x);
-            else if (isPercent)
-                assembled = AssemblePercentParts(plain);
-            else
-                assembled = plain;
-        }
-
-        return MapNumberingSystemDigits(assembled);
-    }
-
-    // Exact non-negative magnitude (|value|) used for rounding, as num/den. BigInt and
-    // numeric-string operands keep their full precision; every other operand uses the exact
-    // value of the double ToNumber result. Non-finite operands return 0 (they take the
-    // NaN/Infinity path before this is consulted).
-    private static (BigInteger num, BigInteger den) ExactMagnitude(JSValue value, double approx)
-    {
-        if (value != null && value.IsBigInt)
-            return (BigInteger.Abs(((BigInt.JSBigInt)value).value), BigInteger.One);
-        if (value != null && value.IsString
-            && TryParseExactDecimal(value.StringValue, out var num, out var den))
-            return (num, den);
-        if (double.IsNaN(approx) || double.IsInfinity(approx))
-            return (BigInteger.Zero, BigInteger.One);
-        return ExactRational(Math.Abs(approx));
-    }
-
-    // Parses the magnitude of a JS numeric string into an exact rational num/den (den a
-    // power of ten): StringIntlMV (ECMA-402) of a StringNumericLiteral. Supports optional sign,
-    // decimal point, exponent, and the 0x/0o/0b non-decimal integer forms. Returns false (caller
-    // falls back to the double value) for anything it does not recognise, e.g. "Infinity" or a
-    // non-numeric string.
-    private static bool TryParseExactDecimal(string s, out BigInteger num, out BigInteger den)
-    {
-        num = BigInteger.Zero;
-        den = BigInteger.One;
-        // The StrWhiteSpace the literal may have around it is the specification's set, the shared
-        // library's (SJL-4.5): U+FEFF is in it, and U+0085, which .NET's Trim removed, is not.
-        s = NumberParsing.TrimStrWhiteSpace(s, TrimEnds.Both).ToString();
-        if (s.Length == 0)
-            return true; // empty / whitespace string is the mathematical value 0
-        if (s[0] is '+' or '-')
-            s = s[1..]; // magnitude only; the sign is taken from the double approximation
-        if (s.Length == 0)
-            return false;
-
-        // NonDecimalIntegerLiteral: its MV is StringToBigInt's (7.1.14) of the same text, the shared
-        // library's BigIntText.StringToBigInt (SJL-4.5): the prefix, then one or more of the radix's
-        // digits, without a sign or a separator.
-        if (s.Length > 2 && s[0] == '0' && s[1] is 'x' or 'X' or 'o' or 'O' or 'b' or 'B')
-            return BigIntText.StringToBigInt(s, BigIntPolicy.Unbounded, null, out num, out _) == Broiler.ECMAScript.ResultStatus.Completed;
-
-        var exp = 0;
-        var eIdx = s.IndexOfAny(['e', 'E']);
-        if (eIdx >= 0)
-        {
-            if (!int.TryParse(s[(eIdx + 1)..], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out exp))
-                return false;
-            s = s[..eIdx];
-        }
-
-        var dot = s.IndexOf('.');
-        var intPart = dot < 0 ? s : s[..dot];
-        var fracPart = dot < 0 ? string.Empty : s[(dot + 1)..];
-        if (intPart.Length == 0 && fracPart.Length == 0)
-            return false;
-        foreach (var c in intPart)
-            if (c is < '0' or > '9') return false;
-        foreach (var c in fracPart)
-            if (c is < '0' or > '9') return false;
-
-        var digits = intPart + fracPart;
-        var n = digits.Length == 0 ? BigInteger.Zero : BigInteger.Parse(digits, CultureInfo.InvariantCulture);
-        var e10 = exp - fracPart.Length;
-        if (e10 >= 0)
-            num = n * BigInteger.Pow(10, e10);
-        else
-        {
-            num = n;
-            den = BigInteger.Pow(10, -e10);
-        }
-        return true;
-    }
-
-    // Wraps the assembled number in the locale's percent pattern (e.g. "n%" / "n %" / "%n").
-    // The literal between the number and the percent sign — when the pattern has one (e.g.
-    // de-DE's "n %") — is emitted as a "literal" part so formatToParts surfaces it.
-    private List<(string, string)> AssemblePercentParts(List<(string, string)> plain)
-    {
-        var symbol = Culture().NumberFormat.PercentSymbol;
-        // .NET's PercentPositivePattern values:
-        //   0 = "n %", 1 = "n%", 2 = "%n", 3 = "% n"
-        var pattern = Culture().NumberFormat.PercentPositivePattern;
-        var parts = new List<(string, string)>(plain.Count + 2);
-        if (pattern == 2 || pattern == 3)
-        {
-            parts.Add(("percentSign", symbol));
-            if (pattern == 3)
-                parts.Add(("literal", " "));
-            parts.AddRange(plain);
-        }
-        else
-        {
-            parts.AddRange(plain);
-            if (pattern == 0)
-                parts.Add(("literal", " "));
-            parts.Add(("percentSign", symbol));
-        }
-        return parts;
-    }
-
-    // Translates the ASCII digits produced by the formatter into the resolved
-    // numbering system's digits (e.g. "arab" 0-9 → ٠-٩, "hanidec" → 〇一二…). Only the
-    // numeric digit-bearing parts are remapped; separators, symbols and literals keep
-    // the locale's characters.
-    private List<(string, string)> MapNumberingSystemDigits(List<(string, string)> parts)
-    {
-        if (numberingSystem == null || numberingSystem == "latn")
-            return parts;
-
-        for (var i = 0; i < parts.Count; i++)
-        {
-            var (type, value) = parts[i];
-            if (type is not ("integer" or "fraction" or "exponentInteger"))
-                continue;
-
-            var sb = new StringBuilder(value.Length);
-            foreach (var c in value)
-                sb.Append(c is >= '0' and <= '9' ? MapDigit(numberingSystem, c - '0') : c.ToString());
-            parts[i] = (type, sb.ToString());
-        }
-
-        return parts;
-    }
-
-    // CLDR numbering systems whose digits 0-9 are a contiguous code-point range, keyed by the code
-    // point of digit zero. Covers every numbering system with a simple digit mapping (the "latn" and
-    // non-contiguous "hanidec" systems are handled separately), so Intl.NumberFormat renders the
-    // correct script digits rather than falling back to ASCII (test262 NumberFormat/.../numbering-systems).
-    private static readonly Dictionary<string, int> ContiguousDigitZero = new()
-    {
-        ["adlm"] = 0x1E950, ["ahom"] = 0x11730, ["arab"] = 0x0660, ["arabext"] = 0x06F0,
-        ["bali"] = 0x1B50, ["beng"] = 0x09E6, ["bhks"] = 0x11C50, ["brah"] = 0x11066,
-        ["cakm"] = 0x11136, ["cham"] = 0xAA50, ["deva"] = 0x0966, ["diak"] = 0x11950,
-        ["fullwide"] = 0xFF10, ["gara"] = 0x10D40, ["gong"] = 0x11DA0, ["gonm"] = 0x11D50,
-        ["gujr"] = 0x0AE6, ["gukh"] = 0x16130, ["guru"] = 0x0A66, ["hmng"] = 0x16B50,
-        ["hmnp"] = 0x1E140, ["java"] = 0xA9D0, ["kali"] = 0xA900, ["kawi"] = 0x11F50,
-        ["khmr"] = 0x17E0, ["knda"] = 0x0CE6, ["krai"] = 0x16D70, ["lana"] = 0x1A80,
-        ["lanatham"] = 0x1A90, ["laoo"] = 0x0ED0, ["lepc"] = 0x1C40, ["limb"] = 0x1946,
-        ["mathbold"] = 0x1D7CE, ["mathdbl"] = 0x1D7D8, ["mathmono"] = 0x1D7F6,
-        ["mathsanb"] = 0x1D7EC, ["mathsans"] = 0x1D7E2, ["mlym"] = 0x0D66, ["modi"] = 0x11650,
-        ["mong"] = 0x1810, ["mroo"] = 0x16A60, ["mtei"] = 0xABF0, ["mymr"] = 0x1040,
-        ["mymrepka"] = 0x116DA, ["mymrpao"] = 0x116D0, ["mymrshan"] = 0x1090,
-        ["mymrtlng"] = 0xA9F0, ["nagm"] = 0x1E4F0, ["newa"] = 0x11450, ["nkoo"] = 0x07C0,
-        ["olck"] = 0x1C50, ["onao"] = 0x1E5F1, ["orya"] = 0x0B66, ["osma"] = 0x104A0,
-        ["outlined"] = 0x1CCF0, ["rohg"] = 0x10D30, ["saur"] = 0xA8D0, ["segment"] = 0x1FBF0,
-        ["shrd"] = 0x111D0, ["sind"] = 0x112F0, ["sinh"] = 0x0DE6, ["sora"] = 0x110F0,
-        ["sund"] = 0x1BB0, ["sunu"] = 0x11BF0, ["takr"] = 0x116C0, ["talu"] = 0x19D0,
-        ["tamldec"] = 0x0BE6, ["telu"] = 0x0C66, ["thai"] = 0x0E50, ["tibt"] = 0x0F20,
-        ["tirh"] = 0x114D0, ["tnsa"] = 0x16AC0, ["tols"] = 0x11DE0, ["vaii"] = 0xA620,
-        ["wara"] = 0x118E0, ["wcho"] = 0x1E2F0,
-    };
-
-    // Numbering systems whose digits are not a contiguous range.
-    private static readonly Dictionary<string, string[]> AlgorithmicDigits = new()
-    {
-        ["hanidec"] = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"],
-    };
-
-    internal static string MapDigit(string numberingSystem, int d)
-    {
-        if (AlgorithmicDigits.TryGetValue(numberingSystem, out var glyphs))
-            return glyphs[d];
-        if (ContiguousDigitZero.TryGetValue(numberingSystem, out var zero))
-            return char.ConvertFromUtf32(zero + d);
-        return ((char)('0' + d)).ToString();
-    }
-
-    private static List<(string, string)> AssemblePlainParts(List<(string, string)> magnitude, string sign)
-    {
-        var parts = new List<(string, string)>();
-        if (sign == "-")
-            parts.Add(("minusSign", "-"));
-        else if (sign == "+")
-            parts.Add(("plusSign", "+"));
-        parts.AddRange(magnitude);
-        return parts;
-    }
-
-    // Wraps the formatted number in the locale's CLDR unit pattern (e.g. "{0} m"),
-    // choosing the plural-category variant from the number. The text around the
-    // "{0}" placeholder is split into "unit" parts (the unit name) and "literal"
-    // parts (surrounding whitespace). The unit identifier and display come from the
-    // options; the patterns are generated CLDR data (UnicodeCldr.LocaleData).
-    private List<(string, string)> AssembleUnitParts(List<(string, string)> numberParts, double x)
-    {
-        var unit = ReadStringOption("unit", string.Empty);
-        var display = resolved?.UnitDisplay ?? "short";
-        var category = CldrLocaleData.SelectPlural(locale, "cardinal", x);
-        var pattern = CldrLocaleData.GetUnitPattern(locale, unit, display, category);
-
-        var placeholder = pattern.IndexOf("{0}", StringComparison.Ordinal);
-        if (placeholder < 0)
-            return numberParts;
-
-        var parts = new List<(string, string)>();
-        AppendUnitText(parts, pattern[..placeholder]);
-        parts.AddRange(numberParts);
-        AppendUnitText(parts, pattern[(placeholder + 3)..]);
-        return parts;
-    }
-
-    // Splits a unit-pattern fragment into leading/trailing whitespace ("literal")
-    // and the unit name ("unit").
-    private static void AppendUnitText(List<(string, string)> parts, string text)
-    {
-        if (text.Length == 0)
-            return;
-
-        var start = 0;
-        while (start < text.Length && char.IsWhiteSpace(text[start]))
-            start++;
-        var end = text.Length;
-        while (end > start && char.IsWhiteSpace(text[end - 1]))
-            end--;
-
-        if (start > 0)
-            parts.Add(("literal", text[..start]));
-        if (end > start)
-            parts.Add(("unit", text[start..end]));
-        if (end < text.Length)
-            parts.Add(("literal", text[end..]));
-    }
-
-    // Lays out the currency symbol around the number core and applies the sign.
-    // For the "accounting" currencySign a negative is wrapped in parentheses in
-    // locales that use that convention (en/ja/ko/zh); locales like de-DE use a
-    // leading minus sign instead. A plus sign (signDisplay) is always prepended.
-    private List<(string, string)> AssembleCurrencyParts(List<(string, string)> magnitude, string sign, CldrCurrencyFormat currency)
-    {
-        var core = new List<(string, string)>();
-        if (currency.SymbolAfterNumber)
-        {
-            core.AddRange(magnitude);
-            if (currency.SpacingBetweenNumberAndSymbol.Length > 0)
-                core.Add(("literal", currency.SpacingBetweenNumberAndSymbol));
-            core.Add(("currency", currency.Symbol));
-        }
-        else
-        {
-            core.Add(("currency", currency.Symbol));
-            core.AddRange(magnitude);
-        }
-
-        var useAccountingParens = sign == "-" && CurrencySignOption() == "accounting" && currency.AccountingUsesParentheses;
-        var parts = new List<(string, string)>();
-        if (useAccountingParens)
-        {
-            parts.Add(("literal", "("));
-            parts.AddRange(core);
-            parts.Add(("literal", ")"));
-            return parts;
-        }
-
-        if (sign == "-")
-            parts.Add(("minusSign", "-"));
-        else if (sign == "+")
-            parts.Add(("plusSign", "+"));
-        parts.AddRange(core);
-        return parts;
-    }
-
-    // Formats a finite magnitude in scientific ("3.45E-4") or engineering ("345E-6")
-    // notation. The exponent is chosen so the mantissa lies in [1,10) for scientific
-    // or [1,1000) (with the exponent a multiple of 3) for engineering; the mantissa is
-    // then formatted with the usual digit rules and an "E"+digits exponent
-    // suffix is appended as exponentSeparator / exponentMinusSign / exponentInteger
-    // parts.
-    private List<(string, string)> FormatScientificEngineering(double absX, bool engineering, bool negative, out bool roundedIsZero)
-    {
-        var minFrac = ReadIntOption("minimumFractionDigits", 0);
-        var maxFrac = ReadIntOption("maximumFractionDigits", 3);
-        if (maxFrac < minFrac)
-            maxFrac = minFrac;
-
-        var exponent = ComputeExponent(absX, engineering);
-        var (intDigits, fracDigits) = FormatMantissa(absX, exponent, minFrac, maxFrac, negative, out roundedIsZero);
-
-        // ComputeExponent (ECMA-402): a mantissa that ROUNDS to its upper bound bumps the exponent
-        // (9.99 -> 10 in scientific, 999.9 -> 1000 in engineering, under "halfExpand"). Whether it does
-        // is the formatter's own rounding of the mantissa, under the resolved roundingMode, increment and
-        // digit options, whose choice is the shared library's: under "floor" 9.99 stays 9.9. (The
-        // platform's away-from-zero Math.Round decided this before milestone SJL-4.5.)
-        if (intDigits.TrimStart('0').Length > (engineering ? 3 : 1))
-        {
-            exponent += engineering ? 3 : 1;
-            (intDigits, fracDigits) = FormatMantissa(absX, exponent, minFrac, maxFrac, negative, out roundedIsZero);
-        }
-
-        var result = BuildDigitParts(intDigits, fracDigits, ReadIntOption("minimumIntegerDigits", 1));
-        result.Add(("exponentSeparator", "E"));
-        if (exponent < 0)
-            result.Add(("exponentMinusSign", "-"));
-        result.Add(("exponentInteger", Math.Abs(exponent).ToString(CultureInfo.InvariantCulture)));
-        return result;
-    }
-
-    // The mantissa x × 10^-exponent of the Number's exact value x, kept exact as compact notation
-    // keeps its reduced value, and rounded once by FormatNumericToString. (A double quotient
-    // absX / 10^exponent rounded it twice wherever 10^exponent is not a double, below 10^0 and
-    // above 10^22.)
-    private (string intDigits, string fracDigits) FormatMantissa(
-        double absX, int exponent, int minFrac, int maxFrac, bool negative, out bool roundedIsZero)
-    {
-        var (num, den) = ExactRational(absX);
-        if (exponent >= 0)
-            den *= BigInteger.Pow(10, exponent);
-        else
-            num *= BigInteger.Pow(10, -exponent);
-
-        return FormatNumericToString(num, den, minFrac, maxFrac, negative, out roundedIsZero);
-    }
-
-    // Compact decimal units (descending by exponent) for the CJK locales exercised
-    // by test262. Each entry is (power-of-ten boundary, suffix); the suffix is shared
-    // by short and long compactDisplay in these locales. Intermediate powers (e.g.
-    // 10^5..10^7 for ja) reuse the lower unit, so the divisor is the largest unit
-    // whose exponent does not exceed the value's magnitude.
-    // English (short) compact scale: 10^3 K, 10^6 M, 10^9 B, 10^12 T. Ordered largest-first
-    // so the FormatCompact loop picks the largest unit not exceeding the value's magnitude.
-    private static readonly (int Exp, string Suffix)[] CompactUnitsEn = [(12, "T"), (9, "B"), (6, "M"), (3, "K")];
-    // English long compact words (compactDisplay: "long"); the number and word are separated
-    // by a literal space (CLDR "0 thousand" / "0 million" / …).
-    private static readonly (int Exp, string Suffix)[] CompactUnitsEnLong =
-        [(12, "trillion"), (9, "billion"), (6, "million"), (3, "thousand")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsJa = [(12, "兆"), (8, "億"), (4, "万")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsKo = [(12, "조"), (8, "억"), (4, "만"), (3, "천")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsZhHant = [(12, "兆"), (8, "億"), (4, "萬")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsZhHans = [(12, "兆"), (8, "亿"), (4, "万")];
-    // German compact (CLDR de). The SHORT form has no thousands abbreviation — values below a
-    // million are shown in full (98765 → "98.765") — and starts compacting at 10^6 ("0 Mio." /
-    // "0 Mrd." / "0 Bio."), joining with a NO-BREAK SPACE. The LONG form does abbreviate
-    // thousands ("0 Tausend" / "0 Million(en)" / "0 Milliarde(n)" / "0 Billion(en)") with an
-    // ordinary space.
-    private static readonly (int Exp, string Suffix)[] CompactUnitsDe = [(12, "Bio."), (9, "Mrd."), (6, "Mio.")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsDeLong =
-        [(12, "Billionen"), (9, "Milliarden"), (6, "Millionen"), (3, "Tausend")];
-    // English (India) uses the Indian numbering scale: lakh (10^5) and crore (10^7)
-    // instead of million/billion (CLDR en-IN short "0K"/"0L"/"0Cr", long
-    // "0 thousand"/"0 lakh"/"0 crore"). Ordered largest-first like the others.
-    private static readonly (int Exp, string Suffix)[] CompactUnitsEnIn = [(7, "Cr"), (5, "L"), (3, "K")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsEnInLong =
-        [(7, "crore"), (5, "lakh"), (3, "thousand")];
-
-    // True when the locale's region subtag is the given two-letter region (the first
-    // 2-alpha subtag after the language, skipping any 4-letter script subtag).
-    private static bool LocaleHasRegion(string tag, string region)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return false;
-        var parts = tag.Split('-');
-        for (var i = 1; i < parts.Length; i++)
-        {
-            var p = parts[i];
-            if (p.Length == 2 && char.IsLetter(p[0]) && char.IsLetter(p[1]))
-                return string.Equals(p, region, StringComparison.OrdinalIgnoreCase);
-        }
-        return false;
-    }
-
-    private static (int Exp, string Suffix)[] GetCompactUnits(string localeTag, bool longForm)
-    {
-        var tag = localeTag ?? string.Empty;
-        var dash = tag.IndexOf('-');
-        var language = (dash < 0 ? tag : tag[..dash]).ToLowerInvariant();
-        switch (language)
-        {
-            case "en":
-                if (LocaleHasRegion(tag, "IN"))
-                    return longForm ? CompactUnitsEnInLong : CompactUnitsEnIn;
-                return longForm ? CompactUnitsEnLong : CompactUnitsEn;
-            case "de":
-                return longForm ? CompactUnitsDeLong : CompactUnitsDe;
-            case "ja":
-                return CompactUnitsJa;
-            case "ko":
-                return CompactUnitsKo;
-            case "zh":
-                var lower = tag.ToLowerInvariant();
-                var isTraditional = lower.Contains("hant") || lower.Contains("-tw")
-                    || lower.Contains("-hk") || lower.Contains("-mo");
-                return isTraditional ? CompactUnitsZhHant : CompactUnitsZhHans;
-            default:
-                return null;
-        }
-    }
-
-    // Compact notation (notation: "compact"). The value is divided by the largest
-    // applicable compact unit and rounded with the default ECMA-402 "morePrecision"
-    // rule: the more precise of {maximumFractionDigits 0} and {maximumSignificantDigits
-    // 2}. That reduces to: when the reduced value's integer magnitude is ≤ 1 (i.e.
-    // < 100) keep 2 significant digits, otherwise round to an integer. The locale's
-    // compact suffix is appended as a "compact" part. Compact numbers are not grouped
-    // (CLDR useGrouping "min2": the ≤4-digit reduced values stay ungrouped). Only the
-    // CJK locales with embedded data are compacted; others fall back to standard
-    // formatting (unchanged behaviour).
-    private List<(string, string)> FormatCompact(double absX, bool negative, out bool roundedIsZero)
-    {
-        var isLong = resolved?.CompactDisplay == "long";
-        var units = GetCompactUnits(locale, isLong);
-        var (num, den) = ExactRational(absX);
-        if (units == null)
-            return FormatFiniteMagnitude(num, den, 0, 3, negative, out roundedIsZero);
-
-        string suffix = null;
-        var reduced = absX;
-        if (absX > 0 && !double.IsInfinity(absX))
-        {
-            var magnitude = CompactMagnitude(absX);
-            foreach (var (exp, sfx) in units)
-            {
-                if (magnitude >= exp)
-                {
-                    reduced = absX / Math.Pow(10, exp);
-                    // The value rounded is x × 10^-exp exactly (1150 is 1.15K, not the double 1.149…).
-                    den *= BigInteger.Pow(10, exp);
-                    suffix = sfx;
-                    break;
-                }
-            }
-        }
-
-        int maxFrac;
-        if (HasOption("maximumFractionDigits"))
-        {
-            maxFrac = ReadIntOption("maximumFractionDigits", 0);
-        }
-        else
-        {
-            // morePrecision default: keep 2 significant digits while the value is
-            // below 100, otherwise round to an integer.
-            var m = CompactMagnitude(reduced);
-            maxFrac = m <= 1 ? Math.Max(0, 1 - m) : 0;
-        }
-
-        var parts = FormatCompactMantissa(num, den, maxFrac, negative, out roundedIsZero);
-        if (suffix != null)
-        {
-            // CLDR compact patterns that include a literal space between the number and the
-            // suffix word: English long ("988 million"), and both German forms ("988 Mio." /
-            // "988 Millionen"). CJK suffixes and English short ("988M") have no space. The
-            // German *short* pattern joins with a NO-BREAK SPACE (U+00A0); the long forms use
-            // an ordinary space.
-            if (ReferenceEquals(units, CompactUnitsDe))
-                parts.Add(("literal", " "));
-            else if (ReferenceEquals(units, CompactUnitsEnLong)
-                || ReferenceEquals(units, CompactUnitsDeLong))
-                parts.Add(("literal", " "));
-            parts.Add(("compact", suffix));
-        }
-        return parts;
-    }
-
-    private static int CompactMagnitude(double v)
-    {
-        if (v <= 0 || double.IsNaN(v) || double.IsInfinity(v))
-            return 0;
-
-        var m = (int)Math.Floor(Math.Log10(v));
-        if (Math.Pow(10, m) > v)
-            m--;
-        else if (Math.Pow(10, m + 1) <= v)
-            m++;
-        return m;
-    }
-
-    // Formats the reduced compact value num/den (integer + optional fraction parts),
-    // trimming trailing fraction zeros. It is rounded to maxFrac fraction digits (at most 15)
-    // by ToRawFixed under the resolved roundingMode and increment, whose choice is the shared
-    // library's (the platform's away-from-zero Math.Round rounded it before milestone SJL-4.5, so
-    // "floor" formatted 1990 as "2K").
-    private List<(string, string)> FormatCompactMantissa(
-        BigInteger num, BigInteger den, int maxFrac, bool negative, out bool roundedIsZero)
-    {
-        var (intDigits, fracDigits, isZero) = RoundFixed(
-            num, den, 0, Math.Clamp(maxFrac, 0, 15), resolved?.RoundingIncrement ?? 1, UnsignedRounding(negative));
-        roundedIsZero = isZero;
-
-        intDigits = intDigits.TrimStart('0');
-        if (intDigits.Length == 0)
-            intDigits = "0";
-
-        // The compact integer is grouped with the resolved (CLDR "min2" by default) grouping —
-        // most compact values are abbreviated to ≤4 digits and stay ungrouped, but a locale that
-        // leaves a range uncompacted (German short: 98765 → "98.765") still groups it.
-        var result = new List<(string, string)>();
-        AppendIntegerParts(result, intDigits);
-        if (fracDigits.Length > 0)
-        {
-            result.Add(("decimal", DecimalSeparator()));
-            result.Add(("fraction", fracDigits));
-        }
-
-        return result;
-    }
-
-    // ComputeExponentForMagnitude over floor(log10(x)) of the Number's exact value x: scientific
-    // keeps the raw base-10 magnitude; engineering rounds it down to a multiple of 3. The magnitude
-    // is the exact value's, as the exact mantissa FormatMantissa formats needs, not the double
-    // powers of ten's: the Number 1e23 is below 10^23, so its magnitude is 22.
-    private static int ComputeExponent(double absX, bool engineering)
-    {
-        if (absX == 0 || double.IsNaN(absX) || double.IsInfinity(absX))
-            return 0;
-
-        var (num, den) = ExactRational(absX);
-        var magnitude = (int)Math.Floor(Math.Log10(absX));
-        while (CompareToPowerOfTen(num, den, magnitude) < 0) magnitude--;       // 10^magnitude ≤ x
-        while (CompareToPowerOfTen(num, den, magnitude + 1) >= 0) magnitude++;  // x < 10^(magnitude+1)
-
-        return engineering ? (int)(Math.Floor(magnitude / 3.0) * 3) : magnitude;
-    }
-
-    // GetUnsignedRoundingMode (ECMA-402): the shared library's, for the resolved roundingMode
-    // ("halfExpand" when absent) and the value's sign. The engine's own UnsignedRoundingMode
-    // enumeration and GetUnsignedRoundingMode were removed at milestone SJL-4.5.
-    private UnsignedRoundingMode UnsignedRounding(bool negative)
-        => ExactRounding.GetUnsignedRoundingMode(resolved?.RoundingMode ?? RoundingMode.HalfExpand, negative);
-
-    // Exact non-negative rational value of a finite double, as num/den with den a power
-    // of two. Used so rounding decisions are made on the real mathematical value of the
-    // Number (e.g. 1.15 is really 1.14999…), exactly as ECMA-402 requires, rather than on
-    // a re-rounded decimal string.
-    private static (BigInteger num, BigInteger den) ExactRational(double x)
-    {
-        long bits = BitConverter.DoubleToInt64Bits(x);
-        int exponent = (int)((bits >> 52) & 0x7FF);
-        long fraction = bits & 0xFFFFFFFFFFFFFL;
-        BigInteger mantissa = exponent == 0 ? fraction : fraction | 0x10000000000000L;
-        // A subnormal's scale is the least normal one's, 2^-1074 per unit (its biased exponent
-        // field is 0, but it counts as 1).
-        if (exponent == 0)
-            exponent = 1;
-        exponent -= 1075; // remove the bias (1023) and the 52-bit fraction shift
-        if (mantissa.IsZero)
-            return (BigInteger.Zero, BigInteger.One);
-        return exponent >= 0
-            ? (mantissa << exponent, BigInteger.One)
-            : (mantissa, BigInteger.One << -exponent);
-    }
-
-    // Sign of (num/den − 10^k): lets us pin down floor(log10(x)) exactly.
-    private static int CompareToPowerOfTen(BigInteger num, BigInteger den, int k)
-        => k >= 0
-            ? num.CompareTo(BigInteger.Pow(10, k) * den)
-            : (num * BigInteger.Pow(10, -k)).CompareTo(den);
-
-    // ToRawFixed (ECMA-402): rounds the non-negative exact value num/den to a multiple of
-    // roundingIncrement·10^-maxFrac using the unsigned rounding mode, then returns the
-    // integer/fraction digit strings with trailing fraction zeros trimmed down to minFrac.
-    // The candidates n1 and n2 are the multiples of the increment just below and above
-    // x · 10^maxFrac, and the shared library's ApplyUnsignedRoundingMode picks one exactly
-    // (the engine's own RoundRatio decided it before milestone SJL-4.5).
-    private static (string intDigits, string fracDigits, bool isZero) RoundFixed(
-        BigInteger num, BigInteger den, int minFrac, int maxFrac, int increment, UnsignedRoundingMode mode)
-    {
-        var value = num * BigInteger.Pow(10, maxFrac);
-        var n1 = BigInteger.Divide(value, den * increment) * increment;
-        var scaled = ExactRounding.ApplyUnsignedRoundingMode(value, den, n1, n1 + increment, mode);
-        var s = scaled.ToString(CultureInfo.InvariantCulture);
-
-        if (maxFrac == 0)
-            return (s, string.Empty, scaled.IsZero);
-
-        if (s.Length <= maxFrac)
-            s = s.PadLeft(maxFrac + 1, '0');
-        var intDigits = s[..^maxFrac];
-        var fracDigits = s[^maxFrac..];
-        while (fracDigits.Length > minFrac && fracDigits.EndsWith('0'))
-            fracDigits = fracDigits[..^1];
-        return (intDigits, fracDigits, scaled.IsZero);
-    }
-
-    // ToRawPrecision core (ECMA-402): rounds the non-negative exact value num/den (> 0) to
-    // maxSig significant digits using the unsigned rounding mode and returns the
-    // significant-digit string (trailing zeros trimmed to minSig) together with the exponent
-    // e of its most-significant digit.
-    private static (string digits, int e) RawPrecisionDigits(
-        BigInteger num, BigInteger den, int minSig, int maxSig, UnsignedRoundingMode mode)
-    {
-        var e = (int)Math.Floor(BigInteger.Log10(num) - BigInteger.Log10(den));
-        while (CompareToPowerOfTen(num, den, e) < 0) e--;       // ensure 10^e ≤ x
-        while (CompareToPowerOfTen(num, den, e + 1) >= 0) e++;  // ensure x < 10^(e+1)
-
-        var k = maxSig - 1 - e;
-        BigInteger a, b;
-        if (k >= 0) { a = num * BigInteger.Pow(10, k); b = den; }
-        else { a = num; b = den * BigInteger.Pow(10, -k); }
-
-        // n1 and n2 = n1 + 1 are the candidates in units of 10^(e − maxSig + 1); the shared library's
-        // ApplyUnsignedRoundingMode picks one exactly.
-        var n1 = BigInteger.Divide(a, b);
-        var digits = ExactRounding.ApplyUnsignedRoundingMode(a, b, n1, n1 + 1, mode).ToString(CultureInfo.InvariantCulture);
-        if (digits.Length > maxSig)
-        {
-            // Rounding carried into a new most-significant digit (e.g. 9.99 → 10).
-            e += digits.Length - maxSig;
-            digits = digits[..maxSig];
-        }
-
-        var sig = digits.Length;
-        while (sig > minSig && digits[sig - 1] == '0')
-            sig--;
-        return (digits[..sig], e);
-    }
-
-    private List<(string, string)> FormatFiniteMagnitude(
-        BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, bool negative, out bool roundedIsZero)
-    {
-        var (intDigits, fracDigits) = FormatNumericToString(num, den, defaultMinFrac, defaultMaxFrac, negative, out roundedIsZero);
-        return BuildDigitParts(intDigits, fracDigits, ReadIntOption("minimumIntegerDigits", 1));
-    }
-
-    // FormatNumericToString (ECMA-402): the integer and fraction digits the non-negative exact value
-    // num/den rounds to under the resolved digit options, rounding mode and increment.
-    private (string intDigits, string fracDigits) FormatNumericToString(
-        BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, bool negative, out bool roundedIsZero)
-    {
-        var priority = resolved?.RoundingPriority ?? "auto";
-        var hasSig = HasOption("minimumSignificantDigits") || HasOption("maximumSignificantDigits");
-        var mode = UnsignedRounding(negative);
-
-        // roundingPriority "morePrecision"/"lessPrecision" resolve both a significant-digit
-        // and a fraction-digit rounding and pick between them; "auto" with significant-digit
-        // options uses significant digits; otherwise the fraction-digit rules apply.
-        if (priority is "morePrecision" or "lessPrecision")
-            return RoundWithPriority(num, den, defaultMinFrac, defaultMaxFrac, priority, mode, out roundedIsZero);
-        if (hasSig)
-            return RoundSignificantDigits(num, den, mode, out roundedIsZero);
-        return RoundFractionDigits(num, den, defaultMinFrac, defaultMaxFrac, mode, out roundedIsZero);
-    }
-
-    // roundingType fractionDigits: rounds to between minimumFractionDigits and
-    // maximumFractionDigits (honouring roundingIncrement and the rounding mode).
-    private (string intDigits, string fracDigits) RoundFractionDigits(
-        BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, UnsignedRoundingMode mode, out bool roundedIsZero)
-    {
-        var (minFrac, maxFrac) = ResolveFractionDigits(defaultMinFrac, defaultMaxFrac);
-        var increment = resolved?.RoundingIncrement ?? 1;
-
-        var (intDigits, fracDigits, isZero) = RoundFixed(num, den, minFrac, maxFrac, increment, mode);
-        roundedIsZero = isZero;
-        return (intDigits, fracDigits);
-    }
-
-    // roundingType significantDigits: rounds to at most maximumSignificantDigits and pads
-    // with trailing zeros up to minimumSignificantDigits.
-    private (string intDigits, string fracDigits) RoundSignificantDigits(
-        BigInteger num, BigInteger den, UnsignedRoundingMode mode, out bool roundedIsZero)
-    {
-        var minSig = ReadIntOption("minimumSignificantDigits", 1);
-        var maxSig = ReadIntOption("maximumSignificantDigits", 21);
-        if (maxSig < minSig)
-            maxSig = minSig;
-
-        roundedIsZero = num.IsZero;
-        return ToRawPrecision(num, den, minSig, maxSig, mode);
-    }
-
-    // FormatNumericToString morePrecision/lessPrecision: compute the significant-digit and
-    // fraction-digit roundings, compare their rounding magnitudes (significant: e−maxSig+1,
-    // fraction: −maxFrac), and keep the more (or less) precise of the two.
-    private (string intDigits, string fracDigits) RoundWithPriority(
-        BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, string priority,
-        UnsignedRoundingMode mode, out bool roundedIsZero)
-    {
-        var minSig = ReadIntOption("minimumSignificantDigits", 1);
-        var maxSig = ReadIntOption("maximumSignificantDigits", 21);
-        if (maxSig < minSig)
-            maxSig = minSig;
-        var (_, maxFrac) = ResolveFractionDigits(defaultMinFrac, defaultMaxFrac);
-
-        int sMagnitude;
-        if (num.IsZero)
-            sMagnitude = 1 - maxSig; // e = 0 for zero
-        else
-        {
-            var (_, e) = RawPrecisionDigits(num, den, minSig, maxSig, mode);
-            sMagnitude = e - maxSig + 1;
-        }
-        var fMagnitude = -maxFrac;
-
-        var fixedIsMorePrecise = fMagnitude < sMagnitude;
-        var useFixed = (priority == "morePrecision" && fixedIsMorePrecise)
-                    || (priority == "lessPrecision" && !fixedIsMorePrecise);
-
-        return useFixed
-            ? RoundFractionDigits(num, den, defaultMinFrac, defaultMaxFrac, mode, out roundedIsZero)
-            : RoundSignificantDigits(num, den, mode, out roundedIsZero);
-    }
-
-    // Shared assembly of the integer/fraction "parts" from already-rounded digit strings:
-    // strips leading integer zeros, pads to minimumIntegerDigits, and emits the grouped
-    // integer parts plus an optional decimal separator and fraction part.
-    private List<(string, string)> BuildDigitParts(string intDigits, string fracDigits, int minInt)
-    {
-        intDigits = intDigits.TrimStart('0');
-        if (intDigits.Length == 0)
-            intDigits = "0";
-        while (intDigits.Length < minInt)
-            intDigits = "0" + intDigits;
-
-        var result = new List<(string, string)>();
-        AppendIntegerParts(result, intDigits);
-        if (fracDigits.Length > 0)
-        {
-            result.Add(("decimal", DecimalSeparator()));
-            result.Add(("fraction", fracDigits));
-        }
-        return result;
-    }
-
-    // ToRawPrecision (ECMA-402): renders x with between minSig and maxSig significant
-    // digits using the unsigned rounding mode, returning the integer- and fraction-digit
-    // strings. The most significant digit sits at 10^e; trailing zeros are trimmed to minSig.
-    private (string intDigits, string fracDigits) ToRawPrecision(
-        BigInteger num, BigInteger den, int minSig, int maxSig, UnsignedRoundingMode mode)
-    {
-        if (num.IsZero)
-            return ("0", new string('0', Math.Max(0, minSig - 1)));
-
-        var (digits, e) = RawPrecisionDigits(num, den, minSig, maxSig, mode);
-
-        if (e >= 0)
-        {
-            var intLen = e + 1;
-            if (digits.Length <= intLen)
-                return (digits.PadRight(intLen, '0'), string.Empty);
-            return (digits[..intLen], digits[intLen..]);
-        }
-
-        return ("0", new string('0', -e - 1) + digits);
-    }
-
-    private void AppendIntegerParts(List<(string, string)> result, string intDigits)
-    {
-        var mode = resolved?.UseGrouping ?? "auto";
-
-        // The locale's grouping sizes (rightmost group first; the last entry repeats),
-        // e.g. [3] for en-US — 1,000,000 — and [3,2] for en-IN — 10,00,000.
-        var groups = SplitIntoGroups(intDigits, Culture().NumberFormat.NumberGroupSizes);
-
-        // The grouping decision is driven by how many integer digits lie to the LEFT of the
-        // rightmost (primary) grouping separator — not by the most-significant group's size,
-        // which differs under a multi-level grouping pattern such as en-IN's 3;2 (100000 →
-        // "1,00,000": leftmost group "1", but 3 digits precede the primary separator):
-        //   "false"  → never group;
-        //   "min2"   → group only when ≥ 2 digits precede the primary separator (1000 → "1000",
-        //              10000 → "10,000", en-IN 100000 → "1,00,000");
-        //   "auto"   → group when ≥ minimumGroupingDigits precede it (pl/es/it use 2);
-        //   "always" → group whenever there is more than one group.
-        var digitsBeforePrimary = intDigits.Length - groups[^1].Length;
-        var shouldGroup = groups.Count > 1 && mode switch
-        {
-            "false" => false,
-            "min2" => digitsBeforePrimary >= 2,
-            "always" => true,
-            _ => digitsBeforePrimary >= CldrLocaleData.MinimumGroupingDigits(locale),
-        };
-
-        if (!shouldGroup)
-        {
-            result.Add(("integer", intDigits));
-            return;
-        }
-
-        var groupSeparator = GroupSeparator();
-        for (var i = 0; i < groups.Count; i++)
-        {
-            if (i > 0)
-                result.Add(("group", groupSeparator));
-            result.Add(("integer", groups[i]));
-        }
-    }
-
-    // Splits an integer-digit string into locale groups, left to right. NumberGroupSizes
-    // lists group sizes from the right; the final entry repeats, and a trailing 0 means
-    // "no further grouping" (the remaining most-significant digits stay in one group).
-    private static List<string> SplitIntoGroups(string intDigits, int[] sizes)
-    {
-        var groups = new List<string>();
-        var pos = intDigits.Length;
-        var i = 0;
-        while (pos > 0)
-        {
-            var size = sizes.Length == 0 ? 0 : sizes[Math.Min(i, sizes.Length - 1)];
-            if (size <= 0)
-            {
-                groups.Insert(0, intDigits[..pos]);
-                break;
-            }
-            var start = Math.Max(0, pos - size);
-            groups.Insert(0, intDigits.Substring(start, pos - start));
-            pos = start;
-            i++;
-        }
-        return groups;
-    }
-
-    private string NanSymbol() => CldrLocaleData.NaNSymbol(locale);
-
-    // Digit options come from the construction-time snapshot (read once from the
-    // options bag), not the live options object, so format-time reads do not
-    // re-invoke option getters.
-    // SetNumberFormatDigitOptions fraction-digit resolution: when only one of the
-    // fraction-digit bounds is given, the other default is pulled toward it — a lone maximum
-    // lowers the default minimum (min(defaultMin, max)), a lone minimum raises the default
-    // maximum (max(defaultMax, min)). Used by both the formatter and resolvedOptions so they
-    // agree; the defaults are style-dependent (currency → its minor-unit digit count).
-    internal (int Min, int Max) ResolveFractionDigits(int defaultMinFrac, int defaultMaxFrac)
-    {
-        var hasMinFrac = HasOption("minimumFractionDigits");
-        var hasMaxFrac = HasOption("maximumFractionDigits");
-        if (hasMinFrac && hasMaxFrac)
-        {
-            var min = ReadIntOption("minimumFractionDigits", defaultMinFrac);
-            var max = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
-            return (min, Math.Max(max, min));
-        }
-        if (hasMaxFrac)
-        {
-            var max = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
-            return (Math.Min(defaultMinFrac, max), max);
-        }
-        if (hasMinFrac)
-        {
-            var min = ReadIntOption("minimumFractionDigits", defaultMinFrac);
-            return (min, Math.Max(defaultMaxFrac, min));
-        }
-        return (defaultMinFrac, defaultMaxFrac);
-    }
-
-    // The default fraction-digit bounds for the resolved style: currency uses the currency's
-    // CLDR minor-unit count (CurrencyDigits, default 2) for both bounds; every other style
-    // uses 0 … 3, matching the magnitude formatter.
-    private (int Min, int Max) DefaultFractionDigits()
-    {
-        // Compact notation switches the formatter into "compactRounding" mode (1-2
-        // significant digits) when no explicit fraction / significant options are present
-        // (ECMA-402 §15.5.4 SetNumberFormatDigitOptions step 17). The fraction-digit
-        // defaults collapse to 0/0 — both the currency's CLDR minor-unit digit count
-        // (e.g. KWD's 3) and the generic 0/3 cap are overridden.
-        if ((resolved?.Notation ?? "standard") == "compact")
-            return (0, 0);
-        // The currency's CLDR minor-unit digit count is only the default under "standard"
-        // notation. Scientific / engineering notation ignores it and uses the generic 0 … 3
-        // bounds (ECMA-402 SetNumberFormatDigitOptions passes mnfdDefault 0 / mxfdDefault 3
-        // unless style is currency *and* notation is standard).
-        if (StyleOption() == "currency" && (resolved?.Notation ?? "standard") == "standard")
-        {
-            var cDigits = ResolveCurrency().FractionDigits;
-            return (cDigits, cDigits);
-        }
-        return (0, 3);
-    }
-
-    private int ReadIntOption(string name, int fallback)
-    {
-        var snapshot = resolved?.DigitOptions;
-        if (snapshot == null)
-            return fallback;
-        var v = snapshot[KeyStrings.GetOrCreate(name)];
-        if (v == null || v.IsUndefined)
-            return fallback;
-        var d = v.DoubleValue;
-        return double.IsNaN(d) ? fallback : (int)d;
-    }
-
-    private bool HasOption(string name)
-    {
-        var snapshot = resolved?.DigitOptions;
-        if (snapshot == null)
-            return false;
-        var v = snapshot[KeyStrings.GetOrCreate(name)];
-        return v != null && !v.IsUndefined;
-    }
-
-    private CultureInfo Culture()
-    {
-        if (string.IsNullOrEmpty(locale))
-            return CultureInfo.InvariantCulture;
-        var tag = locale;
-        var uPos = tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase);
-        if (uPos >= 0)
-            tag = tag[..uPos];
-        try { return CultureInfo.GetCultureInfo(tag); }
-        catch (CultureNotFoundException) { return CultureInfo.InvariantCulture; }
-    }
-
-    private string GroupSeparator() => Culture().NumberFormat.NumberGroupSeparator;
-
-    private string DecimalSeparator() => Culture().NumberFormat.NumberDecimalSeparator;
-
-    private string StyleOption()
-    {
-        if (options == null)
-            return "decimal";
-        var v = options[KeyStrings.GetOrCreate("style")];
-        return v == null || v.IsUndefined ? "decimal" : v.StringValue;
-    }
-
-    private string CurrencySignOption()
-    {
-        if (options == null)
-            return "standard";
-        var v = options[KeyStrings.GetOrCreate("currencySign")];
-        return v == null || v.IsUndefined ? "standard" : v.StringValue;
-    }
-
-    // The locale-aware currency layout (symbol string, placement, negative
-    // convention and fraction digits) comes from the shared CLDR data library
-    // (UnicodeCldr.LocaleData) so the hand-curated tables live next to the other
-    // Unicode Consortium data and can later be generated from cldr-json.
-    private CldrCurrencyFormat ResolveCurrency()
-        => CldrLocaleData.ResolveCurrency(
-            locale,
-            ReadStringOption("currency", string.Empty).ToUpperInvariant(),
-            ReadStringOption("currencyDisplay", "symbol"));
-
-    // The currency option is canonicalized to upper case (CanonicalizeUCurrencyCode); the
-    // value has already been validated as a well-formed 3-letter code at construction time.
-    private static JSValue CanonicalCurrencyValue(JSValue currency)
-        => CreateString(currency.StringValue.ToUpperInvariant());
-
-    private string ReadStringOption(string name, string fallback)
-    {
-        if (options == null)
-            return fallback;
-        var v = options[KeyStrings.GetOrCreate(name)];
-        return v == null || v.IsUndefined ? fallback : v.StringValue;
-    }
+        => JSIntl.NumberParts(Formatter.FormatToParts(JSIntl.ToIntlMathematicalValue(value), null));
 
     public static JSValue FormatRangePrototype(in Arguments a)
     {
-        if (a.This is not JSIntlNumberFormat self)
-            throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatRange called on incompatible receiver");
-
-        var sb = new StringBuilder();
-        foreach (var (_, value, _) in self.ComputeRangeParts(a[0], a.GetAt(1)))
-            sb.Append(value);
-        return CreateString(sb.ToString());
+        var @this = Of(a.This, "formatRange");
+        var (x, y) = RangeValues(in a);
+        RangeCompleted(@this.Formatter.FormatRange(x, y, out var text, null));
+        return CreateString(text);
     }
 
     public static JSValue FormatRangeToPartsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlNumberFormat self)
-            throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatRangeToParts called on incompatible receiver");
+        var @this = Of(a.This, "formatRangeToParts");
+        var (x, y) = RangeValues(in a);
+        RangeCompleted(@this.Formatter.FormatRangeToParts(x, y, out var parts, null));
+        return PartsArray(parts, withSource: true);
+    }
 
+    // The two values of a range: both present, each converted, the start first.
+    private static (IntlDecimal X, IntlDecimal Y) RangeValues(in Arguments a)
+    {
+        var start = a.Get1();
+        var end = a.GetAt(1);
+        if (start == null || start.IsUndefined || end == null || end.IsUndefined)
+            throw JSEngine.NewTypeError("Invalid number range");
+
+        var x = JSIntl.ToIntlMathematicalValue(start);
+        var y = JSIntl.ToIntlMathematicalValue(end);
+        return (x, y);
+    }
+
+    // PartitionNumberRangePattern's refusal, step 1 (an end is not-a-number), as the RangeError it is.
+    private static void RangeCompleted(IntlStatus status)
+    {
+        if (status != IntlStatus.Completed)
+            throw JSEngine.NewRangeError("Invalid number range");
+    }
+
+    // An array of { type, value } objects, and source for a range's parts.
+    private static JSValue PartsArray(IReadOnlyList<NumberPart> parts, bool withSource)
+    {
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
         var sourceKey = KeyStrings.GetOrCreate("source");
-        var parts = CreateArray();
-        foreach (var (type, value, source) in self.ComputeRangeParts(a[0], a.GetAt(1)))
+        var array = CreateArray();
+        foreach (var part in parts)
         {
-            var part = new JSObject();
-            part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
-            part.FastAddValue(valueKey, CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
-            part.FastAddValue(sourceKey, CreateString(source), JSPropertyAttributes.EnumerableConfigurableValue);
-            parts.AddArrayItem(part);
-        }
-        return parts;
-    }
-
-    // PartitionNumberRangePattern (Intl.NumberFormat v3): format both endpoints, and
-    // when their formatted parts are identical render the single value prefixed by the
-    // approximately sign (every part shared); otherwise the start parts (source
-    // "startRange"), the locale range separator (shared) and the end parts (source
-    // "endRange").
-    internal List<(string type, string value, string source)> ComputeRangeParts(JSValue startValue, JSValue endValue)
-    {
-        var start = CoerceRangeOperand(startValue);
-        var end = CoerceRangeOperand(endValue);
-
-        var startParts = ComputeFormatParts(start);
-        var endParts = ComputeFormatParts(end);
-
-        static string Concat(List<(string, string)> parts)
-        {
-            var sb = new StringBuilder();
-            foreach (var (_, value) in parts)
-                sb.Append(value);
-            return sb.ToString();
+            var item = new JSObject();
+            item.FastAddValue(typeKey, CreateString(part.Type), JSPropertyAttributes.EnumerableConfigurableValue);
+            item.FastAddValue(valueKey, CreateString(part.Value), JSPropertyAttributes.EnumerableConfigurableValue);
+            if (withSource && part.Source is not null)
+                item.FastAddValue(sourceKey, CreateString(part.Source), JSPropertyAttributes.EnumerableConfigurableValue);
+            array.AddArrayItem(item);
         }
 
-        var result = new List<(string, string, string)>();
-        if (Concat(startParts) == Concat(endParts))
-        {
-            result.Add(("approximatelySign", "~", "shared"));
-            foreach (var (type, value) in startParts)
-                result.Add((type, value, "shared"));
-            return result;
-        }
-
-        // ICU-style range collapse (NumberRangeFormatter, COLLAPSE_AUTO): an affix that
-        // is identical at both endpoints is rendered once instead of on each side.
-        // - A shared *trailing* affix run (e.g. a currency/percent suffix) always
-        //   collapses, appearing once after the end value: `3 - 5 €` not `3 € - 5 €`.
-        // - A shared *leading* affix run collapses only when it begins with a sign, so
-        //   `signDisplay:"always"` gives `+$2.90–3.10` (the `+$` shared once) while a
-        //   lone currency prefix stays on both sides: `$3 – $5`.
-        // Number-core parts (integer/fraction/group/decimal) never collapse.
-        static bool IsAffix(string type)
-            => type is "currency" or "unit" or "literal" or "percentSign"
-                    or "plusSign" or "minusSign" or "compact";
-        static bool IsSign(string type) => type is "plusSign" or "minusSign";
-        static bool PartsEqual((string type, string value) a, (string type, string value) b)
-            => a.type == b.type && a.value == b.value;
-
-        var n1 = startParts.Count;
-        var n2 = endParts.Count;
-
-        var suffixCollapse = 0;
-        while (suffixCollapse < n1 && suffixCollapse < n2)
-        {
-            var p = startParts[n1 - 1 - suffixCollapse];
-            if (!PartsEqual(p, endParts[n2 - 1 - suffixCollapse]) || !IsAffix(p.type))
-                break;
-            suffixCollapse++;
-        }
-
-        var prefixShared = 0;
-        while (prefixShared < n1 - suffixCollapse && prefixShared < n2 - suffixCollapse)
-        {
-            var p = startParts[prefixShared];
-            if (!PartsEqual(p, endParts[prefixShared]) || !IsAffix(p.type))
-                break;
-            prefixShared++;
-        }
-        var prefixCollapse = prefixShared > 0 && IsSign(startParts[0].type) ? prefixShared : 0;
-
-        var startMiddle = startParts.GetRange(prefixCollapse, n1 - prefixCollapse - suffixCollapse);
-        var endMiddle = endParts.GetRange(prefixCollapse, n2 - prefixCollapse - suffixCollapse);
-
-        // The locale range separator (CLDR miscPatterns/range): en-dash for most locales,
-        // a spaced hyphen-minus for e.g. pt-PT. For a separator that the pattern leaves
-        // tight (no surrounding spaces), ICU's NumberRangeFormatter pads it with a space
-        // only when a non-digit (an affix) abuts it — so a collapsed or plain numeric
-        // boundary renders tight (`+$2.90–3.10`, `1–2`) while `$3 – $5` gets spaces. A
-        // pattern that already carries spaces (pt-PT) is always rendered spaced.
-        var (sepCore, sepSpaced) = CldrLocaleData.RangePattern(locale);
-        var startStr = Concat(startMiddle);
-        var endStr = Concat(endMiddle);
-        var leftDigit = startStr.Length > 0 && char.IsDigit(startStr[^1]);
-        var rightDigit = endStr.Length > 0 && char.IsDigit(endStr[0]);
-        var separator = sepSpaced || !leftDigit || !rightDigit ? " " + sepCore + " " : sepCore;
-
-        for (var i = 0; i < prefixCollapse; i++)
-            result.Add((startParts[i].type, startParts[i].value, "shared"));
-        foreach (var (type, value) in startMiddle)
-            result.Add((type, value, "startRange"));
-        result.Add(("literal", separator, "shared"));
-        foreach (var (type, value) in endMiddle)
-            result.Add((type, value, "endRange"));
-        for (var i = n1 - suffixCollapse; i < n1; i++)
-            result.Add((startParts[i].type, startParts[i].value, "shared"));
-        return result;
-    }
-
-    // ToIntlMathematicalValue with the range-specific guards: a missing operand or a
-    // Symbol is a TypeError, NaN a RangeError. Returns the coerced numeric value.
-    private static JSValue CoerceRangeOperand(JSValue value)
-    {
-        if (value == null || value.IsUndefined)
-            throw JSEngine.NewTypeError("Invalid number range");
-        if (value.IsSymbol)
-            throw JSEngine.NewTypeError("Cannot convert a Symbol value to a number");
-        if (value.IsBigInt)
-            return value;
-        if (double.IsNaN(value.DoubleValue))
-            throw JSEngine.NewRangeError("Invalid number range");
-        return value;
-    }
-
-    private static string CoerceRangeValue(JSValue value)
-    {
-        if (value == null || value.IsUndefined)
-            throw JSEngine.NewTypeError("Invalid number range");
-
-        // ToIntlMathematicalValue (ECMA-402): a Symbol operand cannot be coerced
-        // to a numeric value, so it is a TypeError rather than a formatted string.
-        if (value.IsSymbol)
-            throw JSEngine.NewTypeError("Cannot convert a Symbol value to a number");
-
-        if (value.IsNumber && double.IsNaN(value.DoubleValue))
-            throw JSEngine.NewRangeError("Invalid number range");
-
-        return value.ToString();
+        return array;
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlNumberFormat @this)
-            throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.resolvedOptions called on incompatible receiver");
-
+        var formatter = Of(a.This, "resolvedOptions").Formatter;
+        var digits = formatter.DigitOptions;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(@this.numberingSystem));
 
-        var styleKey = KeyStrings.GetOrCreate("style");
-        var style = @this.options is null || @this.options[styleKey].IsUndefined ? "decimal" : @this.options[styleKey].StringValue;
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(style));
-
-        if (@this.options != null)
+        void Put(string name, string value)
         {
-            var currencyKey = KeyStrings.GetOrCreate("currency");
-            var unitKey = KeyStrings.GetOrCreate("unit");
-            var useGroupingKey = KeyStrings.GetOrCreate("useGrouping");
-            var minimumIntegerDigitsKey = KeyStrings.GetOrCreate("minimumIntegerDigits");
-            var minimumFractionDigitsKey = KeyStrings.GetOrCreate("minimumFractionDigits");
-            var maximumFractionDigitsKey = KeyStrings.GetOrCreate("maximumFractionDigits");
-            var minimumSignificantDigitsKey = KeyStrings.GetOrCreate("minimumSignificantDigits");
-            var maximumSignificantDigitsKey = KeyStrings.GetOrCreate("maximumSignificantDigits");
-
-            // Spec order: currency, currencyDisplay, currencySign appear together (only when
-            // style is "currency"), each with its resolved value.
-            // A well-formed currency code is canonicalized to upper case (e.g. "usd" → "USD")
-            // before it is reflected by resolvedOptions.
-            if (style == "currency")
-            {
-                if (!@this.options[currencyKey].IsUndefined)
-                    result.CreateDataProperty(currencyKey, CanonicalCurrencyValue(@this.options[currencyKey]));
-                result.CreateDataProperty(KeyStrings.GetOrCreate("currencyDisplay"),
-                    CreateString(@this.ReadStringOption("currencyDisplay", "symbol")));
-                result.CreateDataProperty(KeyStrings.GetOrCreate("currencySign"),
-                    CreateString(@this.CurrencySignOption()));
-            }
-            // A currency option supplied without style:"currency" is validated at construction
-            // but is NOT reflected by resolvedOptions (ECMA-402 only emits currency/currencyDisplay/
-            // currencySign for the currency style).
-
-            // unit and unitDisplay sit together in the resolvedOptions table — after the currency
-            // group, before the digit options — and are subject to the mirror-image rule:
-            // SetNumberFormatUnitOptions sets [[Unit]] and [[UnitDisplay]] only when style is
-            // "unit", so a unit supplied under any other style is validated at construction and
-            // then dropped (test262 NumberFormat/constructor-unit.js asserts `"unit" in
-            // resolvedOptions()` is false for style:"percent", and constructor-unitDisplay.js
-            // asserts the same for unitDisplay).
-            if (style == "unit")
-            {
-                if (!@this.options[unitKey].IsUndefined)
-                    result.CreateDataProperty(unitKey, @this.options[unitKey]);
-                if (@this.resolved?.UnitDisplay != null)
-                    result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"),
-                        CreateString(@this.resolved.UnitDisplay));
-            }
-            // Digit options reflect the construction-time snapshot (read once),
-            // not the live options bag, so resolvedOptions does not re-trigger
-            // option getters.
-            var digits = @this.resolved?.DigitOptions;
-
-            if (digits != null && !digits[minimumIntegerDigitsKey].IsUndefined)
-                result.CreateDataProperty(minimumIntegerDigitsKey, digits[minimumIntegerDigitsKey]);
-            else
-                result.CreateDataProperty(minimumIntegerDigitsKey, CreateNumber(1));
-
-            // Fraction-digit reflection mirrors the formatter: the style-dependent defaults
-            // (currency → its minor-unit digit count) feed the SetNumberFormatDigitOptions
-            // resolution, so e.g. JPY reports 0/0 and USD 2/2 rather than the decimal 0/3.
-            var (defMinFrac, defMaxFrac) = @this.DefaultFractionDigits();
-            var (minFrac, maxFrac) = @this.ResolveFractionDigits(defMinFrac, defMaxFrac);
-            result.CreateDataProperty(minimumFractionDigitsKey, CreateNumber(minFrac));
-            result.CreateDataProperty(maximumFractionDigitsKey, CreateNumber(maxFrac));
-
-            // When either significant-digit option is supplied the other gets its
-            // SetNumberFormatDigitOptions default (minimum → 1, maximum → 21), so
-            // both are reported together.
-            var hasMinSig = digits != null && !digits[minimumSignificantDigitsKey].IsUndefined;
-            var hasMaxSig = digits != null && !digits[maximumSignificantDigitsKey].IsUndefined;
-            if (hasMinSig || hasMaxSig)
-            {
-                result.CreateDataProperty(minimumSignificantDigitsKey,
-                    hasMinSig ? digits[minimumSignificantDigitsKey] : CreateNumber(1));
-                result.CreateDataProperty(maximumSignificantDigitsKey,
-                    hasMaxSig ? digits[maximumSignificantDigitsKey] : CreateNumber(21));
-            }
-
-            // useGrouping always has a resolved value ("auto"/"always"/"min2", or boolean
-            // false); the spec places it after the digit options and before notation. The
-            // "false" sentinel maps back to the boolean.
-            var resolvedGrouping = @this.resolved?.UseGrouping ?? "auto";
-            result.CreateDataProperty(useGroupingKey,
-                resolvedGrouping == "false" ? BooleanFalse : CreateString(resolvedGrouping));
-        }
-        else
-        {
-            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), CreateNumber(1));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), CreateNumber(0));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), CreateNumber(3));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"), CreateString("auto"));
+            if (value is not null)
+                result.CreateDataProperty(KeyStrings.GetOrCreate(name), CreateString(value));
         }
 
-        // notation/signDisplay always have a resolved value; compactDisplay is
-        // reflected only when notation is "compact". Per the resolvedOptions table
-        // compactDisplay precedes signDisplay (test262 NumberFormat
-        // resolvedOptions/return-keys-order-default). These are read from the slots
-        // resolved at construction (not the live options object) so getter side
-        // effects observe construction-time order, not access.
-        var r = @this.resolved;
-        if (r != null)
+        void PutNumber(string name, int? value)
         {
-            result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), CreateString(r.Notation));
-            if (r.CompactDisplay != null)
-                result.CreateDataProperty(KeyStrings.GetOrCreate("compactDisplay"), CreateString(r.CompactDisplay));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("signDisplay"), CreateString(r.SignDisplay));
-
-            // SetNumberFormatDigitOptions rounding slots are always present (spec order:
-            // after notation/compactDisplay/signDisplay).
-            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingIncrement"), CreateNumber(r.RoundingIncrement));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingMode"), CreateString(r.RoundingModeName));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingPriority"), CreateString(r.RoundingPriority));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("trailingZeroDisplay"), CreateString(r.TrailingZeroDisplay));
+            if (value is not null)
+                result.CreateDataProperty(KeyStrings.GetOrCreate(name), CreateNumber(value.Value));
         }
 
+        // Table 15, in its order: each slot as the constructor resolved it, read back from the library's record.
+        Put("locale", formatter.Locale);
+        Put("numberingSystem", formatter.NumberingSystem);
+        Put("style", JSIntl.NumberStyleNames[(int)formatter.Style]);
+        Put("currency", formatter.Currency);
+        Put("currencyDisplay", formatter.CurrencyDisplay is { } currencyDisplay ? JSIntl.CurrencyDisplayNames[(int)currencyDisplay] : null);
+        Put("currencySign", formatter.CurrencySign is { } currencySign ? JSIntl.CurrencySignNames[(int)currencySign] : null);
+        Put("unit", formatter.Unit);
+        Put("unitDisplay", formatter.UnitDisplay is { } unitDisplay ? JSIntl.UnitDisplayNames[(int)unitDisplay] : null);
+        PutNumber("minimumIntegerDigits", digits.MinimumIntegerDigits);
+        PutNumber("minimumFractionDigits", digits.MinimumFractionDigits);
+        PutNumber("maximumFractionDigits", digits.MaximumFractionDigits);
+        PutNumber("minimumSignificantDigits", digits.MinimumSignificantDigits);
+        PutNumber("maximumSignificantDigits", digits.MaximumSignificantDigits);
+        result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"),
+            JSIntl.GroupingNames[(int)formatter.UseGrouping] is { } grouping ? CreateString(grouping) : BooleanFalse);
+        Put("notation", JSIntl.NotationNames[(int)formatter.Notation]);
+        Put("compactDisplay", formatter.CompactDisplay is { } compactDisplay ? JSIntl.CompactDisplayNames[(int)compactDisplay] : null);
+        Put("signDisplay", JSIntl.SignDisplayNames[(int)formatter.SignDisplay]);
+        PutDigitTail(result, digits);
         return result;
+    }
+
+    // The last four slots resolvedOptions reports of a number format or plural rules, in Table 15's and Table 32's order:
+    // roundingIncrement, roundingMode, roundingPriority (the computed one) and trailingZeroDisplay.
+    internal static void PutDigitTail(JSObject result, DigitOptions digits)
+    {
+        result.CreateDataProperty(KeyStrings.GetOrCreate("roundingIncrement"), CreateNumber(digits.RoundingIncrement));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("roundingMode"), CreateString(JSIntl.RoundingModeNames[(int)digits.RoundingMode]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("roundingPriority"), CreateString(JSIntl.RoundingPriorityNames[(int)digits.ComputedRoundingPriority]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("trailingZeroDisplay"), CreateString(JSIntl.TrailingZeroDisplayNames[(int)digits.TrailingZeroDisplay]));
     }
 
     private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.NumberFormat");
@@ -5619,7 +4390,7 @@ public class JSIntlDateTimeFormat : JSObject
             {
                 var sb = new StringBuilder(part.Value.Length);
                 foreach (var c in part.Value)
-                    sb.Append(c is >= '0' and <= '9' ? JSIntlNumberFormat.MapDigit(numberingSystem, c - '0') : c.ToString());
+                    sb.Append(c is >= '0' and <= '9' ? JSIntl.NumberingSystemDigit(numberingSystem, c - '0') : c.ToString());
                 mapped.Add(new JSIntlDateTimeFormatEngine.Part(part.Type, sb.ToString(), part.Source));
             }
             else if (part.Type == "literal" && part.Value == "."
@@ -5933,7 +4704,7 @@ public class JSIntlDateTimeFormat : JSObject
     {
         this.locale = locale;
         localeTag = locale.Name;
-        numberingSystem = JSIntlDefaultNumberingSystems.Of(localeTag);
+        numberingSystem = JSIntl.DefaultNumberingSystem(localeTag);
     }
 
     private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.DateTimeFormat");

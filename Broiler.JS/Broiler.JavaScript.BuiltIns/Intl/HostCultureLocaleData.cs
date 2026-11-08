@@ -42,6 +42,16 @@ namespace Broiler.JavaScript.BuiltIns.Intl;
 /// not name. Both answer "no data".
 /// </para>
 /// <para>
+/// <b>Revised 2026-11-08, at SJL-9.5 (task 8.4):</b> native digits do have a question, the number table's
+/// <c>defaultNumberingSystem</c> key, which the shared library reads for a locale's default numbering system (decision D13,
+/// row L22) now that the CLDR 47.0.0 table JSIntlDefaultNumberingSystems is deleted. The provider answers it for a host
+/// culture the shared data lacks: <c>latn</c> where the culture's <see cref="NumberFormatInfo.NativeDigits"/> are ASCII's,
+/// and otherwise the numbering system of the shared data's numbering-system table whose ten digits they are, or no data
+/// when none is (<c>ar-SA</c> answers <c>arab</c>, <c>bn</c> <c>beng</c>). The paragraph above read, of both items,
+/// "Both answer "no data"", and of native digits that ILocaleData.NumberingSystemDigits "is keyed by a numbering system
+/// .NET does not name"; it still holds for the first day of the week.
+/// </para>
+/// <para>
 /// <b>Every other question answers "no data"</b>, so the algorithm uses the parent or root: .NET has no plural, compact,
 /// unit, list, relative-time, display-name, interval or day-period data.
 /// </para>
@@ -131,6 +141,9 @@ internal sealed class HostCultureLocaleData : ILocaleData
     /// <inheritdoc/>
     public string? NumberValue(string locale, string key)
     {
+        if (key == "defaultNumberingSystem")
+            return DefaultNumberingSystem(locale);
+
         if (NumberFormat(locale) is not { } format)
             return null;
 
@@ -229,6 +242,33 @@ internal sealed class HostCultureLocaleData : ILocaleData
         {
             return null;
         }
+    }
+
+    // The numbering system a culture's native digits are (decision D6's native digits): latn for ASCII's, else the system of
+    // the shared data's table with the same ten digits, or null when the host has no culture or the table names none.
+    private string? DefaultNumberingSystem(string locale)
+    {
+        if (Culture(locale) is not { } culture || culture.NumberFormat.NativeDigits is not { Length: 10 } digits)
+            return null;
+
+        if (NumberFormat(locale) is not null)
+            return "latn";
+
+        var shared = JSIntlData.Shared;
+        foreach (var system in shared.NumberingSystems)
+        {
+            if (shared.NumberingSystemDigits(system) is not { Count: 10 } systemDigits)
+                continue;
+
+            var same = true;
+            for (var i = 0; i < 10 && same; i++)
+                same = string.Equals(systemDigits[i], digits[i], StringComparison.Ordinal);
+
+            if (same)
+                return system;
+        }
+
+        return null;
     }
 
     // The number format of a culture whose numbers are written in ASCII digits, the latn system the keys name.
