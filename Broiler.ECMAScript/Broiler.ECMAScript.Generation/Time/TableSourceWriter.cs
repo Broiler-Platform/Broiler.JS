@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   8
 // Annotated:        8/8
 // Exempt:           0
@@ -34,13 +34,13 @@ namespace Broiler.ECMAScript.Generation.Time;
 /// the namespace, the class, the header and the assurance lines - now comes from
 /// <see cref="TableSourceOptions"/>.
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=A4D2B2
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=A4D2B2
+// Hairs-Human:        PENDING
 internal static class TableSourceWriter
 {
     /// <summary>The usings, the namespace, the header, and the class's summary, annotation and opening brace.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=842AF6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=842AF6
+    // Hairs-Human:        PENDING
     internal static StringBuilder Open(TableSourceOptions options, string defaultSummary)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -63,8 +63,8 @@ internal static class TableSourceWriter
     }
 
     /// <summary>A string constant, followed by an empty line.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=6F5A4B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=6F5A4B
+    // Hairs-Human:        PENDING
     internal static void Constant(StringBuilder text, TableSourceOptions options, string name, string summary, string value)
     {
         Member(text, options, name, summary);
@@ -72,8 +72,8 @@ internal static class TableSourceWriter
     }
 
     /// <summary>A byte table, decimal bytes 32 to a line, each followed by a comma, followed by an empty line.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=8F99A3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=8F99A3
+    // Hairs-Human:        PENDING
     internal static void ByteTable(StringBuilder text, TableSourceOptions options, string name, string summary, ReadOnlySpan<byte> data)
     {
         Member(text, options, name, summary);
@@ -97,8 +97,8 @@ internal static class TableSourceWriter
     }
 
     /// <summary>A text table as a UTF-8 raw string literal, one source line per table line, followed by an empty line.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=F81332
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=F81332
+    // Hairs-Human:        PENDING
     internal static void TextTable(StringBuilder text, TableSourceOptions options, string name, string summary, ReadOnlySpan<byte> data)
     {
         Member(text, options, name, summary);
@@ -114,8 +114,8 @@ internal static class TableSourceWriter
     }
 
     /// <summary>The class's closing brace, after the last member's empty line is taken back.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=F84C24
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=F84C24
+    // Hairs-Human:        PENDING
     internal static string Close(StringBuilder text)
     {
         while (text.Length > 2 && text[^1] == '\n' && text[^2] == '\n')
@@ -128,8 +128,8 @@ internal static class TableSourceWriter
     }
 
     /// <summary>A member's summary, the caller's in place of the generator's where it names one, and the caller's annotation lines.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=F05E23
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=F05E23
+    // Hairs-Human:        PENDING
     private static void Member(StringBuilder text, TableSourceOptions options, string name, string summary)
     {
         text.Append("    /// <summary>")
@@ -139,8 +139,8 @@ internal static class TableSourceWriter
     }
 
     /// <summary>Comment lines at an indentation: <c>// </c> before a line, <c>//</c> alone for an empty one.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=0E41B8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=0E41B8
+    // Hairs-Human:        PENDING
     private static void Comments(StringBuilder text, string indent, IReadOnlyList<string> lines)
     {
         foreach (var line in lines)

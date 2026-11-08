@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   42
 // Annotated:        42/42
 // Exempt:           18
@@ -65,8 +65,8 @@ namespace Broiler.ECMAScript.Intl;
 /// <b>Decoded once</b>, on first use, thread-safely; the instance is then immutable and may be shared (convention 10).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=UTS10, ECMA-402 sec-intl-collator-internal-slots via Broiler.VM JsCollationData; IP=Low; Security=Medium; Resources=3; Fingerprint=5F83B6
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=UTS10, ECMA-402 sec-intl-collator-internal-slots via Broiler.VM JsCollationData; IP=Low; Security=Medium; Resources=3; Fingerprint=5F83B6
+// Hairs-Human:        PENDING
 public sealed class UcaCollationData
 {
     private readonly IIntlDataSet data;
@@ -76,8 +76,8 @@ public sealed class UcaCollationData
     /// <summary>The collation data of <paramref name="data"/>, decoded on first use.</summary>
     /// <param name="data">The tables, which answer the same bytes for the life of the process.</param>
     /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0084 X3 data through IIntlDataSet; IP=Low; Security=Low; Resources=1; Fingerprint=46BFD1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0084 X3 data through IIntlDataSet; IP=Low; Security=Low; Resources=1; Fingerprint=46BFD1
+    // Hairs-Human:        PENDING
     public UcaCollationData(IIntlDataSet data)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -86,24 +86,24 @@ public sealed class UcaCollationData
     }
 
     /// <summary>Whether the data set carries a root collation; an engine without one has no collation data.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0084 X3 data through IIntlDataSet; IP=Low; Security=Low; Resources=0; Fingerprint=3222A7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0084 X3 data through IIntlDataSet; IP=Low; Security=Low; Resources=0; Fingerprint=3222A7
+    // Hairs-Human:        PENDING
     public bool HasRoot => !data.Table(IntlTable.CollationRoot).IsEmpty;
 
     /// <summary>The tailorings the data carries, by name, in the order the table holds them.</summary>
     /// <exception cref="InvalidDataException">The tables are not in the format the type's remarks state.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0084 E3 tailorings by name; IP=Low; Security=Low; Resources=0; Fingerprint=D4A103
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0084 E3 tailorings by name; IP=Low; Security=Low; Resources=0; Fingerprint=D4A103
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string> TailoringNames => Decoded.Names;
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0084 X3 data through IIntlDataSet; IP=Low; Security=Low; Resources=1; Fingerprint=16C718
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0084 X3 data through IIntlDataSet; IP=Low; Security=Low; Resources=1; Fingerprint=16C718
+    // Hairs-Human:        PENDING
     internal Tables Decoded => tables.Value;
 
     /// <summary>Whether the data carries the tailoring <paramref name="name"/>.</summary>
     /// <param name="name">A tailoring's name, such as <c>de-phonebk</c>.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0084 E3 via Broiler.VM JsCollationData.TailoringNamed; IP=Low; Security=Low; Resources=0; Fingerprint=3DD9A4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0084 E3 via Broiler.VM JsCollationData.TailoringNamed; IP=Low; Security=Low; Resources=0; Fingerprint=3DD9A4
+    // Hairs-Human:        PENDING
     public bool HasTailoring(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
@@ -116,8 +116,8 @@ public sealed class UcaCollationData
     /// tailoring the data does not carry.
     /// </summary>
     /// <param name="tailoring">A tailoring's name, or <see langword="null"/> for the root.</param>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0084 E5 Thai alternate from data, UTS35 Part 5 alternate; IP=Low; Security=Low; Resources=0; Fingerprint=5D9794
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0084 E5 Thai alternate from data, UTS35 Part 5 alternate; IP=Low; Security=Low; Resources=0; Fingerprint=5D9794
+    // Hairs-Human:        PENDING
     public bool ShiftedByDefault(string? tailoring) =>
         tailoring is not null && Decoded.TailoringNamed(tailoring) is { ShiftedByDefault: true };
 
@@ -131,8 +131,8 @@ public sealed class UcaCollationData
     /// <param name="language">The language subtag of the resolved locale's data locale.</param>
     /// <param name="usage">The resolved <c>usage</c>, <c>sort</c> or <c>search</c>.</param>
     /// <param name="collation">The resolved <c>collation</c>; <c>default</c> or <see langword="null"/> for the default.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.collator, UTS35 Part 5 collation types via Broiler.VM JsRealm.NewCollator; IP=Low; Security=Low; Resources=1; Fingerprint=83990C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.collator, UTS35 Part 5 collation types via Broiler.VM JsRealm.NewCollator; IP=Low; Security=Low; Resources=1; Fingerprint=83990C
+    // Hairs-Human:        PENDING
     public string? TailoringFor(string language, string usage, string? collation)
     {
         ArgumentNullException.ThrowIfNull(language);
@@ -161,8 +161,8 @@ public sealed class UcaCollationData
     /// <param name="language">The language subtag of the locale.</param>
     /// <param name="key">The relevant extension key.</param>
     /// <param name="usage">The resolved <c>usage</c>, <c>sort</c> or <c>search</c>.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl-collator-internal-slots via Broiler.VM JsRealm.CollatorKeyData; IP=Low; Security=Low; Resources=1; Fingerprint=C7A5F6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl-collator-internal-slots via Broiler.VM JsRealm.CollatorKeyData; IP=Low; Security=Low; Resources=1; Fingerprint=C7A5F6
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string?> KeyValues(string language, string key, string usage)
     {
         ArgumentNullException.ThrowIfNull(language);
@@ -205,23 +205,23 @@ public sealed class UcaCollationData
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0084 E3 tailorings by name; IP=Low; Security=Low; Resources=0; Fingerprint=B40B28
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0084 E3 tailorings by name; IP=Low; Security=Low; Resources=0; Fingerprint=B40B28
+    // Hairs-Human:        PENDING
     private string? Carried(string name) => Decoded.TailoringNamed(name) is null ? null : name;
 
     /// <summary>The decoded tables: Broiler.VM's <c>JsCollationData</c>, with the settings table read beside it.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Medium; Resources=3; Fingerprint=DD882D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Medium; Resources=3; Fingerprint=DD882D
+    // Hairs-Human:        PENDING
     internal sealed class Tables
     {
         /// <summary>The scaled common secondary, 0x0020.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=751350
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=751350
+        // Hairs-Human:        PENDING
         internal const ulong CommonSecondary = 0x20 << 8;
 
         /// <summary>The scaled common tertiary, 0x0002.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=CFD8EF
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=CFD8EF
+        // Hairs-Human:        PENDING
         internal const ulong CommonTertiary = 0x02 << 8;
 
         private readonly int[] runFirst;
@@ -232,8 +232,8 @@ public sealed class UcaCollationData
 
         private readonly Dictionary<int, ulong[]> singles = [];
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=1; Fingerprint=0B8B9D
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=1; Fingerprint=0B8B9D
+        // Hairs-Human:        PENDING
         private readonly Dictionary<string, ulong[]> contractions = new(StringComparer.Ordinal);
 
         private readonly HashSet<int> contractionStarts = [];
@@ -242,16 +242,16 @@ public sealed class UcaCollationData
 
         private readonly (int First, int Last)[] unified;
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=1; Fingerprint=7B5C7B
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=1; Fingerprint=7B5C7B
+        // Hairs-Human:        PENDING
         private readonly Dictionary<string, Tailoring> tailorings = new(StringComparer.Ordinal);
 
         private readonly List<string> names = [];
 
         private readonly int maxContraction;
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Medium; Resources=3; Fingerprint=F5458A
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Medium; Resources=3; Fingerprint=F5458A
+        // Hairs-Human:        PENDING
         internal Tables(IIntlDataSet data)
         {
             var root = data.Table(IntlTable.CollationRoot);
@@ -374,24 +374,24 @@ public sealed class UcaCollationData
         internal IReadOnlyList<string> Names => names;
 
         /// <summary>A tailoring by name - <c>und-search</c>, <c>de-phonebk</c>, <c>de-search</c> - or nothing.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.TailoringNamed; IP=Low; Security=Low; Resources=1; Fingerprint=CB72A2
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.TailoringNamed; IP=Low; Security=Low; Resources=1; Fingerprint=CB72A2
+        // Hairs-Human:        PENDING
         internal Tailoring? TailoringNamed(string name) => tailorings.TryGetValue(name, out var tailoring) ? tailoring : null;
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=66B2C6
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=66B2C6
+        // Hairs-Human:        PENDING
         internal static ulong Primary(ulong element) => element >> 40;
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=E90D92
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=E90D92
+        // Hairs-Human:        PENDING
         internal static ulong Secondary(ulong element) => (element >> 23) & 0x1FFFF;
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=215174
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=215174
+        // Hairs-Human:        PENDING
         internal static ulong Tertiary(ulong element) => (element >> 10) & 0x1FFF;
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=64F9E2
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=64F9E2
+        // Hairs-Human:        PENDING
         internal static bool Variable(ulong element) => (element & 1) != 0;
 
         /// <summary>
@@ -399,8 +399,8 @@ public sealed class UcaCollationData
         /// as the generator read it from the tailored string's root elements; a root element's case is its tertiary's, by
         /// UTS #10's tertiary weight table.
         /// </summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 s3.6 via Broiler.VM JsCollationData.Case; IP=Low; Security=Low; Resources=1; Fingerprint=578DAC
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 s3.6 via Broiler.VM JsCollationData.Case; IP=Low; Security=Low; Resources=1; Fingerprint=578DAC
+        // Hairs-Human:        PENDING
         internal static int Case(ulong element)
         {
             if ((element & 0b1000) != 0)
@@ -413,14 +413,14 @@ public sealed class UcaCollationData
             return (Tertiary(element) >> 8) is 0x08 or 0x09 or 0x0A or 0x0B or 0x0C or 0x1D ? 2 : 0;
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=C92AFD
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=0; Fingerprint=C92AFD
+        // Hairs-Human:        PENDING
         internal static ulong Pack(ulong primary, ulong secondary, ulong tertiary, bool variable) =>
             (primary << 40) | (secondary << 23) | (tertiary << 10) | (variable ? 1UL : 0UL);
 
         /// <summary>The root's own elements for one code point, or nothing when no key names it.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.Single; IP=Low; Security=Low; Resources=2; Fingerprint=DFA891
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.Single; IP=Low; Security=Low; Resources=2; Fingerprint=DFA891
+        // Hairs-Human:        PENDING
         internal ulong[]? Single(int codePoint)
         {
             if (singles.TryGetValue(codePoint, out var elements))
@@ -453,8 +453,8 @@ public sealed class UcaCollationData
         }
 
         /// <summary>UCA 17's implicit weights for a code point no key names: Han across blocks by block, core ideographs first.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 s10.1 via Broiler.VM JsCollationData.Implicit; IP=Low; Security=Low; Resources=1; Fingerprint=6B4A2B
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 s10.1 via Broiler.VM JsCollationData.Implicit; IP=Low; Security=Low; Resources=1; Fingerprint=6B4A2B
+        // Hairs-Human:        PENDING
         internal ulong[] Implicit(int codePoint)
         {
             foreach (var (first, last, @base) in siniform)
@@ -505,8 +505,8 @@ public sealed class UcaCollationData
         /// extension over unblocked non-starters, and implicit weights for the rest; numeric runs collapsed to their value when
         /// asked for. The combining classes are the normalization owner's, as Broiler.VM read them from its own.
         /// </summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 s7 via Broiler.VM JsCollationData.Elements; IP=Low; Security=Medium; Resources=4; Fingerprint=5CF89F
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 s7 via Broiler.VM JsCollationData.Elements; IP=Low; Security=Medium; Resources=4; Fingerprint=5CF89F
+        // Hairs-Human:        PENDING
         internal void Elements(int[] text, Tailoring? tailoring, bool numeric, UnicodeNormalization normalization, List<ulong> output)
         {
             var consumed = new bool[text.Length];
@@ -573,8 +573,8 @@ public sealed class UcaCollationData
         }
 
         /// <summary>The longest key at <paramref name="at"/> over contiguous unconsumed code points, and its elements.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 s7 via Broiler.VM JsCollationData.LongestMatch; IP=Low; Security=Low; Resources=3; Fingerprint=104512
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 s7 via Broiler.VM JsCollationData.LongestMatch; IP=Low; Security=Low; Resources=3; Fingerprint=104512
+        // Hairs-Human:        PENDING
         private (int Length, ulong[] Elements) LongestMatch(int[] text, int at, bool[] consumed, Tailoring? tailoring)
         {
             var first = text[at];
@@ -608,8 +608,8 @@ public sealed class UcaCollationData
         }
 
         /// <summary>A key's elements in the tailoring, then in the root unless the tailoring suppresses the root's contractions of its first code point.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 s7 via Broiler.VM JsCollationData.Find; IP=Low; Security=Low; Resources=2; Fingerprint=5F3510
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 s7 via Broiler.VM JsCollationData.Find; IP=Low; Security=Low; Resources=2; Fingerprint=5F3510
+        // Hairs-Human:        PENDING
         private ulong[]? Find(string key, int first, Tailoring? tailoring)
         {
             if (tailoring is not null && tailoring.Entries.TryGetValue(key, out var tailored))
@@ -625,14 +625,14 @@ public sealed class UcaCollationData
             return contractions.TryGetValue(key, out var elements) ? elements : null;
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 s7 via Broiler.VM JsCollationData.CanStartContraction; IP=Low; Security=Low; Resources=1; Fingerprint=9554E6
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 s7 via Broiler.VM JsCollationData.CanStartContraction; IP=Low; Security=Low; Resources=1; Fingerprint=9554E6
+        // Hairs-Human:        PENDING
         private bool CanStartContraction(int codePoint, Tailoring? tailoring) =>
             contractionStarts.Contains(codePoint) && (tailoring is null || !tailoring.Suppressed.Contains(codePoint)) ||
             tailoring is not null && tailoring.Starts.Contains(codePoint);
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 s7 via Broiler.VM JsCollationData.Key; IP=Low; Security=Low; Resources=1; Fingerprint=F714CD
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 s7 via Broiler.VM JsCollationData.Key; IP=Low; Security=Low; Resources=1; Fingerprint=F714CD
+        // Hairs-Human:        PENDING
         private static string Key(int[] text, int at, int length)
         {
             var key = new StringBuilder(length * 2);
@@ -646,13 +646,13 @@ public sealed class UcaCollationData
         }
 
         /// <summary>A code point a key string can hold: a lone surrogate keys as U+FFFD, which no key names.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.Valid; IP=Low; Security=Low; Resources=0; Fingerprint=548CD9
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.Valid; IP=Low; Security=Low; Resources=0; Fingerprint=548CD9
+        // Hairs-Human:        PENDING
         private static int Valid(int codePoint) => codePoint is >= 0xD800 and <= 0xDFFF ? 0xFFFD : codePoint;
 
         /// <summary>The value of a decimal digit by its root primary, or -1 for anything else.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS35 numeric collation via Broiler.VM JsCollationData.DigitValue; IP=Low; Security=Low; Resources=1; Fingerprint=9440FA
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS35 numeric collation via Broiler.VM JsCollationData.DigitValue; IP=Low; Security=Low; Resources=1; Fingerprint=9440FA
+        // Hairs-Human:        PENDING
         private int DigitValue(int codePoint)
         {
             if (Single(codePoint) is not { Length: 1 } elements)
@@ -668,8 +668,8 @@ public sealed class UcaCollationData
         /// A run of digits as its value: one element for the count of significant digits, then one per digit, every primary in
         /// the gap after the zero's, so numbers sort among themselves by value and where a digit would among everything else.
         /// </summary>
-        // Broiler-AI:           Origin=Ported; Spec=UTS35 numeric collation via Broiler.VM JsCollationData.Number; IP=Low; Security=Low; Resources=2; Fingerprint=5A56C8
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS35 numeric collation via Broiler.VM JsCollationData.Number; IP=Low; Security=Low; Resources=2; Fingerprint=5A56C8
+        // Hairs-Human:        PENDING
         private int Number(int[] text, int at, bool[] consumed, List<ulong> output)
         {
             var digits = new List<int>();
@@ -703,8 +703,8 @@ public sealed class UcaCollationData
         /// Reads the settings table: <c>tailoring|alternate|shifted</c> and <c>tailoring|reorder|first|last|before</c>, each for a
         /// tailoring the tailorings table carries (milestone SJL-17.3).
         /// </summary>
-        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 settings alternate and reorder; IP=Low; Security=Medium; Resources=1; Fingerprint=9C587D
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=UTS35 Part 5 settings alternate and reorder; IP=Low; Security=Medium; Resources=1; Fingerprint=9C587D
+        // Hairs-Human:        PENDING
         private void ReadSettings(List<string> lines)
         {
             foreach (var line in lines)
@@ -739,15 +739,15 @@ public sealed class UcaCollationData
             }
         }
 
-        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 settings reorder; IP=Low; Security=Low; Resources=0; Fingerprint=CE197D
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=UTS35 Part 5 settings reorder; IP=Low; Security=Low; Resources=0; Fingerprint=CE197D
+        // Hairs-Human:        PENDING
         private static ulong Hex(string field, string line) =>
             field.Length == 4 && ulong.TryParse(field, NumberStyles.AllowHexSpecifier, NumberFormatInfo.InvariantInfo, out var value)
                 ? value
                 : throw new InvalidDataException("the CollationSettings table has a primary that is not four hexadecimal digits: " + line);
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.ReadKey; IP=Low; Security=Low; Resources=1; Fingerprint=D39B8B
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.ReadKey; IP=Low; Security=Low; Resources=1; Fingerprint=D39B8B
+        // Hairs-Human:        PENDING
         private static string ReadKey(ReadOnlySpan<byte> data, ref int at, out int first, out int length)
         {
             length = data[at++];
@@ -769,8 +769,8 @@ public sealed class UcaCollationData
             return key.ToString();
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.ReadElement; IP=Low; Security=Low; Resources=1; Fingerprint=02C7AB
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.ReadElement; IP=Low; Security=Low; Resources=1; Fingerprint=02C7AB
+        // Hairs-Human:        PENDING
         private static ulong ReadElement(ReadOnlySpan<byte> data, ref int at)
         {
             var primary = (ulong)ReadInt16(data, ref at);
@@ -779,8 +779,8 @@ public sealed class UcaCollationData
             return Pack(primary << 8, secondary << 8, (ulong)(tertiary & 0x7F) << 8, (tertiary & 0x80) != 0);
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.ReadInt32; IP=Low; Security=Low; Resources=0; Fingerprint=1C645E
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.ReadInt32; IP=Low; Security=Low; Resources=0; Fingerprint=1C645E
+        // Hairs-Human:        PENDING
         private static int ReadInt32(ReadOnlySpan<byte> data, ref int at)
         {
             var value = data[at] | (data[at + 1] << 8) | (data[at + 2] << 16) | (data[at + 3] << 24);
@@ -788,8 +788,8 @@ public sealed class UcaCollationData
             return value;
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.ReadInt24; IP=Low; Security=Low; Resources=0; Fingerprint=AE5675
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.ReadInt24; IP=Low; Security=Low; Resources=0; Fingerprint=AE5675
+        // Hairs-Human:        PENDING
         private static int ReadInt24(ReadOnlySpan<byte> data, ref int at)
         {
             var value = data[at] | (data[at + 1] << 8) | (data[at + 2] << 16);
@@ -797,8 +797,8 @@ public sealed class UcaCollationData
             return value;
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.ReadInt16; IP=Low; Security=Low; Resources=0; Fingerprint=EA7518
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData.ReadInt16; IP=Low; Security=Low; Resources=0; Fingerprint=EA7518
+        // Hairs-Human:        PENDING
         private static int ReadInt16(ReadOnlySpan<byte> data, ref int at)
         {
             var value = data[at] | (data[at + 1] << 8);
@@ -811,12 +811,12 @@ public sealed class UcaCollationData
     /// One tailoring: its mappings by key, the longest key, the code points whose root contractions it suppresses, and its
     /// settings - the shifted alternate as its default, and a script's primaries moved before another primary.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS10, UTS35 Part 5 via Broiler.VM JsCollationData.Tailoring; IP=Low; Security=Low; Resources=1; Fingerprint=F6AFB1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS10, UTS35 Part 5 via Broiler.VM JsCollationData.Tailoring; IP=Low; Security=Low; Resources=1; Fingerprint=F6AFB1
+    // Hairs-Human:        PENDING
     internal sealed class Tailoring
     {
-        // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=1; Fingerprint=5E83E8
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollationData; IP=Low; Security=Low; Resources=1; Fingerprint=5E83E8
+        // Hairs-Human:        PENDING
         internal Dictionary<string, ulong[]> Entries { get; } = new(StringComparer.Ordinal);
 
         internal HashSet<int> Starts { get; } = [];

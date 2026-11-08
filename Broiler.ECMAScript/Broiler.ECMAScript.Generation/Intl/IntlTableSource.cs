@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   2
 // Annotated:        2/2
 // Exempt:           0
@@ -38,15 +38,15 @@ namespace Broiler.ECMAScript.Generation.Intl;
 /// time, a machine or a path.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 table source via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=E864E5
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 table source via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=E864E5
+// Hairs-Human:        PENDING
 public static class IntlTableSource
 {
     /// <summary>The C# text of a static class holding <paramref name="tables"/>.</summary>
     /// <param name="tables">The tables, as <see cref="CldrTableGenerator.Generate"/> answers them.</param>
     /// <param name="options">The namespace, the class, and the comment lines around them.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 table source via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=0227D6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 table source via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=0227D6
+    // Hairs-Human:        PENDING
     public static string Write(IntlTables tables, TableSourceOptions options)
     {
         ArgumentNullException.ThrowIfNull(tables);

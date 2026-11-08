@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   12
 // Annotated:        12/12
 // Exempt:           3
@@ -46,8 +46,8 @@ namespace Broiler.ECMAScript.Intl;
 /// (<c>JsRealm.Intl.cs:282</c> and <c>:550</c>), and passes no meter here; Broiler.JS passes none.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Medium; Resources=0; Fingerprint=21832C
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Medium; Resources=0; Fingerprint=21832C
+// Hairs-Human:        PENDING
 public static class LocaleNegotiation
 {
     /// <summary>
@@ -61,8 +61,8 @@ public static class LocaleNegotiation
     /// <param name="failedAt">The index of the first tag that is not well-formed, or -1.</param>
     /// <param name="charge">The caller's meter: each tag's length in code units, before it is parsed, and the alias-table keys its canonicalisation looks up.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidLanguageTag"/>, a <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Medium; Resources=2; Fingerprint=E00DDD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Medium; Resources=2; Fingerprint=E00DDD
+    // Hairs-Human:        PENDING
     public static IntlStatus CanonicalizeLocaleList(IReadOnlyList<string> tags, ILocaleData data, out IReadOnlyList<string> locales, out int failedAt, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(tags);
@@ -100,8 +100,8 @@ public static class LocaleNegotiation
     /// <param name="requestedLocales">The requested locales, canonical, in order.</param>
     /// <param name="charge">The caller's meter: one unit per requested locale examined.</param>
     /// <returns>The available locale matched and the requested locale's extension keywords, or <see langword="null"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Low; Resources=1; Fingerprint=A4627D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Low; Resources=1; Fingerprint=A4627D
+    // Hairs-Human:        PENDING
     public static LocaleMatch? LookupMatchingLocaleByPrefix(IReadOnlyList<string> availableLocales, IReadOnlyList<string> requestedLocales, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(availableLocales);
@@ -137,8 +137,8 @@ public static class LocaleNegotiation
     /// <param name="availableLocales">The service's available locales.</param>
     /// <param name="requestedLocales">The requested locales, canonical, in order.</param>
     /// <param name="charge">The caller's meter: one unit per requested locale, before it is matched.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Low; Resources=1; Fingerprint=AC037E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Low; Resources=1; Fingerprint=AC037E
+    // Hairs-Human:        PENDING
     public static IReadOnlyList<string> FilterLocales(IReadOnlyList<string> availableLocales, IReadOnlyList<string> requestedLocales, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(availableLocales);
@@ -168,8 +168,8 @@ public static class LocaleNegotiation
     /// <param name="requestedLocales">The requested locales, canonical, in order.</param>
     /// <param name="defaultLocale">The default locale (ECMA-402 DefaultLocale), from the engine's provider.</param>
     /// <param name="charge">The caller's meter: one unit per requested locale examined.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Low; Resources=1; Fingerprint=92B361
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Low; Resources=1; Fingerprint=92B361
+    // Hairs-Human:        PENDING
     public static LocaleMatch MatchLocale(IReadOnlyList<string> availableLocales, IReadOnlyList<string> requestedLocales, string defaultLocale, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(defaultLocale);
@@ -184,9 +184,9 @@ public static class LocaleNegotiation
     /// <param name="match">The match <see cref="MatchLocale"/> answered.</param>
     /// <param name="relevantKeys">The service's relevant extension keys in its order, each with the locale data's values for the matched locale and the option, if any.</param>
     /// <param name="data">The locale data whose BCP 47 types canonicalise an option's value and the resolved locale.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=High; Resources=2; Fingerprint=71E8F5
-    // Broiler-Falsified-If: a resolved locale names a keyword the locale data does not support, an option the data supports is not honoured, or a key's value differs from what ECMA-402's ResolveLocale gives for the same data
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=High; Resources=2; Fingerprint=71E8F5
+    // Hairs-Falsified-If: a resolved locale names a keyword the locale data does not support, an option the data supports is not honoured, or a key's value differs from what ECMA-402's ResolveLocale gives for the same data
+    // Hairs-Human:        PENDING
     public static ResolvedLocale ResolveLocale(LocaleMatch match, IReadOnlyList<RelevantKey> relevantKeys, ILocaleData data)
     {
         ArgumentNullException.ThrowIfNull(match);
@@ -302,15 +302,15 @@ public static class LocaleNegotiation
     /// <param name="relevantKeys">The service's relevant extension keys, with their values and options.</param>
     /// <param name="data">The locale data.</param>
     /// <param name="charge">The caller's meter: one unit per requested locale examined.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=High; Resources=2; Fingerprint=1FBC7D
-    // Broiler-Falsified-If: a resolved locale names a keyword the locale data does not support, an option the data supports is not honoured, or a key's value differs from what ECMA-402's ResolveLocale gives for the same data
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=High; Resources=2; Fingerprint=1FBC7D
+    // Hairs-Falsified-If: a resolved locale names a keyword the locale data does not support, an option the data supports is not honoured, or a key's value differs from what ECMA-402's ResolveLocale gives for the same data
+    // Hairs-Human:        PENDING
     public static ResolvedLocale ResolveLocale(IReadOnlyList<string> availableLocales, IReadOnlyList<string> requestedLocales, string defaultLocale, IReadOnlyList<RelevantKey> relevantKeys, ILocaleData data, WorkCharge? charge = null) =>
         ResolveLocale(MatchLocale(availableLocales, requestedLocales, defaultLocale, charge), relevantKeys, data);
 
     /// <summary>The lookup of one requested locale: its longest available prefix, the <c>-u-</c> extension set aside.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Low; Resources=1; Fingerprint=4EA916
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Low; Resources=1; Fingerprint=4EA916
+    // Hairs-Human:        PENDING
     internal static LocaleMatch? Lookup(IReadOnlyList<string> available, string locale)
     {
         var tag = LocaleTag.Parse(locale);
@@ -348,8 +348,8 @@ public static class LocaleNegotiation
         return null;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Low; Resources=1; Fingerprint=3A3FFC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 negotiation.html via Broiler.VM JsRealm.Intl; IP=Low; Security=Low; Resources=1; Fingerprint=3A3FFC
+    // Hairs-Human:        PENDING
     private static bool Contains(IReadOnlyList<string?> values, string? value)
     {
         foreach (var candidate in values)
@@ -367,8 +367,8 @@ public static class LocaleNegotiation
 /// <summary>What ResolveLocale's matching steps found: the available locale, and the requested locale's <c>-u-</c> keywords.</summary>
 /// <param name="Locale">The available locale matched, or the default locale when nothing was.</param>
 /// <param name="ExtensionKeywords">The <c>-u-</c> keywords of the requested locale that matched, in its order; empty when it had none or nothing matched.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-resolvelocale records; IP=Low; Security=Low; Resources=0; Fingerprint=5E0CF7
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-resolvelocale records; IP=Low; Security=Low; Resources=0; Fingerprint=5E0CF7
+// Hairs-Human:        PENDING
 public sealed record LocaleMatch(string Locale, IReadOnlyList<LocaleKeyword> ExtensionKeywords);
 
 /// <summary>
@@ -377,8 +377,8 @@ public sealed record LocaleMatch(string Locale, IReadOnlyList<LocaleKeyword> Ext
 /// </summary>
 /// <param name="Key">The key, for example <c>nu</c>.</param>
 /// <param name="Values">The service's <c>[[LocaleData]]</c> values for the key in the matched locale, the default first; <see langword="null"/> stands for ECMA-402's <b>null</b>.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-resolvelocale records; IP=Low; Security=Low; Resources=0; Fingerprint=71A60C
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-resolvelocale records; IP=Low; Security=Low; Resources=0; Fingerprint=71A60C
+// Hairs-Human:        PENDING
 public sealed record RelevantKey(string Key, IReadOnlyList<string?> Values)
 {
     /// <summary>The option's value as the engine read it, or <see langword="null"/> when the option is absent.</summary>
@@ -395,6 +395,6 @@ public sealed record RelevantKey(string Key, IReadOnlyList<string?> Values)
 /// <param name="Locale">The resolved locale: the matched locale with the supported requested keywords.</param>
 /// <param name="DataLocale">The matched locale, whose data the service reads.</param>
 /// <param name="KeyValues">Each relevant key's value, by key; <see langword="null"/> stands for ECMA-402's <b>null</b>.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-resolvelocale records; IP=Low; Security=Low; Resources=0; Fingerprint=3322DB
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-resolvelocale records; IP=Low; Security=Low; Resources=0; Fingerprint=3322DB
+// Hairs-Human:        PENDING
 public sealed record ResolvedLocale(string Locale, string DataLocale, IReadOnlyDictionary<string, string?> KeyValues);

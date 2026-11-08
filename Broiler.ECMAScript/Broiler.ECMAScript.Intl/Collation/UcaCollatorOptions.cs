@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   4
 // Annotated:        4/4
 // Exempt:           6
@@ -20,8 +20,8 @@ using System;
 namespace Broiler.ECMAScript.Intl;
 
 /// <summary>The levels a collator compares (UTS #10, section 3.1).</summary>
-// Broiler-AI:           Origin=Ported; Spec=UTS10 s3.1, ECMA-402 sec-intl-collator-internal-slots via Broiler.VM JsCollator; IP=Low; Security=Low; Resources=0; Fingerprint=F60EFD
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=UTS10 s3.1, ECMA-402 sec-intl-collator-internal-slots via Broiler.VM JsCollator; IP=Low; Security=Low; Resources=0; Fingerprint=F60EFD
+// Hairs-Human:        PENDING
 public enum CollationStrength
 {
     /// <summary>Primaries only: <c>sensitivity</c> <c>base</c>, and <c>case</c> with the case level.</summary>
@@ -35,8 +35,8 @@ public enum CollationStrength
 }
 
 /// <summary>How a collator orders case at the tertiary level and on its case level (Broiler.VM's <c>JsCaseFirst</c>).</summary>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl-collator-internal-slots, UTS35 kf via Broiler.VM JsCaseFirst; IP=Low; Security=Low; Resources=0; Fingerprint=941D0D
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl-collator-internal-slots, UTS35 kf via Broiler.VM JsCaseFirst; IP=Low; Security=Low; Resources=0; Fingerprint=941D0D
+// Hairs-Human:        PENDING
 public enum CollationCaseFirst
 {
     /// <summary>The root's order: lower case first, by tertiary weight (<c>caseFirst</c> <c>false</c>).</summary>
@@ -63,8 +63,8 @@ public enum CollationCaseFirst
 /// The tailoring by name, as <see cref="UcaCollationData.TailoringFor"/> answers it, or <see langword="null"/> for the root.
 /// A name the data does not carry collates by the root, as Broiler.VM's <c>TailoringNamed</c> answered nothing for it.
 /// </param>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl-collator-internal-slots via Broiler.VM JsCollator; IP=Low; Security=Low; Resources=0; Fingerprint=0D27AF
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl-collator-internal-slots via Broiler.VM JsCollator; IP=Low; Security=Low; Resources=0; Fingerprint=0D27AF
+// Hairs-Human:        PENDING
 public sealed record UcaCollatorOptions(
     CollationStrength Strength, bool CaseLevel, CollationCaseFirst CaseFirst, bool Shifted, bool Numeric, string? Tailoring)
 {
@@ -81,8 +81,8 @@ public sealed record UcaCollatorOptions(
     /// <param name="numeric">The resolved <c>[[Numeric]]</c>.</param>
     /// <param name="tailoring">The tailoring by name, or <see langword="null"/> for the root.</param>
     /// <exception cref="ArgumentNullException"><paramref name="sensitivity"/> or <paramref name="caseFirst"/> is null.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.collator via Broiler.VM JsRealm.NewCollator; IP=Low; Security=Low; Resources=0; Fingerprint=EBCC0C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.collator via Broiler.VM JsRealm.NewCollator; IP=Low; Security=Low; Resources=0; Fingerprint=EBCC0C
+    // Hairs-Human:        PENDING
     public static UcaCollatorOptions FromResolved(string sensitivity, bool ignorePunctuation, string caseFirst, bool numeric, string? tailoring)
     {
         ArgumentNullException.ThrowIfNull(sensitivity);

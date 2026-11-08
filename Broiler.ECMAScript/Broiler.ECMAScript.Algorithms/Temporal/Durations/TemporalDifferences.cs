@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   22
 // Annotated:        22/22
 // Exempt:           0
@@ -43,8 +43,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// each a <c>RangeError</c> in both engines. Every member is safe to call concurrently; none charges.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.14, s4.5.17, s5.5.15, s6.5.9, s8.5.9 and s9.5.7 via Broiler.VM JsTemporal.Durations and JsRealm.Temporal*; IP=Low; Security=Medium; Resources=2; Fingerprint=06D60E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.14, s4.5.17, s5.5.15, s6.5.9, s8.5.9 and s9.5.7 via Broiler.VM JsTemporal.Durations and JsRealm.Temporal*; IP=Low; Security=Medium; Resources=2; Fingerprint=06D60E
+// Hairs-Human:        PENDING
 public static class TemporalDifferences
 {
     // ---- The methods ---------------------------------------------------------------------------------------------
@@ -63,8 +63,8 @@ public static class TemporalDifferences
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> or <see cref="TemporalStatus.InvalidDuration"/> where a rounding window passes a limit.</returns>
     /// <exception cref="ArgumentNullException">The provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A setting is outside its domain (the largest unit not a date unit, among others).</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.14 via Broiler.VM JsRealm.TemporalPlainDate DifferenceTemporalPlainDate; IP=Low; Security=Medium; Resources=2; Fingerprint=CA1B48
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.14 via Broiler.VM JsRealm.TemporalPlainDate DifferenceTemporalPlainDate; IP=Low; Security=Medium; Resources=2; Fingerprint=CA1B48
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferenceTemporalPlainDate(
         DifferenceOperation operation, ICalendarArithmetic calendars, CalendarId calendar, IsoDate one, IsoDate two, DifferenceSettings settings,
         out DurationFields result)
@@ -108,8 +108,8 @@ public static class TemporalDifferences
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> or <see cref="TemporalStatus.InvalidDuration"/>.</returns>
     /// <exception cref="ArgumentNullException">The provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A setting is outside its domain.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s5.5.15 via Broiler.VM JsRealm.TemporalPlainDateTime DifferenceTemporalPlainDateTime; IP=Low; Security=Medium; Resources=2; Fingerprint=991D2F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s5.5.15 via Broiler.VM JsRealm.TemporalPlainDateTime DifferenceTemporalPlainDateTime; IP=Low; Security=Medium; Resources=2; Fingerprint=991D2F
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferenceTemporalPlainDateTime(
         DifferenceOperation operation, ICalendarArithmetic calendars, CalendarId calendar, IsoDateTime one, IsoDateTime two, DifferenceSettings settings,
         out DurationFields result)
@@ -136,8 +136,8 @@ public static class TemporalDifferences
     /// <param name="result">The difference, negated for <c>since</c>; the default unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>; a time difference rounds within the limits.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A setting is outside its domain (a unit not a time unit, among others).</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s4.5.17 via Broiler.VM JsRealm.TemporalPlainTime DifferenceTemporalPlainTime; IP=Low; Security=Medium; Resources=1; Fingerprint=4E7DDB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s4.5.17 via Broiler.VM JsRealm.TemporalPlainTime DifferenceTemporalPlainTime; IP=Low; Security=Medium; Resources=1; Fingerprint=4E7DDB
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferenceTemporalPlainTime(DifferenceOperation operation, IsoTime one, IsoTime two, DifferenceSettings settings, out DurationFields result)
     {
         CheckSettings(settings, dateOnly: false);
@@ -159,8 +159,8 @@ public static class TemporalDifferences
     /// <param name="result">The difference, negated for <c>since</c>; the default unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.InvalidDuration"/> where the rounded difference is past the limits.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A setting is outside its domain (a unit not a time unit, among others).</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s8.5.9 via Broiler.VM JsRealm.TemporalInstant DifferenceTemporalInstant; IP=Low; Security=Medium; Resources=1; Fingerprint=C68214
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s8.5.9 via Broiler.VM JsRealm.TemporalInstant DifferenceTemporalInstant; IP=Low; Security=Medium; Resources=1; Fingerprint=C68214
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferenceTemporalInstant(DifferenceOperation operation, BigInteger one, BigInteger two, DifferenceSettings settings, out DurationFields result)
     {
         CheckSettings(settings, dateOnly: false);
@@ -186,8 +186,8 @@ public static class TemporalDifferences
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> or <see cref="TemporalStatus.InvalidDuration"/>.</returns>
     /// <exception cref="ArgumentNullException">A provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A setting is outside its domain.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s6.5.9 via Broiler.VM JsRealm.TemporalZonedDateTime DifferenceTemporalZonedDateTime; IP=Low; Security=Medium; Resources=2; Fingerprint=6F19A6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s6.5.9 via Broiler.VM JsRealm.TemporalZonedDateTime DifferenceTemporalZonedDateTime; IP=Low; Security=Medium; Resources=2; Fingerprint=6F19A6
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferenceTemporalZonedDateTime(
         DifferenceOperation operation, BigInteger one, BigInteger two, ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId calendar,
         DifferenceSettings settings, out DurationFields result)
@@ -231,8 +231,8 @@ public static class TemporalDifferences
     /// </returns>
     /// <exception cref="ArgumentNullException">The calendars are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A setting is outside its domain (a largest or smallest unit of week or day, among others).</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s9.5.7 via Broiler.VM JsRealm.TemporalYearMonthDay DifferenceTemporalPlainYearMonth; IP=Low; Security=Medium; Resources=2; Fingerprint=D8B743
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s9.5.7 via Broiler.VM JsRealm.TemporalYearMonthDay DifferenceTemporalPlainYearMonth; IP=Low; Security=Medium; Resources=2; Fingerprint=D8B743
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferenceTemporalPlainYearMonth(
         DifferenceOperation operation, TemporalCalendars calendars, CalendarId calendar, IsoDate one, IsoDate two, DifferenceSettings settings,
         out DurationFields result)
@@ -291,8 +291,8 @@ public static class TemporalDifferences
     /// <param name="result">The internal duration, its date part zero; the default unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.InvalidDuration"/> past <see cref="TemporalLimits.MaxTimeDuration"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The increment is not positive, or the unit is a calendar unit, unset or auto.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s8.5.6 via Broiler.VM JsTemporal.DifferenceInstant; IP=Low; Security=Low; Resources=1; Fingerprint=7CC157
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s8.5.6 via Broiler.VM JsTemporal.DifferenceInstant; IP=Low; Security=Low; Resources=1; Fingerprint=7CC157
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferenceInstant(BigInteger one, BigInteger two, long roundingIncrement, TemporalUnit smallestUnit, RoundingMode roundingMode, out InternalDuration result)
     {
         result = default;
@@ -317,8 +317,8 @@ public static class TemporalDifferences
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> where the calendar cannot reach a date.</returns>
     /// <exception cref="ArgumentNullException">The provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The unit is unset or auto.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s5.5.12 via Broiler.VM JsTemporal.DifferenceIsoDateTime; IP=Low; Security=Low; Resources=1; Fingerprint=186131
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s5.5.12 via Broiler.VM JsTemporal.DifferenceIsoDateTime; IP=Low; Security=Low; Resources=1; Fingerprint=186131
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferenceIsoDateTime(
         ICalendarArithmetic calendars, CalendarId calendar, IsoDateTime one, IsoDateTime two, TemporalUnit largestUnit, out InternalDuration result)
     {
@@ -373,8 +373,8 @@ public static class TemporalDifferences
     /// </returns>
     /// <exception cref="ArgumentNullException">The provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A unit is unset or auto, the smallest is larger than the largest, or the increment is not positive.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s5.5.13 via Broiler.VM JsTemporal.DifferencePlainDateTimeWithRounding; IP=Low; Security=Medium; Resources=2; Fingerprint=821347
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s5.5.13 via Broiler.VM JsTemporal.DifferencePlainDateTimeWithRounding; IP=Low; Security=Medium; Resources=2; Fingerprint=821347
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferencePlainDateTimeWithRounding(
         ICalendarArithmetic calendars, CalendarId calendar, IsoDateTime one, IsoDateTime two, TemporalUnit largestUnit, long roundingIncrement,
         TemporalUnit smallestUnit, RoundingMode roundingMode, out InternalDuration result)
@@ -416,8 +416,8 @@ public static class TemporalDifferences
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> or <see cref="TemporalStatus.InvalidDuration"/>.</returns>
     /// <exception cref="ArgumentNullException">The provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The unit is unset or auto.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s5.5.14 via Broiler.VM JsTemporal.DifferencePlainDateTimeWithTotal; IP=Low; Security=Medium; Resources=2; Fingerprint=31967E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s5.5.14 via Broiler.VM JsTemporal.DifferencePlainDateTimeWithTotal; IP=Low; Security=Medium; Resources=2; Fingerprint=31967E
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferencePlainDateTimeWithTotal(
         ICalendarArithmetic calendars, CalendarId calendar, IsoDateTime one, IsoDateTime two, TemporalUnit unit, out double total)
     {
@@ -459,8 +459,8 @@ public static class TemporalDifferences
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> where a wall clock's instant passes the limits.</returns>
     /// <exception cref="ArgumentNullException">A provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The unit is not a date unit.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s6.5.6 via Broiler.VM JsTemporal.DifferenceZonedDateTime; IP=Low; Security=Medium; Resources=2; Fingerprint=7B616B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s6.5.6 via Broiler.VM JsTemporal.DifferenceZonedDateTime; IP=Low; Security=Medium; Resources=2; Fingerprint=7B616B
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferenceZonedDateTime(
         BigInteger one, BigInteger two, ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId calendar, TemporalUnit largestUnit,
         out InternalDuration result)
@@ -533,8 +533,8 @@ public static class TemporalDifferences
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> or <see cref="TemporalStatus.InvalidDuration"/>.</returns>
     /// <exception cref="ArgumentNullException">A provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A unit is unset or auto, the smallest is larger than the largest, or the increment is not positive.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s6.5.7 via Broiler.VM JsTemporal.DifferenceZonedDateTimeWithRounding; IP=Low; Security=Medium; Resources=2; Fingerprint=7B0220
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s6.5.7 via Broiler.VM JsTemporal.DifferenceZonedDateTimeWithRounding; IP=Low; Security=Medium; Resources=2; Fingerprint=7B0220
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferenceZonedDateTimeWithRounding(
         BigInteger one, BigInteger two, ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId calendar, TemporalUnit largestUnit,
         long roundingIncrement, TemporalUnit smallestUnit, RoundingMode roundingMode, out InternalDuration result)
@@ -577,8 +577,8 @@ public static class TemporalDifferences
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> or <see cref="TemporalStatus.InvalidDuration"/>.</returns>
     /// <exception cref="ArgumentNullException">A provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The unit is unset or auto.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s6.5.8 via Broiler.VM JsTemporal.DifferenceZonedDateTimeWithTotal; IP=Low; Security=Medium; Resources=2; Fingerprint=2A5629
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s6.5.8 via Broiler.VM JsTemporal.DifferenceZonedDateTimeWithTotal; IP=Low; Security=Medium; Resources=2; Fingerprint=2A5629
+    // Hairs-Human:        PENDING
     public static TemporalStatus DifferenceZonedDateTimeWithTotal(
         BigInteger one, BigInteger two, ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId calendar, TemporalUnit unit, out double total)
     {
@@ -603,8 +603,8 @@ public static class TemporalDifferences
     // ---- Helpers ---------------------------------------------------------------------------------------------------
 
     // TemporalDurationFromInternal, then for since CreateNegatedTemporalDuration.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.14 via Broiler.VM JsRealm.Temporal* Difference; IP=Low; Security=Low; Resources=0; Fingerprint=68078D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.14 via Broiler.VM JsRealm.Temporal* Difference; IP=Low; Security=Low; Resources=0; Fingerprint=68078D
+    // Hairs-Human:        PENDING
     private static TemporalStatus Result(DifferenceOperation operation, InternalDuration duration, TemporalUnit largestUnit, out DurationFields result)
     {
         var status = DurationMath.FromInternal(duration, largestUnit, out result);
@@ -615,8 +615,8 @@ public static class TemporalDifferences
     }
 
     // The first day of a year-month's month in its calendar: its fields with the day 1, made a date under constrain.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s9.5.7 via Broiler.VM JsRealm.TemporalYearMonthDay DifferenceTemporalPlainYearMonth; IP=Low; Security=Low; Resources=1; Fingerprint=1EE205
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s9.5.7 via Broiler.VM JsRealm.TemporalYearMonthDay DifferenceTemporalPlainYearMonth; IP=Low; Security=Low; Resources=1; Fingerprint=1EE205
+    // Hairs-Human:        PENDING
     private static TemporalStatus FirstOfMonth(TemporalCalendars calendars, CalendarId calendar, IsoDate yearMonth, out IsoDate date)
     {
         date = default;
@@ -628,18 +628,18 @@ public static class TemporalDifferences
     }
 
     // LargerOfTwoTemporalUnits.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s13.20 via Broiler.VM JsTemporalCore.Larger; IP=Low; Security=None; Resources=0; Fingerprint=F1BCC9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s13.20 via Broiler.VM JsTemporalCore.Larger; IP=Low; Security=None; Resources=0; Fingerprint=F1BCC9
+    // Hairs-Human:        PENDING
     private static TemporalUnit Larger(TemporalUnit one, TemporalUnit two) => one <= two ? one : two;
 
     // Whether a unit's category is date (Table 21).
-    // Broiler-AI:           Origin=Ported; Spec=Temporal Table 21 via Broiler.VM JsTemporalCore.IsDateUnit; IP=Low; Security=None; Resources=0; Fingerprint=C6E39D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal Table 21 via Broiler.VM JsTemporalCore.IsDateUnit; IP=Low; Security=None; Resources=0; Fingerprint=C6E39D
+    // Hairs-Human:        PENDING
     private static bool IsDateUnit(TemporalUnit unit) => unit <= TemporalUnit.Day;
 
     // The precondition of a unit: year to nanosecond.
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=8F8097
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=8F8097
+    // Hairs-Human:        PENDING
     private static void CheckUnit(TemporalUnit unit, string name)
     {
         if (unit is < TemporalUnit.Year or > TemporalUnit.Nanosecond)
@@ -647,8 +647,8 @@ public static class TemporalDifferences
     }
 
     // The precondition of a rounding: two units, the smallest no larger than the largest, and a positive increment.
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=637CE2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=637CE2
+    // Hairs-Human:        PENDING
     private static void CheckUnits(TemporalUnit largestUnit, TemporalUnit smallestUnit, long increment)
     {
         CheckUnit(largestUnit, nameof(largestUnit));
@@ -660,8 +660,8 @@ public static class TemporalDifferences
     }
 
     // The precondition of a method's settings: GetDifferenceSettings' record, for a date type its units date units.
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=DD68F7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=DD68F7
+    // Hairs-Human:        PENDING
     private static void CheckSettings(DifferenceSettings settings, bool dateOnly)
     {
         CheckUnits(settings.LargestUnit, settings.SmallestUnit, settings.RoundingIncrement);
@@ -672,8 +672,8 @@ public static class TemporalDifferences
     }
 
     // The precondition of a time type's settings: both units time units.
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=CE7B19
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=CE7B19
+    // Hairs-Human:        PENDING
     private static void CheckTimeUnits(DifferenceSettings settings)
     {
         if (IsDateUnit(settings.LargestUnit))

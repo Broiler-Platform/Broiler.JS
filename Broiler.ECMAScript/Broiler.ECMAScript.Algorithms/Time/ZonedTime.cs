@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   30
 // Annotated:        30/30
 // Exempt:           9
@@ -24,8 +24,8 @@ namespace Broiler.ECMAScript.Time;
 /// <param name="Year">The year, at most 2^53 in magnitude.</param>
 /// <param name="Month">The month, from 1 to 12.</param>
 /// <param name="Day">The day, from 1 to the month's length.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal ISO Date Record via Broiler.VM JsIsoDate; IP=Low; Security=Low; Resources=1; Fingerprint=0CD3AF
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal ISO Date Record via Broiler.VM JsIsoDate; IP=Low; Security=Low; Resources=1; Fingerprint=0CD3AF
+// Hairs-Human:        PENDING
 public readonly record struct IsoDate(long Year, int Month, int Day);
 
 /// <summary>A Time Record of the Temporal proposal with no overflow days: a valid wall-clock time.</summary>
@@ -35,20 +35,20 @@ public readonly record struct IsoDate(long Year, int Month, int Day);
 /// <param name="Millisecond">The millisecond, from 0 to 999.</param>
 /// <param name="Microsecond">The microsecond, from 0 to 999.</param>
 /// <param name="Nanosecond">The nanosecond, from 0 to 999.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal Time Record via Broiler.VM JsTimeRecord; IP=Low; Security=Low; Resources=1; Fingerprint=82E751
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal Time Record via Broiler.VM JsTimeRecord; IP=Low; Security=Low; Resources=1; Fingerprint=82E751
+// Hairs-Human:        PENDING
 public readonly record struct IsoTime(int Hour, int Minute, int Second, int Millisecond, int Microsecond, int Nanosecond);
 
 /// <summary>An ISO Date-Time Record of the Temporal proposal: a wall-clock date and time, in no zone.</summary>
 /// <param name="Date">The date.</param>
 /// <param name="Time">The time.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal ISO Date-Time Record via Broiler.VM JsIsoDateTime; IP=Low; Security=Low; Resources=1; Fingerprint=DBC57C
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal ISO Date-Time Record via Broiler.VM JsIsoDateTime; IP=Low; Security=Low; Resources=1; Fingerprint=DBC57C
+// Hairs-Human:        PENDING
 public readonly record struct IsoDateTime(IsoDate Date, IsoTime Time);
 
 /// <summary>How a wall-clock time a zone repeats or skips is read: the Temporal proposal's <c>disambiguation</c> option.</summary>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal DisambiguatePossibleEpochNanoseconds; IP=Low; Security=Low; Resources=1; Fingerprint=191804
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal DisambiguatePossibleEpochNanoseconds; IP=Low; Security=Low; Resources=1; Fingerprint=191804
+// Hairs-Human:        PENDING
 public enum Disambiguation
 {
     /// <summary><c>"compatible"</c>: a repeated time is its earlier instant and a skipped one is moved forward by the gap, as <c>Date</c> reads them.</summary>
@@ -68,8 +68,8 @@ public enum Disambiguation
 /// How a zone or calendar operation ended (JSD-0076's X3: a failure is data). Each engine maps a status
 /// other than <see cref="Completed"/> to its own error, a <c>RangeError</c> in both today.
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=FC4534
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=FC4534
+// Hairs-Human:        PENDING
 public enum TimeStatus
 {
     /// <summary>The operation completed, and its result is valid.</summary>
@@ -120,42 +120,42 @@ public enum TimeStatus
 /// bounded by the zone's data and the instant range (X3).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal time zone abstract operations via Broiler.VM JsTemporal.Zones; IP=Low; Security=Medium; Resources=1; Fingerprint=9616E9
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal time zone abstract operations via Broiler.VM JsTemporal.Zones; IP=Low; Security=Medium; Resources=1; Fingerprint=9616E9
+// Hairs-Human:        PENDING
 public static class ZonedTime
 {
     /// <summary>The most instants <see cref="GetPossibleEpochNanoseconds"/> can write: one per offset it samples.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 A2; IP=Low; Security=Low; Resources=1; Fingerprint=1A3D6F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 A2; IP=Low; Security=Low; Resources=1; Fingerprint=1A3D6F
+    // Hairs-Human:        PENDING
     public const int MaxPossibleEpochNanoseconds = 3;
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTemporal.NsPerSecond; IP=Low; Security=Low; Resources=1; Fingerprint=48870E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTemporal.NsPerSecond; IP=Low; Security=Low; Resources=1; Fingerprint=48870E
+    // Hairs-Human:        PENDING
     private const long NsPerSecond = 1_000_000_000L;
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTemporalCore.NsPerDay; IP=Low; Security=Low; Resources=1; Fingerprint=52273A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTemporalCore.NsPerDay; IP=Low; Security=Low; Resources=1; Fingerprint=52273A
+    // Hairs-Human:        PENDING
     private const long NsPerDay = 86_400_000_000_000L;
 
     // A wall time further than 2 x 10^8 days from the epoch names no instant near the range: it is refused before
     // any sampling, which keeps every instant the rules are asked about within their 10^15 seconds.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=93641F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=93641F
+    // Hairs-Human:        PENDING
     private const long SamplingDayLimit = 200_000_000L;
 
     /// <summary>The proposal's <c>nsMaxInstant</c>: 10^8 days after the epoch, in nanoseconds.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal nsMaxInstant via Broiler.VM JsTemporalCore.NsMaxInstant; IP=Low; Security=Low; Resources=1; Fingerprint=6FC6E9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal nsMaxInstant via Broiler.VM JsTemporalCore.NsMaxInstant; IP=Low; Security=Low; Resources=1; Fingerprint=6FC6E9
+    // Hairs-Human:        PENDING
     public static readonly BigInteger MaxEpochNanoseconds = new BigInteger(NsPerDay) * 100_000_000;
 
     /// <summary>The proposal's <c>nsMinInstant</c>: 10^8 days before the epoch, in nanoseconds.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal nsMinInstant via Broiler.VM JsTemporalCore.NsMinInstant; IP=Low; Security=Low; Resources=1; Fingerprint=038538
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal nsMinInstant via Broiler.VM JsTemporalCore.NsMinInstant; IP=Low; Security=Low; Resources=1; Fingerprint=038538
+    // Hairs-Human:        PENDING
     public static readonly BigInteger MinEpochNanoseconds = -MaxEpochNanoseconds;
 
     // The rules' bound, 10^15 seconds, in nanoseconds.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=932395
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=932395
+    // Hairs-Human:        PENDING
     private static readonly BigInteger RulesLimitNanoseconds = new BigInteger(TimeZoneDatabase.MaxEpochSeconds) * NsPerSecond;
 
     /// <summary>
@@ -167,8 +167,8 @@ public static class ZonedTime
     /// <returns>The offset in nanoseconds, a whole number of seconds.</returns>
     /// <exception cref="ArgumentNullException">The rules are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The instant is further than 10^15 seconds from the epoch.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetOffsetNanosecondsFor via Broiler.VM JsTemporal.OffsetNanosecondsFor; IP=Low; Security=Medium; Resources=1; Fingerprint=570A3F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetOffsetNanosecondsFor via Broiler.VM JsTemporal.OffsetNanosecondsFor; IP=Low; Security=Medium; Resources=1; Fingerprint=570A3F
+    // Hairs-Human:        PENDING
     public static long GetOffsetNanosecondsFor(ITimeZoneRules rules, BigInteger epochNanoseconds)
     {
         ArgumentNullException.ThrowIfNull(rules);
@@ -193,9 +193,9 @@ public static class ZonedTime
     /// <exception cref="ArgumentNullException">The rules are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">The destination is shorter than <see cref="MaxPossibleEpochNanoseconds"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The date or the time is not valid, or the year's magnitude is above 2^53.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetPossibleEpochNanoseconds and ECMA-262 21.4.1.20 via Broiler.VM JsTemporal.PossibleEpochNs; IP=Low; Security=High; Resources=1; Fingerprint=57989D
-    // Broiler-Falsified-If: an instant the wall time names in the zone is left out, an instant it does not name is written, the instants are not ascending, or an instant outside the range is written with Completed
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetPossibleEpochNanoseconds and ECMA-262 21.4.1.20 via Broiler.VM JsTemporal.PossibleEpochNs; IP=Low; Security=High; Resources=1; Fingerprint=57989D
+    // Hairs-Falsified-If: an instant the wall time names in the zone is left out, an instant it does not name is written, the instants are not ascending, or an instant outside the range is written with Completed
+    // Hairs-Human:        PENDING
     public static TimeStatus GetPossibleEpochNanoseconds(ITimeZoneRules rules, IsoDateTime local, Span<BigInteger> destination, out int count)
     {
         ArgumentNullException.ThrowIfNull(rules);
@@ -227,9 +227,9 @@ public static class ZonedTime
     /// <exception cref="ArgumentNullException">The rules are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The date, the time or the mode is not valid.</exception>
     /// <exception cref="InvalidOperationException">The rules name no instant for the wall time moved across a gap, which no zone with less than a day's gap does.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal DisambiguatePossibleEpochNanoseconds via Broiler.VM JsTemporal.Disambiguate; IP=Low; Security=High; Resources=1; Fingerprint=DD12D0
-    // Broiler-Falsified-If: a repeated time is not its earlier instant under compatible or earlier or its later under later, a skipped time is not moved by the gap in the mode's direction, or reject answers an instant for a time that is repeated or skipped
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal DisambiguatePossibleEpochNanoseconds via Broiler.VM JsTemporal.Disambiguate; IP=Low; Security=High; Resources=1; Fingerprint=DD12D0
+    // Hairs-Falsified-If: a repeated time is not its earlier instant under compatible or earlier or its later under later, a skipped time is not moved by the gap in the mode's direction, or reject answers an instant for a time that is repeated or skipped
+    // Hairs-Human:        PENDING
     public static TimeStatus DisambiguatePossibleEpochNanoseconds(
         ITimeZoneRules rules, ReadOnlySpan<BigInteger> possible, IsoDateTime local, Disambiguation mode, out BigInteger epochNanoseconds)
     {
@@ -253,8 +253,8 @@ public static class ZonedTime
     /// <exception cref="ArgumentNullException">The rules are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The date, the time or the mode is not valid.</exception>
     /// <exception cref="InvalidOperationException">The rules name no instant for the wall time moved across a gap.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetEpochNanosecondsFor via Broiler.VM JsTemporal.EpochNsFor; IP=Low; Security=Medium; Resources=1; Fingerprint=23508B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetEpochNanosecondsFor via Broiler.VM JsTemporal.EpochNsFor; IP=Low; Security=Medium; Resources=1; Fingerprint=23508B
+    // Hairs-Human:        PENDING
     public static TimeStatus GetEpochNanosecondsFor(ITimeZoneRules rules, IsoDateTime local, Disambiguation mode, out BigInteger epochNanoseconds)
     {
         ArgumentNullException.ThrowIfNull(rules);
@@ -287,9 +287,9 @@ public static class ZonedTime
     /// </returns>
     /// <exception cref="ArgumentNullException">The rules are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The date is not valid, or the year's magnitude is above 2^53.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetStartOfDay via Broiler.VM JsTemporal.StartOfDay; IP=Low; Security=High; Resources=1; Fingerprint=515EE5
-    // Broiler-Falsified-If: a day whose midnight exists starts at another instant, a day whose midnight is skipped starts other than at the transition that skips it, or a day with no instant answers one
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetStartOfDay via Broiler.VM JsTemporal.StartOfDay; IP=Low; Security=High; Resources=1; Fingerprint=515EE5
+    // Hairs-Falsified-If: a day whose midnight exists starts at another instant, a day whose midnight is skipped starts other than at the transition that skips it, or a day with no instant answers one
+    // Hairs-Human:        PENDING
     public static TimeStatus GetStartOfDay(ITimeZoneRules rules, IsoDate date, out BigInteger epochNanoseconds)
     {
         ArgumentNullException.ThrowIfNull(rules);
@@ -330,8 +330,8 @@ public static class ZonedTime
     /// <returns>The transition, or <see langword="null"/> where none is at or before <see cref="MaxEpochNanoseconds"/>, as for every offset zone.</returns>
     /// <exception cref="ArgumentNullException">The rules are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The instant is further than 10^15 seconds from the epoch.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZoneNextTransition via Broiler.VM JsTemporal.NextTransition; IP=Low; Security=Medium; Resources=2; Fingerprint=973AF4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZoneNextTransition via Broiler.VM JsTemporal.NextTransition; IP=Low; Security=Medium; Resources=2; Fingerprint=973AF4
+    // Hairs-Human:        PENDING
     public static BigInteger? GetNextTransition(ITimeZoneRules rules, BigInteger epochNanoseconds)
     {
         ArgumentNullException.ThrowIfNull(rules);
@@ -348,8 +348,8 @@ public static class ZonedTime
     /// <returns>The transition, or <see langword="null"/> where none is at or after <see cref="MinEpochNanoseconds"/>, as for every offset zone.</returns>
     /// <exception cref="ArgumentNullException">The rules are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The instant is further than 10^15 seconds from the epoch.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZonePreviousTransition via Broiler.VM JsTemporal.PreviousTransition; IP=Low; Security=Medium; Resources=2; Fingerprint=96A80B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZonePreviousTransition via Broiler.VM JsTemporal.PreviousTransition; IP=Low; Security=Medium; Resources=2; Fingerprint=96A80B
+    // Hairs-Human:        PENDING
     public static BigInteger? GetPreviousTransition(ITimeZoneRules rules, BigInteger epochNanoseconds)
     {
         ArgumentNullException.ThrowIfNull(rules);
@@ -375,8 +375,8 @@ public static class ZonedTime
     /// <returns>Whether they are equal.</returns>
     /// <exception cref="ArgumentNullException">The database is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">A named identifier is not available in the database.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal TimeZoneEquals via Broiler.VM JsTemporal.TimeZoneEquals; IP=Low; Security=Medium; Resources=1; Fingerprint=182599
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal TimeZoneEquals via Broiler.VM JsTemporal.TimeZoneEquals; IP=Low; Security=Medium; Resources=1; Fingerprint=182599
+    // Hairs-Human:        PENDING
     public static bool TimeZoneEquals(ITimeZoneDatabase database, ReadOnlySpan<char> one, ReadOnlySpan<char> two)
     {
         ArgumentNullException.ThrowIfNull(database);
@@ -393,9 +393,9 @@ public static class ZonedTime
     }
 
     // GetPossibleEpochNanoseconds over a checked wall time.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.20 via Broiler.VM JsTemporal.PossibleEpochNs; IP=Low; Security=High; Resources=1; Fingerprint=F0F2D2
-    // Broiler-Falsified-If: a candidate is kept whose instant does not have the offset it was made from, an offset in force a day before or after the wall time is not sampled, or a candidate outside the range completes
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.20 via Broiler.VM JsTemporal.PossibleEpochNs; IP=Low; Security=High; Resources=1; Fingerprint=F0F2D2
+    // Hairs-Falsified-If: a candidate is kept whose instant does not have the offset it was made from, an offset in force a day before or after the wall time is not sampled, or a candidate outside the range completes
+    // Hairs-Human:        PENDING
     private static TimeStatus Possible(ITimeZoneRules rules, IsoDateTime local, Span<BigInteger> destination, out int count)
     {
         count = 0;
@@ -435,9 +435,9 @@ public static class ZonedTime
     }
 
     // DisambiguatePossibleEpochNanoseconds over a checked wall time and mode.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal DisambiguatePossibleEpochNanoseconds via Broiler.VM JsTemporal.Disambiguate; IP=Low; Security=High; Resources=1; Fingerprint=0AFBEC
-    // Broiler-Falsified-If: the gap's two offsets are not read a day before and a day after the wall time, or the moved time's first instant is not answered under earlier and its last otherwise
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal DisambiguatePossibleEpochNanoseconds via Broiler.VM JsTemporal.Disambiguate; IP=Low; Security=High; Resources=1; Fingerprint=0AFBEC
+    // Hairs-Falsified-If: the gap's two offsets are not read a day before and a day after the wall time, or the moved time's first instant is not answered under earlier and its last otherwise
+    // Hairs-Human:        PENDING
     private static TimeStatus Disambiguate(
         ITimeZoneRules rules, ReadOnlySpan<BigInteger> possible, IsoDateTime local, Disambiguation mode, out BigInteger epochNanoseconds)
     {
@@ -487,8 +487,8 @@ public static class ZonedTime
     }
 
     // GetNamedTimeZoneNextTransition, bounded by nsMaxInstant.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZoneNextTransition via Broiler.VM JsTemporal.NextTransition; IP=Low; Security=Medium; Resources=2; Fingerprint=165715
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZoneNextTransition via Broiler.VM JsTemporal.NextTransition; IP=Low; Security=Medium; Resources=2; Fingerprint=165715
+    // Hairs-Human:        PENDING
     private static BigInteger? NextTransition(ITimeZoneRules rules, BigInteger epochNanoseconds)
     {
         // TRANSITIONS FALL ON WHOLE SECONDS: the next after the instant is the next after its second.
@@ -502,8 +502,8 @@ public static class ZonedTime
     }
 
     // The offset in seconds at an instant's floor second.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.21 via Broiler.VM JsTemporal.NamedOffsetSeconds; IP=Low; Security=Medium; Resources=1; Fingerprint=3DF0E3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.21 via Broiler.VM JsTemporal.NamedOffsetSeconds; IP=Low; Security=Medium; Resources=1; Fingerprint=3DF0E3
+    // Hairs-Human:        PENDING
     private static int OffsetSeconds(ITimeZoneRules rules, BigInteger epochNanoseconds)
     {
         var offset = rules.OffsetSecondsAt(FloorSeconds(epochNanoseconds));
@@ -514,8 +514,8 @@ public static class ZonedTime
     }
 
     // The floor of an instant in seconds, for an instant within the rules' 10^15 seconds.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTemporal.FloorSeconds; IP=Low; Security=Medium; Resources=1; Fingerprint=90EA09
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTemporal.FloorSeconds; IP=Low; Security=Medium; Resources=1; Fingerprint=90EA09
+    // Hairs-Human:        PENDING
     private static long FloorSeconds(BigInteger epochNanoseconds)
     {
         if (BigInteger.Abs(epochNanoseconds) > RulesLimitNanoseconds)
@@ -529,21 +529,21 @@ public static class ZonedTime
     }
 
     // GetUTCEpochNanoseconds (ECMA-262 21.4.1.18) of a wall time read as UTC.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.18 via Broiler.VM JsTemporalCore.UtcEpochNs; IP=Low; Security=Low; Resources=1; Fingerprint=066518
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.18 via Broiler.VM JsTemporalCore.UtcEpochNs; IP=Low; Security=Low; Resources=1; Fingerprint=066518
+    // Hairs-Human:        PENDING
     private static BigInteger UtcEpochNanoseconds(IsoDateTime local) =>
         ((BigInteger)IsoCalendarMath.EpochDays(local.Date.Year, local.Date.Month, local.Date.Day) * NsPerDay) + TimeNanoseconds(local.Time);
 
     // A time's nanoseconds since midnight.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTemporalCore.TimeNs; IP=Low; Security=Low; Resources=1; Fingerprint=E4E2E6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTemporalCore.TimeNs; IP=Low; Security=Low; Resources=1; Fingerprint=E4E2E6
+    // Hairs-Human:        PENDING
     private static BigInteger TimeNanoseconds(IsoTime time) =>
         (((((((BigInteger)time.Hour * 60) + time.Minute) * 60) + time.Second) * 1000 + time.Millisecond) * 1000 + time.Microsecond) * 1000 +
         time.Nanosecond;
 
     // The proposal's BalanceISODateTime, the time given in nanoseconds from the date's midnight.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal BalanceISODateTime via Broiler.VM JsTemporalCore.BalanceDateTime; IP=Low; Security=Low; Resources=1; Fingerprint=67529E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal BalanceISODateTime via Broiler.VM JsTemporalCore.BalanceDateTime; IP=Low; Security=Low; Resources=1; Fingerprint=67529E
+    // Hairs-Human:        PENDING
     private static IsoDateTime BalanceDateTime(IsoDate date, BigInteger nanoseconds)
     {
         var days = BigInteger.DivRem(nanoseconds, NsPerDay, out var within);
@@ -566,8 +566,8 @@ public static class ZonedTime
     }
 
     // A wall time's precondition: a valid ISO date and a valid time.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal IsValidISODate and IsValidTime; IP=Low; Security=Low; Resources=1; Fingerprint=9BBF14
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal IsValidISODate and IsValidTime; IP=Low; Security=Low; Resources=1; Fingerprint=9BBF14
+    // Hairs-Human:        PENDING
     private static void CheckDateTime(IsoDateTime local)
     {
         var (date, time) = (local.Date, local.Time);

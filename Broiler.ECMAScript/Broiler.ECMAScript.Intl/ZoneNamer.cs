@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   19
 // Annotated:        19/19
 // Exempt:           2
@@ -23,8 +23,8 @@ namespace Broiler.ECMAScript.Intl;
 /// What a format names its zone with (JSD-0058): the metazone data, the region whose golden zones
 /// apply, and the locale's name of a region.
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=0; Fingerprint=64DAB1
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=0; Fingerprint=64DAB1
+// Hairs-Human:        PENDING
 internal sealed record ZoneNaming(ZoneNamer Names, string Region, System.Func<string, string?> RegionName);
 
 /// <summary>
@@ -46,22 +46,22 @@ internal sealed record ZoneNaming(ZoneNamer Names, string Region, System.Func<st
 /// ends at 9999-12-31 23:59 UTC, as ICU reads CLDR's.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=0; Fingerprint=FF899A
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=0; Fingerprint=FF899A
+// Hairs-Human:        PENDING
 internal sealed class ZoneNamer
 {
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=0; Fingerprint=EB587D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=0; Fingerprint=EB587D
+    // Hairs-Human:        PENDING
     private const long DaylightRange = 184L * 86_400;
 
     private readonly ILocaleData metazones;
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=0; Fingerprint=FBFC13
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=0; Fingerprint=FBFC13
+    // Hairs-Human:        PENDING
     private readonly System.Collections.Generic.Dictionary<string, string> countries = new(System.StringComparer.Ordinal);
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=0; Fingerprint=26B61B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=0; Fingerprint=26B61B
+    // Hairs-Human:        PENDING
     private readonly System.Collections.Generic.Dictionary<string, int> zonesInRegion = new(System.StringComparer.Ordinal);
 
     private readonly ITimeZoneDatabase zones;
@@ -71,8 +71,8 @@ internal sealed class ZoneNamer
     /// <see cref="ILocaleData.GoldenZone"/>, <see cref="ILocaleData.PrimaryZone"/>), which the provider decodes as Broiler.VM's
     /// constructor read the table's lines.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=2; Fingerprint=C7EA2B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=2; Fingerprint=C7EA2B
+    // Hairs-Human:        PENDING
     internal ZoneNamer(ILocaleData metazones, ITimeZoneDatabase zones)
     {
         this.metazones = metazones;
@@ -108,8 +108,8 @@ internal sealed class ZoneNamer
     }
 
     /// <summary>Every region code of two ASCII capitals, in ordinal order.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=211E36
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=211E36
+    // Hairs-Human:        PENDING
     private static System.Collections.Generic.IEnumerable<string> Regions()
     {
         for (var first = 'A'; first <= 'Z'; first++)
@@ -122,9 +122,9 @@ internal sealed class ZoneNamer
     }
 
     /// <summary>The metazone a zone uses at a time value, or nothing.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=High; Resources=2; Fingerprint=20DA34
-    // Broiler-Falsified-If: a zone's metazone at an instant differs from CLDR metaZones' period that holds it
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=High; Resources=2; Fingerprint=20DA34
+    // Hairs-Falsified-If: a zone's metazone at an instant differs from CLDR metaZones' period that holds it
+    // Hairs-Human:        PENDING
     internal string? Metazone(string zone, long time)
     {
         if (metazones.MetazonePeriods(zone) is { } list)
@@ -142,8 +142,8 @@ internal sealed class ZoneNamer
     }
 
     /// <summary>A metazone's golden zone in a region, or in the world's (<c>001</c>) where the region has none.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=A3229E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=A3229E
+    // Hairs-Human:        PENDING
     internal string? Golden(string metazone, string region) =>
         metazones.GoldenZone(metazone, region) ?? metazones.GoldenZone(metazone, "001");
 
@@ -151,16 +151,16 @@ internal sealed class ZoneNamer
     /// A zone's specific name at a time value, long or short, in a language's date data: its own name
     /// for standard or daylight time, or its metazone's; nothing where neither has one.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=1; Fingerprint=324282
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=1; Fingerprint=324282
+    // Hairs-Human:        PENDING
     internal string? Specific(DateData data, string language, string zone, ITimeZoneRules offsets, long time, bool longForm)
     {
         var type = (longForm ? "l" : "s") + (offsets.IsDaylightAt(Seconds(time)) ? "d" : "s");
         return Specific(data, language, zone, time, type);
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=1; Fingerprint=0CA65D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=1; Fingerprint=0CA65D
+    // Hairs-Human:        PENDING
     private string? Specific(DateData data, string language, string zone, long time, string type) =>
         data.Value(language, "tz." + zone + "." + type) ??
         (Metazone(zone, time) is { } metazone ? data.Value(language, "mz." + metazone + "." + type) : null);
@@ -169,15 +169,15 @@ internal sealed class ZoneNamer
     /// A zone's generic name at a time value, long or short (ICU's TZGNCore::getDisplayName): its
     /// non-location name, or its location name; nothing where it has neither.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=High; Resources=2; Fingerprint=D9E938
-    // Broiler-Falsified-If: a generic zone name differs from UTS 35 Part 4 section 7.3's metazone, golden zone and location fallbacks
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=High; Resources=2; Fingerprint=D9E938
+    // Hairs-Falsified-If: a generic zone name differs from UTS 35 Part 4 section 7.3's metazone, golden zone and location fallbacks
+    // Hairs-Human:        PENDING
     internal string? Generic(DateData data, string language, string region, System.Func<string, string?> regionName, string zone, ITimeZoneRules offsets, long time, bool longForm) =>
         NonLocation(data, language, region, regionName, zone, offsets, time, longForm) ?? Location(data, language, regionName, zone);
 
     /// <summary>ICU's formatGenericNonLocationName.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=1; Fingerprint=E76C05
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=1; Fingerprint=E76C05
+    // Hairs-Human:        PENDING
     private string? NonLocation(DateData data, string language, string region, System.Func<string, string?> regionName, string zone, ITimeZoneRules offsets, long time, bool longForm)
     {
         var width = longForm ? "l" : "s";
@@ -225,8 +225,8 @@ internal sealed class ZoneNamer
     }
 
     /// <summary>Whether the transition before or after an instant, within 184 days, borders daylight time.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=300908
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=300908
+    // Hairs-Human:        PENDING
     private static bool DaylightNear(ITimeZoneRules offsets, long seconds)
     {
         if (offsets.PreviousTransition(seconds + 1, daylightFlag: true) is { } before && seconds - before < DaylightRange && offsets.IsDaylightAt(before - 1))
@@ -238,8 +238,8 @@ internal sealed class ZoneNamer
     }
 
     /// <summary>ICU's getPartialLocationName: the metazone's generic name and the zone's location in the fallback format.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=1; Fingerprint=715654
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=1; Fingerprint=715654
+    // Hairs-Human:        PENDING
     private string Partial(DateData data, string language, System.Func<string, string?> regionName, string zone, string metazone, string generic)
     {
         string location;
@@ -257,8 +257,8 @@ internal sealed class ZoneNamer
     }
 
     /// <summary>ICU's getGenericLocationName: the zone's country, where it is the only or primary one, or its city.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=1; Fingerprint=6BA9C1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Medium; Resources=1; Fingerprint=6BA9C1
+    // Hairs-Human:        PENDING
     private string? Location(DateData data, string language, System.Func<string, string?> regionName, string zone)
     {
         if (!countries.TryGetValue(zone, out var country))
@@ -273,23 +273,23 @@ internal sealed class ZoneNamer
     }
 
     /// <summary>A zone's exemplar city: the date data's, or the last segment of its identifier.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=9B49A8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=9B49A8
+    // Hairs-Human:        PENDING
     private static string? City(DateData data, string language, string zone) =>
         data.Value(language, "tz." + zone + ".city") ??
         (zone.StartsWith("Etc/", System.StringComparison.Ordinal) || !zone.Contains('/', System.StringComparison.Ordinal)
             ? null
             : zone[(zone.LastIndexOf('/') + 1)..].Replace('_', ' '));
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=CA350E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=CA350E
+    // Hairs-Human:        PENDING
     private static string Format(string pattern, string first, string? second)
     {
         var text = pattern.Replace("{0}", first, System.StringComparison.Ordinal);
         return second is null ? text : text.Replace("{1}", second, System.StringComparison.Ordinal);
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=E94CD8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 7 time zone names and CLDR metaZones via Broiler.VM JsZoneNames; IP=Low; Security=Low; Resources=1; Fingerprint=E94CD8
+    // Hairs-Human:        PENDING
     private static long Seconds(long time) => (long)System.Math.Floor(time / 1000.0);
 }

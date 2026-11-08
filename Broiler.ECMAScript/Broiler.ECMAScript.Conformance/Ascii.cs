@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   15
 // Annotated:        15/15
 // Exempt:           0
@@ -29,33 +29,33 @@ namespace Broiler.ECMAScript.Conformance;
 /// (convention 9), and nothing formats a number through a culture: every number the notation
 /// writes goes through <see cref="NumberFormatInfo.InvariantInfo"/>.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=0CEF22
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=0CEF22
+// Hairs-Human:        PENDING
 internal static class Ascii
 {
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=DCCBAF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=DCCBAF
+    // Hairs-Human:        PENDING
     internal static bool IsDigit(char c) => c >= '0' && c <= '9';
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=0439B6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=0439B6
+    // Hairs-Human:        PENDING
     internal static bool IsUpperHex(char c) => IsDigit(c) || (c >= 'A' && c <= 'F');
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=9EAA98
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=9EAA98
+    // Hairs-Human:        PENDING
     internal static bool IsLowerHex(char c) => IsDigit(c) || (c >= 'a' && c <= 'f');
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=258913
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=258913
+    // Hairs-Human:        PENDING
     internal static bool IsLower(char c) => c >= 'a' && c <= 'z';
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=2A5F20
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=2A5F20
+    // Hairs-Human:        PENDING
     internal static bool IsLetter(char c) => IsLower(c) || (c >= 'A' && c <= 'Z');
 
     /// <summary>Whether every character of <paramref name="text"/> passes <paramref name="test"/>, and there is one.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=57A369
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=57A369
+    // Hairs-Human:        PENDING
     internal static bool All(ReadOnlySpan<char> text, Func<char, bool> test)
     {
         if (text.IsEmpty)
@@ -70,8 +70,8 @@ internal static class Ascii
     }
 
     /// <summary>A decimal integer with no leading zero, no plus sign and no <c>-0</c>: <c>0|-?[1-9][0-9]*</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=CA1F22
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=CA1F22
+    // Hairs-Human:        PENDING
     internal static bool IsCanonicalInteger(ReadOnlySpan<char> text)
     {
         if (text.SequenceEqual("0"))
@@ -82,39 +82,39 @@ internal static class Ascii
     }
 
     /// <summary>A positive decimal integer with no leading zero: <c>[1-9][0-9]*</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=60C5BA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=60C5BA
+    // Hairs-Human:        PENDING
     internal static bool IsPositiveInteger(ReadOnlySpan<char> text)
         => !text.IsEmpty && text[0] != '0' && All(text, IsDigit);
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=5E6669
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=5E6669
+    // Hairs-Human:        PENDING
     internal static ulong ParseUpperHex(ReadOnlySpan<char> digits)
         => ulong.Parse(digits, NumberStyles.AllowHexSpecifier, NumberFormatInfo.InvariantInfo);
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=3EB0C3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=3EB0C3
+    // Hairs-Human:        PENDING
     internal static string UpperHex(ulong value, int digits)
         => value.ToString(digits == 16 ? "X16" : "X4", NumberFormatInfo.InvariantInfo);
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=53227C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=53227C
+    // Hairs-Human:        PENDING
     internal static BigInteger ParseInteger(ReadOnlySpan<char> digits)
         => BigInteger.Parse(digits, NumberStyles.AllowLeadingSign, NumberFormatInfo.InvariantInfo);
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=0C5002
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=0C5002
+    // Hairs-Human:        PENDING
     internal static string Decimal(BigInteger value) => value.ToString(NumberFormatInfo.InvariantInfo);
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B4AB36
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B4AB36
+    // Hairs-Human:        PENDING
     internal static string Decimal(int value) => value.ToString(NumberFormatInfo.InvariantInfo);
 
     /// <summary>
     /// A positive decimal integer that fits an <see cref="int"/>, or <see langword="false"/>.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=6E47F3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=6E47F3
+    // Hairs-Human:        PENDING
     internal static bool TryParsePositive(ReadOnlySpan<char> text, out int value)
     {
         value = 0;

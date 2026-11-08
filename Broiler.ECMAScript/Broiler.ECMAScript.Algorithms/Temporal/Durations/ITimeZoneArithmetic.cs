@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   4
 // Annotated:        4/4
 // Exempt:           0
@@ -40,15 +40,15 @@ namespace Broiler.ECMAScript.Temporal;
 /// each engine maps to its <c>RangeError</c>. Every member must be safe to call concurrently.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=Temporal s11.1.9, s11.1.11 and s11.1.14, JSD-0078 decision 1; IP=None; Security=Low; Resources=0; Fingerprint=1546C9
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal s11.1.9, s11.1.11 and s11.1.14, JSD-0078 decision 1; IP=None; Security=Low; Resources=0; Fingerprint=1546C9
+// Hairs-Human:        PENDING
 public interface ITimeZoneArithmetic
 {
     /// <summary>The zone's offset from UTC at an instant: the proposal's <c>GetOffsetNanosecondsFor</c>.</summary>
     /// <param name="epochNanoseconds">The instant, a valid epoch nanosecond count.</param>
     /// <returns>The offset, below a day in magnitude.</returns>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s11.1.9; IP=None; Security=Low; Resources=0; Fingerprint=ADC661
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s11.1.9; IP=None; Security=Low; Resources=0; Fingerprint=ADC661
+    // Hairs-Human:        PENDING
     long GetOffsetNanosecondsFor(BigInteger epochNanoseconds);
 
     /// <summary>
@@ -62,8 +62,8 @@ public interface ITimeZoneArithmetic
     /// <see cref="TimeStatus.Completed"/>; <see cref="TimeStatus.OutOfRange"/> where the instant is outside the range;
     /// <see cref="TimeStatus.Ambiguous"/> or <see cref="TimeStatus.Skipped"/> under <see cref="Disambiguation.Reject"/>.
     /// </returns>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s11.1.11; IP=None; Security=Low; Resources=0; Fingerprint=FF236B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s11.1.11; IP=None; Security=Low; Resources=0; Fingerprint=FF236B
+    // Hairs-Human:        PENDING
     TimeStatus GetEpochNanosecondsFor(IsoDateTime dateTime, Disambiguation disambiguation, out BigInteger epochNanoseconds);
 
     /// <summary>The first instant of a day in the zone: the proposal's <c>GetStartOfDay</c>.</summary>
@@ -73,7 +73,7 @@ public interface ITimeZoneArithmetic
     /// <see cref="TimeStatus.Completed"/>; <see cref="TimeStatus.OutOfRange"/> where the instant is outside the range;
     /// <see cref="TimeStatus.NoStartOfDay"/> where midnight is skipped and no transition follows within the range.
     /// </returns>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s11.1.14; IP=None; Security=Low; Resources=0; Fingerprint=47D224
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s11.1.14; IP=None; Security=Low; Resources=0; Fingerprint=47D224
+    // Hairs-Human:        PENDING
     TimeStatus GetStartOfDay(IsoDate date, out BigInteger epochNanoseconds);
 }

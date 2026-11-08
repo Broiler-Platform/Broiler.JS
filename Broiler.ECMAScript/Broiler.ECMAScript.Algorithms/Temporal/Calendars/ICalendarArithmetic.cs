@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   3
 // Annotated:        3/3
 // Exempt:           0
@@ -30,8 +30,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// the engine throws a <c>RangeError</c> for a status other than <see cref="CalendarStatus.Completed"/>.
 /// Every member is safe to call concurrently.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=Temporal s12.3.7 and s12.3.9, JSD-0078 decision 1; IP=None; Security=None; Resources=0; Fingerprint=EC1BCC
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal s12.3.7 and s12.3.9, JSD-0078 decision 1; IP=None; Security=None; Resources=0; Fingerprint=EC1BCC
+// Hairs-Human:        PENDING
 public interface ICalendarArithmetic
 {
     /// <summary>
@@ -49,8 +49,8 @@ public interface ICalendarArithmetic
     /// <see cref="CalendarStatus.MonthNotInYear"/> or <see cref="CalendarStatus.FieldOutOfRange"/>; or
     /// <see cref="CalendarStatus.OutOfRange"/> for a result outside ISODateWithinLimits.
     /// </returns>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s12.3.7; IP=None; Security=Low; Resources=0; Fingerprint=5ACF37
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s12.3.7; IP=None; Security=Low; Resources=0; Fingerprint=5ACF37
+    // Hairs-Human:        PENDING
     CalendarStatus DateAdd(CalendarId calendar, IsoDate date, CalendarDuration duration, CalendarOverflow overflow, out IsoDate result);
 
     /// <summary>
@@ -64,7 +64,7 @@ public interface ICalendarArithmetic
     /// <param name="largestUnit">The largest unit of the difference.</param>
     /// <param name="result">The difference, every field of one sign; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns><see cref="CalendarStatus.Completed"/>, or <see cref="CalendarStatus.OutOfRange"/> for a date outside the limits.</returns>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s12.3.9; IP=None; Security=Low; Resources=0; Fingerprint=25214D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s12.3.9; IP=None; Security=Low; Resources=0; Fingerprint=25214D
+    // Hairs-Human:        PENDING
     CalendarStatus DateUntil(CalendarId calendar, IsoDate one, IsoDate two, CalendarUnit largestUnit, out CalendarDuration result);
 }

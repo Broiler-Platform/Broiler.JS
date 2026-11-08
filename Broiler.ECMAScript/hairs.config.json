@@ -9,8 +9,14 @@
 //
 // The one override is fdlibm's (expm1 and log1p, milestone SJL-4.3), whose notice its file keeps under the header.
 //
-// regenerateCommand assumes the aggregate layout CI reproduces: Broiler.Code and Broiler.JS checked out side
-// by side.
+// The assurance tool is Hairs.Cli 0.1.0-preview.2, pinned in the repository's .config/dotnet-tools.json and restored
+// from nuget.org; regenerateCommand runs it from the repository's root. The artefacts are named here rather than left
+// to the tool's defaults, which changed with the tool. (Changed 2026-11-08, when Broiler.Code's commit 1b31684 "Switch
+// to Hairs" removed its review CLI and the owner chose to migrate to Hairs. This file was assurance.config.json, named
+// no artefacts, so that the manifest took the old tool's default name assurance.manifest.json, and this paragraph
+// read: "regenerateCommand assumes the aggregate layout CI reproduces: Broiler.Code and Broiler.JS checked out side by
+// side." regenerateCommand read "dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release --
+// assurance generate --root Broiler.JS/Broiler.ECMAScript".)
 {
   "schema": 1,
   "component": "Broiler.ECMAScript",
@@ -36,5 +42,10 @@
       "copyright": [ "2026 Broiler Platform contributors", "1993 Sun Microsystems, Inc." ],
       "license": "Apache-2.0 AND SunPro" }
   ],
-  "regenerateCommand": "dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript"
+  "artefacts": {
+    "report": "CODE-ASSURANCE.md",
+    "humanReview": "HUMAN_REVIEW.md",
+    "manifest": "hairs.manifest.json"
+  },
+  "regenerateCommand": "dotnet tool run hairs -- assurance generate --root Broiler.ECMAScript"
 }

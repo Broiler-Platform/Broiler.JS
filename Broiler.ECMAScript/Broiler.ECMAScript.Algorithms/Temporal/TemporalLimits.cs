@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   18
 // Annotated:        18/18
 // Exempt:           0
@@ -41,48 +41,48 @@ namespace Broiler.ECMAScript.Temporal;
 /// <see cref="ZonedTime.MaxEpochNanoseconds"/>, ±10^8 days from the epoch.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0078 decision D9, Temporal limits via Broiler.VM JsTemporalCore; IP=Low; Security=Medium; Resources=1; Fingerprint=C11743
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0078 decision D9, Temporal limits via Broiler.VM JsTemporalCore; IP=Low; Security=Medium; Resources=1; Fingerprint=C11743
+// Hairs-Human:        PENDING
 public static class TemporalLimits
 {
     /// <summary>The nanoseconds in a 24-hour day, the proposal's <c>nsPerDay</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal nsPerDay via Broiler.VM JsTemporalCore.NsPerDay; IP=Low; Security=None; Resources=0; Fingerprint=3BBE72
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal nsPerDay via Broiler.VM JsTemporalCore.NsPerDay; IP=Low; Security=None; Resources=0; Fingerprint=3BBE72
+    // Hairs-Human:        PENDING
     public const long NanosecondsPerDay = 86_400_000_000_000L;
 
     /// <summary>The first year any representable date, date-time or year-month has: -271821.</summary>
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISODateTimeWithinLimits; IP=Low; Security=None; Resources=0; Fingerprint=8728C4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISODateTimeWithinLimits; IP=Low; Security=None; Resources=0; Fingerprint=8728C4
+    // Hairs-Human:        PENDING
     public const long MinYear = -271821;
 
     /// <summary>The last year any representable date, date-time or year-month has: 275760.</summary>
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISODateTimeWithinLimits; IP=Low; Security=None; Resources=0; Fingerprint=F19122
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISODateTimeWithinLimits; IP=Low; Security=None; Resources=0; Fingerprint=F19122
+    // Hairs-Human:        PENDING
     public const long MaxYear = 275760;
 
     /// <summary>The epoch days from 1970-01-01 to either end of the instant range: 10^8.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal CheckISODaysRange via Broiler.VM JsTemporalCore.DaysWithinRange; IP=Low; Security=None; Resources=0; Fingerprint=ED9DFC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal CheckISODaysRange via Broiler.VM JsTemporalCore.DaysWithinRange; IP=Low; Security=None; Resources=0; Fingerprint=ED9DFC
+    // Hairs-Human:        PENDING
     public const long MaxEpochDays = 100_000_000;
 
     /// <summary>The epoch days of -271821-04-19, the first date ISODateWithinLimits admits: 10^8 days and one before the epoch.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.12 via Broiler.VM JsTemporalCore.MinDay; IP=Low; Security=Low; Resources=0; Fingerprint=12A107
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.12 via Broiler.VM JsTemporalCore.MinDay; IP=Low; Security=Low; Resources=0; Fingerprint=12A107
+    // Hairs-Human:        PENDING
     internal const long MinDateEpochDays = -MaxEpochDays - 1;
 
     /// <summary>The bound a duration's years, months and weeks stay below in magnitude: 2^32.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal IsValidDuration via Broiler.VM JsTemporalCore.IsValidDuration; IP=Low; Security=None; Resources=0; Fingerprint=6CD076
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal IsValidDuration via Broiler.VM JsTemporalCore.IsValidDuration; IP=Low; Security=None; Resources=0; Fingerprint=6CD076
+    // Hairs-Human:        PENDING
     public const double CalendarDurationLimit = 4294967296.0;
 
     /// <summary>The proposal's <c>maxTimeDuration</c>: 2^53 × 10^9 - 1 nanoseconds, the largest magnitude of a time duration.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal maxTimeDuration via Broiler.VM JsTemporalCore.MaxTimeDuration; IP=Low; Security=None; Resources=0; Fingerprint=0AA33F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal maxTimeDuration via Broiler.VM JsTemporalCore.MaxTimeDuration; IP=Low; Security=None; Resources=0; Fingerprint=0AA33F
+    // Hairs-Human:        PENDING
     public static readonly BigInteger MaxTimeDuration = (BigInteger.One << 53) * 1_000_000_000 - 1;
 
     // A day in nanoseconds, as an exact integer.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal nsPerDay via Broiler.VM JsTemporalCore.NsPerDay; IP=Low; Security=None; Resources=0; Fingerprint=576D12
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal nsPerDay via Broiler.VM JsTemporalCore.NsPerDay; IP=Low; Security=None; Resources=0; Fingerprint=576D12
+    // Hairs-Human:        PENDING
     private static readonly BigInteger Day = new(NanosecondsPerDay);
 
     /// <summary>
@@ -94,8 +94,8 @@ public static class TemporalLimits
     /// <see cref="TemporalStatus.Completed"/>; <see cref="TemporalStatus.InvalidDate"/> where the fields are not a date;
     /// <see cref="TemporalStatus.OutOfRange"/> where the date is outside the limits.
     /// </returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ISODateWithinLimits via Broiler.VM JsTemporalCore.DateWithinLimits; IP=Low; Security=Medium; Resources=1; Fingerprint=7B46C3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ISODateWithinLimits via Broiler.VM JsTemporalCore.DateWithinLimits; IP=Low; Security=Medium; Resources=1; Fingerprint=7B46C3
+    // Hairs-Human:        PENDING
     public static TemporalStatus CheckIsoDate(IsoDate date) => CheckIsoDateTime(new IsoDateTime(date, new IsoTime(12, 0, 0, 0, 0, 0)));
 
     /// <summary>
@@ -108,8 +108,8 @@ public static class TemporalLimits
     /// <see cref="TemporalStatus.InvalidTime"/> where the fields are not a date or a time;
     /// <see cref="TemporalStatus.OutOfRange"/> where the date-time is outside the limits.
     /// </returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ISODateTimeWithinLimits via Broiler.VM JsTemporalCore.DateTimeWithinLimits, corrected by JSD-0078 decision D9 (row R6); IP=Low; Security=Medium; Resources=1; Fingerprint=8DBE15
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ISODateTimeWithinLimits via Broiler.VM JsTemporalCore.DateTimeWithinLimits, corrected by JSD-0078 decision D9 (row R6); IP=Low; Security=Medium; Resources=1; Fingerprint=8DBE15
+    // Hairs-Human:        PENDING
     public static TemporalStatus CheckIsoDateTime(IsoDateTime dateTime)
     {
         var (date, time) = (dateTime.Date, dateTime.Time);
@@ -138,8 +138,8 @@ public static class TemporalLimits
     /// <see cref="TemporalStatus.Completed"/>; <see cref="TemporalStatus.InvalidDate"/> where the fields are not a date;
     /// <see cref="TemporalStatus.OutOfRange"/> where the year and month are outside the limits.
     /// </returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ISOYearMonthWithinLimits via Broiler.VM JsTemporalCore.YearMonthWithinLimits; IP=Low; Security=Low; Resources=1; Fingerprint=86B367
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ISOYearMonthWithinLimits via Broiler.VM JsTemporalCore.YearMonthWithinLimits; IP=Low; Security=Low; Resources=1; Fingerprint=86B367
+    // Hairs-Human:        PENDING
     public static TemporalStatus CheckIsoYearMonth(IsoDate yearMonth)
     {
         if (!IsoCalendarMath.IsValidIsoDate(yearMonth.Year, yearMonth.Month, yearMonth.Day))
@@ -149,8 +149,8 @@ public static class TemporalLimits
     }
 
     /// <summary>ISOYearMonthWithinLimits over a valid date's year and month: April -271821 to September 275760.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ISOYearMonthWithinLimits via Broiler.VM JsTemporalCore.YearMonthWithinLimits; IP=Low; Security=Low; Resources=0; Fingerprint=4E349A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ISOYearMonthWithinLimits via Broiler.VM JsTemporalCore.YearMonthWithinLimits; IP=Low; Security=Low; Resources=0; Fingerprint=4E349A
+    // Hairs-Human:        PENDING
     internal static bool YearMonthWithinLimits(IsoDate yearMonth) =>
         yearMonth.Year is >= MinYear and <= MaxYear &&
         !(yearMonth.Year == MinYear && yearMonth.Month < 4) && !(yearMonth.Year == MaxYear && yearMonth.Month > 9);
@@ -159,8 +159,8 @@ public static class TemporalLimits
     /// ISODateWithinLimits over a valid date's epoch days: from -271821-04-19 (<see cref="MinDateEpochDays"/>) to
     /// +275760-09-13 (<see cref="MaxEpochDays"/>), the form the calendars test.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.12 via Broiler.VM JsTemporalCore.DateWithinLimits; IP=Low; Security=Low; Resources=0; Fingerprint=E90CB3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.12 via Broiler.VM JsTemporalCore.DateWithinLimits; IP=Low; Security=Low; Resources=0; Fingerprint=E90CB3
+    // Hairs-Human:        PENDING
     internal static bool DateWithinLimits(long epochDays) => epochDays is >= MinDateEpochDays and <= MaxEpochDays;
 
     /// <summary>
@@ -173,8 +173,8 @@ public static class TemporalLimits
     /// <see cref="TemporalStatus.OutOfRange"/> where the date is further than 10^8 days from the epoch (the
     /// specification's <c>RangeError</c>).
     /// </returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal CheckISODaysRange via Broiler.VM JsTemporalCore.DaysWithinRange; IP=Low; Security=Medium; Resources=1; Fingerprint=A75656
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal CheckISODaysRange via Broiler.VM JsTemporalCore.DaysWithinRange; IP=Low; Security=Medium; Resources=1; Fingerprint=A75656
+    // Hairs-Human:        PENDING
     public static TemporalStatus CheckIsoDaysRange(IsoDate date)
     {
         if (!IsoCalendarMath.IsValidIsoDate(date.Year, date.Month, date.Day))
@@ -190,8 +190,8 @@ public static class TemporalLimits
     /// <summary>Whether an exact count of nanoseconds since the epoch is an instant: the proposal's <c>IsValidEpochNanoseconds</c>.</summary>
     /// <param name="epochNanoseconds">The nanoseconds since the epoch.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> beyond ±8.64 × 10^21.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal IsValidEpochNanoseconds via Broiler.VM JsTemporalCore.IsValidEpochNs; IP=Low; Security=Low; Resources=1; Fingerprint=9221C2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal IsValidEpochNanoseconds via Broiler.VM JsTemporalCore.IsValidEpochNs; IP=Low; Security=Low; Resources=1; Fingerprint=9221C2
+    // Hairs-Human:        PENDING
     public static TemporalStatus CheckEpochNanoseconds(BigInteger epochNanoseconds) =>
         epochNanoseconds >= ZonedTime.MinEpochNanoseconds && epochNanoseconds <= ZonedTime.MaxEpochNanoseconds
             ? TemporalStatus.Completed
@@ -203,8 +203,8 @@ public static class TemporalLimits
     /// </summary>
     /// <param name="time">The time.</param>
     /// <returns>Whether the hour is 0 to 23, the minute and second 0 to 59, and the sub-second fields 0 to 999.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal IsValidTime via Broiler.VM JsTemporalCore.IsValidTime; IP=Low; Security=Low; Resources=0; Fingerprint=587DD6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal IsValidTime via Broiler.VM JsTemporalCore.IsValidTime; IP=Low; Security=Low; Resources=0; Fingerprint=587DD6
+    // Hairs-Human:        PENDING
     public static bool IsValidTime(IsoTime time) =>
         time.Hour is >= 0 and <= 23 && time.Minute is >= 0 and <= 59 && time.Second is >= 0 and <= 59 &&
         time.Millisecond is >= 0 and <= 999 && time.Microsecond is >= 0 and <= 999 && time.Nanosecond is >= 0 and <= 999;
@@ -216,8 +216,8 @@ public static class TemporalLimits
     /// </summary>
     /// <param name="duration">The fields, each an integer.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.InvalidDuration"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal IsValidDuration via Broiler.VM JsTemporalCore.IsValidDuration; IP=Low; Security=Medium; Resources=1; Fingerprint=3A6B12
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal IsValidDuration via Broiler.VM JsTemporalCore.IsValidDuration; IP=Low; Security=Medium; Resources=1; Fingerprint=3A6B12
+    // Hairs-Human:        PENDING
     public static TemporalStatus CheckDuration(DurationFields duration)
     {
         ReadOnlySpan<double> fields =

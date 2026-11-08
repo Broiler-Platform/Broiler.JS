@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   7
 // Annotated:        7/7
 // Exempt:           13
@@ -24,8 +24,8 @@ namespace Broiler.ECMAScript.Syntax;
 /// The stage of the front end that reports a diagnostic (decision SJL-D-11; Broiler.VM's JSD-0080, "Diagnostics"): the
 /// tokenizer, the parser, or the static semantics of the syntax half.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=SJL-D-11 diagnostics phase; IP=Low; Security=Low; Resources=0; Fingerprint=68B0E2
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=SJL-D-11 diagnostics phase; IP=Low; Security=Low; Resources=0; Fingerprint=68B0E2
+// Hairs-Human:        PENDING
 public enum DiagnosticPhase
 {
     /// <summary>The lexical grammar (ECMA-262 clause 12): a code unit no token admits, an unterminated literal, a malformed escape.</summary>
@@ -47,8 +47,8 @@ public enum DiagnosticPhase
 /// line terminator of ECMA-262 clause 12.3 starts a line, and CR LF is one. Each includes the source's base offset, line
 /// and column (<see cref="SourceText"/>).
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D15 positions; IP=Low; Security=Low; Resources=0; Fingerprint=8F2BC2
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D15 positions; IP=Low; Security=Low; Resources=0; Fingerprint=8F2BC2
+// Hairs-Human:        PENDING
 public readonly record struct SourceSpan
 {
     /// <summary>Creates a span.</summary>
@@ -57,8 +57,8 @@ public readonly record struct SourceSpan
     /// <param name="line">The 1-based line it starts on.</param>
     /// <param name="column">The 1-based column it starts at.</param>
     /// <exception cref="ArgumentOutOfRangeException">The offset or the length is negative, or the line or the column is below one.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D15 positions; IP=Low; Security=Low; Resources=1; Fingerprint=FAC039
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D15 positions; IP=Low; Security=Low; Resources=1; Fingerprint=FAC039
+    // Hairs-Human:        PENDING
     public SourceSpan(int offset, int length, int line, int column)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(offset);
@@ -100,8 +100,8 @@ public readonly record struct SourceSpan
 /// wide front end, where that front end anchors it at the base.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=SJL-D-11, JSD-0083 D11 D15 diagnostics; IP=Low; Security=Low; Resources=0; Fingerprint=A1F926
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=SJL-D-11, JSD-0083 D11 D15 diagnostics; IP=Low; Security=Low; Resources=0; Fingerprint=A1F926
+// Hairs-Human:        PENDING
 public sealed class SyntaxDiagnostic
 {
     /// <summary>Creates a diagnostic.</summary>
@@ -114,8 +114,8 @@ public sealed class SyntaxDiagnostic
     /// <exception cref="ArgumentNullException">An argument that is a reference is null, or one of the arguments is.</exception>
     /// <exception cref="ArgumentException">The code or the message identifier is not of its form.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The phase is not a <see cref="DiagnosticPhase"/>.</exception>
-    // Broiler-AI:           Origin=AI; Spec=SJL-D-11, catalogue shared codes and message identifiers; IP=Low; Security=Low; Resources=1; Fingerprint=D1807F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=SJL-D-11, catalogue shared codes and message identifiers; IP=Low; Security=Low; Resources=1; Fingerprint=D1807F
+    // Hairs-Human:        PENDING
     public SyntaxDiagnostic(string code, string messageId, IReadOnlyList<string> arguments, DiagnosticPhase phase, SourceSpan span, string sourceName)
     {
         ArgumentNullException.ThrowIfNull(code);
@@ -159,8 +159,8 @@ public sealed class SyntaxDiagnostic
     /// <summary>The name of the source it is in.</summary>
     public string SourceName { get; }
 
-    // Broiler-AI:           Origin=AI; Spec=catalogue shared codes, early-errors.md section 5; IP=Low; Security=Low; Resources=1; Fingerprint=3C5B5C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes, early-errors.md section 5; IP=Low; Security=Low; Resources=1; Fingerprint=3C5B5C
+    // Hairs-Human:        PENDING
     private static bool IsSharedCode(string code)
     {
         if (code.Length != 7 || !code.StartsWith("JSE", StringComparison.Ordinal))
@@ -174,8 +174,8 @@ public sealed class SyntaxDiagnostic
         return true;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=catalogue message identifiers, early-errors.md section 6; IP=Low; Security=Low; Resources=1; Fingerprint=A508F8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue message identifiers, early-errors.md section 6; IP=Low; Security=Low; Resources=1; Fingerprint=A508F8
+    // Hairs-Human:        PENDING
     private static bool IsMessageId(string messageId)
     {
         // Two to four segments joined by '.', each [a-z][a-z0-9]*(-[a-z0-9]+)*.

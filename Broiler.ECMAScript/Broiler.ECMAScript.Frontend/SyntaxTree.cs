@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   11
 // Annotated:        11/11
 // Exempt:           92
@@ -26,8 +26,8 @@ namespace Broiler.ECMAScript.Syntax;
 /// switch on it without a type test.
 /// </summary>
 /// <remarks>The numbers are stable: a kind is never renumbered and a number is never reused.</remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=0; Fingerprint=89DBEB
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=0; Fingerprint=89DBEB
+// Hairs-Human:        PENDING
 public enum SyntaxKind
 {
     /// <summary>A Script or a Module, eval code, or a dynamic function's parameters or body (<see cref="ProgramNode"/>).</summary>
@@ -295,8 +295,8 @@ public enum SyntaxKind
 /// nodes. A node is its own identity: side facts sit in identity-keyed tables beside the tree (stage 4d), never on it.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=0; Fingerprint=9FC754
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=0; Fingerprint=9FC754
+// Hairs-Human:        PENDING
 public abstract class SyntaxNode
 {
     private protected SyntaxNode(SyntaxKind kind, SourceSpan span)
@@ -323,20 +323,20 @@ public abstract class SyntaxNode
     internal int Height { get; set; } = -1;
 
     /// <summary>The node's children in source order, for a walk that needs no type test.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=9EBE30
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=9EBE30
+    // Hairs-Human:        PENDING
     internal abstract void AddChildren(List<SyntaxNode> into);
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=AF0CDC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=AF0CDC
+    // Hairs-Human:        PENDING
     private protected static void Add(List<SyntaxNode> into, SyntaxNode? node)
     {
         if (node is not null)
             into.Add(node);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=86046F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=86046F
+    // Hairs-Human:        PENDING
     private protected static void AddAll<T>(List<SyntaxNode> into, IReadOnlyList<T> nodes)
         where T : SyntaxNode?
     {
@@ -349,17 +349,17 @@ public abstract class SyntaxNode
 }
 
 /// <summary>Read-only lists for the tree.</summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=0; Fingerprint=65D27B
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=0; Fingerprint=65D27B
+// Hairs-Human:        PENDING
 internal static class Lists
 {
-    // Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=422F06
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=422F06
+    // Hairs-Human:        PENDING
     internal static IReadOnlyList<T> Freeze<T>(List<T>? items) =>
         items is null || items.Count == 0 ? Array.Empty<T>() : new ReadOnlyCollection<T>(items.ToArray());
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=0FD37C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=0FD37C
+    // Hairs-Human:        PENDING
     internal static IReadOnlyList<T> One<T>(T item) => new ReadOnlyCollection<T>(new[] { item });
 }
 
@@ -372,12 +372,12 @@ internal static class Lists
 /// <see cref="ExpressionStatement.Directive"/> is set, its raw text kept as written. A dynamic function's parameters are in
 /// <see cref="Parameters"/> and its <see cref="Body"/> is empty; every other goal's are in <see cref="Body"/>.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=0; Fingerprint=5441C5
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=0; Fingerprint=5441C5
+// Hairs-Human:        PENDING
 public sealed class ProgramNode : SyntaxNode
 {
-    // Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=85E41B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=85E41B
+    // Hairs-Human:        PENDING
     internal ProgramNode(SourceSpan span, ParseGoal goal, IReadOnlyList<Statement> body, IReadOnlyList<Pattern> parameters, bool parametersTrailingComma, bool hasTopLevelAwait)
         : base(SyntaxKind.Program, span)
     {
@@ -407,8 +407,8 @@ public sealed class ProgramNode : SyntaxNode
     /// </summary>
     public bool HasTopLevelAwait { get; }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=3F48E1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 output tree, JSD-0083 D15 full spans; IP=Low; Security=Low; Resources=1; Fingerprint=3F48E1
+    // Hairs-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         AddAll(into, Parameters);

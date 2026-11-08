@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   6
 // Annotated:        6/6
 // Exempt:           36
@@ -21,8 +21,8 @@ using Broiler.ECMAScript.Syntax;
 namespace Broiler.ECMAScript.Semantics;
 
 /// <summary>The kind of a scope the declarations walk records (Broiler.VM's JSD-0083, decision D10).</summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=0; Fingerprint=77FAF4
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=0; Fingerprint=77FAF4
+// Hairs-Human:        PENDING
 public enum ScopeKind
 {
     /// <summary>A Script's top level, or eval code's.</summary>
@@ -51,8 +51,8 @@ public enum ScopeKind
 }
 
 /// <summary>How a name is declared (ECMA-262's BoundNames of the declaring production).</summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=0; Fingerprint=675A8D
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=0; Fingerprint=675A8D
+// Hairs-Human:        PENDING
 public enum BindingKind
 {
     /// <summary>A <c>var</c> declaration, its for heads' among them.</summary>
@@ -87,8 +87,8 @@ public enum BindingKind
 }
 
 /// <summary>One declared name, as the declarations walk finds it (decision D10).</summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=1; Fingerprint=A1AF75
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=1; Fingerprint=A1AF75
+// Hairs-Human:        PENDING
 public sealed class Declaration
 {
     internal Declaration(string name, BindingKind kind, SyntaxNode node, bool isLexical, bool isBlockFunction, bool isIfClauseFunction)
@@ -121,8 +121,8 @@ public sealed class Declaration
 }
 
 /// <summary>One scope and its declarations, in source order (decision D10).</summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=1; Fingerprint=21DD7E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=1; Fingerprint=21DD7E
+// Hairs-Human:        PENDING
 public sealed class Scope
 {
     internal Scope(ScopeKind kind, SyntaxNode node, IReadOnlyList<Declaration> declarations)
@@ -149,8 +149,8 @@ public sealed class Scope
 }
 
 /// <summary>A program's or a function's facts the walk computes (decision D10): its strictness and its parameters' names.</summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=1; Fingerprint=6CA3D3
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=1; Fingerprint=6CA3D3
+// Hairs-Human:        PENDING
 public sealed class FunctionFacts
 {
     internal FunctionFacts(SyntaxNode node, bool isStrict, IReadOnlyList<string> parameterNames)
@@ -175,8 +175,8 @@ public sealed class FunctionFacts
 /// position, so that neither engine computes them again: every scope with its kind and declarations, and the program's and
 /// every function's strictness and parameter names.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=1; Fingerprint=6CE5F8
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk; IP=Low; Security=Low; Resources=1; Fingerprint=6CE5F8
+// Hairs-Human:        PENDING
 public sealed class DeclarationTables
 {
     internal DeclarationTables(IReadOnlyList<Scope> scopes, IReadOnlyList<FunctionFacts> functions)

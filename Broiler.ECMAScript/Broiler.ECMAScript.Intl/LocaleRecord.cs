@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   12
 // Annotated:        12/12
 // Exempt:           13
@@ -55,8 +55,8 @@ namespace Broiler.ECMAScript.Intl;
 /// <see cref="LocaleId"/>). The checks of a language, script or region read at most eight code units and take none.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.locale records; IP=Low; Security=Low; Resources=0; Fingerprint=FB2794
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-intl.locale records; IP=Low; Security=Low; Resources=0; Fingerprint=FB2794
+// Hairs-Human:        PENDING
 public sealed record LocaleRecord(
     string Locale,
     string? Calendar,
@@ -73,8 +73,8 @@ public sealed record LocaleRecord(
     /// <summary>The <c>language</c> option's check in UpdateLanguageId (<c>sec-updatelanguageid</c>): a <c>unicode_language_subtag</c>.</summary>
     /// <param name="value">The option's String.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidLanguageSubtag"/>, a <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=4F4846
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=4F4846
+    // Hairs-Human:        PENDING
     public static IntlStatus CheckLanguage(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -84,8 +84,8 @@ public sealed record LocaleRecord(
     /// <summary>The <c>script</c> option's check in UpdateLanguageId: a <c>unicode_script_subtag</c>.</summary>
     /// <param name="value">The option's String.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidScriptSubtag"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=EE068A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=EE068A
+    // Hairs-Human:        PENDING
     public static IntlStatus CheckScript(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -95,8 +95,8 @@ public sealed record LocaleRecord(
     /// <summary>The <c>region</c> option's check in UpdateLanguageId: a <c>unicode_region_subtag</c>.</summary>
     /// <param name="value">The option's String.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidRegionSubtag"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=2BF7C4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=2BF7C4
+    // Hairs-Human:        PENDING
     public static IntlStatus CheckRegion(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -110,8 +110,8 @@ public sealed record LocaleRecord(
     /// <param name="value">The option's String.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of <paramref name="value"/>, charged before the check.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidVariants"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=55E62B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=55E62B
+    // Hairs-Human:        PENDING
     public static IntlStatus CheckVariants(string value, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -145,8 +145,8 @@ public sealed record LocaleRecord(
     /// <param name="value">The option's String.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of <paramref name="value"/>, charged before the check.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidType"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=19B5DB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=19B5DB
+    // Hairs-Human:        PENDING
     public static IntlStatus CheckType(string value, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -158,14 +158,14 @@ public sealed record LocaleRecord(
     /// <param name="value">The option's String, as read.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of the value checked, charged before the check.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidType"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=E5234E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=E5234E
+    // Hairs-Human:        PENDING
     public static IntlStatus CheckFirstDayOfWeek(string value, WorkCharge? charge = null) => CheckType(WeekdayToUValue(value), charge);
 
     /// <summary>ECMA-402's WeekdayToUValue (<c>sec-weekdaytouvalue</c>): <c>"0"</c> to <c>"7"</c> as <c>sun</c> to <c>sun</c>, and any other String unchanged.</summary>
     /// <param name="value">The <c>firstDayOfWeek</c> option's String.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=26657D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=26657D
+    // Hairs-Human:        PENDING
     public static string WeekdayToUValue(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -185,8 +185,8 @@ public sealed record LocaleRecord(
     /// <param name="updated">The updated tag, not yet canonical, or the empty string on a failure.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of the tag and of each option given, charged before the work.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or the status of the first check that fails, in the options' order.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Medium; Resources=2; Fingerprint=D853E1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Medium; Resources=2; Fingerprint=D853E1
+    // Hairs-Human:        PENDING
     public static IntlStatus UpdateLanguageId(string tag, string? language, string? script, string? region, string? variants, out string updated, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(tag);
@@ -267,9 +267,9 @@ public sealed record LocaleRecord(
     /// the keys the record's canonicalisation looks up.
     /// </param>
     /// <returns><see cref="IntlStatus.Completed"/>, or the status of the first step that fails; every one is a <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=High; Resources=2; Fingerprint=218F87
-    // Broiler-Falsified-If: an option outside ASCII or outside its grammar is accepted, an option is checked in another order than ECMA-402's, or the record's locale is not the canonical tag of the tag and options
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=High; Resources=2; Fingerprint=218F87
+    // Hairs-Falsified-If: an option outside ASCII or outside its grammar is accepted, an option is checked in another order than ECMA-402's, or the record's locale is not the canonical tag of the tag and options
+    // Hairs-Human:        PENDING
     public static IntlStatus TryCreate(string tag, LocaleOptions options, ILocaleData data, out LocaleRecord? record, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(tag);
@@ -376,8 +376,8 @@ public sealed record LocaleRecord(
     /// <param name="key">The key, lower case.</param>
     /// <param name="value">The value.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of <paramref name="value"/>, charged before the work.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=B8B716
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-intl.locale sec-updatelanguageid via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=B8B716
+    // Hairs-Human:        PENDING
     public static string CanonicalizeUValue(ILocaleData data, string key, string value, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -400,8 +400,8 @@ public sealed record LocaleRecord(
 /// The options of the <c>Intl.Locale</c> constructor, each as the engine read it and converted it to a String or a
 /// Boolean, or <see langword="null"/> where absent (ECMA-402 <c>sec-intl.locale</c>).
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.locale records; IP=Low; Security=Low; Resources=0; Fingerprint=3F7A51
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-intl.locale records; IP=Low; Security=Low; Resources=0; Fingerprint=3F7A51
+// Hairs-Human:        PENDING
 public sealed record LocaleOptions
 {
     /// <summary>No option given.</summary>

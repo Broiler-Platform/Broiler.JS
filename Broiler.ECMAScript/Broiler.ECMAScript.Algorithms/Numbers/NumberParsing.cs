@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   21
 // Annotated:        21/21
 // Exempt:           4
@@ -22,8 +22,8 @@ using System.Numerics;
 namespace Broiler.ECMAScript.Numbers;
 
 /// <summary>Which ends of a string <see cref="NumberParsing.TrimStrWhiteSpace"/> trims (ECMA-262 22.1.3.32.1 <c>TrimString</c>'s <c>where</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=D1256F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=D1256F
+// Hairs-Human:        PENDING
 [Flags]
 public enum TrimEnds
 {
@@ -55,37 +55,37 @@ public enum TrimEnds
 /// A <see langword="null"/> meter charges nothing.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=5015F4
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=5015F4
+// Hairs-Human:        PENDING
 public static class NumberParsing
 {
     /// <summary>The Unicode version of the white-space set's Space_Separator members (convention 13).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=335916
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=335916
+    // Hairs-Human:        PENDING
     public const string UnicodeVersion = StrWhiteSpace.UnicodeVersion;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=428116
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=428116
+    // Hairs-Human:        PENDING
     private const ulong TwoToThe53 = 1UL << 53;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=1; Fingerprint=27D05D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=1; Fingerprint=27D05D
+    // Hairs-Human:        PENDING
     private const NumberStyles DecimalStyle =
         NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent;
 
     /// <summary>Whether a code unit is <c>StrWhiteSpaceChar</c> (ECMA-262 7.1.4.1.1): white space or a line terminator.</summary>
     /// <param name="c">The code unit.</param>
     /// <returns><see langword="true"/> for the specification's members, from Unicode 17.0.0, and only those.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=7701D9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=7701D9
+    // Hairs-Human:        PENDING
     public static bool IsStrWhiteSpaceChar(char c) => StrWhiteSpace.Contains(c);
 
     /// <summary>Removes <c>StrWhiteSpaceChar</c> code units from the chosen ends (ECMA-262 22.1.3.32.1 <c>TrimString</c>, steps 3 to 5).</summary>
     /// <param name="text">The string.</param>
     /// <param name="ends">Which ends to trim.</param>
     /// <returns>The trimmed part of <paramref name="text"/>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=495116
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=495116
+    // Hairs-Human:        PENDING
     public static ReadOnlySpan<char> TrimStrWhiteSpace(ReadOnlySpan<char> text, TrimEnds ends)
     {
         var start = 0;
@@ -109,9 +109,9 @@ public static class NumberParsing
     /// <param name="text">The string.</param>
     /// <param name="charge">The caller's meter, charged the string's length; <see langword="null"/> for none.</param>
     /// <returns>The correctly rounded value; +0 for a string of white space; NaN when the string is not a <c>StringNumericLiteral</c>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=High; Resources=3; Fingerprint=0E0469
-    // Broiler-Falsified-If: a string the specification's StringNumericLiteral grammar refuses is given a value other than NaN, or the meter is charged after the input is read
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=High; Resources=3; Fingerprint=0E0469
+    // Hairs-Falsified-If: a string the specification's StringNumericLiteral grammar refuses is given a value other than NaN, or the meter is charged after the input is read
+    // Hairs-Human:        PENDING
     public static double StringToNumber(ReadOnlySpan<char> text, WorkCharge? charge = null)
     {
         if (charge is not null && !text.IsEmpty)
@@ -142,8 +142,8 @@ public static class NumberParsing
     /// <param name="text">The string, already <c>ToString</c>'d.</param>
     /// <param name="charge">The caller's meter, charged the string's length; <see langword="null"/> for none.</param>
     /// <returns>The correctly rounded value of the longest prefix that is a <c>StrDecimalLiteral</c>, or NaN when none is.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=E0554C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=E0554C
+    // Hairs-Human:        PENDING
     public static double ParseFloat(ReadOnlySpan<char> text, WorkCharge? charge = null)
     {
         if (charge is not null && !text.IsEmpty)
@@ -164,9 +164,9 @@ public static class NumberParsing
     /// 8, 10, 16 and 32; this one does not); -0 for a negative zero; NaN when there is no digit or the
     /// radix is outside 2 to 36.
     /// </returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=High; Resources=3; Fingerprint=61FCDC
-    // Broiler-Falsified-If: a run of digits beyond 2^53 is not rounded to the nearest double with ties to even, or a radix outside 2 to 36 other than 0 gives a value
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=High; Resources=3; Fingerprint=61FCDC
+    // Hairs-Falsified-If: a run of digits beyond 2^53 is not rounded to the nearest double with ties to even, or a radix outside 2 to 36 other than 0 gives a value
+    // Hairs-Human:        PENDING
     public static double ParseInt(ReadOnlySpan<char> text, int radix, WorkCharge? charge = null)
     {
         if (charge is not null && !text.IsEmpty)
@@ -209,8 +209,8 @@ public static class NumberParsing
     }
 
     /// <summary>The radix a <c>0x</c>, <c>0o</c> or <c>0b</c> prefix names, or 0.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=643E4C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=643E4C
+    // Hairs-Human:        PENDING
     internal static int PrefixRadix(char letter) => letter switch
     {
         'x' or 'X' => 16,
@@ -220,8 +220,8 @@ public static class NumberParsing
     };
 
     /// <summary>The value of a digit in radixes up to 36, or 36 or more for a character that is not one.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=CFE35C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=CFE35C
+    // Hairs-Human:        PENDING
     internal static int DigitValue(char c) => c switch
     {
         >= '0' and <= '9' => c - '0',
@@ -231,8 +231,8 @@ public static class NumberParsing
     };
 
     /// <summary>How many leading characters are digits of the radix.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=B7BD72
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=B7BD72
+    // Hairs-Human:        PENDING
     internal static int Digits(ReadOnlySpan<char> text, int radix)
     {
         var at = 0;
@@ -247,8 +247,8 @@ public static class NumberParsing
     /// an optional sign, then <c>Infinity</c> or decimal digits with an optional fraction and
     /// exponent; 0 when there is none.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=BD4488
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=BD4488
+    // Hairs-Human:        PENDING
     internal static int MatchDecimal(ReadOnlySpan<char> text)
     {
         var at = 0;
@@ -285,8 +285,8 @@ public static class NumberParsing
     }
 
     /// <summary>The correctly rounded value of a matched <c>StrDecimalLiteral</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=E8C40C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=E8C40C
+    // Hairs-Human:        PENDING
     internal static double Decimal(ReadOnlySpan<char> literal)
     {
         var at = literal[0] is '+' or '-' ? 1 : 0;
@@ -302,8 +302,8 @@ public static class NumberParsing
     /// multiplied or divided by an exact power of ten, and one IEEE 754 operation on two exact
     /// operands is correctly rounded. Anything else is left to the platform's parser.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=1; Fingerprint=CE700A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=1; Fingerprint=CE700A
+    // Hairs-Human:        PENDING
     internal static bool TryExactDecimal(ReadOnlySpan<char> literal, out double value)
     {
         value = 0;
@@ -385,8 +385,8 @@ public static class NumberParsing
     }
 
     /// <summary>10^0 to 10^22, every power of ten a double holds exactly.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=1; Fingerprint=D87D20
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=1; Fingerprint=D87D20
+    // Hairs-Human:        PENDING
     private static ReadOnlySpan<double> ExactPowersOfTen =>
     [
         1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11,
@@ -403,9 +403,9 @@ public static class NumberParsing
     /// time. Either is rounded once, from its leading 64 bits and whether anything below them is set.
     /// Past 2^1100 the value is +Infinity whatever follows, so accumulation stops there.
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.5; IP=Low; Security=High; Resources=3; Fingerprint=D21CA7
-    // Broiler-Falsified-If: a run of digits is rounded twice, or not to the nearest double with ties to even, or is accumulated past 2^1100 instead of answering +Infinity
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.5; IP=Low; Security=High; Resources=3; Fingerprint=D21CA7
+    // Hairs-Falsified-If: a run of digits is rounded twice, or not to the nearest double with ties to even, or is accumulated past 2^1100 instead of answering +Infinity
+    // Hairs-Human:        PENDING
     internal static double Integer(ReadOnlySpan<char> digits, int radix)
     {
         var first = 0;
@@ -454,17 +454,17 @@ public static class NumberParsing
     }
 
     /// <summary>The most digits in any radix up to 36 that always make an integer below 2^128: 36^24 &lt; 2^128.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.5; IP=Low; Security=Medium; Resources=1; Fingerprint=33FF6F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.5; IP=Low; Security=Medium; Resources=1; Fingerprint=33FF6F
+    // Hairs-Human:        PENDING
     private const int NarrowDigits = 24;
 
     /// <summary>The bit length past which an integer rounds to +Infinity whatever its lower bits are.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.5; IP=Low; Security=Medium; Resources=1; Fingerprint=549D0D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.5; IP=Low; Security=Medium; Resources=1; Fingerprint=549D0D
+    // Hairs-Human:        PENDING
     private const int InfiniteBits = 1100;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=1; Fingerprint=7BDD63
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.4.1.1; IP=Low; Security=Medium; Resources=1; Fingerprint=7BDD63
+    // Hairs-Human:        PENDING
     private static int Digits10(ReadOnlySpan<char> text, int at)
     {
         while (at < text.Length && text[at] is >= '0' and <= '9')

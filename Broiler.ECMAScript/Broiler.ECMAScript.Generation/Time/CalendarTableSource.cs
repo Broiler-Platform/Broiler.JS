@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   2
 // Annotated:        2/2
 // Exempt:           0
@@ -31,15 +31,15 @@ namespace Broiler.ECMAScript.Generation.Time;
 /// generator where Broiler.VM's named its reader. The text is deterministic: LF line endings, numbers
 /// through the invariant format, and nothing recording a time, a machine or a path.
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=576407
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=576407
+// Hairs-Human:        PENDING
 public static class CalendarTableSource
 {
     /// <summary>The C# text of a static class holding <paramref name="tables"/>.</summary>
     /// <param name="tables">The table, as <see cref="CalendarTableGenerator.Generate"/> answers it.</param>
     /// <param name="options">The namespace, the class, and the comment lines around them.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=40C3CA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=40C3CA
+    // Hairs-Human:        PENDING
     public static string Write(CalendarTables tables, TableSourceOptions options)
     {
         ArgumentNullException.ThrowIfNull(tables);

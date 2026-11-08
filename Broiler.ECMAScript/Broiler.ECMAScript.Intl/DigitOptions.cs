@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   18
 // Annotated:        18/18
 // Exempt:           19
@@ -21,8 +21,8 @@ using Broiler.ECMAScript.Numbers;
 namespace Broiler.ECMAScript.Intl;
 
 /// <summary>The <c>style</c> option of <c>Intl.NumberFormat</c> (ECMA-402 SetNumberFormatUnitOptions, <c>sec-setnumberformatunitoptions</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=BF2772
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=BF2772
+// Hairs-Human:        PENDING
 public enum NumberStyle
 {
     /// <summary><c>decimal</c>.</summary>
@@ -39,8 +39,8 @@ public enum NumberStyle
 }
 
 /// <summary>The <c>notation</c> option of <c>Intl.NumberFormat</c> and <c>Intl.PluralRules</c> (ECMA-402 <c>sec-intl.numberformat</c>, <c>sec-intl.pluralrules</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=1D2D87
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=1D2D87
+// Hairs-Human:        PENDING
 public enum NumberNotation
 {
     /// <summary><c>standard</c>.</summary>
@@ -57,8 +57,8 @@ public enum NumberNotation
 }
 
 /// <summary>The <c>compactDisplay</c> option (ECMA-402 <c>sec-intl.numberformat</c>, <c>sec-intl.pluralrules</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=DCD319
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=DCD319
+// Hairs-Human:        PENDING
 public enum CompactDisplay
 {
     /// <summary><c>short</c>.</summary>
@@ -69,8 +69,8 @@ public enum CompactDisplay
 }
 
 /// <summary>[[RoundingType]], which SetNumberFormatDigitOptions sets (<c>sec-setnumberformatdigitoptions</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=E693AE
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=E693AE
+// Hairs-Human:        PENDING
 public enum NumberRoundingType
 {
     /// <summary><c>fraction-digits</c>.</summary>
@@ -87,8 +87,8 @@ public enum NumberRoundingType
 }
 
 /// <summary>The <c>roundingPriority</c> option, and [[ComputedRoundingPriority]] (<c>sec-setnumberformatdigitoptions</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=FD658F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=FD658F
+// Hairs-Human:        PENDING
 public enum RoundingPriority
 {
     /// <summary><c>auto</c>.</summary>
@@ -102,8 +102,8 @@ public enum RoundingPriority
 }
 
 /// <summary>The <c>trailingZeroDisplay</c> option (<c>sec-setnumberformatdigitoptions</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=9FFA49
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=9FFA49
+// Hairs-Human:        PENDING
 public enum TrailingZeroDisplay
 {
     /// <summary><c>auto</c>.</summary>
@@ -129,8 +129,8 @@ public enum TrailingZeroDisplay
 /// <param name="RoundingMode">GetOption's <c>roundingMode</c>.</param>
 /// <param name="RoundingPriority">GetOption's <c>roundingPriority</c>.</param>
 /// <param name="TrailingZeroDisplay">GetOption's <c>trailingZeroDisplay</c>.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=6F7EEC
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=6F7EEC
+// Hairs-Human:        PENDING
 public sealed record DigitOptionValues(
     int MinimumIntegerDigits,
     bool HasSignificantDigits,
@@ -147,15 +147,15 @@ public sealed record DigitOptionValues(
 /// <summary>Which digit options SetNumberFormatDigitOptions converts: _needSd_ and _needFd_ (<c>sec-setnumberformatdigitoptions</c>).</summary>
 /// <param name="NeedSignificantDigits">Whether the significant-digit options are converted and resolved.</param>
 /// <param name="NeedFractionDigits">Whether the fraction-digit options are converted and resolved.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=E42C3F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=E42C3F
+// Hairs-Human:        PENDING
 public readonly record struct DigitOptionsPlan(bool NeedSignificantDigits, bool NeedFractionDigits);
 
 /// <summary>The fraction-digit defaults the constructors hand SetNumberFormatDigitOptions: _mnfdDefault_ and _mxfdDefault_.</summary>
 /// <param name="Minimum">_mnfdDefault_.</param>
 /// <param name="Maximum">_mxfdDefault_.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=554E25
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=554E25
+// Hairs-Human:        PENDING
 public readonly record struct FractionDigitDefaults(int Minimum, int Maximum);
 
 /// <summary>
@@ -172,8 +172,8 @@ public readonly record struct FractionDigitDefaults(int Minimum, int Maximum);
 /// <param name="RoundingIncrement">[[RoundingIncrement]].</param>
 /// <param name="RoundingMode">[[RoundingMode]].</param>
 /// <param name="TrailingZeroDisplay">[[TrailingZeroDisplay]].</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=FA03B2
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-setnumberformatdigitoptions records and options; IP=Low; Security=Low; Resources=0; Fingerprint=FA03B2
+// Hairs-Human:        PENDING
 public sealed record DigitOptions(
     int MinimumIntegerDigits,
     int? MinimumFractionDigits,
@@ -206,13 +206,13 @@ public sealed record DigitOptions(
 /// casing where it called <c>ToUpperInvariant</c> (decision D19). Nothing here grows with its input, so nothing takes a meter.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=0; Fingerprint=521DB1
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=0; Fingerprint=521DB1
+// Hairs-Human:        PENDING
 public static class DigitOptionRules
 {
     /// <summary>The increments SetNumberFormatDigitOptions admits, in order.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=0; Fingerprint=71A11F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=0; Fingerprint=71A11F
+    // Hairs-Human:        PENDING
     private static ReadOnlySpan<int> AdmittedIncrements => [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
 
     /// <summary>
@@ -224,8 +224,8 @@ public static class DigitOptionRules
     /// <param name="maximum">The greatest value admitted.</param>
     /// <param name="result">The floor of <paramref name="value"/>, or 0.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.NumberOptionOutOfRange"/>, a <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=1; Fingerprint=53EAF5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=1; Fingerprint=53EAF5
+    // Hairs-Human:        PENDING
     public static IntlStatus DefaultNumberOption(double value, int minimum, int maximum, out int result)
     {
         if (double.IsNaN(value) || value < minimum || value > maximum)
@@ -247,8 +247,8 @@ public static class DigitOptionRules
     /// </summary>
     /// <param name="increment">The increment GetNumberOption read, 1 to 5000.</param>
     /// <returns><see langword="true"/> for 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500 and 5000.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=1; Fingerprint=D8C802
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=1; Fingerprint=D8C802
+    // Hairs-Human:        PENDING
     public static bool IsAdmittedRoundingIncrement(int increment) => AdmittedIncrements.Contains(increment);
 
     /// <summary>
@@ -260,8 +260,8 @@ public static class DigitOptionRules
     /// <param name="roundingPriority">The <c>roundingPriority</c> option.</param>
     /// <param name="notation">The notation.</param>
     /// <returns>The plan.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=1; Fingerprint=932E15
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=1; Fingerprint=932E15
+    // Hairs-Human:        PENDING
     public static DigitOptionsPlan Plan(bool hasSignificantDigits, bool hasFractionDigits, RoundingPriority roundingPriority, NumberNotation notation)
     {
         var needSd = true;
@@ -290,8 +290,8 @@ public static class DigitOptionRules
     /// <param name="notation">The notation.</param>
     /// <param name="data">The locale data whose currency digits are read.</param>
     /// <returns>The defaults.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=1; Fingerprint=2DBAD6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=Low; Resources=1; Fingerprint=2DBAD6
+    // Hairs-Human:        PENDING
     public static FractionDigitDefaults NumberFormatDefaults(NumberStyle style, string? currency, NumberNotation notation, ILocaleData data)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -322,9 +322,9 @@ public static class DigitOptionRules
     /// <see cref="IntlStatus.RoundingIncrementNeedsFractionDigits"/>, a <c>TypeError</c>.
     /// </returns>
     /// <exception cref="ArgumentException">A significant-digit value is missing where the plan converts it.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=High; Resources=1; Fingerprint=5E6F7D
-    // Broiler-Falsified-If: a resolved slot differs from SetNumberFormatDigitOptions' for the same option values, or a refusal is another status or none
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-setnumberformatdigitoptions sec-defaultnumberoption via Broiler.VM JsRealm.NumberFormat; IP=Low; Security=High; Resources=1; Fingerprint=5E6F7D
+    // Hairs-Falsified-If: a resolved slot differs from SetNumberFormatDigitOptions' for the same option values, or a refusal is another status or none
+    // Hairs-Human:        PENDING
     public static IntlStatus SetNumberFormatDigitOptions(DigitOptionValues values, FractionDigitDefaults defaults, NumberNotation notation, out DigitOptions? options)
     {
         ArgumentNullException.ThrowIfNull(values);
@@ -437,8 +437,8 @@ public static class DigitOptionRules
     }
 
     /// <summary>ASCII upper casing of a currency code (decision D19, where Broiler.VM called <c>ToUpperInvariant</c>).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D19 ASCII casing; IP=Low; Security=Low; Resources=1; Fingerprint=FFD669
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D19 ASCII casing; IP=Low; Security=Low; Resources=1; Fingerprint=FFD669
+    // Hairs-Human:        PENDING
     internal static string AsciiUpper(string code)
     {
         var chars = code.ToCharArray();

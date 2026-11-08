@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   1
 // Annotated:        1/1
 // Exempt:           0
@@ -30,6 +30,6 @@ namespace Broiler.ECMAScript.Temporal;
 /// A valid duration's date part always fits (IsValidDuration, s7.5.16: years, months and weeks below 2^32 in
 /// magnitude, days below 2^53 seconds), so an engine converts each of its fields exactly.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=Temporal s7.5.1; IP=None; Security=None; Resources=0; Fingerprint=65243C
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal s7.5.1; IP=None; Security=None; Resources=0; Fingerprint=65243C
+// Hairs-Human:        PENDING
 public readonly record struct CalendarDuration(long Years, long Months, long Weeks, long Days);

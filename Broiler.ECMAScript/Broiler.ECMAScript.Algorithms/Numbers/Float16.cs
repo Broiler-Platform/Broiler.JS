@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   7
 // Annotated:        7/7
 // Exempt:           2
@@ -24,8 +24,8 @@ namespace Broiler.ECMAScript.Numbers;
 /// (<c>NumericToRawBytes</c>, 25.1.3.17, step 1.b: "any implementation chosen IEEE 754-2019 binary16
 /// format Not-a-Number encoding").
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 25.1.3.17; IP=Low; Security=Low; Resources=1; Fingerprint=3B058E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 25.1.3.17; IP=Low; Security=Low; Resources=1; Fingerprint=3B058E
+// Hairs-Human:        PENDING
 public enum Float16NanPolicy
 {
     /// <summary>Every NaN is written as the one quiet NaN <see cref="Float16.CanonicalNaN"/>, sign cleared. Broiler.VM's policy.</summary>
@@ -48,13 +48,13 @@ public enum Float16NanPolicy
 /// overflowing to an infinity at 65,520, the midpoint above the largest finite binary16. Rounding
 /// through binary32 first would round twice; this rounds once.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 25.1.3.17; IP=Low; Security=Medium; Resources=1; Fingerprint=ACE8D1
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 25.1.3.17; IP=Low; Security=Medium; Resources=1; Fingerprint=ACE8D1
+// Hairs-Human:        PENDING
 public static class Float16
 {
     /// <summary>The canonical quiet NaN, <c>0x7E00</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=IEEE 754-2019 3.4; IP=Low; Security=Low; Resources=1; Fingerprint=0B3E21
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=IEEE 754-2019 3.4; IP=Low; Security=Low; Resources=1; Fingerprint=0B3E21
+    // Hairs-Human:        PENDING
     public const ushort CanonicalNaN = 0x7E00;
 
     /// <summary>
@@ -64,8 +64,8 @@ public static class Float16
     /// <param name="value">The Number.</param>
     /// <param name="nanPolicy">How a NaN is written.</param>
     /// <returns>The binary16 bits, sign included.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.1.3.17; IP=Low; Security=Medium; Resources=1; Fingerprint=3507E6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.1.3.17; IP=Low; Security=Medium; Resources=1; Fingerprint=3507E6
+    // Hairs-Human:        PENDING
     public static ushort Encode(double value, Float16NanPolicy nanPolicy)
     {
         var bits = BitConverter.DoubleToUInt64Bits(value);
@@ -110,8 +110,8 @@ public static class Float16
     /// <summary><c>RawBytesToNumeric(Float16, bits)</c> (ECMA-262 25.1.3.15): the Number binary16 bits denote, exactly.</summary>
     /// <param name="bits">The binary16 bits.</param>
     /// <returns>The value, NaN for every NaN payload, and -0 for the negative zero.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.1.3.15; IP=Low; Security=Medium; Resources=1; Fingerprint=959A11
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.1.3.15; IP=Low; Security=Medium; Resources=1; Fingerprint=959A11
+    // Hairs-Human:        PENDING
     public static double Decode(ushort bits)
     {
         var negative = (bits & 0x8000) != 0;
@@ -141,8 +141,8 @@ public static class Float16
     /// <summary><c>Math.f16round</c> (ECMA-262 21.3.2.17): the Number rounded to the nearest binary16 and widened back.</summary>
     /// <param name="value">The Number.</param>
     /// <returns>The rounded value; NaN for NaN, and the zeros and infinities themselves.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.17; IP=Low; Security=Medium; Resources=1; Fingerprint=1AC49D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.17; IP=Low; Security=Medium; Resources=1; Fingerprint=1AC49D
+    // Hairs-Human:        PENDING
     public static double Round(double value) =>
         double.IsNaN(value) ? double.NaN : Decode(Encode(value, Float16NanPolicy.Canonical));
 
@@ -151,8 +151,8 @@ public static class Float16
     /// <param name="dropped">The bits below it.</param>
     /// <param name="half">The weight of half a unit of <paramref name="kept"/>.</param>
     /// <returns>The result rounded to nearest, ties to even.</returns>
-    // Broiler-AI:           Origin=AI; Spec=IEEE 754-2019 4.3.1; IP=Low; Security=Medium; Resources=1; Fingerprint=47696A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=IEEE 754-2019 4.3.1; IP=Low; Security=Medium; Resources=1; Fingerprint=47696A
+    // Hairs-Human:        PENDING
     private static uint RoundAway(uint kept, ulong dropped, ulong half) =>
         dropped > half || (dropped == half && (kept & 1) != 0) ? kept + 1 : kept;
 }

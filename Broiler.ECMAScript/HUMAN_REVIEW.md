@@ -1,29 +1,29 @@
 # Human Review: Broiler.ECMAScript
 
 GENERATED - DO NOT EDIT MANUALLY. Regenerate with
-`dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript`, which rewrites this file,
-`CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
+`dotnet tool run hairs -- assurance generate --root Broiler.ECMAScript`, which rewrites this file,
+`CODE-ASSURANCE.md`, `hairs.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2976 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2976 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
 
-Read it; do not edit it. A decision about a code unit is the `// Broiler-Human:` line on that
+Read it; do not edit it. A decision about a code unit is the `// Hairs-Human:` line on that
 unit's declaration, and every table below is read out of those lines. There is nothing here
 to fill in and nothing here to leave blank.
 
 ## 2. How A Review Is Recorded
 
-In one place: the `// Broiler-Human:` line of the assurance annotation that sits on the
+In one place: the `// Hairs-Human:` line of the assurance annotation that sits on the
 declaration being read. Nothing in this file is edited by hand, no second document carries a
 per-item checklist, and no list of permitted aliases exists to be added to.
 
 ```csharp
-// Broiler-AI:           Origin=AI; IP=Low; Security=High; Resources=2; Fingerprint=4A3BFD
-// Broiler-Falsified-If: a negative value reaches the running total
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; IP=Low; Security=High; Resources=2; Fingerprint=4A3BFD
+// Hairs-Falsified-If: a negative value reaches the running total
+// Hairs-Human:        PENDING
 ```
 
 The last line has four shapes. A human writes three of them; the generator writes the fourth

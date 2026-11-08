@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   31
 // Annotated:        31/31
 // Exempt:           13
@@ -54,8 +54,8 @@ namespace Broiler.ECMAScript.Intl;
 /// underscore), with no duplicate variant, singleton or <c>tlang</c> variant.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=3; Fingerprint=06FBDE
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=3; Fingerprint=06FBDE
+// Hairs-Human:        PENDING
 internal sealed class LocaleTag
 {
     /// <summary>The language subtag, lower case.</summary>
@@ -103,9 +103,9 @@ internal sealed class LocaleTag
     /// The tag <paramref name="text"/> is, or nothing when it is not well-formed (ECMA-402 IsWellFormedLanguageTag,
     /// <c>sec-iswellformedlanguagetag</c>).
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=High; Resources=3; Fingerprint=6AE67A
-    // Broiler-Falsified-If: a tag the grammar or ECMA-402's duplicate rules refuse parses, or one they admit does not, or a tag with a code unit outside A-Z a-z 0-9 - parses
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=High; Resources=3; Fingerprint=6AE67A
+    // Hairs-Falsified-If: a tag the grammar or ECMA-402's duplicate rules refuse parses, or one they admit does not, or a tag with a code unit outside A-Z a-z 0-9 - parses
+    // Hairs-Human:        PENDING
     internal static LocaleTag? Parse(string text)
     {
         if (text.Length == 0 || text[0] == '-' || text[^1] == '-')
@@ -221,8 +221,8 @@ internal sealed class LocaleTag
     }
 
     /// <summary>A <c>unicode_language_id</c> at <paramref name="at"/>, without the backwards-compatible forms.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=2; Fingerprint=0016B6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=2; Fingerprint=0016B6
+    // Hairs-Human:        PENDING
     private static bool ParseLanguageId(string[] subtags, ref int at, LocaleTag tag)
     {
         if (at >= subtags.Length || !IsLanguage(subtags[at]))
@@ -259,8 +259,8 @@ internal sealed class LocaleTag
         return true;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=2; Fingerprint=A03A08
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=2; Fingerprint=A03A08
+    // Hairs-Human:        PENDING
     private static bool ParseUnicodeExtension(string[] subtags, ref int at, LocaleTag tag)
     {
         tag.HasUnicodeExtension = true;
@@ -287,8 +287,8 @@ internal sealed class LocaleTag
         return at > start;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=2; Fingerprint=46E47A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=2; Fingerprint=46E47A
+    // Hairs-Human:        PENDING
     private static bool ParseTransformExtension(string[] subtags, ref int at, LocaleTag tag)
     {
         tag.HasTransformExtension = true;
@@ -328,34 +328,34 @@ internal sealed class LocaleTag
     }
 
     /// <summary>Whether a subtag is a <c>unicode_language_subtag</c>: two, three or five to eight ASCII letters.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=70E31F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=70E31F
+    // Hairs-Human:        PENDING
     internal static bool IsLanguage(string subtag) => subtag.Length is (>= 2 and <= 3) or (>= 5 and <= 8) && IsAlpha(subtag);
 
     /// <summary>Whether a subtag is a <c>unicode_script_subtag</c>: four ASCII letters.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=6C4030
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=6C4030
+    // Hairs-Human:        PENDING
     internal static bool IsScript(string subtag) => subtag.Length == 4 && IsAlpha(subtag);
 
     /// <summary>Whether a subtag is a <c>unicode_region_subtag</c>: two ASCII letters or three ASCII digits.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=8F28C2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=8F28C2
+    // Hairs-Human:        PENDING
     internal static bool IsRegion(string subtag) => subtag.Length == 2 && IsAlpha(subtag) || subtag.Length == 3 && IsDigits(subtag);
 
     /// <summary>Whether a subtag is a <c>unicode_variant_subtag</c>: five to eight ASCII letters and digits, or four beginning with a digit.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=3FB7E0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=3FB7E0
+    // Hairs-Human:        PENDING
     internal static bool IsVariant(string subtag) =>
         (subtag.Length is >= 5 and <= 8 || subtag.Length == 4 && subtag[0] is >= '0' and <= '9') &&
         IsAlphanumeric(subtag);
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=03DC04
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=03DC04
+    // Hairs-Human:        PENDING
     private static bool IsUnicodeKey(string subtag) =>
         subtag.Length == 2 && IsAlphanumeric(subtag[..1]) && IsAlpha(subtag[1..]);
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=54B3C1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=54B3C1
+    // Hairs-Human:        PENDING
     private static bool IsTransformKey(string subtag) =>
         subtag.Length == 2 && IsAlpha(subtag[..1]) && IsDigits(subtag[1..]);
 
@@ -364,8 +364,8 @@ internal sealed class LocaleTag
     /// The platform's invariant casing is not this: it lowers U+212A KELVIN SIGN to <c>k</c> and, under ICU, more besides,
     /// so a subtag checked after it could pass with a character no tag may hold.
     /// </remarks>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=9CA6BE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=9CA6BE
+    // Hairs-Human:        PENDING
     internal static string AsciiLower(string text)
     {
         var chars = text.ToCharArray();
@@ -382,8 +382,8 @@ internal sealed class LocaleTag
     }
 
     /// <summary>ASCII-uppercase: a to z raised, and every other code unit as it is (D19, for Broiler.VM's invariant upper-casing).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=810469
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=810469
+    // Hairs-Human:        PENDING
     internal static string AsciiUpper(string text)
     {
         var chars = text.ToCharArray();
@@ -399,8 +399,8 @@ internal sealed class LocaleTag
         return new string(chars);
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=4382E4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=4382E4
+    // Hairs-Human:        PENDING
     internal static bool IsAlpha(string text)
     {
         foreach (var c in text)
@@ -414,8 +414,8 @@ internal sealed class LocaleTag
         return text.Length != 0;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=EF6362
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=EF6362
+    // Hairs-Human:        PENDING
     internal static bool IsDigits(string text)
     {
         foreach (var c in text)
@@ -429,8 +429,8 @@ internal sealed class LocaleTag
         return text.Length != 0;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=191CB1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=191CB1
+    // Hairs-Human:        PENDING
     internal static bool IsAlphanumeric(string text)
     {
         foreach (var c in text)
@@ -445,8 +445,8 @@ internal sealed class LocaleTag
     }
 
     /// <summary>Whether a String is a BCP 47 <c>type</c>: subtags of three to eight ASCII letters and digits (Broiler.VM's <c>IsTypeSequence</c>).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=705907
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=705907
+    // Hairs-Human:        PENDING
     internal static bool IsTypeSequence(string text)
     {
         if (text.Length == 0)
@@ -466,8 +466,8 @@ internal sealed class LocaleTag
     }
 
     /// <summary>A script subtag in title case: its first letter upper case and the rest lower case, by ASCII casing (D19).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=C3C1CB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=C3C1CB
+    // Hairs-Human:        PENDING
     private static string TitleCase(string subtag) => AsciiUpper(subtag[..1]) + AsciiLower(subtag[1..]);
 
     // ---- canonicalisation -----------------------------------------------------------------------
@@ -478,9 +478,9 @@ internal sealed class LocaleTag
     /// </summary>
     /// <param name="data">The locale data whose aliases and BCP 47 types it reads.</param>
     /// <param name="charge">The caller's meter: the alias-table keys each round of alias replacement looks up (<see cref="ReplaceAliases"/>).</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=High; Resources=3; Fingerprint=A64040
-    // Broiler-Falsified-If: a canonical tag canonicalizes to anything but itself, or an alias the CLDR data names survives canonicalization
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=High; Resources=3; Fingerprint=A64040
+    // Hairs-Falsified-If: a canonical tag canonicalizes to anything but itself, or an alias the CLDR data names survives canonicalization
+    // Hairs-Human:        PENDING
     internal LocaleTag Canonicalize(ILocaleData data, WorkCharge? charge = null)
     {
         ReplaceAliases(data, charge);
@@ -542,9 +542,9 @@ internal sealed class LocaleTag
     }
 
     /// <summary>A <c>-u-</c> type in canonical form: an alias replaced, a subdivision alias replaced, <c>true</c> made implicit.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=High; Resources=2; Fingerprint=4D5433
-    // Broiler-Falsified-If: a subdivision alias whose replacement is a region is written other than as the region in lower case followed by zzzz (row L9), or a type CLDR's BCP 47 data replaces is kept
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=High; Resources=2; Fingerprint=4D5433
+    // Hairs-Falsified-If: a subdivision alias whose replacement is a region is written other than as the region in lower case followed by zzzz (row L9), or a type CLDR's BCP 47 data replaces is kept
+    // Hairs-Human:        PENDING
     private static string CanonicalType(ILocaleData data, string key, string type)
     {
         var canonical = data.TryExtensionType('u', key, type, out var preferred) ? preferred : type;
@@ -576,8 +576,8 @@ internal sealed class LocaleTag
     /// The caller's meter: before each round, one unit per alias-table key the round's language rule search looks up
     /// (<see cref="CandidateCount"/>), which grows with the square of the number of variants.
     /// </param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=3; Fingerprint=D4FB11
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=3; Fingerprint=D4FB11
+    // Hairs-Human:        PENDING
     internal void ReplaceAliases(ILocaleData data, WorkCharge? charge = null)
     {
         // A BOUND, because the data's rules terminate and a defect in them must not loop.
@@ -632,8 +632,8 @@ internal sealed class LocaleTag
     /// <c>und</c>) and perhaps a script, a region and variants; it matches when every field it names is in the tag, and it
     /// replaces what it matched with its replacement's fields, adding a replacement field the tag lacks.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=3; Fingerprint=69F57A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Medium; Resources=3; Fingerprint=69F57A
+    // Hairs-Human:        PENDING
     private bool ReplaceLanguage(ILocaleData data)
     {
         LocaleTag? best = null;
@@ -694,8 +694,8 @@ internal sealed class LocaleTag
     /// The alias-table keys a rule matching this tag could have: its language or <c>und</c>, with or without its script and
     /// its region, and with none, one or two of its variants - the data's longest rule, <c>und-hepburn-heploc</c>, names two.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=717AE0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=717AE0
+    // Hairs-Human:        PENDING
     internal IEnumerable<string> Candidates()
     {
         foreach (var language in new[] { Language, "und" })
@@ -733,8 +733,8 @@ internal sealed class LocaleTag
     /// <c>und</c>, with or without the script and the region - the stem itself unless it is <c>und</c> alone, then each
     /// variant, then each ordered pair of distinct variants.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=70D5BF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=1; Fingerprint=70D5BF
+    // Hairs-Human:        PENDING
     internal ulong CandidateCount()
     {
         var variants = (ulong)Variants.Count;
@@ -748,8 +748,8 @@ internal sealed class LocaleTag
     }
 
     /// <summary>The one region of a replacement list: the region likely for this tag's language and script when the list holds it, and the first otherwise.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=205F4A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=205F4A
+    // Hairs-Human:        PENDING
     private string PickRegion(ILocaleData data, string replacements)
     {
         var regions = replacements.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -770,8 +770,8 @@ internal sealed class LocaleTag
     }
 
     /// <summary>UTS #35's Add Likely Subtags over the language, script and region; answers whether the data held a match.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=01C13B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=01C13B
+    // Hairs-Human:        PENDING
     internal bool Maximize(ILocaleData data)
     {
         // CLEAN-UP: Zzzz and ZZ are empty, and a language with a script and a region is already maximal.
@@ -832,8 +832,8 @@ internal sealed class LocaleTag
     /// UTS #35's Remove Likely Subtags: the shortest of the language, the language and region, and the language and script
     /// whose likely subtags are this tag's, its variants and extensions kept; whether the data held a match for the tag at all.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=B3DD18
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=B3DD18
+    // Hairs-Human:        PENDING
     internal bool Minimize(ILocaleData data)
     {
         var maximal = Parse(LanguageId())!;
@@ -865,8 +865,8 @@ internal sealed class LocaleTag
     // ---- writing --------------------------------------------------------------------------------
 
     /// <summary>The language identifier alone: language, script, region and variants.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=13B07A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=13B07A
+    // Hairs-Human:        PENDING
     internal string LanguageId()
     {
         var text = new StringBuilder(Language);
@@ -890,8 +890,8 @@ internal sealed class LocaleTag
     }
 
     /// <summary>The whole tag, extensions in singleton order and private use last.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=10261E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=10261E
+    // Hairs-Human:        PENDING
     public override string ToString()
     {
         var extensions = new SortedDictionary<char, string>(OtherExtensions);
@@ -952,8 +952,8 @@ internal sealed class LocaleTag
     }
 
     /// <summary>The tag with its <c>-u-</c> extension removed: ECMA-402's locale without the extension sequence.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=A35FCE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=A35FCE
+    // Hairs-Human:        PENDING
     internal string WithoutUnicodeExtension()
     {
         var copy = Parse(ToString())!;
@@ -964,8 +964,8 @@ internal sealed class LocaleTag
     }
 
     /// <summary>A copy that shares nothing mutable with this tag.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=AFCAE8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Annex C via Broiler.VM JsLocaleTag; IP=Low; Security=Low; Resources=2; Fingerprint=AFCAE8
+    // Hairs-Human:        PENDING
     internal LocaleTag Clone()
     {
         var copy = new LocaleTag

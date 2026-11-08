@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   21
 // Annotated:        21/21
 // Exempt:           4
@@ -32,31 +32,31 @@ namespace Broiler.ECMAScript.Conformance;
 /// caller validates each corpus with its own instance. An instance is not safe to share between
 /// threads while it validates.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=9; Fingerprint=E7A033
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=9; Fingerprint=E7A033
+// Hairs-Human:        PENDING
 public sealed class VectorValidator
 {
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=C119F4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=C119F4
+    // Hairs-Human:        PENDING
     private static readonly ImmutableArray<string> Required = ["id", "area", "op", "in", "out", "class", "prov", "script", "since"];
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=990747
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=990747
+    // Hairs-Human:        PENDING
     private static readonly FrozenSet<string> Known = FrozenSet.Create(
         StringComparer.Ordinal, "id", "area", "op", "in", "out", "class", "prov", "script", "since", "note");
 
     private readonly VectorSources sources;
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B89F2C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B89F2C
+    // Hairs-Human:        PENDING
     private readonly Dictionary<string, VectorRecord> ids = new(StringComparer.Ordinal);
 
     private readonly List<VectorDiagnostic> diagnostics = [];
 
     /// <summary>Creates a validator for a corpus at the revision and pins <paramref name="sources"/> gives.</summary>
     /// <param name="sources">What the corpus's own documents pin.</param>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=769E7F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=769E7F
+    // Hairs-Human:        PENDING
     public VectorValidator(VectorSources sources)
     {
         ArgumentNullException.ThrowIfNull(sources);
@@ -67,15 +67,15 @@ public sealed class VectorValidator
     public static ImmutableArray<string> Engines { get; } = ["broiler-js", "broiler-vm"];
 
     /// <summary>The areas the schema defines, the first segment of every identifier.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=D9548D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=D9548D
+    // Hairs-Human:        PENDING
     public static FrozenSet<string> Areas { get; } = FrozenSet.Create(
         StringComparer.Ordinal,
         "numbers", "numerics", "text", "date", "unicode", "time-zones", "intl", "temporal", "regexp", "syntax", "semantics");
 
     /// <summary>The classes the schema's section 5 defines.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=FA6E87
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=FA6E87
+    // Hairs-Human:        PENDING
     public static FrozenSet<string> Classes { get; } = FrozenSet.Create(
         StringComparer.Ordinal, "normative", "impl-defined", "divergence");
 
@@ -84,8 +84,8 @@ public sealed class VectorValidator
 
     /// <summary>Validates a file; identifiers are checked for uniqueness across every file this validator has seen.</summary>
     /// <param name="file">A file as the reader read it; its structural defects are carried over.</param>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=369403
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=369403
+    // Hairs-Human:        PENDING
     public void Validate(VectorFile file)
     {
         ArgumentNullException.ThrowIfNull(file);
@@ -94,8 +94,8 @@ public sealed class VectorValidator
             Validate(record);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=7; Fingerprint=BCEF55
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=7; Fingerprint=BCEF55
+    // Hairs-Human:        PENDING
     private void Validate(VectorRecord record)
     {
         void Report(string code, int line, string message) => diagnostics.Add(new(code, record.File, line, message));
@@ -200,8 +200,8 @@ public sealed class VectorValidator
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=75D1B5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=75D1B5
+    // Hairs-Human:        PENDING
     private static void ValidateInputs(string inputs, int line, Action<string, int, string> report)
     {
         var position = 0;
@@ -230,16 +230,16 @@ public sealed class VectorValidator
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B9699B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B9699B
+    // Hairs-Human:        PENDING
     private static void ValidateOutcome(string text, int line, Action<string, int, string> report)
     {
         if (!Outcome.TryParseAlternatives(text, out _, out var code, out var message))
             report(code, line, message);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=90D11B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=90D11B
+    // Hairs-Human:        PENDING
     private void ValidateProvenance(string provenance, int line, Action<string, int, string> report)
     {
         var independent = false;
@@ -302,8 +302,8 @@ public sealed class VectorValidator
     /// a clause id, <c>[A-Za-z0-9.%-]+</c>, which ECMA-402 writes, and holds a <c>spec:ecma402@</c> entry's revision
     /// to sources/ecma402.pin.
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=4; Fingerprint=AB4BFB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=4; Fingerprint=AB4BFB
+    // Hairs-Human:        PENDING
     private static bool TryParseProvenance(string entry, out string kind, out string detail)
     {
         kind = string.Empty;
@@ -382,8 +382,8 @@ public sealed class VectorValidator
     /// One outcome of the schema's section 4 written without the space after its kind, as an <c>overruled:</c>
     /// entry holds it: <c>value:str:"P1Y"</c> for <c>value: str:"P1Y"</c>.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B94301
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B94301
+    // Hairs-Human:        PENDING
     private static bool IsCompactOutcome(string text)
     {
         var colon = text.IndexOf(':', StringComparison.Ordinal);
@@ -396,13 +396,13 @@ public sealed class VectorValidator
     /// A <c>spec:</c> entry whose edition is <c>ecma402</c>, a clause of the ECMA-402 text sources/ecma402.pin
     /// names; every other edition names ECMA-262's (corpus revision 27).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=9A740C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=9A740C
+    // Hairs-Human:        PENDING
     private static bool IsInternationalization(string entry) => entry.StartsWith("spec:ecma402@", StringComparison.Ordinal);
 
     /// <summary><c>[0-9]+\.[0-9]+\.[0-9]+</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=43D78D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=43D78D
+    // Hairs-Human:        PENDING
     private static bool IsVersion(ReadOnlySpan<char> text)
     {
         for (var part = 0; part < 3; part++)
@@ -418,8 +418,8 @@ public sealed class VectorValidator
     }
 
     /// <summary><c>[a-z0-9.-]+(/[a-z0-9.-]+)+</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=69B0F5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=69B0F5
+    // Hairs-Human:        PENDING
     private static bool IsIdentifier(string id)
     {
         var segments = id.Split('/');
@@ -434,12 +434,12 @@ public sealed class VectorValidator
         return true;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=F77F3B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=F77F3B
+    // Hairs-Human:        PENDING
     private static bool IsLowerAlphanumeric(char c) => Ascii.IsLower(c) || Ascii.IsDigit(c);
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=D7BDFC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=D7BDFC
+    // Hairs-Human:        PENDING
     private static bool IsIdentifierCharacter(char c) => IsLowerAlphanumeric(c) || c is '.' or '-';
 
     /// <summary>
@@ -448,12 +448,12 @@ public sealed class VectorValidator
     /// or an upper-case letter, which ECMA-402 writes in some of its ids, such as
     /// <c>sec-Intl.DisplayNames.prototype.of</c> (corpus revision 27).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=DC08F6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=DC08F6
+    // Hairs-Human:        PENDING
     private static bool IsClauseCharacter(char c) => IsIdentifierCharacter(c) || c == '%' || Ascii.IsLetter(c);
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E0D475
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E0D475
+    // Hairs-Human:        PENDING
     private static (string Kind, string Name)? EngineField(string key)
     {
         foreach (var kind in (ReadOnlySpan<string>)["per-engine", "divergence"])

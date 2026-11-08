@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   57
 // Annotated:        57/57
 // Exempt:           20
@@ -53,13 +53,13 @@ namespace Broiler.ECMAScript.Syntax;
 /// One tokenizer serves one parse on one thread; <see cref="Save"/> and <see cref="Restore"/> let its parser look ahead.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical grammar, JSD-0083 sub-area T; IP=Low; Security=Medium; Resources=2; Fingerprint=81DA3B
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical grammar, JSD-0083 sub-area T; IP=Low; Security=Medium; Resources=2; Fingerprint=81DA3B
+// Hairs-Human:        PENDING
 internal sealed class Tokenizer
 {
     /// <summary>The widest BigInt <c>NumericLiterals.Evaluate</c> is asked to build: none, so that only the literal's form is checked.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D9; IP=Low; Security=Low; Resources=1; Fingerprint=B4141B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D9; IP=Low; Security=Low; Resources=1; Fingerprint=B4141B
+    // Hairs-Human:        PENDING
     private const long NoBigIntWidth = 0;
 
     private readonly SourceText source;
@@ -85,8 +85,8 @@ internal sealed class Tokenizer
     /// <param name="extensions">The request's lexer extensions: the <c>m</c> suffix alone.</param>
     /// <param name="hashbang">Whether the text's first code unit is where a <c>HashbangComment</c> may stand (the start of a Script, a Module or eval code).</param>
     /// <param name="startsAtLineStart">Whether the text's start counts as the start of a line for <c>--&gt;</c> (every goal but a dynamic function's parameters).</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12, JSD-0083 D8 D17; IP=Low; Security=Medium; Resources=1; Fingerprint=8BAFCA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12, JSD-0083 D8 D17; IP=Low; Security=Medium; Resources=1; Fingerprint=8BAFCA
+    // Hairs-Human:        PENDING
     internal Tokenizer(SourceText source, EcmaScriptLexical lexical, bool htmlLikeComments, LexerExtensions extensions, bool hashbang, bool startsAtLineStart)
     {
         this.source = source;
@@ -108,19 +108,19 @@ internal sealed class Tokenizer
     /// Whether a line terminator, or a comment holding one, stands between the last token read and the offset
     /// <see cref="PeekTokenStart"/> stopped at: the next token's <see cref="Token.NewLineBefore"/>, known before it is read.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.10 automatic semicolon insertion line terminator; IP=Low; Security=High; Resources=1; Fingerprint=941A34
-    // Broiler-Falsified-If: it answers otherwise than the next token's NewLineBefore after PeekTokenStart
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.10 automatic semicolon insertion line terminator; IP=Low; Security=High; Resources=1; Fingerprint=941A34
+    // Hairs-Falsified-If: it answers otherwise than the next token's NewLineBefore after PeekTokenStart
+    // Hairs-Human:        PENDING
     internal bool NewLinePending => newLine;
 
     /// <summary>The tokenizer's state, for <see cref="Restore"/>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goal lookahead; IP=Low; Security=Medium; Resources=1; Fingerprint=16808E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goal lookahead; IP=Low; Security=Medium; Resources=1; Fingerprint=16808E
+    // Hairs-Human:        PENDING
     internal TokenizerState Save() => new(position, line, lineStart, onlyTriviaOnLine, newLine, templates, diagnostic, refusal);
 
     /// <summary>Returns to a state <see cref="Save"/> gave, so that the parser can look ahead and read again under another goal.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goal lookahead; IP=Low; Security=Medium; Resources=1; Fingerprint=C10992
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goal lookahead; IP=Low; Security=Medium; Resources=1; Fingerprint=C10992
+    // Hairs-Human:        PENDING
     internal void Restore(TokenizerState state)
     {
         position = state.Position;
@@ -138,8 +138,8 @@ internal sealed class Tokenizer
     /// at the text's start, a hashbang) and answers the code unit the next token starts with: -1 at the end of the input,
     /// and -2 once the trivia, or an earlier token, was refused.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 trivia; IP=Low; Security=Medium; Resources=1; Fingerprint=77F678
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 trivia; IP=Low; Security=Medium; Resources=1; Fingerprint=77F678
+    // Hairs-Human:        PENDING
     internal int PeekTokenStart()
     {
         if (diagnostic is not null)
@@ -154,9 +154,9 @@ internal sealed class Tokenizer
     /// <summary>Reads the next input element under <paramref name="goal"/> (ECMA-262 clause 12).</summary>
     /// <param name="goal">The lexical goal the parser stands at.</param>
     /// <returns>The token; <see cref="TokenKind.Invalid"/> once the text is refused, with <see cref="Diagnostic"/> saying why.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical grammar goal symbols; IP=Low; Security=High; Resources=2; Fingerprint=994D5A
-    // Broiler-Falsified-If: a token is read under another goal than the caller names, or a token is answered after a refusal
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical grammar goal symbols; IP=Low; Security=High; Resources=2; Fingerprint=994D5A
+    // Hairs-Falsified-If: a token is read under another goal than the caller names, or a token is answered after a refusal
+    // Hairs-Human:        PENDING
     internal Token Next(LexicalGoal goal)
     {
         if (diagnostic is not null || !SkipTrivia())
@@ -176,9 +176,9 @@ internal sealed class Tokenizer
     // Trivia: clauses 12.2 (white space), 12.3 (line terminators), 12.4 (comments, with the HashbangComment of 12.5),
     // and Annex B.1.1 (HTML-like comments).
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.2-s12.5 trivia, B.1.1 HTML-like comments; IP=Low; Security=High; Resources=2; Fingerprint=AA07AE
-    // Broiler-Falsified-If: a comment or white space the goal admits ends the token stream, a hashbang is skipped anywhere but the first code unit of a text that admits one, or --> is a comment after a token on its line
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.2-s12.5 trivia, B.1.1 HTML-like comments; IP=Low; Security=High; Resources=2; Fingerprint=AA07AE
+    // Hairs-Falsified-If: a comment or white space the goal admits ends the token stream, a hashbang is skipped anywhere but the first code unit of a text that admits one, or --> is a comment after a token on its line
+    // Hairs-Human:        PENDING
     private bool SkipTrivia()
     {
         if (position == 0 && hashbang && text.Length >= 2 && text[0] == '#' && text[1] == '!')
@@ -236,8 +236,8 @@ internal sealed class Tokenizer
         return true;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.4 SingleLineComment; IP=Low; Security=Medium; Resources=1; Fingerprint=83817F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.4 SingleLineComment; IP=Low; Security=Medium; Resources=1; Fingerprint=83817F
+    // Hairs-Human:        PENDING
     private void SkipToLineEnd(int from)
     {
         position = from;
@@ -246,9 +246,9 @@ internal sealed class Tokenizer
     }
 
     /// <summary>A <c>MultiLineComment</c>: one holding a line terminator counts as one (clause 12.4), and is the start of a line for <c>--&gt;</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.4 MultiLineComment; IP=Low; Security=High; Resources=2; Fingerprint=BFA651
-    // Broiler-Falsified-If: an unterminated comment is admitted, or a comment holding a line terminator is not counted as one
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.4 MultiLineComment; IP=Low; Security=High; Resources=2; Fingerprint=BFA651
+    // Hairs-Falsified-If: an unterminated comment is admitted, or a comment holding a line terminator is not counted as one
+    // Hairs-Human:        PENDING
     private bool SkipMultiLineComment()
     {
         var start = position;
@@ -281,9 +281,9 @@ internal sealed class Tokenizer
     // ---------------------------------------------------------------------------------------------------------------
     // Input elements.
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 InputElement goal symbols; IP=Low; Security=High; Resources=2; Fingerprint=F693F8
-    // Broiler-Falsified-If: a slash under a division goal begins a literal, or a right brace under a template goal is read as a punctuator
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 InputElement goal symbols; IP=Low; Security=High; Resources=2; Fingerprint=F693F8
+    // Hairs-Falsified-If: a slash under a division goal begins a literal, or a right brace under a template goal is read as a punctuator
+    // Hairs-Human:        PENDING
     private Token ReadToken(LexicalGoal goal)
     {
         var start = position;
@@ -333,9 +333,9 @@ internal sealed class Tokenizer
     // ---------------------------------------------------------------------------------------------------------------
     // Names: clause 12.7, IdentifierName and PrivateIdentifier, with the early errors of 12.7.1.1.
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.7 IdentifierName, s12.7.1.1 early errors; IP=Low; Security=High; Resources=2; Fingerprint=05B5D9
-    // Broiler-Falsified-If: an escaped code point outside ID_Start or ID_Continue is admitted, or an escaped name and its plain spelling cook to different names
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.7 IdentifierName, s12.7.1.1 early errors; IP=Low; Security=High; Resources=2; Fingerprint=05B5D9
+    // Hairs-Falsified-If: an escaped code point outside ID_Start or ID_Continue is admitted, or an escaped name and its plain spelling cook to different names
+    // Hairs-Human:        PENDING
     private Token ReadIdentifierName(int start, TokenKind kind)
     {
         var startLine = line;
@@ -394,9 +394,9 @@ internal sealed class Tokenizer
     /// After <c>\u</c>: <c>Hex4Digits</c> or <c>{ CodePoint }</c> (clause 12.9.4), the code point any number of leading
     /// zeros may spell up to U+10FFFF. The position is past the escape when it is well formed.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.4 UnicodeEscapeSequence; IP=Low; Security=High; Resources=2; Fingerprint=AC4AD7
-    // Broiler-Falsified-If: an escape with white space, a separator or a non-ASCII digit, or a code point above U+10FFFF, is admitted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.4 UnicodeEscapeSequence; IP=Low; Security=High; Resources=2; Fingerprint=AC4AD7
+    // Hairs-Falsified-If: an escape with white space, a separator or a non-ASCII digit, or a code point above U+10FFFF, is admitted
+    // Hairs-Human:        PENDING
     private bool ReadUnicodeEscape(out int codePoint)
     {
         codePoint = 0;
@@ -436,9 +436,9 @@ internal sealed class Tokenizer
     // ---------------------------------------------------------------------------------------------------------------
     // Numeric literals: clause 12.9.3, scanned by its grammar and valued by NumericLiterals.Evaluate (decision D9).
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 NumericLiteral, JSD-0083 D9 D17; IP=Low; Security=High; Resources=2; Fingerprint=7FFC6B
-    // Broiler-Falsified-If: a text that is no NumericLiteral is admitted, an IdentifierStart or digit touching a literal is admitted, or the m suffix is admitted without the lexer extension
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 NumericLiteral, JSD-0083 D9 D17; IP=Low; Security=High; Resources=2; Fingerprint=7FFC6B
+    // Hairs-Falsified-If: a text that is no NumericLiteral is admitted, an IdentifierStart or digit touching a literal is admitted, or the m suffix is admitted without the lexer extension
+    // Hairs-Human:        PENDING
     private Token ReadNumericLiteral(int start)
     {
         var startLine = line;
@@ -550,8 +550,8 @@ internal sealed class Tokenizer
         return new Token(TokenKind.NumericLiteral, start, position, AbsoluteLine(startLine), AbsoluteColumn(start, startLine, startLineStart), flags, number: number);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 ExponentPart; IP=Low; Security=Medium; Resources=1; Fingerprint=DF48D8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 ExponentPart; IP=Low; Security=Medium; Resources=1; Fingerprint=DF48D8
+    // Hairs-Human:        PENDING
     private bool HasExponent(int start)
     {
         for (var at = start; at < position; at++)
@@ -564,8 +564,8 @@ internal sealed class Tokenizer
     }
 
     /// <summary><c>. DecimalDigits[+Sep]opt</c> after a decimal integer.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 DecimalLiteral; IP=Low; Security=Medium; Resources=1; Fingerprint=255E4B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 DecimalLiteral; IP=Low; Security=Medium; Resources=1; Fingerprint=255E4B
+    // Hairs-Human:        PENDING
     private void ScanFraction()
     {
         if (position < text.Length && text[position] == '.')
@@ -576,8 +576,8 @@ internal sealed class Tokenizer
     }
 
     /// <summary><c>ExponentPart[+Sep]</c>: taken only when digits follow the indicator and its sign, so that <c>1e</c> leaves the <c>e</c> to refuse.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 ExponentPart; IP=Low; Security=Medium; Resources=1; Fingerprint=FD27AA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 ExponentPart; IP=Low; Security=Medium; Resources=1; Fingerprint=FD27AA
+    // Hairs-Human:        PENDING
     private void ScanExponent()
     {
         if (position >= text.Length || text[position] is not ('e' or 'E'))
@@ -598,9 +598,9 @@ internal sealed class Tokenizer
     /// <c>Digits[+Sep]</c> of a radix from the position: a digit, then digits each after at most one separator that stands
     /// between two digits. Answers whether there was a first digit; a separator not followed by a digit is left unread.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 NumericLiteralSeparator; IP=Low; Security=High; Resources=2; Fingerprint=9AD849
-    // Broiler-Falsified-If: a separator not between two digits of the radix is taken into the literal
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 NumericLiteralSeparator; IP=Low; Security=High; Resources=2; Fingerprint=9AD849
+    // Hairs-Falsified-If: a separator not between two digits of the radix is taken into the literal
+    // Hairs-Human:        PENDING
     private bool ScanDigits(int radix, bool separators)
     {
         if (position >= text.Length || DigitValue(text[position], radix) < 0)
@@ -620,8 +620,8 @@ internal sealed class Tokenizer
         return true;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=catalogue EX0003; IP=Low; Security=Medium; Resources=1; Fingerprint=FBF5CF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue EX0003; IP=Low; Security=Medium; Resources=1; Fingerprint=FBF5CF
+    // Hairs-Human:        PENDING
     private Token RefuseNumeric(int start, int startLine, int startLineStart)
     {
         Refuse(Catalogue.NumericLiteralInvalid, start, startLine, startLineStart);
@@ -631,9 +631,9 @@ internal sealed class Tokenizer
     // ---------------------------------------------------------------------------------------------------------------
     // String literals: clause 12.9.4, with the legacy escapes whose strict-mode refusal (12.9.4.1) is the parser's.
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.4 StringLiteral; IP=Low; Security=High; Resources=2; Fingerprint=47058A
-    // Broiler-Falsified-If: a raw LF or CR is admitted in a string, an undefined escape is admitted, or a legacy escape is not recorded
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.4 StringLiteral; IP=Low; Security=High; Resources=2; Fingerprint=47058A
+    // Hairs-Falsified-If: a raw LF or CR is admitted in a string, an undefined escape is admitted, or a legacy escape is not recorded
+    // Hairs-Human:        PENDING
     private Token ReadStringLiteral(int start)
     {
         var startLine = line;
@@ -753,9 +753,9 @@ internal sealed class Tokenizer
     // ---------------------------------------------------------------------------------------------------------------
     // Templates: clause 12.9.6, read in place one piece at a time, each with its TV and its TRV.
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.6 Template, TV and TRV; IP=Low; Security=High; Resources=2; Fingerprint=22B4D9
-    // Broiler-Falsified-If: a template piece ends at a brace or backtick its text escapes, a NotEscapeSequence leaves a cooked value, or CR and CR LF are not LF in both values
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.6 Template, TV and TRV; IP=Low; Security=High; Resources=2; Fingerprint=22B4D9
+    // Hairs-Falsified-If: a template piece ends at a brace or backtick its text escapes, a NotEscapeSequence leaves a cooked value, or CR and CR LF are not LF in both values
+    // Hairs-Human:        PENDING
     private Token ReadTemplate(int start, bool opening)
     {
         var startLine = line;
@@ -861,8 +861,8 @@ internal sealed class Tokenizer
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.6 TV and TRV; IP=Low; Security=Medium; Resources=1; Fingerprint=44F559
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.6 TV and TRV; IP=Low; Security=Medium; Resources=1; Fingerprint=44F559
+    // Hairs-Human:        PENDING
     private Token TemplatePiece(TokenKind kind, int start, int startLine, int startLineStart, StringBuilder cooked, StringBuilder raw, int invalidAt)
     {
         var flags = invalidAt >= 0 ? TokenFlags.NotEscapeSequence : TokenFlags.None;
@@ -873,9 +873,9 @@ internal sealed class Tokenizer
     /// A template's <c>\x</c>: two hex digits make a <c>HexEscapeSequence</c>; fewer make a <c>NotEscapeSequence</c>,
     /// which takes the one hex digit there is and leaves the next code unit to the template.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.6 NotEscapeSequence; IP=Low; Security=High; Resources=2; Fingerprint=1B518C
-    // Broiler-Falsified-If: a NotEscapeSequence takes a code unit after its hex digits, so the template reads the next one wrongly
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.6 NotEscapeSequence; IP=Low; Security=High; Resources=2; Fingerprint=1B518C
+    // Hairs-Falsified-If: a NotEscapeSequence takes a code unit after its hex digits, so the template reads the next one wrongly
+    // Hairs-Human:        PENDING
     private bool TemplateHex(StringBuilder raw, int count, out int value)
     {
         value = 0;
@@ -896,9 +896,9 @@ internal sealed class Tokenizer
     /// A template's <c>\u</c>: a <c>UnicodeEscapeSequence</c>, or the <c>NotEscapeSequence</c> its longest prefix is, which
     /// takes its hex digits and its <c>{</c> and leaves the next code unit to the template.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.6 NotEscapeSequence; IP=Low; Security=High; Resources=2; Fingerprint=CDBA42
-    // Broiler-Falsified-If: a NotEscapeSequence takes the code unit after its digits, or a code point above U+10FFFF is cooked
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.6 NotEscapeSequence; IP=Low; Security=High; Resources=2; Fingerprint=CDBA42
+    // Hairs-Falsified-If: a NotEscapeSequence takes the code unit after its digits, or a code point above U+10FFFF is cooked
+    // Hairs-Human:        PENDING
     private bool TemplateUnicode(StringBuilder raw, out int codePoint)
     {
         codePoint = 0;
@@ -929,9 +929,9 @@ internal sealed class Tokenizer
     // ---------------------------------------------------------------------------------------------------------------
     // Regular-expression literals: clause 12.9.5, delimited only; the pattern's validity is the provider's (decision D7).
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.5 RegularExpressionLiteral; IP=Low; Security=High; Resources=2; Fingerprint=7EA2F0
-    // Broiler-Falsified-If: a slash inside a class ends the literal, a line terminator is admitted in its body, or an escape is taken into its flags
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.5 RegularExpressionLiteral; IP=Low; Security=High; Resources=2; Fingerprint=7EA2F0
+    // Hairs-Falsified-If: a slash inside a class ends the literal, a line terminator is admitted in its body, or an escape is taken into its flags
+    // Hairs-Human:        PENDING
     private Token ReadRegularExpression(int start)
     {
         var startLine = line;
@@ -984,8 +984,8 @@ internal sealed class Tokenizer
     // ---------------------------------------------------------------------------------------------------------------
     // Punctuators: clause 12.8, longest match first.
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.8 Punctuators longest match; IP=Low; Security=Medium; Resources=1; Fingerprint=D876D7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.8 Punctuators longest match; IP=Low; Security=Medium; Resources=1; Fingerprint=D876D7
+    // Hairs-Human:        PENDING
     private Token ReadPunctuator(int start, char c)
     {
         var kind = c switch
@@ -1053,8 +1053,8 @@ internal sealed class Tokenizer
         return new Token(kind, start, position, AbsoluteLine(line), AbsoluteColumn(start, line, lineStart), TokenFlags.None);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.8 Punctuators; IP=Low; Security=Medium; Resources=1; Fingerprint=7C4E9E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.8 Punctuators; IP=Low; Security=Medium; Resources=1; Fingerprint=7C4E9E
+    // Hairs-Human:        PENDING
     private TokenKind Take(int length, TokenKind kind)
     {
         position += length;
@@ -1062,8 +1062,8 @@ internal sealed class Tokenizer
     }
 
     /// <summary>A code point no input element begins with (catalogue row EX0001), at the code point.</summary>
-    // Broiler-AI:           Origin=AI; Spec=catalogue EX0001; IP=Low; Security=Medium; Resources=1; Fingerprint=314920
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue EX0001; IP=Low; Security=Medium; Resources=1; Fingerprint=314920
+    // Hairs-Human:        PENDING
     private Token UnexpectedCharacter(int start)
     {
         CodePointAt(start, out var width);
@@ -1075,8 +1075,8 @@ internal sealed class Tokenizer
     // ---------------------------------------------------------------------------------------------------------------
     // Positions, classes and refusals.
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D11 D15 diagnostic anchors; IP=Low; Security=Medium; Resources=1; Fingerprint=31F25A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D11 D15 diagnostic anchors; IP=Low; Security=Medium; Resources=1; Fingerprint=31F25A
+    // Hairs-Human:        PENDING
     private bool Refuse(LexicalRefusal rule, int start, int startLine, int startLineStart)
     {
         var end = Math.Max(position, start);
@@ -1086,17 +1086,17 @@ internal sealed class Tokenizer
         return false;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D15 positions; IP=Low; Security=Medium; Resources=1; Fingerprint=ABEB25
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D15 positions; IP=Low; Security=Medium; Resources=1; Fingerprint=ABEB25
+    // Hairs-Human:        PENDING
     private int AbsoluteLine(int relativeLine) => source.BaseLine + relativeLine - 1;
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D15 positions; IP=Low; Security=Medium; Resources=1; Fingerprint=E65194
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D15 positions; IP=Low; Security=Medium; Resources=1; Fingerprint=E65194
+    // Hairs-Human:        PENDING
     private int AbsoluteColumn(int offset, int relativeLine, int relativeLineStart) =>
         relativeLine == 1 ? source.BaseColumn + offset : offset - relativeLineStart + 1;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.3 LineTerminatorSequence; IP=Low; Security=Medium; Resources=1; Fingerprint=4C9A4C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.3 LineTerminatorSequence; IP=Low; Security=Medium; Resources=1; Fingerprint=4C9A4C
+    // Hairs-Human:        PENDING
     private void AdvanceLine(char c)
     {
         // CR LF is one line terminator (clause 12.3), so it moves one line.
@@ -1105,19 +1105,19 @@ internal sealed class Tokenizer
         lineStart = position;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical grammar; IP=Low; Security=Medium; Resources=1; Fingerprint=0C2BC4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical grammar; IP=Low; Security=Medium; Resources=1; Fingerprint=0C2BC4
+    // Hairs-Human:        PENDING
     private bool At(int offset, string what) =>
         offset + what.Length <= text.Length && string.CompareOrdinal(text, offset, what, 0, what.Length) == 0;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.7 IdentifierStartChar via IUnicodeTables; IP=Low; Security=Medium; Resources=1; Fingerprint=E1A838
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.7 IdentifierStartChar via IUnicodeTables; IP=Low; Security=Medium; Resources=1; Fingerprint=E1A838
+    // Hairs-Human:        PENDING
     private bool IsIdentifierStartAt(int offset, out int width) => lexical.IsIdentifierStart(CodePointAt(offset, out width));
 
     /// <summary>The code point at <paramref name="offset"/>: a surrogate pair read whole, anything else, a lone surrogate included, the code unit it is.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s11.1.4 CodePointAt; IP=Low; Security=High; Resources=2; Fingerprint=1FC901
-    // Broiler-Falsified-If: a surrogate pair is read as two code points or a lone surrogate as a pair
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s11.1.4 CodePointAt; IP=Low; Security=High; Resources=2; Fingerprint=1FC901
+    // Hairs-Falsified-If: a surrogate pair is read as two code points or a lone surrogate as a pair
+    // Hairs-Human:        PENDING
     private int CodePointAt(int offset, out int width)
     {
         var unit = text[offset];
@@ -1132,20 +1132,20 @@ internal sealed class Tokenizer
     }
 
     /// <summary>WhiteSpace (clause 12.2): TAB, VT, FF, ZWNBSP and the Space_Separator code points, all in the BMP, through the provider beyond ASCII.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.2 WhiteSpace via IUnicodeTables; IP=Low; Security=Medium; Resources=1; Fingerprint=BDAB22
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.2 WhiteSpace via IUnicodeTables; IP=Low; Security=Medium; Resources=1; Fingerprint=BDAB22
+    // Hairs-Human:        PENDING
     private bool IsWhiteSpace(char c) => c is '\t' or '\v' or '\f' or ' ' ? true : c >= 0x80 && lexical.IsWhiteSpace(c);
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.3 LineTerminator; IP=Low; Security=Medium; Resources=1; Fingerprint=FBEFF9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.3 LineTerminator; IP=Low; Security=Medium; Resources=1; Fingerprint=FBEFF9
+    // Hairs-Human:        PENDING
     private static bool IsLineTerminator(char c) => c is '\n' or '\r' or '\u2028' or '\u2029';
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 DecimalDigit; IP=Low; Security=Medium; Resources=1; Fingerprint=3F788E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 DecimalDigit; IP=Low; Security=Medium; Resources=1; Fingerprint=3F788E
+    // Hairs-Human:        PENDING
     private static bool IsAsciiDigit(char c) => c is >= '0' and <= '9';
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 NonDecimalIntegerLiteral; IP=Low; Security=Medium; Resources=1; Fingerprint=FEFA4D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 NonDecimalIntegerLiteral; IP=Low; Security=Medium; Resources=1; Fingerprint=FEFA4D
+    // Hairs-Human:        PENDING
     private static int Radix(char c) => c switch
     {
         'x' or 'X' => 16,
@@ -1154,8 +1154,8 @@ internal sealed class Tokenizer
         _ => 0,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.4 HexDigit; IP=Low; Security=Medium; Resources=1; Fingerprint=2D7172
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.4 HexDigit; IP=Low; Security=Medium; Resources=1; Fingerprint=2D7172
+    // Hairs-Human:        PENDING
     private static int HexValue(char c) => c switch
     {
         >= '0' and <= '9' => c - '0',
@@ -1164,16 +1164,16 @@ internal sealed class Tokenizer
         _ => -1,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 digits of a radix; IP=Low; Security=Medium; Resources=1; Fingerprint=629D02
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.3 digits of a radix; IP=Low; Security=Medium; Resources=1; Fingerprint=629D02
+    // Hairs-Human:        PENDING
     private static int DigitValue(char c, int radix)
     {
         var value = HexValue(c);
         return value < radix ? value : -1;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s11.1.1 UTF16EncodeCodePoint; IP=Low; Security=Medium; Resources=1; Fingerprint=A2F483
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s11.1.1 UTF16EncodeCodePoint; IP=Low; Security=Medium; Resources=1; Fingerprint=A2F483
+    // Hairs-Human:        PENDING
     private static void AppendCodePoint(StringBuilder into, int codePoint)
     {
         if (codePoint <= 0xFFFF)
@@ -1187,8 +1187,8 @@ internal sealed class Tokenizer
     }
 
     /// <summary>A template whose substitution is open: where its backtick is, for where its refusal is anchored.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9.6, JSD-0083 D15; IP=Low; Security=Low; Resources=0; Fingerprint=0CFD5E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9.6, JSD-0083 D15; IP=Low; Security=Low; Resources=0; Fingerprint=0CFD5E
+    // Hairs-Human:        PENDING
     internal sealed class TemplateFrame(int start, int line, int lineStart, TemplateFrame? outer)
     {
         /// <summary>The offset of the template's opening backtick.</summary>
@@ -1206,8 +1206,8 @@ internal sealed class Tokenizer
 }
 
 /// <summary>A tokenizer's state, which <see cref="Tokenizer.Save"/> takes and <see cref="Tokenizer.Restore"/> returns to.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goal lookahead; IP=Low; Security=Low; Resources=0; Fingerprint=AC6498
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goal lookahead; IP=Low; Security=Low; Resources=0; Fingerprint=AC6498
+// Hairs-Human:        PENDING
 internal readonly record struct TokenizerState(
     int Position,
     int Line,
@@ -1219,62 +1219,62 @@ internal readonly record struct TokenizerState(
     Token Refusal);
 
 /// <summary>A lexical rule's shared code and message identifier, from the early-error catalogue (<c>early-errors.tsv</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=catalogue shared codes; IP=Low; Security=Low; Resources=0; Fingerprint=DEEEF7
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=catalogue shared codes; IP=Low; Security=Low; Resources=0; Fingerprint=DEEEF7
+// Hairs-Human:        PENDING
 internal readonly record struct LexicalRefusal(string Code, string MessageId);
 
 /// <summary>The catalogue rows the tokenizer refuses by (decision D11's shared codes; the catalogue's message identifiers).</summary>
-// Broiler-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers; IP=Low; Security=Low; Resources=0; Fingerprint=7358A6
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers; IP=Low; Security=Low; Resources=0; Fingerprint=7358A6
+// Hairs-Human:        PENDING
 internal static class Catalogue
 {
     /// <summary>EX0001: a code point that begins no input element of the goal's lexical grammar.</summary>
-    // Broiler-AI:           Origin=AI; Spec=catalogue row EX0001; IP=Low; Security=Low; Resources=1; Fingerprint=E7BC20
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue row EX0001; IP=Low; Security=Low; Resources=1; Fingerprint=E7BC20
+    // Hairs-Human:        PENDING
     internal static LexicalRefusal UnexpectedCharacter => new("JSE9101", "syntax.character.unexpected");
 
     /// <summary>EX0002: a <c>MultiLineComment</c> with no closing <c>*/</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=catalogue row EX0002; IP=Low; Security=Low; Resources=1; Fingerprint=3837AF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue row EX0002; IP=Low; Security=Low; Resources=1; Fingerprint=3837AF
+    // Hairs-Human:        PENDING
     internal static LexicalRefusal CommentUnterminated => new("JSE9102", "syntax.comment.unterminated");
 
     /// <summary>EX0003: a numeric literal no <c>NumericLiteral</c> production matches, or one an IdentifierStart or a digit touches.</summary>
-    // Broiler-AI:           Origin=AI; Spec=catalogue row EX0003; IP=Low; Security=Low; Resources=1; Fingerprint=A4B1D3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue row EX0003; IP=Low; Security=Low; Resources=1; Fingerprint=A4B1D3
+    // Hairs-Human:        PENDING
     internal static LexicalRefusal NumericLiteralInvalid => new("JSE9103", "syntax.numeric-literal.invalid");
 
     /// <summary>EX0004: a <c>StringLiteral</c> with no closing quote before a line terminator or the end.</summary>
-    // Broiler-AI:           Origin=AI; Spec=catalogue row EX0004; IP=Low; Security=Low; Resources=1; Fingerprint=7BDAB5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue row EX0004; IP=Low; Security=Low; Resources=1; Fingerprint=7BDAB5
+    // Hairs-Human:        PENDING
     internal static LexicalRefusal StringUnterminated => new("JSE9104", "syntax.string.unterminated");
 
     /// <summary>EX0005: a string literal's escape sequence the lexical grammar does not define.</summary>
-    // Broiler-AI:           Origin=AI; Spec=catalogue row EX0005; IP=Low; Security=Low; Resources=1; Fingerprint=044085
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue row EX0005; IP=Low; Security=Low; Resources=1; Fingerprint=044085
+    // Hairs-Human:        PENDING
     internal static LexicalRefusal StringEscapeInvalid => new("JSE9105", "syntax.string.escape.invalid");
 
     /// <summary>EX0006: a <c>RegularExpressionLiteral</c> with no closing <c>/</c> before a line terminator or the end.</summary>
-    // Broiler-AI:           Origin=AI; Spec=catalogue row EX0006; IP=Low; Security=Low; Resources=1; Fingerprint=175544
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue row EX0006; IP=Low; Security=Low; Resources=1; Fingerprint=175544
+    // Hairs-Human:        PENDING
     internal static LexicalRefusal RegExpUnterminated => new("JSE9106", "syntax.regexp.unterminated");
 
     /// <summary>EX0007: a template literal with no closing backtick before the end.</summary>
-    // Broiler-AI:           Origin=AI; Spec=catalogue row EX0007; IP=Low; Security=Low; Resources=1; Fingerprint=DA7B62
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue row EX0007; IP=Low; Security=Low; Resources=1; Fingerprint=DA7B62
+    // Hairs-Human:        PENDING
     internal static LexicalRefusal TemplateUnterminated => new("JSE9107", "syntax.template.unterminated");
 
     /// <summary>EX0025: an identifier's unicode escape the lexical grammar does not define.</summary>
-    // Broiler-AI:           Origin=AI; Spec=catalogue row EX0025; IP=Low; Security=Low; Resources=1; Fingerprint=1CA9F0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue row EX0025; IP=Low; Security=Low; Resources=1; Fingerprint=1CA9F0
+    // Hairs-Human:        PENDING
     internal static LexicalRefusal IdentifierEscapeInvalid => new("JSE9111", "syntax.identifier.escape.invalid");
 
     /// <summary>EE0001: an escaped code point no <c>IdentifierStartChar</c> matches, at a name's start (clause 12.7.1.1).</summary>
-    // Broiler-AI:           Origin=AI; Spec=catalogue row EE0001; IP=Low; Security=Low; Resources=1; Fingerprint=CEE78A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue row EE0001; IP=Low; Security=Low; Resources=1; Fingerprint=CEE78A
+    // Hairs-Human:        PENDING
     internal static LexicalRefusal IdentifierEscapeStart => new("JSE1201", "identifier.escape.invalid-start");
 
     /// <summary>EE0002: an escaped code point no <c>IdentifierPartChar</c> matches, after a name's start (clause 12.7.1.1).</summary>
-    // Broiler-AI:           Origin=AI; Spec=catalogue row EE0002; IP=Low; Security=Low; Resources=1; Fingerprint=70D3EB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=catalogue row EE0002; IP=Low; Security=Low; Resources=1; Fingerprint=70D3EB
+    // Hairs-Human:        PENDING
     internal static LexicalRefusal IdentifierEscapePart => new("JSE1202", "identifier.escape.invalid-part");
 }

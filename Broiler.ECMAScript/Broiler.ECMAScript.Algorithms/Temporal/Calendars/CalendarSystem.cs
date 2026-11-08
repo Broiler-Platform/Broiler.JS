@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   12
 // Annotated:        12/12
 // Exempt:           8
@@ -36,13 +36,13 @@ namespace Broiler.ECMAScript.Temporal;
 /// immutable, so every member is safe to call concurrently.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem; IP=Low; Security=Low; Resources=1; Fingerprint=59BB74
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem; IP=Low; Security=Low; Resources=1; Fingerprint=59BB74
+// Hairs-Human:        PENDING
 internal abstract class CalendarSystem(CalendarId id)
 {
     /// <summary>R.D. 719163 is 1970-01-01.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.RataDieOfEpoch; IP=Low; Security=Low; Resources=1; Fingerprint=A9315E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.RataDieOfEpoch; IP=Low; Security=Low; Resources=1; Fingerprint=A9315E
+    // Hairs-Human:        PENDING
     internal const long RataDieOfEpoch = 719163;
 
     /// <summary>The calendar.</summary>
@@ -64,31 +64,31 @@ internal abstract class CalendarSystem(CalendarId id)
     internal virtual bool HasEras => false;
 
     /// <summary>The year whose arithmetic year is <paramref name="year"/>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.Year; IP=Low; Security=Low; Resources=1; Fingerprint=8C929E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.Year; IP=Low; Security=Low; Resources=1; Fingerprint=8C929E
+    // Hairs-Human:        PENDING
     internal abstract CalendarSystemYear Year(long year);
 
     /// <summary>The arithmetic year containing a day.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.YearOf; IP=Low; Security=Low; Resources=1; Fingerprint=F451E6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.YearOf; IP=Low; Security=Low; Resources=1; Fingerprint=F451E6
+    // Hairs-Human:        PENDING
     internal abstract long YearOf(long epochDays);
 
     /// <summary>Whether a year is a leap year (the era proposal's 4.1.14, note 7).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.InLeapYear; IP=Low; Security=Low; Resources=1; Fingerprint=052273
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.InLeapYear; IP=Low; Security=Low; Resources=1; Fingerprint=052273
+    // Hairs-Human:        PENDING
     internal abstract bool InLeapYear(CalendarSystemYear year);
 
     /// <summary>Whether a month code is one of Table 3's beyond <c>M01</c> to <c>M12</c> for this calendar.</summary>
     internal virtual bool IsAdditionalMonthCode(MonthCode monthCode) => false;
 
     /// <summary>The months between a fixed origin and the first month of a year, for balancing months into years.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.MonthsBefore; IP=Low; Security=Low; Resources=1; Fingerprint=2E17F4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.MonthsBefore; IP=Low; Security=Low; Resources=1; Fingerprint=2E17F4
+    // Hairs-Human:        PENDING
     internal virtual long MonthsBefore(long year) => 12 * year;
 
     /// <summary>The era and era year of a date (the era proposal's 4.1.9 and 4.1.10).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.10, Table 2 via Broiler.VM JsCalendarSystem.EraOf; IP=Low; Security=Low; Resources=1; Fingerprint=05A6DD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.10, Table 2 via Broiler.VM JsCalendarSystem.EraOf; IP=Low; Security=Low; Resources=1; Fingerprint=05A6DD
+    // Hairs-Human:        PENDING
     internal virtual (string? Era, long? EraYear) EraOf(long year, long epochDays) => (null, null);
 
     /// <summary>
@@ -101,8 +101,8 @@ internal abstract class CalendarSystem(CalendarId id)
     internal virtual int? TableReferenceYear(MonthCode monthCode, int day) => null;
 
     /// <summary>The year, ordinal month and day of a day since the epoch.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.FromEpochDays; IP=Low; Security=Low; Resources=1; Fingerprint=9BEFAC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.FromEpochDays; IP=Low; Security=Low; Resources=1; Fingerprint=9BEFAC
+    // Hairs-Human:        PENDING
     internal (CalendarSystemYear Year, int Month, int Day) FromEpochDays(long epochDays)
     {
         var year = Year(YearOf(epochDays));
@@ -111,8 +111,8 @@ internal abstract class CalendarSystem(CalendarId id)
     }
 
     /// <summary>The month code of an ordinal month (the era proposal's 4.1.14, [[MonthCode]]).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.14 via Broiler.VM JsCalendarSystem.MonthCodeOf; IP=Low; Security=Low; Resources=1; Fingerprint=F718A1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.14 via Broiler.VM JsCalendarSystem.MonthCodeOf; IP=Low; Security=Low; Resources=1; Fingerprint=F718A1
+    // Hairs-Human:        PENDING
     internal static MonthCode MonthCodeOf(CalendarSystemYear year, int month)
     {
         var leap = year.LeapMonth;
@@ -123,8 +123,8 @@ internal abstract class CalendarSystem(CalendarId id)
     }
 
     /// <summary>MonthCodeToOrdinal (the era proposal's 4.1.7), or 0 where the year does not contain the code (4.1.5).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.7 via Broiler.VM JsCalendarSystem.Ordinal; IP=Low; Security=Low; Resources=1; Fingerprint=D99B1A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.7 via Broiler.VM JsCalendarSystem.Ordinal; IP=Low; Security=Low; Resources=1; Fingerprint=D99B1A
+    // Hairs-Human:        PENDING
     internal static int Ordinal(CalendarSystemYear year, MonthCode monthCode)
     {
         var number = monthCode.Number;
@@ -145,16 +145,16 @@ internal abstract class CalendarSystem(CalendarId id)
     /// ISO limits lies in a year beyond it, and each operation answers <see cref="CalendarStatus.OutOfRange"/>
     /// before it would ask for one.
     /// </exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1 via Broiler.VM JsCalendarSystem.SharedYear; IP=Low; Security=Low; Resources=1; Fingerprint=84072B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1 via Broiler.VM JsCalendarSystem.SharedYear; IP=Low; Security=Low; Resources=1; Fingerprint=84072B
+    // Hairs-Human:        PENDING
     protected static CalendarSystemYear SharedYear(ICalendarTables tables, TableCalendar calendar, long year) =>
         CalendarYears.GetYear(tables, calendar, year, out var result) == TimeStatus.Completed
             ? CalendarSystemYear.Of(result)
             : throw new InvalidOperationException("The year is beyond the calendar year sources' bound, which every caller keeps.");
 
     /// <summary>The year an estimate names, moved until it contains the day.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.AdjustYear; IP=Low; Security=Low; Resources=1; Fingerprint=D1467E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsCalendarSystem.AdjustYear; IP=Low; Security=Low; Resources=1; Fingerprint=D1467E
+    // Hairs-Human:        PENDING
     protected long AdjustYear(long estimate, long epochDays)
     {
         var year = estimate;

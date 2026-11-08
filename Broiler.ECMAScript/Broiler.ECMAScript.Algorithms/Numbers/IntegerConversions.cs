@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   15
 // Annotated:        15/15
 // Exempt:           0
@@ -37,62 +37,62 @@ namespace Broiler.ECMAScript.Numbers;
 /// is never computed through a rounding.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.5-7.1.22; IP=Low; Security=Medium; Resources=1; Fingerprint=753413
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.5-7.1.22; IP=Low; Security=Medium; Resources=1; Fingerprint=753413
+// Hairs-Human:        PENDING
 public static class IntegerConversions
 {
     /// <summary>The largest index <c>ToIndex</c> admits, and the largest length <c>ToLength</c> gives: 2^53 - 1.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.20; IP=Low; Security=Low; Resources=1; Fingerprint=17B9FB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.20; IP=Low; Security=Low; Resources=1; Fingerprint=17B9FB
+    // Hairs-Human:        PENDING
     public const long MaximumSafeInteger = 9007199254740991;
 
     /// <summary><c>ToInt32</c> (ECMA-262 7.1.6) of a Number.</summary>
     /// <param name="number">The Number.</param>
     /// <returns>The integer congruent to its truncation modulo 2^32, in [-2^31, 2^31); 0 for NaN, the infinities and the zeros.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.6; IP=Low; Security=Medium; Resources=1; Fingerprint=51E8C9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.6; IP=Low; Security=Medium; Resources=1; Fingerprint=51E8C9
+    // Hairs-Human:        PENDING
     public static int ToInt32(double number) => unchecked((int)Modulo64(number));
 
     /// <summary><c>ToUint32</c> (ECMA-262 7.1.7) of a Number.</summary>
     /// <param name="number">The Number.</param>
     /// <returns>Its truncation modulo 2^32; 0 for NaN, the infinities and the zeros.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.7; IP=Low; Security=Medium; Resources=1; Fingerprint=74FA6E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.7; IP=Low; Security=Medium; Resources=1; Fingerprint=74FA6E
+    // Hairs-Human:        PENDING
     public static uint ToUint32(double number) => unchecked((uint)Modulo64(number));
 
     /// <summary><c>ToInt16</c> (ECMA-262 7.1.8) of a Number.</summary>
     /// <param name="number">The Number.</param>
     /// <returns>The integer congruent to its truncation modulo 2^16, in [-2^15, 2^15).</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.8; IP=Low; Security=Medium; Resources=1; Fingerprint=D2CF66
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.8; IP=Low; Security=Medium; Resources=1; Fingerprint=D2CF66
+    // Hairs-Human:        PENDING
     public static short ToInt16(double number) => unchecked((short)Modulo64(number));
 
     /// <summary><c>ToUint16</c> (ECMA-262 7.1.9) of a Number.</summary>
     /// <param name="number">The Number.</param>
     /// <returns>Its truncation modulo 2^16.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.9; IP=Low; Security=Medium; Resources=1; Fingerprint=9252B8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.9; IP=Low; Security=Medium; Resources=1; Fingerprint=9252B8
+    // Hairs-Human:        PENDING
     public static ushort ToUint16(double number) => unchecked((ushort)Modulo64(number));
 
     /// <summary><c>ToInt8</c> (ECMA-262 7.1.10) of a Number.</summary>
     /// <param name="number">The Number.</param>
     /// <returns>The integer congruent to its truncation modulo 2^8, in [-128, 128).</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.10; IP=Low; Security=Medium; Resources=1; Fingerprint=D2C214
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.10; IP=Low; Security=Medium; Resources=1; Fingerprint=D2C214
+    // Hairs-Human:        PENDING
     public static sbyte ToInt8(double number) => unchecked((sbyte)Modulo64(number));
 
     /// <summary><c>ToUint8</c> (ECMA-262 7.1.11) of a Number.</summary>
     /// <param name="number">The Number.</param>
     /// <returns>Its truncation modulo 2^8.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.11; IP=Low; Security=Medium; Resources=1; Fingerprint=48067F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.11; IP=Low; Security=Medium; Resources=1; Fingerprint=48067F
+    // Hairs-Human:        PENDING
     public static byte ToUint8(double number) => unchecked((byte)Modulo64(number));
 
     /// <summary><c>ToUint8Clamp</c> (ECMA-262 7.1.12) of a Number: clamped to [0, 255] and rounded to nearest, ties to even.</summary>
     /// <param name="number">The Number.</param>
     /// <returns>0 for NaN and for anything at or below 0, 255 at or above 255, and otherwise the nearest integer, the even one at a tie.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.12; IP=Low; Security=Medium; Resources=1; Fingerprint=1CC766
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.12; IP=Low; Security=Medium; Resources=1; Fingerprint=1CC766
+    // Hairs-Human:        PENDING
     public static byte ToUint8Clamp(double number)
     {
         if (double.IsNaN(number) || number <= 0)
@@ -114,8 +114,8 @@ public static class IntegerConversions
     /// <summary><c>ToIntegerOrInfinity</c> (ECMA-262 7.1.5) of a Number.</summary>
     /// <param name="number">The Number.</param>
     /// <returns>+0 for NaN and the zeros, the infinity itself for an infinity, and otherwise the truncation, never -0.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.5; IP=Low; Security=Medium; Resources=1; Fingerprint=0EEBB9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.5; IP=Low; Security=Medium; Resources=1; Fingerprint=0EEBB9
+    // Hairs-Human:        PENDING
     public static double ToIntegerOrInfinity(double number)
     {
         if (double.IsNaN(number))
@@ -130,8 +130,8 @@ public static class IntegerConversions
     /// <summary><c>ToLength</c> (ECMA-262 7.1.20) of a Number: its <c>ToIntegerOrInfinity</c> clamped to [0, 2^53 - 1].</summary>
     /// <param name="number">The Number.</param>
     /// <returns>The length, from 0 to <see cref="MaximumSafeInteger"/>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=CB787E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=CB787E
+    // Hairs-Human:        PENDING
     public static long ToLength(double number)
     {
         var integer = ToIntegerOrInfinity(number);
@@ -145,8 +145,8 @@ public static class IntegerConversions
     /// <param name="number">The Number.</param>
     /// <param name="index">The index, when the Number is a valid one.</param>
     /// <returns><see langword="false"/> where the clause throws a <c>RangeError</c>, which the engine raises.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.22; IP=Low; Security=Medium; Resources=1; Fingerprint=D491E1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.22; IP=Low; Security=Medium; Resources=1; Fingerprint=D491E1
+    // Hairs-Human:        PENDING
     public static bool TryToIndex(double number, out long index)
     {
         var integer = ToIntegerOrInfinity(number);
@@ -163,22 +163,22 @@ public static class IntegerConversions
     /// <summary>The bit pattern <c>ToBigInt64</c> (ECMA-262 7.1.15) gives a BigInt: its value modulo 2^64, read as a signed 64-bit integer.</summary>
     /// <param name="value">The BigInt's value.</param>
     /// <returns>The signed 64-bit integer congruent to it.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.15; IP=Low; Security=Medium; Resources=1; Fingerprint=1C8CBC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.15; IP=Low; Security=Medium; Resources=1; Fingerprint=1C8CBC
+    // Hairs-Human:        PENDING
     public static long ToBigInt64(BigInteger value) => unchecked((long)ToBigUint64(value));
 
     /// <summary>The bit pattern <c>ToBigUint64</c> (ECMA-262 7.1.16) gives a BigInt: its value modulo 2^64.</summary>
     /// <param name="value">The BigInt's value.</param>
     /// <returns>The unsigned 64-bit integer congruent to it.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.16; IP=Low; Security=Medium; Resources=1; Fingerprint=44E1AE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.16; IP=Low; Security=Medium; Resources=1; Fingerprint=44E1AE
+    // Hairs-Human:        PENDING
     public static ulong ToBigUint64(BigInteger value) => (ulong)(value & ulong.MaxValue);
 
     /// <summary>A Number's truncation modulo 2^64, exactly; 0 for NaN and the infinities.</summary>
     /// <param name="number">The Number.</param>
     /// <returns>The residue, as the low 64 bits of the integer's two's complement.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.6; IP=Low; Security=Medium; Resources=1; Fingerprint=CC765B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.6; IP=Low; Security=Medium; Resources=1; Fingerprint=CC765B
+    // Hairs-Human:        PENDING
     private static ulong Modulo64(double number)
     {
         if (!double.IsFinite(number))

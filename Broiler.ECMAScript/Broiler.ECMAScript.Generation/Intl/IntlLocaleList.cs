@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   5
 // Annotated:        5/5
 // Exempt:           4
@@ -43,12 +43,12 @@ namespace Broiler.ECMAScript.Generation.Intl;
 /// tables write them; a list out of order is refused rather than sorted, so the file reads as the table.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 D5 D11 locale list; IP=Low; Security=Medium; Resources=2; Fingerprint=2646AD
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 D5 D11 locale list; IP=Low; Security=Medium; Resources=2; Fingerprint=2646AD
+// Hairs-Human:        PENDING
 public sealed class IntlLocaleList
 {
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D5 locale list; IP=Low; Security=Low; Resources=0; Fingerprint=6D6227
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D5 locale list; IP=Low; Security=Low; Resources=0; Fingerprint=6D6227
+    // Hairs-Human:        PENDING
     private IntlLocaleList(ImmutableArray<string> locales, ImmutableArray<string> mainDataLocales, ImmutableArray<string> supplementalLanguages, bool everyLanguage)
     {
         Locales = locales;
@@ -72,9 +72,9 @@ public sealed class IntlLocaleList
     /// <summary>Parses a locale list's text.</summary>
     /// <param name="text">The list's text.</param>
     /// <exception cref="InvalidDataException">A line is not one of the statements above, a tag is malformed, repeated or out of order, or no locale is listed.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D5 D11 locale list; IP=Low; Security=High; Resources=3; Fingerprint=6C3047
-    // Broiler-Falsified-If: a list out of ordinal order, with a repeated tag, a malformed tag or line, or no locale, is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D5 D11 locale list; IP=Low; Security=High; Resources=3; Fingerprint=6C3047
+    // Hairs-Falsified-If: a list out of ordinal order, with a repeated tag, a malformed tag or line, or no locale, is accepted
+    // Hairs-Human:        PENDING
     public static IntlLocaleList Parse(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -138,8 +138,8 @@ public sealed class IntlLocaleList
     }
 
     /// <summary>Appends a tag, refusing one that repeats or does not follow the last in ordinal order.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D5 locale list; IP=Low; Security=Medium; Resources=1; Fingerprint=804F2D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D5 locale list; IP=Low; Security=Medium; Resources=1; Fingerprint=804F2D
+    // Hairs-Human:        PENDING
     private static void Append(List<string> list, string tag, string line)
     {
         if (list.Count > 0 && string.CompareOrdinal(list[^1], tag) >= 0)
@@ -151,8 +151,8 @@ public sealed class IntlLocaleList
     }
 
     /// <summary>A tag of ASCII letters and digits in subtags of one to eight, separated by hyphens.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D5 locale list; IP=Low; Security=Medium; Resources=1; Fingerprint=0CDCF2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D5 locale list; IP=Low; Security=Medium; Resources=1; Fingerprint=0CDCF2
+    // Hairs-Human:        PENDING
     private static bool IsTag(string tag) =>
         tag.Split('-').All(static subtag => subtag.Length is >= 1 and <= 8 &&
             subtag.All(static c => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9'));

@@ -337,18 +337,28 @@ public class SharedRuleTests
     private static IEnumerable<string> LibraryProjectPaths =>
         SharedTree.Libraries.Select(static p => Path.GetRelativePath(SharedTree.Folder, p.Path).Replace(Path.DirectorySeparatorChar, '/'));
 
+    // Changed 2026-11-08, when Broiler.Code's commit 1b31684 "Switch to Hairs" removed the review CLI
+    // and the owner chose to migrate to Hairs.Cli 0.1.0-preview.2. The test read
+    // Broiler.ECMAScript/assurance.config.json and assurance.manifest.json, and asked of
+    // shared-libraries.yml only that it contain "assurance check" and "--root
+    // Broiler.JS/Broiler.ECMAScript", the layout in which Broiler.Code was checked out beside this
+    // repository. It reads hairs.config.json and hairs.manifest.json, refuses the old names beside
+    // them, and holds the workflow, the configuration's regenerateCommand and the tool manifest to
+    // the one pinned tool.
     [Fact]
     public void SL8_The_assurance_scheme_covers_every_shared_library_and_CI_gates_on_it()
     {
-        using var config = JsonDocument.Parse(File.ReadAllText(Path.Combine(SharedTree.Folder, "assurance.config.json")), Lenient);
+        using var config = JsonDocument.Parse(File.ReadAllText(Path.Combine(SharedTree.Folder, "hairs.config.json")), Lenient);
         Assert.Empty(SharedRules.SL8(config, LibraryProjectPaths));
 
-        foreach (var artefact in (string[])["CODE-ASSURANCE.md", "HUMAN_REVIEW.md", "assurance.manifest.json"])
+        foreach (var artefact in (string[])["CODE-ASSURANCE.md", "HUMAN_REVIEW.md", "hairs.manifest.json"])
             Assert.True(File.Exists(Path.Combine(SharedTree.Folder, artefact)), artefact + " has not been generated");
+        foreach (var retired in (string[])["assurance.config.json", "assurance.manifest.json"])
+            Assert.False(File.Exists(Path.Combine(SharedTree.Folder, retired)), retired + " is the retired tool's name and is still present");
 
         // Every source file of every library is in the manifest's files array, which is what makes
         // the record complete: a file the tool did not cover would be absent.
-        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(SharedTree.Folder, "assurance.manifest.json")));
+        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(SharedTree.Folder, "hairs.manifest.json")));
         var files = manifest.RootElement.GetProperty("files").EnumerateArray().Select(static f => f.GetProperty("file").GetString()).ToHashSet(StringComparer.Ordinal);
         foreach (var library in SharedTree.Libraries)
         {
@@ -356,19 +366,30 @@ public class SharedRuleTests
                 Assert.Contains(Path.GetRelativePath(SharedTree.Folder, source).Replace(Path.DirectorySeparatorChar, '/'), files);
         }
 
+        // CI restores the pinned tool and runs its check over the folder; the configuration's
+        // regenerateCommand names the same tool, from the same directory.
         var workflow = File.ReadAllText(Path.Combine(SharedTree.Root, ".github", "workflows", "shared-libraries.yml"));
-        Assert.Contains("assurance check", workflow, StringComparison.Ordinal);
-        Assert.Contains("--root Broiler.JS/Broiler.ECMAScript", workflow, StringComparison.Ordinal);
+        Assert.Contains("run: dotnet tool restore --configfile NuGet.config", workflow, StringComparison.Ordinal);
+        Assert.Contains("run: dotnet tool run hairs -- assurance check --root Broiler.ECMAScript", workflow, StringComparison.Ordinal);
+        Assert.Equal("dotnet tool run hairs -- assurance generate --root Broiler.ECMAScript", config.RootElement.GetProperty("regenerateCommand").GetString());
+        Assert.Equal("hairs.manifest.json", config.RootElement.GetProperty("artefacts").GetProperty("manifest").GetString());
+
+        using var tools = JsonDocument.Parse(File.ReadAllText(Path.Combine(SharedTree.Root, ".config", "dotnet-tools.json")));
+        var hairs = tools.RootElement.GetProperty("tools").GetProperty("hairs.cli");
+        Assert.Equal("0.1.0-preview.2", hairs.GetProperty("version").GetString());
+        Assert.Equal(JsonValueKind.False, hairs.GetProperty("rollForward").ValueKind);
+        Assert.Equal(["hairs"], hairs.GetProperty("commands").EnumerateArray().Select(static c => c.GetString()!));
     }
 
+    // The messages named assurance.config.json until 2026-11-08 (see the clean direction above).
     [Fact]
     public void SL8_The_witness_configuration_is_refused()
     {
         using var config = JsonDocument.Parse(Witness.Text("SL8-config-omits-a-library.json.witness"), Lenient);
         var violations = SharedRules.SL8(config, LibraryProjectPaths).ToList();
-        Assert.Contains("assurance.config.json does not cover Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj", violations);
-        Assert.Contains("assurance.config.json does not forbid preprocessor directives", violations);
-        Assert.Contains("assurance.config.json does not use the strict exemption predicate", violations);
+        Assert.Contains("hairs.config.json does not cover Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj", violations);
+        Assert.Contains("hairs.config.json does not forbid preprocessor directives", violations);
+        Assert.Contains("hairs.config.json does not use the strict exemption predicate", violations);
     }
 
     // ---------------------------------------------------------------------------------------------

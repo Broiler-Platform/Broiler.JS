@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   18
 // Annotated:        18/18
 // Exempt:           5
@@ -26,14 +26,14 @@ namespace Broiler.ECMAScript.Conformance;
 /// <param name="File">The file's name relative to the corpus, '/'-separated.</param>
 /// <param name="Line">The one-based line the defect is at.</param>
 /// <param name="Message">What is wrong, for a reader.</param>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=DE3A99
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=DE3A99
+// Hairs-Human:        PENDING
 public sealed record VectorDiagnostic(string Code, string File, int Line, string Message)
 {
     /// <summary>The diagnostic as <c>file:line: code: message</c>.</summary>
     /// <returns>The diagnostic's one-line form.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=DB6AF8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=DB6AF8
+    // Hairs-Human:        PENDING
     public override string ToString() => File + ":" + Ascii.Decimal(Line) + ": " + Code + ": " + Message;
 }
 
@@ -41,21 +41,21 @@ public sealed record VectorDiagnostic(string Code, string File, int Line, string
 /// <param name="Key">The text before the first <c>": "</c>.</param>
 /// <param name="Value">The text after it.</param>
 /// <param name="Line">The one-based line the field is on.</param>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=A3D134
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=A3D134
+// Hairs-Human:        PENDING
 public sealed record VectorField(string Key, string Value, int Line);
 
 /// <summary>One record of a vector file: its fields in file order, duplicates kept for the validator.</summary>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=59A512
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=59A512
+// Hairs-Human:        PENDING
 public sealed class VectorRecord
 {
     /// <summary>Creates a record.</summary>
     /// <param name="file">The file's name relative to the corpus.</param>
     /// <param name="fields">The record's fields in file order; at least one.</param>
     /// <exception cref="ArgumentException">The record has no field.</exception>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=AD3D6A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=AD3D6A
+    // Hairs-Human:        PENDING
     public VectorRecord(string file, IReadOnlyList<VectorField> fields)
     {
         ArgumentNullException.ThrowIfNull(file);
@@ -73,41 +73,41 @@ public sealed class VectorRecord
     public IReadOnlyList<VectorField> Fields { get; }
 
     /// <summary>The line of the record's first field.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=53E00F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=53E00F
+    // Hairs-Human:        PENDING
     public int Line => Fields[0].Line;
 
     /// <summary>The value of the first field with <paramref name="key"/>, or <see langword="null"/>.</summary>
     /// <param name="key">The field's key.</param>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=1B43A3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=1B43A3
+    // Hairs-Human:        PENDING
     public string? this[string key] => Find(key)?.Value;
 
     /// <summary>The <c>id</c> field, or empty.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=DE4270
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=DE4270
+    // Hairs-Human:        PENDING
     public string Id => this["id"] ?? string.Empty;
 
     /// <summary>The <c>class</c> field, or empty.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=4F7A6A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=4F7A6A
+    // Hairs-Human:        PENDING
     public string Class => this["class"] ?? string.Empty;
 
     /// <summary>The <c>out</c> field, or empty.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B42D92
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B42D92
+    // Hairs-Human:        PENDING
     public string Out => this["out"] ?? string.Empty;
 
     /// <summary>The <c>script</c> field, or empty.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=AF43EC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=AF43EC
+    // Hairs-Human:        PENDING
     public string Script => this["script"] ?? string.Empty;
 
     /// <summary>The first field with <paramref name="key"/>, or <see langword="null"/>.</summary>
     /// <param name="key">The field's key.</param>
     /// <returns>The field, with its line.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=C117C1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=C117C1
+    // Hairs-Human:        PENDING
     public VectorField? Find(string key)
     {
         foreach (var field in Fields)
@@ -123,8 +123,8 @@ public sealed class VectorRecord
     /// <param name="key">The key of the fields to change.</param>
     /// <param name="value">Their new value.</param>
     /// <returns>The changed copy; this record is unchanged.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=2C64BC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=2C64BC
+    // Hairs-Human:        PENDING
     public VectorRecord With(string key, string value)
     {
         var fields = new List<VectorField>(Fields.Count);
@@ -135,16 +135,16 @@ public sealed class VectorRecord
 }
 
 /// <summary>A vector file as read: its records, and the defects the reader found in its structure.</summary>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E475A0
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E475A0
+// Hairs-Human:        PENDING
 public sealed class VectorFile
 {
     /// <summary>Creates a file.</summary>
     /// <param name="path">The file's name relative to the corpus.</param>
     /// <param name="records">Its records, in file order.</param>
     /// <param name="diagnostics">The structural defects the reader found.</param>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=FF22FC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=FF22FC
+    // Hairs-Human:        PENDING
     public VectorFile(string path, IReadOnlyList<VectorRecord> records, IReadOnlyList<VectorDiagnostic> diagnostics)
     {
         ArgumentNullException.ThrowIfNull(path);
@@ -174,21 +174,21 @@ public sealed class VectorFile
 /// It reads bytes its caller hands it and never a file (convention 8), so a runner reads the
 /// corpus from wherever it keeps it.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=A4F4C0
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=A4F4C0
+// Hairs-Human:        PENDING
 public static class VectorReader
 {
     /// <summary>The line every vector file declares before its first record.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=445A45
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=445A45
+    // Hairs-Human:        PENDING
     public const string SchemaLine = "schema: 1";
 
     /// <summary>Reads one vector file.</summary>
     /// <param name="content">The file's bytes, which must be UTF-8 without a byte-order mark.</param>
     /// <param name="name">The name diagnostics and records give the file, relative to the corpus.</param>
     /// <returns>The records and the structural defects; reading never throws on malformed content.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=5; Fingerprint=36CE17
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=5; Fingerprint=36CE17
+    // Hairs-Human:        PENDING
     public static VectorFile Read(ReadOnlySpan<byte> content, string name)
     {
         ArgumentNullException.ThrowIfNull(name);

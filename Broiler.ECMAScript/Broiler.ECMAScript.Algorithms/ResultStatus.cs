@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   1
 // Annotated:        1/1
 // Exempt:           3
@@ -25,8 +25,8 @@ namespace Broiler.ECMAScript;
 /// A shared operation throws only when its caller violates a documented precondition; the adapters
 /// in each engine establish those, so no library exception reaches a script.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=Low; Resources=1; Fingerprint=8B42D1
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=Low; Resources=1; Fingerprint=8B42D1
+// Hairs-Human:        PENDING
 public enum ResultStatus
 {
     /// <summary>The operation completed, and its result is valid.</summary>

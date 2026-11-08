@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   27
 // Annotated:        27/27
 // Exempt:           1
@@ -45,9 +45,9 @@ namespace Broiler.ECMAScript.Numbers;
 /// engine's <c>RangeError</c>.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=CC2B29
-// Broiler-Falsified-If: an operation builds a value wider than the policy before refusing it, or charges other units than Broiler.VM's JsBigInt charges for the same operands
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=CC2B29
+// Hairs-Falsified-If: an operation builds a value wider than the policy before refusing it, or charges other units than Broiler.VM's JsBigInt charges for the same operands
+// Hairs-Human:        PENDING
 public static class BigIntMath
 {
     /// <summary><c>BigInt::add</c> (ECMA-262 6.1.6.2.7).</summary>
@@ -57,8 +57,8 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The sum, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.7 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=758061
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.7 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=758061
+    // Hairs-Human:        PENDING
     public static ResultStatus Add(BigInteger left, BigInteger right, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         Charge(charge, LinearCost(Math.Max(Words(left), Words(right))));
@@ -72,8 +72,8 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The difference, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.8 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=EFF29F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.8 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=EFF29F
+    // Hairs-Human:        PENDING
     public static ResultStatus Subtract(BigInteger left, BigInteger right, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         Charge(charge, LinearCost(Math.Max(Words(left), Words(right))));
@@ -86,8 +86,8 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The negation, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.1 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=D4376F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.1 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=D4376F
+    // Hairs-Human:        PENDING
     public static ResultStatus Negate(BigInteger value, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         Charge(charge, LinearCost(Words(value)));
@@ -100,8 +100,8 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The complement, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.2 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=C0F8D7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.2 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=C0F8D7
+    // Hairs-Human:        PENDING
     public static ResultStatus BitwiseNot(BigInteger value, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         Charge(charge, LinearCost(Words(value)));
@@ -115,9 +115,9 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The product, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.4 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=672BB1
-    // Broiler-Falsified-If: a product whose operands already prove it wider than the policy is computed, or a product is charged other than Broiler.VM's JsBigInt charges it
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.4 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=672BB1
+    // Hairs-Falsified-If: a product whose operands already prove it wider than the policy is computed, or a product is charged other than Broiler.VM's JsBigInt charges it
+    // Hairs-Human:        PENDING
     public static ResultStatus Multiply(BigInteger left, BigInteger right, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         if (left.IsZero || right.IsZero)
@@ -146,9 +146,9 @@ public static class BigIntMath
     /// <param name="result">The quotient, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The divisor is zero; the engine raises the <c>RangeError</c> first.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.5 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=2597AE
-    // Broiler-Falsified-If: a quotient is not truncated toward zero, or a zero divisor reaches the division
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.5 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=2597AE
+    // Hairs-Falsified-If: a quotient is not truncated toward zero, or a zero divisor reaches the division
+    // Hairs-Human:        PENDING
     public static ResultStatus Divide(BigInteger left, BigInteger right, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         if (right.IsZero)
@@ -166,9 +166,9 @@ public static class BigIntMath
     /// <param name="result">The remainder, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The divisor is zero; the engine raises the <c>RangeError</c> first.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.6 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=6B4557
-    // Broiler-Falsified-If: a remainder's sign is not the dividend's, or a zero divisor reaches the division
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.6 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=6B4557
+    // Hairs-Falsified-If: a remainder's sign is not the dividend's, or a zero divisor reaches the division
+    // Hairs-Human:        PENDING
     public static ResultStatus Remainder(BigInteger left, BigInteger right, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         if (right.IsZero)
@@ -195,9 +195,9 @@ public static class BigIntMath
     /// exponent; any other base with an exponent above the policy's width is refused without a
     /// multiplication, since its result is at least <c>2 ** exponent</c>.
     /// </remarks>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.3 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=DFE64E
-    // Broiler-Falsified-If: a power is computed without charging each multiplication, or a result past the policy is answered, or a huge exponent of a trivial base is refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.3 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=DFE64E
+    // Hairs-Falsified-If: a power is computed without charging each multiplication, or a result past the policy is answered, or a huge exponent of a trivial base is refused
+    // Hairs-Human:        PENDING
     public static ResultStatus Power(BigInteger @base, BigInteger exponent, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         if (exponent.Sign < 0)
@@ -271,8 +271,8 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The conjunction, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.18 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=02E913
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.18 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=02E913
+    // Hairs-Human:        PENDING
     public static ResultStatus BitwiseAnd(BigInteger left, BigInteger right, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         Charge(charge, LinearCost(Math.Max(Words(left), Words(right))));
@@ -286,8 +286,8 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The disjunction, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.20 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=B176BA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.20 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=B176BA
+    // Hairs-Human:        PENDING
     public static ResultStatus BitwiseOr(BigInteger left, BigInteger right, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         Charge(charge, LinearCost(Math.Max(Words(left), Words(right))));
@@ -301,8 +301,8 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The exclusive disjunction, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.19 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=5FF1D2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.19 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=5FF1D2
+    // Hairs-Human:        PENDING
     public static ResultStatus BitwiseXor(BigInteger left, BigInteger right, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         Charge(charge, LinearCost(Math.Max(Words(left), Words(right))));
@@ -321,9 +321,9 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The shifted value, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.9 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=E44EA4
-    // Broiler-Falsified-If: a left shift allocates a result its widths already prove wider than the policy, a right shift rounds toward zero, or an oversized count reaches the base class library
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.9 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=E44EA4
+    // Hairs-Falsified-If: a left shift allocates a result its widths already prove wider than the policy, a right shift rounds toward zero, or an oversized count reaches the base class library
+    // Hairs-Human:        PENDING
     public static ResultStatus LeftShift(BigInteger value, BigInteger count, BigIntPolicy policy, WorkCharge? charge, out BigInteger result) =>
         Shift(value, count, policy, charge, out result);
 
@@ -337,9 +337,9 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The shifted value, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.10 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=2A8A8C
-    // Broiler-Falsified-If: x >> n differs from the floor of x / 2^n for any count, or a negative count is not a left shift held to the policy
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.10 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=2A8A8C
+    // Hairs-Falsified-If: x >> n differs from the floor of x / 2^n for any count, or a negative count is not a left shift held to the policy
+    // Hairs-Human:        PENDING
     public static ResultStatus SignedRightShift(BigInteger value, BigInteger count, BigIntPolicy policy, WorkCharge? charge, out BigInteger result) =>
         Shift(value, -count, policy, charge, out result);
 
@@ -353,9 +353,9 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The wrapped value, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>; the result is never wider than the value.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.2.2.1 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=67F831
-    // Broiler-Falsified-If: a value that fits the signed width is changed, or a wrapped value takes the wrong sign
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.2.2.1 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=67F831
+    // Hairs-Falsified-If: a value that fits the signed width is changed, or a wrapped value takes the wrong sign
+    // Hairs-Human:        PENDING
     public static ResultStatus AsIntN(ulong bits, BigInteger value, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         Charge(charge, LinearCost(Words(value)));
@@ -392,9 +392,9 @@ public static class BigIntMath
     /// <param name="result">The residue, when the status is <see cref="ResultStatus.Completed"/>.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.LimitExceeded"/> past the policy.</returns>
     /// <remarks>A negative value modulo a width past the policy is at least <c>2 ** (bits - 1)</c>, so it is refused without allocating.</remarks>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.2.2.2 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=C84AF8
-    // Broiler-Falsified-If: a non-negative value that fits the width is changed, a negative value is answered negative, or a modulus past the policy is allocated
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.2.2.2 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=C84AF8
+    // Hairs-Falsified-If: a non-negative value that fits the width is changed, a negative value is answered negative, or a modulus past the policy is allocated
+    // Hairs-Human:        PENDING
     public static ResultStatus AsUintN(ulong bits, BigInteger value, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         Charge(charge, LinearCost(Words(value)));
@@ -426,9 +426,9 @@ public static class BigIntMath
     /// <param name="number">An integral, finite Number.</param>
     /// <returns>The integer.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The Number is NaN, infinite or not integral; the engine raises the <c>RangeError</c> first.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.2.1.1.1 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=1; Fingerprint=F50D3A
-    // Broiler-Falsified-If: an integral Number converts to an integer other than its exact value
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.2.1.1.1 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=1; Fingerprint=F50D3A
+    // Hairs-Falsified-If: an integral Number converts to an integer other than its exact value
+    // Hairs-Human:        PENDING
     public static BigInteger FromIntegralNumber(double number)
     {
         if (!double.IsFinite(number) || Math.Truncate(number) != number)
@@ -449,9 +449,9 @@ public static class BigIntMath
     /// scaled by the power of two they were shifted by; the scaling is exact until it overflows, which
     /// is the infinity the language gives. The base class library's conversion truncates instead.
     /// </remarks>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.1.1.1 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=7C0D46
-    // Broiler-Falsified-If: a BigInt converts to a Number other than the nearest one with ties to even, or a value at or past 2 ** 1024 - 2 ** 970 converts to a finite Number
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.1.1.1 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=7C0D46
+    // Hairs-Falsified-If: a BigInt converts to a Number other than the nearest one with ties to even, or a value at or past 2 ** 1024 - 2 ** 970 converts to a finite Number
+    // Hairs-Human:        PENDING
     public static double ToNumber(BigInteger value, WorkCharge? charge)
     {
         Charge(charge, LinearCost(Words(value)));
@@ -482,9 +482,9 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <returns>Negative, zero or positive as the BigInt is below, equal to or above the Number.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The Number is NaN or infinite.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 7.2.13 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=B22823
-    // Broiler-Falsified-If: a BigInt and a Number compare other than their mathematical values do, or either is rounded to compare
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 7.2.13 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=B22823
+    // Hairs-Falsified-If: a BigInt and a Number compare other than their mathematical values do, or either is rounded to compare
+    // Hairs-Human:        PENDING
     public static int CompareToNumber(BigInteger value, double number, WorkCharge? charge)
     {
         if (!double.IsFinite(number))
@@ -503,23 +503,23 @@ public static class BigIntMath
     /// <summary>The size a charge over <paramref name="value"/> is computed from: its width in 64-bit words, plus one.</summary>
     /// <param name="value">The value.</param>
     /// <returns><see cref="WordsOf"/> of its width.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=B02C68
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=B02C68
+    // Hairs-Human:        PENDING
     public static int Words(BigInteger value) => WordsOf(value.GetBitLength());
 
     /// <summary>The word count a value <paramref name="bits"/> wide is charged as: <c>ceil(bits / 64) + 1</c>.</summary>
     /// <param name="bits">The width.</param>
     /// <returns>The words, at least one.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=B41A21
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=B41A21
+    // Hairs-Human:        PENDING
     public static int WordsOf(long bits) => (int)((bits + 63) / 64) + 1;
 
     /// <summary>The charge of a pass over <paramref name="words"/> words: one unit a word, plus one.</summary>
     /// <param name="words">The words.</param>
     /// <returns>The units.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=1; Fingerprint=EFBBAF
-    // Broiler-Falsified-If: an operation linear in its operands is charged less for wider operands
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=1; Fingerprint=EFBBAF
+    // Hairs-Falsified-If: an operation linear in its operands is charged less for wider operands
+    // Hairs-Human:        PENDING
     public static ulong LinearCost(int words) => (ulong)Math.Max(words, 0) + 1UL;
 
     /// <summary>
@@ -529,9 +529,9 @@ public static class BigIntMath
     /// <param name="leftWords">The left operand's words.</param>
     /// <param name="rightWords">The right operand's words.</param>
     /// <returns>The units.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=1; Fingerprint=E26CC9
-    // Broiler-Falsified-If: a multiplication or division of wider operands is charged less than one of narrower operands
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=1; Fingerprint=E26CC9
+    // Hairs-Falsified-If: a multiplication or division of wider operands is charged less than one of narrower operands
+    // Hairs-Human:        PENDING
     public static ulong ProductCost(int leftWords, int rightWords) =>
         ((ulong)Math.Max(leftWords, 1) * (ulong)Math.Max(rightWords, 1) / 16UL) +
         (32UL * ((ulong)Math.Max(leftWords, 0) + (ulong)Math.Max(rightWords, 0)));
@@ -539,16 +539,16 @@ public static class BigIntMath
     /// <summary>The charge of converting a part of <paramref name="words"/> words to or from text whole.</summary>
     /// <param name="words">The part's words.</param>
     /// <returns>The units.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=1; Fingerprint=4CB044
-    // Broiler-Falsified-If: a wider part is converted for a smaller charge
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=1; Fingerprint=4CB044
+    // Hairs-Falsified-If: a wider part is converted for a smaller charge
+    // Hairs-Human:        PENDING
     public static ulong LeafCost(int words) => ((ulong)words * (ulong)words / 2UL) + (16UL * (ulong)Math.Max(words, 0)) + 1UL;
 
     /// <summary>Charges <paramref name="units"/> to the meter, when there is one.</summary>
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="units">The units.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=88B593
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=88B593
+    // Hairs-Human:        PENDING
     internal static void Charge(WorkCharge? charge, ulong units) => charge?.Invoke(units);
 
     /// <summary>A computed value, or <see cref="ResultStatus.LimitExceeded"/> when it is wider than the policy.</summary>
@@ -556,9 +556,9 @@ public static class BigIntMath
     /// <param name="policy">The width policy.</param>
     /// <param name="result">The value, when it is within the policy.</param>
     /// <returns>The status.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=1; Fingerprint=1D392B
-    // Broiler-Falsified-If: a value wider than the policy is answered as Completed, or one within it is refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=1; Fingerprint=1D392B
+    // Hairs-Falsified-If: a value wider than the policy is answered as Completed, or one within it is refused
+    // Hairs-Human:        PENDING
     private static ResultStatus Bounded(BigInteger value, BigIntPolicy policy, out BigInteger result)
     {
         if (!policy.Admits(value))
@@ -571,8 +571,8 @@ public static class BigIntMath
     /// <summary>The refusal of a value past the policy.</summary>
     /// <param name="result">Zero; it is not a result.</param>
     /// <returns><see cref="ResultStatus.LimitExceeded"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=4B04F2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=4B04F2
+    // Hairs-Human:        PENDING
     private static ResultStatus Refused(out BigInteger result)
     {
         result = BigInteger.Zero;
@@ -586,9 +586,9 @@ public static class BigIntMath
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <param name="result">The shifted value.</param>
     /// <returns>The status.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.9 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=6DB2EF
-    // Broiler-Falsified-If: a left shift the widths prove too wide is computed before it is refused, or a right shift past the value's width answers other than 0n or -1n
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.9 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=6DB2EF
+    // Hairs-Falsified-If: a left shift the widths prove too wide is computed before it is refused, or a right shift past the value's width answers other than 0n or -1n
+    // Hairs-Human:        PENDING
     private static ResultStatus Shift(BigInteger value, BigInteger count, BigIntPolicy policy, WorkCharge? charge, out BigInteger result)
     {
         if (value.IsZero)

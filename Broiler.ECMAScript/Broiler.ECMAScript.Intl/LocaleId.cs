@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   22
 // Annotated:        22/22
 // Exempt:           6
@@ -45,16 +45,16 @@ namespace Broiler.ECMAScript.Intl;
 /// there (row L43) and passes no meter; Broiler.JS passes none.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Medium; Resources=0; Fingerprint=24BEA8
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Medium; Resources=0; Fingerprint=24BEA8
+// Hairs-Human:        PENDING
 public sealed class LocaleId
 {
     private readonly LocaleTag tag;
 
     private readonly string text;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=BF2127
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=BF2127
+    // Hairs-Human:        PENDING
     private LocaleId(LocaleTag tag)
     {
         this.tag = tag;
@@ -71,23 +71,23 @@ public sealed class LocaleId
     public string? Region => tag.Region;
 
     /// <summary>The variant subtags, lower case (ECMA-402 GetLocaleVariants).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=0; Fingerprint=84BACB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=0; Fingerprint=84BACB
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string> Variants => tag.Variants.AsReadOnly();
 
     /// <summary>The <c>unicode_language_id</c> alone, without extensions or private use (ECMA-402 GetLocaleBaseName).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=0; Fingerprint=52444F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=0; Fingerprint=52444F
+    // Hairs-Human:        PENDING
     public string BaseName => tag.LanguageId();
 
     /// <summary>Whether the identifier has a <c>-u-</c> extension sequence with an attribute or a keyword.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=0; Fingerprint=015161
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=0; Fingerprint=015161
+    // Hairs-Human:        PENDING
     public bool HasUnicodeExtension => tag.HasUnicodeExtension && (tag.Attributes.Count != 0 || tag.Keywords.Count != 0);
 
     /// <summary>The <c>-u-</c> keywords, in the order written (sorted by key once canonicalised); a keyword's value is empty for <c>true</c> left implicit.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=0; Fingerprint=F94C3B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=0; Fingerprint=F94C3B
+    // Hairs-Human:        PENDING
     public IReadOnlyList<LocaleKeyword> Keywords => tag.Keywords.ConvertAll(static k => new LocaleKeyword(k.Key, k.Type)).AsReadOnly();
 
     /// <summary>
@@ -95,8 +95,8 @@ public sealed class LocaleId
     /// the identifier has no such keyword, and the empty string when its value is <c>true</c> left implicit.
     /// </summary>
     /// <param name="key">The key, lower case.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=1AD2FB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=1AD2FB
+    // Hairs-Human:        PENDING
     public string? UnicodeExtensionValue(string key)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -112,8 +112,8 @@ public sealed class LocaleId
     /// <param name="locale">The parsed identifier, in the case and order written, or <see langword="null"/>.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of <paramref name="text"/>, charged before parsing.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidLanguageTag"/>, which an engine throws as a <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Medium; Resources=1; Fingerprint=8D4270
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Medium; Resources=1; Fingerprint=8D4270
+    // Hairs-Human:        PENDING
     public static IntlStatus TryParse(string text, out LocaleId? locale, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -138,8 +138,8 @@ public sealed class LocaleId
     /// <param name="canonical">The canonical tag, or the empty string when the tag is not well-formed.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of <paramref name="text"/>, charged before parsing, and the alias-table keys canonicalisation looks up.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidLanguageTag"/>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Medium; Resources=1; Fingerprint=75B8A0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Medium; Resources=1; Fingerprint=75B8A0
+    // Hairs-Human:        PENDING
     public static IntlStatus TryCanonicalize(string text, ILocaleData data, out string canonical, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -159,8 +159,8 @@ public sealed class LocaleId
     /// <summary>This identifier canonicalised (ECMA-402 CanonicalizeUnicodeLocaleId): aliases replaced, extensions canonicalised and ordered, in canonical case.</summary>
     /// <param name="data">The locale data whose aliases and BCP 47 types canonicalisation reads.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of this identifier's text, charged before the work, and the alias-table keys canonicalisation looks up.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Medium; Resources=1; Fingerprint=553A3F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Medium; Resources=1; Fingerprint=553A3F
+    // Hairs-Human:        PENDING
     public LocaleId Canonicalize(ILocaleData data, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -175,8 +175,8 @@ public sealed class LocaleId
     /// <param name="data">The locale data whose likely subtags it reads.</param>
     /// <param name="found">Whether the data held likely subtags for the identifier; when not, the answer is this identifier with <c>Zzzz</c> and <c>ZZ</c> removed.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of this identifier's text, charged before the work.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=85FEBF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=85FEBF
+    // Hairs-Human:        PENDING
     public LocaleId Maximize(ILocaleData data, out bool found, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -190,8 +190,8 @@ public sealed class LocaleId
     /// <param name="data">The locale data whose likely subtags it reads.</param>
     /// <param name="found">Whether the data held likely subtags for the identifier; when not, the answer is this identifier.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of this identifier's text, charged before the work.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=B3F506
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=B3F506
+    // Hairs-Human:        PENDING
     public LocaleId Minimize(ILocaleData data, out bool found, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -203,8 +203,8 @@ public sealed class LocaleId
 
     /// <summary>This identifier without its <c>-u-</c> extension sequence (ECMA-402's locale "with any Unicode locale extension sequences removed").</summary>
     /// <param name="charge">The caller's meter: one unit per code unit of this identifier's text, charged before the work.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=5F522F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=5F522F
+    // Hairs-Human:        PENDING
     public LocaleId WithoutUnicodeExtension(WorkCharge? charge = null)
     {
         charge?.Invoke((ulong)text.Length);
@@ -212,14 +212,14 @@ public sealed class LocaleId
     }
 
     /// <summary>The identifier's text: its subtags in their order and case, extensions in singleton order and private use last.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=BEDD42
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=BEDD42
+    // Hairs-Human:        PENDING
     public override string ToString() => text;
 
     /// <summary>Whether a String is a <c>unicode_language_subtag</c>: two, three or five to eight ASCII letters (UTS #35 Part 1, section 3.2).</summary>
     /// <param name="value">The String.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=FDD02A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=FDD02A
+    // Hairs-Human:        PENDING
     public static bool IsUnicodeLanguageSubtag(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -228,8 +228,8 @@ public sealed class LocaleId
 
     /// <summary>Whether a String is a <c>unicode_script_subtag</c>: four ASCII letters.</summary>
     /// <param name="value">The String.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=5987E9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=5987E9
+    // Hairs-Human:        PENDING
     public static bool IsUnicodeScriptSubtag(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -238,8 +238,8 @@ public sealed class LocaleId
 
     /// <summary>Whether a String is a <c>unicode_region_subtag</c>: two ASCII letters or three ASCII digits.</summary>
     /// <param name="value">The String.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=837AEB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=837AEB
+    // Hairs-Human:        PENDING
     public static bool IsUnicodeRegionSubtag(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -248,8 +248,8 @@ public sealed class LocaleId
 
     /// <summary>Whether a String is a <c>unicode_variant_subtag</c>: five to eight ASCII letters and digits, or four beginning with a digit.</summary>
     /// <param name="value">The String.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=93118A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=93118A
+    // Hairs-Human:        PENDING
     public static bool IsUnicodeVariantSubtag(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -263,8 +263,8 @@ public sealed class LocaleId
     /// </summary>
     /// <param name="value">The option's String.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of <paramref name="value"/>, charged before the check.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=B825FB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=B825FB
+    // Hairs-Human:        PENDING
     public static bool IsUnicodeType(string value, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -275,8 +275,8 @@ public sealed class LocaleId
     /// <summary>ECMA-402's ASCII-lowercase (Case Sensitivity and Case Mapping): A to Z lowered, and every other code unit as it is.</summary>
     /// <param name="value">The String.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of <paramref name="value"/>, charged before the work.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=9E1A85
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=9E1A85
+    // Hairs-Human:        PENDING
     public static string AsciiLowercase(string value, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -288,14 +288,14 @@ public sealed class LocaleId
     internal LocaleTag Tag => tag;
 
     /// <summary>The identifier of a tag the library has parsed, or <see langword="null"/>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=CA5320
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-iswellformedlanguagetag sec-canonicalizeunicodelocaleid, UTS35 Add and Remove Likely Subtags; IP=Low; Security=Low; Resources=1; Fingerprint=CA5320
+    // Hairs-Human:        PENDING
     internal static LocaleId? From(string text) => LocaleTag.Parse(text) is { } parsed ? new LocaleId(parsed) : null;
 }
 
 /// <summary>A <c>-u-</c> keyword of a locale identifier (UTS #35 Part 1, <c>keyword</c>): its key and its value, empty for <c>true</c> left implicit.</summary>
 /// <param name="Key">The key, two characters, lower case.</param>
 /// <param name="Value">The value's subtags joined by <c>-</c>, lower case; empty for <c>true</c> left implicit.</param>
-// Broiler-AI:           Origin=AI; Spec=UTS35 Part 1 keyword; IP=Low; Security=Low; Resources=0; Fingerprint=A3C711
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=UTS35 Part 1 keyword; IP=Low; Security=Low; Resources=0; Fingerprint=A3C711
+// Hairs-Human:        PENDING
 public readonly record struct LocaleKeyword(string Key, string Value);

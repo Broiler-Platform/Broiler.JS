@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   20
 // Annotated:        20/20
 // Exempt:           2
@@ -29,13 +29,13 @@ namespace Broiler.ECMAScript.Numbers;
 /// to integers stay below 2^1100 for every finite double and radix up to 36. An operation that would
 /// leave the storage is a defect of the caller and throws.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=D0D4E0
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=D0D4E0
+// Hairs-Human:        PENDING
 internal ref struct BigNumber
 {
     /// <summary>The storage, in 32-bit limbs, every caller provides.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=42DA60
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=42DA60
+    // Hairs-Human:        PENDING
     internal const int Capacity = 40;
 
     private readonly Span<uint> limbs;
@@ -43,8 +43,8 @@ internal ref struct BigNumber
 
     /// <summary>Creates a zero over caller-owned storage of <see cref="Capacity"/> limbs.</summary>
     /// <param name="storage">The limbs, least significant first.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=2D7F3F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=2D7F3F
+    // Hairs-Human:        PENDING
     internal BigNumber(Span<uint> storage)
     {
         limbs = storage;
@@ -53,13 +53,13 @@ internal ref struct BigNumber
     }
 
     /// <summary>Whether the number is zero.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=D4DBD2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=D4DBD2
+    // Hairs-Human:        PENDING
     internal readonly bool IsZero => length == 0;
 
     /// <summary>Sets the number to <paramref name="value"/>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=B88FF9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=B88FF9
+    // Hairs-Human:        PENDING
     internal void Set(ulong value)
     {
         limbs[..length].Clear();
@@ -69,8 +69,8 @@ internal ref struct BigNumber
     }
 
     /// <summary>Sets the number to <paramref name="other"/>'s value.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=1289FC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=1289FC
+    // Hairs-Human:        PENDING
     internal void Set(in BigNumber other)
     {
         limbs[..length].Clear();
@@ -79,9 +79,9 @@ internal ref struct BigNumber
     }
 
     /// <summary>Multiplies by 2^<paramref name="bits"/>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=High; Resources=3; Fingerprint=E4CE1E
-    // Broiler-Falsified-If: a shift that would leave the storage writes past it instead of throwing
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=High; Resources=3; Fingerprint=E4CE1E
+    // Hairs-Falsified-If: a shift that would leave the storage writes past it instead of throwing
+    // Hairs-Human:        PENDING
     internal void ShiftLeft(int bits)
     {
         if (length == 0 || bits == 0)
@@ -114,8 +114,8 @@ internal ref struct BigNumber
     }
 
     /// <summary>Multiplies by a small factor.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=4F3465
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=4F3465
+    // Hairs-Human:        PENDING
     internal void Multiply(uint factor)
     {
         ulong carry = 0;
@@ -135,8 +135,8 @@ internal ref struct BigNumber
     }
 
     /// <summary>Multiplies by <paramref name="radix"/>^<paramref name="exponent"/>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=8BB173
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=8BB173
+    // Hairs-Human:        PENDING
     internal void MultiplyPower(uint radix, int exponent)
     {
         // The largest power of the radix that fits a limb, applied as often as it goes in.
@@ -159,8 +159,8 @@ internal ref struct BigNumber
     }
 
     /// <summary>Adds a value below 2^32.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.5; IP=Low; Security=Medium; Resources=1; Fingerprint=0B637C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.5; IP=Low; Security=Medium; Resources=1; Fingerprint=0B637C
+    // Hairs-Human:        PENDING
     internal void AddSmall(uint addend)
     {
         ulong carry = addend;
@@ -180,8 +180,8 @@ internal ref struct BigNumber
     }
 
     /// <summary>The nearest double, ties to even: the leading 64 bits rounded once, everything below them sticky.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=1; Fingerprint=3553C3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=1; Fingerprint=3553C3
+    // Hairs-Human:        PENDING
     internal readonly double ToDouble()
     {
         var bits = BitLength;
@@ -200,8 +200,8 @@ internal ref struct BigNumber
     }
 
     /// <summary>Adds <paramref name="other"/>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=632F41
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=632F41
+    // Hairs-Human:        PENDING
     internal void Add(in BigNumber other)
     {
         var count = Math.Max(length, other.length);
@@ -223,8 +223,8 @@ internal ref struct BigNumber
     }
 
     /// <summary>Subtracts <paramref name="other"/>, which is no greater than this number.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=5667BA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=5667BA
+    // Hairs-Human:        PENDING
     internal void Subtract(in BigNumber other)
     {
         long borrow = 0;
@@ -239,14 +239,14 @@ internal ref struct BigNumber
     }
 
     /// <summary>The bit length of the number, zero for zero.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=CE7C1D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=CE7C1D
+    // Hairs-Human:        PENDING
     internal readonly int BitLength => length == 0 ? 0 : (32 * length) - System.Numerics.BitOperations.LeadingZeroCount(limbs[length - 1]);
 
     /// <summary>Compares two numbers.</summary>
     /// <returns>Negative, zero or positive as <paramref name="left"/> is below, equal to or above <paramref name="right"/>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=BDD984
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=BDD984
+    // Hairs-Human:        PENDING
     internal static int Compare(in BigNumber left, in BigNumber right)
     {
         if (left.length != right.length)
@@ -262,8 +262,8 @@ internal ref struct BigNumber
     }
 
     /// <summary>Compares <paramref name="left"/> + <paramref name="addend"/> with <paramref name="right"/>, without forming the sum.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=13D396
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=13D396
+    // Hairs-Human:        PENDING
     internal static int CompareSum(in BigNumber left, in BigNumber addend, in BigNumber right)
     {
         var count = Math.Max(Math.Max(left.length, addend.length), right.length) + 1;
@@ -299,8 +299,8 @@ internal ref struct BigNumber
     /// below 2^32.
     /// </summary>
     /// <returns>The quotient.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=E18736
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=E18736
+    // Hairs-Human:        PENDING
     internal uint DivideRemainder(in BigNumber divisor)
     {
         if (Compare(this, divisor) < 0)
@@ -326,8 +326,8 @@ internal ref struct BigNumber
     }
 
     /// <summary>The bits of this number from bit <paramref name="from"/> upward, at most <paramref name="count"/> of them.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=7CC67D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=7CC67D
+    // Hairs-Human:        PENDING
     private readonly ulong TopBits(int from, int count)
     {
         // The bits [start, end) span at most three limbs, since count is at most 64.
@@ -347,8 +347,8 @@ internal ref struct BigNumber
     }
 
     /// <summary>Subtracts <paramref name="divisor"/> x <paramref name="factor"/>, which is no greater than this number.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=1FA402
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=1FA402
+    // Hairs-Human:        PENDING
     private void SubtractMultiple(in BigNumber divisor, uint factor)
     {
         ulong carry = 0;
@@ -365,8 +365,8 @@ internal ref struct BigNumber
         Trim();
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=776D00
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=776D00
+    // Hairs-Human:        PENDING
     private void Trim()
     {
         while (length > 0 && limbs[length - 1] == 0)

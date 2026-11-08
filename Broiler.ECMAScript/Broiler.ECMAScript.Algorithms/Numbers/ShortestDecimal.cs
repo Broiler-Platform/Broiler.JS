@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   13
 // Annotated:        13/13
 // Exempt:           0
@@ -42,23 +42,23 @@ namespace Broiler.ECMAScript.Numbers;
 /// which the home's test project recomputes in exact arithmetic and compares entry by entry.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=4E7F1F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=4E7F1F
+// Hairs-Human:        PENDING
 internal static class ShortestDecimal
 {
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=0A3C58
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=0A3C58
+    // Hairs-Human:        PENDING
     private const int Pow5InverseBitCount = 125;
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=B27CAD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=B27CAD
+    // Hairs-Human:        PENDING
     private const int Pow5BitCount = 125;
 
     /// <summary>The shortest decimal significand and its exponent for a positive finite double.</summary>
     /// <param name="value">A double greater than zero and finite.</param>
     /// <param name="exponent">The decimal exponent of the significand's last digit: the value read back is <c>significand x 10^exponent</c>.</param>
     /// <returns>The significand, with no trailing zero digit.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=63D3DA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=63D3DA
+    // Hairs-Human:        PENDING
     internal static ulong Digits(double value, out int exponent)
     {
         var bits = BitConverter.DoubleToUInt64Bits(value);
@@ -212,8 +212,8 @@ internal static class ShortestDecimal
     /// <summary>The number of decimal digits of a positive integer below 10^20.</summary>
     /// <param name="value">The integer.</param>
     /// <returns>Its digit count.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=948144
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=948144
+    // Hairs-Human:        PENDING
     internal static int DecimalLength(ulong value)
     {
         var length = 1;
@@ -227,8 +227,8 @@ internal static class ShortestDecimal
     }
 
     /// <summary><c>floor(m x multiplier / 2^shift)</c>, for a multiplier of 128 bits given low half first.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=B4C0A9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=B4C0A9
+    // Hairs-Human:        PENDING
     private static ulong MulShift(ulong m, ReadOnlySpan<ulong> multiplier, int shift)
     {
         var low = (UInt128)m * multiplier[0];
@@ -238,23 +238,23 @@ internal static class ShortestDecimal
     }
 
     /// <summary><c>floor(e x log10(2))</c>, for 0 &lt;= e &lt;= 1650.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=937A69
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=937A69
+    // Hairs-Human:        PENDING
     private static int Log10Pow2(int e) => (int)(((uint)e * 78913U) >> 18);
 
     /// <summary><c>floor(e x log10(5))</c>, for 0 &lt;= e &lt;= 2620.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=3D0CA2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=3D0CA2
+    // Hairs-Human:        PENDING
     private static int Log10Pow5(int e) => (int)(((uint)e * 732923U) >> 20);
 
     /// <summary>The bit length of 5^e, for 0 &lt;= e &lt;= 3528.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=5ADE39
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=5ADE39
+    // Hairs-Human:        PENDING
     private static int Pow5Bits(int e) => (int)((((uint)e * 1217359U) >> 19) + 1);
 
     /// <summary>Whether 5^p divides the value.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=4F1926
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=4F1926
+    // Hairs-Human:        PENDING
     private static bool MultipleOfPowerOf5(ulong value, int p)
     {
         var count = 0;
@@ -268,15 +268,15 @@ internal static class ShortestDecimal
     }
 
     /// <summary>Whether 2^p divides the value.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=423640
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=423640
+    // Hairs-Human:        PENDING
     private static bool MultipleOfPowerOf2(ulong value, int p) => (value & ((1UL << p) - 1)) == 0;
 
     /// <summary>
     /// <c>floor(2^(bitlength(5^q) + 124) / 5^q) + 1</c> for q from 0 to 341, low 64 bits first.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=CA3AF6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=CA3AF6
+    // Hairs-Human:        PENDING
     internal static ReadOnlySpan<ulong> Pow5InverseSplit =>
     [
         0x0000000000000001, 0x2000000000000000,
@@ -624,8 +624,8 @@ internal static class ShortestDecimal
     ];
 
     /// <summary><c>floor(5^i x 2^(125 - bitlength(5^i)))</c> for i from 0 to 325, low 64 bits first.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=DB89A3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.1.20 via ryu d2s.c; IP=Low; Security=Medium; Resources=1; Fingerprint=DB89A3
+    // Hairs-Human:        PENDING
     internal static ReadOnlySpan<ulong> Pow5Split =>
     [
         0x0000000000000000, 0x1000000000000000,

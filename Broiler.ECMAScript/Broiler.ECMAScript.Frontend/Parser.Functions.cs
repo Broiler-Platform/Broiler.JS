@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   32
 // Annotated:        32/32
 // Exempt:           0
@@ -20,16 +20,16 @@ using System.Collections.Generic;
 namespace Broiler.ECMAScript.Syntax;
 
 /// <summary>Functions, classes, binding patterns and the conversions of the cover grammars (ECMA-262 clauses 13.15.5, 14.3.3 and 15).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=130766
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=130766
+// Hairs-Human:        PENDING
 internal sealed partial class Parser
 {
     // ---------------------------------------------------------------------------------------------------------------
     // Functions.
 
     /// <summary>A function, generator, async function or async generator declaration (clauses 15.2, 15.5, 15.6 and 15.8); <paramref name="plainOnly"/> where only a FunctionDeclaration stands (a labelled item, Annex B.3.3's clause).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=4BFDE8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=4BFDE8
+    // Hairs-Human:        PENDING
     private Statement ParseFunctionDeclaration(bool isAsync, bool isDefault, bool plainOnly = false)
     {
         var first = Ex;
@@ -53,8 +53,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A function, generator, async function or async generator expression (clauses 15.2, 15.5, 15.6 and 15.8).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=A49475
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=A49475
+    // Hairs-Human:        PENDING
     private Expression ParseFunctionExpression(bool isAsync)
     {
         var start = StartOf(Ex);
@@ -70,8 +70,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A function's FormalParameters and FunctionBody, under the function's own [Yield] and [Await] (clause 15).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=2FA3F1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=2FA3F1
+    // Hairs-Human:        PENDING
     private FunctionNode ParseFunctionRest(SourceSpan start, BindingIdentifier? name, bool isAsync, bool isGenerator)
     {
         var outerYield = inYield;
@@ -97,8 +97,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A method's parameters and body (clause 15.4): a getter's none, a setter's one, and no rest element for either.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=BFE7D1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=BFE7D1
+    // Hairs-Human:        PENDING
     private FunctionNode ParseMethod(SourceSpan start, MethodKind kind, bool isAsync, bool isGenerator)
     {
         var outerYield = inYield;
@@ -138,8 +138,8 @@ internal sealed partial class Parser
     /// A FormalParameterList (clause 15.1) up to <paramref name="end"/>: binding elements, a rest element last, a trailing comma
     /// where none follows a rest element. Answers whether a trailing comma closes it.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=38694E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=38694E
+    // Hairs-Human:        PENDING
     private bool ParseFormalParameterList(List<Pattern> into, TokenKind end)
     {
         while (Ex.Kind != end)
@@ -169,8 +169,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A FunctionBody between braces (clause 15.2): [Return] on, its directive prologue first, its strictness its own.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=671DF8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=671DF8
+    // Hairs-Human:        PENDING
     private IReadOnlyList<Statement> ParseFunctionBody()
     {
         var outerReturn = inReturn;
@@ -207,8 +207,8 @@ internal sealed partial class Parser
     /// An arrow function's <c>=&gt;</c> and ConciseBody (clauses 15.3 and 15.9), its parameters already converted: an
     /// expression body under [~Yield] and the arrow's own [Await], or a FunctionBody.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=19D7C2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=19D7C2
+    // Hairs-Human:        PENDING
     private Expression ParseArrowFunction(SourceSpan start, IReadOnlyList<Pattern> parameters, bool trailing, bool isAsync, int mark, bool noIn = false)
     {
         CheckCoverInitialized(mark);
@@ -256,8 +256,8 @@ internal sealed partial class Parser
     /// the async call's elements converted into ArrowFormalParameters, refused where the cover does not cover them
     /// (catalogue rows EE0087 and EE0155 at stage 4d).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=B842AB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=B842AB
+    // Hairs-Human:        PENDING
     private Expression ParseArrowFromCover(SourceSpan start, Expression cover, int mark, bool noIn)
     {
         var parameters = new List<Pattern>();
@@ -323,8 +323,8 @@ internal sealed partial class Parser
     // Binding patterns (clause 14.3.3).
 
     /// <summary>A BindingElement: a target with its Initializer where <c>=</c> follows.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=231E31
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=231E31
+    // Hairs-Human:        PENDING
     private Pattern ParseBindingElement()
     {
         var start = StartOf(Op);
@@ -337,8 +337,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A BindingIdentifier or a BindingPattern.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=3F66AA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=3F66AA
+    // Hairs-Human:        PENDING
     private Pattern ParseBindingTarget()
     {
         var token = Op;
@@ -346,8 +346,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A BindingIdentifier (clause 13.1).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=6EBE42
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=6EBE42
+    // Hairs-Human:        PENDING
     private BindingIdentifier ParseBindingIdentifier()
     {
         var token = Op;
@@ -358,8 +358,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>An ArrayBindingPattern or ObjectBindingPattern, charged one level of nesting as Broiler.VM's parser charges it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=8C8C6D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=8C8C6D
+    // Hairs-Human:        PENDING
     private Pattern ParseBindingPattern()
     {
         var open = Op;
@@ -465,8 +465,8 @@ internal sealed partial class Parser
     // ---------------------------------------------------------------------------------------------------------------
     // Conversions of the covers (clauses 13.2.10, 13.15.5 and 15.3): what was read is converted, never read again.
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=2E38E7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=2E38E7
+    // Hairs-Human:        PENDING
     private BindingIdentifier ToBindingIdentifier(Identifier identifier)
     {
         awaitBound?.Add(identifier);
@@ -474,8 +474,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A cover's element as a BindingElement of ArrowFormalParameters.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=2E1091
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=2E1091
+    // Hairs-Human:        PENDING
     private Pattern ToBindingElement(Expression expression)
     {
         if (expression is AssignmentExpression { Operator: AssignmentOperator.Assign } assignment)
@@ -484,9 +484,9 @@ internal sealed partial class Parser
     }
 
     /// <summary>A cover's target as a BindingIdentifier or BindingPattern: a name, a literal, or an assignment pattern the parse already converted.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.3 ArrowFormalParameters by conversion; IP=Low; Security=High; Resources=2; Fingerprint=402371
-    // Broiler-Falsified-If: a cover element that covers no binding is converted, or one that does is refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.3 ArrowFormalParameters by conversion; IP=Low; Security=High; Resources=2; Fingerprint=402371
+    // Hairs-Falsified-If: a cover element that covers no binding is converted, or one that does is refused
+    // Hairs-Human:        PENDING
     private Pattern ToBindingTarget(SyntaxNode node)
     {
         switch (node)
@@ -506,8 +506,8 @@ internal sealed partial class Parser
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=BF0CE3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=BF0CE3
+    // Hairs-Human:        PENDING
     private ArrayPattern ToArrayBindingPattern(ArrayLiteral array)
     {
         var elements = new List<Pattern?>();
@@ -533,8 +533,8 @@ internal sealed partial class Parser
         return new ArrayPattern(array.Span, Lists.Freeze(elements), array.TrailingComma);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=C49046
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=C49046
+    // Hairs-Human:        PENDING
     private ObjectPattern ToObjectBindingPattern(ObjectLiteral @object)
     {
         var properties = new List<SyntaxNode>();
@@ -567,8 +567,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>An assignment pattern the parse converted, read again as a binding pattern: its targets must be names.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=09E1F2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=09E1F2
+    // Hairs-Human:        PENDING
     private Pattern ToBindingFromAssignmentPattern(Pattern pattern)
     {
         switch (pattern)
@@ -612,8 +612,8 @@ internal sealed partial class Parser
     /// An assignment's or a for head's target (clauses 13.15.5 and 14.7.5): an array or object literal converted to an
     /// AssignmentPattern, or a LeftHandSideExpression as written.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=392499
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=392499
+    // Hairs-Human:        PENDING
     private SyntaxNode ToAssignmentTarget(Expression expression, bool forHead)
     {
         if (expression is ArrayLiteral or ObjectLiteral)
@@ -624,9 +624,9 @@ internal sealed partial class Parser
     }
 
     /// <summary>An array or object literal converted to an ArrayAssignmentPattern or ObjectAssignmentPattern (clause 13.15.5), its CoverInitializedNames taken.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 AssignmentPattern by conversion; IP=Low; Security=High; Resources=2; Fingerprint=BCA81B
-    // Broiler-Falsified-If: a literal that covers no AssignmentPattern is converted, or one that does is refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 AssignmentPattern by conversion; IP=Low; Security=High; Resources=2; Fingerprint=BCA81B
+    // Hairs-Falsified-If: a literal that covers no AssignmentPattern is converted, or one that does is refused
+    // Hairs-Human:        PENDING
     private Pattern ToAssignmentPattern(Expression literal)
     {
         if (literal is ArrayLiteral array)
@@ -687,8 +687,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>An AssignmentElement: a DestructuringAssignmentTarget with its Initializer where one is written.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=89BED0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=89BED0
+    // Hairs-Human:        PENDING
     private Pattern ToAssignmentElement(Expression expression)
     {
         if (expression is AssignmentExpression assignment)
@@ -710,8 +710,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A DestructuringAssignmentTarget: a nested literal converted, or a LeftHandSideExpression (whose validity is stage 4d's).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=02FD5C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=02FD5C
+    // Hairs-Human:        PENDING
     private Pattern ToTargetPattern(Expression expression)
     {
         // A DestructuringAssignmentTarget that is a literal must cover an AssignmentPattern (catalogue row EE0038).
@@ -726,8 +726,8 @@ internal sealed partial class Parser
     // Classes (clause 15.7): all of a class is strict code.
 
     /// <summary>A ClassDeclaration (clause 15.7), its name optional only after <c>export default</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=B7F477
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=B7F477
+    // Hairs-Human:        PENDING
     private Statement ParseClassDeclaration(IReadOnlyList<Decorator> decorators, bool isDefault)
     {
         var start = decorators.Count > 0 ? decorators[0].Span : StartOf(Ex);
@@ -751,8 +751,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A ClassExpression (clause 15.7).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=CF8560
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=CF8560
+    // Hairs-Human:        PENDING
     private Expression ParseClassExpression(IReadOnlyList<Decorator> decorators)
     {
         var start = decorators.Count > 0 ? decorators[0].Span : StartOf(Ex);
@@ -778,9 +778,9 @@ internal sealed partial class Parser
     /// nesting (decision D14): a class expression there recurses through it with no statement or assignment between, so
     /// <c>class extends class extends …</c> would otherwise reach the stack uncharged, a gap Broiler.VM's parser has too.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.7 ClassHeritage, JSD-0083 D14 nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=20ED93
-    // Broiler-Falsified-If: a chain of class heritages nested past the request's bound reaches the stack rather than being refused with the nesting diagnostic
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.7 ClassHeritage, JSD-0083 D14 nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=20ED93
+    // Hairs-Falsified-If: a chain of class heritages nested past the request's bound reaches the stack rather than being refused with the nesting diagnostic
+    // Hairs-Human:        PENDING
     private ClassNode ParseClassTail(SourceSpan start, IReadOnlyList<Decorator> decorators, BindingIdentifier? name)
     {
         Expression? heritage = null;
@@ -829,14 +829,14 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether a token can begin a PropertyName or ClassElementName (clauses 13.2.5 and 15.7): a name, a string, a number, <c>[</c> or a private name.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=918C42
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=918C42
+    // Hairs-Human:        PENDING
     private static bool StartsElementName(Token token) => token.Kind is TokenKind.IdentifierName or TokenKind.StringLiteral
         or TokenKind.NumericLiteral or TokenKind.LeftBracket or TokenKind.PrivateIdentifier;
 
     /// <summary>Whether a token, after a modifier word, means the word is the element's name: <c>(</c>, <c>=</c>, <c>;</c> or <c>}</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=0F5B20
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=0F5B20
+    // Hairs-Human:        PENDING
     private static bool EndsElementName(Token token) => token.Kind is TokenKind.LeftParen or TokenKind.Equals or TokenKind.Semicolon or TokenKind.RightBrace or TokenKind.EndOfInput;
 
     /// <summary>
@@ -844,8 +844,8 @@ internal sealed partial class Parser
     /// flag), or a static block, <c>static</c> where written; <c>get</c>, <c>set</c>, <c>static</c>, <c>async</c> and
     /// <c>accessor</c> are names where a name's end follows them.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=ECC2DD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=ECC2DD
+    // Hairs-Human:        PENDING
     private SyntaxNode ParseClassElement()
     {
         var first = Op;
@@ -945,8 +945,8 @@ internal sealed partial class Parser
     /// inside an async function, and <c>x = await 1</c> is refused), where ES2026's production reads
     /// <c>Initializer[+In, ?Yield, ?Await]</c>.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=F82313
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=F82313
+    // Hairs-Human:        PENDING
     private Expression? ParseFieldInitializer()
     {
         if (Op.Kind != TokenKind.Equals)
@@ -972,8 +972,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A ClassStaticBlock (clause 15.7): its statements under [~Yield, +Await, ~Return].</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=E08310
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=E08310
+    // Hairs-Human:        PENDING
     private StaticBlock ParseStaticBlock(SourceSpan start)
     {
         Advance();
@@ -1011,8 +1011,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Decorators, under the decorators proposal's flag (decision D17): <c>@</c> and a member chain, its call, or a parenthesised expression.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=46F55B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15 functions classes, s13.15.5 conversions; IP=Low; Security=Medium; Resources=2; Fingerprint=46F55B
+    // Hairs-Human:        PENDING
     private IReadOnlyList<Decorator> ParseDecorators()
     {
         var list = new List<Decorator>();

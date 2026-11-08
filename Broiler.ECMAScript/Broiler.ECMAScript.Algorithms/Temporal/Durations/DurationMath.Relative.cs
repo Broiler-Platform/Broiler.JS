@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   18
 // Annotated:        18/18
 // Exempt:           0
@@ -26,8 +26,8 @@ namespace Broiler.ECMAScript.Temporal;
 // calendar, through ICalendarArithmetic's DateAdd and DateUntil, and through ITimeZoneArithmetic's instants where a zone
 // is set. Its two named places (JSD-0054 section 4) stand, and the pinned text rules over its polyfill in the nudge after
 // a shifted window (JSD-0078, decision D7; row D8).
-// Broiler-AI:           Origin=Ported; Spec=Temporal s7.5 via Broiler.VM JsTemporal.Durations; IP=Low; Security=Medium; Resources=2; Fingerprint=B1BDBE
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal s7.5 via Broiler.VM JsTemporal.Durations; IP=Low; Security=Medium; Resources=2; Fingerprint=B1BDBE
+// Hairs-Human:        PENDING
 public static partial class DurationMath
 {
     /// <summary>
@@ -57,8 +57,8 @@ public static partial class DurationMath
     /// </returns>
     /// <exception cref="ArgumentNullException">The calendar provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A unit is unset or auto, the smallest is larger than the largest, or the increment is not positive.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.38, JSD-0078 decision D7 via Broiler.VM JsTemporal.RoundRelativeDuration; IP=Low; Security=Medium; Resources=2; Fingerprint=3660BA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.38, JSD-0078 decision D7 via Broiler.VM JsTemporal.RoundRelativeDuration; IP=Low; Security=Medium; Resources=2; Fingerprint=3660BA
+    // Hairs-Human:        PENDING
     public static TemporalStatus RoundRelativeDuration(
         InternalDuration duration, BigInteger originEpochNanoseconds, BigInteger destinationEpochNanoseconds, IsoDateTime dateTime,
         ITimeZoneArithmetic? timeZone, ICalendarArithmetic calendars, CalendarId calendar, TemporalUnit largestUnit, long roundingIncrement,
@@ -125,8 +125,8 @@ public static partial class DurationMath
     /// </returns>
     /// <exception cref="ArgumentNullException">The calendar provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The unit is unset or auto.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.39 via Broiler.VM JsTemporal.TotalRelativeDuration; IP=Low; Security=Medium; Resources=2; Fingerprint=423228
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.39 via Broiler.VM JsTemporal.TotalRelativeDuration; IP=Low; Security=Medium; Resources=2; Fingerprint=423228
+    // Hairs-Human:        PENDING
     public static TemporalStatus TotalRelativeDuration(
         InternalDuration duration, BigInteger originEpochNanoseconds, BigInteger destinationEpochNanoseconds, IsoDateTime dateTime,
         ITimeZoneArithmetic? timeZone, ICalendarArithmetic calendars, CalendarId calendar, TemporalUnit unit, out double total)
@@ -159,24 +159,24 @@ public static partial class DurationMath
     // ---- The nudges (s7.5.33 to s7.5.37) -------------------------------------------------------------------------
 
     // A Duration Nudge Result Record (s7.5.32).
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.32 via Broiler.VM JsTemporal.Durations; IP=Low; Security=None; Resources=0; Fingerprint=D0E59A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.32 via Broiler.VM JsTemporal.Durations; IP=Low; Security=None; Resources=0; Fingerprint=D0E59A
+    // Hairs-Human:        PENDING
     private readonly record struct Nudge(InternalDuration Duration, BigInteger NudgedEpochNanoseconds, bool DidExpandCalendarUnit);
 
     // An exact ratio, its denominator positive.
-    // Broiler-AI:           Origin=AI; Spec=Temporal s7.5.34; IP=None; Security=None; Resources=0; Fingerprint=72A7B6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s7.5.34; IP=None; Security=None; Resources=0; Fingerprint=72A7B6
+    // Hairs-Human:        PENDING
     private readonly record struct Fraction(BigInteger Numerator, BigInteger Denominator);
 
     // The window ComputeNudgeWindow answers: the unit counts at its ends, their instants and their durations.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.33 via Broiler.VM JsTemporal.Durations; IP=Low; Security=None; Resources=0; Fingerprint=C532C7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.33 via Broiler.VM JsTemporal.Durations; IP=Low; Security=None; Resources=0; Fingerprint=C532C7
+    // Hairs-Human:        PENDING
     private readonly record struct NudgeWindow(
         long R1, long R2, BigInteger StartEpochNanoseconds, BigInteger EndEpochNanoseconds, InternalDuration StartDuration, InternalDuration EndDuration);
 
     // The proposal's ComputeNudgeWindow (s7.5.33).
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.33, JSD-0054 section 4 via Broiler.VM JsTemporal.ComputeNudgeWindow; IP=Low; Security=Medium; Resources=2; Fingerprint=034DB9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.33, JSD-0054 section 4 via Broiler.VM JsTemporal.ComputeNudgeWindow; IP=Low; Security=Medium; Resources=2; Fingerprint=034DB9
+    // Hairs-Human:        PENDING
     private static TemporalStatus ComputeNudgeWindow(
         int sign, InternalDuration duration, BigInteger originEpochNanoseconds, IsoDateTime dateTime, ITimeZoneArithmetic? timeZone,
         ICalendarArithmetic calendars, CalendarId calendar, long increment, TemporalUnit unit, bool additionalShift, out NudgeWindow window)
@@ -292,8 +292,8 @@ public static partial class DurationMath
     }
 
     // The proposal's NudgeToCalendarUnit (s7.5.34): the nudge, and the exact total TotalRelativeDuration reads.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.34, JSD-0078 decisions D7 and D11 via Broiler.VM JsTemporal.NudgeToCalendarUnit; IP=Low; Security=Medium; Resources=2; Fingerprint=E2CC43
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.34, JSD-0078 decisions D7 and D11 via Broiler.VM JsTemporal.NudgeToCalendarUnit; IP=Low; Security=Medium; Resources=2; Fingerprint=E2CC43
+    // Hairs-Human:        PENDING
     private static TemporalStatus NudgeToCalendarUnit(
         int sign, InternalDuration duration, BigInteger originEpochNanoseconds, BigInteger destinationEpochNanoseconds, IsoDateTime dateTime,
         ITimeZoneArithmetic? timeZone, ICalendarArithmetic calendars, CalendarId calendar, long increment, TemporalUnit unit, RoundingMode mode,
@@ -363,8 +363,8 @@ public static partial class DurationMath
     }
 
     // The proposal's NudgeToZonedTime (s7.5.35): the time rounded within the zone's real day, which may carry a day.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.35, JSD-0078 decisions D11 and D12 via Broiler.VM JsTemporal.NudgeToZonedTime; IP=Low; Security=Medium; Resources=2; Fingerprint=C80E4D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.35, JSD-0078 decisions D11 and D12 via Broiler.VM JsTemporal.NudgeToZonedTime; IP=Low; Security=Medium; Resources=2; Fingerprint=C80E4D
+    // Hairs-Human:        PENDING
     private static TemporalStatus NudgeToZonedTime(
         int sign, InternalDuration duration, IsoDateTime dateTime, ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId calendar,
         long increment, TemporalUnit unit, RoundingMode mode, out Nudge nudge)
@@ -431,8 +431,8 @@ public static partial class DurationMath
 
     // The proposal's NudgeToDayOrTime (s7.5.36): the time with its days of 24 hours rounded, days split off again where the
     // largest unit is a date unit.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.36 via Broiler.VM JsTemporal.NudgeToDayOrTime; IP=Low; Security=Medium; Resources=1; Fingerprint=D240B0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.36 via Broiler.VM JsTemporal.NudgeToDayOrTime; IP=Low; Security=Medium; Resources=1; Fingerprint=D240B0
+    // Hairs-Human:        PENDING
     private static TemporalStatus NudgeToDayOrTime(
         InternalDuration duration, BigInteger destinationEpochNanoseconds, TemporalUnit largestUnit, long increment, TemporalUnit smallestUnit,
         RoundingMode mode, out Nudge nudge)
@@ -471,8 +471,8 @@ public static partial class DurationMath
 
     // The proposal's BubbleRelativeDuration (s7.5.37): each larger unit up to the largest taken whole while the nudged
     // instant reaches its next boundary.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.37 via Broiler.VM JsTemporal.BubbleRelativeDuration; IP=Low; Security=Medium; Resources=2; Fingerprint=500E14
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.37 via Broiler.VM JsTemporal.BubbleRelativeDuration; IP=Low; Security=Medium; Resources=2; Fingerprint=500E14
+    // Hairs-Human:        PENDING
     private static TemporalStatus BubbleRelativeDuration(
         int sign, InternalDuration duration, BigInteger nudgedEpochNanoseconds, IsoDateTime dateTime, ITimeZoneArithmetic? timeZone,
         ICalendarArithmetic calendars, CalendarId calendar, TemporalUnit largestUnit, TemporalUnit smallestUnit, out InternalDuration result)
@@ -519,8 +519,8 @@ public static partial class DurationMath
     // ---- The providers ---------------------------------------------------------------------------------------------
 
     // CalendarDateAdd through the provider, its fields converted exactly and its status mapped.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Low; Resources=1; Fingerprint=8A2D4A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Low; Resources=1; Fingerprint=8A2D4A
+    // Hairs-Human:        PENDING
     internal static TemporalStatus CalendarDateAdd(
         ICalendarArithmetic calendars, CalendarId calendar, IsoDate date, DateDuration duration, TemporalOverflow overflow, out IsoDate result)
     {
@@ -535,8 +535,8 @@ public static partial class DurationMath
     }
 
     // CalendarDateUntil through the provider, its largest unit a date unit, its fields made Numbers.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.9 via Broiler.VM JsTemporal.DateUntil; IP=Low; Security=Low; Resources=1; Fingerprint=D91258
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.9 via Broiler.VM JsTemporal.DateUntil; IP=Low; Security=Low; Resources=1; Fingerprint=D91258
+    // Hairs-Human:        PENDING
     internal static TemporalStatus CalendarDateUntil(
         ICalendarArithmetic calendars, CalendarId calendar, IsoDate one, IsoDate two, TemporalUnit largestUnit, out DateDuration result)
     {
@@ -559,22 +559,22 @@ public static partial class DurationMath
     }
 
     // GetISODateTimeFor (s11.1.10): an instant's wall clock in a zone.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s11.1.10 via Broiler.VM JsTemporal.IsoDateTimeFor; IP=Low; Security=Low; Resources=0; Fingerprint=511DE2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s11.1.10 via Broiler.VM JsTemporal.IsoDateTimeFor; IP=Low; Security=Low; Resources=0; Fingerprint=511DE2
+    // Hairs-Human:        PENDING
     internal static IsoDateTime IsoDateTimeFor(ITimeZoneArithmetic timeZone, BigInteger epochNanoseconds) =>
         IsoArithmetic.GetIsoPartsFromEpoch(epochNanoseconds + timeZone.GetOffsetNanosecondsFor(epochNanoseconds));
 
     // GetEpochNanosecondsFor (s11.1.11) under compatible, its failure out of range.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s11.1.11 via Broiler.VM JsTemporal.EpochNsFor; IP=Low; Security=Low; Resources=0; Fingerprint=259961
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s11.1.11 via Broiler.VM JsTemporal.EpochNsFor; IP=Low; Security=Low; Resources=0; Fingerprint=259961
+    // Hairs-Human:        PENDING
     internal static TemporalStatus EpochNanosecondsFor(ITimeZoneArithmetic timeZone, IsoDateTime dateTime, out BigInteger epochNanoseconds) =>
         timeZone.GetEpochNanosecondsFor(dateTime, Disambiguation.Compatible, out epochNanoseconds) == TimeStatus.Completed
             ? TemporalStatus.Completed
             : TemporalStatus.OutOfRange;
 
     // A wall clock's instant: UTC's reading where no zone is set, the zone's otherwise.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.33 via Broiler.VM JsTemporal.EpochFor; IP=Low; Security=Low; Resources=0; Fingerprint=2F5040
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.33 via Broiler.VM JsTemporal.EpochFor; IP=Low; Security=Low; Resources=0; Fingerprint=2F5040
+    // Hairs-Human:        PENDING
     private static TemporalStatus EpochFor(ITimeZoneArithmetic? timeZone, IsoDateTime dateTime, out BigInteger epochNanoseconds)
     {
         if (timeZone is null)
@@ -588,8 +588,8 @@ public static partial class DurationMath
 
     // A calendar's status as the durations sub-area's: a field refused under reject is an invalid date, any other
     // failure out of range (a RangeError in both engines).
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 statuses; IP=None; Security=None; Resources=0; Fingerprint=B1F669
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 statuses; IP=None; Security=None; Resources=0; Fingerprint=B1F669
+    // Hairs-Human:        PENDING
     internal static TemporalStatus Map(CalendarStatus status) => status switch
     {
         CalendarStatus.Completed => TemporalStatus.Completed,
@@ -598,7 +598,7 @@ public static partial class DurationMath
     };
 
     // Whether a date-duration field converts to the calendar's exact integers.
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 row D12; IP=None; Security=Low; Resources=0; Fingerprint=1DC9E9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 row D12; IP=None; Security=Low; Resources=0; Fingerprint=1DC9E9
+    // Hairs-Human:        PENDING
     private static bool FitsCalendar(double value) => double.IsFinite(value) && Math.Abs(value) <= MaxCalendarField;
 }

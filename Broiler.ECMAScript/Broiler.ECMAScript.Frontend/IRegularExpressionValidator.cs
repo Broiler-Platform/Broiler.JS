@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   7
 // Annotated:        7/7
 // Exempt:           10
@@ -43,22 +43,22 @@ namespace Broiler.ECMAScript.Syntax;
 /// throws leaves the parse, which changes no shared state.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.7.2 IsValidRegularExpressionLiteral, JSD-0083 D7; IP=Low; Security=Medium; Resources=0; Fingerprint=3808AD
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.2.7.2 IsValidRegularExpressionLiteral, JSD-0083 D7; IP=Low; Security=Medium; Resources=0; Fingerprint=3808AD
+// Hairs-Human:        PENDING
 public interface IRegularExpressionValidator
 {
     /// <summary>Answers whether a regular-expression literal is valid (ECMA-262 clause 13.2.7.2, IsValidRegularExpressionLiteral).</summary>
     /// <param name="pattern">The literal's body, its source text between the two slashes, as written (BodyText).</param>
     /// <param name="flags">The literal's flags, its source text after the second slash, as written (FlagText); empty for none.</param>
     /// <returns>The validator's verdict.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.7.2 IsValidRegularExpressionLiteral; IP=Low; Security=Medium; Resources=1; Fingerprint=001FDC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.2.7.2 IsValidRegularExpressionLiteral; IP=Low; Security=Medium; Resources=1; Fingerprint=001FDC
+    // Hairs-Human:        PENDING
     RegularExpressionVerdict Validate(string pattern, string flags);
 }
 
 /// <summary>How a regular-expression validator answers (Broiler.VM's JSD-0083, decision D7).</summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 provider answer; IP=Low; Security=Low; Resources=0; Fingerprint=D5A086
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 provider answer; IP=Low; Security=Low; Resources=0; Fingerprint=D5A086
+// Hairs-Human:        PENDING
 public enum RegularExpressionStatus
 {
     /// <summary>The literal is valid: IsValidRegularExpressionLiteral is <see langword="true"/>.</summary>
@@ -85,8 +85,8 @@ public enum RegularExpressionStatus
 /// <c>regexp.literal.invalid</c>, its message as the argument, and code 0. Revision 19 of Broiler.VM's registry maps every
 /// regular-expression condition to one registry code (decision D12), so the condition named changes no code it renders.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 provider answer; IP=Low; Security=Medium; Resources=0; Fingerprint=50A016
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 provider answer; IP=Low; Security=Medium; Resources=0; Fingerprint=50A016
+// Hairs-Human:        PENDING
 public readonly record struct RegularExpressionVerdict
 {
     /// <summary>The verdict of a valid literal.</summary>
@@ -119,8 +119,8 @@ public readonly record struct RegularExpressionVerdict
     /// <returns>The verdict.</returns>
     /// <exception cref="ArgumentException">The message identifier is null or empty.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The position is negative.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 provider answer; IP=Low; Security=Medium; Resources=1; Fingerprint=113BAF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 provider answer; IP=Low; Security=Medium; Resources=1; Fingerprint=113BAF
+    // Hairs-Human:        PENDING
     public static RegularExpressionVerdict Invalid(string messageId, string? argument, int code, int position, bool inFlags) =>
         Refusal(RegularExpressionStatus.Invalid, messageId, argument, code, position, inFlags);
 
@@ -132,13 +132,13 @@ public readonly record struct RegularExpressionVerdict
     /// <returns>The verdict.</returns>
     /// <exception cref="ArgumentException">The message identifier is null or empty.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The position is negative.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 provider answer, catalogue EX0026; IP=Low; Security=Medium; Resources=1; Fingerprint=BEED96
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 provider answer, catalogue EX0026; IP=Low; Security=Medium; Resources=1; Fingerprint=BEED96
+    // Hairs-Human:        PENDING
     public static RegularExpressionVerdict NestedTooDeep(string messageId, string? argument, int code, int position) =>
         Refusal(RegularExpressionStatus.LimitExceeded, messageId, argument, code, position, inFlags: false);
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 provider answer; IP=Low; Security=Medium; Resources=1; Fingerprint=B948BF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 provider answer; IP=Low; Security=Medium; Resources=1; Fingerprint=B948BF
+    // Hairs-Human:        PENDING
     private static RegularExpressionVerdict Refusal(RegularExpressionStatus status, string messageId, string? argument, int code, int position, bool inFlags)
     {
         ArgumentException.ThrowIfNullOrEmpty(messageId);
