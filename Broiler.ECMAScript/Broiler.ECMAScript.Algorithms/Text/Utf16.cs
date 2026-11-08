@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   14
 // Annotated:        14/14
 // Exempt:           0
@@ -23,8 +23,8 @@ namespace Broiler.ECMAScript.Text;
 /// <param name="CodePoint">The code point: a pair's supplementary code point, or the code unit itself.</param>
 /// <param name="CodeUnitCount">How many code units it occupies, 1 or 2.</param>
 /// <param name="IsUnpairedSurrogate">Whether the code unit is a surrogate without its partner.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 11.1.4; IP=Low; Security=Low; Resources=1; Fingerprint=07CBBA
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 11.1.4; IP=Low; Security=Low; Resources=1; Fingerprint=07CBBA
+// Hairs-Human:        PENDING
 public readonly record struct CodePointRecord(int CodePoint, int CodeUnitCount, bool IsUnpairedSurrogate);
 
 /// <summary>
@@ -43,13 +43,13 @@ public readonly record struct CodePointRecord(int CodePoint, int CodeUnitCount, 
 /// the <c>StrWhiteSpaceChar</c> set it trims, which milestone SJL-3 moved here.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=C81133
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=C81133
+// Hairs-Human:        PENDING
 public static class Utf16
 {
     /// <summary>The code unit <c>toWellFormed</c> writes for each lone surrogate, U+FFFD REPLACEMENT CHARACTER.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.31; IP=Low; Security=Low; Resources=1; Fingerprint=524898
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.31; IP=Low; Security=Low; Resources=1; Fingerprint=524898
+    // Hairs-Human:        PENDING
     public const char ReplacementCharacter = (char)0xFFFD;
 
     /// <summary><c>CodePointAt</c> (ECMA-262 11.1.4): the code point at <paramref name="position"/>.</summary>
@@ -57,8 +57,8 @@ public static class Utf16
     /// <param name="position">An index of a code unit of <paramref name="text"/>.</param>
     /// <returns>The code point, how many code units it occupies, and whether it is a lone surrogate.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The position is not an index of the text.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 11.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=3261BC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 11.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=3261BC
+    // Hairs-Human:        PENDING
     public static CodePointRecord CodePointAt(ReadOnlySpan<char> text, int position)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(position);
@@ -78,8 +78,8 @@ public static class Utf16
     /// <param name="text">The String.</param>
     /// <param name="charge">The caller's meter: charged the text's length plus one, first; <see langword="null"/> for none.</param>
     /// <returns><see langword="true"/> when the text holds no lone surrogate.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=66D914
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=66D914
+    // Hairs-Human:        PENDING
     public static bool IsWellFormed(ReadOnlySpan<char> text, WorkCharge? charge = null)
     {
         charge?.Invoke((ulong)text.Length + 1);
@@ -94,8 +94,8 @@ public static class Utf16
     /// <param name="charge">The caller's meter: charged the text's length plus one, first; <see langword="null"/> for none.</param>
     /// <returns><paramref name="text"/> itself when it is well formed; otherwise a new String of the same length.</returns>
     /// <exception cref="ArgumentNullException">The text is <see langword="null"/>.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.31; IP=Low; Security=Medium; Resources=2; Fingerprint=E58D75
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.31; IP=Low; Security=Medium; Resources=2; Fingerprint=E58D75
+    // Hairs-Human:        PENDING
     public static string ToWellFormed(string text, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -139,8 +139,8 @@ public static class Utf16
     /// <param name="unicode">Whether the regular expression reads code points (its <c>u</c> or <c>v</c> flag).</param>
     /// <returns><paramref name="index"/> plus one, or plus two at the start of a pair in Unicode mode.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The index is negative or above 2^53 - 1.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.2.7.3; IP=Low; Security=Medium; Resources=1; Fingerprint=86BFC9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 22.2.7.3; IP=Low; Security=Medium; Resources=1; Fingerprint=86BFC9
+    // Hairs-Human:        PENDING
     public static long AdvanceStringIndex(ReadOnlySpan<char> text, long index, bool unicode)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index);
@@ -153,8 +153,8 @@ public static class Utf16
     }
 
     /// <summary>The index of the first lone surrogate, or -1.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=3E3D39
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=3E3D39
+    // Hairs-Human:        PENDING
     internal static int FirstLoneSurrogate(ReadOnlySpan<char> text)
     {
         for (var at = 0; at < text.Length; at++)
@@ -173,8 +173,8 @@ public static class Utf16
     }
 
     /// <summary>Whether the code unit at <paramref name="at"/> is a surrogate without its partner.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 11.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=C131B0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 11.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=C131B0
+    // Hairs-Human:        PENDING
     internal static bool IsLoneSurrogateAt(ReadOnlySpan<char> text, int at)
     {
         var unit = text[at];
@@ -187,24 +187,24 @@ public static class Utf16
         return false;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 11.1.3; IP=Low; Security=Low; Resources=1; Fingerprint=05B269
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 11.1.3; IP=Low; Security=Low; Resources=1; Fingerprint=05B269
+    // Hairs-Human:        PENDING
     internal static bool IsSurrogate(char unit) => unit is >= (char)0xD800 and <= (char)0xDFFF;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 11.1.3; IP=Low; Security=Low; Resources=1; Fingerprint=01D73A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 11.1.3; IP=Low; Security=Low; Resources=1; Fingerprint=01D73A
+    // Hairs-Human:        PENDING
     internal static bool IsLeading(char unit) => unit is >= (char)0xD800 and <= (char)0xDBFF;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 11.1.3; IP=Low; Security=Low; Resources=1; Fingerprint=A9EECF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 11.1.3; IP=Low; Security=Low; Resources=1; Fingerprint=A9EECF
+    // Hairs-Human:        PENDING
     internal static bool IsTrailing(char unit) => unit is >= (char)0xDC00 and <= (char)0xDFFF;
 
     /// <summary><c>UTF16SurrogatePairToCodePoint</c> (ECMA-262 11.1.3).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 11.1.3; IP=Low; Security=Low; Resources=1; Fingerprint=D175CF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 11.1.3; IP=Low; Security=Low; Resources=1; Fingerprint=D175CF
+    // Hairs-Human:        PENDING
     internal static int Combine(char lead, char trail) => ((lead - 0xD800) * 0x400) + (trail - 0xDC00) + 0x10000;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=A9573C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=A9573C
+    // Hairs-Human:        PENDING
     private const long MaximumSafeInteger = (1L << 53) - 1;
 }

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   2
 // Annotated:        2/2
 // Exempt:           7
@@ -40,15 +40,15 @@ namespace Broiler.ECMAScript.Generation.Time;
 /// <c>//</c> alone for an empty one.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=1; Fingerprint=F6B78F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=1; Fingerprint=F6B78F
+// Hairs-Human:        PENDING
 public sealed record TableSourceOptions
 {
     /// <summary>The options for a class <paramref name="className"/> in <paramref name="namespaceName"/>, with no comment lines and the generator's own summaries.</summary>
     /// <param name="namespaceName">The file-scoped namespace, e.g. <c>Broiler.JavaScript.BuiltIns.Time</c>.</param>
     /// <param name="className">The class's name, e.g. <c>TimeZoneTables</c>.</param>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=0; Fingerprint=4A6DE4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=0; Fingerprint=4A6DE4
+    // Hairs-Human:        PENDING
     public TableSourceOptions(string namespaceName, string className)
     {
         ArgumentException.ThrowIfNullOrEmpty(namespaceName);
@@ -64,25 +64,25 @@ public sealed record TableSourceOptions
     public string ClassName { get; }
 
     /// <summary>Comment lines written after the namespace and before the class, each without its <c>//</c>; none when empty.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=0; Fingerprint=5E4946
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=0; Fingerprint=5E4946
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string> Header { get; init; } = [];
 
     /// <summary>The class's summary, or null for the generator's own.</summary>
     public string? ClassSummary { get; init; }
 
     /// <summary>Comment lines written between the class's summary and its declaration, each without its <c>//</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=0; Fingerprint=CA57DE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=0; Fingerprint=CA57DE
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string> ClassAnnotation { get; init; } = [];
 
     /// <summary>Comment lines written between each member's summary and its declaration, each without its <c>//</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=0; Fingerprint=E34FCA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=0; Fingerprint=E34FCA
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string> MemberAnnotation { get; init; } = [];
 
     /// <summary>A member's summary in place of the generator's own, by the member's name; a member not named keeps the generator's.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=0; Fingerprint=32FF70
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0076 SJL-D-6 (c) table source; IP=Low; Security=Low; Resources=0; Fingerprint=32FF70
+    // Hairs-Human:        PENDING
     public IReadOnlyDictionary<string, string> MemberSummaries { get; init; } = FrozenDictionary<string, string>.Empty;
 }

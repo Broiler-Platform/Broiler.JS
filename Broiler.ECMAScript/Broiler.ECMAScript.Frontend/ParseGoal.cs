@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   2
 // Annotated:        2/2
 // Exempt:           9
@@ -32,8 +32,8 @@ namespace Broiler.ECMAScript.Syntax;
 /// The numbers are stable: a goal is never renumbered and a number is never reused.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s5.1.4 goal symbols, JSD-0083 D10; IP=Low; Security=Low; Resources=0; Fingerprint=F26091
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s5.1.4 goal symbols, JSD-0083 D10; IP=Low; Security=Low; Resources=0; Fingerprint=F26091
+// Hairs-Human:        PENDING
 public enum ParseGoal
 {
     /// <summary>
@@ -74,8 +74,8 @@ public enum ParseGoal
 /// <see cref="ParseGoal.FunctionBody"/> carries it; every other goal reads the default, <see cref="Normal"/>, and refuses
 /// another.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s20.2.1.1.1 CreateDynamicFunction kind; IP=Low; Security=Low; Resources=0; Fingerprint=C4A808
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s20.2.1.1.1 CreateDynamicFunction kind; IP=Low; Security=Low; Resources=0; Fingerprint=C4A808
+// Hairs-Human:        PENDING
 public enum DynamicFunctionKind
 {
     /// <summary><c>normal</c>: <c>FormalParameters[~Yield, ~Await]</c> and <c>FunctionBody[~Yield, ~Await]</c> (<c>Function</c>).</summary>

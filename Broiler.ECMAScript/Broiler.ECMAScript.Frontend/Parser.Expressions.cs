@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   55
 // Annotated:        55/55
 // Exempt:           9
@@ -22,26 +22,26 @@ using System.Runtime.CompilerServices;
 namespace Broiler.ECMAScript.Syntax;
 
 /// <summary>Expressions (ECMA-262 clause 13), with the cover grammars read once and converted.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=130766
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=130766
+// Hairs-Human:        PENDING
 internal sealed partial class Parser
 {
     // The [In] parameter of the AssignmentExpression being read, which an async arrow read whole as a primary takes.
     private bool assignmentNoIn;
 
     /// <summary>The precedence of <c>in</c>, <c>instanceof</c> and the four comparisons.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Low; Resources=0; Fingerprint=2AB4A2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Low; Resources=0; Fingerprint=2AB4A2
+    // Hairs-Human:        PENDING
     private const int Relational = 8;
 
     /// <summary>The precedence of <c>**</c>, the one right-associative binary operator.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Low; Resources=0; Fingerprint=6FC2D1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Low; Resources=0; Fingerprint=6FC2D1
+    // Hairs-Human:        PENDING
     private const int Exponent = 12;
 
     /// <summary>An Expression (clause 13.16): AssignmentExpressions joined by commas.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=DCA6DD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=DCA6DD
+    // Hairs-Human:        PENDING
     private Expression ParseExpression(bool noIn, bool defer = false)
     {
         var first = ParseAssignment(noIn, defer);
@@ -55,8 +55,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>An Expression whose CoverInitializedNames the caller converts or refuses: a for statement's head.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=30F070
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=30F070
+    // Hairs-Human:        PENDING
     private Expression ParseExpressionCover(bool noIn) => ParseExpression(noIn, defer: true);
 
     /// <summary>
@@ -65,9 +65,9 @@ internal sealed partial class Parser
     /// pattern, or a ConditionalExpression. With <paramref name="defer"/>, a CoverInitializedName read here and not
     /// converted is left to the caller, whose literal may yet become a pattern.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=8DDDD0
-    // Broiler-Falsified-If: an arrow is read where its cover was not the whole left operand, a target that is no LeftHandSideExpression is admitted, or a CoverInitializedName no conversion takes is admitted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15 s15.3 arrows by conversion; IP=Low; Security=High; Resources=2; Fingerprint=8DDDD0
+    // Hairs-Falsified-If: an arrow is read where its cover was not the whole left operand, a target that is no LeftHandSideExpression is admitted, or a CoverInitializedName no conversion takes is admitted
+    // Hairs-Human:        PENDING
     private Expression ParseAssignment(bool noIn, bool defer = false)
     {
         var token = Ex;
@@ -150,9 +150,9 @@ internal sealed partial class Parser
     }
 
     /// <summary>Refuses the first CoverInitializedName read since <paramref name="mark"/> that no conversion took (catalogue row EE0017 at stage 4d).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.5 CoverInitializedName; IP=Low; Security=High; Resources=2; Fingerprint=BCA969
-    // Broiler-Falsified-If: a CoverInitializedName that no conversion took is admitted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.2.5 CoverInitializedName; IP=Low; Security=High; Resources=2; Fingerprint=BCA969
+    // Hairs-Falsified-If: a CoverInitializedName that no conversion took is admitted
+    // Hairs-Human:        PENDING
     private void CheckCoverInitialized(int mark)
     {
         // A CoverInitializedName that no conversion took into a pattern (catalogue row EE0017), or an assignment's literal
@@ -189,9 +189,9 @@ internal sealed partial class Parser
     /// it as a DestructuringAssignmentTarget, which EE0038 refuses; and otherwise the refusal is made when the cover, or a
     /// class heritage, resolves.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.1 EE0032, s15.3.1 ArrowParameters cover early errors; IP=Low; Security=High; Resources=2; Fingerprint=722F78
-    // Broiler-Falsified-If: a literal that covers no AssignmentPattern is admitted outside an arrow's head, or an arrow's head that covers it is refused by EE0032
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.1 EE0032, s15.3.1 ArrowParameters cover early errors; IP=Low; Security=High; Resources=2; Fingerprint=722F78
+    // Hairs-Falsified-If: a literal that covers no AssignmentPattern is admitted outside an arrow's head, or an arrow's head that covers it is refused by EE0032
+    // Hairs-Human:        PENDING
     private SyntaxNode ToAssignmentTargetOrDeferred(Expression left, bool defer)
     {
         if (!defer)
@@ -209,8 +209,8 @@ internal sealed partial class Parser
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=E308C4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=E308C4
+    // Hairs-Human:        PENDING
     private static AssignmentOperator? AssignmentOperatorOf(TokenKind kind) => kind switch
     {
         TokenKind.Equals => AssignmentOperator.Assign,
@@ -236,8 +236,8 @@ internal sealed partial class Parser
     /// Whether an expression is a LeftHandSideExpression (clause 13.3): a NewExpression, CallExpression or OptionalExpression,
     /// which a primary expression is. Whether it is a valid target is a static-semantic rule (stage 4d).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=60433A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=60433A
+    // Hairs-Human:        PENDING
     private static bool IsLeftHandSide(Expression expression) => expression.Kind is SyntaxKind.Identifier or SyntaxKind.ThisExpression
         or SyntaxKind.NullLiteral or SyntaxKind.BooleanLiteral or SyntaxKind.NumericLiteral or SyntaxKind.StringLiteral
         or SyntaxKind.RegularExpressionLiteral or SyntaxKind.TemplateLiteral or SyntaxKind.ArrayLiteral or SyntaxKind.ObjectLiteral
@@ -247,8 +247,8 @@ internal sealed partial class Parser
         || (expression.Kind == SyntaxKind.ParenthesizedExpression && expression is ParenthesizedExpression);
 
     /// <summary>A YieldExpression (clause 15.5): its operand on the same line where one is written, <c>yield*</c> with one always.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=5207A7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=5207A7
+    // Hairs-Human:        PENDING
     private Expression ParseYield(bool noIn)
     {
         var keyword = Advance();
@@ -271,8 +271,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether a token, read where an expression may begin, can begin an AssignmentExpression.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=CD3A78
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=CD3A78
+    // Hairs-Human:        PENDING
     private bool StartsExpression(Token token) => token.Kind switch
     {
         TokenKind.IdentifierName => token.IsEscaped || token.Word is not (Word.In or Word.Instanceof),
@@ -288,8 +288,8 @@ internal sealed partial class Parser
     /// A ConditionalExpression (clause 13.14). An async arrow read whole as a primary is no ShortCircuitExpression, so it
     /// is never a condition's test: it is returned to the AssignmentExpression that may be it.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=D158A3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=D158A3
+    // Hairs-Human:        PENDING
     private Expression ParseConditional(bool noIn)
     {
         var test = ParseBinary(1, noIn);
@@ -309,8 +309,8 @@ internal sealed partial class Parser
     /// own height alone, so no depth is kept; it read "the chain the operator extends - the tree depth before the chain
     /// began and the chain's least precedence.")</i>
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=0; Fingerprint=8C8644
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=0; Fingerprint=8C8644
+    // Hairs-Human:        PENDING
     private readonly record struct PendingOperator(Expression Left, Token Operator, int Minimum);
 
     // The precedence climb's explicit stack, shared by every ParseBinary on the parser's stack: each uses the entries above
@@ -336,9 +336,9 @@ internal sealed partial class Parser
     /// right operand of <c>#x in</c> is read by one recursion, which cannot repeat. The method holds no token: what reads
     /// one is a method of its own, out of line, so that the frame each level of nesting leaves here stays small.
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge and nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=C1A259
-    // Broiler-Falsified-If: an operator binds with another precedence or associativity than the grammar's, a chain is charged without its left operand's height or a node without its right operand's, or a right operand of a higher precedence adds a frame to the parser's stack
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge and nesting bound; IP=Low; Security=High; Resources=2; Fingerprint=C1A259
+    // Hairs-Falsified-If: an operator binds with another precedence or associativity than the grammar's, a chain is charged without its left operand's height or a node without its right operand's, or a right operand of a higher precedence adds a frame to the parser's stack
+    // Hairs-Human:        PENDING
     private Expression ParseBinary(int minimum, bool noIn)
     {
         var bottom = pendingOperators.Count;
@@ -393,14 +393,14 @@ internal sealed partial class Parser
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.10 relational private in; IP=Low; Security=Low; Resources=0; Fingerprint=82C9E5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.10 relational private in; IP=Low; Security=Low; Resources=0; Fingerprint=82C9E5
+    // Hairs-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
     private bool AtPrivateIdentifier() => Ex.Kind == TokenKind.PrivateIdentifier;
 
     /// <summary><c>#x in o</c> where a RelationalExpression may begin (clause 13.10): its right operand a ShiftExpression.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.10 relational private in; IP=Low; Security=Medium; Resources=2; Fingerprint=D0F633
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.10 relational private in; IP=Low; Security=Medium; Resources=2; Fingerprint=D0F633
+    // Hairs-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
     private Expression ParsePrivateIn(int minimum, bool noIn)
     {
@@ -416,8 +416,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>The precedence of the binary operator ahead, or 0 where none is: <c>in</c> is none where the [In] parameter is off.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, s13.7 for-in [In]; IP=Low; Security=Low; Resources=0; Fingerprint=C1BDE8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, s13.7 for-in [In]; IP=Low; Security=Low; Resources=0; Fingerprint=C1BDE8
+    // Hairs-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
     private int BinaryPrecedence(bool noIn)
     {
@@ -426,8 +426,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Reads the operator ahead onto the precedence climb's stack, its left operand and its chain's state with it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=0; Fingerprint=027D3C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=0; Fingerprint=027D3C
+    // Hairs-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void PushOperator(Expression left, int minimum)
     {
@@ -437,8 +437,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Takes the operator that waits off the precedence climb's stack and builds its node over <paramref name="right"/>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge; IP=Low; Security=Medium; Resources=0; Fingerprint=E59278
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, JSD-0083 D14 left-operand charge; IP=Low; Security=Medium; Resources=0; Fingerprint=E59278
+    // Hairs-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
     private Expression PopOperator(Expression right, out int minimum)
     {
@@ -452,8 +452,8 @@ internal sealed partial class Parser
     /// The operator <c>**</c> ahead and its right operand, which recurses at the same precedence: charged as nesting, which
     /// bounds the recursion. Its left operand is an UpdateExpression, never a bare UnaryExpression (clause 13.6).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6 exponentiation, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=2; Fingerprint=B9D0DD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.6 exponentiation, JSD-0083 D14 nesting bound; IP=Low; Security=Medium; Resources=2; Fingerprint=B9D0DD
+    // Hairs-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
     private Expression ParseExponentOperand(Expression left, bool noIn)
     {
@@ -481,9 +481,9 @@ internal sealed partial class Parser
     /// 2026-11-02, at stage SJL-13.2f; it read "charged one level of tree depth from the tree depth <c>saved</c> its chain
     /// began at (decision D14).")</i>
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, s13.13 coalesce, JSD-0083 D14 left-operand charge; IP=Low; Security=High; Resources=2; Fingerprint=74F764
-    // Broiler-Falsified-If: a CoalesceExpression mixed with a LogicalOR or LogicalAND operand is built, or a chain node is built without its charge
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.6-s13.13 precedence, s13.13 coalesce, JSD-0083 D14 left-operand charge; IP=Low; Security=High; Resources=2; Fingerprint=74F764
+    // Hairs-Falsified-If: a CoalesceExpression mixed with a LogicalOR or LogicalAND operand is built, or a chain node is built without its charge
+    // Hairs-Human:        PENDING
     private Expression CombineBinary(Expression left, Token token, Expression right)
     {
         Expression node;
@@ -504,13 +504,13 @@ internal sealed partial class Parser
         return node;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=AF8190
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=AF8190
+    // Hairs-Human:        PENDING
     private static bool MixesCoalesce(LogicalOperator op, Expression operand) =>
         operand is LogicalExpression logical && (op == LogicalOperator.Coalesce) != (logical.Operator == LogicalOperator.Coalesce);
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=E15182
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=E15182
+    // Hairs-Human:        PENDING
     private static int Precedence(Token token) => token.Kind switch
     {
         TokenKind.QuestionQuestion => 1,
@@ -529,8 +529,8 @@ internal sealed partial class Parser
         _ => 0,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=FB3228
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=FB3228
+    // Hairs-Human:        PENDING
     private static LogicalOperator? LogicalOperatorOf(Token token) => token.Kind switch
     {
         TokenKind.AmpersandAmpersand => LogicalOperator.And,
@@ -539,8 +539,8 @@ internal sealed partial class Parser
         _ => null,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=A2B5EE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=A2B5EE
+    // Hairs-Human:        PENDING
     private static BinaryOperator BinaryOperatorOf(Token token) => token.Kind switch
     {
         TokenKind.StarStar => BinaryOperator.Exponent,
@@ -570,8 +570,8 @@ internal sealed partial class Parser
     /// A UnaryExpression or UpdateExpression (clauses 13.4, 13.5 and 15.8): each prefix operator that recurses is charged
     /// one level of nesting, as Broiler.VM's parser charges it.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=E78796
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=E78796
+    // Hairs-Human:        PENDING
     private Expression ParseUnary()
     {
         var token = Ex;
@@ -614,8 +614,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A postfix UpdateExpression (clause 13.4): <c>++</c> or <c>--</c> on the same line, after anything but an async arrow read whole as a primary.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=506C97
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=506C97
+    // Hairs-Human:        PENDING
     private Expression ParsePostfix()
     {
         var expression = ParseLeftHandSide();
@@ -632,8 +632,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A LeftHandSideExpression (clause 13.3): a NewExpression, a CallExpression or an OptionalExpression.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=7A568A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=7A568A
+    // Hairs-Human:        PENDING
     private Expression ParseLeftHandSide()
     {
         var token = Ex;
@@ -661,9 +661,9 @@ internal sealed partial class Parser
     /// <paramref name="asyncHead"/>, a first argument list on the same line as <c>async</c> is read as the
     /// CoverCallExpressionAndAsyncArrowHead, which a following <c>=&gt;</c> converts.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=6DE43D
-    // Broiler-Falsified-If: a link the grammar refuses is admitted, or a chain is charged without its first expression's height or a link without its arguments' or key's
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.3 member call optional chains, JSD-0083 D14; IP=Low; Security=High; Resources=2; Fingerprint=6DE43D
+    // Hairs-Falsified-If: a link the grammar refuses is admitted, or a chain is charged without its first expression's height or a link without its arguments' or key's
+    // Hairs-Human:        PENDING
     private Expression ParseChainLinks(Expression current, bool allowCalls, bool asyncHead = false)
     {
         var start = current.Span;
@@ -787,8 +787,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A member's name after <c>.</c> or <c>?.</c>: an IdentifierName, any word among them, or a PrivateIdentifier (clause 13.3).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=A0FA77
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=A0FA77
+    // Hairs-Human:        PENDING
     private SyntaxNode ParseMemberName()
     {
         var token = Op;
@@ -808,8 +808,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>An Arguments list (clause 13.3.8): AssignmentExpressions and spreads, with a trailing comma where written.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=918504
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=918504
+    // Hairs-Human:        PENDING
     private (IReadOnlyList<Expression> Arguments, bool TrailingComma) ParseArguments(bool defer)
     {
         Expect(TokenKind.LeftParen);
@@ -844,8 +844,8 @@ internal sealed partial class Parser
     /// A <c>new</c> expression or <c>new.target</c> (clauses 13.3.5 and 13.3.12), each <c>new</c> charged one level of nesting
     /// as Broiler.VM's parser charges it: the constructor is a MemberExpression, with no call and no optional link.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=6920F7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=6920F7
+    // Hairs-Human:        PENDING
     private Expression ParseNew()
     {
         var keyword = Ex;
@@ -897,8 +897,8 @@ internal sealed partial class Parser
     }
 
     /// <summary><c>super</c> (clause 13.3.7): a SuperProperty's object, or a SuperCall's callee where calls are admitted; nothing else.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=7AA1EF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=7AA1EF
+    // Hairs-Human:        PENDING
     private Expression ParseSuper(bool allowCalls)
     {
         var token = Advance();
@@ -912,8 +912,8 @@ internal sealed partial class Parser
     /// An ImportCall or <c>import.meta</c> (clauses 13.3.10 and 13.3.12), and the import phases' call forms under their flags
     /// (decision D17): an ImportCall is a CallExpression, never a <c>new</c> expression's constructor.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=3448D2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=3448D2
+    // Hairs-Human:        PENDING
     private Expression ParseImportExpression(bool allowCalls)
     {
         var keyword = Advance();
@@ -972,8 +972,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A PrimaryExpression (clause 13.2), the async arrow function <c>async x =&gt; …</c> among them.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=C203D5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=C203D5
+    // Hairs-Human:        PENDING
     private Expression ParsePrimary()
     {
         var token = Ex;
@@ -1013,8 +1013,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A primary expression that begins with a name: a keyword's, a function or class expression, an async arrow, or an IdentifierReference.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=C5E822
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=C5E822
+    // Hairs-Human:        PENDING
     private Expression ParseNamePrimary(Token token)
     {
         if (token.IsEscaped)
@@ -1080,8 +1080,8 @@ internal sealed partial class Parser
     /// under [+Await], where it can only begin an AwaitExpression (clause 15.9): the conversion refuses it where its own
     /// parameters do not bind it. Answers the reference.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.9 AsyncArrowHead [+Await], CoverCallExpressionAndAsyncArrowHead; IP=Low; Security=Medium; Resources=2; Fingerprint=EBB690
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.9 AsyncArrowHead [+Await], CoverCallExpressionAndAsyncArrowHead; IP=Low; Security=Medium; Resources=2; Fingerprint=EBB690
+    // Hairs-Human:        PENDING
     private Identifier NoteAwaitReference(Identifier reference)
     {
         if (!reference.IsEscaped && reference.Name == "await")
@@ -1090,8 +1090,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Forgets the last <c>await</c> reference recorded when it is <paramref name="identifier"/>, which the grammar reads as a BindingIdentifier instead.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.9 AsyncArrowHead [+Await], CoverCallExpressionAndAsyncArrowHead; IP=Low; Security=Medium; Resources=2; Fingerprint=8303BC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.9 AsyncArrowHead [+Await], CoverCallExpressionAndAsyncArrowHead; IP=Low; Security=Medium; Resources=2; Fingerprint=8303BC
+    // Hairs-Human:        PENDING
     private void ForgetAwaitReference(Identifier identifier)
     {
         if (awaitReferences.Count > 0 && ReferenceEquals(awaitReferences[^1], identifier))
@@ -1099,8 +1099,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Drops the <c>await</c> references a nested function read, from <paramref name="mark"/> on: its [Await] is its own, never an enclosing async arrow head's.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.9 AsyncArrowHead [+Await], CoverCallExpressionAndAsyncArrowHead; IP=Low; Security=Medium; Resources=2; Fingerprint=2BEB80
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.9 AsyncArrowHead [+Await], CoverCallExpressionAndAsyncArrowHead; IP=Low; Security=Medium; Resources=2; Fingerprint=2BEB80
+    // Hairs-Human:        PENDING
     private void DropAwaitReferences(int mark)
     {
         if (awaitReferences.Count > mark)
@@ -1108,8 +1108,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether, after the current <c>async</c> and the name after it, <c>=&gt;</c> follows on the same line: the AsyncArrowHead's two-token lookahead.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=5470CB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=5470CB
+    // Hairs-Human:        PENDING
     private bool IsArrowAfterName()
     {
         Peek(LexicalGoal.RegExp);
@@ -1120,8 +1120,8 @@ internal sealed partial class Parser
         return arrow.Kind == TokenKind.Arrow && !arrow.NewLineBefore;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=C35E77
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=C35E77
+    // Hairs-Human:        PENDING
     private NumericLiteral NumericLiteralOf(Token token)
     {
         var flags = NumericLiteralFlags.None;
@@ -1136,8 +1136,8 @@ internal sealed partial class Parser
         return new NumericLiteral(SpanOf(token), token.Number, text.Substring(token.Start, token.Length), flags);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=57BAC5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=57BAC5
+    // Hairs-Human:        PENDING
     private StringLiteral StringLiteralOf(Token token)
     {
         var flags = StringLiteralFlags.None;
@@ -1156,8 +1156,8 @@ internal sealed partial class Parser
     /// charged through them. <i>(Revised 2026-11-02, at stage SJL-13.2f; it read "Its spine is its substitutions' deepest,
     /// so a chain it begins is charged through them.")</i>
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=082B23
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=082B23
+    // Hairs-Human:        PENDING
     private TemplateLiteral ParseTemplate()
     {
         var first = Op;
@@ -1190,9 +1190,9 @@ internal sealed partial class Parser
     /// <c>=&gt;</c> follows on the same line, the cover an AssignmentExpression converts into ArrowFormalParameters. The
     /// forms only parameters have (<c>()</c>, a trailing comma, a rest element) are refused without the arrow.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList; IP=Low; Security=High; Resources=2; Fingerprint=4D6B21
-    // Broiler-Falsified-If: a form only parameters have is admitted without the arrow, or an arrow head is read again rather than converted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.2.10 CoverParenthesizedExpressionAndArrowParameterList; IP=Low; Security=High; Resources=2; Fingerprint=4D6B21
+    // Hairs-Falsified-If: a form only parameters have is admitted without the arrow, or an arrow head is read again rather than converted
+    // Hairs-Human:        PENDING
     private Expression ParseParenthesized()
     {
         var open = Advance();
@@ -1246,14 +1246,14 @@ internal sealed partial class Parser
     }
 
     /// <summary>The span from <paramref name="first"/>'s start to <paramref name="last"/>'s end.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=4F3151
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=4F3151
+    // Hairs-Human:        PENDING
     private static SourceSpan SpanFromTo(SourceSpan first, SourceSpan last) =>
         new(first.Offset, last.Offset + last.Length - first.Offset, first.Line, first.Column);
 
     /// <summary>An ArrayLiteral (clause 13.2.4): elisions, spreads and a trailing comma kept; its elements' CoverInitializedNames deferred to a conversion.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=1DAD3B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=1DAD3B
+    // Hairs-Human:        PENDING
     private Expression ParseArrayLiteral()
     {
         var start = StartOf(Advance());
@@ -1297,8 +1297,8 @@ internal sealed partial class Parser
     /// An ObjectLiteral (clause 13.2.5): its PropertyDefinitions, methods and accessors, spreads, and the CoverInitializedName
     /// <c>{ a = 1 }</c>, which only a conversion to a pattern admits.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=3388A7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=3388A7
+    // Hairs-Human:        PENDING
     private Expression ParseObjectLiteral()
     {
         var start = StartOf(Advance());
@@ -1330,8 +1330,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>One PropertyDefinition (clause 13.2.5), or a MethodDefinition (clause 15.4) of an object literal.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=C0CEAA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=C0CEAA
+    // Hairs-Human:        PENDING
     private SyntaxNode ParsePropertyDefinition(ref (Token At, string Name)? coverAt)
     {
         var token = Op;
@@ -1409,8 +1409,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether a name token can be an IdentifierReference here (clause 13.1): escaped, no reserved word, <c>yield</c> outside [Yield] and <c>await</c> outside [Await].</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=3567FA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=3567FA
+    // Hairs-Human:        PENDING
     private bool IsIdentifierReference(Token token)
     {
         if (token.Kind != TokenKind.IdentifierName)
@@ -1426,8 +1426,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A PropertyName (clause 13.2.5), or a ClassElementName (clause 15.7) with a PrivateIdentifier where <paramref name="allowPrivate"/>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=72993B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=72993B
+    // Hairs-Human:        PENDING
     private SyntaxNode ParsePropertyName(bool allowPrivate)
     {
         var token = Op;
@@ -1462,8 +1462,8 @@ internal sealed partial class Parser
     /// The cover of ArrowFormalParameters a parenthesised list was read as (clause 13.2.10), which only an AssignmentExpression
     /// converts; it never reaches the tree.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=341678
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=341678
+    // Hairs-Human:        PENDING
     private sealed class ArrowParametersCover(SourceSpan span, IReadOnlyList<Expression> items, RestElement? rest, bool trailingComma, int mark)
         : ExpressionCover(span)
     {
@@ -1477,8 +1477,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>The CoverCallExpressionAndAsyncArrowHead an <c>async</c> call was read as (clause 15.9), which only an AssignmentExpression converts.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=DAF410
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=DAF410
+    // Hairs-Human:        PENDING
     private sealed class AsyncArrowHead(CallExpression call, int mark, int awaitMark) : ExpressionCover(call.Span)
     {
         internal CallExpression Call { get; } = call;
@@ -1490,12 +1490,12 @@ internal sealed partial class Parser
 }
 
 /// <summary>A cover the parse read and an arrow's <c>=&gt;</c> converts: it never reaches the tree.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=D3BDE3
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=D3BDE3
+// Hairs-Human:        PENDING
 internal abstract class ExpressionCover(SourceSpan span) : Expression(SyntaxKind.ParenthesizedExpression, span)
 {
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=CA8EA6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=CA8EA6
+    // Hairs-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
     }

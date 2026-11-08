@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   12
 // Annotated:        12/12
 // Exempt:           0
@@ -37,20 +37,20 @@ namespace Broiler.ECMAScript.Numbers;
 /// Unicode data and no state.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=3D11DD
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=3D11DD
+// Hairs-Human:        PENDING
 public static class NumberText
 {
     /// <summary>The longest string <see cref="TryFormat"/> ever writes: a sign, seventeen digits, a point and an exponent.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=09EE93
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=09EE93
+    // Hairs-Human:        PENDING
     public const int MaximumLength = 26;
 
     /// <summary><c>Number::toString(x, 10)</c> (ECMA-262 6.1.6.1.20).</summary>
     /// <param name="value">Any Number.</param>
     /// <returns>The shortest digits that read back as the value, nearest the value when several are shortest, placed by the specification's rules.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=6327CE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=6327CE
+    // Hairs-Human:        PENDING
     public static string ToString(double value)
     {
         Span<char> buffer = stackalloc char[MaximumLength];
@@ -63,8 +63,8 @@ public static class NumberText
     /// <param name="destination">The buffer; <see cref="MaximumLength"/> characters always suffice.</param>
     /// <param name="written">The characters written.</param>
     /// <returns><see langword="false"/> when the buffer is too short, in which case nothing is written.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=ED879E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=ED879E
+    // Hairs-Human:        PENDING
     public static bool TryFormat(double value, Span<char> destination, out int written)
     {
         Span<char> text = stackalloc char[MaximumLength];
@@ -85,8 +85,8 @@ public static class NumberText
     /// <param name="radix">The radix, 2 to 36.</param>
     /// <returns>The shortest digits in the radix that read back as the value, placed positionally; radix 10 is <see cref="ToString(double)"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The radix is outside 2 to 36.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=25AF45
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=25AF45
+    // Hairs-Human:        PENDING
     public static string ToRadixString(double value, int radix)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(radix, 2);
@@ -102,8 +102,8 @@ public static class NumberText
     /// <param name="fractionDigits">The places after the point, 0 to 100.</param>
     /// <returns>The value rounded to that many places, the larger candidate on a tie, with a "-" for a value below zero.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The digit count is outside 0 to 100.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=48699C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=48699C
+    // Hairs-Human:        PENDING
     public static string ToFixed(double value, int fractionDigits)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(fractionDigits);
@@ -132,8 +132,8 @@ public static class NumberText
     /// </summary>
     /// <param name="value">Any Number; a non-finite value gives <c>Number::toString</c>, as step 4 does.</param>
     /// <returns>The shortest digits that read back as the value, written <c>d.ddde+x or d.ddde-x</c>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=28C272
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=28C272
+    // Hairs-Human:        PENDING
     public static string ToExponential(double value)
     {
         if (!double.IsFinite(value))
@@ -169,8 +169,8 @@ public static class NumberText
     /// <param name="fractionDigits">The digits after the point, 0 to 100.</param>
     /// <returns>The value rounded to <paramref name="fractionDigits"/> + 1 significant digits, the larger candidate on a tie, written <c>d.ddde+x or d.ddde-x</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The digit count is outside 0 to 100.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=1372F6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=1372F6
+    // Hairs-Human:        PENDING
     public static string ToExponential(double value, int fractionDigits)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(fractionDigits);
@@ -200,8 +200,8 @@ public static class NumberText
     /// <param name="precision">The significant digits, 1 to 100.</param>
     /// <returns>The value rounded to that many significant digits, the larger candidate on a tie, in fixed or exponential notation as step 10 chooses.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The precision is outside 1 to 100.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=2796B6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=2796B6
+    // Hairs-Human:        PENDING
     public static string ToPrecision(double value, int precision)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(precision, 1);
@@ -236,8 +236,8 @@ public static class NumberText
     }
 
     /// <summary>Writes <c>d.ddde+x or d.ddde-x</c>, the form <c>toExponential</c> and <c>toPrecision</c> share.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=83B414
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=83B414
+    // Hairs-Human:        PENDING
     private static string Exponential(bool negative, ReadOnlySpan<char> digits, int exponent)
     {
         Span<char> text = stackalloc char[digits.Length + 9];
@@ -260,8 +260,8 @@ public static class NumberText
     }
 
     /// <summary>Writes <c>Number::toString(x, 10)</c>; the buffer holds <see cref="MaximumLength"/> characters.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=C004BD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=C004BD
+    // Hairs-Human:        PENDING
     private static int Format(double value, Span<char> text)
     {
         if (double.IsNaN(value))
@@ -334,8 +334,8 @@ public static class NumberText
         return at + exponentLength;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=A49790
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=A49790
+    // Hairs-Human:        PENDING
     private static int Write(Span<char> text, string literal)
     {
         literal.AsSpan().CopyTo(text);

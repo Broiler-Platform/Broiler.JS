@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   18
 // Annotated:        18/18
 // Exempt:           8
@@ -47,13 +47,13 @@ namespace Broiler.ECMAScript.Intl;
 /// </para>
 /// <para><b>Immutable</b>: one may be shared between threads (convention 10).</para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=9B5FB0
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=9B5FB0
+// Hairs-Human:        PENDING
 public sealed class PluralEngine
 {
     /// <summary>The plural categories in the order <c>resolvedOptions</c> lists them (<c>sec-intl.pluralrules.prototype.resolvedoptions</c>).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=56DA8F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=56DA8F
+    // Hairs-Human:        PENDING
     private static string[] CategoryOrder() => ["zero", "one", "two", "few", "many", "other"];
 
     private readonly ILocaleData data;
@@ -90,8 +90,8 @@ public sealed class PluralEngine
     /// <param name="type">Cardinal or ordinal.</param>
     /// <returns>The engine.</returns>
     /// <exception cref="InvalidDataException">A rule's text is not UTS #35's rule syntax: the table is not the generator's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=0F0C32
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=0F0C32
+    // Hairs-Human:        PENDING
     public static PluralEngine Create(ILocaleData data, string language, PluralRuleType type)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -133,9 +133,9 @@ public sealed class PluralEngine
     /// <param name="charge">The caller's meter: one unit per code unit of <paramref name="formatted"/>, before the operands are read.</param>
     /// <returns><c>zero</c>, <c>one</c>, <c>two</c>, <c>few</c>, <c>many</c> or <c>other</c>.</returns>
     /// <exception cref="ArgumentException"><paramref name="formatted"/> is not a decimal String.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=High; Resources=2; Fingerprint=F39F1C
-    // Broiler-Falsified-If: a decimal String's category differs from the first CLDR rule that holds for its UTS 35 operands, or c and e read other than the exponent given
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=High; Resources=2; Fingerprint=F39F1C
+    // Hairs-Falsified-If: a decimal String's category differs from the first CLDR rule that holds for its UTS 35 operands, or c and e read other than the exponent given
+    // Hairs-Human:        PENDING
     public string Select(string formatted, int compactExponent = 0, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(formatted);
@@ -167,8 +167,8 @@ public sealed class PluralEngine
     /// <param name="start">The start's category.</param>
     /// <param name="end">The end's category.</param>
     /// <returns>The range's category.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=AFA08B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=AFA08B
+    // Hairs-Human:        PENDING
     public string SelectRange(string start, string end)
     {
         ArgumentNullException.ThrowIfNull(start);
@@ -176,8 +176,8 @@ public sealed class PluralEngine
         return data.PluralRange(Language, start, end) ?? "other";
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=32B429
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=32B429
+    // Hairs-Human:        PENDING
     private static bool IsDecimalString(string text)
     {
         var point = false;
@@ -207,13 +207,13 @@ public sealed class PluralEngine
 /// The operands of a formatted number that a plural rule reads (UTS #35 Part 3 section 5.1.1): the integer digits, the visible
 /// fraction digits with and without trailing zeros, and the compact exponent.
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=808D65
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=808D65
+// Hairs-Human:        PENDING
 internal readonly record struct PluralOperands(long Integer, bool IntegerHuge, string Fraction, int CompactExponent)
 {
     /// <summary>The operands of a formatted decimal string: ASCII digits with an optional <c>.</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Medium; Resources=2; Fingerprint=BE03E3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Medium; Resources=2; Fingerprint=BE03E3
+    // Hairs-Human:        PENDING
     internal static PluralOperands Of(string formatted, int compactExponent)
     {
         var point = formatted.IndexOf('.', StringComparison.Ordinal);
@@ -228,19 +228,19 @@ internal readonly record struct PluralOperands(long Integer, bool IntegerHuge, s
     }
 
     /// <summary>The number of visible fraction digits, <c>v</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=112422
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=112422
+    // Hairs-Human:        PENDING
     internal int V => Fraction.Length;
 
     /// <summary>The visible fraction digits without trailing zeros.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=0AF713
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=0AF713
+    // Hairs-Human:        PENDING
     internal string T => Fraction.TrimEnd('0');
 }
 
 /// <summary>One CLDR plural rule: an <c>or</c> of <c>and</c>s of relations (UTS #35 Part 3 section 5.1).</summary>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=C1315B
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=C1315B
+// Hairs-Human:        PENDING
 internal sealed class PluralRule
 {
     private readonly List<List<Relation>> alternatives;
@@ -249,9 +249,9 @@ internal sealed class PluralRule
         this.alternatives = alternatives;
 
     /// <summary>Reads a rule's condition; the empty condition holds always.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=High; Resources=2; Fingerprint=CC8B9B
-    // Broiler-Falsified-If: a CLDR rule text is read as another condition than UTS 35 section 5.1 states
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=High; Resources=2; Fingerprint=CC8B9B
+    // Hairs-Falsified-If: a CLDR rule text is read as another condition than UTS 35 section 5.1 states
+    // Hairs-Human:        PENDING
     internal static PluralRule Parse(string condition)
     {
         var alternatives = new List<List<Relation>>();
@@ -276,8 +276,8 @@ internal sealed class PluralRule
         return new PluralRule(alternatives);
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Medium; Resources=2; Fingerprint=B64CC9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Medium; Resources=2; Fingerprint=B64CC9
+    // Hairs-Human:        PENDING
     private static Relation ParseRelation(string text)
     {
         var words = text.Replace("!=", " \u0001 ", StringComparison.Ordinal).Replace("=", " = ", StringComparison.Ordinal)
@@ -358,23 +358,23 @@ internal sealed class PluralRule
     }
 
     /// <summary>The relation's word at <paramref name="at"/>, or the documented refusal when the relation ends before it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=DFBBE6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=DFBBE6
+    // Hairs-Human:        PENDING
     private static string Word(string[] words, int at, string relation) =>
         at < words.Length
             ? words[at]
             : throw new InvalidDataException("a plural rule's relation is not UTS #35's syntax: " + relation);
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=B52DC3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=1; Fingerprint=B52DC3
+    // Hairs-Human:        PENDING
     private static long Integer(string digits, string relation) =>
         long.TryParse(digits, NumberStyles.None, NumberFormatInfo.InvariantInfo, out var value)
             ? value
             : throw new InvalidDataException("a plural rule's relation is not UTS #35's syntax: " + relation);
 
     /// <summary>Whether the rule holds for a formatted number's operands.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Medium; Resources=2; Fingerprint=2E378E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Medium; Resources=2; Fingerprint=2E378E
+    // Hairs-Human:        PENDING
     internal bool Holds(PluralOperands operands)
     {
         if (alternatives.Count == 0)
@@ -393,8 +393,8 @@ internal sealed class PluralRule
         return false;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Medium; Resources=2; Fingerprint=4231A1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Medium; Resources=2; Fingerprint=4231A1
+    // Hairs-Human:        PENDING
     private static bool Holds(Relation relation, PluralOperands operands)
     {
         // THE OPERAND'S VALUE: an integer (its low digits, and whether more lie above them), or for n with a visible nonzero
@@ -466,7 +466,7 @@ internal sealed class PluralRule
     }
 
     /// <summary>One relation: an operand, an optional modulus, whether it is negated, and its ranges.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=8D05DC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-pluralruleselect sec-pluralruleselectrange, UTS35 Part 3 section 5 via Broiler.VM JsPluralRule; IP=Low; Security=Low; Resources=0; Fingerprint=8D05DC
+    // Hairs-Human:        PENDING
     private sealed record Relation(char Operand, long Modulus, bool Negated, (long Low, long High)[] Ranges);
 }

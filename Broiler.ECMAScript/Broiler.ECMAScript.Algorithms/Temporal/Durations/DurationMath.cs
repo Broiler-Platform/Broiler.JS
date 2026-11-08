@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   36
 // Annotated:        36/36
 // Exempt:           0
@@ -53,19 +53,19 @@ namespace Broiler.ECMAScript.Temporal;
 /// at most a few times, and a bubble walks at most the four date units (X3: there is no class C2).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=Temporal s7.5 via Broiler.VM JsTemporal.Durations; IP=Low; Security=Medium; Resources=2; Fingerprint=B1BDBE
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal s7.5 via Broiler.VM JsTemporal.Durations; IP=Low; Security=Medium; Resources=2; Fingerprint=B1BDBE
+// Hairs-Human:        PENDING
 public static partial class DurationMath
 {
     // A day in nanoseconds, as an exact integer.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5 via Broiler.VM JsTemporalCore; IP=None; Security=None; Resources=0; Fingerprint=055C53
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5 via Broiler.VM JsTemporalCore; IP=None; Security=None; Resources=0; Fingerprint=055C53
+    // Hairs-Human:        PENDING
     private static readonly BigInteger Day = new(TemporalLimits.NanosecondsPerDay);
 
     // A date-duration field past this cannot be handed to a calendar exactly; no such field is a valid duration's,
     // and no result that far from a date within the limits is within them.
-    // Broiler-AI:           Origin=AI; Spec=Temporal s7.5.2, JSD-0078 row D12; IP=None; Security=Low; Resources=0; Fingerprint=AF151B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s7.5.2, JSD-0078 row D12; IP=None; Security=Low; Resources=0; Fingerprint=AF151B
+    // Hairs-Human:        PENDING
     private const double MaxCalendarField = 4.0e18;
 
     // ---- The basic operations ----------------------------------------------------------------------------------
@@ -73,15 +73,15 @@ public static partial class DurationMath
     /// <summary>The sign of a duration: the proposal's <c>DurationSign</c> (s7.5.13), the sign of its first field that is not zero.</summary>
     /// <param name="duration">The duration.</param>
     /// <returns>-1, 0 or 1.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.13 to s7.5.15 via Broiler.VM JsTemporalCore.Sign; IP=Low; Security=None; Resources=0; Fingerprint=E51F1F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.13 to s7.5.15 via Broiler.VM JsTemporalCore.Sign; IP=Low; Security=None; Resources=0; Fingerprint=E51F1F
+    // Hairs-Human:        PENDING
     public static int Sign(DurationFields duration) => DurationCore.Sign(duration);
 
     /// <summary>The sign of a date duration: the proposal's <c>DateDurationSign</c> (s7.5.14).</summary>
     /// <param name="duration">The date duration.</param>
     /// <returns>-1, 0 or 1.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.13 to s7.5.15 via Broiler.VM JsTemporalCore.Sign; IP=Low; Security=None; Resources=0; Fingerprint=38FC09
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.13 to s7.5.15 via Broiler.VM JsTemporalCore.Sign; IP=Low; Security=None; Resources=0; Fingerprint=38FC09
+    // Hairs-Human:        PENDING
     public static int Sign(DateDuration duration) =>
         duration.Years != 0 ? Math.Sign(duration.Years)
         : duration.Months != 0 ? Math.Sign(duration.Months)
@@ -92,8 +92,8 @@ public static partial class DurationMath
     /// <summary>The sign of an internal duration: the proposal's <c>InternalDurationSign</c> (s7.5.15), the date part's, else the time's.</summary>
     /// <param name="duration">The internal duration.</param>
     /// <returns>-1, 0 or 1.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.13 to s7.5.15 via Broiler.VM JsTemporalCore.Sign; IP=Low; Security=None; Resources=0; Fingerprint=A5F0B8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.13 to s7.5.15 via Broiler.VM JsTemporalCore.Sign; IP=Low; Security=None; Resources=0; Fingerprint=A5F0B8
+    // Hairs-Human:        PENDING
     public static int Sign(InternalDuration duration)
     {
         var date = Sign(duration.Date);
@@ -103,8 +103,8 @@ public static partial class DurationMath
     /// <summary>The largest unit whose field is not zero: the proposal's <c>DefaultTemporalLargestUnit</c> (s7.5.17), nanosecond for a zero duration.</summary>
     /// <param name="duration">The duration.</param>
     /// <returns>The unit, year to nanosecond.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.17 via Broiler.VM JsTemporalCore.DefaultLargestUnit; IP=Low; Security=None; Resources=0; Fingerprint=DFC930
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.17 via Broiler.VM JsTemporalCore.DefaultLargestUnit; IP=Low; Security=None; Resources=0; Fingerprint=DFC930
+    // Hairs-Human:        PENDING
     public static TemporalUnit DefaultLargestUnit(DurationFields duration) => DurationCore.DefaultLargestUnit(duration);
 
     /// <summary>
@@ -114,8 +114,8 @@ public static partial class DurationMath
     /// <param name="duration">The duration, valid.</param>
     /// <returns>The internal record.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A field is not finite.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.5 via Broiler.VM JsTemporalCore.ToInternal; IP=Low; Security=Low; Resources=1; Fingerprint=BDC5AD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.5 via Broiler.VM JsTemporalCore.ToInternal; IP=Low; Security=Low; Resources=1; Fingerprint=BDC5AD
+    // Hairs-Human:        PENDING
     public static InternalDuration ToInternal(DurationFields duration)
     {
         CheckFinite(duration);
@@ -132,8 +132,8 @@ public static partial class DurationMath
     /// <param name="duration">The duration, valid.</param>
     /// <returns>The internal record, its date part's days zero.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A field is not finite.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.6 via Broiler.VM JsTemporalCore.ToInternalWith24HourDays; IP=Low; Security=Low; Resources=1; Fingerprint=94CFC1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.6 via Broiler.VM JsTemporalCore.ToInternalWith24HourDays; IP=Low; Security=Low; Resources=1; Fingerprint=94CFC1
+    // Hairs-Human:        PENDING
     public static InternalDuration ToInternalWith24HourDays(DurationFields duration)
     {
         CheckFinite(duration);
@@ -152,8 +152,8 @@ public static partial class DurationMath
     /// <param name="result">The fields, every zero a positive zero; the default unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.InvalidDuration"/> where the fields are not a valid duration.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The unit is unset or auto, or a date field is not finite.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.8 via Broiler.VM JsTemporal.FromInternal; IP=Low; Security=Low; Resources=1; Fingerprint=1CCB09
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.8 via Broiler.VM JsTemporal.FromInternal; IP=Low; Security=Low; Resources=1; Fingerprint=1CCB09
+    // Hairs-Human:        PENDING
     public static TemporalStatus FromInternal(InternalDuration duration, TemporalUnit largestUnit, out DurationFields result)
     {
         CheckUnit(largestUnit, nameof(largestUnit));
@@ -164,8 +164,8 @@ public static partial class DurationMath
     /// <summary>A duration with every field negated: the proposal's <c>CreateNegatedTemporalDuration</c> (s7.5.20), every zero a positive zero.</summary>
     /// <param name="duration">The duration.</param>
     /// <returns>The negated duration.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.20 via Broiler.VM JsTemporal.Negated; IP=Low; Security=None; Resources=0; Fingerprint=D2B357
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.20 via Broiler.VM JsTemporal.Negated; IP=Low; Security=None; Resources=0; Fingerprint=D2B357
+    // Hairs-Human:        PENDING
     public static DurationFields Negate(DurationFields duration) => new(
         Negated(duration.Years), Negated(duration.Months), Negated(duration.Weeks), Negated(duration.Days), Negated(duration.Hours),
         Negated(duration.Minutes), Negated(duration.Seconds), Negated(duration.Milliseconds), Negated(duration.Microseconds),
@@ -174,8 +174,8 @@ public static partial class DurationMath
     /// <summary>A duration with every field's magnitude: the fields <c>Temporal.Duration.prototype.abs</c> creates.</summary>
     /// <param name="duration">The duration.</param>
     /// <returns>The duration's absolute value.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.3.17 via Broiler.VM JsRealm.TemporalDuration abs; IP=Low; Security=None; Resources=0; Fingerprint=C0B6A1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.3.17 via Broiler.VM JsRealm.TemporalDuration abs; IP=Low; Security=None; Resources=0; Fingerprint=C0B6A1
+    // Hairs-Human:        PENDING
     public static DurationFields Abs(DurationFields duration) => new(
         Math.Abs(duration.Years), Math.Abs(duration.Months), Math.Abs(duration.Weeks), Math.Abs(duration.Days), Math.Abs(duration.Hours),
         Math.Abs(duration.Minutes), Math.Abs(duration.Seconds), Math.Abs(duration.Milliseconds), Math.Abs(duration.Microseconds),
@@ -191,8 +191,8 @@ public static partial class DurationMath
     /// <param name="days">The days, an integer.</param>
     /// <param name="result">The record; the default unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.InvalidDuration"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.9 via Broiler.VM JsTemporal.DateDurationRecord; IP=Low; Security=Low; Resources=0; Fingerprint=F9B203
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.9 via Broiler.VM JsTemporal.DateDurationRecord; IP=Low; Security=Low; Resources=0; Fingerprint=F9B203
+    // Hairs-Human:        PENDING
     public static TemporalStatus CreateDateDurationRecord(double years, double months, double weeks, double days, out DateDuration result)
     {
         result = default;
@@ -208,8 +208,8 @@ public static partial class DurationMath
     /// <param name="two">The second time duration, in nanoseconds.</param>
     /// <param name="result">The sum; zero unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.InvalidDuration"/> past <see cref="TemporalLimits.MaxTimeDuration"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.22 via Broiler.VM JsTemporal.AddTimeDuration; IP=Low; Security=Low; Resources=1; Fingerprint=E8B15A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.22 via Broiler.VM JsTemporal.AddTimeDuration; IP=Low; Security=Low; Resources=1; Fingerprint=E8B15A
+    // Hairs-Human:        PENDING
     public static TemporalStatus AddTimeDuration(BigInteger one, BigInteger two, out BigInteger result)
     {
         result = one + two;
@@ -226,8 +226,8 @@ public static partial class DurationMath
     /// <param name="result">The sum; zero unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.InvalidDuration"/> past <see cref="TemporalLimits.MaxTimeDuration"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The days are not finite.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.23 via Broiler.VM JsTemporal.Add24HourDays; IP=Low; Security=Low; Resources=1; Fingerprint=B1C324
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.23 via Broiler.VM JsTemporal.Add24HourDays; IP=Low; Security=Low; Resources=1; Fingerprint=B1C324
+    // Hairs-Human:        PENDING
     public static TemporalStatus Add24HourDaysToTimeDuration(BigInteger time, double days, out BigInteger result)
     {
         if (!double.IsFinite(days))
@@ -246,8 +246,8 @@ public static partial class DurationMath
     /// <param name="result">The rounded duration; zero unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.InvalidDuration"/> past <see cref="TemporalLimits.MaxTimeDuration"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The increment is not positive.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.28 via Broiler.VM JsTemporal.RoundTimeDurationToIncrement; IP=Low; Security=Low; Resources=1; Fingerprint=0C5CCE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.28 via Broiler.VM JsTemporal.RoundTimeDurationToIncrement; IP=Low; Security=Low; Resources=1; Fingerprint=0C5CCE
+    // Hairs-Human:        PENDING
     public static TemporalStatus RoundTimeDurationToIncrement(BigInteger duration, BigInteger increment, RoundingMode mode, out BigInteger result)
     {
         result = ExactRounding.RoundNumberToIncrement(duration, BigInteger.One, increment, mode);
@@ -266,8 +266,8 @@ public static partial class DurationMath
     /// <param name="result">The rounded duration; zero unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.InvalidDuration"/> past <see cref="TemporalLimits.MaxTimeDuration"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The increment is not positive, or the unit is a calendar unit, unset or auto.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.30 via Broiler.VM JsTemporal.RoundTimeDuration; IP=Low; Security=Low; Resources=1; Fingerprint=0992C3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.30 via Broiler.VM JsTemporal.RoundTimeDuration; IP=Low; Security=Low; Resources=1; Fingerprint=0992C3
+    // Hairs-Human:        PENDING
     public static TemporalStatus RoundTimeDuration(BigInteger duration, long increment, TemporalUnit unit, RoundingMode mode, out BigInteger result)
     {
         CheckTimeUnit(unit, nameof(unit));
@@ -285,8 +285,8 @@ public static partial class DurationMath
     /// <param name="unit">A time unit or <see cref="TemporalUnit.Day"/>, a day of 24 hours.</param>
     /// <returns>The total.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The unit is a calendar unit, unset or auto.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.31 via Broiler.VM JsTemporal.TotalTimeDuration; IP=Low; Security=Low; Resources=1; Fingerprint=5E1E7B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.31 via Broiler.VM JsTemporal.TotalTimeDuration; IP=Low; Security=Low; Resources=1; Fingerprint=5E1E7B
+    // Hairs-Human:        PENDING
     public static double TotalTimeDuration(BigInteger duration, TemporalUnit unit)
     {
         CheckTimeUnit(unit, nameof(unit));
@@ -308,8 +308,8 @@ public static partial class DurationMath
     /// months or weeks; <see cref="TemporalStatus.InvalidDuration"/> where the sum is past the limits.
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">A field is not finite.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.41 via Broiler.VM JsRealm.TemporalDuration add; IP=Low; Security=Medium; Resources=1; Fingerprint=C93666
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.41 via Broiler.VM JsRealm.TemporalDuration add; IP=Low; Security=Medium; Resources=1; Fingerprint=C93666
+    // Hairs-Human:        PENDING
     public static TemporalStatus AddDurations(DurationFields one, DurationFields two, out DurationFields result)
     {
         result = default;
@@ -336,8 +336,8 @@ public static partial class DurationMath
     /// or <see cref="TemporalStatus.InvalidDuration"/> where an addition passes a limit.
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">A field is not finite.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.2.3 via Broiler.VM JsRealm.TemporalDuration DurationCompare; IP=Low; Security=Medium; Resources=2; Fingerprint=998079
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.2.3 via Broiler.VM JsRealm.TemporalDuration DurationCompare; IP=Low; Security=Medium; Resources=2; Fingerprint=998079
+    // Hairs-Human:        PENDING
     public static TemporalStatus Compare(DurationFields one, DurationFields two, RelativeTo relativeTo, out int result)
     {
         result = 0;
@@ -414,8 +414,8 @@ public static partial class DurationMath
     /// <see cref="TemporalStatus.InvalidDuration"/> where an addition or the result passes a limit.
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">A unit is unset or auto, the smallest is larger than the largest, the increment is not positive, or a field is not finite.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.3.20 via Broiler.VM JsRealm.TemporalDuration DurationRound; IP=Low; Security=Medium; Resources=2; Fingerprint=B02B42
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.3.20 via Broiler.VM JsRealm.TemporalDuration DurationRound; IP=Low; Security=Medium; Resources=2; Fingerprint=B02B42
+    // Hairs-Human:        PENDING
     public static TemporalStatus Round(
         DurationFields duration, TemporalUnit largestUnit, long roundingIncrement, TemporalUnit smallestUnit, RoundingMode roundingMode,
         RelativeTo relativeTo, out DurationFields result)
@@ -493,8 +493,8 @@ public static partial class DurationMath
     /// <see cref="TemporalStatus.InvalidDuration"/> where an addition passes a limit.
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">The unit is unset or auto, or a field is not finite.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.3.21 via Broiler.VM JsRealm.TemporalDuration DurationTotal; IP=Low; Security=Medium; Resources=2; Fingerprint=B5563E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.3.21 via Broiler.VM JsRealm.TemporalDuration DurationTotal; IP=Low; Security=Medium; Resources=2; Fingerprint=B5563E
+    // Hairs-Human:        PENDING
     public static TemporalStatus Total(DurationFields duration, TemporalUnit unit, RelativeTo relativeTo, out double total)
     {
         CheckUnit(unit, nameof(unit));
@@ -536,8 +536,8 @@ public static partial class DurationMath
     /// <param name="days">The days; zero unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> where the addition passes the limits.</returns>
     /// <exception cref="ArgumentNullException">The provider is <see langword="null"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.29 via Broiler.VM JsTemporal.DateDurationDays; IP=Low; Security=Low; Resources=1; Fingerprint=39FA0C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.29 via Broiler.VM JsTemporal.DateDurationDays; IP=Low; Security=Low; Resources=1; Fingerprint=39FA0C
+    // Hairs-Human:        PENDING
     public static TemporalStatus DateDurationDays(ICalendarArithmetic calendars, CalendarId calendar, DateDuration duration, IsoDate relativeTo, out double days)
     {
         ArgumentNullException.ThrowIfNull(calendars);
@@ -574,8 +574,8 @@ public static partial class DurationMath
     /// instant passes the limits.
     /// </returns>
     /// <exception cref="ArgumentNullException">A provider is <see langword="null"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s6.5.5 via Broiler.VM JsTemporal.AddZonedDateTime; IP=Low; Security=Medium; Resources=1; Fingerprint=9DC1C0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s6.5.5 via Broiler.VM JsTemporal.AddZonedDateTime; IP=Low; Security=Medium; Resources=1; Fingerprint=9DC1C0
+    // Hairs-Human:        PENDING
     public static TemporalStatus AddZonedDateTime(
         BigInteger epochNanoseconds, ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId calendar, InternalDuration duration,
         TemporalOverflow overflow, out BigInteger result)
@@ -604,8 +604,8 @@ public static partial class DurationMath
 
     // The start and end a plain relativeTo gives round and total: the date at midnight, and the date the duration
     // reaches with its time balanced into days (Temporal.Duration.prototype.round steps 30 to 34).
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.3.20 and s7.3.21 via Broiler.VM JsRealm.TemporalDuration DurationRound; IP=Low; Security=Low; Resources=1; Fingerprint=A0802F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.3.20 and s7.3.21 via Broiler.VM JsRealm.TemporalDuration DurationRound; IP=Low; Security=Low; Resources=1; Fingerprint=A0802F
+    // Hairs-Human:        PENDING
     private static TemporalStatus PlainTarget(DurationFields duration, RelativeTo relativeTo, out IsoDateTime start, out IsoDateTime target)
     {
         start = new IsoDateTime(relativeTo.PlainDate, default);
@@ -625,8 +625,8 @@ public static partial class DurationMath
     }
 
     // CreateTemporalDuration's validity test of fields TemporalDurationFromInternal made, every zero made positive.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.19 via Broiler.VM JsTemporal.CreateDuration; IP=Low; Security=Low; Resources=0; Fingerprint=D40BF3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.19 via Broiler.VM JsTemporal.CreateDuration; IP=Low; Security=Low; Resources=0; Fingerprint=D40BF3
+    // Hairs-Human:        PENDING
     private static TemporalStatus Create(DurationFields fields, out DurationFields result)
     {
         result = default;
@@ -640,36 +640,36 @@ public static partial class DurationMath
     }
 
     // A field negated, a zero staying positive.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.20 via Broiler.VM JsTemporal.Negated; IP=Low; Security=None; Resources=0; Fingerprint=14D3AA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.5.20 via Broiler.VM JsTemporal.Negated; IP=Low; Security=None; Resources=0; Fingerprint=14D3AA
+    // Hairs-Human:        PENDING
     private static double Negated(double value) => value == 0 ? 0 : -value;
 
     // Whether two durations' fields are equal as Numbers, the proposal's first step of compare: +0 and -0 are equal.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.2.3 via Broiler.VM JsRealm.TemporalDuration DurationCompare; IP=Low; Security=None; Resources=0; Fingerprint=435CB0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.2.3 via Broiler.VM JsRealm.TemporalDuration DurationCompare; IP=Low; Security=None; Resources=0; Fingerprint=435CB0
+    // Hairs-Human:        PENDING
     private static bool SameFields(DurationFields one, DurationFields two) =>
         one.Years == two.Years && one.Months == two.Months && one.Weeks == two.Weeks && one.Days == two.Days &&
         one.Hours == two.Hours && one.Minutes == two.Minutes && one.Seconds == two.Seconds &&
         one.Milliseconds == two.Milliseconds && one.Microseconds == two.Microseconds && one.Nanoseconds == two.Nanoseconds;
 
     // A date's epoch days.
-    // Broiler-AI:           Origin=AI; Spec=Temporal s3.5.9; IP=None; Security=None; Resources=0; Fingerprint=9380FB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s3.5.9; IP=None; Security=None; Resources=0; Fingerprint=9380FB
+    // Hairs-Human:        PENDING
     private static long EpochDays(IsoDate date) => IsoCalendarMath.EpochDays(date.Year, date.Month, date.Day);
 
     // Whether a unit is a calendar unit: the proposal's IsCalendarUnit.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s13.21 via Broiler.VM JsTemporalCore.IsCalendarUnit; IP=Low; Security=None; Resources=0; Fingerprint=D84F87
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s13.21 via Broiler.VM JsTemporalCore.IsCalendarUnit; IP=Low; Security=None; Resources=0; Fingerprint=D84F87
+    // Hairs-Human:        PENDING
     private static bool IsCalendarUnit(TemporalUnit unit) => unit is TemporalUnit.Year or TemporalUnit.Month or TemporalUnit.Week;
 
     // Whether a unit's category is date (Table 21).
-    // Broiler-AI:           Origin=Ported; Spec=Temporal Table 21 via Broiler.VM JsTemporalCore.IsDateUnit; IP=Low; Security=None; Resources=0; Fingerprint=C6E39D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal Table 21 via Broiler.VM JsTemporalCore.IsDateUnit; IP=Low; Security=None; Resources=0; Fingerprint=C6E39D
+    // Hairs-Human:        PENDING
     private static bool IsDateUnit(TemporalUnit unit) => unit <= TemporalUnit.Day;
 
     // The precondition of every member taking fields: each finite.
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=D33CBE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=D33CBE
+    // Hairs-Human:        PENDING
     private static void CheckFinite(DurationFields duration)
     {
         if (!double.IsFinite(duration.Years) || !double.IsFinite(duration.Months) || !double.IsFinite(duration.Weeks) ||
@@ -680,8 +680,8 @@ public static partial class DurationMath
     }
 
     // The precondition of a date duration: each field finite.
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=C8275F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=C8275F
+    // Hairs-Human:        PENDING
     private static void CheckFinite(DateDuration duration, string name)
     {
         if (!double.IsFinite(duration.Years) || !double.IsFinite(duration.Months) || !double.IsFinite(duration.Weeks) || !double.IsFinite(duration.Days))
@@ -689,8 +689,8 @@ public static partial class DurationMath
     }
 
     // The precondition of a unit: year to nanosecond.
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=8F8097
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=8F8097
+    // Hairs-Human:        PENDING
     private static void CheckUnit(TemporalUnit unit, string name)
     {
         if (unit is < TemporalUnit.Year or > TemporalUnit.Nanosecond)
@@ -698,8 +698,8 @@ public static partial class DurationMath
     }
 
     // The precondition of a time unit or a day of 24 hours.
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=4014ED
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=4014ED
+    // Hairs-Human:        PENDING
     private static void CheckTimeUnit(TemporalUnit unit, string name)
     {
         if (unit is < TemporalUnit.Day or > TemporalUnit.Nanosecond)
@@ -707,8 +707,8 @@ public static partial class DurationMath
     }
 
     // The precondition of a rounding: two units, the smallest no larger than the largest, and a positive increment.
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=637CE2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 preconditions; IP=None; Security=Low; Resources=0; Fingerprint=637CE2
+    // Hairs-Human:        PENDING
     private static void CheckUnits(TemporalUnit largestUnit, TemporalUnit smallestUnit, long increment)
     {
         CheckUnit(largestUnit, nameof(largestUnit));

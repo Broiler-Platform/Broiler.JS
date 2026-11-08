@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   6
 // Annotated:        6/6
 // Exempt:           20
@@ -24,8 +24,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// largest first, so that <c>LargerOfTwoTemporalUnits</c> is the smaller enumeration value, with the
 /// specification's <c>unset</c> and <c>auto</c> after them.
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=Temporal Table 21 via Broiler.VM TemporalUnit; IP=Low; Security=None; Resources=0; Fingerprint=9775F7
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal Table 21 via Broiler.VM TemporalUnit; IP=Low; Security=None; Resources=0; Fingerprint=9775F7
+// Hairs-Human:        PENDING
 public enum TemporalUnit
 {
     /// <summary><c>year</c>, a calendar unit.</summary>
@@ -70,8 +70,8 @@ public enum TemporalUnit
 /// maps a status other than <see cref="Completed"/> to its own error, a <c>RangeError</c> in both today, at the
 /// moment the specification throws it.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0078 X3 and decision D9; IP=Low; Security=None; Resources=0; Fingerprint=371A22
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0078 X3 and decision D9; IP=Low; Security=None; Resources=0; Fingerprint=371A22
+// Hairs-Human:        PENDING
 public enum TemporalStatus
 {
     /// <summary>The operation completed, and its result is valid.</summary>
@@ -110,8 +110,8 @@ public enum TemporalStatus
 }
 
 /// <summary>The proposal's <c>overflow</c> option (<c>GetTemporalOverflowOption</c>): how a field outside its range is treated.</summary>
-// Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalOverflowOption via Broiler.VM JsTemporal.Reject; IP=Low; Security=None; Resources=0; Fingerprint=BFC8A2
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalOverflowOption via Broiler.VM JsTemporal.Reject; IP=Low; Security=None; Resources=0; Fingerprint=BFC8A2
+// Hairs-Human:        PENDING
 public enum TemporalOverflow
 {
     /// <summary><c>"constrain"</c>, the default: each field is clamped to its range.</summary>
@@ -129,8 +129,8 @@ public enum TemporalOverflow
 /// <param name="Months">The months.</param>
 /// <param name="Weeks">The weeks.</param>
 /// <param name="Days">The days.</param>
-// Broiler-AI:           Origin=Ported; Spec=Temporal Date Duration Record via Broiler.VM JsDateDuration; IP=Low; Security=None; Resources=0; Fingerprint=27F1C9
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal Date Duration Record via Broiler.VM JsDateDuration; IP=Low; Security=None; Resources=0; Fingerprint=27F1C9
+// Hairs-Human:        PENDING
 public readonly record struct DateDuration(double Years, double Months, double Weeks, double Days);
 
 /// <summary>
@@ -139,8 +139,8 @@ public readonly record struct DateDuration(double Years, double Months, double W
 /// </summary>
 /// <param name="Date">The date duration.</param>
 /// <param name="TimeNanoseconds">The time duration, in nanoseconds.</param>
-// Broiler-AI:           Origin=Ported; Spec=Temporal Internal Duration Record via Broiler.VM JsInternalDuration; IP=Low; Security=None; Resources=0; Fingerprint=D4D151
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal Internal Duration Record via Broiler.VM JsInternalDuration; IP=Low; Security=None; Resources=0; Fingerprint=D4D151
+// Hairs-Human:        PENDING
 public readonly record struct InternalDuration(DateDuration Date, BigInteger TimeNanoseconds);
 
 /// <summary>
@@ -157,8 +157,8 @@ public readonly record struct InternalDuration(DateDuration Date, BigInteger Tim
 /// <param name="Milliseconds">The milliseconds.</param>
 /// <param name="Microseconds">The microseconds.</param>
 /// <param name="Nanoseconds">The nanoseconds.</param>
-// Broiler-AI:           Origin=Ported; Spec=Temporal Duration internal slots via Broiler.VM JsDurationObject.Fields; IP=Low; Security=None; Resources=0; Fingerprint=A8F9CC
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal Duration internal slots via Broiler.VM JsDurationObject.Fields; IP=Low; Security=None; Resources=0; Fingerprint=A8F9CC
+// Hairs-Human:        PENDING
 public readonly record struct DurationFields(
     double Years,
     double Months,

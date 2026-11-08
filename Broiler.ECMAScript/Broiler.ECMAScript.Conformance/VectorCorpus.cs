@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   12
 // Annotated:        12/12
 // Exempt:           6
@@ -27,16 +27,16 @@ namespace Broiler.ECMAScript.Conformance;
 /// <param name="Revision">The corpus revision, the last row of REVISIONS.md.</param>
 /// <param name="SpecificationRevision">The ECMA-262 commit sources/ecma262.pin names.</param>
 /// <param name="UnicodeVersion">The Unicode version sources/unicode.pin names.</param>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=C10269
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=C10269
+// Hairs-Human:        PENDING
 public sealed record VectorSources(int Revision, string SpecificationRevision, string UnicodeVersion)
 {
     /// <summary>
     /// The ECMA-402 commit sources/ecma402.pin names, which a <c>spec:ecma402@</c> provenance entry must
     /// name; <see langword="null"/> when the corpus pins no ECMA-402 text, as before corpus revision 27.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=73B7D2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=73B7D2
+    // Hairs-Human:        PENDING
     public string? InternationalizationRevision { get; init; }
 
     /// <summary>Reads the pins from the text of the three documents that hold them.</summary>
@@ -45,8 +45,8 @@ public sealed record VectorSources(int Revision, string SpecificationRevision, s
     /// <param name="unicodePin">sources/unicode.pin.</param>
     /// <returns>The revision and the two pins.</returns>
     /// <exception cref="FormatException">REVISIONS.md does not list revisions 1, 2, ... in order, or a pin has no value.</exception>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=181CBB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=181CBB
+    // Hairs-Human:        PENDING
     public static VectorSources Parse(string revisions, string ecma262Pin, string unicodePin) =>
         Parse(revisions, ecma262Pin, unicodePin, null);
 
@@ -60,8 +60,8 @@ public sealed record VectorSources(int Revision, string SpecificationRevision, s
     /// <param name="ecma402Pin">sources/ecma402.pin, or <see langword="null"/> when the corpus has none.</param>
     /// <returns>The revision and the pins.</returns>
     /// <exception cref="FormatException">REVISIONS.md does not list revisions 1, 2, ... in order, or a pin has no value.</exception>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=FB6703
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=FB6703
+    // Hairs-Human:        PENDING
     public static VectorSources Parse(string revisions, string ecma262Pin, string unicodePin, string? ecma402Pin)
     {
         ArgumentNullException.ThrowIfNull(revisions);
@@ -88,8 +88,8 @@ public sealed record VectorSources(int Revision, string SpecificationRevision, s
     }
 
     /// <summary>A row of REVISIONS.md's table: <c>| N | YYYY-MM-DD |</c> at the start of the line.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E5E4F1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E5E4F1
+    // Hairs-Human:        PENDING
     private static bool TryReadRevisionRow(string line, out int revision)
     {
         revision = 0;
@@ -106,8 +106,8 @@ public sealed record VectorSources(int Revision, string SpecificationRevision, s
             && date[7] == '-' && Ascii.All(date[8..], Ascii.IsDigit);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E4F1BB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E4F1BB
+    // Hairs-Human:        PENDING
     private static string PinValue(string text, string name, string key)
     {
         foreach (var line in Lines(text))
@@ -123,8 +123,8 @@ public sealed record VectorSources(int Revision, string SpecificationRevision, s
     }
 
     /// <summary>The lines of a text, with LF or CRLF endings.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=0E055D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=0E055D
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> Lines(string text)
     {
         foreach (var line in text.Split('\n'))
@@ -135,26 +135,26 @@ public sealed record VectorSources(int Revision, string SpecificationRevision, s
 /// <summary>One file of the corpus, as its caller read it.</summary>
 /// <param name="Name">The file's name relative to the corpus root, '/'-separated.</param>
 /// <param name="Content">The file's bytes.</param>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=4A93B8
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=4A93B8
+// Hairs-Human:        PENDING
 public readonly record struct CorpusFile(string Name, ReadOnlyMemory<byte> Content);
 
 /// <summary>
 /// The corpus: every <c>.vectors</c> file of it except the negative controls, read and validated.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=C5D895
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=C5D895
+// Hairs-Human:        PENDING
 public sealed class VectorCorpus
 {
     /// <summary>The directory, relative to the corpus root, that holds the negative controls.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=77EB14
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=77EB14
+    // Hairs-Human:        PENDING
     public const string ControlsDirectory = "controls";
 
     private readonly List<VectorRecord> records;
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=0C26CC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=0C26CC
+    // Hairs-Human:        PENDING
     private VectorCorpus(VectorSources sources, IReadOnlyList<VectorFile> files, IReadOnlyList<VectorDiagnostic> diagnostics)
     {
         Sources = sources;
@@ -183,8 +183,8 @@ public sealed class VectorCorpus
     /// </summary>
     /// <param name="name">The file's name relative to the corpus root, '/'-separated.</param>
     /// <returns><see langword="true"/> for a vector file the corpus loads.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=53B43D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=53B43D
+    // Hairs-Human:        PENDING
     public static bool IsVectorFile(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
@@ -199,8 +199,8 @@ public sealed class VectorCorpus
     /// <param name="sources">What the corpus's own documents pin.</param>
     /// <param name="files">The corpus's files.</param>
     /// <returns>The corpus, with every defect found.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=070F1A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=070F1A
+    // Hairs-Human:        PENDING
     public static VectorCorpus Load(VectorSources sources, IEnumerable<CorpusFile> files)
     {
         ArgumentNullException.ThrowIfNull(sources);

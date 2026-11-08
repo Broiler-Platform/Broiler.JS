@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   60
 // Annotated:        60/60
 // Exempt:           14
@@ -53,38 +53,38 @@ namespace Broiler.ECMAScript.Temporal;
 /// to 2035 at most (X3: there is no class C2).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=Temporal s12.3, Intl era and month code proposal 4.1 via Broiler.VM JsTemporal.Calendar and JsTemporal.CalendarNonIso; IP=Low; Security=Medium; Resources=2; Fingerprint=8E9312
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal s12.3, Intl era and month code proposal 4.1 via Broiler.VM JsTemporal.Calendar and JsTemporal.CalendarNonIso; IP=Low; Security=Medium; Resources=2; Fingerprint=8E9312
+// Hairs-Human:        PENDING
 public sealed class TemporalCalendars : ICalendarArithmetic
 {
     // The years and months a calendar adds are refused past these before any arithmetic, as Broiler.VM refuses
     // them: no result within the limits is that far from a date within them.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=None; Resources=0; Fingerprint=A539FC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=None; Resources=0; Fingerprint=A539FC
+    // Hairs-Human:        PENDING
     private const double MaxAddedYears = 1e9;
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=None; Resources=0; Fingerprint=B4E439
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=None; Resources=0; Fingerprint=B4E439
+    // Hairs-Human:        PENDING
     private const double MaxAddedMonths = 1e10;
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=None; Resources=0; Fingerprint=095AA8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=None; Resources=0; Fingerprint=095AA8
+    // Hairs-Human:        PENDING
     private const double MaxAddedWeeks = 1e10;
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=None; Resources=0; Fingerprint=313E22
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=None; Resources=0; Fingerprint=313E22
+    // Hairs-Human:        PENDING
     private const double MaxAddedDays = 1e11;
 
     // A year from fields further than this from the epoch is refused before ISO 8601 regulates it.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.22 via Broiler.VM JsTemporal.DateToIso; IP=Low; Security=None; Resources=0; Fingerprint=188029
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.22 via Broiler.VM JsTemporal.DateToIso; IP=Low; Security=None; Resources=0; Fingerprint=188029
+    // Hairs-Human:        PENDING
     private const double MaxIsoFieldYear = 1e9;
 
     // The reference year of an ISO 8601 month-day (CalendarMonthDayToISOReferenceDate, s12.3.24).
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.24 via Broiler.VM JsTemporal.MonthDayFromFields; IP=Low; Security=None; Resources=0; Fingerprint=63C0A3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.24 via Broiler.VM JsTemporal.MonthDayFromFields; IP=Low; Security=None; Resources=0; Fingerprint=63C0A3
+    // Hairs-Human:        PENDING
     private const long IsoReferenceYear = 1972;
 
     /// <summary>A year bound beyond every calendar's years within the ISO limits (the Hijri ones reach 283,583): the shared sources'.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTemporal.YearBound; IP=Low; Security=Low; Resources=0; Fingerprint=48419E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTemporal.YearBound; IP=Low; Security=Low; Resources=0; Fingerprint=48419E
+    // Hairs-Human:        PENDING
     private const long YearBound = CalendarYears.MaxYearMagnitude;
 
     // Every calendar but ISO 8601, by CalendarId; the first element is unused.
@@ -93,8 +93,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <summary>Creates the calendars over the calendar tables an engine hands in.</summary>
     /// <param name="tables">The calendar tables (SJL-8's <see cref="CalendarTables"/> over the data home's bytes).</param>
     /// <exception cref="ArgumentNullException">The tables are <see langword="null"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 via Broiler.VM JsCalendars..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=F850C7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 via Broiler.VM JsCalendars..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=F850C7
+    // Hairs-Human:        PENDING
     public TemporalCalendars(ICalendarTables tables)
     {
         ArgumentNullException.ThrowIfNull(tables);
@@ -129,9 +129,9 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="identifier">The identifier: a constructor's argument, or the value of a <c>u-ca</c> annotation the grammar read.</param>
     /// <param name="calendar">The calendar; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns><see cref="CalendarStatus.Completed"/>, or <see cref="CalendarStatus.UnknownCalendar"/>, the specification's <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.1.1, Intl era and month code proposal 1.1.1 via Broiler.VM JsTemporal.CanonicalizeCalendar; IP=Low; Security=High; Resources=1; Fingerprint=E8A556
-    // Broiler-Falsified-If: an identifier that differs from a Table 1 type or alias in anything but the case of ASCII letters canonicalises to a calendar
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.1.1, Intl era and month code proposal 1.1.1 via Broiler.VM JsTemporal.CanonicalizeCalendar; IP=Low; Security=High; Resources=1; Fingerprint=E8A556
+    // Hairs-Falsified-If: an identifier that differs from a Table 1 type or alias in anything but the case of ASCII letters canonicalises to a calendar
+    // Hairs-Human:        PENDING
     public static CalendarStatus Canonicalize(ReadOnlySpan<char> identifier, out CalendarId calendar)
     {
         calendar = default;
@@ -173,8 +173,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="calendar">The calendar.</param>
     /// <returns>The identifier, in lower case.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The calendar is not a member of <see cref="CalendarId"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 via Broiler.VM JsTemporal.AvailableCalendars; IP=Low; Security=Low; Resources=0; Fingerprint=32FD9D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 via Broiler.VM JsTemporal.AvailableCalendars; IP=Low; Security=Low; Resources=0; Fingerprint=32FD9D
+    // Hairs-Human:        PENDING
     public static string Identifier(CalendarId calendar) => calendar switch
     {
         CalendarId.Iso8601 => "iso8601",
@@ -203,8 +203,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="calendar">The calendar.</param>
     /// <returns><see langword="false"/> for <c>iso8601</c>, <c>chinese</c> and <c>dangi</c>; <see langword="true"/> for every other.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The calendar is not a member of <see cref="CalendarId"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.1 via Broiler.VM JsTemporal.SupportsEra; IP=Low; Security=Low; Resources=0; Fingerprint=C43249
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.1 via Broiler.VM JsTemporal.SupportsEra; IP=Low; Security=Low; Resources=0; Fingerprint=C43249
+    // Hairs-Human:        PENDING
     public static bool SupportsEra(CalendarId calendar)
     {
         CheckCalendar(calendar);
@@ -218,8 +218,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns>Whether it is <see cref="CalendarStatus.MissingYear"/>, <see cref="CalendarStatus.MissingMonth"/>, <see cref="CalendarStatus.MissingDay"/> or <see cref="CalendarStatus.IncompleteEra"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.31, Intl era and month code proposal 4.1.24 via Broiler.VM JsTemporal.ResolveFields; IP=Low; Security=Low; Resources=0; Fingerprint=29E788
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.31, Intl era and month code proposal 4.1.24 via Broiler.VM JsTemporal.ResolveFields; IP=Low; Security=Low; Resources=0; Fingerprint=29E788
+    // Hairs-Human:        PENDING
     public static bool IsTypeError(CalendarStatus status) =>
         status is CalendarStatus.MissingYear or CalendarStatus.MissingMonth or CalendarStatus.MissingDay or CalendarStatus.IncompleteEra;
 
@@ -237,8 +237,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="additional">The fields the engine read from the argument.</param>
     /// <returns>The merged fields. The time, offset and time zone fields, which the calendar does not hold, the engine merges itself: each one the additional fields hold overrides.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The calendar is not a member of <see cref="CalendarId"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.5 and s12.3.29, Intl era and month code proposal 4.1.23 via Broiler.VM JsTemporal.MergeFields; IP=Low; Security=Medium; Resources=1; Fingerprint=876259
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.5 and s12.3.29, Intl era and month code proposal 4.1.23 via Broiler.VM JsTemporal.MergeFields; IP=Low; Security=Medium; Resources=1; Fingerprint=876259
+    // Hairs-Human:        PENDING
     public static CalendarFields MergeFields(CalendarId calendar, CalendarFields fields, CalendarFields additional)
     {
         var eras = SupportsEra(calendar);
@@ -293,8 +293,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="result">The calendar's date; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns><see cref="CalendarStatus.Completed"/>, or <see cref="CalendarStatus.OutOfRange"/> for a date whose year is outside -271821 to 275760.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The calendar is not a member of <see cref="CalendarId"/>, or the month and day are not an ISO date's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.26, Intl era and month code proposal 4.1.14 via Broiler.VM JsTemporal.IsoToDate; IP=Low; Security=Medium; Resources=1; Fingerprint=C503E6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.26, Intl era and month code proposal 4.1.14 via Broiler.VM JsTemporal.IsoToDate; IP=Low; Security=Medium; Resources=1; Fingerprint=C503E6
+    // Hairs-Human:        PENDING
     public CalendarStatus IsoToDate(CalendarId calendar, IsoDate date, out CalendarDate result)
     {
         CheckCalendar(calendar);
@@ -356,8 +356,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="result">The fields; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns><see cref="CalendarStatus.Completed"/>, or <see cref="CalendarStatus.OutOfRange"/> as <see cref="IsoToDate"/> answers it.</returns>
     /// <exception cref="ArgumentOutOfRangeException">As <see cref="IsoToDate"/>, or the type is not a member of <see cref="CalendarFieldsType"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s13.42 via Broiler.VM JsTemporal.DateToFields; IP=Low; Security=Medium; Resources=1; Fingerprint=DB6ED4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s13.42 via Broiler.VM JsTemporal.DateToFields; IP=Low; Security=Medium; Resources=1; Fingerprint=DB6ED4
+    // Hairs-Human:        PENDING
     public CalendarStatus DateToFields(CalendarId calendar, IsoDate date, CalendarFieldsType type, out CalendarFields result)
     {
         CheckType(type);
@@ -394,8 +394,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <see cref="CalendarStatus.OutOfRange"/>.
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">The calendar or overflow is not a member of its enumeration, or a field is outside what its conversion gives.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.12 via Broiler.VM JsTemporal.DateFromFields; IP=Low; Security=Medium; Resources=1; Fingerprint=93D229
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.12 via Broiler.VM JsTemporal.DateFromFields; IP=Low; Security=Medium; Resources=1; Fingerprint=93D229
+    // Hairs-Human:        PENDING
     public CalendarStatus DateFromFields(CalendarId calendar, CalendarFields fields, CalendarOverflow overflow, out IsoDate result)
     {
         CheckCalendar(calendar);
@@ -427,8 +427,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="result">The reference date; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns>As <see cref="DateFromFields"/>, with <see cref="CalendarStatus.OutOfRange"/> outside the year-month limits.</returns>
     /// <exception cref="ArgumentOutOfRangeException">As <see cref="DateFromFields"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.13 via Broiler.VM JsTemporal.YearMonthFromFields; IP=Low; Security=Medium; Resources=1; Fingerprint=F9713B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.13 via Broiler.VM JsTemporal.YearMonthFromFields; IP=Low; Security=Medium; Resources=1; Fingerprint=F9713B
+    // Hairs-Human:        PENDING
     public CalendarStatus YearMonthFromFields(CalendarId calendar, CalendarFields fields, CalendarOverflow overflow, out IsoDate result)
     {
         CheckCalendar(calendar);
@@ -463,8 +463,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="result">The reference date; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns>As <see cref="DateFromFields"/>, and <see cref="CalendarStatus.NoReferenceDate"/> for a month-day no reference year holds.</returns>
     /// <exception cref="ArgumentOutOfRangeException">As <see cref="DateFromFields"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.14 and s12.3.24 via Broiler.VM JsTemporal.MonthDayFromFields; IP=Low; Security=Medium; Resources=2; Fingerprint=F2A9AF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.14 and s12.3.24 via Broiler.VM JsTemporal.MonthDayFromFields; IP=Low; Security=Medium; Resources=2; Fingerprint=F2A9AF
+    // Hairs-Human:        PENDING
     public CalendarStatus MonthDayFromFields(CalendarId calendar, CalendarFields fields, CalendarOverflow overflow, out IsoDate result)
     {
         CheckCalendar(calendar);
@@ -496,8 +496,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentOutOfRangeException">The calendar or overflow is not a member of its enumeration, or the month and day are not an ISO date's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Medium; Resources=1; Fingerprint=DF6F4B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Medium; Resources=1; Fingerprint=DF6F4B
+    // Hairs-Human:        PENDING
     public CalendarStatus DateAdd(CalendarId calendar, IsoDate date, CalendarDuration duration, CalendarOverflow overflow, out IsoDate result)
     {
         CheckCalendar(calendar);
@@ -521,8 +521,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentOutOfRangeException">The calendar or largest unit is not a member of its enumeration, or a month and day are not an ISO date's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.9 via Broiler.VM JsTemporal.DateUntil; IP=Low; Security=Medium; Resources=2; Fingerprint=BE5756
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.9 via Broiler.VM JsTemporal.DateUntil; IP=Low; Security=Medium; Resources=2; Fingerprint=BE5756
+    // Hairs-Human:        PENDING
     public CalendarStatus DateUntil(CalendarId calendar, IsoDate one, IsoDate two, CalendarUnit largestUnit, out CalendarDuration result)
     {
         CheckCalendar(calendar);
@@ -556,8 +556,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="result">The year-month's reference date; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns><see cref="CalendarStatus.Completed"/>, or <see cref="CalendarStatus.OutOfRange"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The calendar is not a member of <see cref="CalendarId"/>, or the month and day are not an ISO date's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal sec-temporal.plaindate.prototype.toplainyearmonth via Broiler.VM JsRealm.TemporalPlainDate toPlainYearMonth; IP=Low; Security=Medium; Resources=1; Fingerprint=F0C65C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal sec-temporal.plaindate.prototype.toplainyearmonth via Broiler.VM JsRealm.TemporalPlainDate toPlainYearMonth; IP=Low; Security=Medium; Resources=1; Fingerprint=F0C65C
+    // Hairs-Human:        PENDING
     public CalendarStatus DateToYearMonth(CalendarId calendar, IsoDate date, out IsoDate result)
     {
         result = default;
@@ -576,8 +576,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="result">The month-day's reference date; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns><see cref="CalendarStatus.Completed"/>, <see cref="CalendarStatus.NoReferenceDate"/> or <see cref="CalendarStatus.OutOfRange"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The calendar is not a member of <see cref="CalendarId"/>, or the month and day are not an ISO date's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal sec-temporal.plaindate.prototype.toplainmonthday via Broiler.VM JsRealm.TemporalPlainDate toPlainMonthDay; IP=Low; Security=Medium; Resources=2; Fingerprint=8C8364
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal sec-temporal.plaindate.prototype.toplainmonthday via Broiler.VM JsRealm.TemporalPlainDate toPlainMonthDay; IP=Low; Security=Medium; Resources=2; Fingerprint=8C8364
+    // Hairs-Human:        PENDING
     public CalendarStatus DateToMonthDay(CalendarId calendar, IsoDate date, out IsoDate result)
     {
         result = default;
@@ -598,8 +598,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="result">The date; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns>As <see cref="DateFromFields"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">As <see cref="DateFromFields"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal sec-temporal.plainmonthday.prototype.toplaindate via Broiler.VM JsRealm.TemporalYearMonthDay toPlainDate; IP=Low; Security=Medium; Resources=1; Fingerprint=4951E2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal sec-temporal.plainmonthday.prototype.toplaindate via Broiler.VM JsRealm.TemporalYearMonthDay toPlainDate; IP=Low; Security=Medium; Resources=1; Fingerprint=4951E2
+    // Hairs-Human:        PENDING
     public CalendarStatus MonthDayToDate(CalendarId calendar, IsoDate monthDay, CalendarFields fields, out IsoDate result)
     {
         result = default;
@@ -621,8 +621,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="result">The date; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns>As <see cref="DateFromFields"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">As <see cref="DateFromFields"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal sec-temporal.plainyearmonth.prototype.toplaindate via Broiler.VM JsRealm.TemporalYearMonthDay toPlainDate; IP=Low; Security=Medium; Resources=1; Fingerprint=C5A081
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal sec-temporal.plainyearmonth.prototype.toplaindate via Broiler.VM JsRealm.TemporalYearMonthDay toPlainDate; IP=Low; Security=Medium; Resources=1; Fingerprint=C5A081
+    // Hairs-Human:        PENDING
     public CalendarStatus YearMonthToDate(CalendarId calendar, IsoDate yearMonth, CalendarFields fields, out IsoDate result)
     {
         result = default;
@@ -636,8 +636,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
 
     // RegulateISODate (s3.5.7) over the values the fields hold, of any magnitude. Out-of-range years stay as they
     // are under constrain: the caller's limits refuse them afterwards.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.7 via Broiler.VM JsTemporal.RegulateDate; IP=Low; Security=Low; Resources=0; Fingerprint=49621B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.7 via Broiler.VM JsTemporal.RegulateDate; IP=Low; Security=Low; Resources=0; Fingerprint=49621B
+    // Hairs-Human:        PENDING
     private static CalendarStatus RegulateIsoDate(double year, double month, double day, bool reject, out IsoDate result)
     {
         if (reject)
@@ -660,8 +660,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // CalendarDateToISO (s12.3.22) for ISO 8601.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.22 via Broiler.VM JsTemporal.DateToIso; IP=Low; Security=Low; Resources=0; Fingerprint=C1AC80
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.22 via Broiler.VM JsTemporal.DateToIso; IP=Low; Security=Low; Resources=0; Fingerprint=C1AC80
+    // Hairs-Human:        PENDING
     private static CalendarStatus IsoDateToIso(Fields fields, bool reject, out IsoDate result)
     {
         if (Math.Abs(fields.Year!.Value) > MaxIsoFieldYear)
@@ -674,8 +674,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // CalendarDateAdd (s12.3.7) for ISO 8601: years and months balanced, the day regulated, then weeks and days.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Low; Resources=1; Fingerprint=8C7DF4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Low; Resources=1; Fingerprint=8C7DF4
+    // Hairs-Human:        PENDING
     private static CalendarStatus IsoDateAdd(IsoDate date, CalendarDuration duration, bool reject, out IsoDate result)
     {
         result = default;
@@ -693,8 +693,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // CompareSurpasses (s3.5.5) for the ISO calendar's numeric months.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.5 via Broiler.VM JsTemporal.Surpasses; IP=Low; Security=Low; Resources=0; Fingerprint=D8E757
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.5 via Broiler.VM JsTemporal.Surpasses; IP=Low; Security=Low; Resources=0; Fingerprint=D8E757
+    // Hairs-Human:        PENDING
     private static bool Surpasses(int sign, long year, long month, long day, IsoDate target)
     {
         if (year != target.Year)
@@ -711,8 +711,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     // surpasses the target. Weeks and days are not passed: the published text returns false whenever months is
     // zero, which would never end its own weeks loop, so the weeks and days are reckoned in whole days afterwards, as
     // the proposal's polyfill reckons them.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.6 via Broiler.VM JsTemporal.DateSurpasses; IP=Low; Security=Low; Resources=0; Fingerprint=2B402C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.6 via Broiler.VM JsTemporal.DateSurpasses; IP=Low; Security=Low; Resources=0; Fingerprint=2B402C
+    // Hairs-Human:        PENDING
     private static bool DateSurpasses(int sign, IsoDate baseDate, IsoDate target, long years, long months)
     {
         var y0 = baseDate.Year + years;
@@ -727,8 +727,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // The largest count, from an estimate, that does not surpass: CalendarDateUntil's loops, counted from estimates.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.9 via Broiler.VM JsTemporal.DateUntil; IP=Low; Security=Low; Resources=2; Fingerprint=8C060B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.9 via Broiler.VM JsTemporal.DateUntil; IP=Low; Security=Low; Resources=2; Fingerprint=8C060B
+    // Hairs-Human:        PENDING
     private static long Largest(int sign, long estimate, Func<long, bool> surpasses)
     {
         var count = estimate;
@@ -744,8 +744,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     // CalendarDateUntil (s12.3.9) for ISO 8601: the largest years and months that do not surpass the second date,
     // found from an estimate rather than by counting up one at a time; then the weeks and days between the
     // constrained intermediate date and the second date.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.9 via Broiler.VM JsTemporal.DateUntil; IP=Low; Security=Low; Resources=2; Fingerprint=E136D6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.9 via Broiler.VM JsTemporal.DateUntil; IP=Low; Security=Low; Resources=2; Fingerprint=E136D6
+    // Hairs-Human:        PENDING
     private static CalendarDuration IsoDateUntil(IsoDate one, IsoDate two, CalendarUnit largestUnit, int sign)
     {
         long years = 0;
@@ -777,8 +777,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     // ---- The era proposal's section 4.1 ------------------------------------------------------------------
 
     // CalendarResolveFields (s12.3.31) for ISO 8601, or NonISOResolveFields (the era proposal's 4.1.24).
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.31 via Broiler.VM JsTemporal.ResolveFields; IP=Low; Security=Low; Resources=1; Fingerprint=BEAF19
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.31 via Broiler.VM JsTemporal.ResolveFields; IP=Low; Security=Low; Resources=1; Fingerprint=BEAF19
+    // Hairs-Human:        PENDING
     private CalendarStatus ResolveFields(CalendarId calendar, ref Fields fields, CalendarFieldsType type)
     {
         if (calendar != CalendarId.Iso8601)
@@ -810,8 +810,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // A calendar year from the fields' year, refused beyond every year a date within the limits lies in.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsTemporal.CalendarYear; IP=Low; Security=Low; Resources=1; Fingerprint=893FCB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsTemporal.CalendarYear; IP=Low; Security=Low; Resources=1; Fingerprint=893FCB
+    // Hairs-Human:        PENDING
     private static CalendarStatus CalendarYear(CalendarSystem system, double year, out CalendarSystemYear result)
     {
         if (Math.Abs(year) > YearBound)
@@ -825,15 +825,15 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // IsValidMonthCodeForCalendar (the era proposal's 4.1.4): M01 to M12, and Table 3's others for the calendar.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.4, Table 3 via Broiler.VM JsTemporal.IsValidMonthCode; IP=Low; Security=Low; Resources=0; Fingerprint=7DDDBB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.4, Table 3 via Broiler.VM JsTemporal.IsValidMonthCode; IP=Low; Security=Low; Resources=0; Fingerprint=7DDDBB
+    // Hairs-Human:        PENDING
     private static bool IsValidMonthCode(CalendarSystem system, MonthCode monthCode) =>
         (!monthCode.IsLeapMonth && monthCode.Number is >= 1 and <= 12) || system.IsAdditionalMonthCode(monthCode);
 
     // ConstrainMonthCode (the era proposal's 4.1.6): a leap month the year lacks becomes the common month of its
     // number, or Hebrew's M06, which follows Adar I.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.6 via Broiler.VM JsTemporal.ConstrainMonthCode; IP=Low; Security=Low; Resources=0; Fingerprint=F6D4B3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.6 via Broiler.VM JsTemporal.ConstrainMonthCode; IP=Low; Security=Low; Resources=0; Fingerprint=F6D4B3
+    // Hairs-Human:        PENDING
     private static CalendarStatus ConstrainMonthCode(CalendarSystem system, CalendarSystemYear year, MonthCode monthCode, bool reject, out MonthCode result)
     {
         if (CalendarSystem.Ordinal(year, monthCode) > 0)
@@ -853,8 +853,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // NonISOResolveFields (the era proposal's 4.1.24).
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.24 via Broiler.VM JsTemporal.NonIsoResolveFields; IP=Low; Security=Low; Resources=1; Fingerprint=175C32
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.24 via Broiler.VM JsTemporal.NonIsoResolveFields; IP=Low; Security=Low; Resources=1; Fingerprint=175C32
+    // Hairs-Human:        PENDING
     private static CalendarStatus NonIsoResolveFields(CalendarSystem system, ref Fields fields, CalendarFieldsType type)
     {
         var needsYear = type != CalendarFieldsType.MonthDay || fields.MonthCode is null || fields.Month is not null;
@@ -909,8 +909,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // A month or day regulated against the calendar's most: clamped under constrain, refused under reject.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.20 via Broiler.VM JsTemporal.Regulated; IP=Low; Security=Low; Resources=0; Fingerprint=C033D0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.20 via Broiler.VM JsTemporal.Regulated; IP=Low; Security=Low; Resources=0; Fingerprint=C033D0
+    // Hairs-Human:        PENDING
     private static CalendarStatus Regulated(double value, int maximum, bool reject, out int result)
     {
         if (value <= maximum)
@@ -924,8 +924,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // NonISOCalendarDateToISO (the era proposal's 4.1.20).
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.20 via Broiler.VM JsTemporal.NonIsoDateToIso; IP=Low; Security=Low; Resources=1; Fingerprint=E349B3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.20 via Broiler.VM JsTemporal.NonIsoDateToIso; IP=Low; Security=Low; Resources=1; Fingerprint=E349B3
+    // Hairs-Human:        PENDING
     private static CalendarStatus NonIsoDateToIso(CalendarSystem system, Fields fields, bool reject, out IsoDate result)
     {
         result = default;
@@ -948,8 +948,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // NonISOMonthDayToISOReferenceDate (the era proposal's 4.1.21), with Table 6 for the Chinese and Korean calendars.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.21, Table 6 via Broiler.VM JsTemporal.NonIsoMonthDayToReferenceDate; IP=Low; Security=Low; Resources=2; Fingerprint=8DF4A2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.21, Table 6 via Broiler.VM JsTemporal.NonIsoMonthDayToReferenceDate; IP=Low; Security=Low; Resources=2; Fingerprint=8DF4A2
+    // Hairs-Human:        PENDING
     private static CalendarStatus NonIsoMonthDayToReferenceDate(CalendarSystem system, Fields fields, bool reject, out IsoDate result)
     {
         result = default;
@@ -1021,8 +1021,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // The latest or earliest ISO date between two days whose month code and day are the given ones.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.21 via Broiler.VM JsTemporal.ReferenceDate; IP=Low; Security=Low; Resources=2; Fingerprint=34ADCC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.21 via Broiler.VM JsTemporal.ReferenceDate; IP=Low; Security=Low; Resources=2; Fingerprint=34ADCC
+    // Hairs-Human:        PENDING
     private static IsoDate? ReferenceDate(CalendarSystem system, MonthCode monthCode, int day, long from, long to, bool latest)
     {
         var step = latest ? -1 : 1;
@@ -1043,8 +1043,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // The most days a month code has in any year from 1900 to 2035 (the era proposal's 4.1.21).
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.21 via Broiler.VM JsTemporal.MaxDaysInMonth; IP=Low; Security=Low; Resources=2; Fingerprint=85BD1F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.21 via Broiler.VM JsTemporal.MaxDaysInMonth; IP=Low; Security=Low; Resources=2; Fingerprint=85BD1F
+    // Hairs-Human:        PENDING
     private static int MaxDaysInMonth(CalendarSystem system, MonthCode monthCode)
     {
         var most = 0;
@@ -1064,8 +1064,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     // of a year names, or null when that year is beyond the bound. The Chinese and Korean calendars count months from
     // their years, which the shared sources answer only within it (JSD-0077): a balance that would read a year past
     // it reaches a year no date within the ISO limits is in, and is null, as an estimate past it is.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.16 via Broiler.VM JsTemporal.BalanceMonths; IP=Low; Security=Low; Resources=1; Fingerprint=08C706
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.16 via Broiler.VM JsTemporal.BalanceMonths; IP=Low; Security=Low; Resources=1; Fingerprint=08C706
+    // Hairs-Human:        PENDING
     private static (long Year, int Month)? BalanceMonths(CalendarSystem system, long year, long month)
     {
         var estimate = year + (long)Math.Floor((month - 1) / system.MeanMonths);
@@ -1098,15 +1098,15 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // BalanceMonths where every caller is within the limits, so that the year is within the bound.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.16 via Broiler.VM JsTemporal.NonIsoDateUntil; IP=Low; Security=Low; Resources=1; Fingerprint=E8631E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.16 via Broiler.VM JsTemporal.NonIsoDateUntil; IP=Low; Security=Low; Resources=1; Fingerprint=E8631E
+    // Hairs-Human:        PENDING
     private static (long Year, int Month) BalanceMonthsWithin(CalendarSystem system, long year, long month) =>
         BalanceMonths(system, year, month) ??
             throw new InvalidOperationException("A difference between dates within the limits balanced months past the calendar year sources' bound.");
 
     // NonISODateAdd (the era proposal's 4.1.18).
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.18 via Broiler.VM JsTemporal.NonIsoDateAdd; IP=Low; Security=Low; Resources=1; Fingerprint=B57796
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.18 via Broiler.VM JsTemporal.NonIsoDateAdd; IP=Low; Security=Low; Resources=1; Fingerprint=B57796
+    // Hairs-Human:        PENDING
     private static CalendarStatus NonIsoDateAdd(CalendarSystem system, IsoDate date, CalendarDuration duration, bool reject, out IsoDate result)
     {
         result = default;
@@ -1138,8 +1138,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // CompareSurpasses (s3.5.5) with a month code; codes order as their strings do, a leap month after its common one.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.5 via Broiler.VM JsTemporal.SurpassesByCode; IP=Low; Security=Low; Resources=0; Fingerprint=5AAE1F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.5 via Broiler.VM JsTemporal.SurpassesByCode; IP=Low; Security=Low; Resources=0; Fingerprint=5AAE1F
+    // Hairs-Human:        PENDING
     private static bool SurpassesByCode(int sign, long year, MonthCode monthCode, int day, CalendarPoint target)
     {
         if (year != target.Year)
@@ -1152,8 +1152,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // CompareSurpasses (s3.5.5) with an ordinal month.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.5 via Broiler.VM JsTemporal.SurpassesByMonth; IP=Low; Security=Low; Resources=0; Fingerprint=711685
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.5 via Broiler.VM JsTemporal.SurpassesByMonth; IP=Low; Security=Low; Resources=0; Fingerprint=711685
+    // Hairs-Human:        PENDING
     private static bool SurpassesByMonth(int sign, long year, int month, int day, CalendarPoint target)
     {
         if (year != target.Year)
@@ -1166,16 +1166,16 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // The ordinal order of two month codes' strings.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.5 via Broiler.VM JsTemporal.SurpassesByCode; IP=Low; Security=Low; Resources=0; Fingerprint=F51FD2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.5 via Broiler.VM JsTemporal.SurpassesByCode; IP=Low; Security=Low; Resources=0; Fingerprint=F51FD2
+    // Hairs-Human:        PENDING
     private static int CompareCodes(MonthCode one, MonthCode two) =>
         one.Number != two.Number ? one.Number.CompareTo(two.Number) : one.IsLeapMonth.CompareTo(two.IsLeapMonth);
 
     // NonISODateUntil (the era proposal's 4.1.19), its loops counted from estimates: the years and months start from
     // the difference of the two dates' years and month counts and move until NonISODateSurpasses (4.1.17) holds, and
     // the weeks and days, which the proposal reckons in days from the last regulated date, are a subtraction.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.19 via Broiler.VM JsTemporal.NonIsoDateUntil; IP=Low; Security=Low; Resources=2; Fingerprint=D0C343
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.19 via Broiler.VM JsTemporal.NonIsoDateUntil; IP=Low; Security=Low; Resources=2; Fingerprint=D0C343
+    // Hairs-Human:        PENDING
     private static CalendarDuration NonIsoDateUntil(CalendarSystem system, IsoDate one, IsoDate two, CalendarUnit largestUnit, int sign)
     {
         var oneDays = IsoCalendarMath.EpochDays(one.Year, one.Month, one.Day);
@@ -1235,36 +1235,36 @@ public sealed class TemporalCalendars : ICalendarArithmetic
 
     // ---- Helpers -----------------------------------------------------------------------------------------
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 via Broiler.VM JsTemporal.SystemOf; IP=Low; Security=Low; Resources=0; Fingerprint=4B9BF4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 via Broiler.VM JsTemporal.SystemOf; IP=Low; Security=Low; Resources=0; Fingerprint=4B9BF4
+    // Hairs-Human:        PENDING
     private CalendarSystem SystemOf(CalendarId calendar) => systems[(int)calendar]!;
 
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.9 via Broiler.VM JsIsoDate; IP=Low; Security=Low; Resources=0; Fingerprint=598B10
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.9 via Broiler.VM JsIsoDate; IP=Low; Security=Low; Resources=0; Fingerprint=598B10
+    // Hairs-Human:        PENDING
     private static IsoDate FromEpochDays(long days)
     {
         var (year, month, day) = IsoCalendarMath.FromEpochDays(days);
         return new IsoDate(year, month, day);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=Intl era and month code proposal Table 1; IP=Low; Security=Low; Resources=0; Fingerprint=6821FD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Intl era and month code proposal Table 1; IP=Low; Security=Low; Resources=0; Fingerprint=6821FD
+    // Hairs-Human:        PENDING
     private static void CheckCalendar(CalendarId calendar)
     {
         if (calendar is < CalendarId.Iso8601 or > CalendarId.Roc)
             throw new ArgumentOutOfRangeException(nameof(calendar), calendar, "The calendar is not one of Table 1's.");
     }
 
-    // Broiler-AI:           Origin=AI; Spec=Temporal s12.3.31; IP=Low; Security=Low; Resources=0; Fingerprint=62A1E4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s12.3.31; IP=Low; Security=Low; Resources=0; Fingerprint=62A1E4
+    // Hairs-Human:        PENDING
     private static void CheckType(CalendarFieldsType type)
     {
         if (type is < CalendarFieldsType.Date or > CalendarFieldsType.MonthDay)
             throw new ArgumentOutOfRangeException(nameof(type), type, "The type is not date, year-month or month-day.");
     }
 
-    // Broiler-AI:           Origin=AI; Spec=Temporal s13.6; IP=Low; Security=Low; Resources=0; Fingerprint=1614EF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s13.6; IP=Low; Security=Low; Resources=0; Fingerprint=1614EF
+    // Hairs-Human:        PENDING
     private static bool IsReject(CalendarOverflow overflow) => overflow switch
     {
         CalendarOverflow.Constrain => false,
@@ -1273,8 +1273,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     };
 
     // The calendar fields' keys, for CalendarFieldKeysToIgnore.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.29 via Broiler.VM JsTemporal.KeysToIgnore; IP=Low; Security=None; Resources=0; Fingerprint=9B95B0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.29 via Broiler.VM JsTemporal.KeysToIgnore; IP=Low; Security=None; Resources=0; Fingerprint=9B95B0
+    // Hairs-Human:        PENDING
     [Flags]
     private enum FieldKeys
     {
@@ -1288,13 +1288,13 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // A Calendar Date Record's year, month code, ordinal month and day, for CompareSurpasses.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.5 via Broiler.VM JsTemporal.CalendarPoint; IP=Low; Security=None; Resources=0; Fingerprint=769CE6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s3.5.5 via Broiler.VM JsTemporal.CalendarPoint; IP=Low; Security=None; Resources=0; Fingerprint=769CE6
+    // Hairs-Human:        PENDING
     private readonly record struct CalendarPoint(long Year, MonthCode MonthCode, int Month, int Day);
 
     // The calendar fields as resolution changes them, each value checked against its conversion's range.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.2 via Broiler.VM JsCalendarFields; IP=Low; Security=None; Resources=0; Fingerprint=95A71A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.2 via Broiler.VM JsCalendarFields; IP=Low; Security=None; Resources=0; Fingerprint=95A71A
+    // Hairs-Human:        PENDING
     private struct Fields
     {
         internal string? Era;
@@ -1304,8 +1304,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
         internal MonthCode? MonthCode;
         internal double? Day;
 
-        // Broiler-AI:           Origin=AI; Spec=Temporal s12.3.2, Table 19; IP=Low; Security=Low; Resources=0; Fingerprint=76F33C
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=Temporal s12.3.2, Table 19; IP=Low; Security=Low; Resources=0; Fingerprint=76F33C
+        // Hairs-Human:        PENDING
         internal Fields(CalendarFields fields)
         {
             Era = fields.Era;
@@ -1318,8 +1318,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
                 : fields.MonthCode;
         }
 
-        // Broiler-AI:           Origin=AI; Spec=Temporal s12.3.2, Table 19; IP=Low; Security=Low; Resources=0; Fingerprint=21FE93
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=Temporal s12.3.2, Table 19; IP=Low; Security=Low; Resources=0; Fingerprint=21FE93
+        // Hairs-Human:        PENDING
         private static double? Integral(double? value, double minimum, string name) =>
             value is { } v && (!double.IsFinite(v) || Math.Truncate(v) != v || v < minimum)
                 ? throw new ArgumentOutOfRangeException(name, v, "The field is not a value its conversion gives.")
@@ -1332,8 +1332,8 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// year-month's reference date within the limits.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The month is outside 1 to 12, or the day is not one of the month's.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s3.5.12 and s9.5.2; IP=Low; Security=Low; Resources=1; Fingerprint=578876
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s3.5.12 and s9.5.2; IP=Low; Security=Low; Resources=1; Fingerprint=578876
+    // Hairs-Human:        PENDING
     private static bool IsComputable(IsoDate date)
     {
         if (date.Month is < 1 or > 12 || date.Day is < 1 or > 31)

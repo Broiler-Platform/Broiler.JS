@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   5
 // Annotated:        5/5
 // Exempt:           0
@@ -28,27 +28,27 @@ namespace Broiler.ECMAScript.Generation.Time;
 /// the pin beside the archive in <c>Broiler.ECMAScript/data/time/</c> and Broiler.VM's pin in one dated
 /// decision, never one of them alone.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0076 SJL-D-20 SJL-D-21; IP=Low; Security=Low; Resources=0; Fingerprint=A015C7
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0076 SJL-D-20 SJL-D-21; IP=Low; Security=Low; Resources=0; Fingerprint=A015C7
+// Hairs-Human:        PENDING
 public static class TimeDataVersions
 {
     /// <summary>The IANA Time Zone Database release, as its <c>version</c> member states it (SJL-D-20).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0076 SJL-D-20; IP=Low; Security=Low; Resources=0; Fingerprint=01F8F0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0076 SJL-D-20; IP=Low; Security=Low; Resources=0; Fingerprint=01F8F0
+    // Hairs-Human:        PENDING
     public const string TzdbRelease = "2026e";
 
     /// <summary>The CLDR release whose <c>bcp47/timezone.json</c> gives the primary identifiers (ECMA-402 6.5's note).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0076 SJL-D-20; IP=Low; Security=Low; Resources=0; Fingerprint=C5C107
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0076 SJL-D-20; IP=Low; Security=Low; Resources=0; Fingerprint=C5C107
+    // Hairs-Human:        PENDING
     public const string CldrVersion = "48.2.0";
 
     /// <summary>The version of ICU4X's <c>icu_calendar</c> crate the Chinese, Korean, Qing-era and Umm al-Qura years are read from (SJL-D-21).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0076 SJL-D-21; IP=Low; Security=Low; Resources=0; Fingerprint=02AC58
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0076 SJL-D-21; IP=Low; Security=Low; Resources=0; Fingerprint=02AC58
+    // Hairs-Human:        PENDING
     public const string IcuCalendarVersion = "2.3.0";
 
     /// <summary>The version of the <c>calendrical_calculations</c> crate the Persian calendar's corrections are read from (SJL-D-21).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0076 SJL-D-21; IP=Low; Security=Low; Resources=0; Fingerprint=E20077
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0076 SJL-D-21; IP=Low; Security=Low; Resources=0; Fingerprint=E20077
+    // Hairs-Human:        PENDING
     public const string CalendricalCalculationsVersion = "0.2.4";
 }

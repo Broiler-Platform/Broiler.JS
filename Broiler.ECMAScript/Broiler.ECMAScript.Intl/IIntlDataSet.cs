@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   3
 // Annotated:        3/3
 // Exempt:           31
@@ -36,20 +36,20 @@ namespace Broiler.ECMAScript.Intl;
 /// once, lazily and thread-safely, and keeps what it decoded (decision D23's L3 reading).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 data contract; IP=Low; Security=Medium; Resources=1; Fingerprint=588868
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 data contract; IP=Low; Security=Medium; Resources=1; Fingerprint=588868
+// Hairs-Human:        PENDING
 public interface IIntlDataSet
 {
     /// <summary>The CLDR release the tables were generated from, for example <c>48.2.0</c> (convention 13: data versions are public).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 data contract; IP=Low; Security=Low; Resources=0; Fingerprint=421618
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 data contract; IP=Low; Security=Low; Resources=0; Fingerprint=421618
+    // Hairs-Human:        PENDING
     string CldrVersion { get; }
 
     /// <summary>One table's bytes, in the format <see cref="IntlTable"/> documents; empty for a table this data does not carry.</summary>
     /// <param name="table">The table.</param>
     /// <returns>The table's bytes, or an empty span.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 data contract; IP=Low; Security=Medium; Resources=1; Fingerprint=9F1961
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 data contract; IP=Low; Security=Medium; Resources=1; Fingerprint=9F1961
+    // Hairs-Human:        PENDING
     ReadOnlySpan<byte> Table(IntlTable table);
 }
 
@@ -73,8 +73,8 @@ public interface IIntlDataSet
 /// appended 32, are read by this library's <see cref="UcaCollationData"/>.)</i>
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 table numbers; IP=Low; Security=Low; Resources=0; Fingerprint=6DF252
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 table numbers; IP=Low; Security=Low; Resources=0; Fingerprint=6DF252
+// Hairs-Human:        PENDING
 public enum IntlTable
 {
     /// <summary>Nothing.</summary>

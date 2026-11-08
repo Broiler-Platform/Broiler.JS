@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   13
 // Annotated:        13/13
 // Exempt:           7
@@ -20,8 +20,8 @@ using System;
 namespace Broiler.ECMAScript.Text;
 
 /// <summary>Which base64 alphabet a codec reads or writes: RFC 4648 section 4 or section 5.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=F5EB23
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=F5EB23
+// Hairs-Human:        PENDING
 public enum Base64Alphabet
 {
     /// <summary><c>"base64"</c>: <c>+</c> and <c>/</c>.</summary>
@@ -32,8 +32,8 @@ public enum Base64Alphabet
 }
 
 /// <summary>What <c>FromBase64</c> does with a final chunk of fewer than four characters (the option <c>lastChunkHandling</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=036834
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=036834
+// Hairs-Human:        PENDING
 public enum LastChunkHandling
 {
     /// <summary><c>"loose"</c>: decoded, padded or not, its unused bits ignored.</summary>
@@ -66,16 +66,16 @@ public enum LastChunkHandling
 /// are Broiler.VM's units before the cut-over (JSD-0070, decision 3).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=2; Fingerprint=6E8BCD
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=2; Fingerprint=6E8BCD
+// Hairs-Human:        PENDING
 public static class Base64Codec
 {
     /// <summary>A destination length no decode of a text of <paramref name="textLength"/> code units can fill, so that it decodes as if <c>maxLength</c> were 2^53 - 1.</summary>
     /// <param name="textLength">The text's length.</param>
     /// <returns>Three bytes for each four code units of the text, and three more.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The length is negative.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=1; Fingerprint=AD66B3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=1; Fingerprint=AD66B3
+    // Hairs-Human:        PENDING
     public static int DecodedLengthBound(int textLength)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(textLength);
@@ -101,9 +101,9 @@ public static class Base64Codec
     /// under strict handling (<c>base64.unpadded-chunk</c>), or a final chunk of one character
     /// (<c>base64.single-character-chunk</c>).
     /// </returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=High; Resources=3; Fingerprint=2974B4
-    // Broiler-Falsified-If: a decode writes past the destination, reports a read count other than the clauses', or completes or fails where the clauses do not
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=High; Resources=3; Fingerprint=2974B4
+    // Hairs-Falsified-If: a decode writes past the destination, reports a read count other than the clauses', or completes or fails where the clauses do not
+    // Hairs-Human:        PENDING
     public static ResultStatus FromBase64(ReadOnlySpan<char> text, Base64Alphabet alphabet, LastChunkHandling lastChunkHandling, Span<byte> destination, out int read, out int written, out Failure failure, WorkCharge? charge = null)
     {
         read = 0;
@@ -220,9 +220,9 @@ public static class Base64Codec
     /// (<c>hex.odd-length</c>), or a pair that is not two hexadecimal digits (<c>hex.invalid-digit</c>),
     /// with the bytes before it written.
     /// </returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=High; Resources=2; Fingerprint=C63508
-    // Broiler-Falsified-If: a decode writes past the destination, reads beyond what it wrote, or completes over a text the clauses refuse
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=High; Resources=2; Fingerprint=C63508
+    // Hairs-Falsified-If: a decode writes past the destination, reads beyond what it wrote, or completes over a text the clauses refuse
+    // Hairs-Human:        PENDING
     public static ResultStatus FromHex(ReadOnlySpan<char> text, Span<byte> destination, out int read, out int written, out Failure failure, WorkCharge? charge = null)
     {
         read = 0;
@@ -252,8 +252,8 @@ public static class Base64Codec
     /// <param name="charge">The caller's meter: the byte count times four thirds, plus four, first; <see langword="null"/> for none.</param>
     /// <returns>The base64 text.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The text would be longer than the longest String the runtime can allocate.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=2; Fingerprint=CF4207
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=2; Fingerprint=CF4207
+    // Hairs-Human:        PENDING
     public static string ToBase64(ReadOnlySpan<byte> bytes, Base64Alphabet alphabet, bool omitPadding, WorkCharge? charge = null)
     {
         var whole = bytes.Length / 3;
@@ -297,8 +297,8 @@ public static class Base64Codec
     /// <param name="charge">The caller's meter: twice the byte count plus one, first; <see langword="null"/> for none.</param>
     /// <returns>The hexadecimal text.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The text would be longer than the longest String the runtime can allocate.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=1; Fingerprint=DFFABF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=1; Fingerprint=DFFABF
+    // Hairs-Human:        PENDING
     public static string ToHex(ReadOnlySpan<byte> bytes, WorkCharge? charge = null)
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan((long)bytes.Length * 2, StringPadding.MaximumDotNetString, nameof(bytes));
@@ -307,8 +307,8 @@ public static class Base64Codec
     }
 
     /// <summary><c>SkipAsciiWhitespace</c>: tab, line feed, form feed, carriage return and space.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=5EBE89
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=5EBE89
+    // Hairs-Human:        PENDING
     private static int SkipAsciiWhitespace(ReadOnlySpan<char> text, int at)
     {
         while (at < text.Length && text[at] is '\t' or '\n' or '\f' or '\r' or ' ')
@@ -318,8 +318,8 @@ public static class Base64Codec
     }
 
     /// <summary>The value of one character of the standard alphabet, or -1.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=7DAAB8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=7DAAB8
+    // Hairs-Human:        PENDING
     private static int SextetOf(char unit) => unit switch
     {
         >= 'A' and <= 'Z' => unit - 'A',
@@ -331,14 +331,14 @@ public static class Base64Codec
     };
 
     /// <summary>Whether the bits a final chunk of two or three characters leaves unused are set (<c>DecodeBase64Chunk</c>'s <c>throwOnExtraBits</c>).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=1; Fingerprint=CC0BF1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=1; Fingerprint=CC0BF1
+    // Hairs-Human:        PENDING
     private static bool FinalHasExtraBits(ReadOnlySpan<int> chunk, int length) =>
         length == 2 ? (chunk[1] & 0x0F) != 0 : (chunk[2] & 0x03) != 0;
 
     /// <summary><c>DecodeBase64Chunk</c> for a final chunk of two or three characters: one or two bytes.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=1; Fingerprint=0AA078
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=1; Fingerprint=0AA078
+    // Hairs-Human:        PENDING
     private static void WriteFinal(ReadOnlySpan<int> chunk, int length, Span<byte> destination, ref int written)
     {
         var bits = (chunk[0] << 18) | (chunk[1] << 12) | (length == 3 ? chunk[2] << 6 : 0);
@@ -351,8 +351,8 @@ public static class Base64Codec
 
     private static ReadOnlySpan<char> Base64UrlTable => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=9DDC75
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=9DDC75
+    // Hairs-Human:        PENDING
     private static ResultStatus Refuse(int position, string messageId, out Failure failure)
     {
         failure = new Failure(ResultStatus.Malformed, position, messageId);

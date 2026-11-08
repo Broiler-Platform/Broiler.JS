@@ -1,29 +1,29 @@
 # Human Review: Broiler.ECMAScript
 
 GENERATED - DO NOT EDIT MANUALLY. Regenerate with
-`dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript`, which rewrites this file,
-`CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
+`dotnet tool run hairs -- assurance generate --root Broiler.ECMAScript`, which rewrites this file,
+`CODE-ASSURANCE.md`, `hairs.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2974 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2976 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
 
-Read it; do not edit it. A decision about a code unit is the `// Broiler-Human:` line on that
+Read it; do not edit it. A decision about a code unit is the `// Hairs-Human:` line on that
 unit's declaration, and every table below is read out of those lines. There is nothing here
 to fill in and nothing here to leave blank.
 
 ## 2. How A Review Is Recorded
 
-In one place: the `// Broiler-Human:` line of the assurance annotation that sits on the
+In one place: the `// Hairs-Human:` line of the assurance annotation that sits on the
 declaration being read. Nothing in this file is edited by hand, no second document carries a
 per-item checklist, and no list of permitted aliases exists to be added to.
 
 ```csharp
-// Broiler-AI:           Origin=AI; IP=Low; Security=High; Resources=2; Fingerprint=4A3BFD
-// Broiler-Falsified-If: a negative value reaches the running total
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; IP=Low; Security=High; Resources=2; Fingerprint=4A3BFD
+// Hairs-Falsified-If: a negative value reaches the running total
+// Hairs-Human:        PENDING
 ```
 
 The last line has four shapes. A human writes three of them; the generator writes the fourth
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 168 |
-| Code units | 4625 |
-| Relevant | 2974 |
-| Exempt | 1651 |
-| Assessed | 2974 of 2974 (100%) |
-| Human reviewed | 0 of 2974 (0%) |
-| Unverified | 2974 |
+| Code units | 4628 |
+| Relevant | 2976 |
+| Exempt | 1652 |
+| Assessed | 2976 of 2976 (100%) |
+| Human reviewed | 0 of 2976 (0%) |
+| Unverified | 2976 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2974 |
+| HUMAN_PENDING | 2976 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1651 |
+| EXEMPT | 1652 |
 
 ## 5. Aliases In The Tree
 
@@ -173,7 +173,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Frontend/InheritedContext.cs` | 9 | 3 | 6 | 3 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/ParseGoal.cs` | 11 | 2 | 9 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/ParseLimits.cs` | 14 | 9 | 5 | 9 | Low | High | 4/4 |
-| `Broiler.ECMAScript.Frontend/ParseRequest.cs` | 19 | 8 | 11 | 8 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Frontend/ParseRequest.cs` | 20 | 8 | 12 | 8 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/ParseSwitches.cs` | 6 | 2 | 4 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` | 64 | 55 | 9 | 55 | Low | High | 7/7 |
 | `Broiler.ECMAScript.Frontend/Parser.Functions.cs` | 32 | 32 | 0 | 32 | Low | High | 3/3 |
@@ -184,7 +184,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Frontend/Rows.cs` | 212 | 212 | 0 | 212 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SourceText.cs` | 7 | 2 | 5 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxDiagnostic.cs` | 20 | 7 | 13 | 7 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Frontend/SyntaxParser.cs` | 15 | 6 | 9 | 6 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Frontend/SyntaxParser.cs` | 17 | 8 | 9 | 8 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Expressions.cs` | 271 | 128 | 143 | 128 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Functions.cs` | 42 | 16 | 26 | 16 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Modules.cs` | 46 | 21 | 25 | 21 | Low | Low | 0/0 |
@@ -505,7 +505,7 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a chain of class heritages nested past the request's bound reaches the stack rather than being refused with the nesting diagnostic
 - `Broiler.ECMAScript.Syntax.Parser.ParseFor()` in `Broiler.ECMAScript.Frontend/Parser.Statements.cs` - Security=High, Spec=ECMA-262 s14.7.4 s14.7.5 for heads, row P16b, `0BE270`, PENDING
   - Falsified if: a semicolon is inserted in a for head, or a head the lookahead restrictions exclude is admitted
-- `Broiler.ECMAScript.Syntax.Parser.Run(ParseRequest)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, Spec=JSD-0083 D11 first refusal, `17C381`, PENDING
+- `Broiler.ECMAScript.Syntax.Parser.Run(ParseRequest)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, Spec=JSD-0083 D11 first refusal, `541F16`, PENDING
   - Falsified if: a refusal escapes as an exception other than the parse's own, or a refused parse answers a tree
 - `Broiler.ECMAScript.Syntax.Parser.Peek(LexicalGoal)` in `Broiler.ECMAScript.Frontend/Parser.cs` - Security=High, Spec=ECMA-262 s12 goal symbols named by the parser, `E85EA6`, PENDING
   - Falsified if: a token is answered under another goal than the one the parser names
@@ -755,5 +755,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1670 of the 2974 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1672 of the 2976 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

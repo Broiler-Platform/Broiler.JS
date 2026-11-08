@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   16
 // Annotated:        16/16
 // Exempt:           0
@@ -24,28 +24,28 @@ namespace Broiler.ECMAScript.Temporal;
 // defaults, the rounding increments and their maxima, and GetDifferenceSettings' validation after its four reads.
 // Ported from the rule half of Broiler.VM's JsTemporal.Options and the option steps of its realm files' round, total,
 // until and since; the reads, in the specification's order, stay each engine's.
-// Broiler-AI:           Origin=Ported; Spec=JSD-0078 options rules, Temporal s13 via Broiler.VM JsTemporal.Options; IP=Low; Security=Medium; Resources=0; Fingerprint=F3C848
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0078 options rules, Temporal s13 via Broiler.VM JsTemporal.Options; IP=Low; Security=Medium; Resources=0; Fingerprint=F3C848
+// Hairs-Human:        PENDING
 public static partial class TemporalOptionRules
 {
     /// <summary>The <c>roundingIncrement</c> option's default, 1 (<c>GetRoundingIncrementOption</c>).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s14.5.2.3 via Broiler.VM JsTemporal.RoundingIncrement; IP=None; Security=None; Resources=0; Fingerprint=A02056
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s14.5.2.3 via Broiler.VM JsTemporal.RoundingIncrement; IP=None; Security=None; Resources=0; Fingerprint=A02056
+    // Hairs-Human:        PENDING
     public const long DefaultRoundingIncrement = 1;
 
     /// <summary>The largest <c>roundingIncrement</c> the option admits, 10^9 (<c>GetRoundingIncrementOption</c>).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s14.5.2.3 via Broiler.VM JsTemporal.RoundingIncrement; IP=None; Security=None; Resources=0; Fingerprint=EF08B1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s14.5.2.3 via Broiler.VM JsTemporal.RoundingIncrement; IP=None; Security=None; Resources=0; Fingerprint=EF08B1
+    // Hairs-Human:        PENDING
     public const long MaxRoundingIncrement = 1_000_000_000;
 
     /// <summary>The <c>roundingMode</c> default of every <c>round</c>, <c>"halfExpand"</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.3.20 via Broiler.VM JsRealm.TemporalDuration DurationRound; IP=None; Security=None; Resources=0; Fingerprint=CC82E1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.3.20 via Broiler.VM JsRealm.TemporalDuration DurationRound; IP=None; Security=None; Resources=0; Fingerprint=CC82E1
+    // Hairs-Human:        PENDING
     public const RoundingMode DefaultRoundRoundingMode = RoundingMode.HalfExpand;
 
     /// <summary>The <c>roundingMode</c> default of every <c>until</c> and <c>since</c>, <c>"trunc"</c> (<c>GetDifferenceSettings</c>).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s13.43 via Broiler.VM JsTemporal.DifferenceSettings; IP=None; Security=None; Resources=0; Fingerprint=971009
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s13.43 via Broiler.VM JsTemporal.DifferenceSettings; IP=None; Security=None; Resources=0; Fingerprint=971009
+    // Hairs-Human:        PENDING
     public const RoundingMode DefaultDifferenceRoundingMode = RoundingMode.Trunc;
 
     /// <summary>
@@ -56,8 +56,8 @@ public static partial class TemporalOptionRules
     /// <param name="value">The option's value, a Number (an undefined option is <see cref="DefaultRoundingIncrement"/>).</param>
     /// <param name="increment">The increment; <see cref="DefaultRoundingIncrement"/> when the value is refused.</param>
     /// <returns>Whether the value is accepted; any other is the specification's <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s14.5.2.3 via Broiler.VM JsTemporal.RoundingIncrement; IP=Low; Security=Medium; Resources=0; Fingerprint=5A9FDB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s14.5.2.3 via Broiler.VM JsTemporal.RoundingIncrement; IP=Low; Security=Medium; Resources=0; Fingerprint=5A9FDB
+    // Hairs-Human:        PENDING
     public static bool TryParseRoundingIncrement(double value, out long increment)
     {
         increment = DefaultRoundingIncrement;
@@ -75,23 +75,23 @@ public static partial class TemporalOptionRules
     /// <summary>Whether a unit is a calendar unit: the proposal's <c>IsCalendarUnit</c> (s13.21), year, month or week.</summary>
     /// <param name="unit">The unit.</param>
     /// <returns>Whether it is a calendar unit.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s13.21 via Broiler.VM JsTemporalCore.IsCalendarUnit; IP=Low; Security=None; Resources=0; Fingerprint=4FEB79
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s13.21 via Broiler.VM JsTemporalCore.IsCalendarUnit; IP=Low; Security=None; Resources=0; Fingerprint=4FEB79
+    // Hairs-Human:        PENDING
     public static bool IsCalendarUnit(TemporalUnit unit) => unit is TemporalUnit.Year or TemporalUnit.Month or TemporalUnit.Week;
 
     /// <summary>Whether a unit's category is date: the proposal's <c>TemporalUnitCategory</c> (Table 21), year to day.</summary>
     /// <param name="unit">The unit, year to nanosecond.</param>
     /// <returns>Whether it is a date unit.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal Table 21 via Broiler.VM JsTemporalCore.IsDateUnit; IP=Low; Security=None; Resources=0; Fingerprint=50BB4F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal Table 21 via Broiler.VM JsTemporalCore.IsDateUnit; IP=Low; Security=None; Resources=0; Fingerprint=50BB4F
+    // Hairs-Human:        PENDING
     public static bool IsDateUnit(TemporalUnit unit) => unit is >= TemporalUnit.Year and <= TemporalUnit.Day;
 
     /// <summary>The larger of two units: the proposal's <c>LargerOfTwoTemporalUnits</c> (s13.20), the earlier in Table 21.</summary>
     /// <param name="one">The first unit, year to nanosecond.</param>
     /// <param name="two">The second unit, year to nanosecond.</param>
     /// <returns>The larger.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s13.20 via Broiler.VM JsTemporalCore.Larger; IP=Low; Security=None; Resources=0; Fingerprint=425B92
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s13.20 via Broiler.VM JsTemporalCore.Larger; IP=Low; Security=None; Resources=0; Fingerprint=425B92
+    // Hairs-Human:        PENDING
     public static TemporalUnit LargerOfTwoUnits(TemporalUnit one, TemporalUnit two) => one <= two ? one : two;
 
     /// <summary>
@@ -100,8 +100,8 @@ public static partial class TemporalOptionRules
     /// </summary>
     /// <param name="unit">The unit, year to nanosecond.</param>
     /// <returns>The maximum, or <see langword="null"/> for unset.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s13.23 via Broiler.VM JsTemporalCore.MaximumIncrement; IP=Low; Security=None; Resources=0; Fingerprint=B29393
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s13.23 via Broiler.VM JsTemporalCore.MaximumIncrement; IP=Low; Security=None; Resources=0; Fingerprint=B29393
+    // Hairs-Human:        PENDING
     public static long? MaximumRoundingIncrement(TemporalUnit unit) => unit switch
     {
         TemporalUnit.Hour => 24,
@@ -118,8 +118,8 @@ public static partial class TemporalOptionRules
     /// <param name="group">The operation's unit group.</param>
     /// <param name="allowAuto">Whether <c>auto</c> is among the operation's extra values.</param>
     /// <returns>Whether the value is allowed; otherwise the specification's <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s13.18 via Broiler.VM JsTemporal.ValidateUnit; IP=Low; Security=Medium; Resources=0; Fingerprint=178DFF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s13.18 via Broiler.VM JsTemporal.ValidateUnit; IP=Low; Security=Medium; Resources=0; Fingerprint=178DFF
+    // Hairs-Human:        PENDING
     public static bool IsValidUnit(TemporalUnit unit, TemporalUnitGroup group, bool allowAuto)
     {
         if (unit == TemporalUnit.Unset || (allowAuto && unit == TemporalUnit.Auto))
@@ -151,8 +151,8 @@ public static partial class TemporalOptionRules
     /// <param name="settings">The settings; the default when refused.</param>
     /// <returns>Whether the options are valid together; otherwise the specification's <c>RangeError</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The type or the operation is not one of the enumeration's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s13.43 via Broiler.VM JsTemporal.DifferenceSettings; IP=Low; Security=Medium; Resources=0; Fingerprint=7EE40C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s13.43 via Broiler.VM JsTemporal.DifferenceSettings; IP=Low; Security=Medium; Resources=0; Fingerprint=7EE40C
+    // Hairs-Human:        PENDING
     public static bool TryGetDifferenceSettings(
         TemporalType type, DifferenceOperation operation, TemporalUnit largestUnit, long roundingIncrement, RoundingMode roundingMode,
         TemporalUnit smallestUnit, out DifferenceSettings settings)
@@ -194,8 +194,8 @@ public static partial class TemporalOptionRules
     /// <param name="settings">The settings; the default when refused.</param>
     /// <returns>Whether the options are valid together; otherwise the specification's <c>RangeError</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The operation, the group, a default unit, the increment or the mode is outside its domain.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s13.43 via Broiler.VM JsTemporal.DifferenceSettings; IP=Low; Security=Medium; Resources=0; Fingerprint=1A3190
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s13.43 via Broiler.VM JsTemporal.DifferenceSettings; IP=Low; Security=Medium; Resources=0; Fingerprint=1A3190
+    // Hairs-Human:        PENDING
     public static bool TryGetDifferenceSettings(
         DifferenceOperation operation, TemporalUnitGroup group, ReadOnlySpan<TemporalUnit> disallowedUnits, TemporalUnit fallbackSmallestUnit,
         TemporalUnit smallestLargestDefaultUnit, TemporalUnit largestUnit, long roundingIncrement, RoundingMode roundingMode, TemporalUnit smallestUnit,
@@ -265,8 +265,8 @@ public static partial class TemporalOptionRules
     /// <param name="resolvedSmallestUnit">The smallest unit to round to; <see cref="TemporalUnit.Unset"/> when refused.</param>
     /// <returns>Whether the options are valid together; otherwise the specification's <c>RangeError</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The increment is outside 1 to 10^9.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.3.20 via Broiler.VM JsRealm.TemporalDuration DurationRound; IP=Low; Security=Medium; Resources=0; Fingerprint=F19768
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.3.20 via Broiler.VM JsRealm.TemporalDuration DurationRound; IP=Low; Security=Medium; Resources=0; Fingerprint=F19768
+    // Hairs-Human:        PENDING
     public static bool TryGetDurationRoundUnits(
         DurationFields duration, TemporalUnit largestUnit, long roundingIncrement, TemporalUnit smallestUnit,
         out TemporalUnit resolvedLargestUnit, out TemporalUnit resolvedSmallestUnit)
@@ -309,8 +309,8 @@ public static partial class TemporalOptionRules
     /// </summary>
     /// <param name="unit">The <c>unit</c> read, <see cref="TemporalUnit.Unset"/> where undefined.</param>
     /// <returns>Whether the unit is allowed; otherwise the specification's <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.3.21 via Broiler.VM JsRealm.TemporalDuration DurationTotal; IP=Low; Security=Low; Resources=0; Fingerprint=5125AF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s7.3.21 via Broiler.VM JsRealm.TemporalDuration DurationTotal; IP=Low; Security=Low; Resources=0; Fingerprint=5125AF
+    // Hairs-Human:        PENDING
     public static bool IsValidTotalUnit(TemporalUnit unit) => unit is >= TemporalUnit.Year and <= TemporalUnit.Nanosecond;
 
     /// <summary>
@@ -324,8 +324,8 @@ public static partial class TemporalOptionRules
     /// <param name="roundingIncrement">The <c>roundingIncrement</c> read, 1 to 10^9.</param>
     /// <returns>Whether the options are valid; otherwise the specification's <c>RangeError</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The type has no <c>round</c>, or the increment is outside 1 to 10^9.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s4.3.13, s5.3.32, s6.3.39 and s8.3.11 via Broiler.VM JsTemporal.ValidateIncrement; IP=Low; Security=Medium; Resources=0; Fingerprint=BBDAF4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal s4.3.13, s5.3.32, s6.3.39 and s8.3.11 via Broiler.VM JsTemporal.ValidateIncrement; IP=Low; Security=Medium; Resources=0; Fingerprint=BBDAF4
+    // Hairs-Human:        PENDING
     public static bool IsValidRoundOptions(TemporalType type, TemporalUnit smallestUnit, long roundingIncrement)
     {
         if (type is not (TemporalType.PlainTime or TemporalType.PlainDateTime or TemporalType.Instant or TemporalType.ZonedDateTime))

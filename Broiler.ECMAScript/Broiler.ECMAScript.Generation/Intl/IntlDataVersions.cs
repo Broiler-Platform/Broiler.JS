@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   5
 // Annotated:        5/5
 // Exempt:           0
@@ -26,27 +26,27 @@ namespace Broiler.ECMAScript.Generation.Intl;
 /// A re-pin to a later release is a dated data decision that changes these constants, the pins and the
 /// generated tables in the same change, in both repositories.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 D10 D12 data versions; IP=Low; Security=Low; Resources=0; Fingerprint=54962F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 D10 D12 data versions; IP=Low; Security=Low; Resources=0; Fingerprint=54962F
+// Hairs-Human:        PENDING
 public static class IntlDataVersions
 {
     /// <summary>The CLDR release, as the pin's <c>version</c> line and each <c>package.json</c> state it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D10 data versions; IP=Low; Security=Low; Resources=0; Fingerprint=C5C107
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D10 data versions; IP=Low; Security=Low; Resources=0; Fingerprint=C5C107
+    // Hairs-Human:        PENDING
     public const string CldrVersion = "48.2.0";
 
     /// <summary>The CLDR major version, as each supplemental file's <c>_cldrVersion</c> states it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D10 data versions; IP=Low; Security=Low; Resources=0; Fingerprint=5292A9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D10 data versions; IP=Low; Security=Low; Resources=0; Fingerprint=5292A9
+    // Hairs-Human:        PENDING
     public const string CldrMajor = "48";
 
     /// <summary>The UCA version the collation files state in their <c># UCA Version:</c> line, which is the Unicode version.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 data versions; IP=Low; Security=Low; Resources=0; Fingerprint=4D7D93
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 data versions; IP=Low; Security=Low; Resources=0; Fingerprint=4D7D93
+    // Hairs-Human:        PENDING
     public const string UcaVersion = UnicodeVersion;
 
     /// <summary>The Unicode Character Database version the generator reads General_Category, decompositions and Unified_Ideograph from.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 data versions; IP=Low; Security=Low; Resources=0; Fingerprint=DD1BD0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 data versions; IP=Low; Security=Low; Resources=0; Fingerprint=DD1BD0
+    // Hairs-Human:        PENDING
     public const string UnicodeVersion = "17.0.0";
 }

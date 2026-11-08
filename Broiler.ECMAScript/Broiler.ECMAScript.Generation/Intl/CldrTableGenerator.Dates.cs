@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   13
 // Annotated:        13/13
 // Exempt:           0
@@ -28,16 +28,16 @@ using System.Xml.Linq;
 namespace Broiler.ECMAScript.Generation.Intl;
 
 /// <summary>The date tables: the Gregorian, generic, ISO 8601 and other calendars' data, the zone names and the metazones.</summary>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 date tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=AD2E42
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 date tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=AD2E42
+// Hairs-Human:        PENDING
 public static partial class CldrTableGenerator
 {
     /// <summary>
     /// The calendars Broiler.VM's generator writes a layer for: identifier, package, file and the calendar it
     /// is a layer over (none for the generic layer), in its order.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 date tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=F1B522
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 date tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=F1B522
+    // Hairs-Human:        PENDING
     private static ImmutableArray<(string Id, string Package, string File, string? Parent)> CalendarFiles { get; } = ImmutableArray.Create<(string Id, string Package, string File, string? Parent)>(
         ("buddhist", "cldr-cal-buddhist-full", "ca-buddhist", null),
         ("chinese", "cldr-cal-chinese-full", "ca-chinese", null),
@@ -63,8 +63,8 @@ public static partial class CldrTableGenerator
     /// forms (<c>-alt-</c>) and plural-dependent formats (<c>-count-</c>) are not carried. Then the ISO 8601
     /// patterns and the other calendars' layers.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 date tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=5; Fingerprint=1715D5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 date tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=5; Fingerprint=1715D5
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> DateLocales(Archive archive, ImmutableArray<string> languages, ImmutableArray<string> calendars)
     {
         var lines = new List<string>();
@@ -152,8 +152,8 @@ public static partial class CldrTableGenerator
     /// The primary identifier of each name CLDR's time zone keys list (JSD-0053's): the key's <c>_iana</c>
     /// name, or its first alias where it states none.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 zone primaries via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=42CBA4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 zone primaries via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=42CBA4
+    // Hairs-Human:        PENDING
     private static Dictionary<string, string> ZonePrimaries(Archive archive)
     {
         var primaries = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -181,8 +181,8 @@ public static partial class CldrTableGenerator
     /// ICU's default exemplar city of a zone identifier: its last segment, underscores as spaces, or nothing for
     /// an <c>Etc/</c> zone or an identifier without a slash.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 zone names via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=45A587
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 zone names via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=45A587
+    // Hairs-Human:        PENDING
     private static string? DefaultCity(string zone) =>
         zone.StartsWith("Etc/", StringComparison.Ordinal) || !zone.Contains('/', StringComparison.Ordinal)
             ? null
@@ -194,8 +194,8 @@ public static partial class CldrTableGenerator
     /// names (<c>tz.Zone.ld</c>); and each zone's exemplar city (<c>tz.Zone.city</c>) where it is not the
     /// default one of its primary identifier. A locale whose data states no metazone has no metazone names.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 zone names via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=0FBBE5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 zone names via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=0FBBE5
+    // Hairs-Human:        PENDING
     private static List<string> ZoneNames(Archive archive, string language, JsonElement zones)
     {
         var primaries = ZonePrimaries(archive);
@@ -290,8 +290,8 @@ public static partial class CldrTableGenerator
     /// (<c>p|region|zone</c>). <c>Etc/</c> zones are left out: UTC's and a fixed offset's names are the date
     /// data's own.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 metazones via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=B8D1BF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 metazones via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=B8D1BF
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> MetaZones(Archive archive)
     {
         var primaries = ZonePrimaries(archive);
@@ -365,8 +365,8 @@ public static partial class CldrTableGenerator
     /// eras below it.
     /// </para>
     /// </remarks>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 calendar layers via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=5; Fingerprint=00FA74
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 calendar layers via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=5; Fingerprint=00FA74
+    // Hairs-Human:        PENDING
     private static List<string> CalendarLocales(Archive archive, ImmutableArray<string> languages, ImmutableArray<string> names)
     {
         var lines = new List<string>();
@@ -444,8 +444,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>The lines that turn <paramref name="below"/> into <paramref name="layer"/>: changed values and removed keys.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 calendar layers via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=F693C2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 calendar layers via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=F693C2
+    // Hairs-Human:        PENDING
     private static void Layer(string name, Dictionary<string, string> below, Dictionary<string, string> layer, List<string> lines)
     {
         foreach (var (key, value) in layer)
@@ -465,8 +465,8 @@ public static partial class CldrTableGenerator
         }
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 calendar layers via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=4383FB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 calendar layers via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=4383FB
+    // Hairs-Human:        PENDING
     private static bool IsPattern(string key) =>
         key.StartsWith("dateFormats.", StringComparison.Ordinal) || key.StartsWith("timeFormats.", StringComparison.Ordinal) ||
         key.StartsWith("dateTime.", StringComparison.Ordinal) || key.StartsWith("atTime.", StringComparison.Ordinal) ||
@@ -474,8 +474,8 @@ public static partial class CldrTableGenerator
         key.StartsWith("interval.", StringComparison.Ordinal);
 
     /// <summary>A calendar's names and patterns, flattened to the date table's keys, unescaped.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 calendar layers via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=EBD949
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 calendar layers via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=EBD949
+    // Hairs-Human:        PENDING
     private static Dictionary<string, string> CalendarMap(JsonElement calendar)
     {
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -546,8 +546,8 @@ public static partial class CldrTableGenerator
     /// available formats, append items and interval formats. Its names are aliases of each locale's Gregorian
     /// names, so none is carried; and no locale of the release overrides its patterns (JSD-0055).
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 ISO 8601 patterns via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=8D7ECB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 ISO 8601 patterns via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=8D7ECB
+    // Hairs-Human:        PENDING
     private static List<string> Iso8601Patterns(Archive archive)
     {
         const string Language = "@iso8601";
@@ -603,8 +603,8 @@ public static partial class CldrTableGenerator
         return lines;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 date tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=88C2A2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 date tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=88C2A2
+    // Hairs-Human:        PENDING
     private static void FlattenDates(string language, string key, JsonElement value, List<string> lines)
     {
         if (value.ValueKind == JsonValueKind.Object)

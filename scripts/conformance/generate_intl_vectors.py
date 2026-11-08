@@ -43,6 +43,9 @@ generator from CLDR 48.2.0, ``vm_unit_answer``), decision D15's names and decisi
 (``d21_script``). A row's own script, or a table of the plan's rule, states each plan's expectation where it is
 computed; no expected value is read from either engine's run. Each engine's first run is classified in scripts/conformance/intl-divergences.txt, which this generator reads
 (corpus revision 28).
+Revision 35 (2026-11-04) reads decision D7 as the owner kept it that day: Broiler.JS's available locales are the
+host's cultures, so on a host whose ICU lists no culture for an extra locale (HOST_LACKS) Broiler.JS resolves it as
+Broiler.VM does, and the note of each vector whose Broiler.VM expectation differs from out says so.
 
 THE LOCALES. Broiler.JS's main-data list is decision D5's union, read here from bundle sjl-9-001's committed
 locales/union.tsv and CLDR 48.2.0's availableLocales.json and defaultContent.json: the languages its CLDR package
@@ -78,7 +81,7 @@ DEFAULT_OUT = CORPUS / "intl"
 INTLREF = SCRIPTS / "intlref.mjs"
 UNION = REPOSITORY / "docs" / "evidence" / "sjl-9-001" / "locales" / "union.tsv"
 SINCE = 27              # the corpus revision that added the area
-CORPUS_REVISION = 34    # the corpus revision this generator writes: REVISIONS.md's last row
+CORPUS_REVISION = 35    # the corpus revision this generator writes: REVISIONS.md's last row
 GENERATOR = "generate_intl_vectors.py"
 DIVERGENCES = SCRIPTS / "intl-divergences.txt"
 
@@ -124,6 +127,27 @@ WELL_FORMED_TAG = re.compile(r"^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$")
 VM_LIST_REASON = ("decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves {moves} "
                   "(LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer "
                   "for that locale; Broiler.JS's embedding carries the locale, so its expectation is out")
+
+# Decision D7 and row L28 (revision 35, 2026-11-04): Broiler.JS's available locales are the host's cultures only, which
+# the owner's decision of 2026-11-04 ("Host only, fix vectors") keeps, and since SJL-9.5 its resolved locale is the
+# available locale LookupMatcher finds (row L29). Its embedding carries every extra locale's data (decision D5), but a
+# host whose ICU lists no culture for a locale resolves it as Broiler.VM's list does: these are the extra locales the
+# ICU 74.2 of the host that classifies the area (Ubuntu 24.04.5) lists none for, in its data's res_index and to
+# Broiler.JS at SJL-9.5's 4ba95d2d alike. Each resolves there to en (the en-* ones) or to the default en-US, which is
+# vm_resolution's answer too, so where a vector's Broiler.VM expectation differs from out, Broiler.JS answers on such a
+# host for Broiler.VM's resolution, which is Broiler.VM's expectation once Broiler.JS answers the rows the vector's
+# note names as they have it, and its note says so. Its divergence.broiler-js field, which intl-divergences.txt holds,
+# classifies that host (revision 35). (Until the review of 2026-11-04 the note and this comment said flatly that
+# Broiler.JS's answer there "is Broiler.VM's expectation"; at 4ba95d2d 11 of the 14 vectors answer it, and
+# families/0091, 0094 and 0152 do not yet, under rows T12, T30 and T31, and N4, which SJL-9.5 corrects.)
+HOST_LACKS = ("aa", "ab", "en-FR", "en-Shaw", "en-Shaw-GB", "jbo", "pap")
+VM_LIST_HOST_REASON = ("decision D5: Broiler.VM's locale list stays de, de-DE, en and en-US, so it resolves {moves} "
+                       "(LookupMatcher over its list, rows L28 and T16) and its expectation is the reference's answer "
+                       "for that locale; Broiler.JS's embedding carries the locale, so its expectation is out on a host "
+                       "whose cultures list it (decision D7: its available locales are the host's cultures, row L28); "
+                       "a host whose ICU lists no {tags} (ICU 74.2 lists none) resolves it as Broiler.VM's list does "
+                       "(row L29), and there Broiler.JS answers for that locale, which is Broiler.VM's expectation "
+                       "once Broiler.JS answers the rows this note names as they have it (revision 35)")
 
 # Decision D33 (c) and row L40: each engine's Intl.Collator keeps its own data until SJL-17, and the shared
 # CollationsOfLocale reads the list of the collations that engine's Collator resolves. Broiler.JS's Collator keeps its
@@ -2114,7 +2138,11 @@ def resolve(case: Case, ref: str, witness: str | None, extra: dict[str, str], pr
         if vm_answer != out:
             per_engine.setdefault("broiler-js", out)
             per_engine["broiler-vm"] = vm_answer
-            impl_notes.append(VM_LIST_REASON.format(moves=", ".join(case.vm_moves)))
+            lacked = [move.split(" to ")[0] for move in case.vm_moves if move.split(" to ")[0] in HOST_LACKS]
+            if lacked:
+                impl_notes.append(VM_LIST_HOST_REASON.format(moves=", ".join(case.vm_moves), tags=", ".join(lacked)))
+            else:
+                impl_notes.append(VM_LIST_REASON.format(moves=", ".join(case.vm_moves)))
     cls = "impl-defined" if per_engine else "normative"
     notes.extend(n for n in impl_notes if n)
     return Vector(case, out, cls, per_engine, prov + source, notes)
@@ -2239,6 +2267,12 @@ def generate(node: str, witness_node: str, cldr_dir: Path, out: Path, spec: Path
         raise GeneratorError("CLDR 48.2.0's aliases.json does not replace tw by ak, as the tw vector's text says")
     locales = broiler_js_locales(cldr)
     extra = [tag for tag in locales if tag not in VM_LOCALES]
+    for tag in HOST_LACKS:
+        # The host's LookupMatcher reaches en for an en-* tag, which every host's ICU lists, and the default en-US
+        # otherwise: Broiler.VM's resolution, which VM_LIST_HOST_REASON says Broiler.JS resolves the tag to there.
+        host = "en" if tag.startswith("en-") else VM_DEFAULT_LOCALE
+        if tag not in extra or vm_resolution(tag) != host:
+            raise GeneratorError(f"HOST_LACKS names {tag}, which is not an extra locale Broiler.VM resolves to {host}")
     cases_a()
     cases_b()
     cases_c(cldr)

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   43
 // Annotated:        43/43
 // Exempt:           0
@@ -64,17 +64,17 @@ namespace Broiler.ECMAScript.Generation.Intl;
 /// bytes write the same tables.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=8; Fingerprint=AD2E42
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=8; Fingerprint=AD2E42
+// Hairs-Human:        PENDING
 public static partial class CldrTableGenerator
 {
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=B294A2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=B294A2
+    // Hairs-Human:        PENDING
     private const string Root = "cldr-48.2.0/";
 
     /// <summary>The per-member exemption Broiler.VM's generated file states, which its options for <see cref="IntlTableSource"/> repeat.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=16A62D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=16A62D
+    // Hairs-Human:        PENDING
     public const string BroilerVmExemptReason =
         "CLDR 48.2.0 table data written by CldrTableGenerator from the files cldr.pin names, compared byte for byte by rule N28";
 
@@ -84,8 +84,8 @@ public static partial class CldrTableGenerator
     /// <c>https://www.unicode.org/Public/17.0.0/uca/allkeys.txt</c> by Broiler.VM's generator. The archived
     /// CollationTest files are what hold them to the root collation.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 UCA implicit weights via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=0D6C34
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 UCA implicit weights via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=0D6C34
+    // Hairs-Human:        PENDING
     internal static ImmutableArray<(int First, int Last, int Base)> SiniformRanges { get; } = ImmutableArray.Create(
         (0x17000, 0x187FF, 0xFB00),
         (0x18800, 0x18AFF, 0xFB01),
@@ -95,8 +95,8 @@ public static partial class CldrTableGenerator
         (0x18B00, 0x18CFF, 0xFB03));
 
     /// <summary>ECMA-402's sanctioned single units (table 2 of the pinned edition).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sanctioned units via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=D2132B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sanctioned units via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=D2132B
+    // Hairs-Human:        PENDING
     internal static FrozenSet<string> SanctionedUnits { get; } = FrozenSet.Create(
         StringComparer.Ordinal,
         "acre", "bit", "byte", "celsius", "centimeter", "day", "degree", "fahrenheit", "fluid-ounce", "foot",
@@ -106,14 +106,14 @@ public static partial class CldrTableGenerator
         "pound", "second", "stone", "terabit", "terabyte", "week", "yard", "year");
 
     /// <summary>The names files of a locale's display names: its package's file and the kind its lines carry.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 display names via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=56B879
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 display names via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=56B879
+    // Hairs-Human:        PENDING
     private static ImmutableArray<(string File, string Kind)> NameFiles { get; } =
         ImmutableArray.Create(("languages", "language"), ("territories", "region"), ("scripts", "script"), ("variants", "variant"));
 
     /// <summary>The date-time field codes of ECMA-402's table 19, and the CLDR date field each names.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 display names via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=FA6508
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 display names via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=FA6508
+    // Hairs-Human:        PENDING
     private static ImmutableArray<(string Code, string Field)> DateTimeFieldCodes { get; } = ImmutableArray.Create(
         ("era", "era"), ("year", "year"), ("quarter", "quarter"), ("month", "month"), ("weekOfYear", "week"),
         ("weekday", "weekday"), ("day", "day"), ("dayPeriod", "dayperiod"), ("hour", "hour"), ("minute", "minute"),
@@ -127,9 +127,9 @@ public static partial class CldrTableGenerator
     /// <param name="ucd">The UCD subset, read from files the caller verified against a pin.</param>
     /// <param name="options">The locale list and the other parameters.</param>
     /// <exception cref="InvalidDataException">The archive is not the one the pin describes, a file a table reads is not pinned, or a value is not one the table can carry.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=8; Fingerprint=92E567
-    // Broiler-Falsified-If: tables are written from an archive the pin does not describe, or with Broiler.VM's options they differ from Broiler.VM's generator's
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=8; Fingerprint=92E567
+    // Hairs-Falsified-If: tables are written from an archive the pin does not describe, or with Broiler.VM's options they differ from Broiler.VM's generator's
+    // Hairs-Human:        PENDING
     public static IntlTables Generate(IntlCldrPin pin, IReadOnlyDictionary<string, byte[]> cldr, CldrUcd ucd, IntlGeneratorOptions options)
     {
         ArgumentNullException.ThrowIfNull(pin);
@@ -201,31 +201,31 @@ public static partial class CldrTableGenerator
     /// The archive a generation reads: the files the pin names, by the paths it writes them under, and no other,
     /// recording each optional names file the options asked for and the pin does not name.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=Medium; Resources=2; Fingerprint=7B4C3A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=Medium; Resources=2; Fingerprint=7B4C3A
+    // Hairs-Human:        PENDING
     private sealed class Archive(IReadOnlyDictionary<string, byte[]> files)
     {
-        // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=Low; Resources=1; Fingerprint=1716CD
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=Low; Resources=1; Fingerprint=1716CD
+        // Hairs-Human:        PENDING
         private readonly SortedSet<string> absent = new(StringComparer.Ordinal);
 
         /// <summary>Every path the archive holds.</summary>
-        // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=Low; Resources=0; Fingerprint=871A1C
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=Low; Resources=0; Fingerprint=871A1C
+        // Hairs-Human:        PENDING
         internal IEnumerable<string> Names => files.Keys;
 
         /// <summary>A pinned file's bytes, or a refusal naming the file a table reads and the pin does not name.</summary>
-        // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=High; Resources=1; Fingerprint=ADFB0A
-        // Broiler-Falsified-If: a file the pin does not name is read, or its absence is answered with empty data
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=High; Resources=1; Fingerprint=ADFB0A
+        // Hairs-Falsified-If: a file the pin does not name is read, or its absence is answered with empty data
+        // Hairs-Human:        PENDING
         internal byte[] Bytes(string path) =>
             files.TryGetValue(path, out var bytes)
                 ? bytes
                 : throw new InvalidDataException("a table reads " + path + ", and the CLDR pin does not name it");
 
         /// <summary>A pinned file's parsed root element.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=6F6F2A
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=6F6F2A
+        // Hairs-Human:        PENDING
         internal JsonElement Json(string path)
         {
             using var document = JsonDocument.Parse(Bytes(Root + path));
@@ -233,8 +233,8 @@ public static partial class CldrTableGenerator
         }
 
         /// <summary>An optional names file's parsed root element, or false - recorded - when the pin does not name it.</summary>
-        // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=Medium; Resources=2; Fingerprint=49553B
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=Medium; Resources=2; Fingerprint=49553B
+        // Hairs-Human:        PENDING
         internal bool TryJson(string path, out JsonElement element)
         {
             if (!files.ContainsKey(Root + path))
@@ -249,15 +249,15 @@ public static partial class CldrTableGenerator
         }
 
         /// <summary>The optional files asked for and not pinned, in ordinal order.</summary>
-        // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=Low; Resources=1; Fingerprint=E037CE
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 CLDR tables; IP=Low; Security=Low; Resources=1; Fingerprint=E037CE
+        // Hairs-Human:        PENDING
         internal IReadOnlyList<string> Absent() => absent.ToList().AsReadOnly();
     }
 
     /// <summary>A text table: its lines, each refused unless it is printable ASCII without a quote, joined by LF.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=2; Fingerprint=1713B4
-    // Broiler-Falsified-If: a line holding a quote, a control character or a character above U+007E, or a table with no line, is written
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=2; Fingerprint=1713B4
+    // Hairs-Falsified-If: a line holding a quote, a control character or a character above U+007E, or a table with no line, is written
+    // Hairs-Human:        PENDING
     private static IntlGeneratedTable Text(string name, string summary, IEnumerable<string> lines)
     {
         var text = new StringBuilder();
@@ -292,8 +292,8 @@ public static partial class CldrTableGenerator
     /// three by name and refused a list that was not a subset of theirs in their order. The rules it hands the builder for those
     /// three, and their imports, are the same text.)</i>
     /// </remarks>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0084 E3 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=02DD79
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0084 E3 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=02DD79
+    // Hairs-Human:        PENDING
     private static List<(string Name, Tailoring Tailoring)> Tailorings(RootCollation root, CldrUcd ucd, Archive archive, ImmutableArray<string> names)
     {
         if (names.Any(name => !IntlGeneratorOptions.BroilerJsTailorings.Contains(name, StringComparer.Ordinal)) ||
@@ -339,8 +339,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>Likely subtags, ordinal by source.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 likely subtags via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=A00998
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 likely subtags via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=A00998
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> LikelySubtags(Archive archive) =>
         archive.Json("json/cldr-core/supplemental/likelySubtags.json")
             .GetProperty("supplemental").GetProperty("likelySubtags")
@@ -349,8 +349,8 @@ public static partial class CldrTableGenerator
             .Order(StringComparer.Ordinal);
 
     /// <summary>Every alias kind ECMA-402's canonicalization reads.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 aliases via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=7FA483
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 aliases via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=7FA483
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> Aliases(Archive archive)
     {
         var alias = archive.Json("json/cldr-core/supplemental/aliases.json")
@@ -377,8 +377,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>Every BCP 47 key and type the <c>bcp47</c> files define, with a deprecated type's preferred one.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 BCP 47 extensions via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=C0339F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 BCP 47 extensions via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=C0339F
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> Extensions(Archive archive)
     {
         var lines = new SortedSet<string>(StringComparer.Ordinal);
@@ -447,8 +447,8 @@ public static partial class CldrTableGenerator
     /// generator matched <c>^[a-z0-9]{3,8}(-[a-z0-9]{3,8})*$</c>, which this reads by hand (rule SL4); the
     /// spellings it is asked about hold no line feed, the one input on which the expression's <c>$</c> differs.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS 35 BCP 47 type via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=4E60EC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS 35 BCP 47 type via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=4E60EC
+    // Hairs-Human:        PENDING
     internal static bool IsWellFormedType(string text) =>
         text.Split('-').All(static subtag => subtag.Length is >= 3 and <= 8 && subtag.All(static c => c is >= 'a' and <= 'z' or >= '0' and <= '9'));
 
@@ -456,8 +456,8 @@ public static partial class CldrTableGenerator
     /// A table value with every character a line cannot carry written as <c>\uXXXX</c>: what is not printable
     /// ASCII, and the backslash, the bar and the quote.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 table escaping via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=FC248C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 table escaping via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=FC248C
+    // Hairs-Human:        PENDING
     internal static string Escape(string value)
     {
         var escaped = new StringBuilder(value.Length);
@@ -483,8 +483,8 @@ public static partial class CldrTableGenerator
     /// symbols - those its <c>numbers.json</c> carries, and those CLDR's <c>common/main</c> XML states on its
     /// parent chain (<see cref="OwnSymbols"/>), root's own for <c>und</c>.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 D21 D34 number data via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=A229DB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 D21 D34 number data via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=A229DB
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> NumberLocales(Archive archive, ImmutableArray<string> languages, IntlNumberingSymbols symbols)
     {
         var lines = new List<string>();
@@ -544,8 +544,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>CLDR's inheritance marker, which a locale's XML writes for a value it takes from its parent.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D21 numbering-system symbols UTS 35 inheritance marker; IP=Low; Security=Low; Resources=0; Fingerprint=8B51DA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D21 numbering-system symbols UTS 35 inheritance marker; IP=Low; Security=Low; Resources=0; Fingerprint=8B51DA
+    // Hairs-Human:        PENDING
     private const string InheritanceMarker = "↑↑↑";
 
     /// <summary>
@@ -558,8 +558,8 @@ public static partial class CldrTableGenerator
     /// does not state carries no line under the locale: its value is <c>und</c>'s line, root's, or where root
     /// aliases the system to <c>latn</c>, the locale's <c>latn</c> symbol.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D21 numbering-system symbols through the parent chain; IP=Low; Security=Medium; Resources=3; Fingerprint=088AE8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D21 numbering-system symbols through the parent chain; IP=Low; Security=Medium; Resources=3; Fingerprint=088AE8
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> OwnSymbols(Archive archive, string language, JsonElement numbers, FrozenDictionary<string, string> parents)
     {
         var chain = new List<string>();
@@ -598,14 +598,14 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>A CLDR locale's parent: the one <c>parentLocales.json</c> names, else the tag less its last subtag, else root.</summary>
-    // Broiler-AI:           Origin=AI; Spec=UTS 35 parent locales for JSD-0082 D21; IP=Low; Security=Low; Resources=0; Fingerprint=239E06
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=UTS 35 parent locales for JSD-0082 D21; IP=Low; Security=Low; Resources=0; Fingerprint=239E06
+    // Hairs-Human:        PENDING
     private static string Parent(string tag, FrozenDictionary<string, string> parents) =>
         parents.TryGetValue(tag, out var stated) ? stated : tag.LastIndexOf('-') is > 0 and var dash ? tag[..dash] : "root";
 
     /// <summary>CLDR's <c>parentLocales.json</c> map, by BCP 47 tag; <c>und</c> names root.</summary>
-    // Broiler-AI:           Origin=AI; Spec=UTS 35 parent locales for JSD-0082 D21; IP=Low; Security=Low; Resources=1; Fingerprint=5140F5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=UTS 35 parent locales for JSD-0082 D21; IP=Low; Security=Low; Resources=1; Fingerprint=5140F5
+    // Hairs-Human:        PENDING
     private static FrozenDictionary<string, string> ParentLocales(Archive archive) =>
         archive.Json("json/cldr-core/supplemental/parentLocales.json")
             .GetProperty("supplemental").GetProperty("parentLocales").GetProperty("parentLocale")
@@ -619,8 +619,8 @@ public static partial class CldrTableGenerator
     /// files carry. Root's alias of a system to the locale's <c>latn</c> symbols states nothing; an alias anywhere
     /// else is refused, as nothing here resolves one.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D21 numbering-system symbols from CLDR XML; IP=Low; Security=Medium; Resources=3; Fingerprint=AF9C71
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D21 numbering-system symbols from CLDR XML; IP=Low; Security=Medium; Resources=3; Fingerprint=AF9C71
+    // Hairs-Human:        PENDING
     private static IEnumerable<(string System, string Name, string Value)> StatedSymbols(Archive archive, string tag)
     {
         var path = Root + "common/main/" + tag.Replace('-', '_') + ".xml";
@@ -661,8 +661,8 @@ public static partial class CldrTableGenerator
         }
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 number data via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=E9E88C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 number data via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=E9E88C
+    // Hairs-Human:        PENDING
     private static void Flatten(string language, string key, JsonElement value, List<string> lines)
     {
         if (value.ValueKind == JsonValueKind.Object)
@@ -679,8 +679,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>Each main-data locale's currency symbols and names.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 currencies via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=5C08E5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 currencies via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=5C08E5
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> Currencies(Archive archive, ImmutableArray<string> languages, CldrUcd ucd)
     {
         var lines = new List<string>();
@@ -723,8 +723,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>CLDR's currency fraction digits that differ from its default of 2.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 currency digits via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=EFD801
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 currency digits via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=EFD801
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> CurrencyDigits(Archive archive) =>
         archive.Json("json/cldr-core/supplemental/currencyData.json")
             .GetProperty("supplemental").GetProperty("currencyData").GetProperty("fractions")
@@ -734,8 +734,8 @@ public static partial class CldrTableGenerator
             .Order(StringComparer.Ordinal);
 
     /// <summary>The numeric numbering systems and their digits.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 numbering systems via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=7124A8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 numbering systems via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=7124A8
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> NumberingSystems(Archive archive) =>
         archive.Json("json/cldr-core/supplemental/numberingSystems.json")
             .GetProperty("supplemental").GetProperty("numberingSystems")
@@ -748,16 +748,16 @@ public static partial class CldrTableGenerator
     /// The languages a supplemental table is written for: the list's, or with <c>supplemental *</c> every
     /// language <paramref name="rules"/> states, in ordinal order.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D5 supplemental languages; IP=Low; Security=Low; Resources=1; Fingerprint=5CBB4B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D5 supplemental languages; IP=Low; Security=Low; Resources=1; Fingerprint=5CBB4B
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> SupplementalLanguages(IntlLocaleList list, JsonElement rules) =>
         list.EverySupplementalLanguage
             ? rules.EnumerateObject().Select(static language => language.Name).Order(StringComparer.Ordinal)
             : list.SupplementalLanguages;
 
     /// <summary>Each supplemental language's rules of one plural type, without their samples.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D5 D11 plural rules via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=85557A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D5 D11 plural rules via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=85557A
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> PluralRules(Archive archive, string file, string type, IntlLocaleList list)
     {
         var rules = archive.Json("json/cldr-core/supplemental/" + file)
@@ -775,8 +775,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>Each supplemental language's plural range rules.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D5 D11 plural ranges via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=6A7C01
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D5 D11 plural ranges via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=6A7C01
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> PluralRanges(Archive archive, IntlLocaleList list)
     {
         var ranges = archive.Json("json/cldr-core/supplemental/pluralRanges.json")
@@ -797,8 +797,8 @@ public static partial class CldrTableGenerator
     /// Each main-data locale's list patterns: the type as CLDR names it (<c>standard</c>, <c>or-short</c>,
     /// <c>unit-narrow</c> and the rest), and its start, middle, end and two-element patterns.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 list patterns via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=68402D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 list patterns via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=68402D
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> ListPatterns(Archive archive, ImmutableArray<string> languages)
     {
         foreach (var language in languages)
@@ -819,8 +819,8 @@ public static partial class CldrTableGenerator
     /// <c>-short</c> and <c>-narrow</c> fields: the literal for a value (<c>-1</c>, <c>0</c>, <c>1</c> and the
     /// rest CLDR names), and the <c>future.</c> and <c>past.</c> pattern for each plural category.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 relative times via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=843F29
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 relative times via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=843F29
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> RelativeTimes(Archive archive, ImmutableArray<string> languages)
     {
         foreach (var language in languages)
@@ -860,8 +860,8 @@ public static partial class CldrTableGenerator
     /// locale gives no names of its kind (<see cref="IntlTables.AbsentFiles"/>), and a locale whose display
     /// names state no calendar's has no calendar names.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 display names via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=36F508
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 display names via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=36F508
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> DisplayNames(Archive archive, ImmutableArray<string> languages)
     {
         var calendars = archive.Json("json/cldr-bcp47/bcp47/calendar.json")
@@ -943,8 +943,8 @@ public static partial class CldrTableGenerator
     /// Each main-data locale's patterns for the sanctioned units and the compound units CLDR names whose two
     /// halves are sanctioned, in the three widths, and each width's compound pattern.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 units via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=6D41B0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 units via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=6D41B0
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> Units(Archive archive, ImmutableArray<string> languages)
     {
         var lines = new List<string>();
@@ -999,8 +999,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>The hour cycles CLDR allows and prefers in each region it names: region, allowed, preferred.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 time data via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=BE7E85
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 time data via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=BE7E85
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> TimeData(Archive archive) =>
         archive.Json("json/cldr-core/supplemental/timeData.json").GetProperty("supplemental").GetProperty("timeData")
             .EnumerateObject()
@@ -1012,8 +1012,8 @@ public static partial class CldrTableGenerator
     /// Each region's week: region, first day, weekend start, weekend end and minimal days in the first week, a
     /// field empty where CLDR states none and the world's (<c>001</c>) applies.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 week data via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=FF61DD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 week data via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=FF61DD
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> WeekData(Archive archive)
     {
         var week = archive.Json("json/cldr-core/supplemental/weekData.json").GetProperty("supplemental").GetProperty("weekData");
@@ -1036,8 +1036,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>Each script whose line direction CLDR states: script, and whether it is right to left (<c>YES</c>) or not (<c>NO</c>).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 scripts via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=3CF86E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 scripts via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=3CF86E
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> Scripts(Archive archive) =>
         archive.Json("json/cldr-core/scriptMetadata.json").GetProperty("scriptMetadata")
             .EnumerateObject()
@@ -1050,8 +1050,8 @@ public static partial class CldrTableGenerator
     /// Each supplemental language's day period rules: language, period, and the time it is at or the time it is
     /// from and the time it is before.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D5 D11 day periods via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=B5D88E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D5 D11 day periods via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=2; Fingerprint=B5D88E
+    // Hairs-Human:        PENDING
     private static IEnumerable<string> DayPeriods(Archive archive, IntlLocaleList list)
     {
         var rules = archive.Json("json/cldr-core/supplemental/dayPeriods.json").GetProperty("supplemental").GetProperty("dayPeriodRuleSet");

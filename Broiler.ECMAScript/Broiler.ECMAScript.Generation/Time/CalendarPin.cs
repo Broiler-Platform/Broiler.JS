@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   12
 // Annotated:        12/12
 // Exempt:           4
@@ -29,8 +29,8 @@ namespace Broiler.ECMAScript.Generation.Time;
 /// <param name="Bytes">The crate's length.</param>
 /// <param name="Sha256">The crate's SHA-256, in lower-case hexadecimal: the <c>cksum</c> the crates.io index states.</param>
 /// <param name="Sha512">The crate's SHA-512, in base64.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Low; Resources=1; Fingerprint=D8EB11
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Low; Resources=1; Fingerprint=D8EB11
+// Hairs-Human:        PENDING
 public sealed record CalendarPinArchive(string Name, long Bytes, string Sha256, string Sha512);
 
 /// <summary>One file inside an archived crate: the crate, its path, its length and SHA-256.</summary>
@@ -38,8 +38,8 @@ public sealed record CalendarPinArchive(string Name, long Bytes, string Sha256, 
 /// <param name="Name">The file's path inside the crate, e.g. <c>icu_calendar-2.3.0/src/cal/hijri/ummalqura_data.rs</c>.</param>
 /// <param name="Bytes">The file's length after extraction.</param>
 /// <param name="Sha256">The file's SHA-256 after extraction, in lower-case hexadecimal.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Low; Resources=1; Fingerprint=F69C33
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Low; Resources=1; Fingerprint=F69C33
+// Hairs-Human:        PENDING
 public sealed record CalendarPinMember(string Archive, string Name, long Bytes, string Sha256);
 
 /// <summary>
@@ -61,14 +61,14 @@ public sealed record CalendarPinMember(string Archive, string Name, long Bytes, 
 /// name and version, which must be <see cref="PinnedVersions"/>' (decision SJL-D-21).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=7; Fingerprint=BFC182
-// Broiler-Falsified-If: a crate or a member whose length, digests or stated name and version differ from the pin is extracted, or returned as the pinned one, without an exception
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=7; Fingerprint=BFC182
+// Hairs-Falsified-If: a crate or a member whose length, digests or stated name and version differ from the pin is extracted, or returned as the pinned one, without an exception
+// Hairs-Human:        PENDING
 public sealed class CalendarPin
 {
     /// <summary>The crate versions the calendar tables are taken from: <see cref="TimeDataVersions.IcuCalendarVersion"/> and <see cref="TimeDataVersions.CalendricalCalculationsVersion"/>, by crate name.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Low; Resources=1; Fingerprint=9A1DA8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Low; Resources=1; Fingerprint=9A1DA8
+    // Hairs-Human:        PENDING
     public static IReadOnlyDictionary<string, string> PinnedVersions { get; } = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         ["icu_calendar"] = TimeDataVersions.IcuCalendarVersion,
@@ -97,9 +97,9 @@ public sealed class CalendarPin
     /// </summary>
     /// <param name="text">The pin's text.</param>
     /// <exception cref="InvalidDataException">An <c>archive</c>, <c>member</c>, <c>upstream</c> or <c>licence</c> line is malformed or repeats one, or a line is empty of a value or repeats a key.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=3; Fingerprint=084A93
-    // Broiler-Falsified-If: a malformed archive or member line, or a repeated key, is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=3; Fingerprint=084A93
+    // Hairs-Falsified-If: a malformed archive or member line, or a repeated key, is accepted
+    // Hairs-Human:        PENDING
     public static CalendarPin Parse(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -164,9 +164,9 @@ public sealed class CalendarPin
     /// <param name="crates">Each archived crate's bytes, by its file name.</param>
     /// <returns>Each pinned member's bytes, by its path inside its crate.</returns>
     /// <exception cref="InvalidDataException">A crate or a member is not the one the pin describes, or a member is held twice.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=7; Fingerprint=87E5C0
-    // Broiler-Falsified-If: a crate whose length or digests differ from the pin is decompressed, or a member is answered without its own length and hash compared
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=7; Fingerprint=87E5C0
+    // Hairs-Falsified-If: a crate whose length or digests differ from the pin is decompressed, or a member is answered without its own length and hash compared
+    // Hairs-Human:        PENDING
     public IReadOnlyDictionary<string, byte[]> Extract(IReadOnlyDictionary<string, byte[]> crates)
     {
         ArgumentNullException.ThrowIfNull(crates);
@@ -198,9 +198,9 @@ public sealed class CalendarPin
 
     /// <summary>Every way the crates' bytes differ from what the pin records: the archived flag, the crates named, each crate's presence, length and digests.</summary>
     /// <param name="crates">Each archived crate's bytes, by its file name.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=3; Fingerprint=5AF285
-    // Broiler-Falsified-If: a crate one byte or one length away from the pin's, or a crate of another version, yields no violation
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=3; Fingerprint=5AF285
+    // Hairs-Falsified-If: a crate one byte or one length away from the pin's, or a crate of another version, yields no violation
+    // Hairs-Human:        PENDING
     public IEnumerable<string> ArchiveViolations(IReadOnlyDictionary<string, byte[]> crates)
     {
         ArgumentNullException.ThrowIfNull(crates);
@@ -254,9 +254,9 @@ public sealed class CalendarPin
     /// a crate stating another name or version. Empty when they are the pinned ones.
     /// </summary>
     /// <param name="members">Each member's bytes, by its path inside its crate.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=3; Fingerprint=1EB55D
-    // Broiler-Falsified-If: a member whose length or hash differs from the pin, or a Cargo.toml stating another name or version, yields no violation
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=3; Fingerprint=1EB55D
+    // Hairs-Falsified-If: a member whose length or hash differs from the pin, or a Cargo.toml stating another name or version, yields no violation
+    // Hairs-Human:        PENDING
     public IEnumerable<string> Violations(IReadOnlyDictionary<string, byte[]> members)
     {
         ArgumentNullException.ThrowIfNull(members);
@@ -305,9 +305,9 @@ public sealed class CalendarPin
     /// <summary>The members, verified, or an exception naming every way they are not the pinned ones.</summary>
     /// <param name="members">Each member's bytes, by its path inside its crate.</param>
     /// <exception cref="InvalidDataException">The members are not the ones the pin describes.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=3; Fingerprint=6B0B95
-    // Broiler-Falsified-If: members with a violation are returned instead of refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=High; Resources=3; Fingerprint=6B0B95
+    // Hairs-Falsified-If: members with a violation are returned instead of refused
+    // Hairs-Human:        PENDING
     public IReadOnlyDictionary<string, byte[]> Verified(IReadOnlyDictionary<string, byte[]> members)
     {
         var violations = Violations(members).ToArray();
@@ -322,8 +322,8 @@ public sealed class CalendarPin
 
     /// <summary>The name and version a <c>Cargo.toml</c>'s <c>[package]</c> table states, each empty when it states none.</summary>
     /// <param name="manifest">The <c>Cargo.toml</c>'s text.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Medium; Resources=3; Fingerprint=24EAFE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Medium; Resources=3; Fingerprint=24EAFE
+    // Hairs-Human:        PENDING
     public static (string Name, string Version) PackageOf(string manifest)
     {
         ArgumentNullException.ThrowIfNull(manifest);
@@ -363,13 +363,13 @@ public sealed class CalendarPin
     /// <summary>Strict UTF-8: a byte sequence that is not UTF-8 is a refusal, not a replacement character.</summary>
     /// <param name="bytes">The bytes.</param>
     /// <exception cref="System.Text.DecoderFallbackException">The bytes are not UTF-8.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Medium; Resources=3; Fingerprint=DAAAC3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Medium; Resources=3; Fingerprint=DAAAC3
+    // Hairs-Human:        PENDING
     public static string Decode(byte[] bytes) => ArchiveReading.Decode(bytes);
 
     /// <summary>The exception every refusal is, naming each violation on its own line.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Low; Resources=2; Fingerprint=10B312
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin; IP=Low; Security=Low; Resources=2; Fingerprint=10B312
+    // Hairs-Human:        PENDING
     private static InvalidDataException Refusal(IEnumerable<string> violations) =>
         new("The calendar archives are not the ones calendars.pin describes, so nothing is generated from them:\n  " +
             string.Join("\n  ", violations));

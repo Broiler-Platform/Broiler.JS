@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   8
 // Annotated:        8/8
 // Exempt:           10
@@ -23,8 +23,8 @@ using Broiler.ECMAScript.Numbers;
 namespace Broiler.ECMAScript.Intl;
 
 /// <summary>[[Numeric]] of an <c>Intl.RelativeTimeFormat</c>.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.RelativeTimeFormat options and parts; IP=Low; Security=Low; Resources=0; Fingerprint=A1BE61
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.RelativeTimeFormat options and parts; IP=Low; Security=Low; Resources=0; Fingerprint=A1BE61
+// Hairs-Human:        PENDING
 public enum RelativeTimeNumeric
 {
     /// <summary><c>always</c>: a number in every case, "in 1 day".</summary>
@@ -38,8 +38,8 @@ public enum RelativeTimeNumeric
 /// <param name="Type">A number part's type, or <c>literal</c>.</param>
 /// <param name="Value">The part's text.</param>
 /// <param name="Unit">The singular unit, for a part of the number; <see langword="null"/> for a literal.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.RelativeTimeFormat options and parts; IP=Low; Security=Low; Resources=0; Fingerprint=E183CD
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.RelativeTimeFormat options and parts; IP=Low; Security=Low; Resources=0; Fingerprint=E183CD
+// Hairs-Human:        PENDING
 public readonly record struct RelativeTimePart(string Type, string Value, string? Unit);
 
 /// <summary>
@@ -68,16 +68,16 @@ public readonly record struct RelativeTimePart(string Type, string Value, string
 /// </para>
 /// <para><b>Immutable</b>: one may be shared between threads (convention 10).</para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=Low; Resources=0; Fingerprint=1B85DA
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=Low; Resources=0; Fingerprint=1B85DA
+// Hairs-Human:        PENDING
 public sealed class RelativeTimeFormatter
 {
     private readonly ILocaleData data;
 
     private readonly string dataLocale;
 
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=E78E2F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=E78E2F
+    // Hairs-Human:        PENDING
     private RelativeTimeFormatter(ILocaleData data, string locale, string dataLocale, FormatStyle style, RelativeTimeNumeric numeric, NumberFormatter numberFormatter, PluralRulesRecord pluralRules)
     {
         this.data = data;
@@ -119,8 +119,8 @@ public sealed class RelativeTimeFormatter
     /// <param name="numberingSystem">The resolved <c>nu</c> key's value, which the constructor hands its NumberFormat.</param>
     /// <returns>The formatter.</returns>
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=A78A70
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=A78A70
+    // Hairs-Human:        PENDING
     public static RelativeTimeFormatter Create(ILocaleData data, string locale, string dataLocale, FormatStyle style, RelativeTimeNumeric numeric, string numberingSystem)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -141,8 +141,8 @@ public sealed class RelativeTimeFormatter
     /// <param name="unit">The unit, as ToString of the argument.</param>
     /// <param name="singular">The singular unit, or the empty string.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.InvalidRelativeTimeUnit"/>, a <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=192D1D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=192D1D
+    // Hairs-Human:        PENDING
     public static IntlStatus SingularRelativeTimeUnit(string unit, out string singular)
     {
         ArgumentNullException.ThrowIfNull(unit);
@@ -168,8 +168,8 @@ public sealed class RelativeTimeFormatter
     /// <param name="charge">The caller's meter: the plural rules' and the number format's FormatNumericToString, each
     /// <c>digits / 16 + 1</c> units, where a number is written.</param>
     /// <returns>As <see cref="FormatToParts"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=B61A7B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=Low; Resources=1; Fingerprint=B61A7B
+    // Hairs-Human:        PENDING
     public IntlStatus Format(double value, string unit, out string formatted, WorkCharge? charge = null)
     {
         var status = FormatToParts(value, unit, out var parts, charge);
@@ -195,9 +195,9 @@ public sealed class RelativeTimeFormatter
     /// <param name="charge">The caller's meter, as for <see cref="Format"/>.</param>
     /// <returns><see cref="IntlStatus.Completed"/>; <see cref="IntlStatus.RelativeTimeValueNotFinite"/>, a <c>RangeError</c>, for
     /// not-a-number or an infinity, checked first; or <see cref="IntlStatus.InvalidRelativeTimeUnit"/>, a <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=High; Resources=2; Fingerprint=170A9C
-    // Broiler-Falsified-If: the parts differ from PartitionRelativeTimePattern's with the magnitude written, or a refusal is another status
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-PartitionRelativeTimePattern sec-singularrelativetimeunit via Broiler.VM JsRealm.RelativeTimeFormat; IP=Low; Security=High; Resources=2; Fingerprint=170A9C
+    // Hairs-Falsified-If: the parts differ from PartitionRelativeTimePattern's with the magnitude written, or a refusal is another status
+    // Hairs-Human:        PENDING
     public IntlStatus FormatToParts(double value, string unit, out IReadOnlyList<RelativeTimePart> parts, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(unit);

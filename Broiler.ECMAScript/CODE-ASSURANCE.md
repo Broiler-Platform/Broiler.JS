@@ -1,8 +1,8 @@
 # Broiler.ECMAScript Code Assurance
 
 GENERATED - DO NOT EDIT MANUALLY. Regenerate with
-`dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript`, which rewrites this file,
-`HUMAN_REVIEW.md`, `assurance.manifest.json` and every generated source header from the
+`dotnet tool run hairs -- assurance generate --root Broiler.ECMAScript`, which rewrites this file,
+`HUMAN_REVIEW.md`, `hairs.manifest.json` and every generated source header from the
 product tree.
 
 **No code unit in this component carries a decision on its human line yet.** This report
@@ -16,12 +16,12 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Files scanned | 168 |
 | Files not covered | 0 |
 | Files carrying an annotation | 168 |
-| Code units | 4625 |
-| Relevant | 2974 |
-| Exempt by predicate | 1651 |
-| Annotated | 2974 of 2974 (100%) |
-| Human reviewed | 0 of 2974 (0%) |
-| Unverified | 2974 |
+| Code units | 4628 |
+| Relevant | 2976 |
+| Exempt by predicate | 1652 |
+| Annotated | 2976 of 2976 (100%) |
+| Human reviewed | 0 of 2976 (0%) |
+| Unverified | 2976 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2974 |
+| HUMAN_PENDING | 2976 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1651 |
+| EXEMPT | 1652 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 2971 |
+| Low | 2973 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,7 +51,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 1881 |
+| Low | 1883 |
 | Medium | 837 |
 | High | 235 |
 | Critical | 0 |
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.0 / 10 |
-| Units scored | 2974 |
+| Units scored | 2976 |
 
 ## High-security review areas
 
@@ -311,15 +311,15 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Units required to carry one | 235 |
 | Required and missing | 0 |
 
-A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
+A `// Hairs-Falsified-If:` line states, at the declaration, the observation that would make
 the unit wrong. `Security=High` says a unit is risky, which is a set and not a test; the
 criterion is the test. It is required where `Security` is `High` or `Critical` and written
-nowhere else: `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` names every unit that owes one and carries none, and
+nowhere else: `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript` names every unit that owes one and carries none, and
 every unit below `High` that carries one.
 
 The line is a comment, so it is outside every fingerprint by construction: rewording a
 criterion moves no recorded value here, in a file header or in
-`assurance.manifest.json`, and invalidates nothing. That is the intended reading - a
+`hairs.manifest.json`, and invalidates nothing. That is the intended reading - a
 criterion is an instruction to whoever reads the unit, not part of what a review is bound to.
 
 ## Exemption
@@ -329,13 +329,13 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 490 |
-| ParameterAssigningConstructor | 31 |
+| TrivialPropertyOrAccessor | 491 |
+| ParameterAssigningConstructor | 30 |
 | TrivialExpressionBodiedMember | 35 |
 | CompilerSuppliedRecordOrEnumMember | 119 |
 | DelegatingOverrideOrOperator | 4 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 216 |
+| FieldDeclaringStorage | 217 |
 | EnumMemberOfADeclaredVocabulary | 756 |
 | DeclaredInSource | 0 |
 
@@ -359,13 +359,13 @@ through a `<Compile Include>` it states, is left out of the record.
 
 ## Change detection
 
-`assurance.manifest.json` lists **every** code unit in the 5 covered assemblies -
-4625 of them, exempt and relevant alike - with the fingerprint of its declaration.
+`hairs.manifest.json` lists **every** code unit in the 5 covered assemblies -
+4628 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
 trivial is no longer invisible: a semantic change to one moves a value in a generated file
-the check compares byte for byte. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` holds the manifest to the tree.
+the check compares byte for byte. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript` holds the manifest to the tree.
 
 Beside the units it lists **every covered file** - 168 of them - with a
 fingerprint over the complete token stream of its compilation unit. A unit entry exists only
@@ -377,15 +377,15 @@ no file fingerprint - which is what lets one generation be a fixed point.
 
 ## Verification
 
-The generator and the check are one computation: `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` works out what the
+The generator and the check are one computation: `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript` works out what the
 generator would write and compares it with the tree byte for byte, so a record edited by
 hand, or left behind by code that moved, is reported rather than trusted.
 
 | Mode | Command | Effect |
 |---|---|---|
-| Generate | `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript` | Fills every `Fingerprint=TBF`, refreshes a decision the code has outrun into `STALE; Previous=...`, rewrites the generated headers, `HUMAN_REVIEW.md`, `assurance.manifest.json` and this file. |
-| Check | `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` | Reports every generated artefact that is not byte-identical to what the generator would produce, every relevant unit with no annotation, every annotation this system cannot read, every fingerprint out of date and every unit at the top of the security vocabulary without a criterion, or below it with one. |
-| Release | `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release` | The check, and additionally every relevant unit left in a state that blocks a release. |
+| Generate | `dotnet tool run hairs -- assurance generate --root Broiler.ECMAScript` | Fills every `Fingerprint=TBF`, refreshes a decision the code has outrun into `STALE; Previous=...`, rewrites the generated headers, `HUMAN_REVIEW.md`, `hairs.manifest.json` and this file. |
+| Check | `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript` | Reports every generated artefact that is not byte-identical to what the generator would produce, every relevant unit with no annotation, every annotation this system cannot read, every fingerprint out of date and every unit at the top of the security vocabulary without a criterion, or below it with one. |
+| Release | `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release` | The check, and additionally every relevant unit left in a state that blocks a release. |
 
 The fingerprint is six hex characters - 24 bits - of SHA-256 over the declaration's token
 texts, joined by single spaces. Trivia is excluded because a token's text is its own

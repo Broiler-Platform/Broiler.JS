@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   3
 // Annotated:        3/3
 // Exempt:           85
@@ -30,16 +30,22 @@ namespace Broiler.ECMAScript.Syntax;
 /// token's <see cref="Token.Word"/>, and whether that word is a keyword where it stands is the parser's question, since
 /// only the parser knows the position, the strictness and the goal's parameters.
 /// </para>
-/// <para>Internal to the library: the parser reads these, and the token stream reaches an engine through the result.</para>
+/// <para>
+/// Public from 2026-11-04 (the owner's decision of that day, for Broiler.VM's tokenizers-agreement row; decision D21): a
+/// token of <see cref="ParseResult.Tokens"/> has one of these kinds, never <see cref="EndOfInput"/> or
+/// <see cref="Invalid"/>, which the parser reads and never consumes. The numbers are stable. <i>(Revised 2026-11-04; it
+/// read "Internal to the library: the parser reads these, and the token stream reaches an engine through the
+/// result.")</i>
+/// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 input elements; IP=Low; Security=Low; Resources=0; Fingerprint=9F1F7D
-// Broiler-Human:        PENDING
-internal enum TokenKind
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 input elements; IP=Low; Security=Low; Resources=0; Fingerprint=2C0D5B
+// Hairs-Human:        PENDING
+public enum TokenKind
 {
     /// <summary>The end of the input: no input element is left.</summary>
     EndOfInput = 0,
 
-    /// <summary>A refusal: the tokenizer met text no input element of the goal admits, and says why (<see cref="Tokenizer.Diagnostic"/>).</summary>
+    /// <summary>A refusal: the tokenizer met text no input element of the goal admits, and says why in a diagnostic of its own; the parse refuses the source, and no token of this kind is published.</summary>
     Invalid,
 
     /// <summary><c>IdentifierName</c> (clause 12.7), reserved words included; its cooked name is <see cref="Token.Value"/>.</summary>
@@ -252,8 +258,8 @@ internal enum TokenKind
 /// The goal symbols of the lexical grammar (ECMA-262 clause 12): which input elements may begin where the parser stands.
 /// The parser chooses one for each token it asks for; the tokenizer never chooses from the tokens it has read.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 goal symbols; IP=Low; Security=Low; Resources=0; Fingerprint=FFF830
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 goal symbols; IP=Low; Security=Low; Resources=0; Fingerprint=FFF830
+// Hairs-Human:        PENDING
 internal enum LexicalGoal
 {
     /// <summary><c>InputElementDiv</c>: a <c>/</c> is division, and a <c>}</c> a <c>RightBracePunctuator</c>.</summary>
@@ -276,17 +282,18 @@ internal enum LexicalGoal
 }
 
 /// <summary>The facts a token carries beside its kind, span and value: what the parser needs for strict mode, templates and automatic semicolon insertion.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.9 raw facts, JSD-0083 D15; IP=Low; Security=Low; Resources=0; Fingerprint=62EF37
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.9 raw facts, JSD-0083 D15; IP=Low; Security=Low; Resources=0; Fingerprint=5BB185
+// Hairs-Human:        PENDING
 [Flags]
-internal enum TokenFlags
+public enum TokenFlags
 {
     /// <summary>None.</summary>
     None = 0,
 
     /// <summary>
     /// A <c>LineTerminator</c>, or a <c>MultiLineComment</c> holding one, stands between the previous token and this one
-    /// (clause 12.10, automatic semicolon insertion and the restricted productions), the start of the text not counting.
+    /// (clause 12.10, automatic semicolon insertion and the restricted productions). For the first token, one before it
+    /// marks it, the line terminator after a hashbang included; the start of the text alone does not.
     /// </summary>
     NewLineBefore = 1,
 

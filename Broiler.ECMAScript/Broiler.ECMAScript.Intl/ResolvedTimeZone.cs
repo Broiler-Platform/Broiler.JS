@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   4
 // Annotated:        4/4
 // Exempt:           10
@@ -24,8 +24,8 @@ namespace Broiler.ECMAScript.Intl;
 /// What kind of zone a date-time format writes in (Broiler.VM's JSD-0053): UTC, the zero offset ICU names GMT, another fixed
 /// offset, or an IANA zone whose offset changes. It is the primary identifier's kind, so it decides how the zone is named.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-getavailablenamedtimezoneidentifier sec-istimezoneoffsetstring, JSD-0082 D15 via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=0; Fingerprint=E3A277
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-getavailablenamedtimezoneidentifier sec-istimezoneoffsetstring, JSD-0082 D15 via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=0; Fingerprint=E3A277
+// Hairs-Human:        PENDING
 public enum TimeZoneKind
 {
     /// <summary>UTC, and every name whose primary identifier is <c>UTC</c>, named CLDR's <c>zone.utc</c> names.</summary>
@@ -52,8 +52,8 @@ public enum TimeZoneKind
 /// (row Z8, a correction of Broiler.VM). The zone keeps its names: its metazone and its generic, specific and location names
 /// are the primary identifier's, as Broiler.VM names them (row T26, implementation-defined).
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-getavailablenamedtimezoneidentifier sec-istimezoneoffsetstring, JSD-0082 D15 via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=0; Fingerprint=C4802D
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-getavailablenamedtimezoneidentifier sec-istimezoneoffsetstring, JSD-0082 D15 via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=0; Fingerprint=C4802D
+// Hairs-Human:        PENDING
 public sealed class ResolvedTimeZone
 {
     private ResolvedTimeZone(string identifier, string primaryIdentifier, int offsetMinutes, TimeZoneKind kind, ITimeZoneRules? rules)
@@ -66,8 +66,8 @@ public sealed class ResolvedTimeZone
     }
 
     /// <summary>UTC: the zone a format writes in where neither the options nor an engine's host-zone provider name another.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-getavailablenamedtimezoneidentifier sec-istimezoneoffsetstring, JSD-0082 D15 via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=0; Fingerprint=55D784
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-getavailablenamedtimezoneidentifier sec-istimezoneoffsetstring, JSD-0082 D15 via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=Low; Resources=0; Fingerprint=55D784
+    // Hairs-Human:        PENDING
     public static ResolvedTimeZone Utc { get; } = new("UTC", "UTC", 0, TimeZoneKind.Utc, null);
 
     /// <summary>
@@ -103,9 +103,9 @@ public sealed class ResolvedTimeZone
     /// seconds or a fraction, which ECMA-402 refuses with a <c>RangeError</c>; or <see cref="IntlStatus.InvalidTimeZone"/>, the
     /// <c>RangeError</c> of a name the database lacks.</returns>
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-getavailablenamedtimezoneidentifier sec-istimezoneoffsetstring, JSD-0082 D15 via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=High; Resources=2; Fingerprint=373863
-    // Broiler-Falsified-If: an identifier is accepted that GetAvailableNamedTimeZoneIdentifier or IsTimeZoneOffsetString refuses, or its identifier or primary differs from the database's
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-getavailablenamedtimezoneidentifier sec-istimezoneoffsetstring, JSD-0082 D15 via Broiler.VM JsRealm.DateTimeFormat; IP=Low; Security=High; Resources=2; Fingerprint=373863
+    // Hairs-Falsified-If: an identifier is accepted that GetAvailableNamedTimeZoneIdentifier or IsTimeZoneOffsetString refuses, or its identifier or primary differs from the database's
+    // Hairs-Human:        PENDING
     public static IntlStatus Resolve(string timeZone, ITimeZoneDatabase timeZones, out ResolvedTimeZone? resolved, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(timeZone);

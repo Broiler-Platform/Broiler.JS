@@ -119,11 +119,14 @@ DEFAULT_UCD = REPOSITORY / "data" / "unicode" / "pins"
 GENERATOR = "generate_collation_vectors.py"
 DIVERGENCES = SCRIPTS / "collation-divergences.txt"
 
-# THE ONE CONSTANT. The corpus revision that adds the area, which every vector's `since` names. It is the next free
+# THE AREA'S CONSTANT. The corpus revision that adds the area, which every vector's `since` names. It is the next free
 # revision after origin/main's when the change merges (revision 30 there on 2026-11-01), and moves with it if another
-# area's revisions merge first. The revision that classifies the first runs is the one after it.
+# area's revisions merge first. The revision that classifies the first runs is the one after it. CORPUS_REVISION
+# follows REVISIONS.md's last row on its own from revision 35 (2026-11-04), which classified another area; until then
+# it was SINCE + 1 and this comment began "THE ONE CONSTANT".
 SINCE = 33
-CORPUS_REVISION = SINCE + 1  # the corpus revision this generator writes: REVISIONS.md's last row (the classification)
+CORPUS_REVISION = 35  # the corpus revision this generator writes: REVISIONS.md's last row (SINCE + 1, the
+                      # classification, until revision 35 of 2026-11-04 classified the Intl area's again)
 
 ECMA402 = "spec:ecma402@3d4c558#"
 ES2026 = "spec:es2026@0248456c#"

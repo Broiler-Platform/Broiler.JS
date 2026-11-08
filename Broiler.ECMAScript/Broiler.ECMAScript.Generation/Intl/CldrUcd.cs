@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   25
 // Annotated:        25/25
 // Exempt:           5
@@ -29,8 +29,8 @@ namespace Broiler.ECMAScript.Generation.Intl;
 /// <summary>An inclusive range of code points.</summary>
 /// <param name="First">The first code point of the range.</param>
 /// <param name="Last">The last code point of the range.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=A74CB7
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=A74CB7
+// Hairs-Human:        PENDING
 internal readonly record struct CodePointRange(int First, int Last);
 
 /// <summary>
@@ -57,52 +57,52 @@ internal readonly record struct CodePointRange(int First, int Last);
 /// first: the home's <see cref="IntlUcdPin"/>, or Broiler.VM's own Unicode pin.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Medium; Resources=6; Fingerprint=6B703E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Medium; Resources=6; Fingerprint=6B703E
+// Hairs-Human:        PENDING
 public sealed class CldrUcd
 {
     /// <summary>The name <c>UnicodeData.txt</c> is read under, as the pins write it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 UCD subset; IP=Low; Security=Low; Resources=0; Fingerprint=B8D9BE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 UCD subset; IP=Low; Security=Low; Resources=0; Fingerprint=B8D9BE
+    // Hairs-Human:        PENDING
     public const string UnicodeDataFile = "ucd-17.0.0/UnicodeData.txt";
 
     /// <summary>The name <c>PropList.txt</c> is read under, as the pins write it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 UCD subset; IP=Low; Security=Low; Resources=0; Fingerprint=033B8C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 UCD subset; IP=Low; Security=Low; Resources=0; Fingerprint=033B8C
+    // Hairs-Human:        PENDING
     public const string PropListFile = "ucd-17.0.0/PropList.txt";
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=EB11D4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=EB11D4
+    // Hairs-Human:        PENDING
     private const int MaxCodePoint = 0x10FFFF;
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=1AC5B6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=1AC5B6
+    // Hairs-Human:        PENDING
     private const int HangulSBase = 0xAC00;
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=367480
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=367480
+    // Hairs-Human:        PENDING
     private const int HangulLBase = 0x1100;
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=D57D26
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=D57D26
+    // Hairs-Human:        PENDING
     private const int HangulVBase = 0x1161;
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=D8C7B3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=D8C7B3
+    // Hairs-Human:        PENDING
     private const int HangulTBase = 0x11A7;
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=34EF51
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=34EF51
+    // Hairs-Human:        PENDING
     private const int HangulVCount = 21;
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=47F774
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=47F774
+    // Hairs-Human:        PENDING
     private const int HangulTCount = 28;
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=BE574F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=BE574F
+    // Hairs-Human:        PENDING
     private const int HangulNCount = HangulVCount * HangulTCount;
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=C230BE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=C230BE
+    // Hairs-Human:        PENDING
     private const int HangulSCount = 19 * HangulNCount;
 
     /// <summary>The thirty General_Category values, unassigned first: a code point's category is its index here.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=4547CC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=0; Fingerprint=4547CC
+    // Hairs-Human:        PENDING
     private static ImmutableArray<string> Categories { get; } = ImmutableArray.Create(
         "Cn", "Lu", "Ll", "Lt", "Lm", "Lo", "Mn", "Mc", "Me", "Nd", "Nl", "No", "Pc", "Pd", "Ps", "Pe", "Pi", "Pf", "Po",
         "Sm", "Sc", "Sk", "So", "Zs", "Zl", "Zp", "Cc", "Cf", "Cs", "Co");
@@ -120,8 +120,8 @@ public sealed class CldrUcd
     }
 
     /// <summary>The Unicode version the files are read as.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 UCD subset; IP=Low; Security=Low; Resources=0; Fingerprint=3C6364
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 UCD subset; IP=Low; Security=Low; Resources=0; Fingerprint=3C6364
+    // Hairs-Human:        PENDING
     public static string Version => IntlDataVersions.UnicodeVersion;
 
     /// <summary>Each code point's full canonical decomposition, where it has one; Hangul syllables excluded.</summary>
@@ -136,9 +136,9 @@ public sealed class CldrUcd
     /// </summary>
     /// <param name="files">The files' bytes, by the names the pins write them under; other files are not read.</param>
     /// <exception cref="InvalidDataException">A file is missing, or a check above fails.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=High; Resources=6; Fingerprint=E61D3D
-    // Broiler-Falsified-If: a UnicodeData.txt record with a field missing, an unknown category, or a decomposition on a range, or a Unified_Ideograph code point that is not an assigned letter, is read without an exception
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=High; Resources=6; Fingerprint=E61D3D
+    // Hairs-Falsified-If: a UnicodeData.txt record with a field missing, an unknown category, or a decomposition on a range, or a Unified_Ideograph code point that is not an assigned letter, is read without an exception
+    // Hairs-Human:        PENDING
     public static CldrUcd Read(IReadOnlyDictionary<string, byte[]> files)
     {
         ArgumentNullException.ThrowIfNull(files);
@@ -242,8 +242,8 @@ public sealed class CldrUcd
     }
 
     /// <summary>The canonical combining class of <paramref name="codePoint"/>; 0 for a code point UnicodeData.txt does not list.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Medium; Resources=0; Fingerprint=E47A71
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Medium; Resources=0; Fingerprint=E47A71
+    // Hairs-Human:        PENDING
     internal int CombiningClass(int codePoint) => combiningClass[codePoint];
 
     /// <summary>
@@ -251,21 +251,21 @@ public sealed class CldrUcd
     /// <c>Sk</c>, <c>So</c>, <c>Zs</c>, <c>Zl</c> or <c>Zp</c>), the set CLDR's currency spacing reads as
     /// <c>[[:S:][:Z:]]</c>.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=0; Fingerprint=48AC21
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=0; Fingerprint=48AC21
+    // Hairs-Human:        PENDING
     internal bool IsSymbolOrSeparator(int codePoint) => Categories[category[codePoint]][0] is 'S' or 'Z';
 
     /// <summary>
     /// <paramref name="codePoint"/>'s General_Category, its two-letter alias (<c>Lu</c>, <c>Nd</c>, ...): what a collation
     /// tailoring's <c>[reorder]</c> reads to find where the scripts begin (milestone SJL-17.3).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=UCD General_Category; IP=Low; Security=Low; Resources=0; Fingerprint=5E84B2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=UCD General_Category; IP=Low; Security=Low; Resources=0; Fingerprint=5E84B2
+    // Hairs-Human:        PENDING
     internal string GeneralCategory(int codePoint) => Categories[category[codePoint]];
 
     /// <summary>The full Hangul syllable decomposition, LV or LVT.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=1; Fingerprint=3F88E4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=Low; Resources=1; Fingerprint=3F88E4
+    // Hairs-Human:        PENDING
     internal static int[] Hangul(int syllable)
     {
         var index = syllable - HangulSBase;
@@ -277,9 +277,9 @@ public sealed class CldrUcd
     }
 
     /// <summary><c>UnicodeData.txt</c>'s records, with each <c>&lt;..., First&gt;</c>/<c>&lt;..., Last&gt;</c> pair joined into one range.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=High; Resources=3; Fingerprint=AA1255
-    // Broiler-Falsified-If: a line of a field count other than fifteen, or a Last record no First record opened, is read without an exception
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDatabase; IP=Low; Security=High; Resources=3; Fingerprint=AA1255
+    // Hairs-Falsified-If: a line of a field count other than fifteen, or a Last record no First record opened, is read without an exception
+    // Hairs-Human:        PENDING
     private static IEnumerable<(int First, int Last, string[] Fields)> UnicodeDataEntries(string text)
     {
         string[]? opened = null;
@@ -321,8 +321,8 @@ public sealed class CldrUcd
     }
 
     /// <summary>Every data line of a UCD file as trimmed fields, with the <c>#</c> comment removed and blank lines skipped.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDataFile; IP=Low; Security=Medium; Resources=2; Fingerprint=4C79F2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDataFile; IP=Low; Security=Medium; Resources=2; Fingerprint=4C79F2
+    // Hairs-Human:        PENDING
     private static IEnumerable<string[]> Records(string text)
     {
         foreach (var raw in text.Split('\n'))
@@ -338,8 +338,8 @@ public sealed class CldrUcd
     }
 
     /// <summary><c>0041</c> or <c>0041..005A</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDataFile; IP=Low; Security=Medium; Resources=1; Fingerprint=58EE94
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDataFile; IP=Low; Security=Medium; Resources=1; Fingerprint=58EE94
+    // Hairs-Human:        PENDING
     private static CodePointRange Range(string field)
     {
         var dots = field.IndexOf("..", StringComparison.Ordinal);
@@ -350,8 +350,8 @@ public sealed class CldrUcd
     }
 
     /// <summary>A code point in hexadecimal, read through the invariant format.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDataFile; IP=Low; Security=Medium; Resources=1; Fingerprint=AADBC6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDataFile; IP=Low; Security=Medium; Resources=1; Fingerprint=AADBC6
+    // Hairs-Human:        PENDING
     private static int Hex(string text)
     {
         var value = int.Parse(text, NumberStyles.AllowHexSpecifier, NumberFormatInfo.InvariantInfo);
@@ -365,8 +365,8 @@ public sealed class CldrUcd
     }
 
     /// <summary>Sorted, merged: ascending, disjoint and never adjacent.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDataFile; IP=Low; Security=Medium; Resources=2; Fingerprint=5FCA06
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 UCD subset via Broiler.VM UnicodeDataFile; IP=Low; Security=Medium; Resources=2; Fingerprint=5FCA06
+    // Hairs-Human:        PENDING
     private static ImmutableArray<CodePointRange> Normalize(IEnumerable<CodePointRange> ranges)
     {
         var merged = new List<CodePointRange>();

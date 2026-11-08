@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   18
 // Annotated:        18/18
 // Exempt:           9
@@ -21,8 +21,8 @@ using Broiler.ECMAScript.Numbers;
 namespace Broiler.ECMAScript.Temporal;
 
 /// <summary>The <c>calendarName</c> option of the <c>toString</c> methods (<c>GetTemporalShowCalendarNameOption</c>).</summary>
-// Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalShowCalendarNameOption via Broiler.VM JsTemporal.ShowCalendar; IP=Low; Security=None; Resources=0; Fingerprint=C65215
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalShowCalendarNameOption via Broiler.VM JsTemporal.ShowCalendar; IP=Low; Security=None; Resources=0; Fingerprint=C65215
+// Hairs-Human:        PENDING
 public enum ShowCalendarName
 {
     /// <summary><c>"auto"</c>, the default: the annotation for every calendar but <c>iso8601</c>.</summary>
@@ -39,8 +39,8 @@ public enum ShowCalendarName
 }
 
 /// <summary>The <c>timeZoneName</c> option of <c>ZonedDateTime.prototype.toString</c> (<c>GetTemporalShowTimeZoneNameOption</c>).</summary>
-// Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalShowTimeZoneNameOption via Broiler.VM JsTemporal.ShowTimeZone; IP=Low; Security=None; Resources=0; Fingerprint=AF3A5D
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalShowTimeZoneNameOption via Broiler.VM JsTemporal.ShowTimeZone; IP=Low; Security=None; Resources=0; Fingerprint=AF3A5D
+// Hairs-Human:        PENDING
 public enum ShowTimeZoneName
 {
     /// <summary><c>"auto"</c>, the default: the time zone annotation.</summary>
@@ -54,8 +54,8 @@ public enum ShowTimeZoneName
 }
 
 /// <summary>The <c>offset</c> option of <c>ZonedDateTime.prototype.toString</c> (<c>GetTemporalShowOffsetOption</c>).</summary>
-// Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalShowOffsetOption via Broiler.VM JsTemporal.ShowOffset; IP=Low; Security=None; Resources=0; Fingerprint=7FE9A9
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalShowOffsetOption via Broiler.VM JsTemporal.ShowOffset; IP=Low; Security=None; Resources=0; Fingerprint=7FE9A9
+// Hairs-Human:        PENDING
 public enum ShowOffset
 {
     /// <summary><c>"auto"</c>, the default: the offset, rounded to the minute.</summary>
@@ -75,8 +75,8 @@ public enum ShowOffset
 /// </param>
 /// <param name="Unit">The unit rounded to: minute, second, millisecond, microsecond or nanosecond.</param>
 /// <param name="Increment">The increment of that unit: 1, 10 or 100.</param>
-// Broiler-AI:           Origin=Ported; Spec=Temporal ToSecondsStringPrecisionRecord via Broiler.VM JsPrecision; IP=Low; Security=None; Resources=0; Fingerprint=378538
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal ToSecondsStringPrecisionRecord via Broiler.VM JsPrecision; IP=Low; Security=None; Resources=0; Fingerprint=378538
+// Hairs-Human:        PENDING
 public readonly record struct SecondsStringPrecision(int Precision, TemporalUnit Unit, long Increment);
 
 /// <summary>
@@ -91,26 +91,26 @@ public readonly record struct SecondsStringPrecision(int Precision, TemporalUnit
 /// (S2, S4, S5, S7, S11). The class is partial: the durations sub-area adds the rules of the rounding and difference
 /// options to it.
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0078 options rules, Temporal option operations via Broiler.VM JsTemporal.Options; IP=Low; Security=Medium; Resources=0; Fingerprint=F3C848
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0078 options rules, Temporal option operations via Broiler.VM JsTemporal.Options; IP=Low; Security=Medium; Resources=0; Fingerprint=F3C848
+// Hairs-Human:        PENDING
 public static partial class TemporalOptionRules
 {
     /// <summary>The <c>overflow</c> option's default, <c>"constrain"</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalOverflowOption via Broiler.VM JsTemporal.Reject; IP=Low; Security=None; Resources=0; Fingerprint=AD6D2B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalOverflowOption via Broiler.VM JsTemporal.Reject; IP=Low; Security=None; Resources=0; Fingerprint=AD6D2B
+    // Hairs-Human:        PENDING
     public const TemporalOverflow DefaultOverflow = TemporalOverflow.Constrain;
 
     /// <summary>The <c>roundingMode</c> default of every <c>toString</c>, <c>"trunc"</c>; the names are SJL-4's <see cref="ExactRounding.TryParseRoundingMode"/>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal GetRoundingModeOption via Broiler.VM JsTemporal.RoundingModeOption; IP=Low; Security=None; Resources=0; Fingerprint=EA4364
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal GetRoundingModeOption via Broiler.VM JsTemporal.RoundingModeOption; IP=Low; Security=None; Resources=0; Fingerprint=EA4364
+    // Hairs-Human:        PENDING
     public const RoundingMode DefaultToStringRoundingMode = RoundingMode.Trunc;
 
     /// <summary>Reads the <c>overflow</c> option's string: <c>GetTemporalOverflowOption</c>'s allowed values, compared exactly.</summary>
     /// <param name="value">The option's string, after the engine's <c>ToString</c>.</param>
     /// <param name="overflow">The overflow; <see cref="DefaultOverflow"/> when the string is not one.</param>
     /// <returns>Whether the string is <c>"constrain"</c> or <c>"reject"</c>; any other is the specification's <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalOverflowOption via Broiler.VM JsTemporal.Reject; IP=Low; Security=Medium; Resources=0; Fingerprint=29A46F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalOverflowOption via Broiler.VM JsTemporal.Reject; IP=Low; Security=Medium; Resources=0; Fingerprint=29A46F
+    // Hairs-Human:        PENDING
     public static bool TryParseOverflow(ReadOnlySpan<char> value, out TemporalOverflow overflow)
     {
         overflow = value switch
@@ -131,8 +131,8 @@ public static partial class TemporalOptionRules
     /// <param name="value">The option's string, after the engine's <c>ToString</c>.</param>
     /// <param name="show">The display; <see cref="ShowCalendarName.Auto"/>, the default, when the string is not one.</param>
     /// <returns>Whether the string is <c>"auto"</c>, <c>"always"</c>, <c>"never"</c> or <c>"critical"</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalShowCalendarNameOption via Broiler.VM JsTemporal.ShowCalendar; IP=Low; Security=Medium; Resources=0; Fingerprint=436AD4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalShowCalendarNameOption via Broiler.VM JsTemporal.ShowCalendar; IP=Low; Security=Medium; Resources=0; Fingerprint=436AD4
+    // Hairs-Human:        PENDING
     public static bool TryParseShowCalendarName(ReadOnlySpan<char> value, out ShowCalendarName show)
     {
         show = value switch
@@ -155,8 +155,8 @@ public static partial class TemporalOptionRules
     /// <param name="value">The option's string, after the engine's <c>ToString</c>.</param>
     /// <param name="show">The display; <see cref="ShowTimeZoneName.Auto"/>, the default, when the string is not one.</param>
     /// <returns>Whether the string is <c>"auto"</c>, <c>"never"</c> or <c>"critical"</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalShowTimeZoneNameOption via Broiler.VM JsTemporal.ShowTimeZone; IP=Low; Security=Medium; Resources=0; Fingerprint=D69B1A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalShowTimeZoneNameOption via Broiler.VM JsTemporal.ShowTimeZone; IP=Low; Security=Medium; Resources=0; Fingerprint=D69B1A
+    // Hairs-Human:        PENDING
     public static bool TryParseShowTimeZoneName(ReadOnlySpan<char> value, out ShowTimeZoneName show)
     {
         show = value switch
@@ -178,8 +178,8 @@ public static partial class TemporalOptionRules
     /// <param name="value">The option's string, after the engine's <c>ToString</c>.</param>
     /// <param name="show">The display; <see cref="ShowOffset.Auto"/>, the default, when the string is not one.</param>
     /// <returns>Whether the string is <c>"auto"</c> or <c>"never"</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalShowOffsetOption via Broiler.VM JsTemporal.ShowOffset; IP=Low; Security=Medium; Resources=0; Fingerprint=3A282F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalShowOffsetOption via Broiler.VM JsTemporal.ShowOffset; IP=Low; Security=Medium; Resources=0; Fingerprint=3A282F
+    // Hairs-Human:        PENDING
     public static bool TryParseShowOffset(ReadOnlySpan<char> value, out ShowOffset show)
     {
         show = value switch
@@ -207,8 +207,8 @@ public static partial class TemporalOptionRules
     /// A value that is not a Number is <c>ToString</c>'d by the engine and accepted only as <c>"auto"</c>
     /// (<see cref="IsFractionalSecondDigitsAuto"/>); an undefined value is <see cref="TemporalFormat.AutoPrecision"/>.
     /// </remarks>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalFractionalSecondDigitsOption via Broiler.VM JsTemporal.FractionalSecondDigits; IP=Low; Security=Medium; Resources=0; Fingerprint=B83F0E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalFractionalSecondDigitsOption via Broiler.VM JsTemporal.FractionalSecondDigits; IP=Low; Security=Medium; Resources=0; Fingerprint=B83F0E
+    // Hairs-Human:        PENDING
     public static bool TryParseFractionalSecondDigits(double value, out int digits)
     {
         digits = TemporalFormat.AutoPrecision;
@@ -229,8 +229,8 @@ public static partial class TemporalOptionRules
     /// </summary>
     /// <param name="value">The option's string, after the engine's <c>ToString</c>.</param>
     /// <returns>Whether it is <c>"auto"</c>, whose digits are <see cref="TemporalFormat.AutoPrecision"/>; any other is the <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalFractionalSecondDigitsOption via Broiler.VM JsTemporal.FractionalSecondDigits; IP=Low; Security=Medium; Resources=0; Fingerprint=2A06D8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalFractionalSecondDigitsOption via Broiler.VM JsTemporal.FractionalSecondDigits; IP=Low; Security=Medium; Resources=0; Fingerprint=2A06D8
+    // Hairs-Human:        PENDING
     public static bool IsFractionalSecondDigitsAuto(ReadOnlySpan<char> value) => value.SequenceEqual("auto");
 
     /// <summary>
@@ -240,8 +240,8 @@ public static partial class TemporalOptionRules
     /// <param name="value">The option's string, after the engine's <c>ToString</c>.</param>
     /// <param name="unit">The unit, or <see cref="TemporalUnit.Auto"/>; <see cref="TemporalUnit.Unset"/> when the string is not one.</param>
     /// <returns>Whether the string is allowed; any other is the <c>RangeError</c> the read throws. The unit's group is validated afterwards.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal GetTemporalUnitValuedOption via Broiler.VM JsTemporal.UnitOption; IP=Low; Security=Medium; Resources=0; Fingerprint=C86BBE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal GetTemporalUnitValuedOption via Broiler.VM JsTemporal.UnitOption; IP=Low; Security=Medium; Resources=0; Fingerprint=C86BBE
+    // Hairs-Human:        PENDING
     public static bool TryParseUnit(ReadOnlySpan<char> value, out TemporalUnit unit)
     {
         unit = value switch
@@ -273,8 +273,8 @@ public static partial class TemporalOptionRules
     /// Whether the unit is unset, minute (but for a duration), second, millisecond, microsecond or nanosecond; a date unit,
     /// <c>auto</c> and hour are the specification's <c>RangeError</c>.
     /// </returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ValidateTemporalUnitValue and the toString methods via Broiler.VM JsTemporal.ValidateUnit; IP=Low; Security=Medium; Resources=0; Fingerprint=BB699B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ValidateTemporalUnitValue and the toString methods via Broiler.VM JsTemporal.ValidateUnit; IP=Low; Security=Medium; Resources=0; Fingerprint=BB699B
+    // Hairs-Human:        PENDING
     public static bool IsValidToStringSmallestUnit(TemporalUnit smallestUnit, bool duration) => smallestUnit switch
     {
         TemporalUnit.Unset or TemporalUnit.Second or TemporalUnit.Millisecond or TemporalUnit.Microsecond or TemporalUnit.Nanosecond => true,
@@ -290,8 +290,8 @@ public static partial class TemporalOptionRules
     /// <param name="fractionalSecondDigits">0 to 9, or <see cref="TemporalFormat.AutoPrecision"/>.</param>
     /// <returns>The precision, the unit and the increment.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The unit or the digit count is outside its domain.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ToSecondsStringPrecisionRecord via Broiler.VM JsTemporal.Precision; IP=Low; Security=Low; Resources=0; Fingerprint=760507
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ToSecondsStringPrecisionRecord via Broiler.VM JsTemporal.Precision; IP=Low; Security=Low; Resources=0; Fingerprint=760507
+    // Hairs-Human:        PENDING
     public static SecondsStringPrecision ToSecondsStringPrecisionRecord(TemporalUnit smallestUnit, int fractionalSecondDigits)
     {
         if (fractionalSecondDigits is < TemporalFormat.AutoPrecision or > 9)
@@ -325,8 +325,8 @@ public static partial class TemporalOptionRules
     /// <param name="inclusive">Whether the increment may equal the dividend.</param>
     /// <returns>Whether the increment is valid; otherwise the specification's <c>RangeError</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The increment or the dividend is not positive.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ValidateTemporalRoundingIncrement via Broiler.VM JsTemporal.ValidateIncrement; IP=Low; Security=Low; Resources=0; Fingerprint=C94BDA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ValidateTemporalRoundingIncrement via Broiler.VM JsTemporal.ValidateIncrement; IP=Low; Security=Low; Resources=0; Fingerprint=C94BDA
+    // Hairs-Human:        PENDING
     public static bool IsValidRoundingIncrement(long increment, long dividend, bool inclusive)
     {
         if (increment < 1)
@@ -339,8 +339,8 @@ public static partial class TemporalOptionRules
     }
 
     // 10 to a small power.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ToSecondsStringPrecisionRecord via Broiler.VM JsTemporal.Pow10; IP=Low; Security=Low; Resources=0; Fingerprint=B73D51
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ToSecondsStringPrecisionRecord via Broiler.VM JsTemporal.Pow10; IP=Low; Security=Low; Resources=0; Fingerprint=B73D51
+    // Hairs-Human:        PENDING
     private static long Pow10(int exponent)
     {
         var result = 1L;

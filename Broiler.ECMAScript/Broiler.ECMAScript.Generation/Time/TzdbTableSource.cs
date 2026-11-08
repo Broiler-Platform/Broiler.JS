@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   2
 // Annotated:        2/2
 // Exempt:           0
@@ -37,15 +37,15 @@ namespace Broiler.ECMAScript.Generation.Time;
 /// committed file byte for byte.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=70FA20
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=70FA20
+// Hairs-Human:        PENDING
 public static class TzdbTableSource
 {
     /// <summary>The C# text of a static class holding <paramref name="tables"/>.</summary>
     /// <param name="tables">The tables, as <see cref="TzdbTableGenerator.Generate"/> answers them.</param>
     /// <param name="options">The namespace, the class, and the comment lines around them.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=0F1FA0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 SJL-D-6 (c) table source via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=4; Fingerprint=0F1FA0
+    // Hairs-Human:        PENDING
     public static string Write(TzdbTables tables, TableSourceOptions options)
     {
         ArgumentNullException.ThrowIfNull(tables);

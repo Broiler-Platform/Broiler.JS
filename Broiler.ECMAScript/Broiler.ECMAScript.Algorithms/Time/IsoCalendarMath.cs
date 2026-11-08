@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   16
 // Annotated:        16/16
 // Exempt:           0
@@ -39,16 +39,16 @@ namespace Broiler.ECMAScript.Time;
 /// weekdays as the year 400 after it.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Medium; Resources=1; Fingerprint=3DCDAC
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Medium; Resources=1; Fingerprint=3DCDAC
+// Hairs-Human:        PENDING
 public static class IsoCalendarMath
 {
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=1; Fingerprint=5C4590
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=1; Fingerprint=5C4590
+    // Hairs-Human:        PENDING
     private const long YearLimit = 9007199254740992L; // 2^53
 
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=1; Fingerprint=D8BC08
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=1; Fingerprint=D8BC08
+    // Hairs-Human:        PENDING
     private const long DayLimit = 1152921504606846976L; // 2^60
 
     /// <summary>
@@ -57,15 +57,15 @@ public static class IsoCalendarMath
     /// </summary>
     /// <param name="year">The year.</param>
     /// <returns>Whether it is divisible by 4, and by 400 when it is divisible by 100.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.5; IP=Low; Security=Low; Resources=1; Fingerprint=AEDB68
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.5; IP=Low; Security=Low; Resources=1; Fingerprint=AEDB68
+    // Hairs-Human:        PENDING
     public static bool IsLeapYear(long year) => year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
 
     /// <summary>The days in a year: <c>MathematicalDaysInYear</c> of the Temporal proposal.</summary>
     /// <param name="year">The year.</param>
     /// <returns>366 or 365.</returns>
-    // Broiler-AI:           Origin=AI; Spec=Temporal MathematicalDaysInYear; IP=Low; Security=Low; Resources=1; Fingerprint=110D79
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal MathematicalDaysInYear; IP=Low; Security=Low; Resources=1; Fingerprint=110D79
+    // Hairs-Human:        PENDING
     public static int DaysInYear(long year) => IsLeapYear(year) ? 366 : 365;
 
     /// <summary>The days in a month: <c>ISODaysInMonth</c> of the Temporal proposal.</summary>
@@ -73,8 +73,8 @@ public static class IsoCalendarMath
     /// <param name="month">The month, from 1 to 12.</param>
     /// <returns>From 28 to 31.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The month is outside 1 to 12.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISODaysInMonth; IP=Low; Security=Low; Resources=1; Fingerprint=50127B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISODaysInMonth; IP=Low; Security=Low; Resources=1; Fingerprint=50127B
+    // Hairs-Human:        PENDING
     public static int DaysInMonth(long year, int month) => CheckMonth(month) switch
     {
         2 => IsLeapYear(year) ? 29 : 28,
@@ -91,8 +91,8 @@ public static class IsoCalendarMath
     /// <param name="day">The day; one outside the month carries into the months around it.</param>
     /// <returns>The epoch days, negative before 1970.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The year's magnitude is above 2^53, or the month is outside 1 to 12.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISODateToEpochDays; IP=Low; Security=Medium; Resources=1; Fingerprint=DA1680
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISODateToEpochDays; IP=Low; Security=Medium; Resources=1; Fingerprint=DA1680
+    // Hairs-Human:        PENDING
     public static long EpochDays(long year, int month, int day)
     {
         CheckYear(year);
@@ -113,8 +113,8 @@ public static class IsoCalendarMath
     /// <param name="days">The epoch days, at most 2^60 in magnitude.</param>
     /// <returns>The year, the month from 1 to 12 and the day from 1 to 31.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The magnitude of <paramref name="days"/> is above 2^60.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal EpochDaysToISODate; IP=Low; Security=Medium; Resources=1; Fingerprint=D65FB8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal EpochDaysToISODate; IP=Low; Security=Medium; Resources=1; Fingerprint=D65FB8
+    // Hairs-Human:        PENDING
     public static (long Year, int Month, int Day) FromEpochDays(long days)
     {
         CheckMagnitude(days, DayLimit, nameof(days));
@@ -137,8 +137,8 @@ public static class IsoCalendarMath
     /// <param name="day">The day.</param>
     /// <returns>From 1 (Monday) to 7 (Sunday).</returns>
     /// <exception cref="ArgumentOutOfRangeException">The year's magnitude is above 2^53, or the month is outside 1 to 12.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISODayOfWeek; IP=Low; Security=Low; Resources=1; Fingerprint=0597D2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISODayOfWeek; IP=Low; Security=Low; Resources=1; Fingerprint=0597D2
+    // Hairs-Human:        PENDING
     public static int DayOfWeek(long year, int month, int day)
     {
         // ECMA-262's WeekDay (21.4.1.13) counts Sunday as 0 from the epoch's Thursday; Temporal counts
@@ -154,8 +154,8 @@ public static class IsoCalendarMath
     /// <param name="day">The day, from 1 to the month's length.</param>
     /// <returns>From 1 to 366.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The year's magnitude is above 2^53, or the month is outside 1 to 12.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISODayOfYear; IP=Low; Security=Low; Resources=1; Fingerprint=92131E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISODayOfYear; IP=Low; Security=Low; Resources=1; Fingerprint=92131E
+    // Hairs-Human:        PENDING
     public static int DayOfYear(long year, int month, int day) =>
         (int)(EpochDays(year, month, day) - EpochDays(year, 1, 1)) + 1;
 
@@ -168,8 +168,8 @@ public static class IsoCalendarMath
     /// <param name="day">The day, from 1 to the month's length.</param>
     /// <returns>The week, from 1 to 53, and its year, which is the date's or the one either side of it.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The year's magnitude is above 2^53 - 1, or the month is outside 1 to 12.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISOWeekOfYear; IP=Low; Security=Medium; Resources=1; Fingerprint=D5B2A2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISOWeekOfYear; IP=Low; Security=Medium; Resources=1; Fingerprint=D5B2A2
+    // Hairs-Human:        PENDING
     public static (int Week, long Year) WeekOfYear(long year, int month, int day)
     {
         const int Wednesday = 3;
@@ -212,8 +212,8 @@ public static class IsoCalendarMath
     /// <param name="month">The one-based month, at most 2^62 in magnitude.</param>
     /// <returns><c>year + floor((month - 1) / 12)</c> and <c>((month - 1) modulo 12) + 1</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Either argument's magnitude is above 2^62.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal BalanceISOYearMonth; IP=Low; Security=Low; Resources=1; Fingerprint=F28E75
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal BalanceISOYearMonth; IP=Low; Security=Low; Resources=1; Fingerprint=F28E75
+    // Hairs-Human:        PENDING
     public static (long Year, int Month) BalanceYearMonth(long year, long month)
     {
         const long Limit = 4611686018427387904L; // 2^62
@@ -229,25 +229,25 @@ public static class IsoCalendarMath
     /// <param name="month">The month.</param>
     /// <param name="day">The day.</param>
     /// <returns>Whether the month is from 1 to 12 and the day from 1 to the month's length in that year.</returns>
-    // Broiler-AI:           Origin=AI; Spec=Temporal IsValidISODate; IP=Low; Security=Low; Resources=1; Fingerprint=B0CF60
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal IsValidISODate; IP=Low; Security=Low; Resources=1; Fingerprint=B0CF60
+    // Hairs-Human:        PENDING
     public static bool IsValidIsoDate(long year, int month, int day) =>
         month is >= 1 and <= 12 && day >= 1 && day <= DaysInMonth(year, month);
 
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=1; Fingerprint=F37F17
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=1; Fingerprint=F37F17
+    // Hairs-Human:        PENDING
     private static void CheckYear(long year) => CheckMagnitude(year, YearLimit, nameof(year));
 
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=1; Fingerprint=4E140C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=1; Fingerprint=4E140C
+    // Hairs-Human:        PENDING
     private static void CheckMagnitude(long value, long limit, string name)
     {
         if (value < -limit || value > limit)
             throw new ArgumentOutOfRangeException(name, value, "The magnitude is above the operation's limit.");
     }
 
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISODaysInMonth; IP=Low; Security=Low; Resources=1; Fingerprint=75B846
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISODaysInMonth; IP=Low; Security=Low; Resources=1; Fingerprint=75B846
+    // Hairs-Human:        PENDING
     private static int CheckMonth(int month)
     {
         if (month is < 1 or > 12)

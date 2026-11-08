@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   9
 // Annotated:        9/9
 // Exempt:           0
@@ -41,15 +41,15 @@ namespace Broiler.ECMAScript.Numbers;
 /// platform's <c>Math.Pow</c>, after the clause's special cases.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=AD7233
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=AD7233
+// Hairs-Human:        PENDING
 public static class MathKernels
 {
     /// <summary><c>Math.round</c> (ECMA-262 21.3.2.28): the integral Number nearest the argument, a tie toward +Infinity.</summary>
     /// <param name="x">The Number.</param>
     /// <returns>The argument itself when it is not finite or already integral; -0 from -0.5 up to -0; +0 from above +0 below 0.5.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.28; IP=Low; Security=Medium; Resources=1; Fingerprint=C130E1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.28; IP=Low; Security=Medium; Resources=1; Fingerprint=C130E1
+    // Hairs-Human:        PENDING
     public static double Round(double x)
     {
         if (!double.IsFinite(x) || Math.Truncate(x) == x)
@@ -72,8 +72,8 @@ public static class MathKernels
     /// <param name="base">The base.</param>
     /// <param name="exponent">The exponent.</param>
     /// <returns>The power. <c>1 ** NaN</c> and <c>(-1) ** ±Infinity</c> are NaN, as the clause says, where IEEE 754's <c>pow</c> answers 1.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.3; IP=Low; Security=Medium; Resources=1; Fingerprint=8E6A93
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.3; IP=Low; Security=Medium; Resources=1; Fingerprint=8E6A93
+    // Hairs-Human:        PENDING
     public static double Power(double @base, double exponent)
     {
         if (double.IsNaN(exponent))
@@ -111,8 +111,8 @@ public static class MathKernels
     /// and scaled back. The result is within one unit in the last place of the exact value, and is the
     /// exact value whenever that is a double.
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.18; IP=Low; Security=Medium; Resources=1; Fingerprint=F72AA3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.18; IP=Low; Security=Medium; Resources=1; Fingerprint=F72AA3
+    // Hairs-Human:        PENDING
     public static double Hypot(ReadOnlySpan<double> values)
     {
         var largest = 0.0;
@@ -162,8 +162,8 @@ public static class MathKernels
     /// argument exactly. No midpoint between doubles is the cube root of a double, so there is never a
     /// tie to decide.
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.9; IP=Low; Security=Medium; Resources=1; Fingerprint=0103F3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.9; IP=Low; Security=Medium; Resources=1; Fingerprint=0103F3
+    // Hairs-Human:        PENDING
     public static double Cbrt(double x)
     {
         if (!double.IsFinite(x) || x == 0)
@@ -196,23 +196,23 @@ public static class MathKernels
     /// <summary><c>Math.expm1</c> (ECMA-262 21.3.2.15): <c>e^x - 1</c>, accurate near zero, within one unit in the last place.</summary>
     /// <param name="x">The Number.</param>
     /// <returns>The argument itself when it is NaN, a zero or +Infinity; -1 for -Infinity; otherwise the approximation.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.15; IP=Low; Security=Medium; Resources=1; Fingerprint=252BCD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.15; IP=Low; Security=Medium; Resources=1; Fingerprint=252BCD
+    // Hairs-Human:        PENDING
     public static double Expm1(double x) => Fdlibm.Expm1(x);
 
     /// <summary><c>Math.log1p</c> (ECMA-262 21.3.2.21): <c>ln(1 + x)</c>, accurate near zero, within one unit in the last place.</summary>
     /// <param name="x">The Number.</param>
     /// <returns>The argument itself when it is NaN, a zero or +Infinity; -Infinity for -1; NaN below -1; otherwise the approximation.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.21; IP=Low; Security=Medium; Resources=1; Fingerprint=57F9BF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.21; IP=Low; Security=Medium; Resources=1; Fingerprint=57F9BF
+    // Hairs-Human:        PENDING
     public static double Log1p(double x) => Fdlibm.Log1p(x);
 
     /// <summary>A positive finite double as its exact integer significand and the exponent of its last place.</summary>
     /// <param name="value">The double.</param>
     /// <param name="exponent">The exponent of the significand's last place.</param>
     /// <returns>The significand, the hidden bit included.</returns>
-    // Broiler-AI:           Origin=AI; Spec=IEEE 754-2019 3.4; IP=Low; Security=Low; Resources=1; Fingerprint=4EF180
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=IEEE 754-2019 3.4; IP=Low; Security=Low; Resources=1; Fingerprint=4EF180
+    // Hairs-Human:        PENDING
     private static BigInteger Exact(double value, out int exponent)
     {
         var bits = DoubleBits.Of(value);
@@ -229,8 +229,8 @@ public static class MathKernels
     /// <param name="significand">The target's significand.</param>
     /// <param name="exponent">The target's exponent.</param>
     /// <returns>Negative when the midpoint's cube is below the target, positive when above.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.9; IP=Low; Security=Medium; Resources=1; Fingerprint=24619F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.9; IP=Low; Security=Medium; Resources=1; Fingerprint=24619F
+    // Hairs-Human:        PENDING
     private static int CompareCube(double lower, double upper, BigInteger significand, int exponent)
     {
         var a = Exact(lower, out var aExponent);

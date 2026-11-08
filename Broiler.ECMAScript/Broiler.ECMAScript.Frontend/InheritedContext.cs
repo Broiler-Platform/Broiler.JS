@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   3
 // Annotated:        3/3
 // Exempt:           6
@@ -43,8 +43,8 @@ namespace Broiler.ECMAScript.Syntax;
 /// <c>SyntaxError</c> each engine raises, until SJL-15's model.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s19.2.1.1 PerformEval, JSD-0083 D16 D44; IP=Low; Security=Medium; Resources=0; Fingerprint=82941F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s19.2.1.1 PerformEval, JSD-0083 D16 D44; IP=Low; Security=Medium; Resources=0; Fingerprint=82941F
+// Hairs-Human:        PENDING
 public sealed class InheritedContext
 {
     private readonly IReadOnlyList<string>? visiblePrivateNames;
@@ -86,16 +86,16 @@ public sealed class InheritedContext
     /// undeclared private name to the engine.
     /// </summary>
     /// <exception cref="ArgumentException">A name is null, or is not <c>#</c> followed by at least one code unit.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.7.1 PrivateIdentifier, JSD-0083 D16 D44 private names; IP=Low; Security=Medium; Resources=1; Fingerprint=EE18DD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.7.1 PrivateIdentifier, JSD-0083 D16 D44 private names; IP=Low; Security=Medium; Resources=1; Fingerprint=EE18DD
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string>? VisiblePrivateNames
     {
         get => visiblePrivateNames;
         init => visiblePrivateNames = value is null ? null : Copy(value);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.7.1 PrivateIdentifier StringValue; IP=Low; Security=Medium; Resources=1; Fingerprint=D72E55
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.7.1 PrivateIdentifier StringValue; IP=Low; Security=Medium; Resources=1; Fingerprint=D72E55
+    // Hairs-Human:        PENDING
     private static IReadOnlyList<string> Copy(IReadOnlyList<string> names)
     {
         var copy = new string[names.Count];

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   37
 // Annotated:        37/37
 // Exempt:           1
@@ -20,16 +20,16 @@ using System.Collections.Generic;
 namespace Broiler.ECMAScript.Syntax;
 
 /// <summary>The goals' roots, statements and declarations (ECMA-262 clauses 14, 16.1 and 16.2).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=130766
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=130766
+// Hairs-Human:        PENDING
 internal sealed partial class Parser
 {
     // The offset of the string literal that may begin a directive of the prologue being read, or -1.
     private int prologueStart = -1;
 
     /// <summary>The goal's root (clauses 16.1 ParseScript, 16.2 ParseModule, 19.2.1.1 PerformEval and 20.2.1.1.1 CreateDynamicFunction).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=0CB78B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=0CB78B
+    // Hairs-Human:        PENDING
     private ProgramNode ParseProgram()
     {
         var goal = request.Goal;
@@ -75,8 +75,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A StatementList, or a ModuleItemList, to the end of the text, its directive prologue first where the goal has one.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=F080B0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=F080B0
+    // Hairs-Human:        PENDING
     private List<Statement> ParseStatementListUntilEnd(bool directives, bool module, bool top)
     {
         var body = new List<Statement>();
@@ -99,8 +99,8 @@ internal sealed partial class Parser
     /// consist wholly of a string literal. A Use Strict Directive, exactly <c>use strict</c> with no escape or line
     /// continuation, makes the rest of the code strict.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=FAEAE7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=FAEAE7
+    // Hairs-Human:        PENDING
     private void ParsePrologue(List<Statement> body, TokenKind end)
     {
         while (true)
@@ -121,8 +121,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A StatementListItem (clause 14): a declaration or a statement, charged one level of nesting.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=676DCE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=676DCE
+    // Hairs-Human:        PENDING
     private Statement ParseStatementListItem()
     {
         var token = Ex;
@@ -166,8 +166,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A Statement (clause 14), charged one level of nesting.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=494C02
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=494C02
+    // Hairs-Human:        PENDING
     private Statement ParseStatement()
     {
         var token = Ex;
@@ -183,8 +183,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether the current <c>async</c> begins an async function: <c>function</c> follows with no line terminator between (clause 15.8).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=212863
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=212863
+    // Hairs-Human:        PENDING
     private bool IsAsyncFunction()
     {
         var next = PeekAfter(LexicalGoal.RegExp, LexicalGoal.Div);
@@ -192,14 +192,14 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether a token can be a BindingIdentifier (clause 13.1): an escaped name, any name but a reserved word, or <c>yield</c> and <c>await</c>, whose refusals are early errors.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=BFE52B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=BFE52B
+    // Hairs-Human:        PENDING
     private static bool CanBind(Token token) =>
         token.Kind == TokenKind.IdentifierName && (token.IsEscaped || !IsReserved(token.Word) || token.Word is Word.Yield or Word.Await);
 
     /// <summary>Whether the current <c>let</c> begins a LexicalDeclaration (clause 14.3.1): a binding name, <c>[</c> or <c>{</c> follows.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=DDB0F9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=DDB0F9
+    // Hairs-Human:        PENDING
     private bool LetStartsDeclaration()
     {
         var next = PeekAfter(LexicalGoal.RegExp, LexicalGoal.Div);
@@ -207,8 +207,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether the current <c>using</c> begins a UsingDeclaration: a binding name follows on the same line.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=7DD4DD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=7DD4DD
+    // Hairs-Human:        PENDING
     private bool UsingStartsDeclaration()
     {
         var next = PeekAfter(LexicalGoal.RegExp, LexicalGoal.Div);
@@ -216,8 +216,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether the current <c>await</c> begins an AwaitUsingDeclaration: <c>using</c> and a binding name follow, each on the same line.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=F1E13F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=F1E13F
+    // Hairs-Human:        PENDING
     private bool AwaitUsingStartsDeclaration()
     {
         Peek(LexicalGoal.RegExp);
@@ -229,8 +229,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>The Statement production's alternatives, the lookahead restrictions of ExpressionStatement among them (clause 14.5).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=8795FC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=8795FC
+    // Hairs-Human:        PENDING
     private Statement ParseStatementCore(Token token)
     {
         switch (token.Kind)
@@ -298,8 +298,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether a token can be a LabelIdentifier (clause 13.1): an escaped name, a name that is no reserved word, <c>yield</c> outside [Yield] and <c>await</c> outside [Await].</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=6C12C5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=6C12C5
+    // Hairs-Human:        PENDING
     private bool IsLabelIdentifier(Token token)
     {
         if (token.Kind != TokenKind.IdentifierName)
@@ -319,8 +319,8 @@ internal sealed partial class Parser
     /// ImportDeclaration is a ModuleItem, so here, inside a block or under the Script goal, it is refused (catalogue row
     /// EX0010 at stage 4d).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=15C0F1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=15C0F1
+    // Hairs-Human:        PENDING
     private Statement ParseImportInStatement(Token token)
     {
         var next = PeekAfter(LexicalGoal.RegExp, LexicalGoal.Div);
@@ -333,14 +333,14 @@ internal sealed partial class Parser
     /// An ImportDeclaration or ExportDeclaration where only a statement may stand: under the Script goal, catalogue row EX0010;
     /// inside a module's block or function, the grammar's generic refusal (EX0008).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=2D035E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=2D035E
+    // Hairs-Human:        PENDING
     private ParseAbort ModuleItemOutsideModuleItemList(Token token) =>
         isModule ? Unexpected(token) : Refuse(Rows.EX0010, SpanOf(token), Spelling(token));
 
     /// <summary>An ExpressionStatement (clause 14.5), a directive where it opens a prologue and holds only its string literal (clause 11.2.1).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=42DBC3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=42DBC3
+    // Hairs-Human:        PENDING
     private Statement ParseExpressionStatement(Token token)
     {
         var prologue = prologueStart;
@@ -355,8 +355,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A Block (clause 14.2).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=B90444
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=B90444
+    // Hairs-Human:        PENDING
     private BlockStatement ParseBlock()
     {
         var open = Expect(TokenKind.LeftBrace, LexicalGoal.RegExp);
@@ -373,8 +373,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A VariableStatement (clause 14.3.2).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=5FF59A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=5FF59A
+    // Hairs-Human:        PENDING
     private Statement ParseVariableStatement()
     {
         var start = StartOf(Advance());
@@ -384,8 +384,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A LexicalDeclaration (clause 14.3.1), or a UsingDeclaration or AwaitUsingDeclaration.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=630563
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=630563
+    // Hairs-Human:        PENDING
     private Statement ParseLexicalDeclaration(DeclarationKind kind)
     {
         var start = StartOf(Ex);
@@ -405,8 +405,8 @@ internal sealed partial class Parser
     /// A VariableDeclarationList or BindingList (clauses 14.3.1 and 14.3.2): a binding pattern needs its Initializer but in a
     /// for head, where the head decides; a <c>using</c> binds names only.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=63B5F9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=63B5F9
+    // Hairs-Human:        PENDING
     private IReadOnlyList<VariableDeclarator> ParseDeclarators(DeclarationKind kind, bool noIn, bool inForHead)
     {
         var list = new List<VariableDeclarator>();
@@ -434,8 +434,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>An IfStatement (clause 14.6), each clause a Statement or, in sloppy code under Annex B, a FunctionDeclaration (Annex B.3.3).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=E561FB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=E561FB
+    // Hairs-Human:        PENDING
     private Statement ParseIf()
     {
         var start = StartOf(Advance());
@@ -453,8 +453,8 @@ internal sealed partial class Parser
         return new IfStatement(SpanFrom(start), test, consequent, alternate);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=AE4EF1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=AE4EF1
+    // Hairs-Human:        PENDING
     private Statement ParseIfClause()
     {
         var token = Ex;
@@ -479,8 +479,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A WhileStatement (clause 14.7.3).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=C062C0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=C062C0
+    // Hairs-Human:        PENDING
     private Statement ParseWhile()
     {
         var start = StartOf(Advance());
@@ -492,8 +492,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A DoWhileStatement (clause 14.7.2): a semicolon is inserted after its <c>)</c> whatever follows (clause 12.10).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=6C6EA0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=6C6EA0
+    // Hairs-Human:        PENDING
     private Statement ParseDoWhile()
     {
         var start = StartOf(Advance());
@@ -511,9 +511,9 @@ internal sealed partial class Parser
     /// lookahead restrictions on <c>let</c> and <c>async of</c>, Annex B.3.5's initialiser in a sloppy <c>for</c>-<c>in</c>,
     /// and no semicolon inserted in the head (row P16b).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14.7.4 s14.7.5 for heads, row P16b; IP=Low; Security=High; Resources=2; Fingerprint=0BE270
-    // Broiler-Falsified-If: a semicolon is inserted in a for head, or a head the lookahead restrictions exclude is admitted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14.7.4 s14.7.5 for heads, row P16b; IP=Low; Security=High; Resources=2; Fingerprint=0BE270
+    // Hairs-Falsified-If: a semicolon is inserted in a for head, or a head the lookahead restrictions exclude is admitted
+    // Hairs-Human:        PENDING
     private Statement ParseFor()
     {
         var start = StartOf(Advance());
@@ -625,8 +625,8 @@ internal sealed partial class Parser
     /// (<c>for (using of = null;;)</c>): ForDeclaration's lookahead excludes <c>using of</c>, so only <c>=</c>, <c>,</c> or
     /// <c>;</c> after it makes it one.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=2999AB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=2999AB
+    // Hairs-Human:        PENDING
     private bool UsingOfDeclares()
     {
         var state = tokenizer.Save();
@@ -637,8 +637,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>The rest of a C-style head, from its first <c>;</c>: both semicolons are required (clause 12.10, row P16b).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=F53922
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=F53922
+    // Hairs-Human:        PENDING
     private Statement ParseForRest(SourceSpan start, SyntaxNode? init)
     {
         Expect(TokenKind.Semicolon);
@@ -655,8 +655,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>The rest of a for-in or for-of head, after <c>in</c> or <c>of</c>: an Expression, or for <c>of</c> an AssignmentExpression.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=59B5A5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=59B5A5
+    // Hairs-Human:        PENDING
     private Statement ParseForInOfRest(SourceSpan start, SyntaxNode left, bool isOf, bool isAwait)
     {
         var right = isOf ? ParseAssignment(noIn: false) : ParseExpression(noIn: false);
@@ -668,8 +668,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A ContinueStatement or BreakStatement (clauses 14.8 and 14.9): a label on the same line, or none.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=FE862B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=FE862B
+    // Hairs-Human:        PENDING
     private Statement ParseJump(bool isBreak)
     {
         var start = StartOf(Advance());
@@ -687,8 +687,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A ReturnStatement (clause 14.10): only a function body is parsed with [Return] (catalogue rows EX0032 and EX0033 at stage 4d).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=7A96D4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=7A96D4
+    // Hairs-Human:        PENDING
     private Statement ParseReturn()
     {
         var keyword = Ex;
@@ -703,8 +703,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A WithStatement (clause 14.11).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=315EF0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=315EF0
+    // Hairs-Human:        PENDING
     private Statement ParseWith()
     {
         var start = StartOf(Advance());
@@ -716,8 +716,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A SwitchStatement (clause 14.12): at most one DefaultClause.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=80B6A8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=80B6A8
+    // Hairs-Human:        PENDING
     private Statement ParseSwitch()
     {
         var start = StartOf(Advance());
@@ -767,8 +767,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A ThrowStatement (clause 14.14): its expression on the same line.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=ADEE9C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=ADEE9C
+    // Hairs-Human:        PENDING
     private Statement ParseThrow()
     {
         var start = StartOf(Advance());
@@ -781,8 +781,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A TryStatement (clause 14.15), a Catch with or without its parameter.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=665176
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=665176
+    // Hairs-Human:        PENDING
     private Statement ParseTry()
     {
         var start = StartOf(Advance());
@@ -817,8 +817,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A LabelledStatement (clause 14.13): its item a Statement or a FunctionDeclaration, whose admission is a static-semantic rule (stage 4d).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=F630A2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=F630A2
+    // Hairs-Human:        PENDING
     private Statement ParseLabelled(Token token)
     {
         var start = StartOf(token);
@@ -851,8 +851,8 @@ internal sealed partial class Parser
     /// The reserved words of clause 12.7.2, which no unescaped name may be where an Identifier is meant (<c>yield</c> and
     /// <c>await</c> among them; whether each may stand as a name is decided by the [Yield] and [Await] parameters).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=B778CB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=B778CB
+    // Hairs-Human:        PENDING
     private static bool IsReserved(Word word) => word is Word.Await or Word.Break or Word.Case or Word.Catch or Word.Class or Word.Const
         or Word.Continue or Word.Debugger or Word.Default or Word.Delete or Word.Do or Word.Else or Word.Enum or Word.Export
         or Word.Extends or Word.False or Word.Finally or Word.For or Word.Function or Word.If or Word.Import or Word.In
@@ -860,8 +860,8 @@ internal sealed partial class Parser
         or Word.True or Word.Try or Word.Typeof or Word.Var or Word.Void or Word.While or Word.With or Word.Yield;
 
     /// <summary>Records an <c>await</c> of the top level, the fact [[HasTLA]] reads (clause 16.2.1.7).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=B2875B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14 s16.1 statements grammar; IP=Low; Security=Medium; Resources=2; Fingerprint=B2875B
+    // Hairs-Human:        PENDING
     private void NoteAwait()
     {
         if (functionDepth == 0)

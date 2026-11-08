@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   18
 // Annotated:        18/18
 // Exempt:           42
@@ -31,8 +31,8 @@ namespace Broiler.ECMAScript.Intl;
 /// with a <c>RangeError</c> before the library sees it, and <see cref="DateTimeFormat.Create"/> refuses one with
 /// <see cref="ArgumentException"/>.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=B1319F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=B1319F
+// Hairs-Human:        PENDING
 public sealed record DateTimeComponents
 {
     /// <summary>The components in the table's order, which CreateDateTimeFormat reads them in and resolvedOptions reports them in.</summary>
@@ -76,8 +76,8 @@ public sealed record DateTimeComponents
     public string? TimeZoneName { get; init; }
 
     /// <summary>A component's value by its name, <c>fractionalSecondDigits</c> as that many <c>S</c>, as Broiler.VM keeps it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=07E07B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=07E07B
+    // Hairs-Human:        PENDING
     internal string? Value(string name) => name switch
     {
         "weekday" => Weekday,
@@ -95,8 +95,8 @@ public sealed record DateTimeComponents
     };
 
     /// <summary>The values each component admits (Table 16); <see langword="null"/> for <c>fractionalSecondDigits</c>, a number.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=EB97A6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=EB97A6
+    // Hairs-Human:        PENDING
     internal static string[]? Admitted(string name) => name switch
     {
         "weekday" or "era" or "dayPeriod" => ["narrow", "short", "long"],
@@ -108,8 +108,8 @@ public sealed record DateTimeComponents
 }
 
 /// <summary>CreateDateTimeFormat's <c>required</c> argument (<c>sec-createdatetimeformat</c>): which fields a format must have.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=1D70C9
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=1D70C9
+// Hairs-Human:        PENDING
 public enum DateTimeRequired
 {
     /// <summary><c>any</c>: the constructor's, and <c>Date.prototype.toLocaleString</c>'s.</summary>
@@ -123,8 +123,8 @@ public enum DateTimeRequired
 }
 
 /// <summary>CreateDateTimeFormat's <c>defaults</c> argument (<c>sec-createdatetimeformat</c>): which fields a format without any is given.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=FE9D2A
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=FE9D2A
+// Hairs-Human:        PENDING
 public enum DateTimeDefaults
 {
     /// <summary><c>date</c>: the constructor's, and <c>toLocaleDateString</c>'s.</summary>
@@ -144,8 +144,8 @@ public enum DateTimeDefaults
 /// <c>required</c> and <c>defaults</c>. <c>localeMatcher</c>, <c>calendar</c>, <c>numberingSystem</c>, <c>hourCycle</c> and
 /// <c>formatMatcher</c> are read too, the first four for ResolveLocale, and so are not here.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=DCF3BE
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=DCF3BE
+// Hairs-Human:        PENDING
 public sealed record DateTimeFormatOptions
 {
     /// <summary><c>hour12</c>, as GetOption read it, or <see langword="null"/> where it is absent.</summary>
@@ -178,8 +178,8 @@ public sealed record DateTimeFormatOptions
 }
 
 /// <summary>The kind of a value a date-time format writes: ToDateTimeFormattable's (the proposal's <c>sec-todatetimeformattable</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=864991
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=864991
+// Hairs-Human:        PENDING
 public enum DateTimeValueKind
 {
     /// <summary>A Number, a time value to be clipped.</summary>
@@ -211,8 +211,8 @@ public enum DateTimeValueKind
 /// A value a date-time format writes, as an engine read it from a Temporal object's slots or converted it with ToNumber
 /// (the proposal's ToDateTimeFormattable, <c>sec-todatetimeformattable</c>): no object, no property access (convention 2).
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=6D094C
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=6D094C
+// Hairs-Human:        PENDING
 public readonly record struct DateTimeValue
 {
     private DateTimeValue(DateTimeValueKind kind, double time, IsoDate date, IsoTime timeOfDay, BigInteger epochNanoseconds, string calendar)
@@ -246,73 +246,73 @@ public readonly record struct DateTimeValue
     /// <summary>A Number (ToNumber's), to be clipped by TimeClip.</summary>
     /// <param name="time">The Number.</param>
     /// <returns>The value.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=28631E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=28631E
+    // Hairs-Human:        PENDING
     public static DateTimeValue Number(double time) => new(DateTimeValueKind.Time, time, default, default, default, "iso8601");
 
     /// <summary>A <c>Temporal.PlainDate</c>'s [[ISODate]] and [[Calendar]].</summary>
     /// <param name="date">The ISO date.</param>
     /// <param name="calendar">The calendar identifier.</param>
     /// <returns>The value.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=7E7E1C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=7E7E1C
+    // Hairs-Human:        PENDING
     public static DateTimeValue PlainDate(IsoDate date, string calendar) => new(DateTimeValueKind.PlainDate, 0, date, default, default, Checked(calendar));
 
     /// <summary>A <c>Temporal.PlainYearMonth</c>'s [[ISODate]] and [[Calendar]].</summary>
     /// <param name="date">The reference ISO date.</param>
     /// <param name="calendar">The calendar identifier.</param>
     /// <returns>The value.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=DE9760
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=DE9760
+    // Hairs-Human:        PENDING
     public static DateTimeValue PlainYearMonth(IsoDate date, string calendar) => new(DateTimeValueKind.PlainYearMonth, 0, date, default, default, Checked(calendar));
 
     /// <summary>A <c>Temporal.PlainMonthDay</c>'s [[ISODate]] and [[Calendar]].</summary>
     /// <param name="date">The reference ISO date.</param>
     /// <param name="calendar">The calendar identifier.</param>
     /// <returns>The value.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=8C9CAC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=8C9CAC
+    // Hairs-Human:        PENDING
     public static DateTimeValue PlainMonthDay(IsoDate date, string calendar) => new(DateTimeValueKind.PlainMonthDay, 0, date, default, default, Checked(calendar));
 
     /// <summary>A <c>Temporal.PlainTime</c>'s [[Time]].</summary>
     /// <param name="time">The time.</param>
     /// <returns>The value.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=142F59
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=142F59
+    // Hairs-Human:        PENDING
     public static DateTimeValue PlainTime(IsoTime time) => new(DateTimeValueKind.PlainTime, 0, default, time, default, "iso8601");
 
     /// <summary>A <c>Temporal.PlainDateTime</c>'s [[ISODateTime]] and [[Calendar]].</summary>
     /// <param name="dateTime">The ISO date-time.</param>
     /// <param name="calendar">The calendar identifier.</param>
     /// <returns>The value.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=E9BC09
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=E9BC09
+    // Hairs-Human:        PENDING
     public static DateTimeValue PlainDateTime(IsoDateTime dateTime, string calendar) =>
         new(DateTimeValueKind.PlainDateTime, 0, dateTime.Date, dateTime.Time, default, Checked(calendar));
 
     /// <summary>A <c>Temporal.Instant</c>'s [[EpochNanoseconds]].</summary>
     /// <param name="epochNanoseconds">The epoch nanoseconds.</param>
     /// <returns>The value.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=AF3A0C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=AF3A0C
+    // Hairs-Human:        PENDING
     public static DateTimeValue Instant(BigInteger epochNanoseconds) => new(DateTimeValueKind.Instant, 0, default, default, epochNanoseconds, "iso8601");
 
     /// <summary>A <c>Temporal.ZonedDateTime</c>'s [[EpochNanoseconds]] and [[Calendar]].</summary>
     /// <param name="epochNanoseconds">The epoch nanoseconds.</param>
     /// <param name="calendar">The calendar identifier.</param>
     /// <returns>The value.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=CCFB02
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=CCFB02
+    // Hairs-Human:        PENDING
     public static DateTimeValue ZonedDateTime(BigInteger epochNanoseconds, string calendar) =>
         new(DateTimeValueKind.ZonedDateTime, 0, default, default, epochNanoseconds, Checked(calendar));
 
     /// <summary>Whether the value is a Temporal object's rather than a Number's.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=99D94D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=0; Fingerprint=99D94D
+    // Hairs-Human:        PENDING
     public bool IsTemporal => Kind != DateTimeValueKind.Time;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=7FA7A6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-createdatetimeformat Table 16 components and options, proposal-temporal e8cc03fc Temporal values; IP=Low; Security=Low; Resources=1; Fingerprint=7FA7A6
+    // Hairs-Human:        PENDING
     private static string Checked(string calendar)
     {
         ArgumentNullException.ThrowIfNull(calendar);

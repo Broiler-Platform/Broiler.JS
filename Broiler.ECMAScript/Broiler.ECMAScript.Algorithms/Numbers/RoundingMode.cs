@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   2
 // Annotated:        2/2
 // Exempt:           14
@@ -23,8 +23,8 @@ namespace Broiler.ECMAScript.Numbers;
 /// <c>"expand"</c>, <c>"trunc"</c>, <c>"halfCeil"</c>, <c>"halfFloor"</c>, <c>"halfExpand"</c>,
 /// <c>"halfTrunc"</c> and <c>"halfEven"</c>.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=Temporal Table 22; IP=Low; Security=Low; Resources=1; Fingerprint=FD394E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal Table 22; IP=Low; Security=Low; Resources=1; Fingerprint=FD394E
+// Hairs-Human:        PENDING
 public enum RoundingMode
 {
     /// <summary><c>"ceil"</c>: toward +Infinity.</summary>
@@ -59,8 +59,8 @@ public enum RoundingMode
 /// The unsigned rounding modes the signed ones reduce to once the sign is known (Temporal,
 /// <c>GetUnsignedRoundingMode</c>, Table 23; ECMA-402 15.5.13).
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=Temporal Table 23; IP=Low; Security=Low; Resources=1; Fingerprint=147A93
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal Table 23; IP=Low; Security=Low; Resources=1; Fingerprint=147A93
+// Hairs-Human:        PENDING
 public enum UnsignedRoundingMode
 {
     /// <summary><c>zero</c>: to the lower end.</summary>

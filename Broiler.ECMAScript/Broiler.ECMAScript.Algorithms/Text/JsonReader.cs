@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   19
 // Annotated:        19/19
 // Exempt:           32
@@ -22,8 +22,8 @@ using Broiler.ECMAScript.Numbers;
 namespace Broiler.ECMAScript.Text;
 
 /// <summary>What <see cref="JsonReader.Read"/> found.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=6F9069
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=6F9069
+// Hairs-Human:        PENDING
 public enum JsonToken
 {
     /// <summary>Nothing has been read yet.</summary>
@@ -93,9 +93,9 @@ public enum JsonToken
 /// closes; and a number's text through <c>StringToNumber</c>.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=3; Fingerprint=3D7898
-// Broiler-Falsified-If: a text outside JSON.parse's grammar is read to its end, or the reader recurses so that a deep text exhausts the stack instead of meeting the limit
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=3; Fingerprint=3D7898
+// Hairs-Falsified-If: a text outside JSON.parse's grammar is read to its end, or the reader recurses so that a deep text exhausts the stack instead of meeting the limit
+// Hairs-Human:        PENDING
 public ref struct JsonReader
 {
     private readonly ReadOnlySpan<char> text;
@@ -110,8 +110,8 @@ public ref struct JsonReader
     /// <param name="text">The whole text.</param>
     /// <param name="maximumDepth">The deepest value the caller accepts; the document itself is depth 0.</param>
     /// <param name="charge">The caller's meter, or <see langword="null"/>.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=1; Fingerprint=220C7B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=1; Fingerprint=220C7B
+    // Hairs-Human:        PENDING
     public JsonReader(ReadOnlySpan<char> text, DepthLimit maximumDepth, WorkCharge? charge = null)
     {
         this.text = text;
@@ -121,8 +121,8 @@ public ref struct JsonReader
         StringValue = string.Empty;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=15B9F5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=15B9F5
+    // Hairs-Human:        PENDING
     private enum State
     {
         Start,
@@ -161,9 +161,9 @@ public ref struct JsonReader
     /// <see cref="Failure"/> set, after which the reader may not be read again.
     /// </returns>
     /// <exception cref="InvalidOperationException">The reader has already read <see cref="JsonToken.EndOfText"/>, or has failed.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=3; Fingerprint=9C4E6F
-    // Broiler-Falsified-If: a text outside the JSON grammar completes, a text inside it fails below the depth limit, a value deeper than the limit is read, or a charge falls other than where Broiler.VM's reader charged it
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=3; Fingerprint=9C4E6F
+    // Hairs-Falsified-If: a text outside the JSON grammar completes, a text inside it fails below the depth limit, a value deeper than the limit is read, or a charge falls other than where Broiler.VM's reader charged it
+    // Hairs-Human:        PENDING
     public ResultStatus Read()
     {
         StringValue = string.Empty;
@@ -236,9 +236,9 @@ public ref struct JsonReader
     /// <param name="failure">Why it is not, when the status is not <see cref="ResultStatus.Completed"/>.</param>
     /// <param name="charge">The caller's meter, charged as the reader charges; <see langword="null"/> for none.</param>
     /// <returns>The status of the reader's last <see cref="Read"/>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=2; Fingerprint=FB9241
-    // Broiler-Falsified-If: the answer differs from reading the text to its end with a reader
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=2; Fingerprint=FB9241
+    // Hairs-Falsified-If: the answer differs from reading the text to its end with a reader
+    // Hairs-Human:        PENDING
     public static ResultStatus Validate(ReadOnlySpan<char> text, DepthLimit maximumDepth, out Failure failure, WorkCharge? charge = null)
     {
         var reader = new JsonReader(text, maximumDepth, charge);
@@ -259,8 +259,8 @@ public ref struct JsonReader
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=2; Fingerprint=69F7FF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=2; Fingerprint=69F7FF
+    // Hairs-Human:        PENDING
     private ResultStatus ReadMember()
     {
         SkipSpace();
@@ -288,9 +288,9 @@ public ref struct JsonReader
         return ResultStatus.Completed;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=3; Fingerprint=06C6F1
-    // Broiler-Falsified-If: a value deeper than the limit is read, or the unit a value is charged falls after its depth check
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=3; Fingerprint=06C6F1
+    // Hairs-Falsified-If: a value deeper than the limit is read, or the unit a value is charged falls after its depth check
+    // Hairs-Human:        PENDING
     private ResultStatus ReadValue()
     {
         charge?.Invoke(1);
@@ -337,8 +337,8 @@ public ref struct JsonReader
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=2; Fingerprint=8BE66C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=2; Fingerprint=8BE66C
+    // Hairs-Human:        PENDING
     private ResultStatus Begin(bool isObject)
     {
         if (depth == containers.Length)
@@ -353,8 +353,8 @@ public ref struct JsonReader
         return ResultStatus.Completed;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=1; Fingerprint=AD1724
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=1; Fingerprint=AD1724
+    // Hairs-Human:        PENDING
     private ResultStatus End(JsonToken token)
     {
         depth--;
@@ -366,8 +366,8 @@ public ref struct JsonReader
         return ResultStatus.Completed;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=427030
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=427030
+    // Hairs-Human:        PENDING
     private ResultStatus Leaf(JsonToken token, int start)
     {
         Token = token;
@@ -377,8 +377,8 @@ public ref struct JsonReader
         return ResultStatus.Completed;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=1; Fingerprint=EFF3F1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=1; Fingerprint=EFF3F1
+    // Hairs-Human:        PENDING
     private ResultStatus Keyword(string word, JsonToken token)
     {
         if (!text[position..].StartsWith(word, StringComparison.Ordinal))
@@ -389,9 +389,9 @@ public ref struct JsonReader
         return Leaf(token, start);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=2; Fingerprint=C7413D
-    // Broiler-Falsified-If: a number outside the JSON grammar is read, or one inside it is not StringToNumber of its text
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=2; Fingerprint=C7413D
+    // Hairs-Falsified-If: a number outside the JSON grammar is read, or one inside it is not StringToNumber of its text
+    // Hairs-Human:        PENDING
     private ResultStatus ReadNumber()
     {
         var start = position;
@@ -431,9 +431,9 @@ public ref struct JsonReader
         return Leaf(JsonToken.Number, start);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=3; Fingerprint=EE036E
-    // Broiler-Falsified-If: a raw control character or an escape JSON does not define is admitted, or an escape is not resolved to its code unit
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=High; Resources=3; Fingerprint=EE036E
+    // Hairs-Falsified-If: a raw control character or an escape JSON does not define is admitted, or an escape is not resolved to its code unit
+    // Hairs-Human:        PENDING
     private ResultStatus ReadString(out string value)
     {
         value = string.Empty;
@@ -531,8 +531,8 @@ public ref struct JsonReader
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=1; Fingerprint=667BD5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Medium; Resources=1; Fingerprint=667BD5
+    // Hairs-Human:        PENDING
     private void SkipSpace()
     {
         var start = position;
@@ -543,24 +543,24 @@ public ref struct JsonReader
             charge?.Invoke((ulong)(position - start));
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=087A09
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=087A09
+    // Hairs-Human:        PENDING
     private readonly bool Peek(char expected) => position < text.Length && text[position] == expected;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=164CFB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=164CFB
+    // Hairs-Human:        PENDING
     private readonly bool PeekDigit() => position < text.Length && text[position] is >= '0' and <= '9';
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=98A0C7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=98A0C7
+    // Hairs-Human:        PENDING
     private void SkipDigits()
     {
         while (PeekDigit())
             position++;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=F72717
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.1; IP=Low; Security=Low; Resources=1; Fingerprint=F72717
+    // Hairs-Human:        PENDING
     private ResultStatus Refuse(ResultStatus status, int at, string messageId)
     {
         Failure = new Failure(status, at, messageId);

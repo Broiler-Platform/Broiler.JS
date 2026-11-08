@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   42
 // Annotated:        42/42
 // Exempt:           35
@@ -66,28 +66,28 @@ namespace Broiler.ECMAScript.Syntax;
 /// the chain's first operand, which closes the left-operand gap in all four of its shapes.")</i>
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=130766
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=130766
+// Hairs-Human:        PENDING
 internal sealed partial class Parser
 {
     /// <summary>The row of a token no production admits where it stands, where no other row explains the site (catalogue row EX0008; stage 4c's provisional code, which stage 4d kept for these sites).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=DE2D19
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=DE2D19
+    // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal UnexpectedToken = Rows.EX0008;
 
     /// <summary>The row of a token a production requires and does not find (catalogue row EX0009; stage 4c's provisional code, which stage 4d kept for these sites).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=21A3FD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=21A3FD
+    // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal MissingToken = Rows.EX0009;
 
     /// <summary>The contract's nesting diagnostic (catalogue row EX0011).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=1EC0E4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=1EC0E4
+    // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal NestingTooDeep = Rows.EX0011;
 
     /// <summary>The contract's tree-depth diagnostic (catalogue row EX0012).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=991416
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=991416
+    // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal TreeTooDeep = Rows.EX0012;
 
     private readonly ParseRequest request;
@@ -144,12 +144,12 @@ internal sealed partial class Parser
     // no conversion takes the literal: an arrow's head refuses it by its own row, and an enclosing literal converted to an
     // assignment pattern takes it as a DestructuringAssignmentTarget, EE0038's (stage SJL-13.2f; revised 2026-11-02, after
     // review, from "made when no arrow's head takes the literal").
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.1 EE0032, s15.3.1 ArrowParameters cover early errors; IP=Low; Security=Low; Resources=0; Fingerprint=4E23F0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.1 EE0032, s15.3.1 ArrowParameters cover early errors; IP=Low; Security=Low; Resources=0; Fingerprint=4E23F0
+    // Hairs-Human:        PENDING
     private readonly Dictionary<Expression, ParseAbort> deferredPatterns = new(ReferenceEqualityComparer.Instance);
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=ABA2F0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Low; Resources=0; Fingerprint=ABA2F0
+    // Hairs-Human:        PENDING
     private readonly Dictionary<Expression, (Token At, string Name)> coverInitializedAt = new(ReferenceEqualityComparer.Instance);
 
     // The cover the primary expression just read, which an arrow's => may convert: a parenthesised list, or an async call.
@@ -165,8 +165,8 @@ internal sealed partial class Parser
     // While an async arrow's cover is converted, the `await` names its own parameters bind.
     private List<Identifier>? awaitBound;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=4A46A2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=4A46A2
+    // Hairs-Human:        PENDING
     private Parser(ParseRequest request)
     {
         this.request = request;
@@ -190,9 +190,9 @@ internal sealed partial class Parser
 
     /// <summary>Parses <paramref name="request"/>'s source under its goal.</summary>
     /// <returns>The accepted tree with the token stream the parse read, or the first refusal (decision D11).</returns>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D11 first refusal; IP=Low; Security=High; Resources=2; Fingerprint=17C381
-    // Broiler-Falsified-If: a refusal escapes as an exception other than the parse's own, or a refused parse answers a tree
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D11 first refusal; IP=Low; Security=High; Resources=2; Fingerprint=541F16
+    // Hairs-Falsified-If: a refusal escapes as an exception other than the parse's own, or a refused parse answers a tree
+    // Hairs-Human:        PENDING
     internal static ParseResult Run(ParseRequest request)
     {
         var parser = new Parser(request);
@@ -213,15 +213,15 @@ internal sealed partial class Parser
         var walk = Semantics.DeclarationsWalk.Run(request, program);
         if (walk.Diagnostics.Count > 0)
             return ParseResult.Refused(Limit(request, walk.Diagnostics));
-        return ParseResult.Accepted(program, parser.tokens, walk.Tables);
+        return ParseResult.Accepted(program, parser.tokens, request.RetainTokens, walk.Tables);
     }
 
     /// <summary>
     /// The diagnostics a request asks for, of those found in the library's order (decision D11): the first under
     /// <see cref="ErrorReporting.FirstError"/>; all, up to the request's cap, under <see cref="ErrorReporting.AllErrors"/>.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=F710F0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=F710F0
+    // Hairs-Human:        PENDING
     private static List<SyntaxDiagnostic> Limit(ParseRequest request, List<SyntaxDiagnostic> found)
     {
         var count = request.Limits.Reporting == ErrorReporting.FirstError ? 1 : Math.Min(found.Count, request.Limits.DiagnosticCap);
@@ -234,9 +234,9 @@ internal sealed partial class Parser
     // Tokens.
 
     /// <summary>The current token, read under <paramref name="goal"/>: read again from its start when it was read under a goal that reads its first code unit otherwise.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 goal symbols named by the parser; IP=Low; Security=High; Resources=2; Fingerprint=E85EA6
-    // Broiler-Falsified-If: a token is answered under another goal than the one the parser names
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 goal symbols named by the parser; IP=Low; Security=High; Resources=2; Fingerprint=E85EA6
+    // Hairs-Falsified-If: a token is answered under another goal than the one the parser names
+    // Hairs-Human:        PENDING
     private Token Peek(LexicalGoal goal)
     {
         if (hasCur)
@@ -254,8 +254,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether the token's first code unit begins another input element under <paramref name="wanted"/> than under <paramref name="read"/>: a <c>/</c> or a <c>}</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=CE1EC4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=CE1EC4
+    // Hairs-Human:        PENDING
     private bool GoalMatters(Token token, LexicalGoal read, LexicalGoal wanted)
     {
         if (token.Start >= text.Length)
@@ -268,27 +268,27 @@ internal sealed partial class Parser
         return false;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=112B6E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=112B6E
+    // Hairs-Human:        PENDING
     private static bool IsRegExpGoal(LexicalGoal goal) => goal is LexicalGoal.RegExp or LexicalGoal.RegExpOrTemplateTail or LexicalGoal.HashbangOrRegExp;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=A10664
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=A10664
+    // Hairs-Human:        PENDING
     private static bool IsTemplateGoal(LexicalGoal goal) => goal is LexicalGoal.TemplateTail or LexicalGoal.RegExpOrTemplateTail;
 
     /// <summary>The current token where an operator may follow (InputElementDiv).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=A05EA0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=A05EA0
+    // Hairs-Human:        PENDING
     private Token Op => Peek(LexicalGoal.Div);
 
     /// <summary>The current token where an expression or a statement may begin (InputElementRegExp).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=2C9F68
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=2C9F68
+    // Hairs-Human:        PENDING
     private Token Ex => Peek(LexicalGoal.RegExp);
 
     /// <summary>The token after the current one, read under <paramref name="goal"/> and then forgotten: a lexical lookahead, which builds nothing.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=2FF458
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=2FF458
+    // Hairs-Human:        PENDING
     private Token PeekAfter(LexicalGoal currentGoal, LexicalGoal goal)
     {
         Peek(currentGoal);
@@ -299,8 +299,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Consumes the current token, which the caller has read; refuses it when the tokenizer refused the text there.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=FFAAC3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=FFAAC3
+    // Hairs-Human:        PENDING
     private Token Advance()
     {
         if (!hasCur)
@@ -316,13 +316,13 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether the token is the word <paramref name="word"/> written without an escape, the only spelling a keyword or a contextual keyword has (clause 12.7.2).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=146D39
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=146D39
+    // Hairs-Human:        PENDING
     private static bool IsWord(Token token, Word word) => token.Kind == TokenKind.IdentifierName && token.Word == word && !token.IsEscaped;
 
     /// <summary>Consumes the punctuator <paramref name="kind"/>, read under <paramref name="goal"/>, or refuses its absence.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=2DEEA9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=2DEEA9
+    // Hairs-Human:        PENDING
     private Token Expect(TokenKind kind, LexicalGoal goal = LexicalGoal.Div)
     {
         var token = Peek(goal);
@@ -332,8 +332,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Consumes the keyword <paramref name="word"/>, or refuses its absence.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=CA8CD8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=CA8CD8
+    // Hairs-Human:        PENDING
     private Token ExpectWord(Word word, string spelling, LexicalGoal goal = LexicalGoal.Div)
     {
         var token = Peek(goal);
@@ -343,8 +343,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Consumes the punctuator <paramref name="kind"/> when it is the current token.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=CE1A83
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=CE1A83
+    // Hairs-Human:        PENDING
     private bool Eat(TokenKind kind, LexicalGoal goal = LexicalGoal.Div)
     {
         if (Peek(goal).Kind != kind)
@@ -357,9 +357,9 @@ internal sealed partial class Parser
     /// The end of a statement that ends with a semicolon (clause 12.10): the <c>;</c>, or one automatic semicolon insertion
     /// supplies before a <c>}</c>, at the end of the input, or before a token a line terminator precedes.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.10 automatic semicolon insertion; IP=Low; Security=High; Resources=2; Fingerprint=AD94B2
-    // Broiler-Falsified-If: a semicolon is inserted where no rule of clause 12.10 inserts one, or refused where one does
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.10 automatic semicolon insertion; IP=Low; Security=High; Resources=2; Fingerprint=AD94B2
+    // Hairs-Falsified-If: a semicolon is inserted where no rule of clause 12.10 inserts one, or refused where one does
+    // Hairs-Human:        PENDING
     private void ConsumeSemicolon()
     {
         var token = Op;
@@ -378,8 +378,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether automatic semicolon insertion could end a statement before the current token: a <c>;</c>, a <c>}</c>, the end, or a line terminator before it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=99BE9B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=99BE9B
+    // Hairs-Human:        PENDING
     private bool AtStatementEnd(Token token) =>
         token.Kind is TokenKind.Semicolon or TokenKind.RightBrace or TokenKind.EndOfInput || token.NewLineBefore;
 
@@ -387,13 +387,13 @@ internal sealed partial class Parser
     // Spans.
 
     /// <summary>Where a token begins, as a node's span begins (decision D15).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=0B6202
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=0B6202
+    // Hairs-Human:        PENDING
     private SourceSpan StartOf(Token token) => new(source.BaseOffset + token.Start, 0, token.Line, token.Column);
 
     /// <summary>A span from <paramref name="start"/> to the end of the last token consumed: a node's full span.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=6ABA32
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=6ABA32
+    // Hairs-Human:        PENDING
     private SourceSpan SpanFrom(SourceSpan start)
     {
         var end = hasPrevious ? source.BaseOffset + previous.End : start.Offset;
@@ -401,16 +401,16 @@ internal sealed partial class Parser
     }
 
     /// <summary>A token's own span.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=FB148C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=FB148C
+    // Hairs-Human:        PENDING
     private SourceSpan SpanOf(Token token) => new(source.BaseOffset + token.Start, token.Length, token.Line, token.Column);
 
     // ---------------------------------------------------------------------------------------------------------------
     // Refusals.
 
     /// <summary>A refusal of <paramref name="token"/>, which no production admits where it stands (EX0008, or the row an <c>@</c> or an HTML-like comment serves).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=AFC5A1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=AFC5A1
+    // Hairs-Human:        PENDING
     private ParseAbort Unexpected(Token token)
     {
         if (token.Kind == TokenKind.Invalid)
@@ -430,8 +430,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>A refusal where <paramref name="expected"/> is required and <paramref name="found"/> stands (EX0009).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=88A297
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=88A297
+    // Hairs-Human:        PENDING
     private ParseAbort Missing(Token found, string expected)
     {
         if (found.Kind == TokenKind.Invalid)
@@ -440,8 +440,8 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether the token begins an HTML-like comment: <c>&lt;!--</c> anywhere, or <c>--&gt;</c> where a line begins (clause B.1.1).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=B7AC3E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=B7AC3E
+    // Hairs-Human:        PENDING
     private bool IsHtmlLikeComment(Token token)
     {
         var at = token.Start;
@@ -462,13 +462,13 @@ internal sealed partial class Parser
     }
 
     /// <summary>A refusal of a node the grammar does not admit where it stands, at its span: by the row of the cover being converted, or EX0008.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=CF64FB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=CF64FB
+    // Hairs-Human:        PENDING
     private ParseAbort UnexpectedAt(SourceSpan span) => Refuse(coverRule ?? UnexpectedToken, span, string.Empty);
 
     /// <summary>Runs a cover's conversion under the row its refusals are made by (stage 4d; Broiler.VM's JSD-0083, decision D12).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=383E3E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 early errors at the parse, catalogue rows, JSD-0083 D11 D12; IP=Low; Security=Medium; Resources=1; Fingerprint=383E3E
+    // Hairs-Human:        PENDING
     private T Converting<T>(LexicalRefusal rule, Func<T> convert)
     {
         var saved = coverRule;
@@ -483,19 +483,19 @@ internal sealed partial class Parser
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=917DA8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=917DA8
+    // Hairs-Human:        PENDING
     private ParseAbort Refuse(LexicalRefusal rule, SourceSpan span, string argument) =>
         new(new SyntaxDiagnostic(rule.Code, rule.MessageId, argument.Length == 0 ? Array.Empty<string>() : new[] { argument }, DiagnosticPhase.Parser, span, source.Name));
 
     /// <summary>A token's spelling, for a diagnostic's argument: its text, at most 64 code units, empty at the end of the input.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=CDF76F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=CDF76F
+    // Hairs-Human:        PENDING
     private string Spelling(Token token) =>
         token.Kind == TokenKind.EndOfInput ? string.Empty : text.Substring(token.Start, Math.Min(token.Length, 64));
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=F7523D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=F7523D
+    // Hairs-Human:        PENDING
     private static string Spelling(TokenKind kind) => kind switch
     {
         TokenKind.LeftBrace => "{",
@@ -518,9 +518,9 @@ internal sealed partial class Parser
     // The limits (decision D14), checked before the stack is.
 
     /// <summary>Charges one level of nesting, refusing the source past the request's bound (catalogue row EX0011).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 nesting bound, JSD-0080 D27; IP=Low; Security=High; Resources=2; Fingerprint=68FB67
-    // Broiler-Falsified-If: a recursion the nesting bound charges reaches the stack past the request's bound, or a source within the bound is refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D14 nesting bound, JSD-0080 D27; IP=Low; Security=High; Resources=2; Fingerprint=68FB67
+    // Hairs-Falsified-If: a recursion the nesting bound charges reaches the stack past the request's bound, or a source within the bound is refused
+    // Hairs-Human:        PENDING
     private void EnterNesting(Token at)
     {
         nesting++;
@@ -528,8 +528,8 @@ internal sealed partial class Parser
             throw Refuse(NestingTooDeep, SpanOf(at), maximumNesting.ToString(NumberFormatInfo.InvariantInfo));
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=BF42F8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=BF42F8
+    // Hairs-Human:        PENDING
     private void ExitNesting() => nesting--;
 
     /// <summary>
@@ -549,9 +549,9 @@ internal sealed partial class Parser
     /// when the chain began, so that a right operand or an argument read inside a chain was charged that depth and its own
     /// together and a tree within the constant could be refused.)</i>
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=High; Resources=2; Fingerprint=3FA06F
-    // Broiler-Falsified-If: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused, a node's height misses a child's, or a tree within the constant is refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=High; Resources=2; Fingerprint=3FA06F
+    // Hairs-Falsified-If: a chain node deeper than ParseLimits.MaximumTreeDepth is built rather than refused, a node's height misses a child's, or a tree within the constant is refused
+    // Hairs-Human:        PENDING
     private void Charge(SyntaxNode node, SourceSpan at)
     {
         var height = ChildrenHeight(node) + 1;
@@ -567,8 +567,8 @@ internal sealed partial class Parser
     private readonly List<SyntaxNode> chainChildren = new();
 
     /// <summary>The highest of a node's children's heights (<see cref="HeightOf"/>), 0 for a node with no child.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=Medium; Resources=1; Fingerprint=BD6764
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=Medium; Resources=1; Fingerprint=BD6764
+    // Hairs-Human:        PENDING
     private int ChildrenHeight(SyntaxNode node)
     {
         chainChildren.Clear();
@@ -585,9 +585,9 @@ internal sealed partial class Parser
     /// otherwise computed once, from its children's, with an explicit stack, and kept on the node, so that the whole parse
     /// computes each node's height at most once and adds no frame per level of the tree.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=High; Resources=2; Fingerprint=DD2A62
-    // Broiler-Falsified-If: a node's height differs from the most chain nodes on a path below it, or its computation recurses per level of the tree
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant, owner's decision 2026-11-02; IP=Low; Security=High; Resources=2; Fingerprint=DD2A62
+    // Hairs-Falsified-If: a node's height differs from the most chain nodes on a path below it, or its computation recurses per level of the tree
+    // Hairs-Human:        PENDING
     private int HeightOf(SyntaxNode node)
     {
         if (node.Height >= 0)
@@ -628,14 +628,14 @@ internal sealed partial class Parser
     }
 
     /// <summary>Whether a node is one a chain adds, which the tree depth counts: a binary or logical operator's, a member's, a call's or a tagged template's.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant; IP=Low; Security=Low; Resources=0; Fingerprint=83F3D4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth constant; IP=Low; Security=Low; Resources=0; Fingerprint=83F3D4
+    // Hairs-Human:        PENDING
     private static bool IsChainNode(SyntaxNode node) => node.Kind is SyntaxKind.BinaryExpression or SyntaxKind.LogicalExpression
         or SyntaxKind.MemberExpression or SyntaxKind.CallExpression or SyntaxKind.TaggedTemplateExpression;
 
     /// <summary>A refusal the parse unwinds with: the first in the library's order (decision D11).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=E526A5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12 lexical goals, JSD-0083 SJL-13.2c parser; IP=Low; Security=Medium; Resources=2; Fingerprint=E526A5
+    // Hairs-Human:        PENDING
     private sealed class ParseAbort(SyntaxDiagnostic diagnostic) : Exception
     {
         internal SyntaxDiagnostic Diagnostic { get; } = diagnostic;

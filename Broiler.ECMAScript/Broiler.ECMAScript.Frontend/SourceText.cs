@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   2
 // Annotated:        2/2
 // Exempt:           5
@@ -36,8 +36,8 @@ namespace Broiler.ECMAScript.Syntax;
 /// text hold one.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s11.1 source text, JSD-0083 D15; IP=Low; Security=Low; Resources=0; Fingerprint=FEBD3E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s11.1 source text, JSD-0083 D15; IP=Low; Security=Low; Resources=0; Fingerprint=FEBD3E
+// Hairs-Human:        PENDING
 public sealed class SourceText
 {
     /// <summary>Creates a source.</summary>
@@ -48,8 +48,8 @@ public sealed class SourceText
     /// <param name="baseColumn">The column of the text's first code unit; one or more.</param>
     /// <exception cref="ArgumentNullException"><paramref name="text"/> or <paramref name="name"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The base offset is negative, or the base line or column is below one.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D15 positions; IP=Low; Security=Low; Resources=1; Fingerprint=4E6E1E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D15 positions; IP=Low; Security=Low; Resources=1; Fingerprint=4E6E1E
+    // Hairs-Human:        PENDING
     public SourceText(string text, string name = "", int baseOffset = 0, int baseLine = 1, int baseColumn = 1)
     {
         ArgumentNullException.ThrowIfNull(text);

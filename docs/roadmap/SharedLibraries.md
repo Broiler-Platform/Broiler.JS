@@ -1560,6 +1560,20 @@ This repository's part of it:
     services already resolve it (row L35). SJL-7.5's C8 is read as "casing reads the host's culture only through the
     default-locale provider", and its refusal of a `null` locale stands. No run of the rule takes a host culture;
     SJL-9.5 adds a test under one.
+  *(Noted 2026-11-04, at corpus revision 35, on the owner's decision of that day, "Host only, fix vectors", their own
+  dated choice, asked and answered: the policy above, "the available locales are the host's cultures", stays as
+  written, and decision D7 is not read to make the embedding's locales available, the alternative not taken ("Host +
+  embedded", a dated reading of D7 that would have made decision D5's extra locales available on every host). So
+  decision D5's data for an extra locale answers only where the host lists a culture for it; on a host that lists
+  none this engine resolves the locale as LookupMatcher finds it among the host's cultures (row L29 from SJL-9.5), to
+  `en` or to the default `en-US`, as Broiler.VM's list does. The ICU 74.2 of the host the corpus is classified on
+  lists none for `aa`, `ab`, `en-FR`, `en-Shaw`, `en-Shaw-GB`, `jbo` and `pap`, and SJL-9.5's stage-1 head
+  `4ba95d2d` resolves `en-FR` to `en`, where vectors `intl/date-times/families/0091` and `0092` expected `en-FR`'s
+  `"15:07"` and `h23` of this engine. Corpus revision 35 ([`conformance/vectors/REVISIONS.md`](../../conformance/vectors/REVISIONS.md))
+  classifies, for this engine, the 14 vectors whose expectation then holds only where the host lists the locale,
+  each field naming decision D7 and this note as this engine's record, since no task answers it on such a host, and
+  restates the two `en-Shaw-GB` vectors whose answer moves with the resolution; no expected value and no Broiler.VM
+  expectation changes. Broiler.VM's JSD-0082 records the decision by its own dated note with SJL-9.6's pin move.)*
 - **The pins** (decision D14, as revised). ECMA-402 at `tc39/ecma402` `3d4c558180f643d7dea75f011a6355fb285f377e`, the
   last `main` commit on or before 2026-05-08, which already holds the Intl Locale Info proposal and names the
   operation IsWellFormedLanguageTag; the Intl era and month code proposal at its last commit on or before the same

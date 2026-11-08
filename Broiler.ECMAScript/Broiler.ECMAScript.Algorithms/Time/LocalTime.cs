@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   12
 // Annotated:        12/12
 // Exempt:           3
@@ -38,8 +38,8 @@ namespace Broiler.ECMAScript.Time;
 /// zero; Broiler.JS's reads its host's zone. The library reads no zone of its own (contract convention 9).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.25-26; IP=Low; Security=Medium; Resources=1; Fingerprint=B5630F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.25-26; IP=Low; Security=Medium; Resources=1; Fingerprint=B5630F
+// Hairs-Human:        PENDING
 public interface ILocalTimeProvider
 {
     /// <summary>
@@ -48,8 +48,8 @@ public interface ILocalTimeProvider
     /// </summary>
     /// <param name="epochMilliseconds">The instant, a finite Number of milliseconds since the epoch.</param>
     /// <returns>An integral Number of milliseconds, of magnitude below 86,400,000, positive east of UTC.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.21; IP=Low; Security=Medium; Resources=1; Fingerprint=21E1F4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.21; IP=Low; Security=Medium; Resources=1; Fingerprint=21E1F4
+    // Hairs-Human:        PENDING
     double GetOffsetMilliseconds(double epochMilliseconds);
 
     /// <summary>
@@ -58,8 +58,8 @@ public interface ILocalTimeProvider
     /// </summary>
     /// <param name="epochMilliseconds">The instant, a time value.</param>
     /// <returns>The name, or <see langword="null"/> for a <c>tzName</c> that is the empty String.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.3; IP=Low; Security=Low; Resources=1; Fingerprint=3A6A76
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.3; IP=Low; Security=Low; Resources=1; Fingerprint=3A6A76
+    // Hairs-Human:        PENDING
     string? GetName(double epochMilliseconds);
 }
 
@@ -67,8 +67,8 @@ public interface ILocalTimeProvider
 /// A local time zone at a fixed offset with no transition: ECMA-262's time zone of an offset string
 /// (<c>IsTimeZoneOffsetString</c>, 21.4.1.33), and Broiler.VM's UTC at an offset of zero.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.33; IP=Low; Security=Low; Resources=1; Fingerprint=417C7E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.33; IP=Low; Security=Low; Resources=1; Fingerprint=417C7E
+// Hairs-Human:        PENDING
 public sealed class FixedOffsetLocalTimeProvider : ILocalTimeProvider
 {
     private readonly double offset;
@@ -79,8 +79,8 @@ public sealed class FixedOffsetLocalTimeProvider : ILocalTimeProvider
     /// <param name="offsetMilliseconds">The offset, an integral Number of milliseconds of magnitude below 86,400,000, positive east of UTC.</param>
     /// <param name="name">The zone's name for <c>TimeZoneString</c>, or <see langword="null"/> for none.</param>
     /// <exception cref="ArgumentOutOfRangeException">The offset is not integral, or its magnitude is a day or more.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.33; IP=Low; Security=Low; Resources=1; Fingerprint=DF38DE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.33; IP=Low; Security=Low; Resources=1; Fingerprint=DF38DE
+    // Hairs-Human:        PENDING
     public FixedOffsetLocalTimeProvider(double offsetMilliseconds, string? name)
     {
         EcmaLocalTime.CheckOffset(offsetMilliseconds, nameof(offsetMilliseconds));
@@ -91,21 +91,21 @@ public sealed class FixedOffsetLocalTimeProvider : ILocalTimeProvider
     /// <summary>The fixed offset, whatever the instant (ECMA-262 21.4.1.33's <c>ParseTimeZoneOffsetString</c>, in milliseconds).</summary>
     /// <param name="epochMilliseconds">The instant.</param>
     /// <returns>The offset this zone was created with.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.33; IP=Low; Security=Low; Resources=1; Fingerprint=194543
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.33; IP=Low; Security=Low; Resources=1; Fingerprint=194543
+    // Hairs-Human:        PENDING
     public double GetOffsetMilliseconds(double epochMilliseconds) => offset;
 
     /// <summary>The fixed name, whatever the instant (ECMA-262 21.4.4.41.3's implementation-defined timezone name).</summary>
     /// <param name="epochMilliseconds">The instant.</param>
     /// <returns>The name this zone was created with, or <see langword="null"/>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.3; IP=Low; Security=Low; Resources=1; Fingerprint=C9E2D3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.3; IP=Low; Security=Low; Resources=1; Fingerprint=C9E2D3
+    // Hairs-Human:        PENDING
     public string? GetName(double epochMilliseconds) => name;
 }
 
 /// <summary>ECMA-262's conversions between UTC and local time over the engine's <see cref="ILocalTimeProvider"/>.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.25-26; IP=Low; Security=Medium; Resources=1; Fingerprint=FDA9A3
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.25-26; IP=Low; Security=Medium; Resources=1; Fingerprint=FDA9A3
+// Hairs-Human:        PENDING
 public static class EcmaLocalTime
 {
     /// <summary><c>LocalTime</c> (ECMA-262 21.4.1.25): <c>t + 𝔽(offsetMs)</c>, the offset in force at the instant <c>t</c>.</summary>
@@ -114,8 +114,8 @@ public static class EcmaLocalTime
     /// <returns>The local time; NaN for a NaN or an infinite <paramref name="t"/>.</returns>
     /// <exception cref="ArgumentNullException">The zone is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">The zone answered an offset that breaks its contract.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.25; IP=Low; Security=Medium; Resources=1; Fingerprint=13223A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.25; IP=Low; Security=Medium; Resources=1; Fingerprint=13223A
+    // Hairs-Human:        PENDING
     public static double LocalTime(double t, ILocalTimeProvider zone)
     {
         ArgumentNullException.ThrowIfNull(zone);
@@ -142,9 +142,9 @@ public static class EcmaLocalTime
     /// </remarks>
     /// <exception cref="ArgumentNullException">The zone is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">The zone answered an offset that breaks its contract.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.26; IP=Low; Security=High; Resources=1; Fingerprint=708CAB
-    // Broiler-Falsified-If: a repeated local time is read at a later instant than its earliest, a skipped local time is read at an offset other than the one before its transition, or a local time with one instant is read at another
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.26; IP=Low; Security=High; Resources=1; Fingerprint=708CAB
+    // Hairs-Falsified-If: a repeated local time is read at a later instant than its earliest, a skipped local time is read at an offset other than the one before its transition, or a local time with one instant is read at another
+    // Hairs-Human:        PENDING
     public static double Utc(double t, ILocalTimeProvider zone)
     {
         ArgumentNullException.ThrowIfNull(zone);
@@ -165,8 +165,8 @@ public static class EcmaLocalTime
     }
 
     // The provider's offset at an instant, held to its contract.
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.25; IP=Low; Security=Medium; Resources=1; Fingerprint=6BE133
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.25; IP=Low; Security=Medium; Resources=1; Fingerprint=6BE133
+    // Hairs-Human:        PENDING
     private static double Offset(ILocalTimeProvider zone, double epochMilliseconds)
     {
         var offset = zone.GetOffsetMilliseconds(epochMilliseconds);
@@ -177,8 +177,8 @@ public static class EcmaLocalTime
     }
 
     // A fixed offset's precondition: integral and below a day.
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.33; IP=Low; Security=Low; Resources=1; Fingerprint=602D1E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.33; IP=Low; Security=Low; Resources=1; Fingerprint=602D1E
+    // Hairs-Human:        PENDING
     internal static void CheckOffset(double offset, string name)
     {
         if (!double.IsFinite(offset) || Math.Floor(offset) != offset || Math.Abs(offset) >= EcmaTime.MsPerDay)

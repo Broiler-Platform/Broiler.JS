@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   3
 // Annotated:        3/3
 // Exempt:           6
@@ -27,16 +27,16 @@ namespace Broiler.ECMAScript.Generation.Intl;
 /// <param name="Summary">What the table holds, field by field, as the generator's summary states it.</param>
 /// <param name="IsText">True for a text table - ASCII lines of fields separated by <c>|</c>, separated by LF, the last unterminated - and false for a binary one.</param>
 /// <param name="Data">The table's bytes: what an engine embeds.</param>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 generated table; IP=Low; Security=Low; Resources=0; Fingerprint=15B3E2
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 generated table; IP=Low; Security=Low; Resources=0; Fingerprint=15B3E2
+// Hairs-Human:        PENDING
 public sealed record IntlGeneratedTable(string Name, string Summary, bool IsText, ReadOnlyMemory<byte> Data);
 
 /// <summary>
 /// Every table the CLDR table generator writes from one pin, archive and set of options, in the order
 /// Broiler.VM's <c>JsCldrTables.g.cs</c> declares them, with the data versions they were written from.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 generated tables; IP=Low; Security=Low; Resources=1; Fingerprint=6CBF40
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 generated tables; IP=Low; Security=Low; Resources=1; Fingerprint=6CBF40
+// Hairs-Human:        PENDING
 public sealed class IntlTables
 {
     internal IntlTables(string cldrVersion, string ucaVersion, IReadOnlyList<IntlGeneratedTable> tables, IReadOnlyList<string> absentFiles)
@@ -54,8 +54,8 @@ public sealed class IntlTables
     public string UcaVersion { get; }
 
     /// <summary>The Unicode version of the UCD files read.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 generated tables; IP=Low; Security=Low; Resources=0; Fingerprint=D8142D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 generated tables; IP=Low; Security=Low; Resources=0; Fingerprint=D8142D
+    // Hairs-Human:        PENDING
     public static string UnicodeVersion => IntlDataVersions.UnicodeVersion;
 
     /// <summary>Every table, in the order Broiler.VM's generated file declares them.</summary>
@@ -72,8 +72,8 @@ public sealed class IntlTables
     /// <summary>The table named <paramref name="name"/>.</summary>
     /// <param name="name">The table's name, e.g. <c>LikelySubtags</c>.</param>
     /// <exception cref="InvalidDataException">No table has that name.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 generated tables; IP=Low; Security=Low; Resources=1; Fingerprint=489206
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 generated tables; IP=Low; Security=Low; Resources=1; Fingerprint=489206
+    // Hairs-Human:        PENDING
     public IntlGeneratedTable this[string name] =>
         Tables.SingleOrDefault(table => string.Equals(table.Name, name, StringComparison.Ordinal))
         ?? throw new InvalidDataException("the generator writes no table `" + name + "`");

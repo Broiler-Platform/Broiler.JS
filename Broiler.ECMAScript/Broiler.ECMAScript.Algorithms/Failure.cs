@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   3
 // Annotated:        3/3
 // Exempt:           3
@@ -27,13 +27,13 @@ namespace Broiler.ECMAScript;
 /// Message text is not part of the contract. The identifier is: an engine keys its own message on
 /// it, so changing an identifier is a breaking change and changing an engine's text is not.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=Low; Resources=1; Fingerprint=B9AD3E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=Low; Resources=1; Fingerprint=B9AD3E
+// Hairs-Human:        PENDING
 public readonly record struct Failure
 {
     /// <summary>The value that means "the failure has no position in the input".</summary>
-    // Broiler-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=Low; Resources=1; Fingerprint=55EA0C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=Low; Resources=1; Fingerprint=55EA0C
+    // Hairs-Human:        PENDING
     public const int NoPosition = -1;
 
     /// <summary>Creates a failure.</summary>
@@ -42,8 +42,8 @@ public readonly record struct Failure
     /// <param name="messageId">The stable identifier of the message, for example <c>number.malformed-exponent</c>.</param>
     /// <exception cref="ArgumentOutOfRangeException">The status is <see cref="ResultStatus.Completed"/>, or the position is below <see cref="NoPosition"/>.</exception>
     /// <exception cref="ArgumentException">The message identifier is empty.</exception>
-    // Broiler-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=Medium; Resources=1; Fingerprint=C260F1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=Medium; Resources=1; Fingerprint=C260F1
+    // Hairs-Human:        PENDING
     public Failure(ResultStatus status, int position, string messageId)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(status, ResultStatus.Completed);

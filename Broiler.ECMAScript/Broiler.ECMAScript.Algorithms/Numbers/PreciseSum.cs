@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   7
 // Annotated:        7/7
 // Exempt:           8
@@ -40,33 +40,33 @@ namespace Broiler.ECMAScript.Numbers;
 /// is ever an infinity; the result is that exact value rounded once, ties to even.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Medium; Resources=2; Fingerprint=326634
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Medium; Resources=2; Fingerprint=326634
+// Hairs-Human:        PENDING
 public sealed class PreciseSum
 {
     /// <summary>2^1023, half of the unit an overflowing partial is split into.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Low; Resources=1; Fingerprint=976965
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Low; Resources=1; Fingerprint=976965
+    // Hairs-Human:        PENDING
     private const double TwoTo1023 = 8.98846567431157953865e+307;
 
     /// <summary>The non-overlapping partials, smallest magnitude first.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Low; Resources=1; Fingerprint=9214DB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Low; Resources=1; Fingerprint=9214DB
+    // Hairs-Human:        PENDING
     private readonly List<double> partials = new();
 
     /// <summary>The multiples of 2^1024 split off overflowing partials, signed.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Low; Resources=1; Fingerprint=24228D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Low; Resources=1; Fingerprint=24228D
+    // Hairs-Human:        PENDING
     private long overflow;
 
     /// <summary>The clause's state: minus-zero, finite, plus-infinity, minus-infinity or not-a-number.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Low; Resources=1; Fingerprint=F91CA1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Low; Resources=1; Fingerprint=F91CA1
+    // Hairs-Human:        PENDING
     private State state = State.MinusZero;
 
     /// <summary>The states of the clause's steps 3 to 11.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Low; Resources=1; Fingerprint=B81E40
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Low; Resources=1; Fingerprint=B81E40
+    // Hairs-Human:        PENDING
     private enum State
     {
         MinusZero,
@@ -78,8 +78,8 @@ public sealed class PreciseSum
 
     /// <summary>Adds one Number, as the clause's loop does once its value is known to be a Number (step 9.d to 9.f).</summary>
     /// <param name="value">The Number.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Medium; Resources=2; Fingerprint=2404BB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Medium; Resources=2; Fingerprint=2404BB
+    // Hairs-Human:        PENDING
     public void Add(double value)
     {
         if (state == State.NotANumber)
@@ -107,8 +107,8 @@ public sealed class PreciseSum
 
     /// <summary>The clause's result (steps 10 to 15): NaN, an infinity, -0, or the exact sum rounded to the nearest Number.</summary>
     /// <returns>The sum of every Number added so far.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Medium; Resources=2; Fingerprint=EB5782
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Medium; Resources=2; Fingerprint=EB5782
+    // Hairs-Human:        PENDING
     public double Result()
     {
         switch (state)
@@ -136,8 +136,8 @@ public sealed class PreciseSum
 
     /// <summary>Grows the expansion by one finite non-zero double, splitting off 2^1024 wherever a partial would overflow.</summary>
     /// <param name="value">The double.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Medium; Resources=2; Fingerprint=5D5C4E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.3.2.34; IP=Low; Security=Medium; Resources=2; Fingerprint=5D5C4E
+    // Hairs-Human:        PENDING
     private void Grow(double value)
     {
         var kept = 0;
@@ -177,8 +177,8 @@ public sealed class PreciseSum
     /// <summary>A finite double as an integer count of 2^-1074.</summary>
     /// <param name="value">The double.</param>
     /// <returns>Its exact value times 2^1074.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=DFE2BB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=DFE2BB
+    // Hairs-Human:        PENDING
     private static BigInteger Units(double value)
     {
         if (value == 0)

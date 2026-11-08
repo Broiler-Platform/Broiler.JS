@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   12
 // Annotated:        12/12
 // Exempt:           5
@@ -22,8 +22,8 @@ using System.Text;
 namespace Broiler.ECMAScript.Conformance;
 
 /// <summary>The verdicts of the schema's section 8, with the library-level runner's own.</summary>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=A8D484
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=A8D484
+// Hairs-Human:        PENDING
 public enum Verdict
 {
     /// <summary>The rendered outcome is one of the expected alternatives.</summary>
@@ -44,22 +44,22 @@ public enum Verdict
 /// <param name="Expected">The outcome expected of the subject: its per-engine field, or <c>out</c>.</param>
 /// <param name="Rendered">The outcome the subject gave, rendered.</param>
 /// <param name="Verdict">The comparison's verdict.</param>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=79F472
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=79F472
+// Hairs-Human:        PENDING
 public sealed record VectorResult(VectorRecord Vector, string Expected, string Rendered, Verdict Verdict)
 {
     /// <summary>A divergence vector this engine now matches: the next revision may retire the field.</summary>
     /// <param name="engine">The engine the result is of.</param>
     /// <returns>Whether the vector carries a divergence field for an engine it now matches.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=46A348
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=46A348
+    // Hairs-Human:        PENDING
     public bool DivergenceNoLongerHolds(string engine)
         => Verdict == Verdict.Match && Vector["divergence." + engine] is not null;
 }
 
 /// <summary>An engine-level runner's view of an engine: evaluate a script in a fresh realm, and render the outcome.</summary>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=BF6F04
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=BF6F04
+// Hairs-Human:        PENDING
 public interface IVectorEngine
 {
     /// <summary><c>broiler-js</c> or <c>broiler-vm</c>, as the corpus's per-engine fields name it.</summary>
@@ -73,22 +73,22 @@ public interface IVectorEngine
     /// <param name="prelude">The corpus's prelude.js.</param>
     /// <param name="script">The vector's <c>script</c> field.</param>
     /// <returns>The rendered outcome.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E10F10
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E10F10
+    // Hairs-Human:        PENDING
     string Evaluate(string prelude, string script);
 }
 
 /// <summary>The engine-level runner, and the report every runner writes.</summary>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=30ECE7
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=30ECE7
+// Hairs-Human:        PENDING
 public static class VectorRun
 {
     /// <summary>The outcome expected of <paramref name="engine"/>: its per-engine field on an impl-defined vector, otherwise <c>out</c>.</summary>
     /// <param name="vector">The vector.</param>
     /// <param name="engine">The engine's name.</param>
     /// <returns>The expected outcome's text.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=F57295
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=F57295
+    // Hairs-Human:        PENDING
     public static string ExpectedFor(VectorRecord vector, string engine)
     {
         ArgumentNullException.ThrowIfNull(vector);
@@ -101,8 +101,8 @@ public static class VectorRun
     /// <param name="rendered">The rendered outcome.</param>
     /// <returns>The verdict.</returns>
     /// <exception cref="FormatException">The vector's expected outcome does not parse, which a validated corpus never has.</exception>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=15FCC0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=15FCC0
+    // Hairs-Human:        PENDING
     public static Verdict Compare(VectorRecord vector, string engine, string rendered)
     {
         ArgumentNullException.ThrowIfNull(rendered);
@@ -125,8 +125,8 @@ public static class VectorRun
     /// <param name="prelude">The corpus's prelude.js.</param>
     /// <param name="engine">The engine.</param>
     /// <returns>One result per vector, in order.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=BED042
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=BED042
+    // Hairs-Human:        PENDING
     public static IReadOnlyList<VectorResult> RunEngine(IEnumerable<VectorRecord> vectors, string prelude, IVectorEngine engine)
     {
         ArgumentNullException.ThrowIfNull(vectors);
@@ -149,8 +149,8 @@ public static class VectorRun
     /// <param name="engine">The engine or library the results are of.</param>
     /// <param name="sources">The corpus's pins.</param>
     /// <returns>The report, with LF line endings.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=93EA25
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=93EA25
+    // Hairs-Human:        PENDING
     public static string Report(IReadOnlyList<VectorResult> results, string engine, VectorSources sources)
     {
         ArgumentNullException.ThrowIfNull(results);
@@ -187,8 +187,8 @@ public static class VectorRun
     /// <summary>A verdict as the report writes it.</summary>
     /// <param name="verdict">The verdict.</param>
     /// <returns><c>match</c>, <c>classified-divergence</c>, <c>difference</c> or <c>not-implemented</c>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=BDBBD5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=BDBBD5
+    // Hairs-Human:        PENDING
     public static string Name(Verdict verdict) => verdict switch
     {
         Verdict.Match => "match",
@@ -198,7 +198,7 @@ public static class VectorRun
     };
 
     /// <summary>Line endings in a rendered outcome are normalised to LF; nothing else is.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=9DEAA0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=9DEAA0
+    // Hairs-Human:        PENDING
     private static string Normalise(string rendered) => rendered.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n');
 }

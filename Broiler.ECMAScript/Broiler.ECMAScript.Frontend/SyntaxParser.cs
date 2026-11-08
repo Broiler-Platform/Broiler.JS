@@ -1,17 +1,17 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
-// Relevant units:   6
-// Annotated:        6/6
+// HAIRS Code Assurance
+// --------------------
+// Relevant units:   8
+// Annotated:        8/8
 // Exempt:           9
-// Human-reviewed:   0/6
+// Human-reviewed:   0/8
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         1/1
 // Resource impact:  2/10 max
-// Unverified:       6
+// Unverified:       8
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -22,8 +22,8 @@ namespace Broiler.ECMAScript.Syntax;
 
 /// <summary>How a parse ended (Broiler.VM's JSD-0083, X3: "a refusal is data").</summary>
 /// <remarks>The numbers are stable; a later stage that withdraws <see cref="NotImplemented"/> reuses no number.</remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=177077
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=177077
+// Hairs-Human:        PENDING
 public enum ParseOutcome
 {
     /// <summary>
@@ -60,19 +60,32 @@ public enum ParseOutcome
 /// 4d.")</i>
 /// </summary>
 /// <remarks>
-/// The token stream the parse read is kept beside the tree inside the library and is not public at stage 4c or 4d: which of its
-/// raw facts the result publishes, for Broiler.VM's tokenizers-agreement row and Broiler.JS's bridged token chain
-/// (decisions D21 and D44), is fixed when a consumer first reads it.
+/// The token stream the parse read is kept beside the tree, and the result publishes it as <see cref="Tokens"/> when the
+/// request sets <see cref="ParseRequest.RetainTokens"/>: every raw fact each token carries, for Broiler.VM's
+/// tokenizers-agreement row (decision D21), by the owner's decision of 2026-11-04 ("Expose + preview.10"). <i>(Revised
+/// 2026-11-04; it read "The token stream the parse read is kept beside the tree inside the library and is not public at
+/// stage 4c or 4d: which of its raw facts the result publishes, for Broiler.VM's tokenizers-agreement row and Broiler.JS's
+/// bridged token chain (decisions D21 and D44), is fixed when a consumer first reads it.")</i>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=54BFD3
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=54BFD3
+// Hairs-Human:        PENDING
 public sealed class ParseResult
 {
-    private ParseResult(ParseOutcome outcome, ProgramNode? tree, IReadOnlyList<Token> tokens, IReadOnlyList<SyntaxDiagnostic> diagnostics, Semantics.DeclarationTables? declarations)
+    /// <summary>
+    /// Whether the request set <see cref="ParseRequest.RetainTokens"/>: a flag beside the outcome, where the result's
+    /// layout has room for it, so that a result is the size it was at 0.1.0-preview.9 and holds one list of tokens either
+    /// way.
+    /// </summary>
+    private readonly bool retainTokens;
+
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11, D21 retained tokens; IP=Low; Security=Low; Resources=1; Fingerprint=2EAACD
+    // Hairs-Human:        PENDING
+    private ParseResult(ParseOutcome outcome, ProgramNode? tree, IReadOnlyList<Token> tokens, bool retainTokens, IReadOnlyList<SyntaxDiagnostic> diagnostics, Semantics.DeclarationTables? declarations)
     {
         Outcome = outcome;
         Tree = tree;
-        Tokens = tokens;
+        TokenStream = tokens;
+        this.retainTokens = retainTokens;
         Diagnostics = diagnostics;
         Declarations = declarations;
     }
@@ -89,8 +102,22 @@ public sealed class ParseResult
     /// <summary>The refusals, in the library's order (decision D11): empty for an accepted source; for a refused source, one under <see cref="ErrorReporting.FirstError"/>, and up to <see cref="ParseLimits.DiagnosticCap"/> under <see cref="ErrorReporting.AllErrors"/>.</summary>
     public IReadOnlyList<SyntaxDiagnostic> Diagnostics { get; }
 
-    /// <summary>The tokens the parse consumed, in source order, each read under the goal the parser named; empty for a refused source.</summary>
-    internal IReadOnlyList<Token> Tokens { get; }
+    /// <summary>
+    /// The tokens the parse consumed, in source order, each read under the goal the parser named, so that each <c>/</c> is
+    /// division or a regular-expression literal's start and each <c>}</c> a punctuator or a template's continuation as the
+    /// grammar read it: a template is its run of pieces (<see cref="TokenKind.TemplateHead"/>, each substitution's tokens,
+    /// <see cref="TokenKind.TemplateMiddle"/>s and <see cref="TokenKind.TemplateTail"/>), or one
+    /// <see cref="TokenKind.NoSubstitutionTemplate"/>. No <see cref="TokenKind.EndOfInput"/> token and no comment. Empty
+    /// unless the request sets <see cref="ParseRequest.RetainTokens"/>, and empty for a refused source. <i>(Revised
+    /// 2026-11-04, when the member became public; it read "The tokens the parse consumed, in source order, each read under
+    /// the goal the parser named; empty for a refused source.")</i>
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D21 retained tokens; IP=Low; Security=Low; Resources=1; Fingerprint=E9AFE5
+    // Hairs-Human:        PENDING
+    public IReadOnlyList<Token> Tokens => retainTokens ? TokenStream : Array.Empty<Token>();
+
+    /// <summary>The tokens the parse consumed, whether the request retains them or not, for the canonical dump (<c>runners/SyntaxDump.cs</c>); empty for a refused source.</summary>
+    internal IReadOnlyList<Token> TokenStream { get; }
 
     /// <summary>
     /// The declarations walk's side tables (stage SJL-13.2d; Broiler.VM's JSD-0083, decision D10), ordered by source position:
@@ -100,16 +127,18 @@ public sealed class ParseResult
     public Semantics.DeclarationTables? Declarations { get; }
 
     /// <summary>The answer of a parse that accepts the source.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=F137FE
-    // Broiler-Human:        PENDING
-    internal static ParseResult Accepted(ProgramNode tree, List<Token> tokens, Semantics.DeclarationTables declarations) =>
-        new(ParseOutcome.Accepted, tree, tokens.AsReadOnly(), Array.Empty<SyntaxDiagnostic>(), declarations);
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11, D21 retained tokens; IP=Low; Security=Medium; Resources=1; Fingerprint=9DE218
+    // Hairs-Human:        PENDING
+    internal static ParseResult Accepted(ProgramNode tree, List<Token> tokens, bool retainTokens, Semantics.DeclarationTables declarations)
+    {
+        return new(ParseOutcome.Accepted, tree, tokens.AsReadOnly(), retainTokens, Array.Empty<SyntaxDiagnostic>(), declarations);
+    }
 
     /// <summary>The answer of a parse that refuses the source, with the diagnostics the request asks for, in the library's order (decision D11).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2d parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=398E8C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2d parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=F88918
+    // Hairs-Human:        PENDING
     internal static ParseResult Refused(List<SyntaxDiagnostic> diagnostics) =>
-        new(ParseOutcome.Refused, null, Array.Empty<Token>(), diagnostics.AsReadOnly(), null);
+        new(ParseOutcome.Refused, null, Array.Empty<Token>(), false, diagnostics.AsReadOnly(), null);
 }
 
 /// <summary>
@@ -152,8 +181,8 @@ public sealed class ParseResult
 /// which the request's caller makes safe.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=85477C
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11; IP=Low; Security=Medium; Resources=1; Fingerprint=85477C
+// Hairs-Human:        PENDING
 public static class SyntaxParser
 {
     /// <summary>
@@ -174,9 +203,9 @@ public static class SyntaxParser
     /// </returns>
     /// <exception cref="ArgumentNullException">The request is null.</exception>
     /// <exception cref="ArgumentException">The request's Unicode provider is not of the library's Unicode version or lacks a table the lexical classes read.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s16.1 s16.2 s19.2.1.1 s20.2.1.1.1 goals, JSD-0083 SJL-13.2c parse entry D32; IP=Low; Security=High; Resources=2; Fingerprint=6F6645
-    // Broiler-Falsified-If: a source the grammar or a syntax row's early error refuses is answered Accepted, a source neither refuses is answered Refused, or the meter is charged after a code unit of the source is read or for other than the text's length
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s16.1 s16.2 s19.2.1.1 s20.2.1.1.1 goals, JSD-0083 SJL-13.2c parse entry D32; IP=Low; Security=High; Resources=2; Fingerprint=6F6645
+    // Hairs-Falsified-If: a source the grammar or a syntax row's early error refuses is answered Accepted, a source neither refuses is answered Refused, or the meter is charged after a code unit of the source is read or for other than the text's length
+    // Hairs-Human:        PENDING
     public static ParseResult Parse(ParseRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);

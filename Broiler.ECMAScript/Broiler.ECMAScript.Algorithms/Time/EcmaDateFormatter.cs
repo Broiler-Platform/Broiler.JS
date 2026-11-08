@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   13
 // Annotated:        13/13
 // Exempt:           0
@@ -29,13 +29,13 @@ namespace Broiler.ECMAScript.Time;
 /// names, ToZeroPaddedDecimalString's digits, U+002D for a negative year or offset. Nothing reads a
 /// culture (contract convention 9); the zone's name is the provider's, written as it is given.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41; IP=Low; Security=Medium; Resources=1; Fingerprint=4F42EA
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41; IP=Low; Security=Medium; Resources=1; Fingerprint=4F42EA
+// Hairs-Human:        PENDING
 public static class EcmaDateFormatter
 {
     /// <summary>The text of an invalid date, which <c>toString</c> and its siblings answer for a NaN time value (21.4.4.41.4).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.4; IP=Low; Security=Low; Resources=1; Fingerprint=EF3BC4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.4; IP=Low; Security=Low; Resources=1; Fingerprint=EF3BC4
+    // Hairs-Human:        PENDING
     public const string InvalidDate = "Invalid Date";
 
     /// <summary>
@@ -45,8 +45,8 @@ public static class EcmaDateFormatter
     /// <param name="tv">A finite Number: a local time for <c>toString</c>, a time value for <c>toUTCString</c>.</param>
     /// <returns>For example <c>"00:00:00 GMT"</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="tv"/> is not finite.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.1; IP=Low; Security=Medium; Resources=1; Fingerprint=3111B7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.1; IP=Low; Security=Medium; Resources=1; Fingerprint=3111B7
+    // Hairs-Human:        PENDING
     public static string TimeString(double tv)
     {
         CheckFinite(tv);
@@ -61,8 +61,8 @@ public static class EcmaDateFormatter
     /// <param name="tv">A finite Number: a local time.</param>
     /// <returns>For example <c>"Thu Jan 01 1970"</c> or <c>"Fri Jan 01 -0001"</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="tv"/> is not finite.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.2; IP=Low; Security=Medium; Resources=1; Fingerprint=A7C9F3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.2; IP=Low; Security=Medium; Resources=1; Fingerprint=A7C9F3
+    // Hairs-Human:        PENDING
     public static string DateString(double tv)
     {
         CheckFinite(tv);
@@ -79,8 +79,8 @@ public static class EcmaDateFormatter
     /// <exception cref="ArgumentNullException">The zone is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="tv"/> is not finite.</exception>
     /// <exception cref="InvalidOperationException">The zone answered an offset that breaks its contract.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.3; IP=Low; Security=Medium; Resources=1; Fingerprint=0CFC41
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.3; IP=Low; Security=Medium; Resources=1; Fingerprint=0CFC41
+    // Hairs-Human:        PENDING
     public static string TimeZoneString(double tv, ILocalTimeProvider zone)
     {
         ArgumentNullException.ThrowIfNull(zone);
@@ -103,8 +103,8 @@ public static class EcmaDateFormatter
     /// <returns>For example <c>"Thu Jan 01 1970 00:00:00 GMT+0000 (Coordinated Universal Time)"</c>.</returns>
     /// <exception cref="ArgumentNullException">The zone is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">The zone answered an offset that breaks its contract.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.4; IP=Low; Security=Medium; Resources=1; Fingerprint=2F0681
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.4; IP=Low; Security=Medium; Resources=1; Fingerprint=2F0681
+    // Hairs-Human:        PENDING
     public static string ToDateString(double tv, ILocalTimeProvider zone)
     {
         ArgumentNullException.ThrowIfNull(zone);
@@ -122,8 +122,8 @@ public static class EcmaDateFormatter
     /// <param name="tv">A time value or NaN.</param>
     /// <returns>For example <c>"Thu, 01 Jan 1970 00:00:00 GMT"</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="tv"/> is infinite.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.43; IP=Low; Security=Medium; Resources=1; Fingerprint=EA8D2E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.43; IP=Low; Security=Medium; Resources=1; Fingerprint=EA8D2E
+    // Hairs-Human:        PENDING
     public static string ToUtcString(double tv)
     {
         if (double.IsNaN(tv))
@@ -141,8 +141,8 @@ public static class EcmaDateFormatter
     /// <param name="tv">A time value or NaN.</param>
     /// <param name="text">The text, for a finite <paramref name="tv"/>; otherwise the empty String.</param>
     /// <returns>Whether <paramref name="tv"/> is finite; the caller throws its <c>RangeError</c> when it is not.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.36; IP=Low; Security=Medium; Resources=1; Fingerprint=B91659
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.36; IP=Low; Security=Medium; Resources=1; Fingerprint=B91659
+    // Hairs-Human:        PENDING
     public static bool TryToIsoString(double tv, out string text)
     {
         if (!double.IsFinite(tv))
@@ -162,8 +162,8 @@ public static class EcmaDateFormatter
     }
 
     // The year with its sign when negative, its magnitude at least four digits (DateString's yearSign and paddedYear).
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.2; IP=Low; Security=Low; Resources=1; Fingerprint=2E242D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.2; IP=Low; Security=Low; Resources=1; Fingerprint=2E242D
+    // Hairs-Human:        PENDING
     private static string Year(double tv)
     {
         var year = EcmaTime.YearFromTime(tv);
@@ -171,13 +171,13 @@ public static class EcmaDateFormatter
     }
 
     // ToZeroPaddedDecimalString (ECMA-262 22.1.3.17.3) of a non-negative integral Number.
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.17.3; IP=Low; Security=Low; Resources=1; Fingerprint=73A402
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.17.3; IP=Low; Security=Low; Resources=1; Fingerprint=73A402
+    // Hairs-Human:        PENDING
     private static string Padded(double value, int width) =>
         ((long)value).ToString(NumberFormatInfo.InvariantInfo).PadLeft(width, '0');
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.2; IP=Low; Security=Low; Resources=1; Fingerprint=4FC0E2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.2; IP=Low; Security=Low; Resources=1; Fingerprint=4FC0E2
+    // Hairs-Human:        PENDING
     private static string WeekDayName(double tv) => (int)EcmaTime.WeekDay(tv) switch
     {
         0 => "Sun",
@@ -189,8 +189,8 @@ public static class EcmaDateFormatter
         _ => "Sat",
     };
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.2; IP=Low; Security=Low; Resources=1; Fingerprint=CD7F0A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41.2; IP=Low; Security=Low; Resources=1; Fingerprint=CD7F0A
+    // Hairs-Human:        PENDING
     private static string MonthName(double tv) => (int)EcmaTime.MonthFromTime(tv) switch
     {
         0 => "Jan",
@@ -207,8 +207,8 @@ public static class EcmaDateFormatter
         _ => "Dec",
     };
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41; IP=Low; Security=Low; Resources=1; Fingerprint=8B955C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.4.41; IP=Low; Security=Low; Resources=1; Fingerprint=8B955C
+    // Hairs-Human:        PENDING
     private static void CheckFinite(double tv)
     {
         if (!double.IsFinite(tv))

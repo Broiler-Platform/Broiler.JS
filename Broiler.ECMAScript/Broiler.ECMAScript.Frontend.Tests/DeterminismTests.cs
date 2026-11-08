@@ -61,7 +61,7 @@ public sealed class DeterminismTests
         return items;
     }
 
-    private static ParseRequest Request(Item item)
+    private static ParseRequest Request(Item item, bool retainTokens = false)
     {
         if (item.Variant[0] == 'E')
         {
@@ -71,6 +71,7 @@ public sealed class DeterminismTests
                 Switches = ParseSwitches.For(ParseGoal.Eval) with { ForcedStrict = strict },
                 Context = new InheritedContext { InFunction = strict },
                 Limits = new ParseLimits { NestingDepth = new DepthLimit(64) },
+                RetainTokens = retainTokens,
             };
         }
 
@@ -82,6 +83,7 @@ public sealed class DeterminismTests
             Proposals = j ? ProposalFlags.Decorators | ProposalFlags.AutoAccessors | ProposalFlags.ImportSourceCalls | ProposalFlags.ImportDeferCalls : ProposalFlags.None,
             Extensions = j ? LexerExtensions.DecimalSuffix : LexerExtensions.None,
             Limits = new ParseLimits { NestingDepth = new DepthLimit(j ? ParseLimits.MaximumSupportedNestingDepth : 64) },
+            RetainTokens = retainTokens,
         };
     }
 
@@ -180,6 +182,50 @@ public sealed class DeterminismTests
         second.Join();
         AssertSame(items, alone, a!, "the first of two threads");
         AssertSame(items, alone, b!, "the second of two threads");
+    }
+
+    [Fact]
+    public void Retaining_the_tokens_changes_nothing_but_the_published_stream()
+    {
+        // The request's RetainTokens (the owner's decision of 2026-11-04): over every stored input of the corpus, the dump of
+        // a parse with it on is the same bytes as with it off, the stream published with it on is the stream the parse read,
+        // and nothing is published with it off.
+        var items = Population.Value;
+        Exception? failure = null;
+        var accepted = 0;
+        var thread = new Thread(
+            () =>
+            {
+                try
+                {
+                    foreach (var item in items)
+                    {
+                        var off = SyntaxParser.Parse(Request(item));
+                        var on = SyntaxParser.Parse(Request(item, retainTokens: true));
+                        var name = item.Id + " " + item.Variant + " " + item.Configuration;
+                        if (!SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on)))
+                            throw new InvalidOperationException(name + ": the dump differs with the tokens retained");
+                        if (off.Tokens.Count != 0)
+                            throw new InvalidOperationException(name + ": tokens published with the switch off");
+                        if (!on.Tokens.SequenceEqual(on.TokenStream) || !on.Tokens.SequenceEqual(off.TokenStream))
+                            throw new InvalidOperationException(name + ": the published stream is not the stream the parse read");
+                        if (on.Outcome == ParseOutcome.Accepted)
+                            accepted++;
+                    }
+                }
+                catch (Exception e)
+                {
+                    failure = e;
+                }
+            },
+            ParseLimits.StackBytes);
+        thread.Start();
+        thread.Join();
+        if (failure is not null)
+            throw failure;
+
+        // Not vacuous: most of the corpus is accepted, so most parses publish a stream.
+        Assert.True(accepted > items.Count / 2, accepted.ToString(CultureInfo.InvariantCulture) + " of " + items.Count.ToString(CultureInfo.InvariantCulture) + " accepted");
     }
 
     [Fact]

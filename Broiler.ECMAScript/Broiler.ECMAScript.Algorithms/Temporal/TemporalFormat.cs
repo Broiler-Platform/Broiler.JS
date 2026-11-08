@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   28
 // Annotated:        28/28
 // Exempt:           0
@@ -42,25 +42,25 @@ namespace Broiler.ECMAScript.Temporal;
 /// identifiers are written as the caller hands them.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0078 serialization, Temporal string forms via Broiler.VM JsTemporalCore and JsTemporal.Conversions; IP=Low; Security=Low; Resources=1; Fingerprint=1485F3
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0078 serialization, Temporal string forms via Broiler.VM JsTemporalCore and JsTemporal.Conversions; IP=Low; Security=Low; Resources=1; Fingerprint=1485F3
+// Hairs-Human:        PENDING
 public static class TemporalFormat
 {
     /// <summary>The precision <c>auto</c>: as many fraction digits as are not trailing zeros.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ToSecondsStringPrecisionRecord via Broiler.VM JsTemporalCore.PrecisionAuto; IP=Low; Security=None; Resources=0; Fingerprint=0871D5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ToSecondsStringPrecisionRecord via Broiler.VM JsTemporalCore.PrecisionAuto; IP=Low; Security=None; Resources=0; Fingerprint=0871D5
+    // Hairs-Human:        PENDING
     public const int AutoPrecision = -1;
 
     /// <summary>The precision <c>minute</c>: hours and minutes only.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ToSecondsStringPrecisionRecord via Broiler.VM JsTemporalCore.PrecisionMinute; IP=Low; Security=None; Resources=0; Fingerprint=D12D3D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ToSecondsStringPrecisionRecord via Broiler.VM JsTemporalCore.PrecisionMinute; IP=Low; Security=None; Resources=0; Fingerprint=D12D3D
+    // Hairs-Human:        PENDING
     public const int MinutePrecision = -2;
 
     /// <summary>A year as an ISO string writes it: the proposal's <c>PadISOYear</c>.</summary>
     /// <param name="year">The year.</param>
     /// <returns>Four digits for 0 to 9999; otherwise a sign and at least six digits.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal PadISOYear via Broiler.VM JsTemporalCore.PadYear; IP=Low; Security=Low; Resources=0; Fingerprint=A76BD7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal PadISOYear via Broiler.VM JsTemporalCore.PadYear; IP=Low; Security=Low; Resources=0; Fingerprint=A76BD7
+    // Hairs-Human:        PENDING
     public static string PadIsoYear(long year) =>
         year is >= 0 and <= 9999 ? Padded((ulong)year, 4) : (year > 0 ? "+" : "-") + Padded(Magnitude(year), 6);
 
@@ -69,8 +69,8 @@ public static class TemporalFormat
     /// <param name="precision">0 to 9, or <see cref="AutoPrecision"/>.</param>
     /// <returns>A point and the digits, truncated to the precision or (auto) to the last digit that is not zero; empty for no digit.</returns>
     /// <exception cref="ArgumentOutOfRangeException">An argument is outside its domain.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal FormatFractionalSeconds via Broiler.VM JsTemporalCore.FractionalSeconds; IP=Low; Security=Low; Resources=0; Fingerprint=FE02EA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal FormatFractionalSeconds via Broiler.VM JsTemporalCore.FractionalSeconds; IP=Low; Security=Low; Resources=0; Fingerprint=FE02EA
+    // Hairs-Human:        PENDING
     public static string FormatFractionalSeconds(int subSecondNanoseconds, int precision)
     {
         if (subSecondNanoseconds is < 0 or > 999_999_999)
@@ -92,8 +92,8 @@ public static class TemporalFormat
     /// <param name="precision">0 to 9, <see cref="AutoPrecision"/> or <see cref="MinutePrecision"/>.</param>
     /// <returns><c>HH:MM</c> for minute precision; otherwise <c>HH:MM:SS</c> and the fraction.</returns>
     /// <exception cref="ArgumentOutOfRangeException">An argument is outside its domain.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal FormatTimeString via Broiler.VM JsTemporalCore.FormatTime; IP=Low; Security=Low; Resources=0; Fingerprint=5BCA95
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal FormatTimeString via Broiler.VM JsTemporalCore.FormatTime; IP=Low; Security=Low; Resources=0; Fingerprint=5BCA95
+    // Hairs-Human:        PENDING
     public static string FormatTimeString(int hour, int minute, int second, int subSecondNanoseconds, int precision)
     {
         if (hour is < 0 or > 24 || minute is < 0 or > 59 || second is < 0 or > 59)
@@ -112,8 +112,8 @@ public static class TemporalFormat
     /// <param name="precision">0 to 9, <see cref="AutoPrecision"/> or <see cref="MinutePrecision"/>.</param>
     /// <returns>The time's string, for example <c>12:30:45.5</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The time is not valid, or the precision is outside its domain.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TimeRecordToString via Broiler.VM JsTemporalCore.TimeToString; IP=Low; Security=Low; Resources=0; Fingerprint=6220F2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TimeRecordToString via Broiler.VM JsTemporalCore.TimeToString; IP=Low; Security=Low; Resources=0; Fingerprint=6220F2
+    // Hairs-Human:        PENDING
     public static string TimeToString(IsoTime time, int precision)
     {
         CheckTime(time);
@@ -125,8 +125,8 @@ public static class TemporalFormat
     /// <param name="show">The <c>calendarName</c> option.</param>
     /// <returns>Empty for <c>never</c>, and for <c>auto</c> with <c>iso8601</c>; <c>[!u-ca=…]</c> for <c>critical</c>; else <c>[u-ca=…]</c>.</returns>
     /// <exception cref="ArgumentNullException">The calendar is <see langword="null"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal FormatCalendarAnnotation via Broiler.VM JsTemporal.CalendarAnnotation; IP=Low; Security=Low; Resources=1; Fingerprint=B9826A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal FormatCalendarAnnotation via Broiler.VM JsTemporal.CalendarAnnotation; IP=Low; Security=Low; Resources=1; Fingerprint=B9826A
+    // Hairs-Human:        PENDING
     public static string FormatCalendarAnnotation(string calendar, ShowCalendarName show)
     {
         ArgumentNullException.ThrowIfNull(calendar);
@@ -144,8 +144,8 @@ public static class TemporalFormat
     /// <param name="calendar">The calendar identifier, canonical.</param>
     /// <param name="show">The <c>calendarName</c> option.</param>
     /// <returns><c>YYYY-MM-DD</c> and the calendar annotation.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TemporalDateToString via Broiler.VM JsTemporal.DateString; IP=Low; Security=Low; Resources=1; Fingerprint=E2396C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TemporalDateToString via Broiler.VM JsTemporal.DateString; IP=Low; Security=Low; Resources=1; Fingerprint=E2396C
+    // Hairs-Human:        PENDING
     public static string DateToString(IsoDate date, string calendar, ShowCalendarName show) =>
         IsoDateString(date) + FormatCalendarAnnotation(calendar, show);
 
@@ -155,8 +155,8 @@ public static class TemporalFormat
     /// <param name="precision">0 to 9, <see cref="AutoPrecision"/> or <see cref="MinutePrecision"/>.</param>
     /// <param name="show">The <c>calendarName</c> option.</param>
     /// <returns><c>YYYY-MM-DDTHH:MM…</c> and the calendar annotation.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ISODateTimeToString via Broiler.VM JsTemporal.DateTimeString; IP=Low; Security=Low; Resources=1; Fingerprint=2AFF74
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ISODateTimeToString via Broiler.VM JsTemporal.DateTimeString; IP=Low; Security=Low; Resources=1; Fingerprint=2AFF74
+    // Hairs-Human:        PENDING
     public static string DateTimeToString(IsoDateTime dateTime, string calendar, int precision, ShowCalendarName show) =>
         IsoDateString(dateTime.Date) + "T" + TimeToString(dateTime.Time, precision) + FormatCalendarAnnotation(calendar, show);
 
@@ -168,8 +168,8 @@ public static class TemporalFormat
     /// <param name="calendar">The calendar identifier, canonical.</param>
     /// <param name="show">The <c>calendarName</c> option.</param>
     /// <returns><c>YYYY-MM</c>, or <c>YYYY-MM-DD</c>, and the calendar annotation.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TemporalYearMonthToString via Broiler.VM JsTemporal.YearMonthString; IP=Low; Security=Low; Resources=1; Fingerprint=4F3440
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TemporalYearMonthToString via Broiler.VM JsTemporal.YearMonthString; IP=Low; Security=Low; Resources=1; Fingerprint=4F3440
+    // Hairs-Human:        PENDING
     public static string YearMonthToString(IsoDate isoDate, string calendar, ShowCalendarName show)
     {
         ArgumentNullException.ThrowIfNull(calendar);
@@ -188,8 +188,8 @@ public static class TemporalFormat
     /// <param name="calendar">The calendar identifier, canonical.</param>
     /// <param name="show">The <c>calendarName</c> option.</param>
     /// <returns><c>MM-DD</c>, or <c>YYYY-MM-DD</c>, and the calendar annotation.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TemporalMonthDayToString via Broiler.VM JsTemporal.MonthDayString; IP=Low; Security=Low; Resources=1; Fingerprint=ECBBF5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TemporalMonthDayToString via Broiler.VM JsTemporal.MonthDayString; IP=Low; Security=Low; Resources=1; Fingerprint=ECBBF5
+    // Hairs-Human:        PENDING
     public static string MonthDayToString(IsoDate isoDate, string calendar, ShowCalendarName show)
     {
         ArgumentNullException.ThrowIfNull(calendar);
@@ -209,8 +209,8 @@ public static class TemporalFormat
     /// <param name="precision">0 to 9, <see cref="AutoPrecision"/> or <see cref="MinutePrecision"/>.</param>
     /// <returns>The instant's string, for example <c>2020-01-01T00:00:00Z</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The offset's magnitude is a day or more, or the precision is outside its domain.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TemporalInstantToString via Broiler.VM JsTemporal.InstantString; IP=Low; Security=Low; Resources=1; Fingerprint=0528FD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TemporalInstantToString via Broiler.VM JsTemporal.InstantString; IP=Low; Security=Low; Resources=1; Fingerprint=0528FD
+    // Hairs-Human:        PENDING
     public static string InstantToString(BigInteger epochNanoseconds, long? offsetNanoseconds, int precision)
     {
         var offset = offsetNanoseconds ?? 0;
@@ -236,8 +236,8 @@ public static class TemporalFormat
     /// <returns>The zoned date-time's string, for example <c>2020-07-01T12:00:00+02:00[Europe/Berlin]</c>.</returns>
     /// <exception cref="ArgumentNullException">The zone or the calendar is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The offset's magnitude is a day or more, or the precision is outside its domain.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TemporalZonedDateTimeToString via Broiler.VM JsTemporal.ZonedDateTimeString; IP=Low; Security=Low; Resources=1; Fingerprint=318DE9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TemporalZonedDateTimeToString via Broiler.VM JsTemporal.ZonedDateTimeString; IP=Low; Security=Low; Resources=1; Fingerprint=318DE9
+    // Hairs-Human:        PENDING
     public static string ZonedDateTimeToString(
         BigInteger epochNanoseconds,
         long offsetNanoseconds,
@@ -266,8 +266,8 @@ public static class TemporalFormat
     /// <param name="precision">0 to 9, or <see cref="AutoPrecision"/>.</param>
     /// <returns>The duration's string, for example <c>-P1DT2H0.5S</c>; <c>PT0S</c> for zero.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The duration is not valid, or the precision is outside its domain.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TemporalDurationToString via Broiler.VM JsTemporalCore.DurationToString; IP=Low; Security=Low; Resources=1; Fingerprint=351D1C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TemporalDurationToString via Broiler.VM JsTemporalCore.DurationToString; IP=Low; Security=Low; Resources=1; Fingerprint=351D1C
+    // Hairs-Human:        PENDING
     public static string DurationToString(DurationFields duration, int precision)
     {
         if (TemporalLimits.CheckDuration(duration) != TemporalStatus.Completed)
@@ -306,8 +306,8 @@ public static class TemporalFormat
     /// <param name="offsetNanoseconds">The offset, of magnitude below a day.</param>
     /// <returns>For example <c>+05:30</c> or <c>-00:44:30</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The offset's magnitude is a day or more.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal FormatUTCOffsetNanoseconds via Broiler.VM JsTemporalCore.FormatOffsetNs; IP=Low; Security=Low; Resources=0; Fingerprint=A9BF5F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal FormatUTCOffsetNanoseconds via Broiler.VM JsTemporalCore.FormatOffsetNs; IP=Low; Security=Low; Resources=0; Fingerprint=A9BF5F
+    // Hairs-Human:        PENDING
     public static string FormatUtcOffsetNanoseconds(long offsetNanoseconds)
     {
         CheckOffset(offsetNanoseconds);
@@ -327,8 +327,8 @@ public static class TemporalFormat
     /// <param name="offsetNanoseconds">The offset, of magnitude below a day.</param>
     /// <returns><c>±HH:MM</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The offset's magnitude is a day or more.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal FormatDateTimeUTCOffsetRounded via Broiler.VM JsTemporalCore.FormatOffsetRounded; IP=Low; Security=Low; Resources=0; Fingerprint=C667F8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal FormatDateTimeUTCOffsetRounded via Broiler.VM JsTemporalCore.FormatOffsetRounded; IP=Low; Security=Low; Resources=0; Fingerprint=C667F8
+    // Hairs-Human:        PENDING
     public static string FormatDateTimeUtcOffsetRounded(long offsetNanoseconds)
     {
         CheckOffset(offsetNanoseconds);
@@ -347,8 +347,8 @@ public static class TemporalFormat
     /// <param name="mode">The rounding mode.</param>
     /// <returns>The time's string.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The time is not valid, or the precision record is not one the rule answers.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal.PlainTime.prototype.toString via Broiler.VM JsRealm.TemporalPlainTime; IP=Low; Security=Low; Resources=1; Fingerprint=43758B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal.PlainTime.prototype.toString via Broiler.VM JsRealm.TemporalPlainTime; IP=Low; Security=Low; Resources=1; Fingerprint=43758B
+    // Hairs-Human:        PENDING
     public static string PlainTimeToString(IsoTime time, SecondsStringPrecision precision, RoundingMode mode)
     {
         var rounded = IsoArithmetic.RoundTime(time, precision.Increment, precision.Unit, mode, out _);
@@ -366,8 +366,8 @@ public static class TemporalFormat
     /// <param name="show">The <c>calendarName</c> option.</param>
     /// <param name="text">The string; <see langword="null"/> unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> where the rounded date-time is outside the limits.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal.PlainDateTime.prototype.toString via Broiler.VM JsRealm.TemporalPlainDateTime; IP=Low; Security=Low; Resources=1; Fingerprint=84C549
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal.PlainDateTime.prototype.toString via Broiler.VM JsRealm.TemporalPlainDateTime; IP=Low; Security=Low; Resources=1; Fingerprint=84C549
+    // Hairs-Human:        PENDING
     public static TemporalStatus TryPlainDateTimeToString(
         IsoDateTime dateTime, string calendar, SecondsStringPrecision precision, RoundingMode mode, ShowCalendarName show, out string? text)
     {
@@ -396,8 +396,8 @@ public static class TemporalFormat
     /// duration is not valid. Both are the specification's <c>RangeError</c>.
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">The duration is not valid, or the precision's unit is minute or larger.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal.Duration.prototype.toString via Broiler.VM JsRealm.TemporalDuration; IP=Low; Security=Low; Resources=1; Fingerprint=1C86A5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal.Duration.prototype.toString via Broiler.VM JsRealm.TemporalDuration; IP=Low; Security=Low; Resources=1; Fingerprint=1C86A5
+    // Hairs-Human:        PENDING
     public static TemporalStatus TryDurationToString(DurationFields duration, SecondsStringPrecision precision, RoundingMode mode, out string? text)
     {
         text = null;
@@ -429,19 +429,19 @@ public static class TemporalFormat
     }
 
     // An ISO date as YYYY-MM-DD.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TemporalDateToString via Broiler.VM JsTemporalCore.DateToString; IP=Low; Security=Low; Resources=0; Fingerprint=0F107A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TemporalDateToString via Broiler.VM JsTemporalCore.DateToString; IP=Low; Security=Low; Resources=0; Fingerprint=0F107A
+    // Hairs-Human:        PENDING
     private static string IsoDateString(IsoDate date) =>
         PadIsoYear(date.Year) + "-" + Padded(date.Month, 2) + "-" + Padded(date.Day, 2);
 
     // A time's nanoseconds within its second.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TimeRecordToString via Broiler.VM JsTemporalCore.SubSecond; IP=Low; Security=Low; Resources=0; Fingerprint=34D0BF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TimeRecordToString via Broiler.VM JsTemporalCore.SubSecond; IP=Low; Security=Low; Resources=0; Fingerprint=34D0BF
+    // Hairs-Human:        PENDING
     private static int SubSecond(IsoTime time) => (time.Millisecond * 1_000_000) + (time.Microsecond * 1000) + time.Nanosecond;
 
     // A duration field's magnitude and its designator, where the field is not zero.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TemporalDurationToString via Broiler.VM JsTemporalCore.IntegerText; IP=Low; Security=Low; Resources=0; Fingerprint=57AC1B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TemporalDurationToString via Broiler.VM JsTemporalCore.IntegerText; IP=Low; Security=Low; Resources=0; Fingerprint=57AC1B
+    // Hairs-Human:        PENDING
     private static void AppendPart(StringBuilder text, double value, char designator)
     {
         if (value != 0)
@@ -449,23 +449,23 @@ public static class TemporalFormat
     }
 
     // A non-negative integer with at least a number of digits.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ToZeroPaddedDecimalString via Broiler.VM JsTemporalCore.Padded; IP=Low; Security=Low; Resources=0; Fingerprint=04E300
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ToZeroPaddedDecimalString via Broiler.VM JsTemporalCore.Padded; IP=Low; Security=Low; Resources=0; Fingerprint=04E300
+    // Hairs-Human:        PENDING
     private static string Padded(ulong value, int width) => value.ToString(NumberFormatInfo.InvariantInfo).PadLeft(width, '0');
 
     // A field of a valid record, never negative, with at least a number of digits.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ToZeroPaddedDecimalString via Broiler.VM JsTemporalCore.Padded; IP=Low; Security=Low; Resources=0; Fingerprint=653356
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ToZeroPaddedDecimalString via Broiler.VM JsTemporalCore.Padded; IP=Low; Security=Low; Resources=0; Fingerprint=653356
+    // Hairs-Human:        PENDING
     private static string Padded(int value, int width) => Padded((ulong)Math.Max(value, 0), width);
 
     // The magnitude of a year, long.MinValue's too.
-    // Broiler-AI:           Origin=AI; Spec=Temporal PadISOYear; IP=Low; Security=Low; Resources=0; Fingerprint=8A611D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal PadISOYear; IP=Low; Security=Low; Resources=0; Fingerprint=8A611D
+    // Hairs-Human:        PENDING
     private static ulong Magnitude(long value) => value < 0 ? (ulong)-(value + 1) + 1 : (ulong)value;
 
     // A valid time's precondition.
-    // Broiler-AI:           Origin=AI; Spec=Temporal IsValidTime; IP=Low; Security=Low; Resources=0; Fingerprint=2DCD00
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal IsValidTime; IP=Low; Security=Low; Resources=0; Fingerprint=2DCD00
+    // Hairs-Human:        PENDING
     private static void CheckTime(IsoTime time)
     {
         if (!TemporalLimits.IsValidTime(time))
@@ -473,8 +473,8 @@ public static class TemporalFormat
     }
 
     // An offset below a day in magnitude.
-    // Broiler-AI:           Origin=AI; Spec=Temporal GetOffsetNanosecondsFor; IP=Low; Security=Low; Resources=0; Fingerprint=D1611A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal GetOffsetNanosecondsFor; IP=Low; Security=Low; Resources=0; Fingerprint=D1611A
+    // Hairs-Human:        PENDING
     private static void CheckOffset(long offsetNanoseconds)
     {
         if (offsetNanoseconds is <= -TemporalLimits.NanosecondsPerDay or >= TemporalLimits.NanosecondsPerDay)

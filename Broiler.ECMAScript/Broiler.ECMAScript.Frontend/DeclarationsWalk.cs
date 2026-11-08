@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   86
 // Annotated:        86/86
 // Exempt:           42
@@ -45,19 +45,19 @@ namespace Broiler.ECMAScript.Semantics;
 /// of the top level, as it reaches the parser (decision D10).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B38FCA
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B38FCA
+// Hairs-Human:        PENDING
 internal sealed class DeclarationsWalk
 {
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=774738
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=774738
+    // Hairs-Human:        PENDING
     private static readonly FrozenSet<string> StrictReserved = new HashSet<string>(StringComparer.Ordinal)
     {
         "implements", "interface", "let", "package", "private", "protected", "public", "static", "yield",
     }.ToFrozenSet(StringComparer.Ordinal);
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0B9019
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0B9019
+    // Hairs-Human:        PENDING
     private static readonly FrozenSet<string> Reserved = new HashSet<string>(StringComparer.Ordinal)
     {
         "await", "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do", "else", "enum",
@@ -71,27 +71,27 @@ internal sealed class DeclarationsWalk
     private readonly List<(int Key, int SubKey, int Sequence, SyntaxDiagnostic Diagnostic)> found = new();
     private readonly List<(int Start, int Sequence, Scope Scope)> scopes = new();
     private readonly List<(int Start, int Sequence, FunctionFacts Facts)> functions = new();
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=4AC307
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=4AC307
+    // Hairs-Human:        PENDING
     private readonly Dictionary<FunctionNode, Shape> shapes = new(ReferenceEqualityComparer.Instance);
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=E373F4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=E373F4
+    // Hairs-Human:        PENDING
     private readonly HashSet<SyntaxNode> declaredFunctions = new(ReferenceEqualityComparer.Instance);
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=E6D526
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=E6D526
+    // Hairs-Human:        PENDING
     private readonly HashSet<SyntaxNode> taggedQuasis = new(ReferenceEqualityComparer.Instance);
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=408B2B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=408B2B
+    // Hairs-Human:        PENDING
     private readonly HashSet<SyntaxNode> ifClauseFunctions = new(ReferenceEqualityComparer.Instance);
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=016F67
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=016F67
+    // Hairs-Human:        PENDING
     private readonly HashSet<SyntaxNode> skippedNames = new(ReferenceEqualityComparer.Instance);
     private readonly Stack<(SyntaxNode Node, Context Context)> stack = new();
     private readonly List<SyntaxNode> children = new();
     private int sequence;
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=BFF3D1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=BFF3D1
+    // Hairs-Human:        PENDING
     private DeclarationsWalk(ParseRequest request)
     {
         this.request = request;
@@ -100,8 +100,8 @@ internal sealed class DeclarationsWalk
     }
 
     /// <summary>The shape of a function, which decides the catalogue row each of its rules is reported by.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=A9BD3F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=A9BD3F
+    // Hairs-Human:        PENDING
     private enum Shape
     {
         Function,
@@ -119,8 +119,8 @@ internal sealed class DeclarationsWalk
     }
 
     /// <summary>The kind of the statement list whose labels a label set holds (decision D10's ContainsDuplicateLabels rows).</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=ADA519
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=ADA519
+    // Hairs-Human:        PENDING
     private enum LabelOwner
     {
         Script,
@@ -130,8 +130,8 @@ internal sealed class DeclarationsWalk
     }
 
     /// <summary>The walk's result: the diagnostics in the library's order, and the side tables.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F734C4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F734C4
+    // Hairs-Human:        PENDING
     internal sealed class Result(List<SyntaxDiagnostic> diagnostics, DeclarationTables tables)
     {
         internal List<SyntaxDiagnostic> Diagnostics { get; } = diagnostics;
@@ -140,8 +140,8 @@ internal sealed class DeclarationsWalk
     }
 
     /// <summary>Walks a tree the grammar admitted.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=CF7D4C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=CF7D4C
+    // Hairs-Human:        PENDING
     internal static Result Run(ParseRequest request, ProgramNode program)
     {
         var walk = new DeclarationsWalk(request);
@@ -154,8 +154,8 @@ internal sealed class DeclarationsWalk
     /// early errors come before the grammar's refusal (decision D11). The top level's own scope never closed, so its conflicts
     /// are not checked.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B3D642
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B3D642
+    // Hairs-Human:        PENDING
     internal static List<SyntaxDiagnostic> RunPartial(ParseRequest request, List<Statement> completed, int refusedAt)
     {
         var walk = new DeclarationsWalk(request);
@@ -165,8 +165,8 @@ internal sealed class DeclarationsWalk
         return walk.Ordered(refusedAt);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=7D56CF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=7D56CF
+    // Hairs-Human:        PENDING
     private List<SyntaxDiagnostic> Ordered(int before)
     {
         // By place, then (for the conflicts a scope's close reports) by the second of the conflicting declarations, then by
@@ -182,8 +182,8 @@ internal sealed class DeclarationsWalk
         return list;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9E7968
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9E7968
+    // Hairs-Human:        PENDING
     private DeclarationTables Tables()
     {
         scopes.Sort(static (a, b) => a.Start != b.Start ? a.Start.CompareTo(b.Start) : a.Sequence.CompareTo(b.Sequence));
@@ -200,8 +200,8 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Reporting.
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=34AB6C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=34AB6C
+    // Hairs-Human:        PENDING
     private void Report(LexicalRefusal row, SourceSpan span, int key, int subKey, string argument = "")
     {
         var diagnostic = new SyntaxDiagnostic(row.Code, row.MessageId, argument.Length == 0 ? Array.Empty<string>() : new[] { argument },
@@ -209,28 +209,28 @@ internal sealed class DeclarationsWalk
         found.Add((key, subKey, sequence++, diagnostic));
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=67E8B3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=67E8B3
+    // Hairs-Human:        PENDING
     private void Report(LexicalRefusal row, SyntaxNode at, string argument = "") => Report(row, at.Span, at.Span.Offset, at.Span.Offset, argument);
 
     /// <summary>
     /// A declared-name conflict, reported at the second of the conflicting declarations and placed at the close of the scope
     /// that holds them, after the conflicts of the same scope whose second declaration comes earlier (decision D11).
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9326BB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9326BB
+    // Hairs-Human:        PENDING
     private void ReportConflict(LexicalRefusal row, SyntaxNode second, int scopeEnd, string name) =>
         Report(row, second.Span, scopeEnd, second.Span.Offset, name);
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=FF2B43
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=FF2B43
+    // Hairs-Human:        PENDING
     private static int End(SyntaxNode node) => node.Span.Offset + node.Span.Length;
 
     // ---------------------------------------------------------------------------------------------------------------
     // The program.
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=075477
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=075477
+    // Hairs-Human:        PENDING
     private void WalkProgram(ProgramNode program, IReadOnlyList<Statement> body, bool closed)
     {
         var goal = request.Goal;
@@ -298,8 +298,8 @@ internal sealed class DeclarationsWalk
         Run(body, context);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=DCC45B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=DCC45B
+    // Hairs-Human:        PENDING
     private static Shape DynamicShape(DynamicFunctionKind kind) => kind switch
     {
         DynamicFunctionKind.Generator => Shape.Generator,
@@ -308,8 +308,8 @@ internal sealed class DeclarationsWalk
         _ => Shape.Function,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B88031
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B88031
+    // Hairs-Human:        PENDING
     private void Run<T>(IReadOnlyList<T> nodes, Context context)
         where T : SyntaxNode?
     {
@@ -326,16 +326,16 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=5CC567
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=5CC567
+    // Hairs-Human:        PENDING
     private void Push(SyntaxNode? node, Context context)
     {
         if (node is not null)
             stack.Push((node, context));
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=6215BA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=6215BA
+    // Hairs-Human:        PENDING
     private void PushAll<T>(IReadOnlyList<T> nodes, Context context)
         where T : SyntaxNode?
     {
@@ -346,8 +346,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=D08166
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=D08166
+    // Hairs-Human:        PENDING
     private void PushChildren(SyntaxNode node, Context context)
     {
         children.Clear();
@@ -360,8 +360,8 @@ internal sealed class DeclarationsWalk
     // The visit: each node's own rules, then its children under their context, pushed in reverse so that they are
     // visited in source order.
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=8F9BE4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=8F9BE4
+    // Hairs-Human:        PENDING
     private void Visit(SyntaxNode node, Context context)
     {
         switch (node)
@@ -521,8 +521,8 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Names (ECMA-262 clause 13.1.1; catalogue rows EE0005 to EE0014, EE0140).
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=BE3932
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=BE3932
+    // Hairs-Human:        PENDING
     private enum NameUse
     {
         Reference,
@@ -530,8 +530,8 @@ internal sealed class DeclarationsWalk
         Label,
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=5AF585
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=5AF585
+    // Hairs-Human:        PENDING
     private void CheckName(string name, bool escaped, SyntaxNode at, NameUse use, Context context)
     {
         // A static block reads its statements under [+Await]: an `await` BindingIdentifier there is EE0009's in either goal,
@@ -590,8 +590,8 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Literals.
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=144201
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=144201
+    // Hairs-Human:        PENDING
     private void ValidateRegularExpression(RegularExpressionLiteral literal)
     {
         // The provider decides IsValidRegularExpressionLiteral (decision D7), once per literal, in source order; the library
@@ -603,8 +603,8 @@ internal sealed class DeclarationsWalk
         Report(row ?? Rows.EE0019, literal, row is null ? verdict.MessageId ?? string.Empty : verdict.Argument ?? string.Empty);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=1D75B6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=1D75B6
+    // Hairs-Human:        PENDING
     private static LexicalRefusal? RegularExpressionRow(string messageId)
     {
         foreach (var row in RegularExpressionRows)
@@ -617,8 +617,8 @@ internal sealed class DeclarationsWalk
     }
 
     /// <summary>The rows a regular-expression literal's provider decides (the stage table's basis <c>provider</c>), in catalogue order.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=DF2A2A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=DF2A2A
+    // Hairs-Human:        PENDING
     internal static readonly System.Collections.Immutable.ImmutableArray<LexicalRefusal> RegularExpressionRows =
     [
         Rows.EE0019, Rows.EE0183, Rows.EE0184, Rows.EE0185, Rows.EE0186, Rows.EE0187, Rows.EE0188, Rows.EE0189, Rows.EE0190,
@@ -627,8 +627,8 @@ internal sealed class DeclarationsWalk
         Rows.EE0209, Rows.EE0210, Rows.EE0211, Rows.EE0212, Rows.EE0213, Rows.EG0002,
     ];
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=EB66B0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=EB66B0
+    // Hairs-Human:        PENDING
     private void CheckTemplateEscapes(TemplateLiteral template)
     {
         // An untagged template's NotEscapeSequence (EE0020, EE0022 to EE0024): its piece has no cooked value.
@@ -645,8 +645,8 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Functions (clauses 15.1 to 15.9).
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0FD09D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0FD09D
+    // Hairs-Human:        PENDING
     private void VisitFunction(FunctionNode function, Context outer)
     {
         var shape = ShapeOf(function);
@@ -734,8 +734,8 @@ internal sealed class DeclarationsWalk
         PushAll(function.Parameters, parameterContext);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=08E36D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=08E36D
+    // Hairs-Human:        PENDING
     private Shape ShapeOf(FunctionNode function)
     {
         if (shapes.TryGetValue(function, out var shape))
@@ -751,8 +751,8 @@ internal sealed class DeclarationsWalk
         };
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=8476A8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=8476A8
+    // Hairs-Human:        PENDING
     private static Shape MethodShape(MethodKind kind, FunctionNode function) => kind switch
     {
         MethodKind.Get => Shape.Getter,
@@ -766,8 +766,8 @@ internal sealed class DeclarationsWalk
         },
     };
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F87D22
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F87D22
+    // Hairs-Human:        PENDING
     private static LexicalRefusal? StrictName(Shape shape) => shape switch
     {
         Shape.Function => Rows.EE0071,
@@ -777,8 +777,8 @@ internal sealed class DeclarationsWalk
         _ => null,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9D5983
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9D5983
+    // Hairs-Human:        PENDING
     private static LexicalRefusal? UseStrictRow(Shape shape) => shape switch
     {
         Shape.Function => Rows.EE0072,
@@ -795,8 +795,8 @@ internal sealed class DeclarationsWalk
         _ => null,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=DF1DA7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=DF1DA7
+    // Hairs-Human:        PENDING
     private static LexicalRefusal? DuplicateParameterRow(Shape shape, bool simple, bool strict) => shape switch
     {
         Shape.Function or Shape.Generator or Shape.AsyncFunction or Shape.AsyncGenerator when !simple => Rows.EE0069,
@@ -810,8 +810,8 @@ internal sealed class DeclarationsWalk
         _ => Rows.EE0068,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=826D9A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=826D9A
+    // Hairs-Human:        PENDING
     private LexicalRefusal? ParameterCollisionRow(Shape shape, FunctionNode function) => shape switch
     {
         Shape.Function => Rows.EE0073,
@@ -828,8 +828,8 @@ internal sealed class DeclarationsWalk
         _ => null,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=39E703
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=39E703
+    // Hairs-Human:        PENDING
     private bool IsParenthesizedAsyncHead(FunctionNode function)
     {
         // `async x => ...` binds an AsyncArrowBindingIdentifier (EE0154); `async (...) => ...` a cover (EE0158).
@@ -847,8 +847,8 @@ internal sealed class DeclarationsWalk
         return false;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=613732
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=613732
+    // Hairs-Human:        PENDING
     private static LexicalRefusal? YieldInParameters(Shape shape) => shape switch
     {
         Shape.Generator => Rows.EE0101,
@@ -860,8 +860,8 @@ internal sealed class DeclarationsWalk
         _ => null,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=C2B62D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=C2B62D
+    // Hairs-Human:        PENDING
     private static LexicalRefusal? AwaitInParameters(Shape shape) => shape switch
     {
         Shape.AsyncFunction => Rows.EE0146,
@@ -873,8 +873,8 @@ internal sealed class DeclarationsWalk
         _ => null,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=19B0D5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=19B0D5
+    // Hairs-Human:        PENDING
     private static bool IsSimpleParameterList(IReadOnlyList<Pattern> parameters)
     {
         foreach (var parameter in parameters)
@@ -886,12 +886,12 @@ internal sealed class DeclarationsWalk
         return true;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=081B31
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=081B31
+    // Hairs-Human:        PENDING
     private static bool HasUseStrict(IReadOnlyList<Statement> body) => FirstUseStrict(body) is not null;
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=12913B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=12913B
+    // Hairs-Human:        PENDING
     private static ExpressionStatement? FirstUseStrict(IReadOnlyList<Statement> body)
     {
         foreach (var statement in body)
@@ -910,8 +910,8 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Classes (clause 15.7) and object literals' methods (clause 13.2.5).
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=2550B2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=2550B2
+    // Hairs-Human:        PENDING
     private void VisitClass(ClassNode @class, Context outer)
     {
         var context = outer with { Strict = true };
@@ -980,8 +980,8 @@ internal sealed class DeclarationsWalk
         PushAll(@class.Decorators, outer);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=194B51
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=194B51
+    // Hairs-Human:        PENDING
     private void VisitStaticBlock(StaticBlock block, Context outer)
     {
         var lexical = new List<Declaration>();
@@ -1002,8 +1002,8 @@ internal sealed class DeclarationsWalk
         PushAll(block.Body, context);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=3111FE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=3111FE
+    // Hairs-Human:        PENDING
     private void CheckPrivateName(SyntaxNode key, bool isStatic, MethodKind? kind, Dictionary<string, (bool IsStatic, MethodKind? Kind)> seen)
     {
         if (key is not PrivateIdentifier privateName)
@@ -1028,8 +1028,8 @@ internal sealed class DeclarationsWalk
             Report(Rows.EE0123, key, privateName.Name);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=BC2B3E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=BC2B3E
+    // Hairs-Human:        PENDING
     private static string? PropName(SyntaxNode key) => key switch
     {
         IdentifierName identifier => identifier.Name,
@@ -1037,8 +1037,8 @@ internal sealed class DeclarationsWalk
         _ => null,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=27AE15
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=27AE15
+    // Hairs-Human:        PENDING
     private void VisitProperty(PropertyDefinition property, Context context)
     {
         if (property.PropertyKind is PropertyKind.Method or PropertyKind.Get or PropertyKind.Set && property.Value is FunctionExpression { Function: { } method })
@@ -1062,8 +1062,8 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Expressions.
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=89F333
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=89F333
+    // Hairs-Human:        PENDING
     private void CheckMetaProperty(MetaProperty meta, Context context)
     {
         if (meta.Meta.Name == "new" && !context.InFunction)
@@ -1078,8 +1078,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=BBFEE4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=BBFEE4
+    // Hairs-Human:        PENDING
     private enum TargetType
     {
         Simple,
@@ -1087,8 +1087,8 @@ internal sealed class DeclarationsWalk
         Invalid,
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=FDFAF2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=FDFAF2
+    // Hairs-Human:        PENDING
     private TargetType TargetTypeOf(Expression expression, Context context)
     {
         while (expression is ParenthesizedExpression parenthesized)
@@ -1109,8 +1109,8 @@ internal sealed class DeclarationsWalk
         };
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=359FCA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=359FCA
+    // Hairs-Human:        PENDING
     private void CheckAssignment(AssignmentExpression assignment, Context context)
     {
         if (assignment.Target is not Expression target)
@@ -1133,8 +1133,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=E07BA1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=E07BA1
+    // Hairs-Human:        PENDING
     private void CheckDelete(UnaryExpression unary, Context context)
     {
         // delete of a bare name in strict code, or of a private reference (EE0030), and either parenthesised (EE0031).
@@ -1153,8 +1153,8 @@ internal sealed class DeclarationsWalk
             Report(parenthesized ? Rows.EE0031 : Rows.EE0030, unary, "delete");
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=E8B08A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=E8B08A
+    // Hairs-Human:        PENDING
     private void VisitShorthand(PatternProperty shorthand, Context context)
     {
         // An AssignmentProperty's IdentifierReference must be a simple target (EE0036): eval and arguments in strict code are not.
@@ -1175,8 +1175,8 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Statements.
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=85A264
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=85A264
+    // Hairs-Human:        PENDING
     private void VisitStatementListScope(SyntaxNode node, IReadOnlyList<Statement> body, ScopeKind kind, LexicalRefusal duplicateRow, LexicalRefusal collisionRow, bool strict)
     {
         var lexical = new List<Declaration>();
@@ -1192,8 +1192,8 @@ internal sealed class DeclarationsWalk
         CheckConflicts(lexical, vars, End(node), duplicateRow, collisionRow, sloppy: !strict);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=435D91
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=435D91
+    // Hairs-Human:        PENDING
     private void VisitSwitch(SwitchStatement @switch, Context context)
     {
         var all = new List<Statement>();
@@ -1207,8 +1207,8 @@ internal sealed class DeclarationsWalk
         PushChildren(@switch, context);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=A16920
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=A16920
+    // Hairs-Human:        PENDING
     private void CheckNoUsing(IReadOnlyList<Statement> statements, LexicalRefusal row)
     {
         foreach (var statement in statements)
@@ -1218,8 +1218,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=C6F0D1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=C6F0D1
+    // Hairs-Human:        PENDING
     private void CheckDeclaration(VariableDeclaration declaration, bool inForInOfHead)
     {
         var kind = declaration.DeclarationKind;
@@ -1269,8 +1269,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=4BD257
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=4BD257
+    // Hairs-Human:        PENDING
     private void VisitFor(ForStatement @for, Context context)
     {
         if (@for.Init is VariableDeclaration { DeclarationKind: not DeclarationKind.Var } head)
@@ -1287,8 +1287,8 @@ internal sealed class DeclarationsWalk
         PushChildren(@for, context);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=43FF7B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=43FF7B
+    // Hairs-Human:        PENDING
     private void VisitForInOf(Statement statement, SyntaxNode left, Statement body, Context context)
     {
         // A call as a for-in or for-of target: Annex B.3.9 makes it a run-time refusal in non-strict code only (EG0008).
@@ -1322,8 +1322,8 @@ internal sealed class DeclarationsWalk
         CheckLabelledFunctionBody(body, Rows.EE0052);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=4D1B27
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=4D1B27
+    // Hairs-Human:        PENDING
     private void VisitIf(IfStatement @if, Context context)
     {
         if (@if.Alternate is null)
@@ -1351,8 +1351,8 @@ internal sealed class DeclarationsWalk
         PushChildren(@if, context);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=004437
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=004437
+    // Hairs-Human:        PENDING
     private void CheckLabelledFunctionBody(Statement body, LexicalRefusal row)
     {
         // IsLabelledFunction: a labelled function, through any number of labels, as a statement's body.
@@ -1363,8 +1363,8 @@ internal sealed class DeclarationsWalk
             Report(row, function, "function");
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0B7ABE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0B7ABE
+    // Hairs-Human:        PENDING
     private void VisitLabelled(LabelledStatement labelled, Context context)
     {
         var name = labelled.Label.Name;
@@ -1391,8 +1391,8 @@ internal sealed class DeclarationsWalk
         Push(labelled.Body, context with { Labels = new LabelSet(name, context.Labels) });
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=8BC487
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=8BC487
+    // Hairs-Human:        PENDING
     private void VisitCatch(CatchClause @catch, Context context)
     {
         var names = new List<string>();
@@ -1448,8 +1448,8 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Modules (clause 16.2).
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=7EEC92
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=7EEC92
+    // Hairs-Human:        PENDING
     private void CheckExportName(StringLiteral name)
     {
         // A ModuleExportName's string must be well-formed Unicode (EE0178).
@@ -1471,8 +1471,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=D8573C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=D8573C
+    // Hairs-Human:        PENDING
     private void CheckModuleExportNames(ImportDeclaration import)
     {
         if (import.NamedImports is null)
@@ -1484,8 +1484,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=A77227
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=A77227
+    // Hairs-Human:        PENDING
     private void CheckExport(ExportNamedDeclaration export)
     {
         foreach (var specifier in export.Specifiers)
@@ -1510,8 +1510,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=3F41E6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=3F41E6
+    // Hairs-Human:        PENDING
     private void CheckAttributes(IReadOnlyList<ImportAttribute>? attributes)
     {
         // An import attribute's key given twice (EE0180).
@@ -1534,8 +1534,8 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // The static semantics of declarations: BoundNames, LexicallyDeclaredNames and VarDeclaredNames (clauses 8.2 and 14).
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9059BA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9059BA
+    // Hairs-Human:        PENDING
     private void CheckConflicts(List<Declaration> lexical, List<Declaration> vars, int scopeEnd, LexicalRefusal duplicateRow, LexicalRefusal collisionRow, bool sloppy = false)
     {
         if (lexical.Count == 0)
@@ -1566,16 +1566,16 @@ internal sealed class DeclarationsWalk
         CheckCollisions(lexical, vars, scopeEnd, collisionRow);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B4C9B1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B4C9B1
+    // Hairs-Human:        PENDING
     private readonly HashSet<SyntaxNode> sloppyPlainFunctions = new(ReferenceEqualityComparer.Instance);
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=C45402
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=C45402
+    // Hairs-Human:        PENDING
     private bool IsSloppyPlainFunction(Declaration declaration) => sloppyPlainFunctions.Contains(declaration.Node);
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=2FF186
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=2FF186
+    // Hairs-Human:        PENDING
     private void CheckCollisions(List<Declaration> lexical, List<Declaration> vars, int scopeEnd, LexicalRefusal collisionRow)
     {
         if (lexical.Count == 0 || vars.Count == 0)
@@ -1609,8 +1609,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=36C73B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=36C73B
+    // Hairs-Human:        PENDING
     private void CollectList(IReadOnlyList<Statement> body, bool top, bool module, List<Declaration> lexical, List<Declaration> vars)
     {
         foreach (var statement in body)
@@ -1622,8 +1622,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=73EC67
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=73EC67
+    // Hairs-Human:        PENDING
     private void CollectTopLevel(Statement statement, List<Declaration> lexical, List<Declaration> vars)
     {
         // TopLevelLexicallyDeclaredNames and TopLevelVarDeclaredNames: a function's or a script's own function declarations
@@ -1648,8 +1648,8 @@ internal sealed class DeclarationsWalk
             CollectVars(statement, vars);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=2E5F8D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=2E5F8D
+    // Hairs-Human:        PENDING
     private void CollectModuleItem(Statement statement, List<Declaration> lexical, List<Declaration> vars, bool module)
     {
         switch (statement)
@@ -1682,8 +1682,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B79A4D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B79A4D
+    // Hairs-Human:        PENDING
     private static IEnumerable<BindingIdentifier> ImportBindings(ImportDeclaration import)
     {
         if (import.DefaultBinding is { } defaultBinding)
@@ -1698,8 +1698,8 @@ internal sealed class DeclarationsWalk
     }
 
     /// <summary>Adds a statement's LexicallyDeclaredNames, and answers whether it declares lexically at all.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=3A79C2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=3A79C2
+    // Hairs-Human:        PENDING
     private bool CollectLexical(Statement statement, List<Declaration> lexical, bool inBlock)
     {
         switch (statement)
@@ -1746,8 +1746,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0C2D53
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0C2D53
+    // Hairs-Human:        PENDING
     private static void CollectVars(Statement statement, List<Declaration> vars, HashSet<SyntaxNode>? forOf = null)
     {
         switch (statement)
@@ -1814,8 +1814,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=118E73
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=118E73
+    // Hairs-Human:        PENDING
     private static void AddVars(VariableDeclaration declaration, List<Declaration> vars, HashSet<SyntaxNode>? forOf)
     {
         var nodes = new List<BindingIdentifier>();
@@ -1829,8 +1829,8 @@ internal sealed class DeclarationsWalk
     }
 
     /// <summary>BoundNames of a binding pattern, in source order; iterative, since a pattern's nesting is the request's to bound.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F6DB6B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F6DB6B
+    // Hairs-Human:        PENDING
     private static void BoundNames(Pattern? pattern, List<string>? names, List<BindingIdentifier>? nodes)
     {
         if (pattern is null)
@@ -1871,8 +1871,8 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=DD74DF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=DD74DF
+    // Hairs-Human:        PENDING
     private static IReadOnlyList<Declaration> Merge(List<Declaration> lexical, List<Declaration> vars)
     {
         var all = new List<Declaration>(lexical.Count + vars.Count);
@@ -1885,12 +1885,12 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // The context the walk carries down the tree.
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=923D84
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=923D84
+    // Hairs-Human:        PENDING
     private sealed record LabelSet(string Name, LabelSet? Next);
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=751BF7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=751BF7
+    // Hairs-Human:        PENDING
     private sealed record Context
     {
         /// <summary>Whether the code is strict mode code.</summary>

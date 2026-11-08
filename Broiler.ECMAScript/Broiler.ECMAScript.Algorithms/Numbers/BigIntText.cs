@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   17
 // Annotated:        17/17
 // Exempt:           0
@@ -41,24 +41,24 @@ namespace Broiler.ECMAScript.Numbers;
 /// culture, which corrects Broiler.JS's radix-10 text (JSD-0067, X2).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=07A48D
-// Broiler-Falsified-If: a conversion's text depends on the process's culture, or a conversion's work runs before it is charged
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=07A48D
+// Hairs-Falsified-If: a conversion's text depends on the process's culture, or a conversion's work runs before it is charged
+// Hairs-Human:        PENDING
 public static class BigIntText
 {
     /// <summary>The widest part the conversion to text hands to the base class library whole: 4,096 bits.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=3FB93F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=3FB93F
+    // Hairs-Human:        PENDING
     private const long FormatLeafBits = 4096;
 
     /// <summary>The widest leaf the decimal parse hands to the base class library whole: 1,024 digits.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=CEDA47
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=CEDA47
+    // Hairs-Human:        PENDING
     private const int ParseLeafDigits = 1024;
 
     /// <summary>The thirty-six digits, lower case, as <c>BigInt.prototype.toString</c> writes them.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=Low; Resources=1; Fingerprint=EDCCA7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=Low; Resources=1; Fingerprint=EDCCA7
+    // Hairs-Human:        PENDING
     private const string RadixDigits = "0123456789abcdefghijklmnopqrstuvwxyz";
 
     /// <summary>
@@ -74,9 +74,9 @@ public static class BigIntText
     /// The digit bound is charged first, linearly. A radix that is a power of two reads the bits in one
     /// pass; any other is divide and conquer.
     /// </remarks>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=040A0D
-    // Broiler-Falsified-If: a wider BigInt is converted for the same charge as a narrower one, or the digits differ from the integer in that radix
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=040A0D
+    // Hairs-Falsified-If: a wider BigInt is converted for the same charge as a narrower one, or the digits differ from the integer in that radix
+    // Hairs-Human:        PENDING
     public static string ToString(BigInteger value, int radix, WorkCharge? charge)
     {
         if (radix is < 2 or > 36)
@@ -144,9 +144,9 @@ public static class BigIntText
     /// by leaf and join by join, and the radix-prefixed forms are one pass. A decimal text of more
     /// digits than any value within the policy has is known too wide without converting a digit.
     /// </remarks>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=BA8558
-    // Broiler-Falsified-If: a text outside StringIntegerLiteral answers a value, a text inside it answers an integer other than its mathematical value, or a value past the policy is constructed
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=BA8558
+    // Hairs-Falsified-If: a text outside StringIntegerLiteral answers a value, a text inside it answers an integer other than its mathematical value, or a value past the policy is constructed
+    // Hairs-Human:        PENDING
     public static ResultStatus StringToBigInt(ReadOnlySpan<char> text, BigIntPolicy policy, WorkCharge? charge, out BigInteger value, out int tooWideSign)
     {
         BigIntMath.Charge(charge, BigIntMath.LinearCost(text.Length / 8));
@@ -201,9 +201,9 @@ public static class BigIntText
     /// <param name="value">The BigInt.</param>
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <returns>The decimal text.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=DABCC7
-    // Broiler-Falsified-If: the text of a value differs from its invariant decimal digits, or a split or a leaf runs before it is charged
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=DABCC7
+    // Hairs-Falsified-If: the text of a value differs from its invariant decimal digits, or a split or a leaf runs before it is charged
+    // Hairs-Human:        PENDING
     private static string ToDecimalString(BigInteger value, WorkCharge? charge)
     {
         var bound = (int)(value.GetBitLength() * 30103L / 100000L) + 2;
@@ -248,9 +248,9 @@ public static class BigIntText
     /// <param name="powers">The squared powers.</param>
     /// <param name="widths">Their digit counts.</param>
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=2E5194
-    // Broiler-Falsified-If: a digit is dropped, duplicated or unpadded where a split leaves a remainder with leading zeros
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=2E5194
+    // Hairs-Falsified-If: a digit is dropped, duplicated or unpadded where a split leaves a remainder with leading zeros
+    // Hairs-Human:        PENDING
     private static void AppendDecimal(StringBuilder text, BigInteger value, int width, int level, List<BigInteger> powers, List<int> widths, WorkCharge? charge)
     {
         var bits = value.GetBitLength();
@@ -282,8 +282,8 @@ public static class BigIntText
     /// <param name="text">The text being built.</param>
     /// <param name="magnitude">The magnitude.</param>
     /// <param name="bitsPerDigit">The bits a digit holds.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=A576C9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=A576C9
+    // Hairs-Human:        PENDING
     private static void AppendPowerOfTwoRadix(StringBuilder text, BigInteger magnitude, int bitsPerDigit)
     {
         var bytes = magnitude.ToByteArray(isUnsigned: true, isBigEndian: false);
@@ -318,9 +318,9 @@ public static class BigIntText
     /// <param name="powers">The squared powers.</param>
     /// <param name="widths">Their digit counts.</param>
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=D941DC
-    // Broiler-Falsified-If: a digit is dropped, duplicated or unpadded where a split leaves a remainder with leading zeros
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=D941DC
+    // Hairs-Falsified-If: a digit is dropped, duplicated or unpadded where a split leaves a remainder with leading zeros
+    // Hairs-Human:        PENDING
     private static void AppendRadix(StringBuilder text, BigInteger value, int width, int level, int radix, ulong chunk,
         int chunkDigits, List<BigInteger> powers, List<int> widths, WorkCharge? charge)
     {
@@ -353,8 +353,8 @@ public static class BigIntText
     /// <param name="chunk">The largest power of the radix below 2^63.</param>
     /// <param name="chunkDigits">Its digit count.</param>
     /// <returns>The digits.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=23B890
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=2; Fingerprint=23B890
+    // Hairs-Human:        PENDING
     private static string RadixLeaf(BigInteger value, int radix, ulong chunk, int chunkDigits)
     {
         var words = new List<ulong>();
@@ -378,8 +378,8 @@ public static class BigIntText
     /// <param name="radix">The radix.</param>
     /// <param name="width">The padded width, or zero.</param>
     /// <returns>The digits.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=Low; Resources=1; Fingerprint=6F23B8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 6.1.6.2.23 via Broiler.VM JsBigInt; IP=Low; Security=Low; Resources=1; Fingerprint=6F23B8
+    // Hairs-Human:        PENDING
     private static string WordDigits(ulong word, int radix, int width)
     {
         Span<char> buffer = stackalloc char[64];
@@ -403,8 +403,8 @@ public static class BigIntText
     /// </summary>
     /// <param name="policy">The width policy.</param>
     /// <returns>The digit count.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=C85713
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=C85713
+    // Hairs-Human:        PENDING
     private static long MaximumDecimalDigits(BigIntPolicy policy) => (policy.MaximumBits * 30103L / 100000L) + 1;
 
     /// <summary>
@@ -419,9 +419,9 @@ public static class BigIntText
     /// <param name="value">The value.</param>
     /// <param name="tooWideSign">1 when the value is too wide.</param>
     /// <returns>The status.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=9CD8E7
-    // Broiler-Falsified-If: a digit outside the radix is admitted, or the packed bits spell an integer other than the digits do
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=2; Fingerprint=9CD8E7
+    // Hairs-Falsified-If: a digit outside the radix is admitted, or the packed bits spell an integer other than the digits do
+    // Hairs-Human:        PENDING
     private static ResultStatus ParseRadix(ReadOnlySpan<char> digits, int radix, BigIntPolicy policy, WorkCharge? charge, out BigInteger value, out int tooWideSign)
     {
         value = BigInteger.Zero;
@@ -467,8 +467,8 @@ public static class BigIntText
     /// <summary>An ASCII digit's or letter's value, or 36 for any other character.</summary>
     /// <param name="digit">The character.</param>
     /// <returns>0 to 35, or 36.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=31C289
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=Medium; Resources=1; Fingerprint=31C289
+    // Hairs-Human:        PENDING
     private static int DigitValue(char digit) => digit switch
     {
         >= '0' and <= '9' => digit - '0',
@@ -484,9 +484,9 @@ public static class BigIntText
     /// <param name="digits">The digits.</param>
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <returns>The integer.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=96C969
-    // Broiler-Falsified-If: a digit is dropped or misplaced in a split, or a join is not charged before it runs
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=96C969
+    // Hairs-Falsified-If: a digit is dropped or misplaced in a split, or a join is not charged before it runs
+    // Hairs-Human:        PENDING
     private static BigInteger ParseDecimal(ReadOnlySpan<char> digits, WorkCharge? charge)
     {
         var powers = new List<BigInteger>();
@@ -515,9 +515,9 @@ public static class BigIntText
     /// <param name="widths">Their digit counts.</param>
     /// <param name="charge">The meter, or <see langword="null"/>.</param>
     /// <returns>The part's integer.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=2B0663
-    // Broiler-Falsified-If: the high part is scaled by a power other than ten to the low part's length
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 7.1.14 via Broiler.VM JsBigInt; IP=Low; Security=High; Resources=3; Fingerprint=2B0663
+    // Hairs-Falsified-If: the high part is scaled by a power other than ten to the low part's length
+    // Hairs-Human:        PENDING
     private static BigInteger ParseDecimalPart(ReadOnlySpan<char> digits, int level, List<BigInteger> powers, List<int> widths, WorkCharge? charge)
     {
         while (level >= 0 && widths[level] >= digits.Length)
