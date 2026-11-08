@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   1
 // Annotated:        1/1
 // Exempt:           2
@@ -21,8 +21,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// How a calendar operation treats a month or day beyond the calendar's: the value of the Temporal proposal's
 /// <c>overflow</c> option (GetTemporalOverflowOption, s13.6), which the engine reads and hands in.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=Temporal s13.6; IP=None; Security=None; Resources=0; Fingerprint=6A0EE1
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal s13.6; IP=None; Security=None; Resources=0; Fingerprint=6A0EE1
+// Hairs-Human:        PENDING
 public enum CalendarOverflow
 {
     /// <summary><c>"constrain"</c>, the option's default: the month or day is clamped to the nearest the calendar has.</summary>

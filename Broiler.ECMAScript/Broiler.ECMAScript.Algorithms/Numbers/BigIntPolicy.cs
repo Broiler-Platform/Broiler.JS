@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   5
 // Annotated:        5/5
 // Exempt:           1
@@ -48,26 +48,26 @@ namespace Broiler.ECMAScript.Numbers;
 /// the limit stays 64 bits below .NET's.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=BE9B4E
-// Broiler-Falsified-If: a value exactly MaximumBits wide is refused, or one a bit wider is admitted
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=BE9B4E
+// Hairs-Falsified-If: a value exactly MaximumBits wide is refused, or one a bit wider is admitted
+// Hairs-Human:        PENDING
 public readonly record struct BigIntPolicy
 {
     /// <summary>
     /// The widest value the library builds under any policy: 2^31 - 128 bits, 64 below the widest
     /// a .NET <see cref="BigInteger"/> holds.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=CDE036
-    // Broiler-Falsified-If: an operation under any policy computes a value, final or intermediate, wider than a .NET BigInteger holds, so a .NET OverflowException can reach a script
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=CDE036
+    // Hairs-Falsified-If: an operation under any policy computes a value, final or intermediate, wider than a .NET BigInteger holds, so a .NET OverflowException can reach a script
+    // Hairs-Human:        PENDING
     public const long RepresentationLimit = (1L << 31) - 128;
 
     /// <summary>Creates a policy.</summary>
     /// <param name="maximumBits">The widest admitted value, from 1 to <see cref="RepresentationLimit"/>.</param>
     /// <exception cref="ArgumentOutOfRangeException">The width is outside that range.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=998980
-    // Broiler-Falsified-If: a width below 1 or above RepresentationLimit makes a policy
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=998980
+    // Hairs-Falsified-If: a width below 1 or above RepresentationLimit makes a policy
+    // Hairs-Human:        PENDING
     public BigIntPolicy(long maximumBits)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumBits, 1);
@@ -76,22 +76,22 @@ public readonly record struct BigIntPolicy
     }
 
     /// <summary>The policy of decision SJL-D-15 (a): no limit but the representation's.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=42A7C2
-    // Broiler-Falsified-If: Unbounded is narrower or wider than RepresentationLimit
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=42A7C2
+    // Hairs-Falsified-If: Unbounded is narrower or wider than RepresentationLimit
+    // Hairs-Human:        PENDING
     public static BigIntPolicy Unbounded => new(RepresentationLimit);
 
     /// <summary>The widest admitted value, in bits.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=EE644C
-    // Broiler-Falsified-If: MaximumBits is not the width the policy was made with
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=EE644C
+    // Hairs-Falsified-If: MaximumBits is not the width the policy was made with
+    // Hairs-Human:        PENDING
     public long MaximumBits { get; }
 
     /// <summary>Whether <paramref name="value"/> is within the policy.</summary>
     /// <param name="value">A value.</param>
     /// <returns><see langword="true"/> when its width is at most <see cref="MaximumBits"/>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=5675C8
-    // Broiler-Falsified-If: a value wider than MaximumBits is admitted, so an operation under the policy answers a value past the engine's ceiling
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=5675C8
+    // Hairs-Falsified-If: a value wider than MaximumBits is admitted, so an operation under the policy answers a value past the engine's ceiling
+    // Hairs-Human:        PENDING
     public bool Admits(BigInteger value) => value.GetBitLength() <= MaximumBits;
 }

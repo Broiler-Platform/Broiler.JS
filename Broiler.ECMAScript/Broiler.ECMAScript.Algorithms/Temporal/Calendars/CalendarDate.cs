@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   1
 // Annotated:        1/1
 // Exempt:           1
@@ -35,8 +35,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// <param name="DaysInYear">The days of the date's year (<c>daysInYear</c>).</param>
 /// <param name="MonthsInYear">The months of the date's year (<c>monthsInYear</c>).</param>
 /// <param name="InLeapYear">Whether the year is a leap year (<c>inLeapYear</c>, the era proposal's 4.1.14).</param>
-// Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.1 via Broiler.VM JsCalendarDate; IP=None; Security=None; Resources=0; Fingerprint=E58A3E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.1 via Broiler.VM JsCalendarDate; IP=None; Security=None; Resources=0; Fingerprint=E58A3E
+// Hairs-Human:        PENDING
 public readonly record struct CalendarDate(
     string? Era,
     long? EraYear,

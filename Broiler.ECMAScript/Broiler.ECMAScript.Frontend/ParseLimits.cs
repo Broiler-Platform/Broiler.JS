@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   9
 // Annotated:        9/9
 // Exempt:           5
@@ -51,8 +51,8 @@ namespace Broiler.ECMAScript.Syntax;
 /// within it is accepted, however its chains stand beside or below one another.)</i>
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0080 D27, JSD-0083 D11 D14 limits; IP=Low; Security=Medium; Resources=0; Fingerprint=8281B1
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0080 D27, JSD-0083 D11 D14 limits; IP=Low; Security=Medium; Resources=0; Fingerprint=8281B1
+// Hairs-Human:        PENDING
 public sealed class ParseLimits
 {
     /// <summary>
@@ -85,9 +85,9 @@ public sealed class ParseLimits
     /// stacks, and the bound is not lowered (decision D14). Stage 4e states the stack.")</i>
     /// </para>
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth bound, JSD-0022; IP=Low; Security=High; Resources=0; Fingerprint=6DB2AB
-    // Broiler-Falsified-If: the constant differs from Broiler.VM's SliceParseOptions.MaximumTreeDepth, or a tree deeper than it is built rather than refused once the parser exists
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D14 tree-depth bound, JSD-0022; IP=Low; Security=High; Resources=0; Fingerprint=6DB2AB
+    // Hairs-Falsified-If: the constant differs from Broiler.VM's SliceParseOptions.MaximumTreeDepth, or a tree deeper than it is built rather than refused once the parser exists
+    // Hairs-Human:        PENDING
     public const int MaximumTreeDepth = 10_000;
 
     /// <summary>
@@ -105,9 +105,9 @@ public sealed class ParseLimits
     /// default runs) and 1,682,944 under Native AOT, a margin of about 4.9 and 10.0 on <see cref="StackBytes"/>; twice the
     /// bound would leave the JIT less than three.)</i>
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 D47 nesting bound; IP=Low; Security=High; Resources=0; Fingerprint=2C4111
-    // Broiler-Falsified-If: the constant is below Broiler.VM's SliceParseOptions.MaximumSupportedNestingDepth, so a nesting depth Broiler.VM passes today is refused when the request is made
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D14 D47 nesting bound; IP=Low; Security=High; Resources=0; Fingerprint=2C4111
+    // Hairs-Falsified-If: the constant is below Broiler.VM's SliceParseOptions.MaximumSupportedNestingDepth, so a nesting depth Broiler.VM passes today is refused when the request is made
+    // Hairs-Human:        PENDING
     public const int MaximumSupportedNestingDepth = 512;
 
     /// <summary>
@@ -140,13 +140,13 @@ public sealed class ParseLimits
     /// derivation is to be measured again with it (<c>Broiler.ECMAScript.Probe --measure-frames</c>).
     /// </para>
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 the stack the tree-depth constant requires, JSD-0022; IP=Low; Security=High; Resources=0; Fingerprint=2F9878
-    // Broiler-Falsified-If: a source within the limits, parsed on a thread of this stack, ends the process rather than answering
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D14 the stack the tree-depth constant requires, JSD-0022; IP=Low; Security=High; Resources=0; Fingerprint=2F9878
+    // Hairs-Falsified-If: a source within the limits, parsed on a thread of this stack, ends the process rather than answering
+    // Hairs-Human:        PENDING
     public const int StackBytes = 16 * 1024 * 1024;
 
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D14 nesting default; IP=Low; Security=Low; Resources=0; Fingerprint=2961CA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D14 nesting default; IP=Low; Security=Low; Resources=0; Fingerprint=2961CA
+    // Hairs-Human:        PENDING
     private readonly DepthLimit nestingDepth = new(MaximumSupportedNestingDepth);
     private readonly int diagnosticCap = int.MaxValue;
     private readonly ErrorReporting reporting = ErrorReporting.FirstError;
@@ -159,9 +159,9 @@ public sealed class ParseLimits
 
     /// <summary>The deepest syntactic nesting the parse admits: from 1 to <see cref="MaximumSupportedNestingDepth"/>.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The depth is below 1 or above <see cref="MaximumSupportedNestingDepth"/>.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0080 D27, JSD-0083 D14 nesting parameter; IP=Low; Security=High; Resources=1; Fingerprint=32674F
-    // Broiler-Falsified-If: a nesting depth below 1 or above MaximumSupportedNestingDepth is admitted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 D27, JSD-0083 D14 nesting parameter; IP=Low; Security=High; Resources=1; Fingerprint=32674F
+    // Hairs-Falsified-If: a nesting depth below 1 or above MaximumSupportedNestingDepth is admitted
+    // Hairs-Human:        PENDING
     public DepthLimit NestingDepth
     {
         get => nestingDepth;
@@ -178,8 +178,8 @@ public sealed class ParseLimits
     /// <see cref="ErrorReporting.FirstError"/> a parse reports one at most, whatever the cap.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The cap is below 1.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D11 diagnostic cap; IP=Low; Security=Low; Resources=1; Fingerprint=E26853
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D11 diagnostic cap; IP=Low; Security=Low; Resources=1; Fingerprint=E26853
+    // Hairs-Human:        PENDING
     public int DiagnosticCap
     {
         get => diagnosticCap;
@@ -192,8 +192,8 @@ public sealed class ParseLimits
 
     /// <summary>First error or all errors (decision D11): both engines ask for the first error at SJL-13 and SJL-14.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is not an <see cref="ErrorReporting"/>.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D11 first error or all errors; IP=Low; Security=Low; Resources=1; Fingerprint=597F79
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D11 first error or all errors; IP=Low; Security=Low; Resources=1; Fingerprint=597F79
+    // Hairs-Human:        PENDING
     public ErrorReporting Reporting
     {
         get => reporting;
@@ -207,8 +207,8 @@ public sealed class ParseLimits
 }
 
 /// <summary>Whether a parse stops at its first refusal or goes on (Broiler.VM's JSD-0083, decision D11).</summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D11 first error or all errors; IP=Low; Security=Low; Resources=0; Fingerprint=19A95B
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D11 first error or all errors; IP=Low; Security=Low; Resources=0; Fingerprint=19A95B
+// Hairs-Human:        PENDING
 public enum ErrorReporting
 {
     /// <summary>

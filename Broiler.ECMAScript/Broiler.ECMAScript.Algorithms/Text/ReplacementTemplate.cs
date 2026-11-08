@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   4
 // Annotated:        4/4
 // Exempt:           7
@@ -21,8 +21,8 @@ using System.Collections.Generic;
 namespace Broiler.ECMAScript.Text;
 
 /// <summary>What one part of a replacement template stands for (ECMA-262 22.1.3.19.1 <c>GetSubstitution</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.19.1; IP=Low; Security=Low; Resources=1; Fingerprint=A5A661
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.19.1; IP=Low; Security=Low; Resources=1; Fingerprint=A5A661
+// Hairs-Human:        PENDING
 public enum ReplacementPartKind
 {
     /// <summary>Text of the template, copied as it is: <see cref="ReplacementPart.Start"/> and <see cref="ReplacementPart.Length"/> name it.</summary>
@@ -52,8 +52,8 @@ public enum ReplacementPartKind
 /// <param name="Start">For a literal, where its text starts in the template; for a named capture, where the name starts; zero otherwise.</param>
 /// <param name="Length">The length of that text or name; zero otherwise.</param>
 /// <param name="CaptureIndex">For a capture, its index, from one; zero otherwise.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.19.1; IP=Low; Security=Low; Resources=1; Fingerprint=C48A6F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.19.1; IP=Low; Security=Low; Resources=1; Fingerprint=C48A6F
+// Hairs-Human:        PENDING
 public readonly record struct ReplacementPart(ReplacementPartKind Kind, int Start, int Length, int CaptureIndex);
 
 /// <summary>
@@ -75,8 +75,8 @@ public readonly record struct ReplacementPart(ReplacementPartKind Kind, int Star
 /// before anything else is a dollar sign. A String pattern has no captures and no named captures.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.19.1; IP=Low; Security=Medium; Resources=2; Fingerprint=536537
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.19.1; IP=Low; Security=Medium; Resources=2; Fingerprint=536537
+// Hairs-Human:        PENDING
 public static class ReplacementTemplate
 {
     /// <summary>Parses a replacement template into the parts <c>GetSubstitution</c> evaluates.</summary>
@@ -86,8 +86,8 @@ public static class ReplacementTemplate
     /// <param name="charge">The caller's meter: charged the template's length plus one, first; <see langword="null"/> for none.</param>
     /// <returns>The parts in order; adjacent literal text is one part, and an empty template has none.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The capture count is negative.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.19.1; IP=Low; Security=Medium; Resources=2; Fingerprint=BA3A42
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.19.1; IP=Low; Security=Medium; Resources=2; Fingerprint=BA3A42
+    // Hairs-Human:        PENDING
     public static ReplacementPart[] Parse(ReadOnlySpan<char> template, int captureCount, bool hasNamedCaptures, WorkCharge? charge = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(captureCount);

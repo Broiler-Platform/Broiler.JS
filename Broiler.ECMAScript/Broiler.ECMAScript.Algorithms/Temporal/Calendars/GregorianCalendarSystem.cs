@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   7
 // Annotated:        7/7
 // Exempt:           2
@@ -25,15 +25,15 @@ namespace Broiler.ECMAScript.Temporal;
 /// <c>JsGregorianCalendar</c>. Japanese eras run from Meiji 6 (1873), by the date each began; Gregorian years
 /// before.
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 2 via Broiler.VM JsGregorianCalendar; IP=Low; Security=Low; Resources=1; Fingerprint=236AC3
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 2 via Broiler.VM JsGregorianCalendar; IP=Low; Security=Low; Resources=1; Fingerprint=236AC3
+// Hairs-Human:        PENDING
 internal sealed class GregorianCalendarSystem : CalendarSystem
 {
     // What the calendar's year adds to give the ISO year: -543 for buddhist, 1911 for roc.
     private readonly long isoOffset;
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 2 via Broiler.VM JsGregorianCalendar..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=D5C3FD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 2 via Broiler.VM JsGregorianCalendar..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=D5C3FD
+    // Hairs-Human:        PENDING
     internal GregorianCalendarSystem(CalendarId id, long isoOffset)
         : base(id)
     {
@@ -42,8 +42,8 @@ internal sealed class GregorianCalendarSystem : CalendarSystem
 
     internal override bool HasEras => true;
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 2 via Broiler.VM JsGregorianCalendar.Year; IP=Low; Security=Low; Resources=1; Fingerprint=37838C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 2 via Broiler.VM JsGregorianCalendar.Year; IP=Low; Security=Low; Resources=1; Fingerprint=37838C
+    // Hairs-Human:        PENDING
     internal override CalendarSystemYear Year(long year)
     {
         var iso = year + isoOffset;
@@ -54,16 +54,16 @@ internal sealed class GregorianCalendarSystem : CalendarSystem
         return new CalendarSystemYear(year, IsoCalendarMath.EpochDays(iso, 1, 1), CalendarSystemYear.FromLengths(lengths));
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 2 via Broiler.VM JsGregorianCalendar.YearOf; IP=Low; Security=Low; Resources=1; Fingerprint=136932
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 2 via Broiler.VM JsGregorianCalendar.YearOf; IP=Low; Security=Low; Resources=1; Fingerprint=136932
+    // Hairs-Human:        PENDING
     internal override long YearOf(long epochDays) => IsoCalendarMath.FromEpochDays(epochDays).Year - isoOffset;
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 2 via Broiler.VM JsGregorianCalendar.InLeapYear; IP=Low; Security=Low; Resources=1; Fingerprint=28D322
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 2 via Broiler.VM JsGregorianCalendar.InLeapYear; IP=Low; Security=Low; Resources=1; Fingerprint=28D322
+    // Hairs-Human:        PENDING
     internal override bool InLeapYear(CalendarSystemYear year) => year.Days == 366;
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.10, Table 2 via Broiler.VM JsGregorianCalendar.EraOf; IP=Low; Security=Low; Resources=1; Fingerprint=FE50CF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.10, Table 2 via Broiler.VM JsGregorianCalendar.EraOf; IP=Low; Security=Low; Resources=1; Fingerprint=FE50CF
+    // Hairs-Human:        PENDING
     internal override (string? Era, long? EraYear) EraOf(long year, long epochDays)
     {
         switch (Id)
@@ -91,8 +91,8 @@ internal sealed class GregorianCalendarSystem : CalendarSystem
         }
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.12, Table 2 via Broiler.VM JsGregorianCalendar.YearForEra; IP=Low; Security=Low; Resources=1; Fingerprint=C60B33
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.12, Table 2 via Broiler.VM JsGregorianCalendar.YearForEra; IP=Low; Security=Low; Resources=1; Fingerprint=C60B33
+    // Hairs-Human:        PENDING
     internal override long? YearForEra(string era, long eraYear) => (Id, era) switch
     {
         (CalendarId.Buddhist, "be") => eraYear,

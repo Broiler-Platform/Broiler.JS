@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   11
 // Annotated:        11/11
 // Exempt:           13
@@ -22,8 +22,8 @@ using System.Text;
 namespace Broiler.ECMAScript.Conformance;
 
 /// <summary>The kinds of typed value the corpus schema's section 3 defines.</summary>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=2BE10D
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=2BE10D
+// Hairs-Human:        PENDING
 public enum TypedValueKind
 {
     /// <summary>A Number, written <c>f64:0x</c> and its sixteen-digit bit pattern.</summary>
@@ -65,13 +65,13 @@ public enum TypedValueKind
 /// </remarks>
 /// <param name="Kind">Which of the schema's kinds the value is.</param>
 /// <param name="Text">The value's one written form.</param>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=6; Fingerprint=C74C22
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=6; Fingerprint=C74C22
+// Hairs-Human:        PENDING
 public sealed record TypedValue(TypedValueKind Kind, string Text)
 {
     /// <summary>The bit pattern every NaN is written with: <c>f64:0x7FF8000000000000</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=CCAD94
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=CCAD94
+    // Hairs-Human:        PENDING
     public const ulong CanonicalNaN = 0x7FF8000000000000;
 
     /// <summary>The bit pattern of a Number.</summary>
@@ -87,8 +87,8 @@ public sealed record TypedValue(TypedValueKind Kind, string Text)
     public bool Boolean { get; init; }
 
     /// <summary>The value of a Number, from its bit pattern.</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B570F4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B570F4
+    // Hairs-Human:        PENDING
     public double Number => BitConverter.UInt64BitsToDouble(Bits);
 
     /// <summary>
@@ -100,8 +100,8 @@ public sealed record TypedValue(TypedValueKind Kind, string Text)
     /// <param name="code">The defect, named the way the validator reports it: <c>bad-double</c>, <c>bad-string</c> or <c>bad-value</c>.</param>
     /// <param name="message">What is wrong with the text, when it is refused.</param>
     /// <returns>Whether the text is a typed value in its canonical form.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=6; Fingerprint=A48044
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=6; Fingerprint=A48044
+    // Hairs-Human:        PENDING
     public static bool TryParse(string text, out TypedValue value, out string code, out string message)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -195,8 +195,8 @@ public sealed record TypedValue(TypedValueKind Kind, string Text)
     /// <param name="position">Where the value starts; on return, the index just after it.</param>
     /// <param name="token">The value's text, which may still be malformed.</param>
     /// <returns>Whether a complete token was read.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=7B1E3E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=7B1E3E
+    // Hairs-Human:        PENDING
     public static bool TryReadToken(string line, ref int position, out string token)
     {
         ArgumentNullException.ThrowIfNull(line);
@@ -227,16 +227,16 @@ public sealed record TypedValue(TypedValueKind Kind, string Text)
     /// <summary>A Number in the notation: its bit pattern, every NaN as the canonical one (schema section 7).</summary>
     /// <param name="value">The Number an engine or a library produced.</param>
     /// <returns>The value's one written form.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=525F9B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=525F9B
+    // Hairs-Human:        PENDING
     public static string RenderNumber(double value)
         => "f64:0x" + Ascii.UpperHex(double.IsNaN(value) ? CanonicalNaN : BitConverter.DoubleToUInt64Bits(value), 16);
 
     /// <summary>A String in the notation, from its UTF-16 code units (schema section 3).</summary>
     /// <param name="chars">The string's code units, lone surrogates included.</param>
     /// <returns>The value's one written form.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=CFB68E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=CFB68E
+    // Hairs-Human:        PENDING
     public static string RenderString(string chars)
     {
         ArgumentNullException.ThrowIfNull(chars);
@@ -257,19 +257,19 @@ public sealed record TypedValue(TypedValueKind Kind, string Text)
     /// <summary>A BigInt in the notation (schema section 3).</summary>
     /// <param name="value">The BigInt's value.</param>
     /// <returns>The value's one written form.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=56E40B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=56E40B
+    // Hairs-Human:        PENDING
     public static string RenderBigInt(BigInteger value) => "bigint:" + Ascii.Decimal(value);
 
     /// <summary>A Boolean in the notation (schema section 3).</summary>
     /// <param name="value">The Boolean's value.</param>
     /// <returns><c>bool:true</c> or <c>bool:false</c>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=5C4FCA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=5C4FCA
+    // Hairs-Human:        PENDING
     public static string RenderBoolean(bool value) => value ? "bool:true" : "bool:false";
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=4; Fingerprint=6CB6F1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=4; Fingerprint=6CB6F1
+    // Hairs-Human:        PENDING
     private static bool TryDecodeString(string text, out string chars, out string message)
     {
         chars = string.Empty;

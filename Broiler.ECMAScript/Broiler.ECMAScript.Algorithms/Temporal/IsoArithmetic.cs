@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   27
 // Annotated:        27/27
 // Exempt:           0
@@ -40,26 +40,26 @@ namespace Broiler.ECMAScript.Temporal;
 /// the preconditions are far outside every limit Temporal sets, so an adapter that checks the limits never meets them.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0078, Temporal ISO arithmetic via Broiler.VM JsTemporalCore; IP=Low; Security=Medium; Resources=1; Fingerprint=9F1F64
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0078, Temporal ISO arithmetic via Broiler.VM JsTemporalCore; IP=Low; Security=Medium; Resources=1; Fingerprint=9F1F64
+// Hairs-Human:        PENDING
 public static class IsoArithmetic
 {
     // The bound of a day count the balancing takes, 2^60, the civil-day arithmetic's own.
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=0; Fingerprint=ACF87E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=0; Fingerprint=ACF87E
+    // Hairs-Human:        PENDING
     private const long DayCountLimit = 1L << 60;
 
     // A day in nanoseconds, as an exact integer.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal nsPerDay via Broiler.VM JsTemporalCore.NsPerDay; IP=Low; Security=None; Resources=0; Fingerprint=055C53
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal nsPerDay via Broiler.VM JsTemporalCore.NsPerDay; IP=Low; Security=None; Resources=0; Fingerprint=055C53
+    // Hairs-Human:        PENDING
     private static readonly BigInteger Day = new(TemporalLimits.NanosecondsPerDay);
 
     /// <summary>Compares two dates: the proposal's <c>CompareISODate</c>.</summary>
     /// <param name="one">The first date.</param>
     /// <param name="two">The second date.</param>
     /// <returns>-1, 0 or 1 as the first is before, equal to or after the second.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal CompareISODate via Broiler.VM JsTemporalCore.Compare; IP=Low; Security=Low; Resources=0; Fingerprint=9AE35B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal CompareISODate via Broiler.VM JsTemporalCore.Compare; IP=Low; Security=Low; Resources=0; Fingerprint=9AE35B
+    // Hairs-Human:        PENDING
     public static int CompareIsoDate(IsoDate one, IsoDate two) =>
         one.Year != two.Year ? (one.Year > two.Year ? 1 : -1)
         : one.Month != two.Month ? (one.Month > two.Month ? 1 : -1)
@@ -70,16 +70,16 @@ public static class IsoArithmetic
     /// <param name="one">The first time.</param>
     /// <param name="two">The second time.</param>
     /// <returns>-1, 0 or 1 as the first is before, equal to or after the second.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal CompareTimeRecord via Broiler.VM JsTemporalCore.Compare; IP=Low; Security=Low; Resources=0; Fingerprint=1ECC13
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal CompareTimeRecord via Broiler.VM JsTemporalCore.Compare; IP=Low; Security=Low; Resources=0; Fingerprint=1ECC13
+    // Hairs-Human:        PENDING
     public static int CompareTime(IsoTime one, IsoTime two) => Math.Sign(TimeToNanoseconds(one).CompareTo(TimeToNanoseconds(two)));
 
     /// <summary>Compares two date-times: the proposal's <c>CompareISODateTime</c>.</summary>
     /// <param name="one">The first date-time.</param>
     /// <param name="two">The second date-time.</param>
     /// <returns>-1, 0 or 1 as the first is before, equal to or after the second.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal CompareISODateTime via Broiler.VM JsTemporalCore.Compare; IP=Low; Security=Low; Resources=0; Fingerprint=EE5667
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal CompareISODateTime via Broiler.VM JsTemporalCore.Compare; IP=Low; Security=Low; Resources=0; Fingerprint=EE5667
+    // Hairs-Human:        PENDING
     public static int CompareIsoDateTime(IsoDateTime one, IsoDateTime two)
     {
         var date = CompareIsoDate(one.Date, two.Date);
@@ -90,8 +90,8 @@ public static class IsoArithmetic
     /// <param name="time">The time, valid.</param>
     /// <returns>((((hour × 60 + minute) × 60 + second) × 1000 + millisecond) × 1000 + microsecond) × 1000 + nanosecond, below 8.64 × 10^13.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The time is not valid (<see cref="TemporalLimits.IsValidTime"/>).</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TimeDurationFromComponents via Broiler.VM JsTemporalCore.TimeNs; IP=Low; Security=Low; Resources=0; Fingerprint=5D335F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TimeDurationFromComponents via Broiler.VM JsTemporalCore.TimeNs; IP=Low; Security=Low; Resources=0; Fingerprint=5D335F
+    // Hairs-Human:        PENDING
     public static long TimeToNanoseconds(IsoTime time)
     {
         if (!TemporalLimits.IsValidTime(time))
@@ -111,8 +111,8 @@ public static class IsoArithmetic
     /// <param name="day">The one-based day, any integer of magnitude at most 2^60; it carries into the month.</param>
     /// <returns>The date, valid in the ISO 8601 calendar and not necessarily within Temporal's limits.</returns>
     /// <exception cref="ArgumentOutOfRangeException">An argument's magnitude is above its bound, or the result is further than 2^60 days from the epoch.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal BalanceISOYearMonth and AddDaysToISODate via Broiler.VM JsTemporalCore.AddDays; IP=Low; Security=Medium; Resources=1; Fingerprint=B32444
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal BalanceISOYearMonth and AddDaysToISODate via Broiler.VM JsTemporalCore.AddDays; IP=Low; Security=Medium; Resources=1; Fingerprint=B32444
+    // Hairs-Human:        PENDING
     public static IsoDate BalanceIsoDate(long year, long month, long day)
     {
         CheckDayCount(day, nameof(day));
@@ -125,8 +125,8 @@ public static class IsoArithmetic
     /// <param name="days">The days, at most 2^60 in magnitude.</param>
     /// <returns>The date, not necessarily within Temporal's limits.</returns>
     /// <exception cref="ArgumentOutOfRangeException">An argument is outside its bound, or the result is further than 2^60 days from the epoch.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal AddDaysToISODate via Broiler.VM JsTemporalCore.AddDays; IP=Low; Security=Medium; Resources=1; Fingerprint=5359D6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal AddDaysToISODate via Broiler.VM JsTemporalCore.AddDays; IP=Low; Security=Medium; Resources=1; Fingerprint=5359D6
+    // Hairs-Human:        PENDING
     public static IsoDate AddDaysToIsoDate(IsoDate date, long days)
     {
         CheckDayCount(days, nameof(days));
@@ -141,8 +141,8 @@ public static class IsoArithmetic
     /// <param name="days">The days carried: floor(<paramref name="nanoseconds"/> / 8.64 × 10^13).</param>
     /// <returns>The time of day.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The days carried do not fit a <see cref="long"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal BalanceTime via Broiler.VM JsTemporalCore.BalanceTime; IP=Low; Security=Medium; Resources=1; Fingerprint=24ED0B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal BalanceTime via Broiler.VM JsTemporalCore.BalanceTime; IP=Low; Security=Medium; Resources=1; Fingerprint=24ED0B
+    // Hairs-Human:        PENDING
     public static IsoTime BalanceTime(BigInteger nanoseconds, out long days)
     {
         var whole = BigInteger.DivRem(nanoseconds, Day, out var within);
@@ -179,8 +179,8 @@ public static class IsoArithmetic
     /// <param name="days">The days carried.</param>
     /// <returns>The time of day.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A field is not finite, or the days carried do not fit a <see cref="long"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal BalanceTime via Broiler.VM JsTemporalCore.BalanceTime; IP=Low; Security=Medium; Resources=1; Fingerprint=4CF3D5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal BalanceTime via Broiler.VM JsTemporalCore.BalanceTime; IP=Low; Security=Medium; Resources=1; Fingerprint=4CF3D5
+    // Hairs-Human:        PENDING
     public static IsoTime BalanceTime(double hour, double minute, double second, double millisecond, double microsecond, double nanosecond, out long days)
     {
         if (!double.IsFinite(hour) || !double.IsFinite(minute) || !double.IsFinite(second) ||
@@ -196,8 +196,8 @@ public static class IsoArithmetic
     /// <param name="days">The days carried, of either sign.</param>
     /// <returns>The time of day.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The days carried do not fit a <see cref="long"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal AddTime via Broiler.VM JsTemporalCore.AddTime; IP=Low; Security=Medium; Resources=1; Fingerprint=D71591
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal AddTime via Broiler.VM JsTemporalCore.AddTime; IP=Low; Security=Medium; Resources=1; Fingerprint=D71591
+    // Hairs-Human:        PENDING
     public static IsoTime AddTime(IsoTime time, BigInteger timeDuration, out long days) =>
         BalanceTime(TimeToNanoseconds(time) + timeDuration, out days);
 
@@ -205,8 +205,8 @@ public static class IsoArithmetic
     /// <param name="one">The earlier operand.</param>
     /// <param name="two">The later operand.</param>
     /// <returns>The nanoseconds from <paramref name="one"/> to <paramref name="two"/>, of either sign and below a day in magnitude.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal DifferenceTime via Broiler.VM JsTemporalCore.DifferenceTime; IP=Low; Security=Low; Resources=0; Fingerprint=5D166D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal DifferenceTime via Broiler.VM JsTemporalCore.DifferenceTime; IP=Low; Security=Low; Resources=0; Fingerprint=5D166D
+    // Hairs-Human:        PENDING
     public static BigInteger DifferenceTime(IsoTime one, IsoTime two) => TimeToNanoseconds(two) - TimeToNanoseconds(one);
 
     /// <summary>
@@ -221,8 +221,8 @@ public static class IsoArithmetic
     /// <param name="result">The date; the default unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.InvalidDate"/> under <see cref="TemporalOverflow.Reject"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The month or the day is NaN, or the overflow is not one of the two.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal RegulateISODate via Broiler.VM JsTemporal.RegulateDate; IP=Low; Security=Medium; Resources=0; Fingerprint=6743F7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal RegulateISODate via Broiler.VM JsTemporal.RegulateDate; IP=Low; Security=Medium; Resources=0; Fingerprint=6743F7
+    // Hairs-Human:        PENDING
     public static TemporalStatus RegulateIsoDate(long year, double month, double day, TemporalOverflow overflow, out IsoDate result)
     {
         if (double.IsNaN(month) || double.IsNaN(day))
@@ -260,8 +260,8 @@ public static class IsoArithmetic
     /// <param name="result">The time; the default unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.InvalidTime"/> under <see cref="TemporalOverflow.Reject"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A field is NaN, or the overflow is not one of the two.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal RegulateTime via Broiler.VM JsTemporal.RegulateTime; IP=Low; Security=Medium; Resources=0; Fingerprint=FDDCBE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal RegulateTime via Broiler.VM JsTemporal.RegulateTime; IP=Low; Security=Medium; Resources=0; Fingerprint=FDDCBE
+    // Hairs-Human:        PENDING
     public static TemporalStatus RegulateTime(
         double hour, double minute, double second, double millisecond, double microsecond, double nanosecond, TemporalOverflow overflow, out IsoTime result)
     {
@@ -313,8 +313,8 @@ public static class IsoArithmetic
     /// within its preconditions.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">A field of the duration is not finite, the date is not valid, or the overflow is not one of the two.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal CalendarDateAdd ISO 8601 branch via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Medium; Resources=1; Fingerprint=F71EC3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal CalendarDateAdd ISO 8601 branch via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Medium; Resources=1; Fingerprint=F71EC3
+    // Hairs-Human:        PENDING
     public static TemporalStatus AddIsoDate(IsoDate date, DateDuration duration, TemporalOverflow overflow, out IsoDate result)
     {
         if (!double.IsFinite(duration.Years) || !double.IsFinite(duration.Months) || !double.IsFinite(duration.Weeks) || !double.IsFinite(duration.Days))
@@ -349,8 +349,8 @@ public static class IsoArithmetic
     /// <param name="dateTime">The date-time; its month from 1 to 12 and its year at most 2^53 in magnitude.</param>
     /// <returns>The epoch nanoseconds, not necessarily an instant.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The year's magnitude is above 2^53, or the month is outside 1 to 12.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal GetUTCEpochNanoseconds via Broiler.VM JsTemporalCore.UtcEpochNs; IP=Low; Security=Low; Resources=1; Fingerprint=C24830
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal GetUTCEpochNanoseconds via Broiler.VM JsTemporalCore.UtcEpochNs; IP=Low; Security=Low; Resources=1; Fingerprint=C24830
+    // Hairs-Human:        PENDING
     public static BigInteger GetUtcEpochNanoseconds(IsoDateTime dateTime) =>
         ((BigInteger)IsoCalendarMath.EpochDays(dateTime.Date.Year, dateTime.Date.Month, dateTime.Date.Day) * Day) + TimeToNanoseconds(dateTime.Time);
 
@@ -358,8 +358,8 @@ public static class IsoArithmetic
     /// <param name="epochNanoseconds">The nanoseconds since the epoch; the wall clock of a zone is this plus its offset.</param>
     /// <returns>The date-time.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The value is further than 2^60 days from the epoch.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal GetISOPartsFromEpoch via Broiler.VM JsTemporalCore.FromEpochNs; IP=Low; Security=Low; Resources=1; Fingerprint=DAB427
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal GetISOPartsFromEpoch via Broiler.VM JsTemporalCore.FromEpochNs; IP=Low; Security=Low; Resources=1; Fingerprint=DAB427
+    // Hairs-Human:        PENDING
     public static IsoDateTime GetIsoPartsFromEpoch(BigInteger epochNanoseconds)
     {
         var time = BalanceTime(epochNanoseconds, out var days);
@@ -375,8 +375,8 @@ public static class IsoArithmetic
     /// <param name="timeNanoseconds">The nanoseconds from the date's midnight, of either sign.</param>
     /// <returns>The date-time, not necessarily within Temporal's limits.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The days carried or the result are past the civil-day arithmetic's bounds.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal BalanceISODateTime via Broiler.VM JsTemporalCore.BalanceDateTime; IP=Low; Security=Medium; Resources=1; Fingerprint=0E97A1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal BalanceISODateTime via Broiler.VM JsTemporalCore.BalanceDateTime; IP=Low; Security=Medium; Resources=1; Fingerprint=0E97A1
+    // Hairs-Human:        PENDING
     public static IsoDateTime BalanceIsoDateTime(IsoDate date, BigInteger timeNanoseconds)
     {
         var time = BalanceTime(timeNanoseconds, out var days);
@@ -394,8 +394,8 @@ public static class IsoArithmetic
     /// <param name="days">The days carried: 0 or 1.</param>
     /// <returns>The rounded time.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The increment is not positive, or the unit is a calendar unit, unset or auto.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal RoundTime via Broiler.VM JsTemporalCore.RoundTime; IP=Low; Security=Medium; Resources=1; Fingerprint=315CCF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal RoundTime via Broiler.VM JsTemporalCore.RoundTime; IP=Low; Security=Medium; Resources=1; Fingerprint=315CCF
+    // Hairs-Human:        PENDING
     public static IsoTime RoundTime(IsoTime time, long increment, TemporalUnit unit, RoundingMode mode, out long days)
     {
         CheckRounding(increment, unit);
@@ -439,8 +439,8 @@ public static class IsoArithmetic
     /// <param name="mode">The rounding mode.</param>
     /// <returns>The rounded date-time, which may be a day past the limits: the caller checks them with <see cref="TemporalLimits.CheckIsoDateTime"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The increment is not positive, or the unit is a calendar unit, unset or auto.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal RoundISODateTime via Broiler.VM JsTemporalCore.RoundDateTime; IP=Low; Security=Medium; Resources=1; Fingerprint=1149B8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal RoundISODateTime via Broiler.VM JsTemporalCore.RoundDateTime; IP=Low; Security=Medium; Resources=1; Fingerprint=1149B8
+    // Hairs-Human:        PENDING
     public static IsoDateTime RoundIsoDateTime(IsoDateTime dateTime, long increment, TemporalUnit unit, RoundingMode mode)
     {
         var rounded = RoundTime(dateTime.Time, increment, unit, mode, out var days);
@@ -458,8 +458,8 @@ public static class IsoArithmetic
     /// <param name="mode">The rounding mode.</param>
     /// <returns>The rounded epoch nanoseconds.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The increment is not positive, or the unit is a calendar unit, unset or auto.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal RoundTemporalInstant via Broiler.VM JsTemporal.RoundInstant; IP=Low; Security=Low; Resources=1; Fingerprint=32F615
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal RoundTemporalInstant via Broiler.VM JsTemporal.RoundInstant; IP=Low; Security=Low; Resources=1; Fingerprint=32F615
+    // Hairs-Human:        PENDING
     public static BigInteger RoundTemporalInstant(BigInteger epochNanoseconds, long increment, TemporalUnit unit, RoundingMode mode)
     {
         CheckRounding(increment, unit);
@@ -471,8 +471,8 @@ public static class IsoArithmetic
     /// <param name="timeDuration">The time duration, in nanoseconds.</param>
     /// <param name="result">The instant reached; zero unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns><see cref="TemporalStatus.Completed"/>, or <see cref="TemporalStatus.OutOfRange"/> where the sum is not an instant.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal AddInstant via Broiler.VM JsTemporal.AddInstant; IP=Low; Security=Low; Resources=1; Fingerprint=2387C8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal AddInstant via Broiler.VM JsTemporal.AddInstant; IP=Low; Security=Low; Resources=1; Fingerprint=2387C8
+    // Hairs-Human:        PENDING
     public static TemporalStatus AddInstant(BigInteger epochNanoseconds, BigInteger timeDuration, out BigInteger result)
     {
         var sum = epochNanoseconds + timeDuration;
@@ -487,8 +487,8 @@ public static class IsoArithmetic
     }
 
     // EpochDaysToISODate, as the record.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal EpochDaysToISODate via Broiler.VM JsIsoDate; IP=Low; Security=Low; Resources=0; Fingerprint=598B10
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal EpochDaysToISODate via Broiler.VM JsIsoDate; IP=Low; Security=Low; Resources=0; Fingerprint=598B10
+    // Hairs-Human:        PENDING
     private static IsoDate FromEpochDays(long days)
     {
         var (year, month, day) = IsoCalendarMath.FromEpochDays(days);
@@ -496,8 +496,8 @@ public static class IsoArithmetic
     }
 
     // A day count within the civil-day arithmetic's bound.
-    // Broiler-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=0; Fingerprint=A1A28C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal ISO 8601 calendar; IP=Low; Security=Low; Resources=0; Fingerprint=A1A28C
+    // Hairs-Human:        PENDING
     private static void CheckDayCount(long days, string name)
     {
         if (days is < -DayCountLimit or > DayCountLimit)
@@ -505,8 +505,8 @@ public static class IsoArithmetic
     }
 
     // An overflow that is one of the two.
-    // Broiler-AI:           Origin=AI; Spec=Temporal GetTemporalOverflowOption; IP=Low; Security=Low; Resources=0; Fingerprint=CCD45C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal GetTemporalOverflowOption; IP=Low; Security=Low; Resources=0; Fingerprint=CCD45C
+    // Hairs-Human:        PENDING
     private static void CheckOverflow(TemporalOverflow overflow)
     {
         if (overflow is not (TemporalOverflow.Constrain or TemporalOverflow.Reject))
@@ -514,8 +514,8 @@ public static class IsoArithmetic
     }
 
     // A positive increment of a unit with a length: a time unit or day.
-    // Broiler-AI:           Origin=AI; Spec=Temporal RoundTime; IP=Low; Security=Low; Resources=0; Fingerprint=AA96D6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal RoundTime; IP=Low; Security=Low; Resources=0; Fingerprint=AA96D6
+    // Hairs-Human:        PENDING
     private static void CheckRounding(long increment, TemporalUnit unit)
     {
         if (increment < 1)

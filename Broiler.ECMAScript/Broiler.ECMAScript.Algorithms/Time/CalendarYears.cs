@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   39
 // Annotated:        39/39
 // Exempt:           19
@@ -25,8 +25,8 @@ namespace Broiler.ECMAScript.Time;
 /// (JSD-0076, the calendar tables; decision SJL-D-21): their years are the shared part, and their
 /// arithmetic is each engine's until SJL-10.
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1; IP=Low; Security=Low; Resources=1; Fingerprint=602E3B
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1; IP=Low; Security=Low; Resources=1; Fingerprint=602E3B
+// Hairs-Human:        PENDING
 public enum TableCalendar
 {
     /// <summary><c>chinese</c>: its year is the related ISO year in which it begins.</summary>
@@ -47,13 +47,13 @@ public enum TableCalendar
 /// and its leap month (JSD-0076: "a year here is its new year, its months and their lengths, and its leap
 /// month").
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1 via Broiler.VM JsCalendarYear; IP=Low; Security=Low; Resources=1; Fingerprint=117DF2
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1 via Broiler.VM JsCalendarYear; IP=Low; Security=Low; Resources=1; Fingerprint=117DF2
+// Hairs-Human:        PENDING
 public readonly record struct CalendarYear
 {
     // Each month's length less 29, two bits a month from the first month up.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarYear.Offsets; IP=Low; Security=Low; Resources=1; Fingerprint=6292BD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarYear.Offsets; IP=Low; Security=Low; Resources=1; Fingerprint=6292BD
+    // Hairs-Human:        PENDING
     private readonly int lengths;
 
     /// <summary>Creates a year.</summary>
@@ -62,8 +62,8 @@ public readonly record struct CalendarYear
     /// <param name="monthLengths">The length of each month in order, 12 or 13 of them, each from 29 to 31 days.</param>
     /// <param name="leapMonth">The ordinal of the leap month, from 1 to 13, in a year of 13 months; 0 in a year of 12.</param>
     /// <exception cref="ArgumentOutOfRangeException">A month count, a length or the leap month is outside what a table-backed calendar has.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarYear..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=B1B5CE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarYear..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=B1B5CE
+    // Hairs-Human:        PENDING
     public CalendarYear(long year, long newYearEpochDays, ReadOnlySpan<int> monthLengths, int leapMonth)
     {
         if (monthLengths.Length is not (12 or 13))
@@ -110,8 +110,8 @@ public readonly record struct CalendarYear
     /// <param name="month">The month's ordinal, from 1 to <see cref="MonthsInYear"/>.</param>
     /// <returns>From 29 to 31 days.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The ordinal is outside the year.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarYear.DaysInMonth; IP=Low; Security=Low; Resources=1; Fingerprint=C03642
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarYear.DaysInMonth; IP=Low; Security=Low; Resources=1; Fingerprint=C03642
+    // Hairs-Human:        PENDING
     public int DaysInMonth(int month)
     {
         if (month < 1 || month > MonthsInYear)
@@ -127,8 +127,8 @@ public readonly record struct CalendarYear
 /// Persian calendar's corrections to the 33-year rule. <see cref="CalendarYears"/> answers a year from them
 /// inside their ranges and from the ported sources outside.
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=D7B920
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=D7B920
+// Hairs-Human:        PENDING
 public interface ICalendarTables
 {
     /// <summary>
@@ -140,16 +140,16 @@ public interface ICalendarTables
     /// <param name="year">The year; <see langword="default"/> when the tables do not hold it.</param>
     /// <returns>Whether the tables hold it.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The calendar is not a Chinese or Korean one.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData.EastAsianYear; IP=Low; Security=Low; Resources=1; Fingerprint=049428
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData.EastAsianYear; IP=Low; Security=Low; Resources=1; Fingerprint=049428
+    // Hairs-Human:        PENDING
     bool TryGetEastAsianYear(TableCalendar calendar, long relatedIsoYear, out CalendarYear year);
 
     /// <summary>An <c>islamic-umalqura</c> year the table holds: KACST's, 1300 to 1600 AH in the pinned data.</summary>
     /// <param name="year">The year, AH.</param>
     /// <param name="calendarYear">The year; <see langword="default"/> when the table does not hold it.</param>
     /// <returns>Whether the table holds it.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData.UmmAlQuraYear; IP=Low; Security=Low; Resources=1; Fingerprint=A3AD57
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData.UmmAlQuraYear; IP=Low; Security=Low; Resources=1; Fingerprint=A3AD57
+    // Hairs-Human:        PENDING
     bool TryGetUmmAlQuraYear(long year, out CalendarYear calendarYear);
 
     /// <summary>
@@ -158,8 +158,8 @@ public interface ICalendarTables
     /// </summary>
     /// <param name="year">The year, AP.</param>
     /// <returns>Whether it is listed.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsPersianCalendar.Corrected; IP=Low; Security=Low; Resources=1; Fingerprint=DFAC8A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsPersianCalendar.Corrected; IP=Low; Security=Low; Resources=1; Fingerprint=DFAC8A
+    // Hairs-Human:        PENDING
     bool IsPersianNonLeapYear(long year);
 }
 
@@ -183,52 +183,52 @@ public interface ICalendarTables
 /// is decoded each time it is asked for, and nothing is cached. Every member is safe to call concurrently.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData; IP=Low; Security=Medium; Resources=2; Fingerprint=61CB38
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData; IP=Low; Security=Medium; Resources=2; Fingerprint=61CB38
+// Hairs-Human:        PENDING
 public sealed class CalendarTables : ICalendarTables
 {
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=991E63
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=991E63
+    // Hairs-Human:        PENDING
     private readonly byte[] china;
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=D21016
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=D21016
+    // Hairs-Human:        PENDING
     private readonly byte[] korea;
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=591A9A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=591A9A
+    // Hairs-Human:        PENDING
     private readonly byte[] qing;
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=9ABCA4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=9ABCA4
+    // Hairs-Human:        PENDING
     private readonly byte[] ummAlQura;
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=9AAFC7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=9AAFC7
+    // Hairs-Human:        PENDING
     private readonly int chinaStart;
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=5F1E83
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=5F1E83
+    // Hairs-Human:        PENDING
     private readonly int koreaStart;
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=906333
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=906333
+    // Hairs-Human:        PENDING
     private readonly int qingStart;
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=ED122B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData; IP=Low; Security=Low; Resources=1; Fingerprint=ED122B
+    // Hairs-Human:        PENDING
     private readonly int ummAlQuraStart;
 
     // The Persian years the 33-year rule makes leap and the calendar does not, ascending.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData.PersianNonLeapYears; IP=Low; Security=Low; Resources=1; Fingerprint=22BF24
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData.PersianNonLeapYears; IP=Low; Security=Low; Resources=1; Fingerprint=22BF24
+    // Hairs-Human:        PENDING
     private readonly int[] persianNonLeapYears;
 
     /// <summary>Reads the calendar table an engine hands in.</summary>
     /// <param name="table">The table's bytes.</param>
     /// <exception cref="ArgumentException">The table does not hold the generator's layout.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData..ctor; IP=Low; Security=Medium; Resources=2; Fingerprint=45A982
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData..ctor; IP=Low; Security=Medium; Resources=2; Fingerprint=45A982
+    // Hairs-Human:        PENDING
     public CalendarTables(ReadOnlySpan<byte> table)
     {
         var at = 0;
@@ -259,8 +259,8 @@ public sealed class CalendarTables : ICalendarTables
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData.EastAsianYear; IP=Low; Security=Low; Resources=1; Fingerprint=798280
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData.EastAsianYear; IP=Low; Security=Low; Resources=1; Fingerprint=798280
+    // Hairs-Human:        PENDING
     public bool TryGetEastAsianYear(TableCalendar calendar, long relatedIsoYear, out CalendarYear year)
     {
         if (calendar is not (TableCalendar.Chinese or TableCalendar.Dangi))
@@ -281,8 +281,8 @@ public sealed class CalendarTables : ICalendarTables
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData.UmmAlQuraYear; IP=Low; Security=Low; Resources=1; Fingerprint=96BFE5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData.UmmAlQuraYear; IP=Low; Security=Low; Resources=1; Fingerprint=96BFE5
+    // Hairs-Human:        PENDING
     public bool TryGetUmmAlQuraYear(long year, out CalendarYear calendarYear)
     {
         var index = year - ummAlQuraStart;
@@ -303,15 +303,15 @@ public sealed class CalendarTables : ICalendarTables
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsPersianCalendar.Corrected; IP=Low; Security=Low; Resources=1; Fingerprint=D50FFB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsPersianCalendar.Corrected; IP=Low; Security=Low; Resources=1; Fingerprint=D50FFB
+    // Hairs-Human:        PENDING
     public bool IsPersianNonLeapYear(long year) =>
         persianNonLeapYears.Length > 0 && year >= persianNonLeapYears[0] && year <= persianNonLeapYears[^1] &&
         Array.BinarySearch(persianNonLeapYears, (int)year) >= 0;
 
     // A Chinese, Korean or Qing record as a year.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData.EastAsianYear; IP=Low; Security=Low; Resources=1; Fingerprint=584171
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, JSD-0056 via Broiler.VM JsCalendarData.EastAsianYear; IP=Low; Security=Low; Resources=1; Fingerprint=584171
+    // Hairs-Human:        PENDING
     private static CalendarYear EastAsian(byte[] records, int start, long relatedIsoYear)
     {
         var at = (int)(relatedIsoYear - start) * 3;
@@ -327,8 +327,8 @@ public sealed class CalendarTables : ICalendarTables
     }
 
     // A little-endian 16-bit integer.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData.U16; IP=Low; Security=Medium; Resources=1; Fingerprint=D66007
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData.U16; IP=Low; Security=Medium; Resources=1; Fingerprint=D66007
+    // Hairs-Human:        PENDING
     private static int U16(ReadOnlySpan<byte> table, ref int at)
     {
         if (at + 2 > table.Length)
@@ -340,8 +340,8 @@ public sealed class CalendarTables : ICalendarTables
     }
 
     // A section: its first year, its count, and its records.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData.Section; IP=Low; Security=Medium; Resources=1; Fingerprint=02B4F1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarData.Section; IP=Low; Security=Medium; Resources=1; Fingerprint=02B4F1
+    // Hairs-Human:        PENDING
     private static (int Start, byte[] Records) Section(ReadOnlySpan<byte> table, ref int at, int size)
     {
         var start = U16(table, ref at);
@@ -375,63 +375,63 @@ public sealed class CalendarTables : ICalendarTables
 /// takes a table lookup or a few dozen additions (X3).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1 via Broiler.VM JsCalendars; IP=Medium; Security=Medium; Resources=1; Fingerprint=A45B7F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1 via Broiler.VM JsCalendars; IP=Medium; Security=Medium; Resources=1; Fingerprint=A45B7F
+// Hairs-Human:        PENDING
 public static class CalendarYears
 {
     /// <summary>The largest magnitude of a year the sources answer: Broiler.VM's bound, beyond every calendar's years within the ISO limits.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 X3 via Broiler.VM JsTemporal.YearBound; IP=Low; Security=Low; Resources=1; Fingerprint=87DBD6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 X3 via Broiler.VM JsTemporal.YearBound; IP=Low; Security=Low; Resources=1; Fingerprint=87DBD6
+    // Hairs-Human:        PENDING
     public const long MaxYearMagnitude = 300_000;
 
     // R.D. 719163 is 1970-01-01.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarSystem.RataDieOfEpoch; IP=Low; Security=Low; Resources=1; Fingerprint=E10925
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsCalendarSystem.RataDieOfEpoch; IP=Low; Security=Low; Resources=1; Fingerprint=E10925
+    // Hairs-Human:        PENDING
     private const long RataDieOfEpoch = 719163;
 
     // R.D. 227015, Julian 622-07-16, a Friday: the civil Hijri epoch, in days since 1970-01-01.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsHijriCalendar.CivilEpoch; IP=Low; Security=Low; Resources=1; Fingerprint=A3EBF7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsHijriCalendar.CivilEpoch; IP=Low; Security=Low; Resources=1; Fingerprint=A3EBF7
+    // Hairs-Human:        PENDING
     internal const long CivilEpoch = 227015 - RataDieOfEpoch;
 
     // R.D. 226896, Julian 622-03-19, the first day of 1 AP, in days since 1970-01-01.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsPersianCalendar.Epoch; IP=Low; Security=Low; Resources=1; Fingerprint=394EBF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsPersianCalendar.Epoch; IP=Low; Security=Low; Resources=1; Fingerprint=394EBF
+    // Hairs-Human:        PENDING
     private const long PersianEpoch = 226896 - RataDieOfEpoch;
 
     // A day in milliseconds.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.Day; IP=Low; Security=Low; Resources=1; Fingerprint=3EB970
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.Day; IP=Low; Security=Low; Resources=1; Fingerprint=3EB970
+    // Hairs-Human:        PENDING
     private const long Day = 86_400_000;
 
     // UTC+8, Beijing time.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.UtcPlus8; IP=Low; Security=Low; Resources=1; Fingerprint=A0A1EC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.UtcPlus8; IP=Low; Security=Low; Resources=1; Fingerprint=A0A1EC
+    // Hairs-Human:        PENDING
     private const long UtcPlus8 = 28_800_000;
 
     // UTC+9, Korean time.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.UtcPlus9; IP=Low; Security=Low; Resources=1; Fingerprint=ADCFC5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.UtcPlus9; IP=Low; Security=Low; Resources=1; Fingerprint=ADCFC5
+    // Hairs-Human:        PENDING
     private const long UtcPlus9 = 32_400_000;
 
     // UTC+(1397/180) hours, Beijing's local mean time.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.BeijingMeanTime; IP=Low; Security=Low; Resources=1; Fingerprint=792B54
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.BeijingMeanTime; IP=Low; Security=Low; Resources=1; Fingerprint=792B54
+    // Hairs-Human:        PENDING
     private const long BeijingMeanTime = 27_940_000;
 
     // The mean Gregorian year, 146097/400 days, in milliseconds.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.MeanYear; IP=Medium; Security=Low; Resources=1; Fingerprint=E8FBB1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.MeanYear; IP=Medium; Security=Low; Resources=1; Fingerprint=E8FBB1
+    // Hairs-Human:        PENDING
     private const long MeanYear = 31_556_952_000;
 
     // The mean Gregorian solar term, a twelfth of the mean year.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.MeanSolarTerm; IP=Medium; Security=Low; Resources=1; Fingerprint=D1EB80
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.MeanSolarTerm; IP=Medium; Security=Low; Resources=1; Fingerprint=D1EB80
+    // Hairs-Human:        PENDING
     private const long MeanSolarTerm = 2_629_746_000;
 
     // The mean synodic month, 29.5305888531 days, truncated to milliseconds.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.MeanSynodicMonth; IP=Medium; Security=Low; Resources=1; Fingerprint=5326A4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.MeanSynodicMonth; IP=Medium; Security=Low; Resources=1; Fingerprint=5326A4
+    // Hairs-Human:        PENDING
     private const long MeanSynodicMonth = 2_551_442_876;
 
     /// <summary>
@@ -445,9 +445,9 @@ public static class CalendarYears
     /// <returns><see cref="TimeStatus.Completed"/>, or <see cref="TimeStatus.OutOfRange"/> for a year of magnitude above <see cref="MaxYearMagnitude"/>.</returns>
     /// <exception cref="ArgumentNullException">The tables are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The calendar is not one of the four.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1 via Broiler.VM JsCalendarSystem.Year; IP=Low; Security=High; Resources=1; Fingerprint=4EB1E8
-    // Broiler-Falsified-If: a year inside a table's range is not the table's, a year outside it is not its source's, or a year of magnitude above the bound completes
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1 via Broiler.VM JsCalendarSystem.Year; IP=Low; Security=High; Resources=1; Fingerprint=4EB1E8
+    // Hairs-Falsified-If: a year inside a table's range is not the table's, a year outside it is not its source's, or a year of magnitude above the bound completes
+    // Hairs-Human:        PENDING
     public static TimeStatus GetYear(ICalendarTables tables, TableCalendar calendar, long year, out CalendarYear result)
     {
         ArgumentNullException.ThrowIfNull(tables);
@@ -470,15 +470,15 @@ public static class CalendarYears
     }
 
     // The tabular Hijri new year of a year from an epoch.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsHijriCalendar.TabularNewYear; IP=Low; Security=Low; Resources=1; Fingerprint=738D86
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsHijriCalendar.TabularNewYear; IP=Low; Security=Low; Resources=1; Fingerprint=738D86
+    // Hairs-Human:        PENDING
     internal static long TabularNewYear(long epoch, long year) =>
         epoch + ((year - 1) * 354) + EcmaTime.FloorDivide(3 + (11 * year), 30);
 
     // The civil tabular year, Umm al-Qura's outside its table: months of 30 and 29 days alternately, the twelfth
     // of 30 in years 2, 5, 7, 10, 13, 16, 18, 21, 24, 26 and 29 of each 30.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1 via Broiler.VM JsHijriCalendar.Year; IP=Low; Security=Low; Resources=1; Fingerprint=1DD045
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Intl era and month code proposal Table 1 via Broiler.VM JsHijriCalendar.Year; IP=Low; Security=Low; Resources=1; Fingerprint=1DD045
+    // Hairs-Human:        PENDING
     private static CalendarYear Tabular(long year)
     {
         Span<int> lengths = stackalloc int[12];
@@ -492,8 +492,8 @@ public static class CalendarYears
     }
 
     // The Persian year: the 33-year rule, a year the corrections list being common.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Calendrical Calculations ch. 15 via Broiler.VM JsPersianCalendar.Year; IP=Low; Security=Low; Resources=1; Fingerprint=B69B25
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Calendrical Calculations ch. 15 via Broiler.VM JsPersianCalendar.Year; IP=Low; Security=Low; Resources=1; Fingerprint=B69B25
+    // Hairs-Human:        PENDING
     private static CalendarYear Persian(ICalendarTables tables, long year)
     {
         var start = PersianNewYear(tables, year);
@@ -503,14 +503,14 @@ public static class CalendarYears
     }
 
     // The first day of a Persian year by the 33-year rule, a day later where the year before is a listed correction.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Calendrical Calculations ch. 15 via Broiler.VM JsPersianCalendar.NewYear; IP=Low; Security=Low; Resources=1; Fingerprint=EF8470
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Calendrical Calculations ch. 15 via Broiler.VM JsPersianCalendar.NewYear; IP=Low; Security=Low; Resources=1; Fingerprint=EF8470
+    // Hairs-Human:        PENDING
     private static long PersianNewYear(ICalendarTables tables, long year) =>
         PersianEpoch - 1 + (365 * (year - 1)) + EcmaTime.FloorDivide((8 * year) + 21, 33) - (tables.IsPersianNonLeapYear(year - 1) ? 1 : 0);
 
     // A Chinese or Korean year: the table's, or ICU4X's approximation.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.Year; IP=Low; Security=Low; Resources=1; Fingerprint=D97FE2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.Year; IP=Low; Security=Low; Resources=1; Fingerprint=D97FE2
+    // Hairs-Human:        PENDING
     private static CalendarYear EastAsian(ICalendarTables tables, bool korean, long year)
     {
         if (tables.TryGetEastAsianYear(korean ? TableCalendar.Dangi : TableCalendar.Chinese, year, out var table))
@@ -520,12 +520,12 @@ public static class CalendarYears
     }
 
     // A moment: a day, R.D., and milliseconds within it.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, icu_calendar 2.3.0 simple.rs via Broiler.VM JsEastAsianCalendar.Moment; IP=Medium; Security=Low; Resources=1; Fingerprint=CC0E6F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, icu_calendar 2.3.0 simple.rs via Broiler.VM JsEastAsianCalendar.Moment; IP=Medium; Security=Low; Resources=1; Fingerprint=CC0E6F
+    // Hairs-Human:        PENDING
     private readonly record struct Moment(long RataDie, long Milliseconds)
     {
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0076, icu_calendar 2.3.0 simple.rs via Broiler.VM JsEastAsianCalendar.Moment; IP=Medium; Security=Low; Resources=1; Fingerprint=BBE635
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0076, icu_calendar 2.3.0 simple.rs via Broiler.VM JsEastAsianCalendar.Moment; IP=Medium; Security=Low; Resources=1; Fingerprint=BBE635
+        // Hairs-Human:        PENDING
         public static Moment operator +(Moment moment, long duration)
         {
             var total = moment.Milliseconds + duration;
@@ -534,8 +534,8 @@ public static class CalendarYears
     }
 
     // The latest moment start + n * period on or before the day rataDie.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, icu_calendar 2.3.0 simple.rs via Broiler.VM JsEastAsianCalendar.OnOrBefore; IP=Medium; Security=Low; Resources=1; Fingerprint=982441
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, icu_calendar 2.3.0 simple.rs via Broiler.VM JsEastAsianCalendar.OnOrBefore; IP=Medium; Security=Low; Resources=1; Fingerprint=982441
+    // Hairs-Human:        PENDING
     private static Moment OnOrBefore(long rataDie, Moment start, long period)
     {
         var difference = ((rataDie - start.RataDie) * Day) - start.Milliseconds;
@@ -547,13 +547,13 @@ public static class CalendarYears
     }
 
     // The R.D. day of an ISO date.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.RataDie; IP=Low; Security=Low; Resources=1; Fingerprint=095349
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsEastAsianCalendar.RataDie; IP=Low; Security=Low; Resources=1; Fingerprint=095349
+    // Hairs-Human:        PENDING
     private static long RataDie(long year, int month, int day) => IsoCalendarMath.EpochDays(year, month, day) + RataDieOfEpoch;
 
     // A year by mean solar terms and mean new moons at a UTC offset, after the pingqi rule.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, icu_calendar 2.3.0 simple.rs via Broiler.VM JsEastAsianCalendar.Approximate; IP=Medium; Security=Low; Resources=1; Fingerprint=DB0D3D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, icu_calendar 2.3.0 simple.rs via Broiler.VM JsEastAsianCalendar.Approximate; IP=Medium; Security=Low; Resources=1; Fingerprint=DB0D3D
+    // Hairs-Human:        PENDING
     private static CalendarYear Approximate(long offset, long relatedIso)
     {
         // 1999-12-22T07:44Z, THE SOLSTICE; 2000-01-06T18:14Z, THE NEW MOON.

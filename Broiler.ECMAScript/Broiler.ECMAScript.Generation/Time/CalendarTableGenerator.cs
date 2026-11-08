@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   29
 // Annotated:        29/29
 // Exempt:           3
@@ -44,13 +44,13 @@ namespace Broiler.ECMAScript.Generation.Time;
 /// leap and the astronomical calendar does not, ascending.</item>
 /// </list>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=80D336
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=80D336
+// Hairs-Human:        PENDING
 public sealed class CalendarTables
 {
     /// <summary>Holds the table the generator wrote.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=6A4064
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=6A4064
+    // Hairs-Human:        PENDING
     internal CalendarTables(byte[] calendars)
     {
         Calendars = calendars;
@@ -81,39 +81,39 @@ public sealed class CalendarTables
 /// <see cref="CalendarTables"/> states, or nothing is written.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=High; Resources=5; Fingerprint=CDF266
-// Broiler-Falsified-If: the table is written from a crate member that failed its pin's check, or a year that does not follow the one before it, or whose new year falls outside the layout, is written instead of refused
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=High; Resources=5; Fingerprint=CDF266
+// Hairs-Falsified-If: the table is written from a crate member that failed its pin's check, or a year that does not follow the one before it, or whose new year falls outside the layout, is written instead of refused
+// Hairs-Human:        PENDING
 public static class CalendarTableGenerator
 {
     /// <summary>ICU4X's Chinese years, 1912 to 2102.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=0D1A26
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=0D1A26
+    // Hairs-Human:        PENDING
     public const string China = "icu_calendar-2.3.0/src/cal/east_asian_traditional/china_data.rs";
 
     /// <summary>ICU4X's Korean years, 1912 to 2102.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=C038BE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=C038BE
+    // Hairs-Human:        PENDING
     public const string Korea = "icu_calendar-2.3.0/src/cal/east_asian_traditional/korea_data.rs";
 
     /// <summary>ICU4X's Qing-era years, 1900 to 1911, which the Chinese and Korean calendars share.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=362332
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=362332
+    // Hairs-Human:        PENDING
     public const string Qing = "icu_calendar-2.3.0/src/cal/east_asian_traditional/qing_data.rs";
 
     /// <summary>ICU4X's Umm al-Qura years, 1300 to 1600 AH.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=EAF8EB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=EAF8EB
+    // Hairs-Human:        PENDING
     public const string UmmAlQura = "icu_calendar-2.3.0/src/cal/hijri/ummalqura_data.rs";
 
     /// <summary><c>calendrical_calculations</c>' Persian calendar, whose <c>NON_LEAP_CORRECTION</c> array the table carries.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=FCA8AC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=FCA8AC
+    // Hairs-Human:        PENDING
     public const string Persian = "calendrical_calculations-0.2.4/src/persian.rs";
 
     /// <summary>R.D. 227015, the civil Hijri epoch, in days since 1970-01-01.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=F561B8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=F561B8
+    // Hairs-Human:        PENDING
     private const long CivilHijriEpoch = 227015 - 719163;
 
     /// <summary>
@@ -123,9 +123,9 @@ public static class CalendarTableGenerator
     /// <param name="pin">The calendar pin.</param>
     /// <param name="members">The crate members, as <see cref="CalendarPin.Extract"/> answers them.</param>
     /// <exception cref="InvalidDataException">The members are not the pinned ones, or a year table is malformed or does not fit the layout.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=High; Resources=5; Fingerprint=5E7CCA
-    // Broiler-Falsified-If: a table is answered for a crate member whose length or hash differs from the pin
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=High; Resources=5; Fingerprint=5E7CCA
+    // Hairs-Falsified-If: a table is answered for a crate member whose length or hash differs from the pin
+    // Hairs-Human:        PENDING
     public static CalendarTables Generate(CalendarPin pin, IReadOnlyDictionary<string, byte[]> members)
     {
         ArgumentNullException.ThrowIfNull(pin);
@@ -154,21 +154,21 @@ public static class CalendarTableGenerator
     /// <param name="Long">Each of the thirteen months' lengths, true for 30 days.</param>
     /// <param name="LeapMonth">The leap month's ordinal, or 0 for none.</param>
     /// <param name="NewYear">The new year, in days since 1970-01-01.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=33F77C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=33F77C
+    // Hairs-Human:        PENDING
     internal sealed record EastAsianYear(int Year, bool[] Long, int LeapMonth, long NewYear);
 
     /// <summary>One published Umm al-Qura year: its year, month lengths and new year.</summary>
     /// <param name="Year">The Hijri year.</param>
     /// <param name="Long">Each of the twelve months' lengths, true for 30 days.</param>
     /// <param name="NewYear">The new year, in days since 1970-01-01.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=8C51B2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=8C51B2
+    // Hairs-Human:        PENDING
     internal sealed record HijriYear(int Year, bool[] Long, long NewYear);
 
     /// <summary>The years one East Asian table states, checked to run on from its starting year.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=4C77D6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=4C77D6
+    // Hairs-Human:        PENDING
     internal static IReadOnlyList<EastAsianYear> EastAsianYears(string source, string file)
     {
         var start = StartingYear(source, file);
@@ -203,8 +203,8 @@ public static class CalendarTableGenerator
     }
 
     /// <summary>The Umm al-Qura years, checked to run on from the table's starting year.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=8F1023
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=8F1023
+    // Hairs-Human:        PENDING
     internal static IReadOnlyList<HijriYear> HijriYears(string source)
     {
         var start = StartingYear(source, UmmAlQura);
@@ -234,8 +234,8 @@ public static class CalendarTableGenerator
     }
 
     /// <summary>The Persian years the 33-year rule makes leap and are not, ascending.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=DF16C3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=DF16C3
+    // Hairs-Human:        PENDING
     internal static IReadOnlyList<int> PersianCorrections(string source)
     {
         var match = Matches(source, "const NON_LEAP_CORRECTION: [i32; ", PersianTable).FirstOrDefault()
@@ -253,8 +253,8 @@ public static class CalendarTableGenerator
 
     /// <summary>Appends one East Asian section: its first year and count, then three bytes per year.</summary>
     /// <exception cref="InvalidDataException">A new year falls outside the layout's 64 days from 19 January.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=3; Fingerprint=657256
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=3; Fingerprint=657256
+    // Hairs-Human:        PENDING
     private static void EastAsianSection(List<byte> bytes, IReadOnlyList<EastAsianYear> years)
     {
         U16(bytes, years[0].Year);
@@ -286,8 +286,8 @@ public static class CalendarTableGenerator
 
     /// <summary>Appends the Umm al-Qura section: its first year and count, then 16 bits per year.</summary>
     /// <exception cref="InvalidDataException">A new year is more than five days from the tabular one.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=3; Fingerprint=D3F8EF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=3; Fingerprint=D3F8EF
+    // Hairs-Human:        PENDING
     private static void UmmAlQuraSection(List<byte> bytes, IReadOnlyList<HijriYear> years)
     {
         U16(bytes, years[0].Year);
@@ -317,8 +317,8 @@ public static class CalendarTableGenerator
 
     /// <summary>A table's <c>pub const STARTING_YEAR: i32 = N;</c>.</summary>
     /// <exception cref="InvalidDataException">The source states no starting year.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=3; Fingerprint=40324F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=3; Fingerprint=40324F
+    // Hairs-Human:        PENDING
     private static int StartingYear(string source, string file) =>
         Matches(source, "pub const STARTING_YEAR: i32 = ", StartingYearLine).FirstOrDefault() is { } match
             ? Int(match[0])
@@ -326,8 +326,8 @@ public static class CalendarTableGenerator
 
     /// <summary>A year's month lengths, <c>l</c> long and <c>s</c> short, separated by commas.</summary>
     /// <exception cref="InvalidDataException">A length is neither, or the year states another number of months.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=316193
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=316193
+    // Hairs-Human:        PENDING
     private static bool[] Lengths(string list, int count, string file)
     {
         var lengths = list.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -346,8 +346,8 @@ public static class CalendarTableGenerator
 
     /// <summary>Appends a 16-bit value, little-endian.</summary>
     /// <exception cref="InvalidDataException">The value does not fit 16 bits.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=CE8BD0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=CE8BD0
+    // Hairs-Human:        PENDING
     private static void U16(List<byte> bytes, int value)
     {
         if (value is < 0 or > 0xFFFF)
@@ -360,8 +360,8 @@ public static class CalendarTableGenerator
     }
 
     /// <summary>A decimal integer with an optional leading sign, read through the invariant format.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=AA26C9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=AA26C9
+    // Hairs-Human:        PENDING
     private static int Int(string text) => int.Parse(text, NumberStyles.AllowLeadingSign, NumberFormatInfo.InvariantInfo);
 
     /// <summary>
@@ -369,8 +369,8 @@ public static class CalendarTableGenerator
     /// a regular expression's matches are: each occurrence of <paramref name="prefix"/> where
     /// <paramref name="rest"/> reads the rest of the row, its groups in order.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=4; Fingerprint=31C8C6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=4; Fingerprint=31C8C6
+    // Hairs-Human:        PENDING
     private static IEnumerable<string[]> Matches(string source, string prefix, Func<RowReader, string[]?> rest)
     {
         for (var at = source.IndexOf(prefix, StringComparison.Ordinal); at >= 0; at = source.IndexOf(prefix, at, StringComparison.Ordinal))
@@ -394,8 +394,8 @@ public static class CalendarTableGenerator
     /// gregorian\((\d+), (\d+), (\d+)\)\)</c>: the year, the lengths, the leap month or the empty string, and
     /// the new year's year, month and day.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=2; Fingerprint=D5516E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=2; Fingerprint=D5516E
+    // Hairs-Human:        PENDING
     private static string[]? EastAsianRow(RowReader row)
     {
         if (row.Digits() is not { } year || !row.Literal(", [") || row.Run("ls, ") is not { } lengths || !row.Literal("], "))
@@ -425,8 +425,8 @@ public static class CalendarTableGenerator
     /// The rest of <c>PackedHijriYearData::try_new\((\d+), \[([ls, ]+)\], gregorian\((\d+), (\d+),
     /// (\d+)\)\)\.unwrap\(\)</c>: the year, the lengths, and the new year's year, month and day.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=2; Fingerprint=09BA8C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=2; Fingerprint=09BA8C
+    // Hairs-Human:        PENDING
     private static string[]? HijriRow(RowReader row) =>
         row.Digits() is { } year && row.Literal(", [") && row.Run("ls, ") is { } lengths && row.Literal("], gregorian(")
         && row.Digits() is { } y && row.Literal(", ") && row.Digits() is { } m && row.Literal(", ") && row.Digits() is { } d
@@ -435,16 +435,16 @@ public static class CalendarTableGenerator
             : null;
 
     /// <summary>The rest of <c>const NON_LEAP_CORRECTION: \[i32; (\d+)\] = \[([0-9,\s]+)\];</c>: the count and the list.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=2; Fingerprint=8567C5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=2; Fingerprint=8567C5
+    // Hairs-Human:        PENDING
     private static string[]? PersianTable(RowReader row) =>
         row.Digits() is { } count && row.Literal("] = [") && row.Run("0123456789, \t\n\v\f\r") is { } list && row.Literal("];")
             ? [count, list]
             : null;
 
     /// <summary>The rest of <c>pub const STARTING_YEAR: i32 = (\d+);</c>: the year.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=1; Fingerprint=242DFF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=1; Fingerprint=242DFF
+    // Hairs-Human:        PENDING
     private static string[]? StartingYearLine(RowReader row) =>
         row.Digits() is { } year && row.Literal(";") ? [year] : null;
 
@@ -453,18 +453,18 @@ public static class CalendarTableGenerator
     /// or false, consuming nothing more, where the text does not match. ASCII digits only, as the pinned
     /// sources write them.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=2; Fingerprint=CC5D67
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=2; Fingerprint=CC5D67
+    // Hairs-Human:        PENDING
     private sealed class RowReader(string source, int position)
     {
         /// <summary>Where the next read starts.</summary>
-        // Broiler-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Low; Resources=0; Fingerprint=AC61E8
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Low; Resources=0; Fingerprint=AC61E8
+        // Hairs-Human:        PENDING
         internal int Position { get; private set; } = position;
 
         /// <summary>Consumes <paramref name="text"/> where it is next.</summary>
-        // Broiler-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=1; Fingerprint=742D5C
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=1; Fingerprint=742D5C
+        // Hairs-Human:        PENDING
         internal bool Literal(string text)
         {
             if (!source.AsSpan(Position).StartsWith(text, StringComparison.Ordinal))
@@ -477,13 +477,13 @@ public static class CalendarTableGenerator
         }
 
         /// <summary>Consumes one or more ASCII digits.</summary>
-        // Broiler-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=1; Fingerprint=BBE62F
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=1; Fingerprint=BBE62F
+        // Hairs-Human:        PENDING
         internal string? Digits() => Run("0123456789");
 
         /// <summary>Consumes one or more characters of <paramref name="set"/>.</summary>
-        // Broiler-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=2; Fingerprint=263DD5
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=JSD-0056 calendar tables; IP=Low; Security=Medium; Resources=2; Fingerprint=263DD5
+        // Hairs-Human:        PENDING
         internal string? Run(string set)
         {
             var end = Position;

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   14
 // Annotated:        14/14
 // Exempt:           8
@@ -44,8 +44,8 @@ namespace Broiler.ECMAScript.Intl;
 /// is read here but through the provider and those two.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 provider for sub-area (d), no table read outside the provider; IP=Low; Security=Low; Resources=0; Fingerprint=46C18D
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 provider for sub-area (d), no table read outside the provider; IP=Low; Security=Low; Resources=0; Fingerprint=46C18D
+// Hairs-Human:        PENDING
 public sealed class DateTimeData
 {
     private readonly Lazy<ZoneNamer> zoneNames;
@@ -55,8 +55,8 @@ public sealed class DateTimeData
     /// <param name="timeZones">The IANA Time Zone Database the formats' zones are found in.</param>
     /// <param name="calendars">The calendars a format other than the Gregorian and ISO 8601 ones writes its fields in.</param>
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 provider for sub-area (d), no table read outside the provider; IP=Low; Security=Low; Resources=1; Fingerprint=72F008
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 provider for sub-area (d), no table read outside the provider; IP=Low; Security=Low; Resources=1; Fingerprint=72F008
+    // Hairs-Human:        PENDING
     public DateTimeData(ILocaleData data, ITimeZoneDatabase timeZones, TemporalCalendars calendars)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -82,8 +82,8 @@ public sealed class DateTimeData
     internal DateData Dates { get; }
 
     /// <summary>CLDR's metazones and the algorithms that name a zone by them, built the first time a zone is named.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 provider for sub-area (d), no table read outside the provider; IP=Low; Security=Low; Resources=0; Fingerprint=CBD23D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 provider for sub-area (d), no table read outside the provider; IP=Low; Security=Low; Resources=0; Fingerprint=CBD23D
+    // Hairs-Human:        PENDING
     internal ZoneNamer ZoneNames => zoneNames.Value;
 }
 
@@ -103,28 +103,28 @@ public sealed class DateTimeData
 /// Broiler.VM's are: a generator never changes after it is made. They are made under a lock.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=0; Fingerprint=ECB0AE
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=0; Fingerprint=ECB0AE
+// Hairs-Human:        PENDING
 internal sealed class DateData
 {
     private readonly ILocaleData data;
 
     private readonly Lock gate = new();
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=0; Fingerprint=2AC135
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=0; Fingerprint=2AC135
+    // Hairs-Human:        PENDING
     private readonly Dictionary<string, DateTimePatternGenerator> generators = new(StringComparer.Ordinal);
 
     internal DateData(ILocaleData data) => this.data = data;
 
     /// <summary>The locale data.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=0; Fingerprint=CBB118
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=0; Fingerprint=CBB118
+    // Hairs-Human:        PENDING
     internal ILocaleData Locale => data;
 
     /// <summary>The locale of a data language: <c>en</c> for <c>en@hebrew</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=2423B2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=2423B2
+    // Hairs-Human:        PENDING
     internal static string LanguageOf(string dataLanguage)
     {
         var at = dataLanguage.IndexOf('@', StringComparison.Ordinal);
@@ -132,8 +132,8 @@ internal sealed class DateData
     }
 
     /// <summary>The calendar of a data language: <c>gregory</c> for <c>en</c>, <c>hebrew</c> for <c>en@hebrew</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=C33AE3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=C33AE3
+    // Hairs-Human:        PENDING
     private static string CalendarOf(string dataLanguage)
     {
         var at = dataLanguage.IndexOf('@', StringComparison.Ordinal);
@@ -141,23 +141,23 @@ internal sealed class DateData
     }
 
     /// <summary>A data language's value for a key, or nothing.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=AC40D5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=AC40D5
+    // Hairs-Human:        PENDING
     internal string? Value(string dataLanguage, string key) => data.DateValue(LanguageOf(dataLanguage), CalendarOf(dataLanguage), key);
 
     /// <summary>Every value of a data language, in the order the decoding left them, or nothing.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=8424B6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=8424B6
+    // Hairs-Human:        PENDING
     internal IReadOnlyDictionary<string, string>? Values(string dataLanguage) => data.DateValues(LanguageOf(dataLanguage), CalendarOf(dataLanguage));
 
     /// <summary>A language's day period rules, or nothing; a calendar's data is its language's for day periods, which belong to no calendar.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=0A5911
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=0A5911
+    // Hairs-Human:        PENDING
     internal IReadOnlyList<DayPeriodRule>? DayPeriods(string dataLanguage) => data.DayPeriods(LanguageOf(dataLanguage));
 
     /// <summary>The pattern generator of a data language whose default hour character is <paramref name="hourChar"/>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Medium; Resources=2; Fingerprint=000431
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Medium; Resources=2; Fingerprint=000431
+    // Hairs-Human:        PENDING
     internal DateTimePatternGenerator Generator(string dataLanguage, char hourChar, string decimalSymbol)
     {
         var key = dataLanguage + "|" + hourChar + "|" + decimalSymbol;
@@ -178,8 +178,8 @@ internal sealed class DateData
     /// The hour character a region prefers - <c>h</c>, <c>H</c>, <c>K</c> or <c>k</c> - from CLDR's time data, the world's
     /// where the region has none.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=8E92E1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=8E92E1
+    // Hairs-Human:        PENDING
     internal char PreferredHourChar(string region)
     {
         if ((data.HourCycles(region) ?? data.HourCycles("001")) is not { } cycles)
@@ -200,8 +200,8 @@ internal sealed class DateData
     /// </summary>
     /// <param name="region">The region whose time data applies.</param>
     /// <param name="twelveHour">Whether the 12-hour cycle is asked for, else the 24-hour one.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots hourCycle12 and hourCycle24 over UTS #35 Time Data allowed formats, JSD-0082 row T10 (C5); IP=Low; Security=Low; Resources=1; Fingerprint=41C730
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots hourCycle12 and hourCycle24 over UTS #35 Time Data allowed formats, JSD-0082 row T10 (C5); IP=Low; Security=Low; Resources=1; Fingerprint=41C730
+    // Hairs-Human:        PENDING
     internal char AllowedHourChar(string region, bool twelveHour)
     {
         if ((data.HourCycles(region) ?? data.HourCycles("001")) is { } cycles)

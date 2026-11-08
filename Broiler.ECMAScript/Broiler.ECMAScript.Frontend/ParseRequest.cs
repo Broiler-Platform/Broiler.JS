@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   8
 // Annotated:        8/8
 // Exempt:           12
@@ -54,8 +54,8 @@ namespace Broiler.ECMAScript.Syntax;
 /// library's supported maximum nesting, first error, its tables and its validator.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0080 parse request, JSD-0083 D7 D8 D10 D11 D14-D17 D32; IP=Low; Security=Medium; Resources=0; Fingerprint=8A6191
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0080 parse request, JSD-0083 D7 D8 D10 D11 D14-D17 D32; IP=Low; Security=Medium; Resources=0; Fingerprint=8A6191
+// Hairs-Human:        PENDING
 public sealed class ParseRequest
 {
     private readonly ParseSwitches switches;
@@ -72,8 +72,8 @@ public sealed class ParseRequest
     /// <param name="regularExpressions">The engine's regular-expression validator (decision D7).</param>
     /// <exception cref="ArgumentNullException">The source or a provider is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The goal is not a <see cref="ParseGoal"/>.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0080 parse request, JSD-0083 D7 D8; IP=Low; Security=Medium; Resources=1; Fingerprint=DD62A1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 parse request, JSD-0083 D7 D8; IP=Low; Security=Medium; Resources=1; Fingerprint=DD62A1
+    // Hairs-Human:        PENDING
     public ParseRequest(SourceText source, ParseGoal goal, IUnicodeTables unicodeTables, IRegularExpressionValidator regularExpressions)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -98,8 +98,8 @@ public sealed class ParseRequest
 
     /// <summary>The switches; by default <see cref="ParseSwitches.For"/> of the goal.</summary>
     /// <exception cref="ArgumentException">Top-level <c>await</c> is on for a goal but Script and Module, or HTML-like comments for the Module goal.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D10 D17 switches by goal; IP=Low; Security=Medium; Resources=1; Fingerprint=5E88E0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 D17 switches by goal; IP=Low; Security=Medium; Resources=1; Fingerprint=5E88E0
+    // Hairs-Human:        PENDING
     public ParseSwitches Switches
     {
         get => switches;
@@ -119,8 +119,8 @@ public sealed class ParseRequest
     /// </summary>
     /// <exception cref="ArgumentNullException">The goal is eval code and the context is null.</exception>
     /// <exception cref="ArgumentException">The goal is not eval code and a context is given.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s19.2.1.1 PerformEval, JSD-0083 D16 D44 inherited context; IP=Low; Security=Medium; Resources=1; Fingerprint=CEBAE7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s19.2.1.1 PerformEval, JSD-0083 D16 D44 inherited context; IP=Low; Security=Medium; Resources=1; Fingerprint=CEBAE7
+    // Hairs-Human:        PENDING
     public InheritedContext? Context
     {
         get => context;
@@ -136,8 +136,8 @@ public sealed class ParseRequest
 
     /// <summary>The proposals the parse admits; none by default (decision D17).</summary>
     /// <exception cref="ArgumentOutOfRangeException">A bit <see cref="ProposalFlags"/> does not define is set.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D17 proposal flags; IP=Low; Security=Low; Resources=1; Fingerprint=20C934
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D17 proposal flags; IP=Low; Security=Low; Resources=1; Fingerprint=20C934
+    // Hairs-Human:        PENDING
     public ProposalFlags Proposals
     {
         get => proposals;
@@ -153,8 +153,8 @@ public sealed class ParseRequest
 
     /// <summary>The lexer extensions the tokenizer admits; none by default (decision D17).</summary>
     /// <exception cref="ArgumentOutOfRangeException">A bit <see cref="LexerExtensions"/> does not define is set.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D17 lexer extension; IP=Low; Security=Low; Resources=1; Fingerprint=D34037
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D17 lexer extension; IP=Low; Security=Low; Resources=1; Fingerprint=D34037
+    // Hairs-Human:        PENDING
     public LexerExtensions Extensions
     {
         get => extensions;
@@ -168,8 +168,8 @@ public sealed class ParseRequest
 
     /// <summary>The limits; <see cref="ParseLimits.Default"/> by default.</summary>
     /// <exception cref="ArgumentNullException">The limits are null.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D11 D14 limits; IP=Low; Security=Low; Resources=1; Fingerprint=3C40F1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D11 D14 limits; IP=Low; Security=Low; Resources=1; Fingerprint=3C40F1
+    // Hairs-Human:        PENDING
     public ParseLimits Limits
     {
         get => limits;
@@ -187,8 +187,8 @@ public sealed class ParseRequest
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is not a <see cref="DynamicFunctionKind"/>.</exception>
     /// <exception cref="ArgumentException">The goal is not a dynamic function's piece and the kind is not <see cref="DynamicFunctionKind.Normal"/>.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s20.2.1.1.1 CreateDynamicFunction kind; IP=Low; Security=Low; Resources=1; Fingerprint=C9F987
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s20.2.1.1.1 CreateDynamicFunction kind; IP=Low; Security=Low; Resources=1; Fingerprint=C9F987
+    // Hairs-Human:        PENDING
     public DynamicFunctionKind FunctionKind
     {
         get => functionKind;

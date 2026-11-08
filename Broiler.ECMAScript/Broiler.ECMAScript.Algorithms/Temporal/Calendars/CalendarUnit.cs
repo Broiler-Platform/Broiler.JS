@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   1
 // Annotated:        1/1
 // Exempt:           4
@@ -21,8 +21,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// The largest unit of a calendar's difference: the date units CalendarDateUntil (Temporal s12.3.9) takes, which
 /// <see cref="ICalendarArithmetic.DateUntil"/> fills from the largest down.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=Temporal s12.3.9; IP=None; Security=None; Resources=0; Fingerprint=26ED71
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal s12.3.9; IP=None; Security=None; Resources=0; Fingerprint=26ED71
+// Hairs-Human:        PENDING
 public enum CalendarUnit
 {
     /// <summary>Years, then months, then days.</summary>

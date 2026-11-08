@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   1
 // Annotated:        1/1
 // Exempt:           16
@@ -28,8 +28,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// object's <c>calendarId</c>. No member stands for <c>islamic</c>, <c>islamic-rgsa</c>, <c>gregorian</c> or
 /// <c>minguo</c>, which no row of Table 1 names (JSD-0078, decision D5; the correspondence's rows C2 and C3).
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=Temporal s12.1.2, Intl era and month code proposal 1.1.1 Table 1; IP=None; Security=None; Resources=0; Fingerprint=6B133F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal s12.1.2, Intl era and month code proposal 1.1.1 Table 1; IP=None; Security=None; Resources=0; Fingerprint=6B133F
+// Hairs-Human:        PENDING
 public enum CalendarId
 {
     /// <summary><c>iso8601</c>: the ISO 8601 calendar, the Temporal proposal's own.</summary>

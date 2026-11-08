@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   8
 // Annotated:        8/8
 // Exempt:           11
@@ -22,8 +22,8 @@ using System.Text;
 namespace Broiler.ECMAScript.Intl;
 
 /// <summary>The width of a list, relative-time or display-name format: [[Style]], <c>long</c>, <c>short</c> or <c>narrow</c>.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.ListFormat options and parts; IP=Low; Security=Low; Resources=0; Fingerprint=1BB13D
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.ListFormat options and parts; IP=Low; Security=Low; Resources=0; Fingerprint=1BB13D
+// Hairs-Human:        PENDING
 public enum FormatStyle
 {
     /// <summary><c>long</c>.</summary>
@@ -37,8 +37,8 @@ public enum FormatStyle
 }
 
 /// <summary>[[Type]] of an <c>Intl.ListFormat</c>.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.ListFormat options and parts; IP=Low; Security=Low; Resources=0; Fingerprint=07CE98
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.ListFormat options and parts; IP=Low; Security=Low; Resources=0; Fingerprint=07CE98
+// Hairs-Human:        PENDING
 public enum ListFormatType
 {
     /// <summary><c>conjunction</c>: "A, B, and C".</summary>
@@ -54,8 +54,8 @@ public enum ListFormatType
 /// <summary>One part of a formatted list (<c>sec-formatlisttoparts</c>): an <c>element</c> or a <c>literal</c>.</summary>
 /// <param name="Type"><c>element</c> or <c>literal</c>.</param>
 /// <param name="Value">The part's text.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.ListFormat options and parts; IP=Low; Security=Low; Resources=0; Fingerprint=D0BBAF
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-Intl.ListFormat options and parts; IP=Low; Security=Low; Resources=0; Fingerprint=D0BBAF
+// Hairs-Human:        PENDING
 public readonly record struct ListPart(string Type, string Value);
 
 /// <summary>
@@ -77,8 +77,8 @@ public readonly record struct ListPart(string Type, string Value);
 /// </para>
 /// <para><b>Immutable</b>: one may be shared between threads (convention 10).</para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createpartsfromlist sec-deconstructpattern via Broiler.VM JsRealm.ListFormat; IP=Low; Security=Low; Resources=0; Fingerprint=4B5FA8
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-createpartsfromlist sec-deconstructpattern via Broiler.VM JsRealm.ListFormat; IP=Low; Security=Low; Resources=0; Fingerprint=4B5FA8
+// Hairs-Human:        PENDING
 public sealed class ListFormatter
 {
     private ListFormatter(string locale, ListFormatType type, FormatStyle style, ListPatterns templates)
@@ -109,8 +109,8 @@ public sealed class ListFormatter
     /// <param name="style">The <c>style</c> option.</param>
     /// <returns>The formatter.</returns>
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createpartsfromlist sec-deconstructpattern via Broiler.VM JsRealm.ListFormat; IP=Low; Security=Low; Resources=1; Fingerprint=F496E1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-createpartsfromlist sec-deconstructpattern via Broiler.VM JsRealm.ListFormat; IP=Low; Security=Low; Resources=1; Fingerprint=F496E1
+    // Hairs-Human:        PENDING
     public static ListFormatter Create(ILocaleData data, string locale, string dataLocale, ListFormatType type, FormatStyle style)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -128,8 +128,8 @@ public sealed class ListFormatter
     /// <param name="list">The elements, StringListFromIterable's list.</param>
     /// <param name="charge">The caller's meter: one unit per template step of a list of three elements or more.</param>
     /// <returns>The formatted String.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createpartsfromlist sec-deconstructpattern via Broiler.VM JsRealm.ListFormat; IP=Low; Security=Low; Resources=1; Fingerprint=4F0A02
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-createpartsfromlist sec-deconstructpattern via Broiler.VM JsRealm.ListFormat; IP=Low; Security=Low; Resources=1; Fingerprint=4F0A02
+    // Hairs-Human:        PENDING
     public string Format(IReadOnlyList<string> list, WorkCharge? charge = null)
     {
         var text = new StringBuilder();
@@ -150,9 +150,9 @@ public sealed class ListFormatter
     /// <param name="charge">The caller's meter, as for <see cref="Format"/>.</param>
     /// <returns>The parts.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="list"/> or an element is null.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createpartsfromlist sec-deconstructpattern via Broiler.VM JsRealm.ListFormat; IP=Low; Security=High; Resources=2; Fingerprint=91E3D7
-    // Broiler-Falsified-If: the parts differ from CreatePartsFromList's over the type and style's templates, or the charge from one per template step
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-createpartsfromlist sec-deconstructpattern via Broiler.VM JsRealm.ListFormat; IP=Low; Security=High; Resources=2; Fingerprint=91E3D7
+    // Hairs-Falsified-If: the parts differ from CreatePartsFromList's over the type and style's templates, or the charge from one per template step
+    // Hairs-Human:        PENDING
     public IReadOnlyList<ListPart> FormatToParts(IReadOnlyList<string> list, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(list);
@@ -196,8 +196,8 @@ public sealed class ListFormatter
     /// DeconstructPattern (<c>sec-deconstructpattern</c>) over a list pattern: each non-empty literal between the placeables,
     /// and the parts of <c>{0}</c> and <c>{1}</c> in their places.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-createpartsfromlist sec-deconstructpattern via Broiler.VM JsRealm.ListFormat; IP=Low; Security=Low; Resources=1; Fingerprint=845737
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-createpartsfromlist sec-deconstructpattern via Broiler.VM JsRealm.ListFormat; IP=Low; Security=Low; Resources=1; Fingerprint=845737
+    // Hairs-Human:        PENDING
     private static List<ListPart> DeconstructPattern(string pattern, List<ListPart> zero, List<ListPart> one)
     {
         var result = new List<ListPart>();

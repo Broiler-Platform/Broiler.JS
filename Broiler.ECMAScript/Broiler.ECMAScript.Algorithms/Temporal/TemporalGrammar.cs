@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   56
 // Annotated:        56/56
 // Exempt:           47
@@ -29,8 +29,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// The goal symbols of the Temporal proposal's ISO 8601 / RFC 9557 grammar (<c>#sec-temporal-iso8601grammar</c>) a
 /// string is parsed as by <see cref="TemporalGrammar.TryParse"/>.
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar goal symbols via Broiler.VM TemporalGoal; IP=Low; Security=None; Resources=0; Fingerprint=C434CF
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar goal symbols via Broiler.VM TemporalGoal; IP=Low; Security=None; Resources=0; Fingerprint=C434CF
+// Hairs-Human:        PENDING
 public enum TemporalGoal
 {
     /// <summary><c>TemporalDateTimeString[~Zoned]</c>: a date, with an optional time and offset, no <c>Z</c>; the date, date-time and <c>relativeTo</c> forms.</summary>
@@ -56,8 +56,8 @@ public enum TemporalGoal
 /// Why a Temporal string was refused (JSD-0078's X3: the grammar answers a record or a code). Each engine maps every
 /// code to its own <c>RangeError</c>, as the specification throws one for each; the code names the step.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0078 X3, Temporal ParseISODateTime; IP=Low; Security=None; Resources=0; Fingerprint=05B5D2
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0078 X3, Temporal ParseISODateTime; IP=Low; Security=None; Resources=0; Fingerprint=05B5D2
+// Hairs-Human:        PENDING
 public enum TemporalParseError
 {
     /// <summary>The string was accepted.</summary>
@@ -92,8 +92,8 @@ public enum TemporalParseError
 /// <param name="Critical">Whether the annotation carries the critical flag <c>!</c>.</param>
 /// <param name="Key">The key, the grammar's <c>AnnotationKey</c>.</param>
 /// <param name="Value">The value, the grammar's <c>AnnotationValue</c>.</param>
-// Broiler-AI:           Origin=Ported; Spec=Temporal Annotation via Broiler.VM JsTemporalParser.annotations; IP=Low; Security=None; Resources=0; Fingerprint=8CD16E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal Annotation via Broiler.VM JsTemporalParser.annotations; IP=Low; Security=None; Resources=0; Fingerprint=8CD16E
+// Hairs-Human:        PENDING
 public readonly record struct TemporalAnnotation(bool Critical, string Key, string Value);
 
 /// <summary>
@@ -102,21 +102,21 @@ public readonly record struct TemporalAnnotation(bool Critical, string Key, stri
 /// </summary>
 /// <param name="Name">The name, or <see langword="null"/> for an offset time zone.</param>
 /// <param name="OffsetMinutes">The offset in minutes, from -1439 to 1439, for an offset time zone; zero for a named one.</param>
-// Broiler-AI:           Origin=Ported; Spec=Temporal Time Zone Identifier Parse Record via Broiler.VM JsTemporal.ParseZone; IP=Low; Security=None; Resources=0; Fingerprint=505851
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal Time Zone Identifier Parse Record via Broiler.VM JsTemporal.ParseZone; IP=Low; Security=None; Resources=0; Fingerprint=505851
+// Hairs-Human:        PENDING
 public readonly record struct TimeZoneIdentifierRecord(string? Name, int OffsetMinutes);
 
 /// <summary>
 /// An ISO Date-Time Parse Record of the Temporal proposal (<c>ParseISODateTime</c>), with the parse nodes an engine
 /// reads beside it: the goal matched, the offset's value, and every key-value annotation.
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=Temporal ISO Date-Time Parse Record via Broiler.VM JsTemporalParse; IP=Low; Security=Low; Resources=1; Fingerprint=F80F47
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal ISO Date-Time Parse Record via Broiler.VM JsTemporalParse; IP=Low; Security=Low; Resources=1; Fingerprint=F80F47
+// Hairs-Human:        PENDING
 public sealed class IsoParseResult
 {
     // Creates the record from the parser's nodes.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ISO Date-Time Parse Record via Broiler.VM JsTemporalParse; IP=Low; Security=Low; Resources=1; Fingerprint=37205E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ISO Date-Time Parse Record via Broiler.VM JsTemporalParse; IP=Low; Security=Low; Resources=1; Fingerprint=37205E
+    // Hairs-Human:        PENDING
     internal IsoParseResult(
         TemporalGoal goal,
         long? year,
@@ -212,9 +212,9 @@ public sealed class IsoParseResult
 /// character is read, when the text is not empty, whatever the outcome. Both engines pass none today.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser; IP=Low; Security=High; Resources=3; Fingerprint=4DD523
-// Broiler-Falsified-If: a string Broiler.VM's JsTemporalParser refuses is accepted for a goal, a string it accepts is refused, or an accepted string answers a field other than Broiler.VM's
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser; IP=Low; Security=High; Resources=3; Fingerprint=4DD523
+// Hairs-Falsified-If: a string Broiler.VM's JsTemporalParser refuses is accepted for a goal, a string it accepts is refused, or an accepted string answers a field other than Broiler.VM's
+// Hairs-Human:        PENDING
 public static class TemporalGrammar
 {
     /// <summary>
@@ -233,9 +233,9 @@ public static class TemporalGrammar
     /// year-month without a day or a month-day without a year must be in <c>iso8601</c> where it names a calendar.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">A goal is not one of the enumeration's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseISODateTime via Broiler.VM JsTemporalParser.Parse; IP=Low; Security=High; Resources=3; Fingerprint=2B62FC
-    // Broiler-Falsified-If: the meter is charged other than the text's length before the first character is read, a later goal is tried after an earlier one matched, or a calendar other than the first u-ca annotation's is answered
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseISODateTime via Broiler.VM JsTemporalParser.Parse; IP=Low; Security=High; Resources=3; Fingerprint=2B62FC
+    // Hairs-Falsified-If: the meter is charged other than the text's length before the first character is read, a later goal is tried after an earlier one matched, or a calendar other than the first u-ca annotation's is answered
+    // Hairs-Human:        PENDING
     public static bool TryParse(
         ReadOnlySpan<char> text,
         ReadOnlySpan<TemporalGoal> goals,
@@ -263,9 +263,9 @@ public static class TemporalGrammar
     /// <param name="error">Why the string was refused, <see cref="TemporalParseError.OutOfRange"/> for one outside the range.</param>
     /// <param name="charge">The caller's meter, charged the text's length before it is read; <see langword="null"/> for none.</param>
     /// <returns>Whether the string is accepted.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseTemporalInstant via Broiler.VM JsTemporal.ToInstant; IP=Low; Security=High; Resources=3; Fingerprint=3765EF
-    // Broiler-Falsified-If: an instant string within the range is refused, or one outside it, or more than 10^8 days from the epoch after its offset, is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseTemporalInstant via Broiler.VM JsTemporal.ToInstant; IP=Low; Security=High; Resources=3; Fingerprint=3765EF
+    // Hairs-Falsified-If: an instant string within the range is refused, or one outside it, or more than 10^8 days from the epoch after its offset, is accepted
+    // Hairs-Human:        PENDING
     public static bool TryParseInstant(ReadOnlySpan<char> text, out BigInteger epochNanoseconds, out TemporalParseError error, WorkCharge? charge = null)
     {
         Charge(text, charge);
@@ -303,9 +303,9 @@ public static class TemporalGrammar
     /// <param name="error">Why the string was refused.</param>
     /// <param name="charge">The caller's meter, charged the text's length before it is read; <see langword="null"/> for none.</param>
     /// <returns>Whether the string names a zone. A name's availability is the adapter's to check (<c>GetAvailableNamedTimeZoneIdentifier</c>).</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseTemporalTimeZoneString via Broiler.VM JsTemporal.ToTimeZoneIdentifier; IP=Low; Security=High; Resources=3; Fingerprint=E00095
-    // Broiler-Falsified-If: a string that is neither a time zone identifier nor an ISO string of one of the six goals names a zone, or the zone answered is not the annotation's, then UTC for Z, then the offset's
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseTemporalTimeZoneString via Broiler.VM JsTemporal.ToTimeZoneIdentifier; IP=Low; Security=High; Resources=3; Fingerprint=E00095
+    // Hairs-Falsified-If: a string that is neither a time zone identifier nor an ISO string of one of the six goals names a zone, or the zone answered is not the annotation's, then UTC for Z, then the offset's
+    // Hairs-Human:        PENDING
     public static bool TryParseTimeZoneString(ReadOnlySpan<char> text, out TimeZoneIdentifierRecord zone, out TemporalParseError error, WorkCharge? charge = null)
     {
         Charge(text, charge);
@@ -357,9 +357,9 @@ public static class TemporalGrammar
     /// <param name="zone">The name, not yet looked up, or the offset in minutes; the default unless accepted.</param>
     /// <param name="charge">The caller's meter, charged the text's length before it is read; <see langword="null"/> for none.</param>
     /// <returns>Whether the whole string is a time zone identifier.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseTimeZoneIdentifier via Broiler.VM JsTemporal.TimeZoneFromIdentifier; IP=Low; Security=High; Resources=3; Fingerprint=232199
-    // Broiler-Falsified-If: a string the grammar's TimeZoneIdentifier does not match whole is accepted, or an offset identifier answers a name
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseTimeZoneIdentifier via Broiler.VM JsTemporal.TimeZoneFromIdentifier; IP=Low; Security=High; Resources=3; Fingerprint=232199
+    // Hairs-Falsified-If: a string the grammar's TimeZoneIdentifier does not match whole is accepted, or an offset identifier answers a name
+    // Hairs-Human:        PENDING
     public static bool TryParseTimeZoneIdentifier(ReadOnlySpan<char> text, out TimeZoneIdentifierRecord zone, WorkCharge? charge = null)
     {
         Charge(text, charge);
@@ -383,9 +383,9 @@ public static class TemporalGrammar
     /// <param name="error">Why the string was refused: <see cref="TemporalParseError.Malformed"/>.</param>
     /// <param name="charge">The caller's meter, charged the text's length before it is read; <see langword="null"/> for none.</param>
     /// <returns>Whether the string is a calendar string.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseTemporalCalendarString via Broiler.VM JsTemporal.ParseCalendarString; IP=Low; Security=High; Resources=3; Fingerprint=41C0C1
-    // Broiler-Falsified-If: a string that neither ParseISODateTime over the six goals nor AnnotationValue accepts is accepted, or the calendar answered is not the first u-ca annotation's
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseTemporalCalendarString via Broiler.VM JsTemporal.ParseCalendarString; IP=Low; Security=High; Resources=3; Fingerprint=41C0C1
+    // Hairs-Falsified-If: a string that neither ParseISODateTime over the six goals nor AnnotationValue accepts is accepted, or the calendar answered is not the first u-ca annotation's
+    // Hairs-Human:        PENDING
     public static bool TryParseCalendarString(
         ReadOnlySpan<char> text, [NotNullWhen(true)] out string? calendar, out TemporalParseError error, WorkCharge? charge = null)
     {
@@ -417,9 +417,9 @@ public static class TemporalGrammar
     /// <param name="text">The string, already converted.</param>
     /// <param name="offsetNanoseconds">The offset in nanoseconds, of magnitude below a day; zero unless accepted.</param>
     /// <returns>Whether the whole string is a UTC offset.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ToOffsetString and ParseDateTimeUTCOffset via Broiler.VM JsTemporal.OffsetString and JsTemporalParser.OffsetNanoseconds; IP=Low; Security=High; Resources=1; Fingerprint=880839
-    // Broiler-Falsified-If: a string other than a whole UTCOffset with sub-minute precision is accepted, or an accepted offset answers other than its exact nanoseconds
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ToOffsetString and ParseDateTimeUTCOffset via Broiler.VM JsTemporal.OffsetString and JsTemporalParser.OffsetNanoseconds; IP=Low; Security=High; Resources=1; Fingerprint=880839
+    // Hairs-Falsified-If: a string other than a whole UTCOffset with sub-minute precision is accepted, or an accepted offset answers other than its exact nanoseconds
+    // Hairs-Human:        PENDING
     public static bool TryParseOffsetString(ReadOnlySpan<char> text, out long offsetNanoseconds)
     {
         offsetNanoseconds = 0;
@@ -440,9 +440,9 @@ public static class TemporalGrammar
     /// <param name="error">Why the string was refused: <see cref="TemporalParseError.Malformed"/>.</param>
     /// <param name="charge">The caller's meter, charged the text's length before it is read; <see langword="null"/> for none.</param>
     /// <returns>Whether the string is a <c>TemporalDurationString</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseTemporalDurationString via Broiler.VM JsTemporalParser.Duration; IP=Low; Security=High; Resources=3; Fingerprint=38C6AC
-    // Broiler-Falsified-If: a string the TemporalDurationString grammar refuses is accepted (a time designator with no part, a fraction not on the last time part, parts out of order), or a part is not its exact value rounded once
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseTemporalDurationString via Broiler.VM JsTemporalParser.Duration; IP=Low; Security=High; Resources=3; Fingerprint=38C6AC
+    // Hairs-Falsified-If: a string the TemporalDurationString grammar refuses is accepted (a time designator with no part, a fraction not on the last time part, parts out of order), or a part is not its exact value rounded once
+    // Hairs-Human:        PENDING
     public static bool TryParseDuration(ReadOnlySpan<char> text, out DurationFields duration, out TemporalParseError error, WorkCharge? charge = null)
     {
         Charge(text, charge);
@@ -461,9 +461,9 @@ public static class TemporalGrammar
     /// <param name="text">The string.</param>
     /// <param name="charge">The caller's meter, charged the text's length before it is read; <see langword="null"/> for none.</param>
     /// <returns>Whether it is one, whether or not such a zone is available.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TimeZoneIdentifier via Broiler.VM JsTemporalParser.IsTimeZoneIdentifier; IP=Low; Security=High; Resources=3; Fingerprint=FADD2D
-    // Broiler-Falsified-If: a string other than a whole UTCOffset without seconds or a TimeZoneIANAName is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TimeZoneIdentifier via Broiler.VM JsTemporalParser.IsTimeZoneIdentifier; IP=Low; Security=High; Resources=3; Fingerprint=FADD2D
+    // Hairs-Falsified-If: a string other than a whole UTCOffset without seconds or a TimeZoneIANAName is accepted
+    // Hairs-Human:        PENDING
     public static bool IsTimeZoneIdentifier(ReadOnlySpan<char> text, WorkCharge? charge = null)
     {
         Charge(text, charge);
@@ -474,9 +474,9 @@ public static class TemporalGrammar
     /// <param name="text">The string.</param>
     /// <param name="allowSubMinute">Whether seconds and a fraction of a second may follow the minutes: <c>UTCOffset[+SubMinutePrecision]</c>.</param>
     /// <returns>Whether it is one: a sign, hours 00 to 23, and optionally minutes and seconds 00 to 59, all extended or all basic.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal UTCOffset via Broiler.VM JsTemporalParser.IsUtcOffset; IP=Low; Security=High; Resources=1; Fingerprint=1F7E11
-    // Broiler-Falsified-If: a string other than a whole UTCOffset of the precision is accepted, including Z, U+2212 or a digit other than ASCII
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal UTCOffset via Broiler.VM JsTemporalParser.IsUtcOffset; IP=Low; Security=High; Resources=1; Fingerprint=1F7E11
+    // Hairs-Falsified-If: a string other than a whole UTCOffset of the precision is accepted, including Z, U+2212 or a digit other than ASCII
+    // Hairs-Human:        PENDING
     public static bool IsUtcOffset(ReadOnlySpan<char> text, bool allowSubMinute)
     {
         var parser = new Parser(text);
@@ -487,9 +487,9 @@ public static class TemporalGrammar
     /// <param name="text">The string.</param>
     /// <param name="charge">The caller's meter, charged the text's length before it is read; <see langword="null"/> for none.</param>
     /// <returns>Whether it is one.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal AnnotationValue via Broiler.VM JsTemporalParser.IsAnnotationValue; IP=Low; Security=High; Resources=3; Fingerprint=E3B3B1
-    // Broiler-Falsified-If: an empty string, an empty component or a character other than an ASCII letter, digit or separating hyphen is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal AnnotationValue via Broiler.VM JsTemporalParser.IsAnnotationValue; IP=Low; Security=High; Resources=3; Fingerprint=E3B3B1
+    // Hairs-Falsified-If: an empty string, an empty component or a character other than an ASCII letter, digit or separating hyphen is accepted
+    // Hairs-Human:        PENDING
     public static bool IsAnnotationValue(ReadOnlySpan<char> text, WorkCharge? charge = null)
     {
         Charge(text, charge);
@@ -497,14 +497,14 @@ public static class TemporalGrammar
     }
 
     // The six goals ParseTemporalCalendarString and ParseTemporalTimeZoneString try, in the specification's order.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseTemporalCalendarString via Broiler.VM JsTemporal.ParseCalendarString; IP=Low; Security=Low; Resources=0; Fingerprint=FE8B4C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseTemporalCalendarString via Broiler.VM JsTemporal.ParseCalendarString; IP=Low; Security=Low; Resources=0; Fingerprint=FE8B4C
+    // Hairs-Human:        PENDING
     private static ReadOnlySpan<TemporalGoal> AllGoals =>
         [TemporalGoal.ZonedDateTime, TemporalGoal.DateTime, TemporalGoal.Instant, TemporalGoal.Time, TemporalGoal.MonthDay, TemporalGoal.YearMonth];
 
     // The charge of convention 4: the text's length, before it is read, when it is not empty.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0078 X3 via EcmaDateParser.Parse; IP=Low; Security=Medium; Resources=0; Fingerprint=694734
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0078 X3 via EcmaDateParser.Parse; IP=Low; Security=Medium; Resources=0; Fingerprint=694734
+    // Hairs-Human:        PENDING
     private static void Charge(ReadOnlySpan<char> text, WorkCharge? charge)
     {
         if (charge is not null && text.Length > 0)
@@ -512,9 +512,9 @@ public static class TemporalGrammar
     }
 
     // ParseISODateTime over validated goals, uncharged.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseISODateTime via Broiler.VM JsTemporalParser.Parse; IP=Low; Security=High; Resources=3; Fingerprint=DB3BE7
-    // Broiler-Falsified-If: the annotation checks are applied to a goal other than the first matched, or the record's fields are not the matched parse nodes'
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseISODateTime via Broiler.VM JsTemporalParser.Parse; IP=Low; Security=High; Resources=3; Fingerprint=DB3BE7
+    // Hairs-Falsified-If: the annotation checks are applied to a goal other than the first matched, or the record's fields are not the matched parse nodes'
+    // Hairs-Human:        PENDING
     private static TemporalParseError Parse(ReadOnlySpan<char> text, ReadOnlySpan<TemporalGoal> goals, out IsoParseResult? result)
     {
         result = null;
@@ -638,8 +638,8 @@ public static class TemporalGrammar
     }
 
     // ASCII-lowercase of a calendar is "iso8601": the annotation value is ASCII, so this is the specification's test.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseISODateTime via Broiler.VM JsTemporalParser.Parse; IP=Low; Security=Low; Resources=0; Fingerprint=F3572B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseISODateTime via Broiler.VM JsTemporalParser.Parse; IP=Low; Security=Low; Resources=0; Fingerprint=F3572B
+    // Hairs-Human:        PENDING
     private static bool IsIso8601(string calendar)
     {
         const string Iso = "iso8601";
@@ -658,17 +658,17 @@ public static class TemporalGrammar
 
     // The proposal's ParseTimeZoneIdentifier of a string the grammar's TimeZoneIdentifier matches: the offset branch is
     // SJL-8's offset identifier reading.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseTimeZoneIdentifier via Broiler.VM JsTemporal.ParseZone; IP=Low; Security=Low; Resources=1; Fingerprint=79AE6D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseTimeZoneIdentifier via Broiler.VM JsTemporal.ParseZone; IP=Low; Security=Low; Resources=1; Fingerprint=79AE6D
+    // Hairs-Human:        PENDING
     private static TimeZoneIdentifierRecord ParseZone(ReadOnlySpan<char> identifier) =>
         OffsetTimeZones.TryParseOffsetIdentifier(identifier, out var minutes)
             ? new TimeZoneIdentifierRecord(null, minutes)
             : new TimeZoneIdentifierRecord(identifier.ToString(), 0);
 
     // Whether the whole string is a TimeZoneIdentifier, uncharged.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TimeZoneIdentifier via Broiler.VM JsTemporalParser.IsTimeZoneIdentifier; IP=Low; Security=High; Resources=3; Fingerprint=2684CF
-    // Broiler-Falsified-If: a string other than a whole UTCOffset without seconds or a TimeZoneIANAName is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TimeZoneIdentifier via Broiler.VM JsTemporalParser.IsTimeZoneIdentifier; IP=Low; Security=High; Resources=3; Fingerprint=2684CF
+    // Hairs-Falsified-If: a string other than a whole UTCOffset without seconds or a TimeZoneIANAName is accepted
+    // Hairs-Human:        PENDING
     private static bool IsWholeTimeZoneIdentifier(ReadOnlySpan<char> text)
     {
         var parser = new Parser(text);
@@ -676,9 +676,9 @@ public static class TemporalGrammar
     }
 
     // The grammar's AnnotationValue, uncharged.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal AnnotationValue via Broiler.VM JsTemporalParser.IsAnnotationValue; IP=Low; Security=High; Resources=3; Fingerprint=B98621
-    // Broiler-Falsified-If: an empty string, an empty component or a character other than an ASCII letter, digit or separating hyphen is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal AnnotationValue via Broiler.VM JsTemporalParser.IsAnnotationValue; IP=Low; Security=High; Resources=3; Fingerprint=B98621
+    // Hairs-Falsified-If: an empty string, an empty component or a character other than an ASCII letter, digit or separating hyphen is accepted
+    // Hairs-Human:        PENDING
     private static bool IsAnnotationValueCore(ReadOnlySpan<char> value)
     {
         if (value.Length == 0)
@@ -707,9 +707,9 @@ public static class TemporalGrammar
     }
 
     // The grammar's AnnotationKey: a lower-case letter or underscore, then lower-case letters, digits, underscores and hyphens.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal AnnotationKey via Broiler.VM JsTemporalParser.IsAnnotationKey; IP=Low; Security=High; Resources=1; Fingerprint=4375B0
-    // Broiler-Falsified-If: a key that is empty, starts other than with a lower-case ASCII letter or an underscore, or holds a character outside the key's set is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal AnnotationKey via Broiler.VM JsTemporalParser.IsAnnotationKey; IP=Low; Security=High; Resources=1; Fingerprint=4375B0
+    // Hairs-Falsified-If: a key that is empty, starts other than with a lower-case ASCII letter or an underscore, or holds a character outside the key's set is accepted
+    // Hairs-Human:        PENDING
     private static bool IsAnnotationKey(ReadOnlySpan<char> key)
     {
         if (key.Length == 0 || !(key[0] is (>= 'a' and <= 'z') or '_'))
@@ -725,8 +725,8 @@ public static class TemporalGrammar
     }
 
     // The proposal's ParseDateTimeUTCOffset of a string the grammar's UTCOffset[+SubMinutePrecision] matches: its nanoseconds.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseDateTimeUTCOffset via Broiler.VM JsTemporalParser.OffsetNanoseconds; IP=Low; Security=Medium; Resources=1; Fingerprint=484859
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseDateTimeUTCOffset via Broiler.VM JsTemporalParser.OffsetNanoseconds; IP=Low; Security=Medium; Resources=1; Fingerprint=484859
+    // Hairs-Human:        PENDING
     private static long OffsetNanoseconds(ReadOnlySpan<char> offset)
     {
         var sign = offset[0] == '-' ? -1L : 1L;
@@ -769,9 +769,9 @@ public static class TemporalGrammar
     }
 
     // The proposal's ParseTemporalDurationString: the ten fields, exact, or false where the string is not a duration.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ParseTemporalDurationString via Broiler.VM JsTemporalParser.Duration; IP=Low; Security=High; Resources=3; Fingerprint=A6B684
-    // Broiler-Falsified-If: a string the TemporalDurationString grammar refuses is accepted, or a part answers other than its exact value rounded once to a Number
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ParseTemporalDurationString via Broiler.VM JsTemporalParser.Duration; IP=Low; Security=High; Resources=3; Fingerprint=A6B684
+    // Hairs-Falsified-If: a string the TemporalDurationString grammar refuses is accepted, or a part answers other than its exact value rounded once to a Number
+    // Hairs-Human:        PENDING
     private static bool Duration(ReadOnlySpan<char> text, out DurationFields duration)
     {
         duration = default;
@@ -921,37 +921,37 @@ public static class TemporalGrammar
         return true;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=Temporal DecimalDigit via Broiler.VM JsTemporalParser.IsDigit; IP=Low; Security=Low; Resources=0; Fingerprint=B3DF33
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal DecimalDigit via Broiler.VM JsTemporalParser.IsDigit; IP=Low; Security=Low; Resources=0; Fingerprint=B3DF33
+    // Hairs-Human:        PENDING
     private static bool IsDigit(char c) => c is >= '0' and <= '9';
 
-    // Broiler-AI:           Origin=Ported; Spec=Temporal grammar ASCII letters via Broiler.VM JsTemporalParser.IsAlpha; IP=Low; Security=Low; Resources=0; Fingerprint=05C4FA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal grammar ASCII letters via Broiler.VM JsTemporalParser.IsAlpha; IP=Low; Security=Low; Resources=0; Fingerprint=05C4FA
+    // Hairs-Human:        PENDING
     private static bool IsAlpha(char c) => c is (>= 'A' and <= 'Z') or (>= 'a' and <= 'z');
 
     // A key-value annotation's place in the text.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal Annotation via Broiler.VM JsTemporalParser.annotations; IP=Low; Security=Low; Resources=0; Fingerprint=B73C02
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal Annotation via Broiler.VM JsTemporalParser.annotations; IP=Low; Security=Low; Resources=0; Fingerprint=B73C02
+    // Hairs-Human:        PENDING
     private readonly record struct AnnotationSpan(bool Critical, int KeyStart, int KeyEnd, int ValueStart, int ValueEnd);
 
     // The recursive-descent parser: one method per production, each advancing over its text or restoring the position
     // and failing, so that the alternatives backtrack as the grammar's do. The parse nodes ParseISODateTime reads are
     // captured as the productions match.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar productions via Broiler.VM JsTemporalParser; IP=Low; Security=High; Resources=3; Fingerprint=E21966
-    // Broiler-Falsified-If: a production matches text its grammar rule does not derive, fails on text it derives where Broiler.VM's matches, or leaves the position other than after its match or at its start
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar productions via Broiler.VM JsTemporalParser; IP=Low; Security=High; Resources=3; Fingerprint=E21966
+    // Hairs-Falsified-If: a production matches text its grammar rule does not derive, fails on text it derives where Broiler.VM's matches, or leaves the position other than after its match or at its start
+    // Hairs-Human:        PENDING
     private ref struct Parser
     {
-        // Broiler-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.text; IP=Low; Security=Low; Resources=0; Fingerprint=8A5809
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.text; IP=Low; Security=Low; Resources=0; Fingerprint=8A5809
+        // Hairs-Human:        PENDING
         private readonly ReadOnlySpan<char> text;
 
-        // Broiler-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.annotations; IP=Low; Security=Low; Resources=1; Fingerprint=4362D1
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.annotations; IP=Low; Security=Low; Resources=1; Fingerprint=4362D1
+        // Hairs-Human:        PENDING
         private List<AnnotationSpan>? annotations;
 
-        // Broiler-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser; IP=Low; Security=Low; Resources=1; Fingerprint=1A87B3
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser; IP=Low; Security=Low; Resources=1; Fingerprint=1A87B3
+        // Hairs-Human:        PENDING
         internal Parser(ReadOnlySpan<char> text)
         {
             this.text = text;
@@ -999,20 +999,20 @@ public static class TemporalGrammar
 
         internal int ZoneEnd { get; private set; }
 
-        // Broiler-AI:           Origin=Ported; Spec=Temporal Annotations via Broiler.VM JsTemporalParser.annotations; IP=Low; Security=Low; Resources=0; Fingerprint=29E1E1
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal Annotations via Broiler.VM JsTemporalParser.annotations; IP=Low; Security=Low; Resources=0; Fingerprint=29E1E1
+        // Hairs-Human:        PENDING
         internal readonly int AnnotationCount => annotations?.Count ?? 0;
 
-        // Broiler-AI:           Origin=Ported; Spec=Temporal Annotations via Broiler.VM JsTemporalParser.annotations; IP=Low; Security=Low; Resources=0; Fingerprint=582E31
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal Annotations via Broiler.VM JsTemporalParser.annotations; IP=Low; Security=Low; Resources=0; Fingerprint=582E31
+        // Hairs-Human:        PENDING
         internal readonly AnnotationSpan AnnotationAt(int index) => annotations![index];
 
         // ---- Goals ------------------------------------------------------------------------------------------------
 
         // DateTime[Z, TimeRequired] and its suffixes, for the date-time goals.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal AnnotatedDateTime via Broiler.VM JsTemporalParser.AnnotatedDateTime; IP=Low; Security=High; Resources=3; Fingerprint=30151F
-        // Broiler-Falsified-If: a date-time without its required time, offset or zone annotation matches, Z matches where the goal has no Z, or text remains after the match
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal AnnotatedDateTime via Broiler.VM JsTemporalParser.AnnotatedDateTime; IP=Low; Security=High; Resources=3; Fingerprint=30151F
+        // Hairs-Falsified-If: a date-time without its required time, offset or zone annotation matches, Z matches where the goal has no Z, or text remains after the match
+        // Hairs-Human:        PENDING
         internal bool AnnotatedDateTime(bool zoned, bool timeRequired, bool instant)
         {
             Reset();
@@ -1043,9 +1043,9 @@ public static class TemporalGrammar
 
         // AnnotatedTime with the early errors of the grammar: a time without its designator must not also be a
         // month-day or a year-month.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal AnnotatedTime and its early errors via Broiler.VM JsTemporalParser.AnnotatedTime; IP=Low; Security=High; Resources=3; Fingerprint=8D86A1
-        // Broiler-Falsified-If: a designator-less time that is also a whole DateSpecMonthDay or DateSpecYearMonth matches, or Z matches
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal AnnotatedTime and its early errors via Broiler.VM JsTemporalParser.AnnotatedTime; IP=Low; Security=High; Resources=3; Fingerprint=8D86A1
+        // Hairs-Falsified-If: a designator-less time that is also a whole DateSpecMonthDay or DateSpecYearMonth matches, or Z matches
+        // Hairs-Human:        PENDING
         internal bool AnnotatedTime()
         {
             Reset();
@@ -1073,18 +1073,18 @@ public static class TemporalGrammar
             return true;
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=Temporal AnnotatedYearMonth via Broiler.VM JsTemporalParser.AnnotatedYearMonth; IP=Low; Security=High; Resources=3; Fingerprint=45E67D
-        // Broiler-Falsified-If: a year-month followed by anything but annotations matches
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal AnnotatedYearMonth via Broiler.VM JsTemporalParser.AnnotatedYearMonth; IP=Low; Security=High; Resources=3; Fingerprint=45E67D
+        // Hairs-Falsified-If: a year-month followed by anything but annotations matches
+        // Hairs-Human:        PENDING
         internal bool AnnotatedYearMonth()
         {
             Reset();
             return DateSpecYearMonth() && Annotations() && At == text.Length;
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=Temporal AnnotatedMonthDay via Broiler.VM JsTemporalParser.AnnotatedMonthDay; IP=Low; Security=High; Resources=3; Fingerprint=0C76E0
-        // Broiler-Falsified-If: a month-day followed by anything but annotations matches
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal AnnotatedMonthDay via Broiler.VM JsTemporalParser.AnnotatedMonthDay; IP=Low; Security=High; Resources=3; Fingerprint=0C76E0
+        // Hairs-Falsified-If: a month-day followed by anything but annotations matches
+        // Hairs-Human:        PENDING
         internal bool AnnotatedMonthDay()
         {
             Reset();
@@ -1094,9 +1094,9 @@ public static class TemporalGrammar
         // ---- Dates ------------------------------------------------------------------------------------------------
 
         // DateYear: four digits, or an ASCII sign and six, -000000 refused.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal DateYear via Broiler.VM JsTemporalParser.DateYear; IP=Low; Security=High; Resources=1; Fingerprint=4FFA3B
-        // Broiler-Falsified-If: a year other than four ASCII digits or an ASCII sign and six is matched, or -000000 is
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal DateYear via Broiler.VM JsTemporalParser.DateYear; IP=Low; Security=High; Resources=1; Fingerprint=4FFA3B
+        // Hairs-Falsified-If: a year other than four ASCII digits or an ASCII sign and six is matched, or -000000 is
+        // Hairs-Human:        PENDING
         private bool DateYear()
         {
             var start = At;
@@ -1127,9 +1127,9 @@ public static class TemporalGrammar
         }
 
         // DateMonth: 01 to 12.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal DateMonth via Broiler.VM JsTemporalParser.DateMonth; IP=Low; Security=High; Resources=0; Fingerprint=60B3B8
-        // Broiler-Falsified-If: a month other than two ASCII digits from 01 to 12 is matched
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal DateMonth via Broiler.VM JsTemporalParser.DateMonth; IP=Low; Security=High; Resources=0; Fingerprint=60B3B8
+        // Hairs-Falsified-If: a month other than two ASCII digits from 01 to 12 is matched
+        // Hairs-Human:        PENDING
         private bool DateMonth()
         {
             var start = At;
@@ -1145,9 +1145,9 @@ public static class TemporalGrammar
         }
 
         // DateDay: 01 to 31.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal DateDay via Broiler.VM JsTemporalParser.DateDay; IP=Low; Security=High; Resources=0; Fingerprint=21B999
-        // Broiler-Falsified-If: a day other than two ASCII digits from 01 to 31 is matched
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal DateDay via Broiler.VM JsTemporalParser.DateDay; IP=Low; Security=High; Resources=0; Fingerprint=21B999
+        // Hairs-Falsified-If: a day other than two ASCII digits from 01 to 31 is matched
+        // Hairs-Human:        PENDING
         private bool DateDay()
         {
             var start = At;
@@ -1163,9 +1163,9 @@ public static class TemporalGrammar
         }
 
         // DateSpec[Extended] with its early error IsValidDate: a date that matches and is not a date fails.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal DateSpec and IsValidDate via Broiler.VM JsTemporalParser.DateSpec; IP=Low; Security=High; Resources=1; Fingerprint=3F3E7B
-        // Broiler-Falsified-If: a date mixing the extended and basic separators, or a date that is not a valid ISO date, matches
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal DateSpec and IsValidDate via Broiler.VM JsTemporalParser.DateSpec; IP=Low; Security=High; Resources=1; Fingerprint=3F3E7B
+        // Hairs-Falsified-If: a date mixing the extended and basic separators, or a date that is not a valid ISO date, matches
+        // Hairs-Human:        PENDING
         private bool DateSpec()
         {
             var start = At;
@@ -1195,9 +1195,9 @@ public static class TemporalGrammar
         }
 
         // DateSpecYearMonth: a year, an optional hyphen and a month.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal DateSpecYearMonth via Broiler.VM JsTemporalParser.DateSpecYearMonth; IP=Low; Security=High; Resources=1; Fingerprint=313B7C
-        // Broiler-Falsified-If: a year-month other than a DateYear, an optional hyphen and a DateMonth matches
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal DateSpecYearMonth via Broiler.VM JsTemporalParser.DateSpecYearMonth; IP=Low; Security=High; Resources=1; Fingerprint=313B7C
+        // Hairs-Falsified-If: a year-month other than a DateYear, an optional hyphen and a DateMonth matches
+        // Hairs-Human:        PENDING
         internal bool DateSpecYearMonth()
         {
             var start = At;
@@ -1216,9 +1216,9 @@ public static class TemporalGrammar
         }
 
         // DateSpecMonthDay: an optional --, a month, an optional hyphen and a day, valid in the reference leap year.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal DateSpecMonthDay and IsValidMonthDay via Broiler.VM JsTemporalParser.DateSpecMonthDay; IP=Low; Security=High; Resources=1; Fingerprint=14CC14
-        // Broiler-Falsified-If: a month-day that is not a day of 1972 matches, or one with a single leading hyphen
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal DateSpecMonthDay and IsValidMonthDay via Broiler.VM JsTemporalParser.DateSpecMonthDay; IP=Low; Security=High; Resources=1; Fingerprint=14CC14
+        // Hairs-Falsified-If: a month-day that is not a day of 1972 matches, or one with a single leading hyphen
+        // Hairs-Human:        PENDING
         internal bool DateSpecMonthDay()
         {
             var start = At;
@@ -1252,9 +1252,9 @@ public static class TemporalGrammar
         // ---- Times ------------------------------------------------------------------------------------------------
 
         // TemporalDecimalFraction: a period or comma and one to nine digits; the time's is kept, the first only.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal TemporalDecimalFraction via Broiler.VM JsTemporalParser.Fraction; IP=Low; Security=High; Resources=1; Fingerprint=B60AF2
-        // Broiler-Falsified-If: a fraction of no digit or of ten or more digits matches
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal TemporalDecimalFraction via Broiler.VM JsTemporalParser.Fraction; IP=Low; Security=High; Resources=1; Fingerprint=B60AF2
+        // Hairs-Falsified-If: a fraction of no digit or of ten or more digits matches
+        // Hairs-Human:        PENDING
         private bool Fraction(bool keep)
         {
             var start = At;
@@ -1281,9 +1281,9 @@ public static class TemporalGrammar
         }
 
         // TimeSpec[Extended] of either form: the extended form first, then the basic one.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal TimeSpec via Broiler.VM JsTemporalParser.TimeSpec; IP=Low; Security=High; Resources=1; Fingerprint=BC60CA
-        // Broiler-Falsified-If: a time mixing the extended and basic separators matches beyond its hour and minute, an hour above 23, a minute above 59 or a second above 60 matches
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal TimeSpec via Broiler.VM JsTemporalParser.TimeSpec; IP=Low; Security=High; Resources=1; Fingerprint=BC60CA
+        // Hairs-Falsified-If: a time mixing the extended and basic separators matches beyond its hour and minute, an hour above 23, a minute above 59 or a second above 60 matches
+        // Hairs-Human:        PENDING
         private bool TimeSpec()
         {
             var start = At;
@@ -1335,9 +1335,9 @@ public static class TemporalGrammar
 
         // UTCOffset[SubMinutePrecision]: a sign, hours, and optionally minutes and, with sub-minute precision, seconds
         // and a fraction, all extended or all basic. The match may be shorter than the text that follows.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal UTCOffset via Broiler.VM JsTemporalParser.UtcOffset; IP=Low; Security=High; Resources=1; Fingerprint=A4AF4D
-        // Broiler-Falsified-If: an offset with a sign other than ASCII + or -, an hour above 23, a minute or second above 59, or seconds without sub-minute precision matches
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal UTCOffset via Broiler.VM JsTemporalParser.UtcOffset; IP=Low; Security=High; Resources=1; Fingerprint=A4AF4D
+        // Hairs-Falsified-If: an offset with a sign other than ASCII + or -, an hour above 23, a minute or second above 59, or seconds without sub-minute precision matches
+        // Hairs-Human:        PENDING
         internal bool UtcOffset(bool subMinute, out bool hasSeconds)
         {
             hasSeconds = false;
@@ -1374,9 +1374,9 @@ public static class TemporalGrammar
 
         // TimeZoneIANAName: components of the name's characters joined by slashes, each starting with a letter, a
         // period or an underscore.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal TimeZoneIANAName via Broiler.VM JsTemporalParser.TimeZoneIanaName; IP=Low; Security=High; Resources=3; Fingerprint=B4B31D
-        // Broiler-Falsified-If: a name with an empty component, a component starting with a digit, a hyphen or a plus sign, or a character outside ASCII letters, digits and . _ - + / matches
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal TimeZoneIANAName via Broiler.VM JsTemporalParser.TimeZoneIanaName; IP=Low; Security=High; Resources=3; Fingerprint=B4B31D
+        // Hairs-Falsified-If: a name with an empty component, a component starting with a digit, a hyphen or a plus sign, or a character outside ASCII letters, digits and . _ - + / matches
+        // Hairs-Human:        PENDING
         private bool TimeZoneIanaName()
         {
             var start = At;
@@ -1398,9 +1398,9 @@ public static class TemporalGrammar
         }
 
         // TimeZoneIdentifier: an offset without seconds, or else an IANA name.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal TimeZoneIdentifier via Broiler.VM JsTemporalParser.TimeZoneIdentifier; IP=Low; Security=High; Resources=3; Fingerprint=4F1405
-        // Broiler-Falsified-If: an identifier other than a UTCOffset without seconds or a TimeZoneIANAName matches
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal TimeZoneIdentifier via Broiler.VM JsTemporalParser.TimeZoneIdentifier; IP=Low; Security=High; Resources=3; Fingerprint=4F1405
+        // Hairs-Falsified-If: an identifier other than a UTCOffset without seconds or a TimeZoneIANAName matches
+        // Hairs-Human:        PENDING
         internal bool TimeZoneIdentifier()
         {
             var start = At;
@@ -1412,9 +1412,9 @@ public static class TemporalGrammar
         }
 
         // The bracketed suffix: a time zone annotation first if at all, then key-value annotations.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal TimeZoneAnnotation and Annotations via Broiler.VM JsTemporalParser.Annotations; IP=Low; Security=High; Resources=3; Fingerprint=91C026
-        // Broiler-Falsified-If: an empty or flag-only annotation, a zone annotation after another annotation or one the TimeZoneIdentifier grammar refuses, or a key or value off the grammar matches
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal TimeZoneAnnotation and Annotations via Broiler.VM JsTemporalParser.Annotations; IP=Low; Security=High; Resources=3; Fingerprint=91C026
+        // Hairs-Falsified-If: an empty or flag-only annotation, a zone annotation after another annotation or one the TimeZoneIdentifier grammar refuses, or a key or value off the grammar matches
+        // Hairs-Human:        PENDING
         private bool Annotations()
         {
             var first = true;
@@ -1472,9 +1472,9 @@ public static class TemporalGrammar
         }
 
         // DateTimeUTCOffset[Z]: a Z where allowed, or an optional offset with sub-minute precision.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal DateTimeUTCOffset via Broiler.VM JsTemporalParser.DateTimeOffset; IP=Low; Security=High; Resources=1; Fingerprint=A9D204
-        // Broiler-Falsified-If: Z or z matches where the goal has no UTCDesignator
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal DateTimeUTCOffset via Broiler.VM JsTemporalParser.DateTimeOffset; IP=Low; Security=High; Resources=1; Fingerprint=A9D204
+        // Hairs-Falsified-If: Z or z matches where the goal has no UTCDesignator
+        // Hairs-Human:        PENDING
         private bool DateTimeOffset(bool allowZ)
         {
             if (allowZ && EatAny("Zz"))
@@ -1500,8 +1500,8 @@ public static class TemporalGrammar
         // ---- Characters -------------------------------------------------------------------------------------------
 
         // Every parse node cleared, and the position at the start.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.Reset; IP=Low; Security=Low; Resources=0; Fingerprint=8894FF
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.Reset; IP=Low; Security=Low; Resources=0; Fingerprint=8894FF
+        // Hairs-Human:        PENDING
         private void Reset()
         {
             At = 0;
@@ -1524,12 +1524,12 @@ public static class TemporalGrammar
         }
 
         // The character a number of places ahead, or U+0000 past the end.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.Peek; IP=Low; Security=Low; Resources=0; Fingerprint=356AB8
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.Peek; IP=Low; Security=Low; Resources=0; Fingerprint=356AB8
+        // Hairs-Human:        PENDING
         private readonly char Peek(int ahead = 0) => At + ahead < text.Length ? text[At + ahead] : '\0';
 
-        // Broiler-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.Eat; IP=Low; Security=Low; Resources=0; Fingerprint=C679A1
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.Eat; IP=Low; Security=Low; Resources=0; Fingerprint=C679A1
+        // Hairs-Human:        PENDING
         private bool Eat(char c)
         {
             if (Peek() != c)
@@ -1539,8 +1539,8 @@ public static class TemporalGrammar
             return true;
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.EatAny; IP=Low; Security=Low; Resources=0; Fingerprint=DA0F5F
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser.EatAny; IP=Low; Security=Low; Resources=0; Fingerprint=DA0F5F
+        // Hairs-Human:        PENDING
         private bool EatAny(ReadOnlySpan<char> set)
         {
             if (At < text.Length && set.Contains(text[At]))
@@ -1553,9 +1553,9 @@ public static class TemporalGrammar
         }
 
         // A run of exactly this many ASCII digits at the position, read; -1, the position kept, where there is none.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal DecimalDigit via Broiler.VM JsTemporalParser.Digits; IP=Low; Security=High; Resources=0; Fingerprint=A86237
-        // Broiler-Falsified-If: a character other than an ASCII digit is read as one
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal DecimalDigit via Broiler.VM JsTemporalParser.Digits; IP=Low; Security=High; Resources=0; Fingerprint=A86237
+        // Hairs-Falsified-If: a character other than an ASCII digit is read as one
+        // Hairs-Human:        PENDING
         private int Digits(int count)
         {
             if (At + count > text.Length)
@@ -1575,9 +1575,9 @@ public static class TemporalGrammar
         }
 
         // Two ASCII digits no greater than a maximum; -1, the position kept, where there are none.
-        // Broiler-AI:           Origin=Ported; Spec=Temporal Hour and MinuteSecond via Broiler.VM JsTemporalParser.Bounded; IP=Low; Security=High; Resources=0; Fingerprint=757D0F
-        // Broiler-Falsified-If: two digits above the maximum are read
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=Temporal Hour and MinuteSecond via Broiler.VM JsTemporalParser.Bounded; IP=Low; Security=High; Resources=0; Fingerprint=757D0F
+        // Hairs-Falsified-If: two digits above the maximum are read
+        // Hairs-Human:        PENDING
         private int Bounded(int maximum)
         {
             var start = At;

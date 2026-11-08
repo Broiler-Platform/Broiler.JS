@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   1
 // Annotated:        1/1
 // Exempt:           0
@@ -33,6 +33,6 @@ namespace Broiler.ECMAScript;
 /// polls cancellation itself; the delegate is where a caller does both.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=Medium; Resources=1; Fingerprint=5E3A07
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=Medium; Resources=1; Fingerprint=5E3A07
+// Hairs-Human:        PENDING
 public delegate void WorkCharge(ulong units);

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   10
 // Annotated:        10/10
 // Exempt:           2
@@ -20,8 +20,8 @@ using System;
 namespace Broiler.ECMAScript.Text;
 
 /// <summary>Where <see cref="StringPadding.Pad"/> puts the filler (ECMA-262 22.1.3.17.2 <c>StringPad</c>'s <c>placement</c>).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.17.2; IP=Low; Security=Low; Resources=1; Fingerprint=031F5F
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.17.2; IP=Low; Security=Low; Resources=1; Fingerprint=031F5F
+// Hairs-Human:        PENDING
 public enum PadPlacement
 {
     /// <summary>Before the String, as <c>padStart</c> does.</summary>
@@ -44,8 +44,8 @@ public enum PadPlacement
 /// result longer than <c>limit</c> is <see cref="ResultStatus.LimitExceeded"/>, which an engine
 /// raises as <c>RangeError</c>, and nothing is built.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.17.2; IP=Low; Security=Medium; Resources=2; Fingerprint=81821C
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.17.2; IP=Low; Security=Medium; Resources=2; Fingerprint=81821C
+// Hairs-Human:        PENDING
 public static class StringPadding
 {
     /// <summary><c>StringPad</c> (ECMA-262 22.1.3.17.2).</summary>
@@ -67,9 +67,9 @@ public static class StringPadding
     /// </returns>
     /// <exception cref="ArgumentNullException">The text or the filler is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The length is negative or above 2^53 - 1, or the placement is not one of the enumeration's.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.17.2; IP=Low; Security=High; Resources=3; Fingerprint=0D98D3
-    // Broiler-Falsified-If: a String longer than the limit is built or charged, an empty filler is not answered with the String itself, or the filler is not repeated and truncated to exactly maxLength minus the String's length
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.17.2; IP=Low; Security=High; Resources=3; Fingerprint=0D98D3
+    // Hairs-Falsified-If: a String longer than the limit is built or charged, an empty filler is not answered with the String itself, or the filler is not repeated and truncated to exactly maxLength minus the String's length
+    // Hairs-Human:        PENDING
     public static ResultStatus Pad(string text, long maxLength, string filler, PadPlacement placement, LengthLimit limit, out string result, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -106,13 +106,13 @@ public static class StringPadding
         return ResultStatus.Completed;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=A9573C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=A9573C
+    // Hairs-Human:        PENDING
     private const long MaximumSafeInteger = (1L << 53) - 1;
 
     /// <summary>The longest String the runtime can allocate, so that no limit a caller passes lets the builder fail.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=DF1516
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=DF1516
+    // Hairs-Human:        PENDING
     internal const int MaximumDotNetString = 0x3FFFFFDF;
 }
 
@@ -132,8 +132,8 @@ public static class StringPadding
 /// position - is one <see cref="Math.Clamp(double, double, double)"/> and is not here.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.22; IP=Low; Security=Medium; Resources=1; Fingerprint=D9DBDA
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.22; IP=Low; Security=Medium; Resources=1; Fingerprint=D9DBDA
+// Hairs-Human:        PENDING
 public static class RelativeIndex
 {
     /// <summary>
@@ -145,8 +145,8 @@ public static class RelativeIndex
     /// <param name="length">The length, zero to 2^53 - 1.</param>
     /// <returns>Zero for negative infinity; the length plus a negative position, but not below zero; otherwise the position, but not above the length.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The position is NaN or not integral, or the length is negative or above 2^53 - 1.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.22; IP=Low; Security=Medium; Resources=1; Fingerprint=AAC274
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.22; IP=Low; Security=Medium; Resources=1; Fingerprint=AAC274
+    // Hairs-Human:        PENDING
     public static long Clamped(double relative, long length)
     {
         Check(relative, length);
@@ -165,8 +165,8 @@ public static class RelativeIndex
     /// <param name="index">The index, when there is an element there.</param>
     /// <returns><see langword="true"/> when the position, counted back from the end when it is negative, is an index below the length.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The position is NaN or not integral, or the length is negative or above 2^53 - 1.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.1; IP=Low; Security=Medium; Resources=1; Fingerprint=EA7860
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 22.1.3.1; IP=Low; Security=Medium; Resources=1; Fingerprint=EA7860
+    // Hairs-Human:        PENDING
     public static bool TryElement(double relative, long length, out long index)
     {
         Check(relative, length);
@@ -189,8 +189,8 @@ public static class RelativeIndex
     /// <param name="length">The length, zero to 2^53 - 1.</param>
     /// <returns>The index to start from, no greater than the length minus one; -1 when there is nothing to search.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The position is NaN or not integral, or the length is negative or above 2^53 - 1.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 23.1.3.20; IP=Low; Security=Medium; Resources=1; Fingerprint=158E88
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 23.1.3.20; IP=Low; Security=Medium; Resources=1; Fingerprint=158E88
+    // Hairs-Human:        PENDING
     public static long LastSearchStart(double relative, long length)
     {
         Check(relative, length);
@@ -201,8 +201,8 @@ public static class RelativeIndex
         return k < 0 ? -1 : (long)k;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 7.1.5; IP=Low; Security=Medium; Resources=1; Fingerprint=14025B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 7.1.5; IP=Low; Security=Medium; Resources=1; Fingerprint=14025B
+    // Hairs-Human:        PENDING
     private static void Check(double relative, long length)
     {
         if (double.IsNaN(relative) || (double.IsFinite(relative) && Math.Truncate(relative) != relative))

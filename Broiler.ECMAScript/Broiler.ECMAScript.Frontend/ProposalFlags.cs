@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   2
 // Annotated:        2/2
 // Exempt:           9
@@ -31,8 +31,8 @@ namespace Broiler.ECMAScript.Syntax;
 /// </para>
 /// <para>The values are bits, stable once published, and a request refuses one this type does not define.</para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D17 proposal flags; IP=Low; Security=Low; Resources=0; Fingerprint=E2F461
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D17 proposal flags; IP=Low; Security=Low; Resources=0; Fingerprint=E2F461
+// Hairs-Human:        PENDING
 [Flags]
 public enum ProposalFlags
 {
@@ -66,8 +66,8 @@ public enum ProposalFlags
 /// The library tokenizes what an extension admits and gives it no meaning: decision SJL-D-17 keeps the meaning in the
 /// engine that asks for it. The values are bits, and a request refuses one this type does not define.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D17 lexer extension, SJL-D-17; IP=Low; Security=Low; Resources=0; Fingerprint=5F9094
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D17 lexer extension, SJL-D-17; IP=Low; Security=Low; Resources=0; Fingerprint=5F9094
+// Hairs-Human:        PENDING
 [Flags]
 public enum LexerExtensions
 {

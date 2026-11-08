@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   5
 // Annotated:        5/5
 // Exempt:           1
@@ -29,15 +29,15 @@ namespace Broiler.ECMAScript.Temporal;
 /// <remarks>
 /// The instance is immutable, and every member is safe to call concurrently where the rules are, as SJL-8's are.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=Temporal s11.1, JSD-0078 decision 1 over JSD-0076; IP=None; Security=Low; Resources=0; Fingerprint=CFDE55
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal s11.1, JSD-0078 decision 1 over JSD-0076; IP=None; Security=Low; Resources=0; Fingerprint=CFDE55
+// Hairs-Human:        PENDING
 public sealed class TemporalTimeZone : ITimeZoneArithmetic
 {
     /// <summary>Creates the zone over its rules.</summary>
     /// <param name="rules">The zone's rules.</param>
     /// <exception cref="ArgumentNullException">The rules are <see langword="null"/>.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0078 decision 1; IP=None; Security=Low; Resources=0; Fingerprint=1A3F61
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0078 decision 1; IP=None; Security=Low; Resources=0; Fingerprint=1A3F61
+    // Hairs-Human:        PENDING
     public TemporalTimeZone(ITimeZoneRules rules)
     {
         ArgumentNullException.ThrowIfNull(rules);
@@ -48,18 +48,18 @@ public sealed class TemporalTimeZone : ITimeZoneArithmetic
     public ITimeZoneRules Rules { get; }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s11.1.9 over JSD-0076 ZonedTime; IP=None; Security=Low; Resources=1; Fingerprint=EE53EA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s11.1.9 over JSD-0076 ZonedTime; IP=None; Security=Low; Resources=1; Fingerprint=EE53EA
+    // Hairs-Human:        PENDING
     public long GetOffsetNanosecondsFor(BigInteger epochNanoseconds) => ZonedTime.GetOffsetNanosecondsFor(Rules, epochNanoseconds);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s11.1.11 over JSD-0076 ZonedTime; IP=None; Security=Low; Resources=1; Fingerprint=715B7E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s11.1.11 over JSD-0076 ZonedTime; IP=None; Security=Low; Resources=1; Fingerprint=715B7E
+    // Hairs-Human:        PENDING
     public TimeStatus GetEpochNanosecondsFor(IsoDateTime dateTime, Disambiguation disambiguation, out BigInteger epochNanoseconds) =>
         ZonedTime.GetEpochNanosecondsFor(Rules, dateTime, disambiguation, out epochNanoseconds);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s11.1.14 over JSD-0076 ZonedTime; IP=None; Security=Low; Resources=1; Fingerprint=AE0A95
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s11.1.14 over JSD-0076 ZonedTime; IP=None; Security=Low; Resources=1; Fingerprint=AE0A95
+    // Hairs-Human:        PENDING
     public TimeStatus GetStartOfDay(IsoDate date, out BigInteger epochNanoseconds) => ZonedTime.GetStartOfDay(Rules, date, out epochNanoseconds);
 }

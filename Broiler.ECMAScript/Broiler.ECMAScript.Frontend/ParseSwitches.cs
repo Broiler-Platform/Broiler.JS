@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   2
 // Annotated:        2/2
 // Exempt:           4
@@ -34,8 +34,8 @@ namespace Broiler.ECMAScript.Syntax;
 /// (ECMA-262 Annex B.1.1).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0083 D10 D17 switches; IP=Low; Security=Low; Resources=0; Fingerprint=10FF6A
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 D17 switches; IP=Low; Security=Low; Resources=0; Fingerprint=10FF6A
+// Hairs-Human:        PENDING
 public readonly record struct ParseSwitches
 {
     /// <summary>
@@ -79,8 +79,8 @@ public readonly record struct ParseSwitches
     /// Not forced strict; top-level <c>await</c> on for <see cref="ParseGoal.Module"/> alone, as both engines' module
     /// options set it; Annex B on; HTML-like comments on for every goal but <see cref="ParseGoal.Module"/>.
     /// </returns>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D10 D17 switch defaults; IP=Low; Security=Low; Resources=1; Fingerprint=DF9001
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 D17 switch defaults; IP=Low; Security=Low; Resources=1; Fingerprint=DF9001
+    // Hairs-Human:        PENDING
     public static ParseSwitches For(ParseGoal goal) => new()
     {
         ForcedStrict = false,

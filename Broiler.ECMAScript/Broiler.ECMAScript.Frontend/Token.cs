@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   8
 // Annotated:        8/8
 // Exempt:           74
@@ -46,8 +46,8 @@ namespace Broiler.ECMAScript.Syntax;
 /// public".)</i>
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0080 output raw facts, JSD-0083 D15 D21; IP=Low; Security=Low; Resources=0; Fingerprint=C18C8A
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0080 output raw facts, JSD-0083 D15 D21; IP=Low; Security=Low; Resources=0; Fingerprint=C18C8A
+// Hairs-Human:        PENDING
 public readonly struct Token
 {
     /// <summary>Creates a token.</summary>
@@ -124,23 +124,23 @@ public readonly struct Token
     public Word Word { get; }
 
     /// <summary>Whether a line terminator stands between the previous token and this one.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.10; IP=Low; Security=Low; Resources=1; Fingerprint=E3DFD4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.10; IP=Low; Security=Low; Resources=1; Fingerprint=E3DFD4
+    // Hairs-Human:        PENDING
     public bool NewLineBefore => (Flags & TokenFlags.NewLineBefore) != 0;
 
     /// <summary>Whether this is an identifier name or private name written with an escape.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.7.1; IP=Low; Security=Low; Resources=1; Fingerprint=FF945F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.7.1; IP=Low; Security=Low; Resources=1; Fingerprint=FF945F
+    // Hairs-Human:        PENDING
     public bool IsEscaped => (Flags & TokenFlags.Escaped) != 0;
 
     /// <summary>Its length in code units.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0083 D15; IP=Low; Security=Low; Resources=1; Fingerprint=F4209D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D15; IP=Low; Security=Low; Resources=1; Fingerprint=F4209D
+    // Hairs-Human:        PENDING
     public int Length => End - Start;
 
     /// <summary>The token with the newline fact set as the trivia before it says.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.10 automatic semicolon insertion; IP=Low; Security=Medium; Resources=1; Fingerprint=C70164
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.10 automatic semicolon insertion; IP=Low; Security=Medium; Resources=1; Fingerprint=C70164
+    // Hairs-Human:        PENDING
     internal Token WithNewLineBefore(bool newLine) =>
         new(Kind, Start, End, Line, Column, newLine ? Flags | TokenFlags.NewLineBefore : Flags & ~TokenFlags.NewLineBefore, Value, Raw, Number, Split, Word);
 }
@@ -160,8 +160,8 @@ public readonly struct Token
 /// stable. <i>(Revised 2026-11-04; the enumeration was internal.)</i>
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.7.2 reserved words; IP=Low; Security=Low; Resources=0; Fingerprint=B56471
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.7.2 reserved words; IP=Low; Security=Low; Resources=0; Fingerprint=B56471
+// Hairs-Human:        PENDING
 public enum Word
 {
     /// <summary>No word of this list.</summary>
@@ -352,13 +352,13 @@ public enum Word
 }
 
 /// <summary>The words of <see cref="Syntax.Word"/>, looked up by spelling.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.7.2 reserved words; IP=Low; Security=Low; Resources=0; Fingerprint=2B2B48
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.7.2 reserved words; IP=Low; Security=Low; Resources=0; Fingerprint=2B2B48
+// Hairs-Human:        PENDING
 internal static class Words
 {
     /// <summary>The word <paramref name="name"/> spells, or <see cref="Word.None"/>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s12.7.2 reserved words; IP=Low; Security=Medium; Resources=1; Fingerprint=66912A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s12.7.2 reserved words; IP=Low; Security=Medium; Resources=1; Fingerprint=66912A
+    // Hairs-Human:        PENDING
     internal static Word Of(string name) => name switch
     {
         "await" => Word.Await,

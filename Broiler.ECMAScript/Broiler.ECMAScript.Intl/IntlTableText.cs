@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   6
 // Annotated:        6/6
 // Exempt:           0
@@ -29,16 +29,16 @@ namespace Broiler.ECMAScript.Intl;
 /// <c>4cf9ca44</c> (<c>Lines</c>, <c>Pairs</c>, <c>Unescape</c>), with its culture-invariant hexadecimal parse read through
 /// <see cref="NumberFormatInfo.InvariantInfo"/> (JSD-0082, decision D19).
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=F759FC
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=F759FC
+// Hairs-Human:        PENDING
 internal static class IntlTableText
 {
     /// <summary>A table value with its <c>\uXXXX</c> escapes resolved, each to the one UTF-16 code unit it names.</summary>
     /// <param name="value">The value, as a table field writes it.</param>
     /// <exception cref="FormatException">An escape's four characters are not hexadecimal digits: the table is not the generator's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=1; Fingerprint=9C6D2C
-    // Broiler-Falsified-If: an escape \uXXXX resolves to another code unit than its four hexadecimal digits name, or a value without an escape is changed
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=1; Fingerprint=9C6D2C
+    // Hairs-Falsified-If: an escape \uXXXX resolves to another code unit than its four hexadecimal digits name, or a value without an escape is changed
+    // Hairs-Human:        PENDING
     internal static string Unescape(string value)
     {
         if (value.IndexOf('\\', StringComparison.Ordinal) < 0)
@@ -65,8 +65,8 @@ internal static class IntlTableText
 
     /// <summary>The lines of a text table, the empty ones left out.</summary>
     /// <param name="table">The table's bytes, ASCII.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=BDEB67
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=BDEB67
+    // Hairs-Human:        PENDING
     internal static List<string> Lines(ReadOnlySpan<byte> table)
     {
         var text = Encoding.ASCII.GetString(table);
@@ -87,8 +87,8 @@ internal static class IntlTableText
     /// <param name="table">The table's bytes.</param>
     /// <param name="name">The table, for the message of a line with no <c>|</c>.</param>
     /// <exception cref="InvalidDataException">A line has no <c>|</c>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=E5540D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=E5540D
+    // Hairs-Human:        PENDING
     internal static Dictionary<string, string> Pairs(ReadOnlySpan<byte> table, IntlTable name)
     {
         var pairs = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -107,8 +107,8 @@ internal static class IntlTableText
     /// <param name="count">The fields the table's format gives a line.</param>
     /// <param name="name">The table, for the message.</param>
     /// <exception cref="InvalidDataException">The line has fewer fields: the table is not in the format its <see cref="IntlTable"/> value states.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=0B3F68
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=0B3F68
+    // Hairs-Human:        PENDING
     internal static string[] Fields(string line, int count, IntlTable name)
     {
         var fields = line.Split('|');
@@ -125,8 +125,8 @@ internal static class IntlTableText
     /// <param name="line">The line.</param>
     /// <param name="name">The table, for the message.</param>
     /// <exception cref="InvalidDataException">The line has no <c>|</c>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=7FAC02
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 table format via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=7FAC02
+    // Hairs-Human:        PENDING
     internal static int Bar(string line, IntlTable name)
     {
         var bar = line.IndexOf('|', StringComparison.Ordinal);

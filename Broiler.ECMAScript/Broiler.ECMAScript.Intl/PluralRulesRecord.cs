@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   8
 // Annotated:        8/8
 // Exempt:           8
@@ -23,8 +23,8 @@ namespace Broiler.ECMAScript.Intl;
 /// <summary>What ResolvePlural answers (<c>sec-resolveplural</c>): the plural category and the String it was selected over.</summary>
 /// <param name="PluralCategory">[[PluralCategory]]: <c>zero</c>, <c>one</c>, <c>two</c>, <c>few</c>, <c>many</c> or <c>other</c>.</param>
 /// <param name="FormattedString">[[FormattedString]]: FormatNumericToString's String, or <c>NaN</c>, <c>Infinity</c> or <c>-Infinity</c>.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-resolveplural record; IP=Low; Security=Low; Resources=0; Fingerprint=2659B7
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-resolveplural record; IP=Low; Security=Low; Resources=0; Fingerprint=2659B7
+// Hairs-Human:        PENDING
 public readonly record struct ResolvedPlural(string PluralCategory, string FormattedString);
 
 /// <summary>
@@ -55,8 +55,8 @@ public readonly record struct ResolvedPlural(string PluralCategory, string Forma
 /// </para>
 /// <para><b>Immutable</b>: one may be shared between threads (convention 10).</para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Low; Resources=0; Fingerprint=ECE56D
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Low; Resources=0; Fingerprint=ECE56D
+// Hairs-Human:        PENDING
 public sealed class PluralRulesRecord
 {
     private readonly ILocaleData data;
@@ -91,8 +91,8 @@ public sealed class PluralRulesRecord
     public PluralEngine Engine { get; }
 
     /// <summary>The categories PluralRuleSelect can answer, in <c>resolvedOptions</c>' order (<c>pluralCategories</c>).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Low; Resources=0; Fingerprint=7F590F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Low; Resources=0; Fingerprint=7F590F
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string> PluralCategories => Engine.Categories;
 
     /// <summary>
@@ -108,8 +108,8 @@ public sealed class PluralRulesRecord
     /// <param name="compactDisplay">The <c>compactDisplay</c> option.</param>
     /// <param name="digitOptions">What SetNumberFormatDigitOptions resolved, with 0 and 3 as the fraction-digit defaults.</param>
     /// <returns>The record.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Low; Resources=1; Fingerprint=374DE3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Low; Resources=1; Fingerprint=374DE3
+    // Hairs-Human:        PENDING
     public static PluralRulesRecord Create(ILocaleData data, string locale, string dataLocale, PluralRuleType type, NumberNotation notation, CompactDisplay compactDisplay, DigitOptions digitOptions)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -129,9 +129,9 @@ public sealed class PluralRulesRecord
     /// reading of the String those digits make and the compact exponent's second rounding of the same digits (Broiler.VM's
     /// charges, decision D18).</param>
     /// <returns>The category and the String.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=High; Resources=2; Fingerprint=526DAF
-    // Broiler-Falsified-If: the category is selected over another String than FormatNumericToString's, or compact notation passes another exponent than ComputeExponent's
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=High; Resources=2; Fingerprint=526DAF
+    // Hairs-Falsified-If: the category is selected over another String than FormatNumericToString's, or compact notation passes another exponent than ComputeExponent's
+    // Hairs-Human:        PENDING
     public ResolvedPlural ResolvePlural(IntlDecimal n, WorkCharge? charge = null)
     {
         switch (n.Kind)
@@ -157,8 +157,8 @@ public sealed class PluralRulesRecord
     /// <param name="category">The range's category, or the empty string.</param>
     /// <param name="charge">The caller's meter, charged by each end's <see cref="ResolvePlural"/>.</param>
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.RangeIsNotANumber"/>, a <c>RangeError</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Low; Resources=1; Fingerprint=7659B0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Low; Resources=1; Fingerprint=7659B0
+    // Hairs-Human:        PENDING
     public IntlStatus ResolvePluralRange(IntlDecimal x, IntlDecimal y, out string category, WorkCharge? charge = null)
     {
         if (x.Kind == IntlDecimalKind.NaN || y.Kind == IntlDecimalKind.NaN)
@@ -179,8 +179,8 @@ public sealed class PluralRulesRecord
     /// The compact decimal exponent of <paramref name="x"/> (decision D20): ComputeExponent (<c>sec-computeexponent</c>) over the
     /// language's decimal compact patterns of the compact display, in compact notation; 0 in every other notation and for zero.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Medium; Resources=2; Fingerprint=464676
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Medium; Resources=2; Fingerprint=464676
+    // Hairs-Human:        PENDING
     private int CompactExponent(IntlDecimal x)
     {
         if (Notation != NumberNotation.Compact || x.IsZero)
@@ -206,8 +206,8 @@ public sealed class PluralRulesRecord
     /// ComputeExponentForMagnitude (<c>sec-computeexponentformagnitude</c>) in compact notation: the magnitude less the compact
     /// pattern's digits after the first, or 0 where the locale does not compact the magnitude.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Low; Resources=1; Fingerprint=E18355
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-resolveplural sec-resolvepluralrange sec-computeexponent via Broiler.VM JsRealm.PluralRules; IP=Low; Security=Low; Resources=1; Fingerprint=E18355
+    // Hairs-Human:        PENDING
     private int ExponentForMagnitude(int magnitude)
     {
         if (magnitude < 3)

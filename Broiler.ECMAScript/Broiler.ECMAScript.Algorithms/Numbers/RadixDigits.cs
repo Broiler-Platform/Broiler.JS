@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   16
 // Annotated:        16/16
 // Exempt:           0
@@ -41,35 +41,35 @@ namespace Broiler.ECMAScript.Numbers;
 /// double-arithmetic loops were not.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=9A8AD7
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=9A8AD7
+// Hairs-Human:        PENDING
 internal static class RadixDigits
 {
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=ADE454
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=ADE454
+    // Hairs-Human:        PENDING
     private const string Alphabet = "0123456789abcdefghijklmnopqrstuvwxyz";
 
     /// <summary>The longest significand any radix from 2 to 36 needs for a double, with room for a carry.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=332249
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=332249
+    // Hairs-Human:        PENDING
     private const int MaximumDigits = 128;
 
     /// <summary>2^53, below which every integer a double holds is exact and its neighbours are one apart.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=F0E952
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=F0E952
+    // Hairs-Human:        PENDING
     private const double TwoToThe53 = 9007199254740992.0;
 
     /// <summary>The widest a quantity of the narrow path may grow to, in bits, with one bit to spare.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=6659F6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=6659F6
+    // Hairs-Human:        PENDING
     private const int NarrowBits = 127;
 
     /// <summary>Formats a positive finite double in a radix from 2 to 36 other than 10.</summary>
     /// <param name="value">A double greater than zero and finite.</param>
     /// <param name="radix">The radix.</param>
     /// <returns>The specification's string, without a sign.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=3560F1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=3560F1
+    // Hairs-Human:        PENDING
     internal static string Format(double value, int radix)
     {
         Span<char> digits = stackalloc char[MaximumDigits];
@@ -86,8 +86,8 @@ internal static class RadixDigits
     }
 
     /// <summary>The big-number path alone, for any radix that is not a power of two: what the tests hold the integer and narrow paths to.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=F5A795
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=F5A795
+    // Hairs-Human:        PENDING
     internal static string FormatWide(double value, int radix)
     {
         Span<char> digits = stackalloc char[MaximumDigits];
@@ -99,8 +99,8 @@ internal static class RadixDigits
     /// An integer below 2^53 is its own shortest digits in every radix: its rounding interval is
     /// at most one wide, and every other number with as few significant digits is at least one away.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=0C62BF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=0C62BF
+    // Hairs-Human:        PENDING
     private static int Integer(ulong value, int radix, Span<char> digits, out int integerDigits)
     {
         Span<char> reversed = stackalloc char[64];
@@ -120,8 +120,8 @@ internal static class RadixDigits
     }
 
     /// <summary>The terminating expansion of a double in a radix that is a power of two.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=9FA21D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=9FA21D
+    // Hairs-Human:        PENDING
     private static int PowerOfTwo(double value, int radix, Span<char> digits, out int integerDigits)
     {
         var bits = DoubleBits.Of(value);
@@ -143,8 +143,8 @@ internal static class RadixDigits
     }
 
     /// <summary>Steele and White's free-format generation, in exact integer arithmetic.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=575996
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=575996
+    // Hairs-Human:        PENDING
     private static int FreeFormat(double value, int radix, Span<char> digits, out int integerDigits)
     {
         var bits = DoubleBits.Of(value);
@@ -242,8 +242,8 @@ internal static class RadixDigits
     /// scaling gives, so the path never overflows; when it does not hold, the caller uses the
     /// big-number path.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=61CB04
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=61CB04
+    // Hairs-Human:        PENDING
     private static bool TryFreeFormatNarrow(double value, int radix, Span<char> digits, out int count, out int integerDigits)
     {
         var bits = DoubleBits.Of(value);
@@ -343,8 +343,8 @@ internal static class RadixDigits
     /// The quotient of <paramref name="r"/> by <paramref name="s"/>, below 37 here, leaving the
     /// remainder in <paramref name="r"/>: estimated in floating point and corrected exactly.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=B307BC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=B307BC
+    // Hairs-Human:        PENDING
     private static uint Divide(ref UInt128 r, UInt128 s)
     {
         var quotient = (uint)((double)r / (double)s);
@@ -366,8 +366,8 @@ internal static class RadixDigits
     }
 
     /// <summary>The digits generation leaves, without the leading and trailing zeros the specification's s never has.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=F75CBC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=1; Fingerprint=F75CBC
+    // Hairs-Human:        PENDING
     private static int Finish(Span<char> digits, int count, int exponent, out int integerDigits)
     {
         // An estimate one too large leaves leading zero digits, which carry no value.
@@ -391,8 +391,8 @@ internal static class RadixDigits
     }
 
     /// <summary>Appends the last digit, carrying into the digits before it when it reaches the radix.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=474655
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=474655
+    // Hairs-Human:        PENDING
     private static int Append(Span<char> digits, int count, uint digit, uint radix, ref int exponent)
     {
         if (digit < radix)
@@ -424,8 +424,8 @@ internal static class RadixDigits
     /// <summary>Steps 6 and 7 of <c>Number::toString</c>: the digits placed positionally, without an exponent.</summary>
     /// <param name="digits">The significand's k digits.</param>
     /// <param name="integerDigits">The specification's n: how many places the point is after the first digit.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=EB523B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=EB523B
+    // Hairs-Human:        PENDING
     internal static string Positional(ReadOnlySpan<char> digits, int integerDigits)
     {
         var k = digits.Length;
@@ -452,8 +452,8 @@ internal static class RadixDigits
         });
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=ECEE4C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1.20; IP=Low; Security=Medium; Resources=2; Fingerprint=ECEE4C
+    // Hairs-Human:        PENDING
     private static int FloorDivide(int value, int divisor) =>
         value >= 0 ? value / divisor : -((-value + divisor - 1) / divisor);
 }

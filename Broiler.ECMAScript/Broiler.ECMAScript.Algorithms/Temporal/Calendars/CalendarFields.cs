@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   1
 // Annotated:        1/1
 // Exempt:           6
@@ -40,8 +40,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// ignores them.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.2 via Broiler.VM JsCalendarFields; IP=None; Security=None; Resources=0; Fingerprint=B310C4
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal s12.3.2 via Broiler.VM JsCalendarFields; IP=None; Security=None; Resources=0; Fingerprint=B310C4
+// Hairs-Human:        PENDING
 public readonly record struct CalendarFields
 {
     /// <summary>The <c>era</c> field: an era code or alias of Table 2, matched exactly; or unset.</summary>

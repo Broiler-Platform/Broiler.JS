@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   14
 // Annotated:        14/14
 // Exempt:           5
@@ -28,8 +28,8 @@ namespace Broiler.ECMAScript.Generation.Time;
 /// <summary>A compiled zone with its Zone name.</summary>
 /// <param name="Name">The Zone's name in the tzdb source.</param>
 /// <param name="Zone">The compiled zone.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=FB5F32
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=FB5F32
+// Hairs-Human:        PENDING
 public sealed record TzdbCompiledZone(string Name, TzdbZone Zone);
 
 /// <summary>
@@ -55,13 +55,13 @@ public sealed record TzdbCompiledZone(string Name, TzdbZone Zone);
 /// <c>zone.tab</c>'s zones of each country, both in ordinal order.</item>
 /// </list>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=7E8319
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=7E8319
+// Hairs-Human:        PENDING
 public sealed class TzdbTables
 {
     /// <summary>Holds the tables the generator wrote.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=B372DA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=B372DA
+    // Hairs-Human:        PENDING
     internal TzdbTables(string release, byte[] timeZones, byte[] timeZoneIds, byte[] timeZoneRegions)
     {
         Release = release;
@@ -107,20 +107,20 @@ public sealed class TzdbTables
 /// nothing recording a time, a machine or a path.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=High; Resources=6; Fingerprint=A7C108
-// Broiler-Falsified-If: a table is written from a tzdb member or a CLDR file that failed its pin's check, or two runs over the same inputs write different bytes
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=High; Resources=6; Fingerprint=A7C108
+// Hairs-Falsified-If: a table is written from a tzdb member or a CLDR file that failed its pin's check, or two runs over the same inputs write different bytes
+// Hairs-Human:        PENDING
 public static class TzdbTableGenerator
 {
     /// <summary>CLDR's time zone keys, by the path a CLDR pin writes them under.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=1BA802
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=1BA802
+    // Hairs-Human:        PENDING
     public const string TimeZoneKeys = "cldr-48.2.0/json/cldr-bcp47/bcp47/timezone.json";
 
     /// <summary>The compiled zones of the pinned release, by Zone name, in ordinal order.</summary>
     /// <param name="source">The parsed source files.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=5; Fingerprint=5424B0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=5; Fingerprint=5424B0
+    // Hairs-Human:        PENDING
     public static IReadOnlyList<TzdbCompiledZone> Zones(TzdbSource source)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -139,9 +139,9 @@ public static class TzdbTableGenerator
     /// <param name="cldrPin">The CLDR pin, which must name <see cref="TimeZoneKeys"/>.</param>
     /// <param name="cldr">Each file the CLDR pin names, by the path it writes it under.</param>
     /// <exception cref="InvalidDataException">An archive is not the pinned one, the CLDR pin does not name the time zone keys, or the data disagrees with itself.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=High; Resources=6; Fingerprint=CA2F6C
-    // Broiler-Falsified-If: tables are answered for a tzdb member or a CLDR file whose length or hash differs from its pin
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=High; Resources=6; Fingerprint=CA2F6C
+    // Hairs-Falsified-If: tables are answered for a tzdb member or a CLDR file whose length or hash differs from its pin
+    // Hairs-Human:        PENDING
     public static TzdbTables Generate(
         TzdbPin pin,
         IReadOnlyDictionary<string, byte[]> tzdb,
@@ -166,8 +166,8 @@ public static class TzdbTableGenerator
     }
 
     /// <summary>The binary zone table, in the layout <see cref="TzdbTables.TimeZones"/> states.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=FD865F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=FD865F
+    // Hairs-Human:        PENDING
     internal static byte[] Encode(IReadOnlyList<TzdbCompiledZone> zones)
     {
         var bytes = new List<byte>();
@@ -223,8 +223,8 @@ public static class TzdbTableGenerator
     }
 
     /// <summary>An ON field as a kind (0 a day, 1 the last weekday, 2 on or after, 3 on or before), a weekday and a day.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=CEF3AE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=CEF3AE
+    // Hairs-Human:        PENDING
     internal static (int Kind, int Weekday, int Day) OnField(string on)
     {
         if (on.StartsWith("last", StringComparison.Ordinal))
@@ -246,18 +246,18 @@ public static class TzdbTableGenerator
     }
 
     /// <summary>A signed value, zig-zag encoded so that a small magnitude is a small number.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=413BE5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=413BE5
+    // Hairs-Human:        PENDING
     private static ulong ZigZag(long value) => (ulong)((value << 1) ^ (value >> 63));
 
     /// <summary>Appends a signed value as a zig-zag varint.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=CEE1C1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=CEE1C1
+    // Hairs-Human:        PENDING
     private static void Signed(List<byte> bytes, long value) => Unsigned(bytes, ZigZag(value));
 
     /// <summary>Appends an unsigned value as a little-endian base-128 varint.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=69B5A7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=69B5A7
+    // Hairs-Human:        PENDING
     private static void Unsigned(List<byte> bytes, ulong value)
     {
         while (value >= 0x80)
@@ -270,8 +270,8 @@ public static class TzdbTableGenerator
     }
 
     /// <summary>Every identifier, with the Zone it reads and its primary identifier where that is another.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 6.5.1 via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=A34AEF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 6.5.1 via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=A34AEF
+    // Hairs-Human:        PENDING
     internal static IEnumerable<string> Identifiers(TzdbSource source, IReadOnlyList<TzdbCompiledZone> zones, byte[] timeZoneKeys)
     {
         var index = zones.Select(static (zone, i) => (zone.Name, i)).ToDictionary(static p => p.Name, static p => p.i, StringComparer.Ordinal);
@@ -331,8 +331,8 @@ public static class TzdbTableGenerator
     }
 
     /// <summary><c>zone.tab</c>'s zones of each country code.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=2C8BD1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=2C8BD1
+    // Hairs-Human:        PENDING
     internal static IEnumerable<string> Regions(IReadOnlyDictionary<string, byte[]> tzdb) =>
         TzdbPin.Decode(tzdb["zone.tab"]).Split('\n')
             .Where(static line => line.Length > 0 && line[0] != '#')
@@ -346,8 +346,8 @@ public static class TzdbTableGenerator
     /// literal of them holds them. A line that is not plain printable ASCII, or holds a quotation mark, is
     /// refused, since no source writer could state it.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=3; Fingerprint=FCDD8A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator; IP=Low; Security=Medium; Resources=3; Fingerprint=FCDD8A
+    // Hairs-Human:        PENDING
     internal static byte[] Text(string name, IEnumerable<string> lines)
     {
         var text = new StringBuilder();

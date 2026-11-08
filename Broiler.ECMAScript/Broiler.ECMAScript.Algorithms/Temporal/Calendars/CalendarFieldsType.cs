@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   1
 // Annotated:        1/1
 // Exempt:           3
@@ -21,8 +21,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// The kind of value a set of calendar fields describes: the <c>type</c> argument of the Temporal proposal's
 /// CalendarResolveFields (s12.3.31) and ISODateToFields (s13.42), which decides the fields each needs.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=Temporal s12.3.31; IP=None; Security=None; Resources=0; Fingerprint=E363D4
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal s12.3.31; IP=None; Security=None; Resources=0; Fingerprint=E363D4
+// Hairs-Human:        PENDING
 public enum CalendarFieldsType
 {
     /// <summary><c>date</c>: a year, a month and a day.</summary>

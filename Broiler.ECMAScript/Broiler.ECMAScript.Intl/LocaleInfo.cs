@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   18
 // Annotated:        18/18
 // Exempt:           2
@@ -53,8 +53,8 @@ namespace Broiler.ECMAScript.Intl;
 /// <see cref="LocaleId"/>). Broiler.VM charges nothing there (row L43) and passes no meter; Broiler.JS passes none.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=0; Fingerprint=1AEABD
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=0; Fingerprint=1AEABD
+// Hairs-Human:        PENDING
 public static class LocaleInfo
 {
     /// <summary>
@@ -62,8 +62,8 @@ public static class LocaleInfo
     /// which no embedding's data carries, so <c>gregory</c> (row L16, the same in both engines).
     /// </summary>
     /// <param name="locale">The Locale.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=F9A4AD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=F9A4AD
+    // Hairs-Human:        PENDING
     public static IReadOnlyList<string> Calendars(LocaleRecord locale)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -79,9 +79,9 @@ public static class LocaleInfo
     /// <param name="collator">The engine's <c>Intl.Collator</c> data.</param>
     /// <param name="defaultLocale">DefaultLocale, from the engine's provider.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of the Locale's identifier, charged before the work.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=High; Resources=1; Fingerprint=284344
-    // Broiler-Falsified-If: a locale whose language is not und and that the Collator's available locales do not match answers anything but DefaultLocale's collations (row L18), or und answers anything but emoji and eor
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=High; Resources=1; Fingerprint=284344
+    // Hairs-Falsified-If: a locale whose language is not und and that the Collator's available locales do not match answers anything but DefaultLocale's collations (row L18), or und answers anything but emoji and eor
+    // Hairs-Human:        PENDING
     public static IReadOnlyList<string> Collations(LocaleRecord locale, ICollatorLocaleData collator, string defaultLocale, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -127,8 +127,8 @@ public static class LocaleInfo
     /// <param name="locale">The Locale.</param>
     /// <param name="data">The locale data.</param>
     /// <param name="charge">The caller's meter: as <see cref="RegionPreference"/>'s.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=F36BBF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=F36BBF
+    // Hairs-Human:        PENDING
     public static IReadOnlyList<string> HourCycles(LocaleRecord locale, ILocaleData data, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -187,8 +187,8 @@ public static class LocaleInfo
     /// <param name="numberFormatLocales">The engine's <c>Intl.NumberFormat</c> available locales.</param>
     /// <param name="data">The locale data.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of the Locale's identifier, charged before the work.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Medium; Resources=1; Fingerprint=0B2523
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Medium; Resources=1; Fingerprint=0B2523
+    // Hairs-Human:        PENDING
     public static IReadOnlyList<string> NumberingSystems(LocaleRecord locale, IReadOnlyList<string> numberFormatLocales, ILocaleData data, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -222,8 +222,8 @@ public static class LocaleInfo
     /// <param name="locale">The Locale.</param>
     /// <param name="timeZones">The time zone database the engine embeds.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of the Locale's identifier, charged before the work.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=CA526B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=CA526B
+    // Hairs-Human:        PENDING
     public static IReadOnlyList<string>? TimeZones(LocaleRecord locale, ITimeZoneDatabase timeZones, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -241,8 +241,8 @@ public static class LocaleInfo
     /// <param name="data">The locale data.</param>
     /// <param name="charge">The caller's meter: one unit per code unit of the Locale's identifier, charged before the work.</param>
     /// <returns><c>"rtl"</c>, <c>"ltr"</c>, or <see langword="null"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=A99A31
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=A99A31
+    // Hairs-Human:        PENDING
     public static string? TextDirection(LocaleRecord locale, ILocaleData data, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -269,8 +269,8 @@ public static class LocaleInfo
     /// <param name="locale">The Locale.</param>
     /// <param name="data">The locale data, whose week data holds the world's, <c>001</c>.</param>
     /// <param name="charge">The caller's meter: as <see cref="RegionPreference"/>'s.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=04097F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=04097F
+    // Hairs-Human:        PENDING
     public static LocaleWeekInfo WeekInfo(LocaleRecord locale, ILocaleData data, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -316,8 +316,8 @@ public static class LocaleInfo
     /// The caller's meter: one unit per code unit of <paramref name="locale"/>, charged before the work, and the alias-table
     /// keys the likely tag's canonicalisation looks up.
     /// </param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=96C249
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=96C249
+    // Hairs-Human:        PENDING
     public static LocaleRegionPreference RegionPreference(string locale, ILocaleData data, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -327,8 +327,8 @@ public static class LocaleInfo
     }
 
     /// <summary>RegionPreference's steps, once the identifier's length is charged; the canonicalisation charges its alias-table keys.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=6C2213
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=6C2213
+    // Hairs-Human:        PENDING
     private static LocaleRegionPreference Preference(string locale, ILocaleData data, WorkCharge? charge)
     {
         var tag = Tag(locale);
@@ -345,8 +345,8 @@ public static class LocaleInfo
     }
 
     /// <summary>ECMA-402's CanonicalUnicodeSubdivision (<c>sec-canonicalunicodesubdivision</c>): the region a subdivision keyword names.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=7459AD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=7459AD
+    // Hairs-Human:        PENDING
     private static string? Subdivision(ILocaleData data, LocaleTag tag, string key)
     {
         var entry = tag.Keywords.FindIndex(pair => pair.Key == key);
@@ -369,8 +369,8 @@ public static class LocaleInfo
     }
 
     /// <summary>A week data day as ECMA-402's weekday number, Monday 1 to Sunday 7; 0 for anything else.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=DC903D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=DC903D
+    // Hairs-Human:        PENDING
     private static int Day(string key) => key switch
     {
         "mon" => 1,
@@ -384,13 +384,13 @@ public static class LocaleInfo
     };
 
     /// <summary>Charges the caller's meter one unit per code unit of a Locale's identifier, before a method reads it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=0; Fingerprint=7F1FE0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=0; Fingerprint=7F1FE0
+    // Hairs-Human:        PENDING
     private static void Charge(LocaleRecord locale, WorkCharge? charge) => charge?.Invoke((ulong)locale.Locale.Length);
 
     /// <summary>The parsed form of a Locale's canonical identifier.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=195C73
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=195C73
+    // Hairs-Human:        PENDING
     private static LocaleTag Tag(string locale) =>
         LocaleTag.Parse(locale) ?? throw new ArgumentException("the locale " + locale + " is not a well-formed tag", nameof(locale));
 }
@@ -398,15 +398,15 @@ public static class LocaleInfo
 /// <summary>What WeekInfoOfLocale answers (ECMA-402's WeekInfo Record): the first day, and the weekend's days in ascending order, Monday 1 to Sunday 7.</summary>
 /// <param name="FirstDay">[[FirstDay]].</param>
 /// <param name="Weekend">[[Weekend]].</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 locale.html records and the Collator's data; IP=Low; Security=Low; Resources=0; Fingerprint=4D63D4
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 locale.html records and the Collator's data; IP=Low; Security=Low; Resources=0; Fingerprint=4D63D4
+// Hairs-Human:        PENDING
 public sealed record LocaleWeekInfo(int FirstDay, IReadOnlyList<int> Weekend);
 
 /// <summary>What RegionPreference answers: the region whose data a locale reads, and the <c>rg</c> override.</summary>
 /// <param name="Region">[[Region]].</param>
 /// <param name="RegionOverride">[[RegionOverride]], or <see langword="null"/>.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 locale.html records and the Collator's data; IP=Low; Security=Low; Resources=0; Fingerprint=7958E9
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 locale.html records and the Collator's data; IP=Low; Security=Low; Resources=0; Fingerprint=7958E9
+// Hairs-Human:        PENDING
 public sealed record LocaleRegionPreference(string Region, string? RegionOverride);
 
 /// <summary>
@@ -414,8 +414,8 @@ public sealed record LocaleRegionPreference(string Region, string? RegionOverrid
 /// each one's sort collations, and the collations it supports. Each engine keeps its own Collator until milestone SJL-17
 /// shares collation (decision SJL-D-24 (c)); Broiler.VM's lists <c>phonebk</c> for German alone (JSD-0043).
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 locale.html records and the Collator's data; IP=Low; Security=Low; Resources=0; Fingerprint=CBB9CD
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 locale.html records and the Collator's data; IP=Low; Security=Low; Resources=0; Fingerprint=CBB9CD
+// Hairs-Human:        PENDING
 public interface ICollatorLocaleData
 {
     /// <summary>%Intl.Collator%.[[AvailableLocales]].</summary>
@@ -426,7 +426,7 @@ public interface ICollatorLocaleData
 
     /// <summary>%Intl.Collator%.[[SortLocaleData]].[[&lt;locale&gt;]].[[co]]: the locale's collations for sorting, <see langword="null"/> first.</summary>
     /// <param name="locale">An available locale, or DefaultLocale.</param>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 locale.html records and the Collator's data; IP=Low; Security=Low; Resources=1; Fingerprint=6AF046
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 locale.html records and the Collator's data; IP=Low; Security=Low; Resources=1; Fingerprint=6AF046
+    // Hairs-Human:        PENDING
     IReadOnlyList<string?> SortLocaleData(string locale);
 }

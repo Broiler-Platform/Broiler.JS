@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   1
 // Annotated:        1/1
 // Exempt:           14
@@ -27,8 +27,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// A status names the specification's step that failed, not a message: messages stay each engine's (JSD-0054
 /// section 5). The order in which an operation tests its inputs is Broiler.VM's, which is the specification's.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0078 X3; IP=None; Security=None; Resources=0; Fingerprint=3A5A88
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0078 X3; IP=None; Security=None; Resources=0; Fingerprint=3A5A88
+// Hairs-Human:        PENDING
 public enum CalendarStatus
 {
     /// <summary>The operation completed, and its result is valid.</summary>

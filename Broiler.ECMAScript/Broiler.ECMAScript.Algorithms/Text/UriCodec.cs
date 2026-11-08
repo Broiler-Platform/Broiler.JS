@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   14
 // Annotated:        14/14
 // Exempt:           3
@@ -38,13 +38,13 @@ namespace Broiler.ECMAScript.Text;
 /// position of the code unit or escape at fault; an engine raises <c>URIError</c>.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6; IP=Low; Security=Medium; Resources=2; Fingerprint=91F488
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.6; IP=Low; Security=Medium; Resources=2; Fingerprint=91F488
+// Hairs-Human:        PENDING
 public static class UriCodec
 {
     /// <summary><c>encodeURI</c>'s <c>extraUnescaped</c> and <c>decodeURI</c>'s <c>preserveEscapeSet</c>: the <c>uriReserved</c> characters and <c>#</c> (ECMA-262 19.2.6.2 and 19.2.6.1).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=0ED4B6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=0ED4B6
+    // Hairs-Human:        PENDING
     public const string ReservedAndNumberSign = ";/?:@&=+$,#";
 
     /// <summary><c>Encode</c> (ECMA-262 19.2.6.5): every code point outside the unescaped set as its UTF-8 octets, each <c>%XX</c>.</summary>
@@ -54,8 +54,8 @@ public static class UriCodec
     /// <param name="failure">The lone surrogate's position, when it is not.</param>
     /// <param name="charge">The caller's meter: one unit before each step, a surrogate pair being one step; <see langword="null"/> for none.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.Malformed"/> at a lone surrogate (<c>uri.unpaired-surrogate</c>).</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.5; IP=Low; Security=Medium; Resources=2; Fingerprint=781004
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.6.5; IP=Low; Security=Medium; Resources=2; Fingerprint=781004
+    // Hairs-Human:        PENDING
     public static ResultStatus Encode(ReadOnlySpan<char> text, ReadOnlySpan<char> extraUnescaped, out string result, out Failure failure, WorkCharge? charge = null)
     {
         failure = default;
@@ -94,9 +94,9 @@ public static class UriCodec
     /// lead or continue a sequence (<c>uri.invalid-octet</c>), or a sequence that is overlong, a
     /// surrogate or above U+10FFFF (<c>uri.invalid-utf8</c>).
     /// </returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.6; IP=Low; Security=High; Resources=2; Fingerprint=230B5B
-    // Broiler-Falsified-If: an overlong sequence, an encoded surrogate or a value above U+10FFFF completes, a preserved character's escape is decoded, or a well-formed sequence is refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.6.6; IP=Low; Security=High; Resources=2; Fingerprint=230B5B
+    // Hairs-Falsified-If: an overlong sequence, an encoded surrogate or a value above U+10FFFF completes, a preserved character's escape is decoded, or a well-formed sequence is refused
+    // Hairs-Human:        PENDING
     public static ResultStatus Decode(ReadOnlySpan<char> text, ReadOnlySpan<char> preserveEscapeSet, out string result, out Failure failure, WorkCharge? charge = null)
     {
         failure = default;
@@ -173,8 +173,8 @@ public static class UriCodec
     /// <param name="text">The String.</param>
     /// <param name="charge">The caller's meter: one unit before each code unit; <see langword="null"/> for none.</param>
     /// <returns>The escaped String. <c>escape</c> never fails.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 B.2.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=FCE721
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 B.2.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=FCE721
+    // Hairs-Human:        PENDING
     public static string Escape(ReadOnlySpan<char> text, WorkCharge? charge = null)
     {
         var output = new StringBuilder(text.Length);
@@ -204,8 +204,8 @@ public static class UriCodec
     /// <param name="text">The String.</param>
     /// <param name="charge">The caller's meter: one unit before each step, an escape being one step; <see langword="null"/> for none.</param>
     /// <returns>The unescaped String. <c>unescape</c> never fails.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 B.2.1.2; IP=Low; Security=Medium; Resources=2; Fingerprint=1BA52E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 B.2.1.2; IP=Low; Security=Medium; Resources=2; Fingerprint=1BA52E
+    // Hairs-Human:        PENDING
     public static string Unescape(ReadOnlySpan<char> text, WorkCharge? charge = null)
     {
         var output = new StringBuilder(text.Length);
@@ -247,8 +247,8 @@ public static class UriCodec
     /// <summary>The value of one hexadecimal digit of either case (ECMA-262 12.9.3 <c>HexDigit</c>), or a negative number for any other code unit.</summary>
     /// <param name="unit">The code unit.</param>
     /// <returns>Zero to fifteen, or -1, which stays negative when it is shifted left by up to 30 bits and combined with other digits by a bitwise or.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Low; Resources=1; Fingerprint=039EF5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Low; Resources=1; Fingerprint=039EF5
+    // Hairs-Human:        PENDING
     public static int HexDigitValue(char unit) => unit switch
     {
         >= '0' and <= '9' => unit - '0',
@@ -257,8 +257,8 @@ public static class UriCodec
         _ => -1,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.6; IP=Low; Security=Medium; Resources=1; Fingerprint=565B81
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.6.6; IP=Low; Security=Medium; Resources=1; Fingerprint=565B81
+    // Hairs-Human:        PENDING
     private static int OctetAt(ReadOnlySpan<char> text, int at)
     {
         if (at + 2 >= text.Length || text[at] != '%')
@@ -268,8 +268,8 @@ public static class UriCodec
         return value < 0 ? -1 : value;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.5; IP=Low; Security=Low; Resources=1; Fingerprint=F424F8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.6.5; IP=Low; Security=Low; Resources=1; Fingerprint=F424F8
+    // Hairs-Human:        PENDING
     private static void AppendUtf8(StringBuilder output, int point)
     {
         if (point <= 0x7F)
@@ -296,13 +296,13 @@ public static class UriCodec
         }
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.5; IP=Low; Security=Low; Resources=1; Fingerprint=D10E52
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.6.5; IP=Low; Security=Low; Resources=1; Fingerprint=D10E52
+    // Hairs-Human:        PENDING
     private static void AppendOctet(StringBuilder output, int octet) =>
         output.Append('%').Append(UpperHexDigits[(octet >> 4) & 0xF]).Append(UpperHexDigits[octet & 0xF]);
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.6; IP=Low; Security=Low; Resources=1; Fingerprint=C6C821
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.6.6; IP=Low; Security=Low; Resources=1; Fingerprint=C6C821
+    // Hairs-Human:        PENDING
     private static void AppendCodePoint(StringBuilder output, int point)
     {
         if (point <= 0xFFFF)
@@ -316,12 +316,12 @@ public static class UriCodec
     }
 
     /// <summary><c>uriUnescaped</c> (ECMA-262 19.2.6.1): <c>uriAlpha</c>, <c>DecimalDigit</c> and <c>uriMark</c>.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=D40E9B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=D40E9B
+    // Hairs-Human:        PENDING
     private static bool IsUriUnescaped(char unit) => IsAsciiAlphanumeric(unit) || UriMark.Contains(unit);
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=096A98
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=096A98
+    // Hairs-Human:        PENDING
     private static bool IsAsciiAlphanumeric(char unit) => unit is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or (>= '0' and <= '9');
 
     private static ReadOnlySpan<char> UriMark => "-_.!~*'()";
@@ -331,8 +331,8 @@ public static class UriCodec
 
     private static ReadOnlySpan<char> UpperHexDigits => "0123456789ABCDEF";
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6; IP=Low; Security=Low; Resources=1; Fingerprint=5A0616
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 19.2.6; IP=Low; Security=Low; Resources=1; Fingerprint=5A0616
+    // Hairs-Human:        PENDING
     private static ResultStatus Refuse(int position, string messageId, out string result, out Failure failure)
     {
         result = string.Empty;

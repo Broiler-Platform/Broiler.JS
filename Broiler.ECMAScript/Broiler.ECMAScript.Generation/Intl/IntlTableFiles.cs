@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   4
 // Annotated:        4/4
 // Exempt:           0
@@ -35,19 +35,19 @@ namespace Broiler.ECMAScript.Generation.Intl;
 /// <c>.bin</c> for a binary one - <c>LikelySubtags</c> is <c>likely-subtags.txt</c>, <c>CollationRoot</c> is
 /// <c>collation-root.bin</c>. Nothing here reads or writes a file: the caller writes the bytes it is answered.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 table files; IP=Low; Security=Low; Resources=3; Fingerprint=3CFE1A
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 table files; IP=Low; Security=Low; Resources=3; Fingerprint=3CFE1A
+// Hairs-Human:        PENDING
 public static class IntlTableFiles
 {
     /// <summary>The manifest's file name.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 table files; IP=Low; Security=Low; Resources=0; Fingerprint=2950E2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 table files; IP=Low; Security=Low; Resources=0; Fingerprint=2950E2
+    // Hairs-Human:        PENDING
     public const string ManifestFile = "tables.manifest";
 
     /// <summary>The file name a table is written under: <c>LikelySubtags</c> as <c>likely-subtags.txt</c>.</summary>
     /// <param name="table">The table.</param>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 table files; IP=Low; Security=Low; Resources=1; Fingerprint=E2DC41
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 table files; IP=Low; Security=Low; Resources=1; Fingerprint=E2DC41
+    // Hairs-Human:        PENDING
     public static string FileName(IntlGeneratedTable table)
     {
         ArgumentNullException.ThrowIfNull(table);
@@ -77,8 +77,8 @@ public static class IntlTableFiles
     /// <summary>Every file: one per table and the manifest, by file name, in ordinal order.</summary>
     /// <param name="tables">The tables, as <see cref="CldrTableGenerator.Generate"/> answers them.</param>
     /// <param name="header">The manifest's comment lines, each without its <c>#</c>: the caller's account of where the files come from.</param>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 table files; IP=Low; Security=Medium; Resources=3; Fingerprint=79C7E1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 table files; IP=Low; Security=Medium; Resources=3; Fingerprint=79C7E1
+    // Hairs-Human:        PENDING
     public static IReadOnlyDictionary<string, byte[]> Write(IntlTables tables, IReadOnlyList<string> header)
     {
         ArgumentNullException.ThrowIfNull(tables);

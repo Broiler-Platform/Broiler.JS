@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   13
 // Annotated:        13/13
 // Exempt:           4
@@ -30,8 +30,8 @@ namespace Broiler.ECMAScript.Generation.Intl;
 /// <param name="Name">The path as the pin writes it, relative to the pin's directory, e.g. <c>cldr-48.2.0/json/cldr-core/supplemental/plurals.json</c>.</param>
 /// <param name="Bytes">The file's length.</param>
 /// <param name="Sha256">The file's SHA-256, in lower-case hexadecimal.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=1; Fingerprint=7F0BCB
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=1; Fingerprint=7F0BCB
+// Hairs-Human:        PENDING
 public sealed record IntlPinEntry(string Name, long Bytes, string Sha256);
 
 /// <summary>
@@ -56,24 +56,24 @@ public sealed record IntlPinEntry(string Name, long Bytes, string Sha256);
 /// the line; here the reader checks both.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 D12 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=574FE4
-// Broiler-Falsified-If: a file whose length, SHA-256 or stated version differs from the pin, or a pin of another CLDR or UCA version, is returned as the pinned one without an exception
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 D12 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=574FE4
+// Hairs-Falsified-If: a file whose length, SHA-256 or stated version differs from the pin, or a pin of another CLDR or UCA version, is returned as the pinned one without an exception
+// Hairs-Human:        PENDING
 public sealed class IntlCldrPin
 {
     /// <summary>The one CLDR release the Intl data is taken from.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=0; Fingerprint=2BDACF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=0; Fingerprint=2BDACF
+    // Hairs-Human:        PENDING
     public const string PinnedVersion = IntlDataVersions.CldrVersion;
 
     /// <summary>The CLDR major version the supplemental files state.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=0; Fingerprint=884F22
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=0; Fingerprint=884F22
+    // Hairs-Human:        PENDING
     public const string PinnedMajor = IntlDataVersions.CldrMajor;
 
     /// <summary>The UCA version the collation files state, which is the Unicode version the generator reads.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D12 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=0; Fingerprint=4C2813
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D12 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=0; Fingerprint=4C2813
+    // Hairs-Human:        PENDING
     public const string PinnedUcaVersion = IntlDataVersions.UcaVersion;
 
     private IntlCldrPin(IReadOnlyDictionary<string, string> values, IReadOnlyList<IntlPinEntry> entries, IReadOnlyList<string> integrities)
@@ -93,16 +93,16 @@ public sealed class IntlCldrPin
     public IReadOnlyList<string> Integrities { get; }
 
     /// <summary>The version line, or the empty string when there is none.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Medium; Resources=1; Fingerprint=7391BA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Medium; Resources=1; Fingerprint=7391BA
+    // Hairs-Human:        PENDING
     public string Version => Values.TryGetValue("version", out var version) ? version : string.Empty;
 
     /// <summary>Parses pin text: <c>key value</c> lines, <c>#</c> comments, repeated <c>file</c> and <c>json-integrity</c> lines.</summary>
     /// <param name="text">The pin's text.</param>
     /// <exception cref="InvalidDataException">A <c>file</c> line is malformed, or a line is empty of a value or repeats a key.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=871D66
-    // Broiler-Falsified-If: a malformed file line or a repeated key is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=871D66
+    // Hairs-Falsified-If: a malformed file line or a repeated key is accepted
+    // Hairs-Human:        PENDING
     public static IntlCldrPin Parse(string text)
     {
         var (values, entries, integrities) = IntlPinText.Parse(text, "cldr.pin");
@@ -112,8 +112,8 @@ public sealed class IntlCldrPin
     /// <summary>The entry the pin writes as <paramref name="name"/>.</summary>
     /// <param name="name">The path as the pin writes it.</param>
     /// <exception cref="InvalidDataException">The pin names no such file.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Medium; Resources=2; Fingerprint=8DFD48
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Medium; Resources=2; Fingerprint=8DFD48
+    // Hairs-Human:        PENDING
     public IntlPinEntry Entry(string name) =>
         Entries.SingleOrDefault(entry => string.Equals(entry.Name, name, StringComparison.Ordinal))
         ?? throw new InvalidDataException("cldr.pin names no file `" + name + "`");
@@ -124,9 +124,9 @@ public sealed class IntlCldrPin
     /// when they are the files the pin describes.
     /// </summary>
     /// <param name="archive">Each file's bytes, by the path the pin writes it under.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 D12 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=874F2C
-    // Broiler-Falsified-If: a file whose length, hash or stated version differs from the pin, or a pin of another version or UCA version, yields no violation
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 D12 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=874F2C
+    // Hairs-Falsified-If: a file whose length, hash or stated version differs from the pin, or a pin of another version or UCA version, yields no violation
+    // Hairs-Human:        PENDING
     public IEnumerable<string> Violations(IReadOnlyDictionary<string, byte[]> archive)
     {
         ArgumentNullException.ThrowIfNull(archive);
@@ -176,9 +176,9 @@ public sealed class IntlCldrPin
     /// <summary>The files, verified, or an exception naming every way they are not the pinned ones.</summary>
     /// <param name="archive">Each file's bytes, by the path the pin writes it under.</param>
     /// <exception cref="InvalidDataException">The files are not the ones the pin describes.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=22A1C6
-    // Broiler-Falsified-If: files with a violation are returned instead of refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=22A1C6
+    // Hairs-Falsified-If: files with a violation are returned instead of refused
+    // Hairs-Human:        PENDING
     public IReadOnlyDictionary<string, byte[]> Verified(IReadOnlyDictionary<string, byte[]> archive)
     {
         var violations = Violations(archive).ToArray();
@@ -200,9 +200,9 @@ public sealed class IntlCldrPin
     /// </summary>
     /// <param name="name">The path as the pin writes it.</param>
     /// <param name="bytes">The file's bytes.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 D12 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=13894D
-    // Broiler-Falsified-If: a package, supplemental or UCA file of another release is answered null
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 D12 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=13894D
+    // Hairs-Falsified-If: a package, supplemental or UCA file of another release is answered null
+    // Hairs-Human:        PENDING
     public static string? VersionViolation(string name, byte[] bytes)
     {
         ArgumentNullException.ThrowIfNull(name);
@@ -252,15 +252,15 @@ public sealed class IntlCldrPin
 
 /// <summary>The grammar both Intl data pins share: <c>key value</c> lines, <c>#</c> comments, repeated <c>file</c> and <c>json-integrity</c> lines.</summary>
 /// <remarks><b>PORTED from Broiler.VM's <c>CldrPin.Parse</c></b>, its grammar unchanged; Broiler.VM's <c>UnicodePin</c> reads the same <c>file</c> lines.</remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 D12 pin grammar via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=6A20EE
-// Broiler-Falsified-If: a file line that is not a path, a decimal length and a digest, or a single-valued key that repeats or has no value, is parsed without an exception
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 D12 pin grammar via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=6A20EE
+// Hairs-Falsified-If: a file line that is not a path, a decimal length and a digest, or a single-valued key that repeats or has no value, is parsed without an exception
+// Hairs-Human:        PENDING
 internal static class IntlPinText
 {
     /// <summary>The single-valued keys, the <c>file</c> entries in order and the <c>json-integrity</c> lines of a pin's text.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D10 D12 pin grammar via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=333008
-    // Broiler-Falsified-If: a malformed file line or a repeated key is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D10 D12 pin grammar via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=333008
+    // Hairs-Falsified-If: a malformed file line or a repeated key is accepted
+    // Hairs-Human:        PENDING
     internal static (IReadOnlyDictionary<string, string> Values, IReadOnlyList<IntlPinEntry> Entries, IReadOnlyList<string> Integrities) Parse(string text, string pinName)
     {
         ArgumentNullException.ThrowIfNull(text);

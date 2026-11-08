@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   10
 // Annotated:        10/10
 // Exempt:           4
@@ -26,13 +26,13 @@ namespace Broiler.ECMAScript.Temporal;
 /// calendar tables hold, and ICU4X's mean-motion approximation outside them, as Table 1 allows. The arithmetic
 /// over them, and Table 6's reference years, are ported from Broiler.VM's <c>JsEastAsianCalendar</c>.
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar; IP=Low; Security=Low; Resources=1; Fingerprint=50FD62
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar; IP=Low; Security=Low; Resources=1; Fingerprint=50FD62
+// Hairs-Human:        PENDING
 internal sealed class EastAsianCalendarSystem : CalendarSystem
 {
     // The mean synodic month in days.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.MeanSynodicMonth; IP=Low; Security=Low; Resources=1; Fingerprint=FEF03A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.MeanSynodicMonth; IP=Low; Security=Low; Resources=1; Fingerprint=FEF03A
+    // Hairs-Human:        PENDING
     private const double MeanSynodicMonth = 29.530588853;
 
     private readonly bool korean;
@@ -42,8 +42,8 @@ internal sealed class EastAsianCalendarSystem : CalendarSystem
     // The first day of the related ISO year 2000's year, the origin of the month count.
     private readonly long anchor;
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=65FA28
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=65FA28
+    // Hairs-Human:        PENDING
     internal EastAsianCalendarSystem(CalendarId id, ICalendarTables tables)
         : base(id)
     {
@@ -52,40 +52,40 @@ internal sealed class EastAsianCalendarSystem : CalendarSystem
         anchor = Year(2000).Start;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.MeanMonths; IP=Low; Security=Low; Resources=1; Fingerprint=DFB48C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.MeanMonths; IP=Low; Security=Low; Resources=1; Fingerprint=DFB48C
+    // Hairs-Human:        PENDING
     internal override double MeanMonths => 365.2425 / MeanSynodicMonth;
 
     internal override bool MonthsBeforeReadsYears => true;
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.IsAdditionalMonthCode; IP=Low; Security=Low; Resources=1; Fingerprint=EF3F3C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.IsAdditionalMonthCode; IP=Low; Security=Low; Resources=1; Fingerprint=EF3F3C
+    // Hairs-Human:        PENDING
     internal override bool IsAdditionalMonthCode(MonthCode monthCode) => monthCode.IsLeapMonth && monthCode.Number is >= 1 and <= 12;
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.MonthsBefore; IP=Low; Security=Low; Resources=1; Fingerprint=26019C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.MonthsBefore; IP=Low; Security=Low; Resources=1; Fingerprint=26019C
+    // Hairs-Human:        PENDING
     internal override long MonthsBefore(long year) =>
         (long)Math.Round((Year(year).Start - anchor) / MeanSynodicMonth, MidpointRounding.AwayFromZero);
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.Year; IP=Low; Security=Low; Resources=1; Fingerprint=311ED6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.Year; IP=Low; Security=Low; Resources=1; Fingerprint=311ED6
+    // Hairs-Human:        PENDING
     internal override CalendarSystemYear Year(long year) =>
         SharedYear(tables, korean ? TableCalendar.Dangi : TableCalendar.Chinese, year);
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.YearOf; IP=Low; Security=Low; Resources=1; Fingerprint=4E7249
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.YearOf; IP=Low; Security=Low; Resources=1; Fingerprint=4E7249
+    // Hairs-Human:        PENDING
     internal override long YearOf(long epochDays)
     {
         var related = IsoCalendarMath.FromEpochDays(epochDays).Year;
         return Year(related).Start > epochDays ? related - 1 : related;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.InLeapYear; IP=Low; Security=Low; Resources=1; Fingerprint=E74E87
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 1 and Table 6 via Broiler.VM JsEastAsianCalendar.InLeapYear; IP=Low; Security=Low; Resources=1; Fingerprint=E74E87
+    // Hairs-Human:        PENDING
     internal override bool InLeapYear(CalendarSystemYear year) => year.Months == 13;
 
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 6 via Broiler.VM JsEastAsianCalendar.TableReferenceYear; IP=Low; Security=Low; Resources=1; Fingerprint=E82DEE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Intl era and month code proposal Table 6 via Broiler.VM JsEastAsianCalendar.TableReferenceYear; IP=Low; Security=Low; Resources=1; Fingerprint=E82DEE
+    // Hairs-Human:        PENDING
     internal override int? TableReferenceYear(MonthCode monthCode, int day)
     {
         // TABLE 6 (the era proposal's ad5028b): the reference year for days 1 to 29, then for day 30. -1 IS ITS DASH.
