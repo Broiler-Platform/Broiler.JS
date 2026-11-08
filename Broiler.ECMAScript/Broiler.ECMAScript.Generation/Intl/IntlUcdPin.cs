@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   7
 // Annotated:        7/7
 // Exempt:           3
@@ -42,14 +42,14 @@ namespace Broiler.ECMAScript.Generation.Intl;
 /// pin, and does not read this one.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=High; Resources=3; Fingerprint=AEF610
-// Broiler-Falsified-If: a file whose length or SHA-256 differs from the pin, a PropList.txt of another version, or a pin of another Unicode version, is returned as the pinned one without an exception
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=High; Resources=3; Fingerprint=AEF610
+// Hairs-Falsified-If: a file whose length or SHA-256 differs from the pin, a PropList.txt of another version, or a pin of another Unicode version, is returned as the pinned one without an exception
+// Hairs-Human:        PENDING
 public sealed class IntlUcdPin
 {
     /// <summary>The one Unicode version the generator reads.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=Low; Resources=0; Fingerprint=F480A8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=Low; Resources=0; Fingerprint=F480A8
+    // Hairs-Human:        PENDING
     public const string PinnedVersion = IntlDataVersions.UnicodeVersion;
 
     private IntlUcdPin(IReadOnlyDictionary<string, string> values, IReadOnlyList<IntlPinEntry> entries)
@@ -65,16 +65,16 @@ public sealed class IntlUcdPin
     public IReadOnlyList<IntlPinEntry> Entries { get; }
 
     /// <summary>The version line, or the empty string when there is none.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=Medium; Resources=1; Fingerprint=7391BA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=Medium; Resources=1; Fingerprint=7391BA
+    // Hairs-Human:        PENDING
     public string Version => Values.TryGetValue("version", out var version) ? version : string.Empty;
 
     /// <summary>Parses pin text: <c>key value</c> lines, <c>#</c> comments and repeated <c>file</c> lines.</summary>
     /// <param name="text">The pin's text.</param>
     /// <exception cref="InvalidDataException">A <c>file</c> line is malformed, or a line is empty of a value or repeats a key.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=High; Resources=3; Fingerprint=07D170
-    // Broiler-Falsified-If: a malformed file line or a repeated key is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=High; Resources=3; Fingerprint=07D170
+    // Hairs-Falsified-If: a malformed file line or a repeated key is accepted
+    // Hairs-Human:        PENDING
     public static IntlUcdPin Parse(string text)
     {
         var (values, entries, _) = IntlPinText.Parse(text, "ucd.pin");
@@ -84,8 +84,8 @@ public sealed class IntlUcdPin
     /// <summary>The entry the pin writes as <paramref name="name"/>.</summary>
     /// <param name="name">The path as the pin writes it.</param>
     /// <exception cref="InvalidDataException">The pin names no such file.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=Medium; Resources=2; Fingerprint=9F1A62
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=Medium; Resources=2; Fingerprint=9F1A62
+    // Hairs-Human:        PENDING
     public IntlPinEntry Entry(string name) =>
         Entries.SingleOrDefault(entry => string.Equals(entry.Name, name, StringComparison.Ordinal))
         ?? throw new InvalidDataException("ucd.pin names no file `" + name + "`");
@@ -96,9 +96,9 @@ public sealed class IntlUcdPin
     /// are the files the pin describes and the pin names both files the generator reads.
     /// </summary>
     /// <param name="archive">Each file's bytes, by the path the pin writes it under.</param>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=High; Resources=3; Fingerprint=DA6542
-    // Broiler-Falsified-If: a file whose length or hash differs from the pin, a pin of another version, or a pin that does not name a file the generator reads, yields no violation
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=High; Resources=3; Fingerprint=DA6542
+    // Hairs-Falsified-If: a file whose length or hash differs from the pin, a pin of another version, or a pin that does not name a file the generator reads, yields no violation
+    // Hairs-Human:        PENDING
     public IEnumerable<string> Violations(IReadOnlyDictionary<string, byte[]> archive)
     {
         ArgumentNullException.ThrowIfNull(archive);
@@ -152,9 +152,9 @@ public sealed class IntlUcdPin
     /// <summary>The files, verified, or an exception naming every way they are not the pinned ones.</summary>
     /// <param name="archive">Each file's bytes, by the path the pin writes it under.</param>
     /// <exception cref="InvalidDataException">The files are not the ones the pin describes.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=High; Resources=3; Fingerprint=67FB7E
-    // Broiler-Falsified-If: files with a violation are returned instead of refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D12 UCD pin; IP=Low; Security=High; Resources=3; Fingerprint=67FB7E
+    // Hairs-Falsified-If: files with a violation are returned instead of refused
+    // Hairs-Human:        PENDING
     public IReadOnlyDictionary<string, byte[]> Verified(IReadOnlyDictionary<string, byte[]> archive)
     {
         var violations = Violations(archive).ToArray();

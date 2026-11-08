@@ -10,7 +10,8 @@ name: Shared libraries
 #     warning, and that publication's report is compared with the Native AOT image's, line for
 #     line, as is the build's (bundle sjl-13-001's part D, as its rule's revisions of 2026-11-03
 #     read it);
-#   - the Broiler Code Assurance check holds the folder to its generated artefacts (rule SL8);
+#   - the Hairs assurance check holds the folder to its generated artefacts (rule SL8; Hairs.Cli since
+#     2026-11-08, where it read "the Broiler Code Assurance check");
 #   - the shared version stream packs, passes package validation, and restores in a pristine
 #     consumer from an isolated cache.
 # Publish-shared calls it with a resolved version before anything is pushed.
@@ -156,24 +157,26 @@ jobs:
     name: Assurance check (SL8)
     runs-on: ubuntu-24.04
     steps:
-      # The assurance tool lives in Broiler.Code. The two are checked out side by side, the layout
-      # Broiler.ECMAScript/assurance.config.json's regenerateCommand names.
-      - name: Check out Broiler.JS
+      # The assurance tool is Hairs.Cli, pinned in .config/dotnet-tools.json and restored from nuget.org
+      # (NuGet.config), the command Broiler.ECMAScript/hairs.config.json's regenerateCommand names, run
+      # from the repository's root. (Changed 2026-11-08, when Broiler.Code's commit 1b31684 "Switch to
+      # Hairs" removed its review CLI and the owner chose to migrate to Hairs. The job read: "The
+      # assurance tool lives in Broiler.Code. The two are checked out side by side, the layout
+      # Broiler.ECMAScript/assurance.config.json's regenerateCommand names", checked out this
+      # repository to Broiler.JS and Broiler-Platform/Broiler.Code to Broiler.Code with
+      # secrets.BROILER_CODE_TOKEN or the workflow's token, and ran "dotnet run --project
+      # Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root
+      # Broiler.JS/Broiler.ECMAScript".)
+      - name: Check out
         uses: actions/checkout@v7
-        with:
-          path: Broiler.JS
-      - name: Check out Broiler.Code
-        uses: actions/checkout@v7
-        with:
-          repository: Broiler-Platform/Broiler.Code
-          path: Broiler.Code
-          token: ${{ secrets.BROILER_CODE_TOKEN || github.token }}
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
+      - name: Restore the pinned Hairs.Cli from nuget.org
+        run: dotnet tool restore --configfile NuGet.config
       - name: Check the shared folder against its generated artefacts
-        run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript
+        run: dotnet tool run hairs -- assurance check --root Broiler.ECMAScript
 
   pack:
     name: Pack, validate and restore the shared stream (dry run)

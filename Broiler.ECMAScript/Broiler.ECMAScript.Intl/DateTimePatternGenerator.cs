@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   68
 // Annotated:        68/68
 // Exempt:           15
@@ -42,127 +42,127 @@ namespace Broiler.ECMAScript.Intl;
 /// or second, whose width the pattern keeps, and for an hour only when the caller asks.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=05ED9C
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=05ED9C
+// Hairs-Human:        PENDING
 internal sealed class DateTimePatternGenerator
 {
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=D48789
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=D48789
+    // Hairs-Human:        PENDING
     internal const int Era = 0;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=6322C7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=6322C7
+    // Hairs-Human:        PENDING
     internal const int Year = 1;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=B40D99
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=B40D99
+    // Hairs-Human:        PENDING
     internal const int Quarter = 2;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=9370C0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=9370C0
+    // Hairs-Human:        PENDING
     internal const int Month = 3;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=404AE2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=404AE2
+    // Hairs-Human:        PENDING
     internal const int WeekOfYear = 4;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=3D19F6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=3D19F6
+    // Hairs-Human:        PENDING
     internal const int WeekOfMonth = 5;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=0582C9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=0582C9
+    // Hairs-Human:        PENDING
     internal const int Weekday = 6;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=002C5F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=002C5F
+    // Hairs-Human:        PENDING
     internal const int DayOfYear = 7;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=D962B2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=D962B2
+    // Hairs-Human:        PENDING
     internal const int DayOfWeekInMonth = 8;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=F5CEDE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=F5CEDE
+    // Hairs-Human:        PENDING
     internal const int Day = 9;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=BAAE41
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=BAAE41
+    // Hairs-Human:        PENDING
     internal const int DayPeriod = 10;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=0B0998
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=0B0998
+    // Hairs-Human:        PENDING
     internal const int Hour = 11;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=FC736B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=FC736B
+    // Hairs-Human:        PENDING
     internal const int Minute = 12;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=8C256D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=8C256D
+    // Hairs-Human:        PENDING
     internal const int Second = 13;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=9A5D8C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=9A5D8C
+    // Hairs-Human:        PENDING
     internal const int FractionalSecond = 14;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=F2D3E4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=F2D3E4
+    // Hairs-Human:        PENDING
     internal const int Zone = 15;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=F4119A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=F4119A
+    // Hairs-Human:        PENDING
     internal const int FieldCount = 16;
 
     /// <summary>ICU's <c>UDATPG_MATCH_HOUR_FIELD_LENGTH</c>: the hour keeps the skeleton's width.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=971A3B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=971A3B
+    // Hairs-Human:        PENDING
     internal const int MatchHourLength = 1 << Hour;
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=B28560
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=B28560
+    // Hairs-Human:        PENDING
     private const int MatchMinuteLength = 1 << Minute;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=B0060D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=B0060D
+    // Hairs-Human:        PENDING
     private const int MatchSecondLength = 1 << Second;
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=25D536
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=25D536
+    // Hairs-Human:        PENDING
     private const int Narrow = -0x101;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=4754DD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=4754DD
+    // Hairs-Human:        PENDING
     private const int Shorter = -0x102;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=ABF2A9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=ABF2A9
+    // Hairs-Human:        PENDING
     private const int Short = -0x103;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=935270
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=935270
+    // Hairs-Human:        PENDING
     private const int Long = -0x104;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=242FEC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=242FEC
+    // Hairs-Human:        PENDING
     private const int Numeric = 0x100;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=C47522
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=C47522
+    // Hairs-Human:        PENDING
     private const int Delta = 0x10;
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=98877B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=98877B
+    // Hairs-Human:        PENDING
     private const int ExtraField = 0x10000;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=F435B9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=F435B9
+    // Hairs-Human:        PENDING
     private const int MissingField = 0x1000;
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=EBB30F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=EBB30F
+    // Hairs-Human:        PENDING
     private const int UsesCapJ = 1;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=CF31DA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=CF31DA
+    // Hairs-Human:        PENDING
     private const int FixFractionalSeconds = 2;
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=C6BD54
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=C6BD54
+    // Hairs-Human:        PENDING
     private const int DateMask = (1 << DayPeriod) - 1;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=0A200C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=0A200C
+    // Hairs-Human:        PENDING
     private const int TimeMask = ((1 << FieldCount) - 1) & ~DateMask;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=A756FD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=A756FD
+    // Hairs-Human:        PENDING
     private const int FractionalMask = 1 << FractionalSecond;
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=F855F2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=F855F2
+    // Hairs-Human:        PENDING
     private const int SecondAndFractionalMask = (1 << Second) | (1 << FractionalSecond);
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=0F2409
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=0F2409
+    // Hairs-Human:        PENDING
     private readonly record struct Row(char Char, int Field, int Type, int MinLength);
 
     /// <summary>ICU's field table: each pattern letter's field, type and least width.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=3452F7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=3452F7
+    // Hairs-Human:        PENDING
     private static readonly ImmutableArray<Row> Rows =
     [
         new('G', Era, Short, 1), new('G', Era, Long, 4), new('G', Era, Narrow, 5),
@@ -208,20 +208,20 @@ internal sealed class DateTimePatternGenerator
     ];
 
     /// <summary>The append item each field takes, by CLDR's name; <c>*</c> takes ICU's default.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=BC4C77
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=BC4C77
+    // Hairs-Human:        PENDING
     private static readonly ImmutableArray<string> AppendItems =
         ["Era", "Year", "Quarter", "Month", "Week", "*", "Day-Of-Week", "*", "*", "Day", "*", "Hour", "Minute", "Second", "*", "Timezone"];
 
     /// <summary>The date field whose display name an append item quotes.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=D74347
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=D74347
+    // Hairs-Human:        PENDING
     private static readonly ImmutableArray<string> FieldNames =
         ["era", "year", "quarter", "month", "week", "weekOfMonth", "weekday", "dayOfYear", "weekdayOfMonth", "day", "dayperiod", "hour", "minute", "second", "*", "zone"];
 
     /// <summary>The fields of a skeleton or a pattern, as ICU's <c>PtnSkeleton</c> holds them.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=77ADE3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=77ADE3
+    // Hairs-Human:        PENDING
     private sealed class Skeleton
     {
         internal readonly int[] Type = new int[FieldCount];
@@ -231,16 +231,16 @@ internal sealed class DateTimePatternGenerator
         internal readonly int[] BaseLengths = new int[FieldCount];
         internal bool AddedDefaultDayPeriod;
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=7468AE
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=7468AE
+        // Hairs-Human:        PENDING
         internal string Original => Text(Chars, Lengths);
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=88E450
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=88E450
+        // Hairs-Human:        PENDING
         internal string Base => Text(BaseChars, BaseLengths);
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=04C35E
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=04C35E
+        // Hairs-Human:        PENDING
         internal int FieldMask
         {
             get
@@ -259,8 +259,8 @@ internal sealed class DateTimePatternGenerator
             }
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=604C12
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=604C12
+        // Hairs-Human:        PENDING
         private static string Text(char[] chars, int[] lengths)
         {
             var text = new StringBuilder();
@@ -275,8 +275,8 @@ internal sealed class DateTimePatternGenerator
     }
 
     /// <summary>A pattern the generator holds, as ICU's <c>PtnElem</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=15D69B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=15D69B
+    // Hairs-Human:        PENDING
     private sealed class Entry(string basePattern, Skeleton skeleton, string pattern, bool specified)
     {
         internal string Base { get; } = basePattern;
@@ -294,8 +294,8 @@ internal sealed class DateTimePatternGenerator
 
     private readonly string[] fieldNames = new string[FieldCount];
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=355213
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=0; Fingerprint=355213
+    // Hairs-Human:        PENDING
     private readonly Dictionary<string, string> glue = new(StringComparer.Ordinal);
 
     private readonly char defaultHourChar;
@@ -303,8 +303,8 @@ internal sealed class DateTimePatternGenerator
     private readonly string decimalSymbol;
 
     /// <summary>Makes the generator of <paramref name="language"/> as ICU initializes one.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=2; Fingerprint=1BABFD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=2; Fingerprint=1BABFD
+    // Hairs-Human:        PENDING
     internal DateTimePatternGenerator(DateData data, string language, char hourChar, string decimalSymbol)
     {
         defaultHourChar = hourChar;
@@ -364,9 +364,9 @@ internal sealed class DateTimePatternGenerator
     /// ICU's <c>getBestPattern</c>: the pattern for <paramref name="skeletonText"/>, with the hour's
     /// width the skeleton's when <paramref name="options"/> carries <see cref="MatchHourLength"/>.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=High; Resources=2; Fingerprint=4E6042
-    // Broiler-Falsified-If: a skeleton's pattern differs from ICU DateTimePatternGenerator getBestPattern's over the locale's CLDR availableFormats and appendItems
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=High; Resources=2; Fingerprint=4E6042
+    // Hairs-Falsified-If: a skeleton's pattern differs from ICU DateTimePatternGenerator getBestPattern's over the locale's CLDR availableFormats and appendItems
+    // Hairs-Human:        PENDING
     internal string BestPattern(string skeletonText, int options)
     {
         var flags = 0;
@@ -403,8 +403,8 @@ internal sealed class DateTimePatternGenerator
     }
 
     /// <summary>ICU's <c>staticGetSkeleton</c>: a pattern's fields in canonical order, its literal text dropped.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=1; Fingerprint=FC4DBA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=1; Fingerprint=FC4DBA
+    // Hairs-Human:        PENDING
     internal static string SkeletonOf(string pattern)
     {
         var skeleton = Parse(pattern);
@@ -424,8 +424,8 @@ internal sealed class DateTimePatternGenerator
     }
 
     /// <summary>A pattern's tokens as ICU's <c>FormatParser</c> splits it: runs of one letter, and every other character alone.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=2; Fingerprint=92863F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=2; Fingerprint=92863F
+    // Hairs-Human:        PENDING
     internal static List<string> Tokens(string pattern)
     {
         var tokens = new List<string>();
@@ -460,8 +460,8 @@ internal sealed class DateTimePatternGenerator
     /// ICU's <c>getQuoteLiteral</c>: from the quote token at <paramref name="index"/>, the index of the
     /// token that closes it, with the quoted tokens, the quotes included, appended to <paramref name="into"/>.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=2A0B57
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=2A0B57
+    // Hairs-Human:        PENDING
     internal static int QuoteEnd(List<string> tokens, int index, StringBuilder? into)
     {
         if (tokens[index][0] == '\'')
@@ -493,13 +493,13 @@ internal sealed class DateTimePatternGenerator
     }
 
     /// <summary>Whether <paramref name="c"/> is an ASCII letter, which a pattern reads as a field.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=5FED4A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=5FED4A
+    // Hairs-Human:        PENDING
     internal static bool IsLetter(char c) => c is (>= 'A' and <= 'Z') or (>= 'a' and <= 'z');
 
     /// <summary>The field a run of one pattern letter is, or -1.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=D84E40
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=D84E40
+    // Hairs-Human:        PENDING
     internal static int FieldOf(string token)
     {
         var index = CanonicalIndex(token, strict: true);
@@ -507,8 +507,8 @@ internal sealed class DateTimePatternGenerator
     }
 
     /// <summary>Whether a run of one pattern letter is numeric in ICU's table.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=94BF83
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=94BF83
+    // Hairs-Human:        PENDING
     internal static bool IsNumeric(string token)
     {
         var index = CanonicalIndex(token, strict: true);
@@ -518,8 +518,8 @@ internal sealed class DateTimePatternGenerator
     // ---- ICU's structures ------------------------------------------------------------------------
 
     /// <summary>ICU's <c>getCanonicalIndex</c>: the row of a run of one letter, by its width.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=1; Fingerprint=E5C8BD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=1; Fingerprint=E5C8BD
+    // Hairs-Human:        PENDING
     private static int CanonicalIndex(string token, bool strict)
     {
         if (token.Length == 0)
@@ -568,8 +568,8 @@ internal sealed class DateTimePatternGenerator
     }
 
     /// <summary>ICU's <c>DateTimeMatcher::set</c>: the fields of a skeleton or a pattern.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=2; Fingerprint=4C2345
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=2; Fingerprint=4C2345
+    // Hairs-Human:        PENDING
     private static Skeleton Parse(string pattern)
     {
         var skeleton = new Skeleton();
@@ -639,8 +639,8 @@ internal sealed class DateTimePatternGenerator
     }
 
     /// <summary>ICU's <c>mapSkeletonMetacharacters</c>: <c>j</c>, <c>C</c> and <c>J</c> replaced by the language's hour and day period.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=1; Fingerprint=A05509
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=1; Fingerprint=A05509
+    // Hairs-Human:        PENDING
     private string MapMetacharacters(string skeleton, ref int flags)
     {
         var mapped = new StringBuilder(skeleton.Length);
@@ -697,14 +697,14 @@ internal sealed class DateTimePatternGenerator
         return mapped.ToString();
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=CAE71E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=CAE71E
+    // Hairs-Human:        PENDING
     private static int BootIndex(char c) =>
         c is >= 'A' and <= 'Z' ? c - 'A' : c is >= 'a' and <= 'z' ? 26 + c - 'a' : -1;
 
     /// <summary>ICU's <c>addPatternWithSkeleton</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=1; Fingerprint=A1579A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=1; Fingerprint=A1579A
+    // Hairs-Human:        PENDING
     private void AddPattern(string pattern, string? skeletonKey, bool overrideExisting)
     {
         var skeleton = Parse(skeletonKey ?? pattern);
@@ -749,8 +749,8 @@ internal sealed class DateTimePatternGenerator
         list.Add(new Entry(basePattern, skeleton, pattern, skeletonKey is not null));
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=79669E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=79669E
+    // Hairs-Human:        PENDING
     private Entry? FromBase(string basePattern)
     {
         var index = BootIndex(basePattern[0]);
@@ -771,8 +771,8 @@ internal sealed class DateTimePatternGenerator
         return null;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=A6B11F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=A6B11F
+    // Hairs-Human:        PENDING
     private Entry? FromSkeleton(Skeleton skeleton)
     {
         var basePattern = skeleton.Base;
@@ -802,8 +802,8 @@ internal sealed class DateTimePatternGenerator
         return null;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=60DD36
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=60DD36
+    // Hairs-Human:        PENDING
     private static bool SameTypes(Skeleton left, Skeleton right)
     {
         for (var field = 0; field < FieldCount; field++)
@@ -818,9 +818,9 @@ internal sealed class DateTimePatternGenerator
     }
 
     /// <summary>ICU's <c>getDistance</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=High; Resources=2; Fingerprint=531AC5
-    // Broiler-Falsified-If: a pattern's distance to a skeleton differs from ICU's, so another availableFormats entry is chosen
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=High; Resources=2; Fingerprint=531AC5
+    // Hairs-Falsified-If: a pattern's distance to a skeleton differs from ICU's, so another availableFormats entry is chosen
+    // Hairs-Human:        PENDING
     private static int Distance(Skeleton request, Skeleton other, int includeMask, out int missing, out int extra)
     {
         var result = 0;
@@ -860,8 +860,8 @@ internal sealed class DateTimePatternGenerator
     /// ICU's <c>getBestRaw</c>: the nearest pattern, and of two as near the one whose missing fields
     /// are the higher bits.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=2; Fingerprint=9815B6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=2; Fingerprint=9815B6
+    // Hairs-Human:        PENDING
     private Entry BestRaw(Skeleton request, int includeMask, out int missing, out int extra)
     {
         var bestDistance = int.MaxValue;
@@ -901,8 +901,8 @@ internal sealed class DateTimePatternGenerator
     }
 
     /// <summary>ICU's <c>getBestAppending</c>: the fields of <paramref name="fields"/>, with what no pattern holds appended.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=2; Fingerprint=EEA8A0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Medium; Resources=2; Fingerprint=EEA8A0
+    // Hairs-Human:        PENDING
     private string BestAppending(int fields, int flags, int options, Skeleton request)
     {
         if (fields == 0)
@@ -946,8 +946,8 @@ internal sealed class DateTimePatternGenerator
         return result;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=9235BC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=9235BC
+    // Hairs-Human:        PENDING
     private static int TopBit(int mask)
     {
         if (mask == 0)
@@ -967,9 +967,9 @@ internal sealed class DateTimePatternGenerator
     }
 
     /// <summary>ICU's <c>adjustFieldTypes</c>: a found pattern's fields given the skeleton's letters and widths.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=High; Resources=2; Fingerprint=4D9929
-    // Broiler-Falsified-If: a matched pattern's field widths differ from ICU adjustFieldTypes' for the requested skeleton
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=High; Resources=2; Fingerprint=4D9929
+    // Hairs-Falsified-If: a matched pattern's field widths differ from ICU adjustFieldTypes' for the requested skeleton
+    // Hairs-Human:        PENDING
     private string AdjustFieldTypes(string pattern, Skeleton? specified, int flags, int options, Skeleton request)
     {
         var tokens = Tokens(pattern);
@@ -1075,8 +1075,8 @@ internal sealed class DateTimePatternGenerator
     }
 
     /// <summary>A CLDR message pattern with <c>{0}</c>, <c>{1}</c> and <c>{2}</c> replaced.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=337911
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 Part 4 section 2.6 availableFormats and appendItems via Broiler.VM JsDatePatternGenerator (ICU DateTimePatternGenerator); IP=Low; Security=Low; Resources=1; Fingerprint=337911
+    // Hairs-Human:        PENDING
     internal static string Substitute(string pattern, string zero, string one, string two)
     {
         var text = new StringBuilder(pattern.Length + zero.Length + one.Length + two.Length);

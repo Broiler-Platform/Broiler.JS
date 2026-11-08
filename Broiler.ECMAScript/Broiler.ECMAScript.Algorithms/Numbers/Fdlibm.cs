@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 1993 Sun Microsystems, Inc.
 // SPDX-License-Identifier: Apache-2.0 AND SunPro
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   26
 // Annotated:        26/26
 // Exempt:           0
@@ -46,77 +46,77 @@ namespace Broiler.ECMAScript.Numbers;
 /// for a result accurate there. V8 computes both with fdlibm too.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Medium; Resources=1; Fingerprint=D263BA
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Medium; Resources=1; Fingerprint=D263BA
+// Hairs-Human:        PENDING
 internal static class Fdlibm
 {
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=E88585
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=E88585
+    // Hairs-Human:        PENDING
     private const double Huge = 1.0e+300;
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=6AA657
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=6AA657
+    // Hairs-Human:        PENDING
     private const double Tiny = 1.0e-300;
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=1C3962
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=1C3962
+    // Hairs-Human:        PENDING
     private const double OverflowThreshold = 7.09782712893383973096e+02; // 0x40862E42 FEFA39EF
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=5EBF34
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=5EBF34
+    // Hairs-Human:        PENDING
     private const double Ln2High = 6.93147180369123816490e-01;           // 0x3FE62E42 FEE00000
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=94941C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=94941C
+    // Hairs-Human:        PENDING
     private const double Ln2Low = 1.90821492927058770002e-10;            // 0x3DEA39EF 35793C76
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=F7B681
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=F7B681
+    // Hairs-Human:        PENDING
     private const double InverseLn2 = 1.44269504088896338700e+00;        // 0x3FF71547 652B82FE
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=64A91A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=64A91A
+    // Hairs-Human:        PENDING
     private const double TwoTo54 = 1.80143985094819840000e+16;           // 0x43500000 00000000
 
     // Scaled Q's of expm1: Qn here is 2^n times Qn of the rational approximation, for R(2z) with z = x * x / 2.
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=4ED9E5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=4ED9E5
+    // Hairs-Human:        PENDING
     private const double Q1 = -3.33333333333331316428e-02; // 0xBFA11111 111110F4
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=F2AA31
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=F2AA31
+    // Hairs-Human:        PENDING
     private const double Q2 = 1.58730158725481460165e-03;  // 0x3F5A01A0 19FE5585
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=B3DEB9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=B3DEB9
+    // Hairs-Human:        PENDING
     private const double Q3 = -7.93650757867487942473e-05; // 0xBF14CE19 9EAADBB7
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=7DF89D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=7DF89D
+    // Hairs-Human:        PENDING
     private const double Q4 = 4.00821782732936239552e-06;  // 0x3ED0CFCA 86E65239
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=0D76F6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Low; Resources=1; Fingerprint=0D76F6
+    // Hairs-Human:        PENDING
     private const double Q5 = -2.01099218183624371326e-07; // 0xBE8AFDB7 6E09C32D
 
     // The polynomial of log1p's reduced argument.
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=4F31F6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=4F31F6
+    // Hairs-Human:        PENDING
     private const double Lp1 = 6.666666666666735130e-01; // 0x3FE55555 55555593
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=A00624
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=A00624
+    // Hairs-Human:        PENDING
     private const double Lp2 = 3.999999999940941908e-01; // 0x3FD99999 9997FA04
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=FA6395
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=FA6395
+    // Hairs-Human:        PENDING
     private const double Lp3 = 2.857142874366239149e-01; // 0x3FD24924 94229359
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=EF7530
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=EF7530
+    // Hairs-Human:        PENDING
     private const double Lp4 = 2.222219843214978396e-01; // 0x3FCC71C5 1D8E78AF
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=B6604A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=B6604A
+    // Hairs-Human:        PENDING
     private const double Lp5 = 1.818357216161805012e-01; // 0x3FC74664 96CB03DE
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=6739B6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=6739B6
+    // Hairs-Human:        PENDING
     private const double Lp6 = 1.531383769920937332e-01; // 0x3FC39A09 D078C69F
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=640E33
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Low; Resources=1; Fingerprint=640E33
+    // Hairs-Human:        PENDING
     private const double Lp7 = 1.479819860511658591e-01; // 0x3FC2F112 DF3E5244
 
     /// <summary>fdlibm's <c>expm1</c>.</summary>
     /// <param name="x">The argument.</param>
     /// <returns><c>e^x - 1</c> within one unit in the last place.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Medium; Resources=1; Fingerprint=B9DD4E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.15 via fdlibm s_expm1.c; IP=Low; Security=Medium; Resources=1; Fingerprint=B9DD4E
+    // Hairs-Human:        PENDING
     internal static double Expm1(double x)
     {
         double y, hi, lo, c = 0, t, e, hxs, hfx, r1, twopk;
@@ -234,8 +234,8 @@ internal static class Fdlibm
     /// <summary>fdlibm's <c>log1p</c>.</summary>
     /// <param name="x">The argument.</param>
     /// <returns><c>ln(1 + x)</c> within one unit in the last place.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Medium; Resources=1; Fingerprint=4E9423
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.3.2.21 via fdlibm s_log1p.c; IP=Low; Security=Medium; Resources=1; Fingerprint=4E9423
+    // Hairs-Human:        PENDING
     internal static double Log1p(double x)
     {
         double hfsq, f = 0, c = 0, s, z, r, u;
@@ -345,30 +345,30 @@ internal static class Fdlibm
     /// <summary>The high 32 bits of a double's representation, C's <c>GET_HIGH_WORD</c>.</summary>
     /// <param name="value">The double.</param>
     /// <returns>Its sign, exponent and the top 20 bits of its fraction.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=IEEE 754-2019 3.4 via fdlibm math_private.h; IP=Low; Security=Low; Resources=1; Fingerprint=A7C2B0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=IEEE 754-2019 3.4 via fdlibm math_private.h; IP=Low; Security=Low; Resources=1; Fingerprint=A7C2B0
+    // Hairs-Human:        PENDING
     private static uint HighWord(double value) => (uint)(BitConverter.DoubleToUInt64Bits(value) >> 32);
 
     /// <summary>The low 32 bits of a double's representation, C's <c>GET_LOW_WORD</c>.</summary>
     /// <param name="value">The double.</param>
     /// <returns>The low 32 bits of its fraction.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=IEEE 754-2019 3.4 via fdlibm math_private.h; IP=Low; Security=Low; Resources=1; Fingerprint=8C230D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=IEEE 754-2019 3.4 via fdlibm math_private.h; IP=Low; Security=Low; Resources=1; Fingerprint=8C230D
+    // Hairs-Human:        PENDING
     private static uint LowWord(double value) => (uint)BitConverter.DoubleToUInt64Bits(value);
 
     /// <summary>A double from its two words, C's <c>INSERT_WORDS</c>.</summary>
     /// <param name="high">The high word.</param>
     /// <param name="low">The low word.</param>
     /// <returns>The double.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=IEEE 754-2019 3.4 via fdlibm math_private.h; IP=Low; Security=Low; Resources=1; Fingerprint=0E48B1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=IEEE 754-2019 3.4 via fdlibm math_private.h; IP=Low; Security=Low; Resources=1; Fingerprint=0E48B1
+    // Hairs-Human:        PENDING
     private static double FromWords(uint high, uint low) => BitConverter.UInt64BitsToDouble(((ulong)high << 32) | low);
 
     /// <summary>A double with its high word replaced, C's <c>SET_HIGH_WORD</c>.</summary>
     /// <param name="value">The double.</param>
     /// <param name="high">The new high word.</param>
     /// <returns>The double with the low word kept.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=IEEE 754-2019 3.4 via fdlibm math_private.h; IP=Low; Security=Low; Resources=1; Fingerprint=94E4C7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=IEEE 754-2019 3.4 via fdlibm math_private.h; IP=Low; Security=Low; Resources=1; Fingerprint=94E4C7
+    // Hairs-Human:        PENDING
     private static double WithHighWord(double value, uint high) => FromWords(high, LowWord(value));
 }

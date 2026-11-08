@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   6
 // Annotated:        6/6
 // Exempt:           6
@@ -21,8 +21,8 @@ using System.Collections.Immutable;
 namespace Broiler.ECMAScript.Generation.Intl;
 
 /// <summary>Which numbering systems' symbols the number table carries (decision JSD-0082, decision D21).</summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 D21 numbering-system symbols; IP=Low; Security=Low; Resources=0; Fingerprint=3E18A8
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 D21 numbering-system symbols; IP=Low; Security=Low; Resources=0; Fingerprint=3E18A8
+// Hairs-Human:        PENDING
 public enum IntlNumberingSymbols
 {
     /// <summary>
@@ -53,14 +53,14 @@ public enum IntlNumberingSymbols
 /// <c>de</c> and <c>en</c>, supplemental rules for <c>de</c> and <c>en</c>) and every other parameter at its
 /// default, the generator writes Broiler.VM's tables byte for byte.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 generator parameters; IP=Low; Security=Medium; Resources=1; Fingerprint=D5DC31
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 generator parameters; IP=Low; Security=Medium; Resources=1; Fingerprint=D5DC31
+// Hairs-Human:        PENDING
 public sealed record IntlGeneratorOptions
 {
     /// <summary>The options for <paramref name="locales"/>, every other parameter at Broiler.VM's value.</summary>
     /// <param name="locales">The embedding's locale list.</param>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D11 generator parameters; IP=Low; Security=Low; Resources=0; Fingerprint=A0FF1C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D11 generator parameters; IP=Low; Security=Low; Resources=0; Fingerprint=A0FF1C
+    // Hairs-Human:        PENDING
     public IntlGeneratorOptions(IntlLocaleList locales)
     {
         ArgumentNullException.ThrowIfNull(locales);
@@ -68,15 +68,15 @@ public sealed record IntlGeneratorOptions
     }
 
     /// <summary>The calendars Broiler.VM's tables carry a layer for, besides the Gregorian, generic and ISO 8601 ones, in the order its generator writes them.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 calendars via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=CBFBF3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 calendars via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=CBFBF3
+    // Hairs-Human:        PENDING
     public static ImmutableArray<string> BroilerVmCalendars { get; } = ImmutableArray.Create(
         "buddhist", "chinese", "coptic", "dangi", "ethiopic", "ethioaa", "hebrew", "indian", "islamic", "islamic-civil",
         "islamic-tbla", "islamic-umalqura", "japanese", "persian", "roc");
 
     /// <summary>The collation tailorings Broiler.VM's tables carry, in the order its generator writes them.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=529599
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=529599
+    // Hairs-Human:        PENDING
     public static ImmutableArray<string> BroilerVmTailorings { get; } = ImmutableArray.Create("und-search", "de-phonebk", "de-search");
 
     /// <summary>
@@ -85,8 +85,8 @@ public sealed record IntlGeneratorOptions
     /// (<c>standard</c>, <c>search</c>, <c>trad</c>). <c>en</c> and <c>de</c>'s standard order are the root's, and CLDR gives them no
     /// tailoring.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0084 E3 tailorings; IP=Low; Security=Low; Resources=0; Fingerprint=3A957F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0084 E3 tailorings; IP=Low; Security=Low; Resources=0; Fingerprint=3A957F
+    // Hairs-Human:        PENDING
     public static ImmutableArray<string> BroilerJsTailorings { get; } = ImmutableArray.Create(
         "und-search", "de-phonebk", "de-search", "es-standard", "es-search", "es-trad", "sv-standard", "sv-search", "sv-trad", "th-standard");
 

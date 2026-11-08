@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   12
 // Annotated:        12/12
 // Exempt:           0
@@ -37,8 +37,8 @@ namespace Broiler.ECMAScript.Numbers;
 /// twice there before this library, accumulating digits in a double.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=1; Fingerprint=4D0AD3
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=1; Fingerprint=4D0AD3
+// Hairs-Human:        PENDING
 public static class ExactRounding
 {
     /// <summary>
@@ -48,8 +48,8 @@ public static class ExactRounding
     /// <param name="name">The option's string, after the engine's <c>ToString</c>.</param>
     /// <param name="mode">The mode, when the name is one.</param>
     /// <returns><see langword="false"/> for any other string, where the clause throws a <c>RangeError</c>, which the engine raises.</returns>
-    // Broiler-AI:           Origin=AI; Spec=Temporal 13.8; IP=Low; Security=Low; Resources=1; Fingerprint=879DA8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal 13.8; IP=Low; Security=Low; Resources=1; Fingerprint=879DA8
+    // Hairs-Human:        PENDING
     public static bool TryParseRoundingMode(ReadOnlySpan<char> name, out RoundingMode mode)
     {
         mode = name switch
@@ -71,8 +71,8 @@ public static class ExactRounding
     /// <summary><c>NegateRoundingMode</c> (Temporal 13.10): the mode that rounds a negated quantity as this mode rounds the quantity, which <c>since</c> applies.</summary>
     /// <param name="mode">The mode.</param>
     /// <returns><c>Ceil</c> and <c>Floor</c> exchanged, <c>HalfCeil</c> and <c>HalfFloor</c> exchanged, every other mode itself.</returns>
-    // Broiler-AI:           Origin=AI; Spec=Temporal 13.10; IP=Low; Security=Low; Resources=1; Fingerprint=7FFF4E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal 13.10; IP=Low; Security=Low; Resources=1; Fingerprint=7FFF4E
+    // Hairs-Human:        PENDING
     public static RoundingMode Negate(RoundingMode mode) => mode switch
     {
         RoundingMode.Ceil => RoundingMode.Floor,
@@ -87,8 +87,8 @@ public static class ExactRounding
     /// <param name="negative">Whether the quantity is negative.</param>
     /// <returns>The unsigned mode to apply to the quantity's magnitude.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The mode is not one of the nine.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal 13.25; IP=Low; Security=Medium; Resources=1; Fingerprint=0A0574
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal 13.25; IP=Low; Security=Medium; Resources=1; Fingerprint=0A0574
+    // Hairs-Human:        PENDING
     public static UnsignedRoundingMode GetUnsignedRoundingMode(RoundingMode mode, bool negative) => mode switch
     {
         RoundingMode.Ceil => negative ? UnsignedRoundingMode.Zero : UnsignedRoundingMode.Infinity,
@@ -115,8 +115,8 @@ public static class ExactRounding
     /// <param name="mode">The unsigned mode.</param>
     /// <returns><paramref name="lower"/> or <paramref name="upper"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A precondition does not hold.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal 13.26; IP=Low; Security=Medium; Resources=1; Fingerprint=E31002
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal 13.26; IP=Low; Security=Medium; Resources=1; Fingerprint=E31002
+    // Hairs-Human:        PENDING
     public static BigInteger ApplyUnsignedRoundingMode(
         BigInteger numerator, BigInteger denominator, BigInteger lower, BigInteger upper, UnsignedRoundingMode mode)
     {
@@ -181,8 +181,8 @@ public static class ExactRounding
     /// <param name="mode">The mode.</param>
     /// <returns>The rounded value, a multiple of the increment.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The denominator or the increment is not positive.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal 13.27; IP=Low; Security=Medium; Resources=1; Fingerprint=F5CF54
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal 13.27; IP=Low; Security=Medium; Resources=1; Fingerprint=F5CF54
+    // Hairs-Human:        PENDING
     public static BigInteger RoundNumberToIncrement(BigInteger numerator, BigInteger denominator, BigInteger increment, RoundingMode mode)
     {
         if (increment.Sign <= 0)
@@ -210,8 +210,8 @@ public static class ExactRounding
     /// <param name="mode">The mode.</param>
     /// <returns>The rounded value, a multiple of the increment.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The denominator or the increment is not positive.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal 13.28; IP=Low; Security=Medium; Resources=1; Fingerprint=F80327
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal 13.28; IP=Low; Security=Medium; Resources=1; Fingerprint=F80327
+    // Hairs-Human:        PENDING
     public static BigInteger RoundNumberToIncrementAsIfPositive(BigInteger numerator, BigInteger denominator, BigInteger increment, RoundingMode mode)
     {
         if (increment.Sign <= 0)
@@ -235,8 +235,8 @@ public static class ExactRounding
     /// <param name="denominator">The denominator; not zero.</param>
     /// <returns>The nearest double, signed as the quotient; +0 for a zero numerator.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The denominator is zero.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=2; Fingerprint=107719
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=2; Fingerprint=107719
+    // Hairs-Human:        PENDING
     public static double ToDouble(BigInteger numerator, BigInteger denominator)
     {
         if (denominator.IsZero)
@@ -300,8 +300,8 @@ public static class ExactRounding
     /// <param name="numerator">The numerator.</param>
     /// <param name="denominator">The denominator; positive.</param>
     /// <returns>The largest integer at most the quotient.</returns>
-    // Broiler-AI:           Origin=AI; Spec=Temporal 13.28; IP=Low; Security=Low; Resources=1; Fingerprint=9DD5CC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal 13.28; IP=Low; Security=Low; Resources=1; Fingerprint=9DD5CC
+    // Hairs-Human:        PENDING
     private static BigInteger FloorDivide(BigInteger numerator, BigInteger denominator)
     {
         var quotient = BigInteger.DivRem(numerator, denominator, out var remainder);
@@ -316,8 +316,8 @@ public static class ExactRounding
     /// <param name="shift">The weight of the leading bits' last place; zero or more.</param>
     /// <param name="sticky">Whether any bit below the leading bits is set.</param>
     /// <returns>The nearest double, ties to even; +Infinity beyond the largest finite double's rounding interval.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=1; Fingerprint=0B1151
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=1; Fingerprint=0B1151
+    // Hairs-Human:        PENDING
     internal static double ToDouble(ulong leading, long shift, bool sticky)
     {
         if (leading == 0)
@@ -353,8 +353,8 @@ public static class ExactRounding
     /// <summary>Rounds a non-negative integer below 2^128.</summary>
     /// <param name="value">The integer.</param>
     /// <returns>The nearest double, ties to even; +0 for zero.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=1; Fingerprint=96D8C0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=1; Fingerprint=96D8C0
+    // Hairs-Human:        PENDING
     internal static double ToDouble(UInt128 value)
     {
         var high = (ulong)(value >> 64);
@@ -367,7 +367,7 @@ public static class ExactRounding
     }
 
     /// <summary>2^53: an integer up to it converts to a double exactly.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=1; Fingerprint=428116
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Medium; Resources=1; Fingerprint=428116
+    // Hairs-Human:        PENDING
     private const ulong TwoToThe53 = 1UL << 53;
 }

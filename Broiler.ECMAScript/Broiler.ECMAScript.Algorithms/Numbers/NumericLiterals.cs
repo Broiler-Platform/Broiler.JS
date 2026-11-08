@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   13
 // Annotated:        13/13
 // Exempt:           6
@@ -22,8 +22,8 @@ using System.Numerics;
 namespace Broiler.ECMAScript.Numbers;
 
 /// <summary>The kind of value a numeric literal denotes.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=7D78FB
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=7D78FB
+// Hairs-Human:        PENDING
 public enum NumericLiteralKind
 {
     /// <summary>A Number.</summary>
@@ -34,8 +34,8 @@ public enum NumericLiteralKind
 }
 
 /// <summary>Which production of <c>NumericLiteral</c> (ECMA-262 12.9.3) a literal is, which is what strict-mode rules read.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=D83BFE
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=D83BFE
+// Hairs-Human:        PENDING
 public enum NumericLiteralForm
 {
     /// <summary>A <c>DecimalLiteral</c> or a <c>DecimalBigIntegerLiteral</c>.</summary>
@@ -56,8 +56,8 @@ public enum NumericLiteralForm
 /// <param name="Form">Which production it is.</param>
 /// <param name="Number">Its value when it is a Number; NaN otherwise.</param>
 /// <param name="BigInt">Its value when it is a BigInt; zero otherwise.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=FDAF96
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=FDAF96
+// Hairs-Human:        PENDING
 public readonly record struct NumericLiteral(NumericLiteralKind Kind, NumericLiteralForm Form, double Number, BigInteger BigInt);
 
 /// <summary>
@@ -79,8 +79,8 @@ public readonly record struct NumericLiteral(NumericLiteralKind Kind, NumericLit
 /// (contract convention 5), so no conversion is asked of a text wider than the caller accepts.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=FE521E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=FE521E
+// Hairs-Human:        PENDING
 public static class NumericLiterals
 {
     /// <summary>Evaluates the source text of one numeric literal.</summary>
@@ -95,9 +95,9 @@ public static class NumericLiterals
     /// exactly one <c>NumericLiteral</c>, or is a legacy form in strict mode code; or
     /// <see cref="ResultStatus.LimitExceeded"/> when a BigInt is wider than <paramref name="bigIntBits"/>.
     /// </returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=High; Resources=3; Fingerprint=0957E2
-    // Broiler-Falsified-If: a text that is not exactly one NumericLiteral completes, or a legacy form in strict mode code completes
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=High; Resources=3; Fingerprint=0957E2
+    // Hairs-Falsified-If: a text that is not exactly one NumericLiteral completes, or a legacy form in strict mode code completes
+    // Hairs-Human:        PENDING
     public static ResultStatus Evaluate(ReadOnlySpan<char> text, bool strict, LengthLimit bigIntBits, out NumericLiteral literal, out Failure failure, WorkCharge? charge = null)
     {
         literal = default;
@@ -183,8 +183,8 @@ public static class NumericLiterals
     }
 
     /// <summary>After the integer digits of a decimal literal: a fraction, an exponent, the BigInt suffix, or nothing.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=B68FCA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=B68FCA
+    // Hairs-Human:        PENDING
     private static ResultStatus DecimalTail(ReadOnlySpan<char> text, int at, NumericLiteralForm form, bool allowBigInt, LengthLimit bigIntBits, WorkCharge? charge, out NumericLiteral literal, out Failure failure)
     {
         if (at < text.Length && text[at] == 'n')
@@ -219,8 +219,8 @@ public static class NumericLiterals
     }
 
     /// <summary>An optional exponent and the end of the literal; then the decimal value of all of it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=0B1F4A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=0B1F4A
+    // Hairs-Human:        PENDING
     private static ResultStatus ExponentTail(ReadOnlySpan<char> text, int at, out NumericLiteral literal, out Failure failure)
     {
         literal = default;
@@ -250,9 +250,9 @@ public static class NumericLiterals
     }
 
     /// <summary>A BigInt's value, its width held to the caller's limit before and after it is built.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 12.9.3 via Broiler.VM JsParser.TryBigIntValue; IP=Low; Security=High; Resources=3; Fingerprint=E930F3
-    // Broiler-Falsified-If: a BigInt literal wider than the caller's limit is converted before it is refused, or one within the limit is refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 12.9.3 via Broiler.VM JsParser.TryBigIntValue; IP=Low; Security=High; Resources=3; Fingerprint=E930F3
+    // Hairs-Falsified-If: a BigInt literal wider than the caller's limit is converted before it is refused, or one within the limit is refused
+    // Hairs-Human:        PENDING
     private static ResultStatus BigInt(ReadOnlySpan<char> digits, int radix, NumericLiteralForm form, LengthLimit bigIntBits, WorkCharge? charge, out NumericLiteral literal, out Failure failure)
     {
         literal = default;
@@ -308,8 +308,8 @@ public static class NumericLiterals
     /// <c>Digits[+Sep]</c> of a radix from <paramref name="at"/>: a digit, then digits each
     /// optionally after one separator. The end, or minus the position of the fault.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=C6F08F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=C6F08F
+    // Hairs-Human:        PENDING
     private static int Separated(ReadOnlySpan<char> text, int at, int radix)
     {
         if (at >= text.Length || !IsDigit(text[at], radix))
@@ -339,14 +339,14 @@ public static class NumericLiterals
     }
 
     /// <summary>Whether a character is a digit of the radix; radix 10, the common one, by one comparison.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=1; Fingerprint=6BC25D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=1; Fingerprint=6BC25D
+    // Hairs-Human:        PENDING
     private static bool IsDigit(char c, int radix) =>
         radix == 10 ? (uint)(c - '0') <= 9 : NumberParsing.DigitValue(c) < radix;
 
     /// <summary>The text with every separator removed, in <paramref name="buffer"/> when it holds it.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=065F05
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=065F05
+    // Hairs-Human:        PENDING
     private static ReadOnlySpan<char> WithoutSeparators(ReadOnlySpan<char> text, Span<char> buffer)
     {
         if (text.IndexOf('_') < 0)
@@ -363,13 +363,13 @@ public static class NumericLiterals
         return target[..length];
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=210152
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=210152
+    // Hairs-Human:        PENDING
     private static ResultStatus Refuse(int position, string messageId, out Failure failure) =>
         Refuse(position, messageId, ResultStatus.Malformed, out failure);
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=D26D68
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Medium; Resources=2; Fingerprint=D26D68
+    // Hairs-Human:        PENDING
     private static ResultStatus Refuse(int position, string messageId, ResultStatus status, out Failure failure)
     {
         failure = new Failure(status, position, messageId);

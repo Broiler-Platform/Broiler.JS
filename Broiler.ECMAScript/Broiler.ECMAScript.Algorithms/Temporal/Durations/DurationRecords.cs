@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   11
 // Annotated:        11/11
 // Exempt:           21
@@ -26,8 +26,8 @@ namespace Broiler.ECMAScript.Temporal;
 /// The unit groups of the proposal's <c>ValidateTemporalUnitValue</c> (s13.18): the units an option of an operation
 /// may name, by Table 21's category.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=Temporal s13.18, Table 21; IP=None; Security=None; Resources=0; Fingerprint=971FAD
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal s13.18, Table 21; IP=None; Security=None; Resources=0; Fingerprint=971FAD
+// Hairs-Human:        PENDING
 public enum TemporalUnitGroup
 {
     /// <summary><c>date</c>: year, month, week and day.</summary>
@@ -41,8 +41,8 @@ public enum TemporalUnitGroup
 }
 
 /// <summary>Which of a type's two difference methods runs: the proposal's <c>until</c> or <c>since</c> operation.</summary>
-// Broiler-AI:           Origin=AI; Spec=Temporal s13.43; IP=None; Security=None; Resources=0; Fingerprint=6769FF
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal s13.43; IP=None; Security=None; Resources=0; Fingerprint=6769FF
+// Hairs-Human:        PENDING
 public enum DifferenceOperation
 {
     /// <summary><c>until</c>: from the receiver to the argument.</summary>
@@ -56,8 +56,8 @@ public enum DifferenceOperation
 /// The Temporal type whose method an option rule serves: the rules of <c>until</c>, <c>since</c> and <c>round</c>
 /// differ by type (GetDifferenceSettings' arguments, and each <c>round</c>'s units and increments).
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0078 options rules; IP=None; Security=None; Resources=0; Fingerprint=122ACE
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0078 options rules; IP=None; Security=None; Resources=0; Fingerprint=122ACE
+// Hairs-Human:        PENDING
 public enum TemporalType
 {
     /// <summary><c>Temporal.PlainDate</c>.</summary>
@@ -87,8 +87,8 @@ public enum TemporalType
 /// <param name="LargestUnit">The largest unit, never unset or auto, at least as large as the smallest.</param>
 /// <param name="RoundingMode">The rounding mode, negated for <c>since</c>.</param>
 /// <param name="RoundingIncrement">The rounding increment, 1 to 10^9, valid for the smallest unit.</param>
-// Broiler-AI:           Origin=Ported; Spec=Temporal s13.43 via Broiler.VM JsDifferenceSettings; IP=Low; Security=None; Resources=0; Fingerprint=667BFB
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal s13.43 via Broiler.VM JsDifferenceSettings; IP=Low; Security=None; Resources=0; Fingerprint=667BFB
+// Hairs-Human:        PENDING
 public readonly record struct DifferenceSettings(TemporalUnit SmallestUnit, TemporalUnit LargestUnit, RoundingMode RoundingMode, long RoundingIncrement);
 
 /// <summary>
@@ -106,12 +106,12 @@ public readonly record struct DifferenceSettings(TemporalUnit SmallestUnit, Temp
 /// The default value is <see cref="None"/>: no <c>relativeTo</c>.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=Temporal s13.19, JSD-0078 decision 1; IP=None; Security=Low; Resources=0; Fingerprint=A02E30
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=Temporal s13.19, JSD-0078 decision 1; IP=None; Security=Low; Resources=0; Fingerprint=A02E30
+// Hairs-Human:        PENDING
 public readonly struct RelativeTo : IEquatable<RelativeTo>
 {
-    // Broiler-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=Low; Resources=0; Fingerprint=E56844
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=Low; Resources=0; Fingerprint=E56844
+    // Hairs-Human:        PENDING
     private RelativeTo(bool plain, IsoDate date, BigInteger epochNanoseconds, ITimeZoneArithmetic? timeZone, ICalendarArithmetic calendars, CalendarId calendar)
     {
         IsPlain = plain;
@@ -129,8 +129,8 @@ public readonly struct RelativeTo : IEquatable<RelativeTo>
     public bool IsPlain { get; }
 
     /// <summary>Whether the record is a zoned instant (<c>[[ZonedRelativeTo]]</c>).</summary>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=None; Resources=0; Fingerprint=A7915B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=None; Resources=0; Fingerprint=A7915B
+    // Hairs-Human:        PENDING
     public bool IsZoned => TimeZone is not null;
 
     /// <summary>The plain date; the default unless <see cref="IsPlain"/>.</summary>
@@ -154,8 +154,8 @@ public readonly struct RelativeTo : IEquatable<RelativeTo>
     /// <param name="calendar">The date's calendar.</param>
     /// <returns>The record.</returns>
     /// <exception cref="ArgumentNullException">The provider is <see langword="null"/>.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=Low; Resources=0; Fingerprint=807C11
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=Low; Resources=0; Fingerprint=807C11
+    // Hairs-Human:        PENDING
     public static RelativeTo FromPlainDate(IsoDate date, ICalendarArithmetic calendars, CalendarId calendar)
     {
         ArgumentNullException.ThrowIfNull(calendars);
@@ -169,8 +169,8 @@ public readonly struct RelativeTo : IEquatable<RelativeTo>
     /// <param name="calendar">The instant's calendar.</param>
     /// <returns>The record.</returns>
     /// <exception cref="ArgumentNullException">A provider is <see langword="null"/>.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=Low; Resources=0; Fingerprint=C09167
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=Low; Resources=0; Fingerprint=C09167
+    // Hairs-Human:        PENDING
     public static RelativeTo FromZoned(BigInteger epochNanoseconds, ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId calendar)
     {
         ArgumentNullException.ThrowIfNull(timeZone);
@@ -179,8 +179,8 @@ public readonly struct RelativeTo : IEquatable<RelativeTo>
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=None; Resources=0; Fingerprint=FF1905
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=None; Resources=0; Fingerprint=FF1905
+    // Hairs-Human:        PENDING
     public bool Equals(RelativeTo other) =>
         IsPlain == other.IsPlain && PlainDate == other.PlainDate && EpochNanoseconds == other.EpochNanoseconds &&
         ReferenceEquals(TimeZone, other.TimeZone) && ReferenceEquals(Calendars, other.Calendars) && Calendar == other.Calendar;
@@ -201,7 +201,7 @@ public readonly struct RelativeTo : IEquatable<RelativeTo>
     /// <param name="left">The first record.</param>
     /// <param name="right">The second record.</param>
     /// <returns>Whether they differ.</returns>
-    // Broiler-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=None; Resources=0; Fingerprint=3F347F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Temporal s13.19; IP=None; Security=None; Resources=0; Fingerprint=3F347F
+    // Hairs-Human:        PENDING
     public static bool operator !=(RelativeTo left, RelativeTo right) => !left.Equals(right);
 }

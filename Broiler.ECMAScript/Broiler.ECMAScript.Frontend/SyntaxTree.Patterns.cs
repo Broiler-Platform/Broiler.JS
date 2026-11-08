@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   23
 // Annotated:        23/23
 // Exempt:           13
@@ -27,12 +27,12 @@ namespace Broiler.ECMAScript.Syntax;
 /// An assignment pattern and an arrow function's parameters are converted from the cover the parse read (an array or object
 /// literal, a parenthesised list, an async call's arguments), never parsed a second time.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=2EFFA8
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=2EFFA8
+// Hairs-Human:        PENDING
 public abstract class Pattern : SyntaxNode
 {
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=E9E79F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=E9E79F
+    // Hairs-Human:        PENDING
     private protected Pattern(SyntaxKind kind, SourceSpan span)
         : base(kind, span)
     {
@@ -40,12 +40,12 @@ public abstract class Pattern : SyntaxNode
 }
 
 /// <summary>A BindingIdentifier (ECMA-262 clause 13.1): a name a declaration, a parameter or a binding pattern binds.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=D18FE1
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=D18FE1
+// Hairs-Human:        PENDING
 public sealed class BindingIdentifier : Pattern
 {
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=E0A240
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=E0A240
+    // Hairs-Human:        PENDING
     internal BindingIdentifier(SourceSpan span, string name, bool isEscaped)
         : base(SyntaxKind.BindingIdentifier, span)
     {
@@ -59,20 +59,20 @@ public sealed class BindingIdentifier : Pattern
     /// <summary>Whether it is written with a <c>\u</c> escape (clause 12.7), a raw fact.</summary>
     public bool IsEscaped { get; }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=CA8EA6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=CA8EA6
+    // Hairs-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
     }
 }
 
 /// <summary>An ArrayBindingPattern or ArrayAssignmentPattern (ECMA-262 clauses 14.3.3 and 13.15.5).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=A5B017
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=A5B017
+// Hairs-Human:        PENDING
 public sealed class ArrayPattern : Pattern
 {
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=E721C4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=E721C4
+    // Hairs-Human:        PENDING
     internal ArrayPattern(SourceSpan span, IReadOnlyList<Pattern?> elements, bool trailingComma)
         : base(SyntaxKind.ArrayPattern, span)
     {
@@ -86,18 +86,18 @@ public sealed class ArrayPattern : Pattern
     /// <summary>Whether a comma closes the list after its last element, a raw fact.</summary>
     public bool TrailingComma { get; }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=470A6A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=470A6A
+    // Hairs-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into) => AddAll(into, Elements);
 }
 
 /// <summary>A BindingProperty or AssignmentProperty (ECMA-262 clauses 14.3.3 and 13.15.5).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=1F7D48
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=1F7D48
+// Hairs-Human:        PENDING
 public sealed class PatternProperty : SyntaxNode
 {
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=549578
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=549578
+    // Hairs-Human:        PENDING
     internal PatternProperty(SourceSpan span, SyntaxNode key, Pattern value, bool isShorthand)
         : base(SyntaxKind.PatternProperty, span)
     {
@@ -115,8 +115,8 @@ public sealed class PatternProperty : SyntaxNode
     /// <summary>Whether it is written <c>{ x }</c> or <c>{ x = 1 }</c>, the name serving as key and target.</summary>
     public bool IsShorthand { get; }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=EBBC47
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=EBBC47
+    // Hairs-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         if (!IsShorthand)
@@ -126,12 +126,12 @@ public sealed class PatternProperty : SyntaxNode
 }
 
 /// <summary>An ObjectBindingPattern or ObjectAssignmentPattern (ECMA-262 clauses 14.3.3 and 13.15.5).</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=6DF749
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=6DF749
+// Hairs-Human:        PENDING
 public sealed class ObjectPattern : Pattern
 {
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=5B76E1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=5B76E1
+    // Hairs-Human:        PENDING
     internal ObjectPattern(SourceSpan span, IReadOnlyList<SyntaxNode> properties, bool trailingComma)
         : base(SyntaxKind.ObjectPattern, span)
     {
@@ -145,18 +145,18 @@ public sealed class ObjectPattern : Pattern
     /// <summary>Whether a comma closes the list after its last property, a raw fact.</summary>
     public bool TrailingComma { get; }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=448E81
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=448E81
+    // Hairs-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into) => AddAll(into, Properties);
 }
 
 /// <summary>A target with its Initializer (ECMA-262 clauses 13.15.5 and 14.3.3): a SingleNameBinding or BindingElement with one, or an AssignmentElement.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=E890B8
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=E890B8
+// Hairs-Human:        PENDING
 public sealed class AssignmentPattern : Pattern
 {
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=4880EE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=4880EE
+    // Hairs-Human:        PENDING
     internal AssignmentPattern(SourceSpan span, Pattern target, Expression initializer)
         : base(SyntaxKind.AssignmentPattern, span)
     {
@@ -170,8 +170,8 @@ public sealed class AssignmentPattern : Pattern
     /// <summary>The initializer, evaluated when the value is undefined.</summary>
     public Expression Initializer { get; }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=23D6E2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=23D6E2
+    // Hairs-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into)
     {
         into.Add(Target);
@@ -180,12 +180,12 @@ public sealed class AssignmentPattern : Pattern
 }
 
 /// <summary><c>...</c> and a target (ECMA-262 clauses 13.15.5, 14.3.3 and 15.1): a rest element, property or parameter.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=8E7E9C
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=8E7E9C
+// Hairs-Human:        PENDING
 public sealed class RestElement : Pattern
 {
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=B9BF76
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=B9BF76
+    // Hairs-Human:        PENDING
     internal RestElement(SourceSpan span, Pattern argument)
         : base(SyntaxKind.RestElement, span)
     {
@@ -195,8 +195,8 @@ public sealed class RestElement : Pattern
     /// <summary>The target.</summary>
     public Pattern Argument { get; }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=DCA11B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=DCA11B
+    // Hairs-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into) => into.Add(Argument);
 }
 
@@ -204,12 +204,12 @@ public sealed class RestElement : Pattern
 /// An assignment pattern's DestructuringAssignmentTarget that is not itself a pattern (ECMA-262 clause 13.15.5): a
 /// LeftHandSideExpression, as Broiler.VM's tree keeps it. Whether it is a valid target is a static-semantic rule (stage 4d).
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=B7EA98
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=0; Fingerprint=B7EA98
+// Hairs-Human:        PENDING
 public sealed class TargetPattern : Pattern
 {
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=E6CDC5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=E6CDC5
+    // Hairs-Human:        PENDING
     internal TargetPattern(SourceSpan span, Expression target)
         : base(SyntaxKind.TargetPattern, span)
     {
@@ -219,7 +219,7 @@ public sealed class TargetPattern : Pattern
     /// <summary>The target expression.</summary>
     public Expression Target { get; }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=99F89A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.15.5 s14.3.3 patterns tree; IP=Low; Security=Low; Resources=1; Fingerprint=99F89A
+    // Hairs-Human:        PENDING
     internal override void AddChildren(List<SyntaxNode> into) => into.Add(Target);
 }

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   7
 // Annotated:        7/7
 // Exempt:           4
@@ -22,8 +22,8 @@ using System.Collections.Generic;
 namespace Broiler.ECMAScript.Conformance;
 
 /// <summary>The kinds of outcome the corpus schema's section 4 defines.</summary>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=88CC22
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=88CC22
+// Hairs-Human:        PENDING
 public enum OutcomeKind
 {
     /// <summary>The operation or script produced a value: <c>value: </c> and a typed value.</summary>
@@ -47,19 +47,19 @@ public enum OutcomeKind
 /// <param name="Text">The outcome's one written form, kind included.</param>
 /// <param name="Value">The value of a <see cref="OutcomeKind.Value"/> or <see cref="OutcomeKind.Throw"/> outcome.</param>
 /// <param name="Name">The error name of an <see cref="OutcomeKind.Error"/> outcome, or the word of a <see cref="OutcomeKind.Status"/> one.</param>
-// Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=4; Fingerprint=39325E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=4; Fingerprint=39325E
+// Hairs-Human:        PENDING
 public sealed record Outcome(OutcomeKind Kind, string Text, TypedValue? Value, string? Name)
 {
     /// <summary>The standard errors an <c>error:</c> outcome may name (ECMA-262 sections 20.5.5 and 20.5.7).</summary>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=FB1824
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=FB1824
+    // Hairs-Human:        PENDING
     public static FrozenSet<string> ErrorNames { get; } = FrozenSet.Create(
         StringComparer.Ordinal,
         "Error", "EvalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError", "AggregateError");
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=F91736
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=F91736
+    // Hairs-Human:        PENDING
     private const string Separator = " | ";
 
     /// <summary>
@@ -71,8 +71,8 @@ public sealed record Outcome(OutcomeKind Kind, string Text, TypedValue? Value, s
     /// <param name="code">The defect, named the way the validator reports it, when the text is refused.</param>
     /// <param name="message">What is wrong with the text, when it is refused.</param>
     /// <returns>Whether the text is one or more distinct outcomes.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=E81555
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=E81555
+    // Hairs-Human:        PENDING
     public static bool TryParseAlternatives(string text, out IReadOnlyList<Outcome> outcomes, out string code, out string message)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -111,8 +111,8 @@ public sealed record Outcome(OutcomeKind Kind, string Text, TypedValue? Value, s
     /// <param name="alternatives">The alternatives an expected outcome lists.</param>
     /// <param name="rendered">A rendered outcome.</param>
     /// <returns><see langword="true"/> when the rendered text equals an alternative's, ordinally.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=79BD2C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=79BD2C
+    // Hairs-Human:        PENDING
     public static bool AnyIs(IReadOnlyList<Outcome> alternatives, string rendered)
     {
         ArgumentNullException.ThrowIfNull(alternatives);
@@ -125,8 +125,8 @@ public sealed record Outcome(OutcomeKind Kind, string Text, TypedValue? Value, s
         return false;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=5; Fingerprint=394912
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=5; Fingerprint=394912
+    // Hairs-Human:        PENDING
     private static bool TryParseOne(string text, ref int position, out Outcome outcome, out string code, out string message)
     {
         outcome = null!;

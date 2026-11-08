@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   25
 // Annotated:        25/25
 // Exempt:           1
@@ -32,24 +32,24 @@ namespace Broiler.ECMAScript.Generation.Time;
 /// <param name="At">The AT time, in seconds after midnight.</param>
 /// <param name="AtKind">How AT is read: <c>w</c> wall clock, <c>s</c> standard time, <c>u</c> universal time.</param>
 /// <param name="Save">The SAVE amount, in seconds.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=18F04A
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=18F04A
+// Hairs-Human:        PENDING
 public sealed record TzdbRule(int From, int? To, int Month, string On, int At, char AtKind, int Save);
 
 /// <summary>A tzdb <c>Zone</c> line or continuation: its standard offset, its rules, and when it ends.</summary>
 /// <param name="StandardOffset">The STDOFF field, in seconds.</param>
 /// <param name="Rules">The RULES field: <c>-</c>, a fixed save such as <c>1:00</c>, or a rule set's name.</param>
 /// <param name="Until">The UNTIL fields, or none on the zone's last line.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=A46890
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=A46890
+// Hairs-Human:        PENDING
 public sealed record TzdbZoneLine(int StandardOffset, string Rules, IReadOnlyList<string> Until);
 
 /// <summary>A zone's recurring rules after the last year its transitions are listed for.</summary>
 /// <param name="StandardOffset">The standard offset of the zone's last line, in seconds.</param>
 /// <param name="LastListedYear">The last year whose transitions are listed; the rules give every later year's.</param>
 /// <param name="Rules">The rules without a last year, in the order the source gives them.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=C98CAE
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=C98CAE
+// Hairs-Human:        PENDING
 public sealed record TzdbFinalRules(int StandardOffset, int LastListedYear, IReadOnlyList<TzdbRule> Rules);
 
 /// <summary>A change of a zone's UTC offset, or of its daylight flag alone.</summary>
@@ -59,24 +59,24 @@ public sealed record TzdbFinalRules(int StandardOffset, int LastListedYear, IRea
 /// Whether that offset is daylight saving time as CLDR names it: the rearguard reading, in which a negative
 /// save makes the other time of the year the daylight one.
 /// </param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=CB36F0
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=CB36F0
+// Hairs-Human:        PENDING
 public readonly record struct TzdbTransition(long At, int Offset, bool Daylight);
 
 /// <summary>A compiled zone: its first offset, each later change of offset, and the rules that continue it.</summary>
 /// <param name="InitialOffset">The offset before the first transition, in seconds.</param>
 /// <param name="Transitions">Each change of offset or of the daylight flag, in order of time.</param>
 /// <param name="Final">The rules for every year after the listed transitions, or null when the last offset holds for ever.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=92C3AE
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=92C3AE
+// Hairs-Human:        PENDING
 public sealed record TzdbZone(int InitialOffset, IReadOnlyList<TzdbTransition> Transitions, TzdbFinalRules? Final);
 
 /// <summary>The rule sets, zones and links of the tzdb source files, by name.</summary>
 /// <param name="Rules">Each rule set's lines, by its name, in the order the files give them.</param>
 /// <param name="Zones">Each Zone's lines, by its name, in the order the files give them.</param>
 /// <param name="Links">Each Link's target, by the Link's name.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=B44F82
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=B44F82
+// Hairs-Human:        PENDING
 public sealed record TzdbSource(
     IReadOnlyDictionary<string, IReadOnlyList<TzdbRule>> Rules,
     IReadOnlyDictionary<string, IReadOnlyList<TzdbZoneLine>> Zones,
@@ -109,21 +109,21 @@ public sealed record TzdbSource(
 /// with the generated table (milestone SJL-8's data-home exit clause 3).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=5; Fingerprint=8A4293
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=5; Fingerprint=8A4293
+// Hairs-Human:        PENDING
 public static class TzdbCompiler
 {
     /// <summary>The source files <c>zic</c> compiles in the pinned default build, in the order IANA's Makefile lists them; <c>factory</c> is left out (SJL-D-20).</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=DA3CEF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=1; Fingerprint=DA3CEF
+    // Hairs-Human:        PENDING
     public static ImmutableArray<string> SourceFiles { get; } =
         ["africa", "antarctica", "asia", "australasia", "europe", "northamerica", "southamerica", "etcetera", "backward"];
 
     /// <summary>Reads the source files' Rule, Zone and Link lines.</summary>
     /// <param name="archive">The verified members of the tzdb tarball, by name; each of <see cref="SourceFiles"/> must be among them.</param>
     /// <exception cref="InvalidDataException">A line is neither a Rule, a Zone, a Link nor a continuation, or a field cannot be read.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=4; Fingerprint=531868
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=4; Fingerprint=531868
+    // Hairs-Human:        PENDING
     public static TzdbSource Parse(IReadOnlyDictionary<string, byte[]> archive)
     {
         ArgumentNullException.ThrowIfNull(archive);
@@ -192,26 +192,26 @@ public static class TzdbCompiler
     }
 
     /// <summary>A zone line's fields from its STDOFF on.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=19B167
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=19B167
+    // Hairs-Human:        PENDING
     private static TzdbZoneLine ZoneLine(string[] fields) =>
         new(Time(fields[0]).Seconds, fields[1], fields.Length > 3 ? fields[3..] : []);
 
     /// <summary>A decimal integer field, read through the invariant format.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=5F5DEF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=5F5DEF
+    // Hairs-Human:        PENDING
     internal static int Integer(string text) => int.Parse(text, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
 
     /// <summary>A three-letter name with its first letter in upper case and the next two in lower case, ASCII letters folded.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=986094
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=986094
+    // Hairs-Human:        PENDING
     private static string Capitalized(string text) =>
         string.Concat(ArchiveReading.AsciiUpper(text[0]).ToString(), ArchiveReading.AsciiLower(text[1..3]));
 
     /// <summary>A month field, January 1, by its first three letters.</summary>
     /// <exception cref="InvalidDataException">The field names no month.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=68614F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=68614F
+    // Hairs-Human:        PENDING
     internal static int Month(string text) =>
         Capitalized(text) switch
         {
@@ -222,8 +222,8 @@ public static class TzdbCompiler
 
     /// <summary>A weekday, Monday 0, by its first three letters.</summary>
     /// <exception cref="InvalidDataException">The field names no weekday.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=92E117
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=92E117
+    // Hairs-Human:        PENDING
     internal static int Weekday(string text) =>
         Capitalized(text) switch
         {
@@ -232,8 +232,8 @@ public static class TzdbCompiler
         };
 
     /// <summary>A time field, <c>[-]h[:mm[:ss]]</c> with an optional suffix: seconds, and <c>w</c>, <c>s</c> or <c>u</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=BAD60F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=BAD60F
+    // Hairs-Human:        PENDING
     internal static (int Seconds, char Kind) Time(string text)
     {
         var kind = 'w';
@@ -277,8 +277,8 @@ public static class TzdbCompiler
     /// <param name="year">The year.</param>
     /// <param name="month">The month, January 1.</param>
     /// <param name="day">The day of the month.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=6178AC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=6178AC
+    // Hairs-Human:        PENDING
     public static long DaysFromCivil(long year, int month, int day)
     {
         year -= month <= 2 ? 1 : 0;
@@ -290,21 +290,21 @@ public static class TzdbCompiler
     }
 
     /// <summary>The length of a month of the proleptic Gregorian calendar.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=A3ED65
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=A3ED65
+    // Hairs-Human:        PENDING
     private static int MonthLength(long year, int month) =>
         month == 2
             ? (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) ? 29 : 28)
             : month is 4 or 6 or 9 or 11 ? 30 : 31;
 
     /// <summary>Monday 0 to Sunday 6, of a day since the epoch, which was a Thursday.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=8A80C4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=8A80C4
+    // Hairs-Human:        PENDING
     private static int DayOfWeek(long days) => (int)(((days + 3) % 7 + 7) % 7);
 
     /// <summary>The day, since the epoch, an ON field names in a year and month.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=D85065
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=D85065
+    // Hairs-Human:        PENDING
     internal static long OnDay(long year, int month, string on)
     {
         if (on.StartsWith("last", StringComparison.Ordinal))
@@ -341,13 +341,13 @@ public static class TzdbCompiler
     }
 
     /// <summary>The year an instant falls in, by the mean Gregorian year, as the compiler and its readers decide when the recurring rules apply.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=951EC2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=951EC2
+    // Hairs-Human:        PENDING
     internal static int YearOf(long seconds) => 1970 + (int)Math.Floor(seconds / 31556952.0);
 
     /// <summary>An UNTIL field's local instant, in seconds, and how it is read.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=34CE0A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=1; Fingerprint=34CE0A
+    // Hairs-Human:        PENDING
     private static (long Local, char Kind) UntilLocal(IReadOnlyList<string> until)
     {
         var year = Integer(until[0]);
@@ -358,8 +358,8 @@ public static class TzdbCompiler
     }
 
     /// <summary>A local instant as universal time, by how it is read.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=93CA82
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Low; Resources=0; Fingerprint=93CA82
+    // Hairs-Human:        PENDING
     private static long ToUniversal((long Local, char Kind) at, int standard, int save) =>
         at.Kind switch
         {
@@ -369,8 +369,8 @@ public static class TzdbCompiler
         };
 
     /// <summary>Each rule's occurrence in the years given, in chronological order of local time.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=4; Fingerprint=FF803F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=4; Fingerprint=FF803F
+    // Hairs-Human:        PENDING
     internal static List<(long Local, char Kind, int Save)> Events(IEnumerable<TzdbRule> rules, long firstYear, long lastYear)
     {
         var events = new List<(long Local, char Kind, int Save)>();
@@ -394,8 +394,8 @@ public static class TzdbCompiler
     /// <param name="lines">The zone's lines, in the order the source gives them.</param>
     /// <param name="rules">Every rule set, by name.</param>
     /// <exception cref="InvalidDataException">The zone has no lines.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=5; Fingerprint=15DD73
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=5; Fingerprint=15DD73
+    // Hairs-Human:        PENDING
     public static TzdbZone Compile(IReadOnlyList<TzdbZoneLine> lines, IReadOnlyDictionary<string, IReadOnlyList<TzdbRule>> rules)
     {
         ArgumentNullException.ThrowIfNull(lines);
@@ -572,8 +572,8 @@ public static class TzdbCompiler
     /// </summary>
     /// <param name="zone">The compiled zone.</param>
     /// <param name="at">The instant, in seconds since the epoch.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=2; Fingerprint=353C12
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=2; Fingerprint=353C12
+    // Hairs-Human:        PENDING
     public static int OffsetAt(TzdbZone zone, long at)
     {
         ArgumentNullException.ThrowIfNull(zone);
@@ -604,8 +604,8 @@ public static class TzdbCompiler
     }
 
     /// <summary>The offset the recurring rules give in a year after the listed ones.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=2; Fingerprint=324A9F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 zic compile via Broiler.VM TzdbCompiler; IP=Low; Security=Medium; Resources=2; Fingerprint=324A9F
+    // Hairs-Human:        PENDING
     internal static int RecurringOffsetAt(TzdbFinalRules final, long at)
     {
         var year = YearOf(at);

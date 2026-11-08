@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   10
 // Annotated:        10/10
 // Exempt:           4
@@ -29,8 +29,8 @@ namespace Broiler.ECMAScript.Time;
 /// offset written with other decimal digits is not an offset string (the correspondence's row A13), and
 /// a caller that also finds no named zone throws its <c>RangeError</c>.
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33 via Broiler.VM JsRealm.DateTimeFormat.ParseOffset; IP=Low; Security=Medium; Resources=1; Fingerprint=46E20D
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33 via Broiler.VM JsRealm.DateTimeFormat.ParseOffset; IP=Low; Security=Medium; Resources=1; Fingerprint=46E20D
+// Hairs-Human:        PENDING
 public static class OffsetTimeZones
 {
     /// <summary>
@@ -40,9 +40,9 @@ public static class OffsetTimeZones
     /// </summary>
     /// <param name="text">The string.</param>
     /// <returns>Whether the whole string is a <c>UTCOffset</c>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33.1 via Broiler.VM JsRealm.DateTimeFormat.ParseOffset; IP=Low; Security=High; Resources=1; Fingerprint=5FE091
-    // Broiler-Falsified-If: a string outside the UTCOffset grammar, one with a digit outside 0 to 9 among them, is accepted, or one of the grammar is refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33.1 via Broiler.VM JsRealm.DateTimeFormat.ParseOffset; IP=Low; Security=High; Resources=1; Fingerprint=5FE091
+    // Hairs-Falsified-If: a string outside the UTCOffset grammar, one with a digit outside 0 to 9 among them, is accepted, or one of the grammar is refused
+    // Hairs-Human:        PENDING
     public static bool IsTimeZoneOffsetString(ReadOnlySpan<char> text) => Parse(text, out _, out _);
 
     /// <summary>
@@ -53,9 +53,9 @@ public static class OffsetTimeZones
     /// <param name="text">The identifier.</param>
     /// <param name="offsetMinutes">The offset in minutes, positive east of UTC; zero when the text is not one.</param>
     /// <returns>Whether the whole string is an offset identifier; <see langword="false"/> for an offset string with seconds, which ECMA-402's <c>CreateDateTimeFormat</c> and Temporal both refuse as a zone.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal ParseTimeZoneIdentifier via Broiler.VM JsTemporal.ParseZone; IP=Low; Security=High; Resources=1; Fingerprint=203719
-    // Broiler-Falsified-If: an identifier with seconds, with hours above 23 or minutes above 59, with a digit outside 0 to 9, or mixing the extended and basic forms is accepted, or the minutes of an accepted one are not its sign times its hours and minutes
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal ParseTimeZoneIdentifier via Broiler.VM JsTemporal.ParseZone; IP=Low; Security=High; Resources=1; Fingerprint=203719
+    // Hairs-Falsified-If: an identifier with seconds, with hours above 23 or minutes above 59, with a digit outside 0 to 9, or mixing the extended and basic forms is accepted, or the minutes of an accepted one are not its sign times its hours and minutes
+    // Hairs-Human:        PENDING
     public static bool TryParseOffsetIdentifier(ReadOnlySpan<char> text, out int offsetMinutes)
     {
         if (Parse(text, out var minutes, out var hasSeconds) && !hasSeconds)
@@ -75,8 +75,8 @@ public static class OffsetTimeZones
     /// <param name="offsetMinutes">The offset in minutes, of magnitude below a day.</param>
     /// <returns>The identifier, for example <c>-05:30</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The offset's magnitude is a day or more.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal FormatOffsetTimeZoneIdentifier via Broiler.VM JsTemporalCore.FormatOffsetMinutes; IP=Low; Security=Low; Resources=1; Fingerprint=4FA022
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal FormatOffsetTimeZoneIdentifier via Broiler.VM JsTemporalCore.FormatOffsetMinutes; IP=Low; Security=Low; Resources=1; Fingerprint=4FA022
+    // Hairs-Human:        PENDING
     public static string FormatOffsetIdentifier(int offsetMinutes)
     {
         if (offsetMinutes is <= -1440 or >= 1440)
@@ -102,8 +102,8 @@ public static class OffsetTimeZones
     /// <param name="primaryIdentifier">A primary identifier, in the database's case, matched ordinally.</param>
     /// <param name="offsetMinutes">The offset in minutes, positive east of UTC; zero when the identifier is not one of them.</param>
     /// <returns>Whether the identifier is one of the 26 zones.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 A14 via Broiler.VM JsRealm.DateTimeFormat.EtcGmtZones; IP=Low; Security=Medium; Resources=1; Fingerprint=32AB74
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076 A14 via Broiler.VM JsRealm.DateTimeFormat.EtcGmtZones; IP=Low; Security=Medium; Resources=1; Fingerprint=32AB74
+    // Hairs-Human:        PENDING
     public static bool TryGetEtcGmtOffset(ReadOnlySpan<char> primaryIdentifier, out int offsetMinutes)
     {
         offsetMinutes = 0;
@@ -126,9 +126,9 @@ public static class OffsetTimeZones
 
     // ECMA-262's UTCOffset grammar: a sign, two-digit hours, and optionally minutes and seconds, all extended or
     // all basic, and after seconds a fraction of one to nine digits.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33 via Broiler.VM JsRealm.DateTimeFormat.ParseOffset; IP=Low; Security=High; Resources=1; Fingerprint=5DD51E
-    // Broiler-Falsified-If: a string outside the UTCOffset grammar is read as an offset, one of it is refused, or the seconds flag or the minutes read differ from the string's
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33 via Broiler.VM JsRealm.DateTimeFormat.ParseOffset; IP=Low; Security=High; Resources=1; Fingerprint=5DD51E
+    // Hairs-Falsified-If: a string outside the UTCOffset grammar is read as an offset, one of it is refused, or the seconds flag or the minutes read differ from the string's
+    // Hairs-Human:        PENDING
     private static bool Parse(ReadOnlySpan<char> text, out int minutes, out bool hasSeconds)
     {
         minutes = 0;
@@ -183,8 +183,8 @@ public static class OffsetTimeZones
     }
 
     // Two ASCII digits at a position, read as a number no greater than a maximum.
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33 via Broiler.VM JsRealm.DateTimeFormat.ParseOffset; IP=Low; Security=Medium; Resources=1; Fingerprint=6CDA57
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33 via Broiler.VM JsRealm.DateTimeFormat.ParseOffset; IP=Low; Security=Medium; Resources=1; Fingerprint=6CDA57
+    // Hairs-Human:        PENDING
     private static bool TwoDigits(ReadOnlySpan<char> text, int at, int maximum, out int value)
     {
         value = 0;
@@ -205,19 +205,19 @@ public static class OffsetTimeZones
 /// proposal's offset-zone branch gives, and refuses it as the branch does where it is outside the instant
 /// range; no transition is ever found.
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetPossibleEpochNanoseconds via Broiler.VM JsTemporal.PossibleEpochNs; IP=Low; Security=Low; Resources=1; Fingerprint=F493A4
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetPossibleEpochNanoseconds via Broiler.VM JsTemporal.PossibleEpochNs; IP=Low; Security=Low; Resources=1; Fingerprint=F493A4
+// Hairs-Human:        PENDING
 public sealed class FixedOffsetTimeZoneRules : ITimeZoneRules
 {
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076; IP=Low; Security=Low; Resources=1; Fingerprint=65DEBC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076; IP=Low; Security=Low; Resources=1; Fingerprint=65DEBC
+    // Hairs-Human:        PENDING
     private readonly int offset;
 
     /// <summary>Creates the rules of a fixed offset.</summary>
     /// <param name="offsetSeconds">The offset in seconds, positive east of UTC, of magnitude below a day.</param>
     /// <exception cref="ArgumentOutOfRangeException">The offset's magnitude is a day or more.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33.2; IP=Low; Security=Low; Resources=1; Fingerprint=B46D4F
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33.2; IP=Low; Security=Low; Resources=1; Fingerprint=B46D4F
+    // Hairs-Human:        PENDING
     public FixedOffsetTimeZoneRules(int offsetSeconds)
     {
         if (offsetSeconds is <= -86400 or >= 86400)
@@ -229,15 +229,15 @@ public sealed class FixedOffsetTimeZoneRules : ITimeZoneRules
     /// <summary>The fixed offset, whatever the instant.</summary>
     /// <param name="epochSeconds">The instant.</param>
     /// <returns>The offset the rules were created with.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33.2; IP=Low; Security=Low; Resources=1; Fingerprint=377426
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.33.2; IP=Low; Security=Low; Resources=1; Fingerprint=377426
+    // Hairs-Human:        PENDING
     public int OffsetSecondsAt(long epochSeconds) => offset;
 
     /// <summary>Never daylight time: an offset zone has no daylight saving time.</summary>
     /// <param name="epochSeconds">The instant.</param>
     /// <returns><see langword="false"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076; IP=Low; Security=Low; Resources=1; Fingerprint=4D4035
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076; IP=Low; Security=Low; Resources=1; Fingerprint=4D4035
+    // Hairs-Human:        PENDING
     public bool IsDaylightAt(long epochSeconds) => false;
 
     /// <summary>No transition: the Temporal proposal's <c>GetTimeZoneTransition</c> answers <see langword="null"/> for an offset zone.</summary>
@@ -245,15 +245,15 @@ public sealed class FixedOffsetTimeZoneRules : ITimeZoneRules
     /// <param name="limitEpochSeconds">The last instant that may be answered.</param>
     /// <param name="daylightFlag">Whether a change of the daylight flag alone counts.</param>
     /// <returns><see langword="null"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZoneNextTransition; IP=Low; Security=Low; Resources=1; Fingerprint=287EB7
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZoneNextTransition; IP=Low; Security=Low; Resources=1; Fingerprint=287EB7
+    // Hairs-Human:        PENDING
     public long? NextTransition(long afterEpochSeconds, long limitEpochSeconds, bool daylightFlag) => null;
 
     /// <summary>No transition: the Temporal proposal's <c>GetTimeZoneTransition</c> answers <see langword="null"/> for an offset zone.</summary>
     /// <param name="beforeEpochSeconds">The instant to search before.</param>
     /// <param name="daylightFlag">Whether a change of the daylight flag alone counts.</param>
     /// <returns><see langword="null"/>.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZonePreviousTransition; IP=Low; Security=Low; Resources=1; Fingerprint=042C7A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZonePreviousTransition; IP=Low; Security=Low; Resources=1; Fingerprint=042C7A
+    // Hairs-Human:        PENDING
     public long? PreviousTransition(long beforeEpochSeconds, bool daylightFlag) => null;
 }

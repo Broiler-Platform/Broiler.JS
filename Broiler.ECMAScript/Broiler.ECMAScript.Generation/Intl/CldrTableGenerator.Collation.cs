@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   40
 // Annotated:        40/40
 // Exempt:           5
@@ -32,8 +32,8 @@ namespace Broiler.ECMAScript.Generation.Intl;
 /// Broiler.VM's <c>JsCollationData</c> reads; collation itself is milestone SJL-17's (decision SJL-D-24 (c)),
 /// and the generator moves whole, collation included (decision D11).
 /// </summary>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 collation tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=7; Fingerprint=AD2E42
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 collation tables via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=7; Fingerprint=AD2E42
+// Hairs-Human:        PENDING
 public static partial class CldrTableGenerator
 {
     /// <summary>
@@ -42,8 +42,8 @@ public static partial class CldrTableGenerator
     /// with the expression <c>&lt;collation type=['"]type['"][^&gt;]*&gt;</c>, which this reads by hand (rule
     /// SL4): the same opening, either quote before and after the type, and the next <c>&gt;</c>.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 collation rules via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=4559E3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 collation rules via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=4559E3
+    // Hairs-Human:        PENDING
     internal static string CollationRules(string xml, string type)
     {
         const string Opening = "<collation type=";
@@ -69,8 +69,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>A code point sequence in NFD, decomposed with the UCD subset and ordered canonically.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 NFD via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=3; Fingerprint=2E32AA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 NFD via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=3; Fingerprint=2E32AA
+    // Hairs-Human:        PENDING
     internal static int[] Nfd(CldrUcd database, IEnumerable<int> codePoints)
     {
         var result = new List<int>();
@@ -119,8 +119,8 @@ public static partial class CldrTableGenerator
     }
 
     /// <summary>The code points of a string.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=485E66
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=485E66
+    // Hairs-Human:        PENDING
     internal static IEnumerable<int> CodePoints(string text)
     {
         for (var i = 0; i < text.Length; i++)
@@ -140,20 +140,20 @@ public static partial class CldrTableGenerator
     /// Whether <paramref name="c"/> is white space as <c>char.IsWhiteSpace</c> answers, which Broiler.VM's
     /// generator called and the conventions forbid (rule SL4): the Unicode White_Space characters, written out.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=Unicode White_Space for Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=0; Fingerprint=14559D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=Unicode White_Space for Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=0; Fingerprint=14559D
+    // Hairs-Human:        PENDING
     internal static bool IsWhiteSpace(char c) =>
         (int)c is >= 0x09 and <= 0x0D or 0x20 or 0x85 or 0xA0 or 0x1680 or >= 0x2000 and <= 0x200A
             or 0x2028 or 0x2029 or 0x202F or 0x205F or 0x3000;
 
     /// <summary>One collation element in root weights: primary, secondary, tertiary and whether it is variable.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=48D549
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=48D549
+    // Hairs-Human:        PENDING
     internal readonly record struct Element(int Primary, int Secondary, int Tertiary, bool Variable);
 
     /// <summary>The root collation as <c>allkeys_CLDR.txt</c> states it.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=04FC1C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=04FC1C
+    // Hairs-Human:        PENDING
     internal sealed class RootCollation
     {
         private RootCollation(Dictionary<string, Element[]> entries) => Entries = entries;
@@ -166,9 +166,9 @@ public static partial class CldrTableGenerator
         /// <c>\[([.*])([0-9A-F]{4})\.([0-9A-F]{4})\.([0-9A-F]{4})\]</c>; <see cref="Elements"/> reads the same
         /// matches by hand (rule SL4).
         /// </summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=5; Fingerprint=33AB30
-        // Broiler-Falsified-If: a line that maps nothing, repeats a key or has a weight wider than its encoding is read without an exception
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=5; Fingerprint=33AB30
+        // Hairs-Falsified-If: a line that maps nothing, repeats a key or has a weight wider than its encoding is read without an exception
+        // Hairs-Human:        PENDING
         internal static RootCollation Read(string text)
         {
             var entries = new Dictionary<string, Element[]>(StringComparer.Ordinal);
@@ -213,9 +213,9 @@ public static partial class CldrTableGenerator
         /// <paramref name="weights"/>, left to right without overlap, as the expression's matches were: four
         /// upper-case hexadecimal digits a weight.
         /// </summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=2; Fingerprint=D4DC2B
-        // Broiler-Falsified-If: an element with a lower-case or missing hexadecimal digit, or another marker than . or *, is read, or one the expression matches is not
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=2; Fingerprint=D4DC2B
+        // Hairs-Falsified-If: an element with a lower-case or missing hexadecimal digit, or another marker than . or *, is read, or one the expression matches is not
+        // Hairs-Human:        PENDING
         internal static IEnumerable<Element> Elements(string weights)
         {
             static bool IsHex(string text, int at)
@@ -253,20 +253,20 @@ public static partial class CldrTableGenerator
         }
 
         /// <summary>A key's code points.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=47B8C8
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=47B8C8
+        // Hairs-Human:        PENDING
         internal static int[] Key(string key) =>
             [.. key.Split(' ').Select(static part => int.Parse(part, NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo))];
 
         /// <summary>The key of some code points.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=5C9ED9
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=5C9ED9
+        // Hairs-Human:        PENDING
         internal static string KeyOf(IEnumerable<int> codePoints) =>
             string.Join(' ', codePoints.Select(static codePoint => codePoint.ToString("X4", NumberFormatInfo.InvariantInfo)));
 
         /// <summary>UCA 17's implicit weights for a code point no key names.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=UCA 17 implicit weights via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=5AA0B7
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=UCA 17 implicit weights via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=5AA0B7
+        // Hairs-Human:        PENDING
         internal static Element[] Implicit(int codePoint, CldrUcd database)
         {
             foreach (var (first, last, @base) in SiniformRanges)
@@ -289,8 +289,8 @@ public static partial class CldrTableGenerator
         /// The binary table: runs of single elements whose primary rises with the code point, then every other
         /// mapping, then the siniform ranges, then the unified ideographs.
         /// </summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=5; Fingerprint=AB8C1F
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=5; Fingerprint=AB8C1F
+        // Hairs-Human:        PENDING
         internal byte[] Encode(CldrUcd database)
         {
             var singles = Entries
@@ -376,8 +376,8 @@ public static partial class CldrTableGenerator
         }
 
         /// <summary>One element in five bytes: primary, secondary, then tertiary with the variable flag in its top bit.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=43EF47
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 root collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=43EF47
+        // Hairs-Human:        PENDING
         private static void Weights(List<byte> bytes, Element element)
         {
             UInt16(bytes, element.Primary);
@@ -410,18 +410,18 @@ public static partial class CldrTableGenerator
     /// supported tailorings reaches it twice from one reset.
     /// </para>
     /// </remarks>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=7; Fingerprint=F6AFB1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=7; Fingerprint=F6AFB1
+    // Hairs-Human:        PENDING
     internal sealed class Tailoring
     {
         /// <summary>The scaled weight of the root's common secondary, 0x0020.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=27B773
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=27B773
+        // Hairs-Human:        PENDING
         private const long CommonSecondary = 0x20 << 8;
 
         /// <summary>The scaled weight of the root's common tertiary, 0x0002.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=95D6FF
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=95D6FF
+        // Hairs-Human:        PENDING
         private const long CommonTertiary = 0x02 << 8;
 
         private Tailoring()
@@ -429,28 +429,28 @@ public static partial class CldrTableGenerator
         }
 
         /// <summary>Every tailored mapping: NFD key to scaled elements.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=F0F63B
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=F0F63B
+        // Hairs-Human:        PENDING
         internal SortedDictionary<string, ScaledElement[]> Entries { get; } = new(StringComparer.Ordinal);
 
         /// <summary>The first code points whose root contractions this tailoring suppresses.</summary>
         internal SortedSet<int> Suppressed { get; } = [];
 
         /// <summary>The root tertiaries that mark an upper-case character, as the profile's reader reads them.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=0E786B
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=0E786B
+        // Hairs-Human:        PENDING
         internal static ReadOnlySpan<int> UpperTertiaries => [0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x1D];
 
         /// <summary>
         /// One element in scaled weights, and its case: 0 lower or uncased, 1 mixed, 2 upper, or -1 where nothing
         /// stated it yet.
         /// </summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=072BD5
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=072BD5
+        // Hairs-Human:        PENDING
         internal readonly record struct ScaledElement(long Primary, long Secondary, long Tertiary, bool Variable, int Case = -1)
         {
-            // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=A92CDF
-            // Broiler-Human:        PENDING
+            // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=A92CDF
+            // Hairs-Human:        PENDING
             internal static ScaledElement From(Element element) =>
                 new((long)element.Primary << 8, (long)element.Secondary << 8, (long)element.Tertiary << 8, element.Variable);
         }
@@ -461,8 +461,8 @@ public static partial class CldrTableGenerator
         /// order and the rest, together, to the last; a secondary element is uncased and a tertiary one upper. A
         /// tailored weight says nothing about case, since it sits between two root weights that may disagree.
         /// </summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=C95730
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=C95730
+        // Hairs-Human:        PENDING
         internal static ScaledElement[] WithCase(ScaledElement[] tailored, IReadOnlyList<Element> rootOfString)
         {
             var primaries = tailored.Count(static element => element.Primary != 0);
@@ -510,8 +510,8 @@ public static partial class CldrTableGenerator
             return result;
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=4F73F8
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=6; Fingerprint=4F73F8
+        // Hairs-Human:        PENDING
         internal static Tailoring Build(
             RootCollation root, CldrUcd database, string rules, Func<string, string?> imports)
         {
@@ -520,9 +520,9 @@ public static partial class CldrTableGenerator
             return tailoring;
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=7; Fingerprint=CE9BFD
-        // Broiler-Falsified-If: rule syntax outside the supported subset is accepted, or a tailored weight that runs into the next root weight is written
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=7; Fingerprint=CE9BFD
+        // Hairs-Falsified-If: rule syntax outside the supported subset is accepted, or a tailored weight that runs into the next root weight is written
+        // Hairs-Human:        PENDING
         private void Apply(RootCollation root, CldrUcd database, string rules, Func<string, string?> imports)
         {
             var used = new HashSet<string>(StringComparer.Ordinal);
@@ -778,8 +778,8 @@ public static partial class CldrTableGenerator
         /// <summary>The tailoring's settings, each a line of the CollationSettings table without the tailoring's name, in the order its rules state them.</summary>
         internal List<string> SettingLines { get; } = [];
 
-        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 collation settings; IP=Low; Security=Low; Resources=1; Fingerprint=0705CB
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=UTS35 Part 5 collation settings; IP=Low; Security=Low; Resources=1; Fingerprint=0705CB
+        // Hairs-Human:        PENDING
         private void AddSetting(string line)
         {
             if (!SettingLines.Contains(line, StringComparer.Ordinal))
@@ -794,8 +794,8 @@ public static partial class CldrTableGenerator
         /// the script's root primaries from <c>first</c> to <c>last</c> moved before the root primary <c>before</c>, each four
         /// hexadecimal digits.
         /// </summary>
-        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 collation settings; IP=Low; Security=Low; Resources=1; Fingerprint=B14694
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=UTS35 Part 5 collation settings; IP=Low; Security=Low; Resources=1; Fingerprint=B14694
+        // Hairs-Human:        PENDING
         internal static List<string> Settings(IReadOnlyList<(string Name, Tailoring Tailoring)> tailorings)
         {
             var lines = new List<string>();
@@ -815,8 +815,8 @@ public static partial class CldrTableGenerator
         /// The scripts a <c>[reorder]</c> may name, each with the block its letters are in: Thai alone, which CLDR 48.2.0's
         /// tailoring of <c>th</c> names. Another script is refused by name, as other syntax is.
         /// </summary>
-        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 reorder; IP=Low; Security=Low; Resources=0; Fingerprint=9318FF
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=UTS35 Part 5 reorder; IP=Low; Security=Low; Resources=0; Fingerprint=9318FF
+        // Hairs-Human:        PENDING
         private static ImmutableArray<(string Script, int First, int Last)> ReorderScripts { get; } = [("Thai", 0x0E00, 0x0E7F)];
 
         /// <summary>
@@ -826,8 +826,8 @@ public static partial class CldrTableGenerator
         /// currency and digit groups (UTS #35 Part 5, reordering groups). Refused unless no other mapping has a primary in the
         /// script's range, so that moving the range moves that script alone.
         /// </summary>
-        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 reorder, reordering groups; IP=Low; Security=Medium; Resources=5; Fingerprint=F68279
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=UTS35 Part 5 reorder, reordering groups; IP=Low; Security=Medium; Resources=5; Fingerprint=F68279
+        // Hairs-Human:        PENDING
         private static string Reorder(RootCollation root, CldrUcd database, string script)
         {
             if (ReorderScripts.FirstOrDefault(entry => string.Equals(entry.Script, script, StringComparison.Ordinal)) is not { Script: not null } named)
@@ -872,8 +872,8 @@ public static partial class CldrTableGenerator
         /// and that primary's variability, so that a relation at the primary level sorts just before the string. Refused
         /// unless the string has exactly one element with a primary, which is its first.
         /// </summary>
-        // Broiler-AI:           Origin=AI; Spec=UTS35 Part 5 reset before; IP=Low; Security=Medium; Resources=4; Fingerprint=0165BE
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=AI; Spec=UTS35 Part 5 reset before; IP=Low; Security=Medium; Resources=4; Fingerprint=0165BE
+        // Hairs-Human:        PENDING
         private static ScaledElement BeforePrimary(RootCollation root, ScaledElement[] reset)
         {
             if (reset.Length == 0 || reset[0].Primary == 0 || reset.Skip(1).Any(static element => element.Primary != 0) || reset[0].Primary % 256 != 0)
@@ -890,13 +890,13 @@ public static partial class CldrTableGenerator
             return new ScaledElement((long)below.Primary << 8, CommonSecondary, CommonTertiary, below.Variable);
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=DAB761
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=DAB761
+        // Hairs-Human:        PENDING
         private static string Describe(ScaledElement[] elements) =>
             string.Join(',', elements.Select(static element => string.Create(NumberFormatInfo.InvariantInfo, $"{element.Primary}.{element.Secondary}.{element.Tertiary}")));
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=9A2D73
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=1; Fingerprint=9A2D73
+        // Hairs-Human:        PENDING
         private static void SkipSpace(string rules, ref int at)
         {
             while (at < rules.Length)
@@ -921,8 +921,8 @@ public static partial class CldrTableGenerator
             }
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=A44082
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=A44082
+        // Hairs-Human:        PENDING
         private static string Bracketed(string rules, ref int at)
         {
             var depth = 0;
@@ -945,8 +945,8 @@ public static partial class CldrTableGenerator
         }
 
         /// <summary>The relation at <paramref name="at"/>: 1, 2 or 3 for its level, 0 for <c>=</c>.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=2077B6
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=2077B6
+        // Hairs-Human:        PENDING
         private static int Relation(string rules, ref int at)
         {
             if (rules[at] == '=')
@@ -972,8 +972,8 @@ public static partial class CldrTableGenerator
         }
 
         /// <summary>The text after a reset or relation, up to the next operator, with quotes and escapes resolved.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=891497
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=891497
+        // Hairs-Human:        PENDING
         private static int[] Text(string rules, ref int at)
         {
             var text = new StringBuilder();
@@ -1020,8 +1020,8 @@ public static partial class CldrTableGenerator
             return [.. CodePoints(text.ToString())];
         }
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=8B5574
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=1; Fingerprint=8B5574
+        // Hairs-Human:        PENDING
         private static string Escape(string rules, ref int at)
         {
             if (rules[at + 1] == 'u')
@@ -1043,8 +1043,8 @@ public static partial class CldrTableGenerator
         }
 
         /// <summary>A UnicodeSet of single characters and ranges, as <c>[suppressContractions]</c> writes one.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=477EF3
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=2; Fingerprint=477EF3
+        // Hairs-Human:        PENDING
         private static List<int> UnicodeSet(string set)
         {
             if (set.Length < 2 || set[0] != '[' || set[^1] != ']')
@@ -1097,8 +1097,8 @@ public static partial class CldrTableGenerator
         /// 24 bits, secondary 17, tertiary 13, the variable flag in the lowest bit), and the code points whose root
         /// contractions it suppresses.
         /// </summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=7C354E
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator; IP=Low; Security=Medium; Resources=4; Fingerprint=7C354E
+        // Hairs-Human:        PENDING
         internal static byte[] Encode(IReadOnlyList<(string Name, Tailoring Tailoring)> tailorings)
         {
             var bytes = new List<byte>();
@@ -1158,8 +1158,8 @@ public static partial class CldrTableGenerator
         }
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=C5C173
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=C5C173
+    // Hairs-Human:        PENDING
     private static void UInt(List<byte> bytes, int value)
     {
         bytes.Add((byte)value);
@@ -1168,8 +1168,8 @@ public static partial class CldrTableGenerator
         bytes.Add((byte)(value >> 24));
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=D4F9E1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=D4F9E1
+    // Hairs-Human:        PENDING
     private static void UInt24(List<byte> bytes, int value)
     {
         bytes.Add((byte)value);
@@ -1177,8 +1177,8 @@ public static partial class CldrTableGenerator
         bytes.Add((byte)(value >> 16));
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D11 collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=DC15B8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 collation via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=0; Fingerprint=DC15B8
+    // Hairs-Human:        PENDING
     private static void UInt16(List<byte> bytes, int value)
     {
         bytes.Add((byte)value);

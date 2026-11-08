@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   29
 // Annotated:        29/29
 // Exempt:           6
@@ -57,8 +57,8 @@ namespace Broiler.ECMAScript.Intl;
 /// before it does.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=0; Fingerprint=E4CD50
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=0; Fingerprint=E4CD50
+// Hairs-Human:        PENDING
 public sealed class CompositeLocaleData : ILocaleData
 {
     private readonly ILocaleData shared;
@@ -72,8 +72,8 @@ public sealed class CompositeLocaleData : ILocaleData
     /// <param name="shared">The shared data, ordinarily a <see cref="TableLocaleData"/>.</param>
     /// <param name="secondary">The secondary provider, or <see langword="null"/>; Broiler.VM registers none (decision D6).</param>
     /// <exception cref="ArgumentNullException"><paramref name="shared"/> is null.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=4DB89A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=4DB89A
+    // Hairs-Human:        PENDING
     public CompositeLocaleData(ILocaleData shared, ILocaleData? secondary = null)
     {
         ArgumentNullException.ThrowIfNull(shared);
@@ -86,8 +86,8 @@ public sealed class CompositeLocaleData : ILocaleData
     /// <param name="locale">The locale as the tables key it.</param>
     /// <returns>The chain, from the locale to <c>und</c>, each tag once.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="locale"/> is null.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Medium; Resources=1; Fingerprint=F74417
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Medium; Resources=1; Fingerprint=F74417
+    // Hairs-Human:        PENDING
     public static IReadOnlyList<string> Chain(string locale)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -120,29 +120,29 @@ public sealed class CompositeLocaleData : ILocaleData
 
     /// <inheritdoc/>
     /// <remarks>The composite holds a locale when its shared data does.</remarks>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=DD6A47
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=DD6A47
+    // Hairs-Human:        PENDING
     public bool HoldsLocale(IntlTable table, string locale) => shared.HoldsLocale(table, locale);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=1AED59
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=1AED59
+    // Hairs-Human:        PENDING
     public string? LikelySubtags(string source) => shared.LikelySubtags(source) ?? secondary?.LikelySubtags(source);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=6D651A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=6D651A
+    // Hairs-Human:        PENDING
     public string? Alias(LocaleAliasKind kind, string from) => shared.Alias(kind, from) ?? secondary?.Alias(kind, from);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=7141DB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=7141DB
+    // Hairs-Human:        PENDING
     public bool IsExtensionKey(char singleton, string key) =>
         shared.IsExtensionKey(singleton, key) || secondary is not null && secondary.IsExtensionKey(singleton, key);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=E7C8B2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=E7C8B2
+    // Hairs-Human:        PENDING
     public bool TryExtensionType(char singleton, string key, string type, out string preferred)
     {
         if (shared.TryExtensionType(singleton, key, type, out preferred))
@@ -160,29 +160,29 @@ public sealed class CompositeLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=BD1E4A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=BD1E4A
+    // Hairs-Human:        PENDING
     public RegionHourCycles? HourCycles(string region) => shared.HourCycles(region) ?? secondary?.HourCycles(region);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=7193CB
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=7193CB
+    // Hairs-Human:        PENDING
     public RegionWeek? Week(string region) => shared.Week(region) ?? secondary?.Week(region);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=150BE3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=150BE3
+    // Hairs-Human:        PENDING
     public bool? IsRightToLeft(string script) => shared.IsRightToLeft(script) ?? secondary?.IsRightToLeft(script);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=F31C7A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=F31C7A
+    // Hairs-Human:        PENDING
     public string? NumberValue(string locale, string key) =>
         Resolve(IntlTable.NumberLocales, locale, (data, tag) => data.NumberValue(tag, key));
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=A2D3CE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=A2D3CE
+    // Hairs-Human:        PENDING
     public CurrencyNames? Currency(string locale, string code) =>
         ResolveValue(IntlTable.Currencies, locale, (data, tag) => data.Currency(tag, code));
 
@@ -190,92 +190,92 @@ public sealed class CompositeLocaleData : ILocaleData
     public IReadOnlyList<string> CurrencyCodes => shared.CurrencyCodes;
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=1D46C6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=1D46C6
+    // Hairs-Human:        PENDING
     public int? CurrencyDigits(string code) => shared.CurrencyDigits(code) ?? secondary?.CurrencyDigits(code);
 
     /// <inheritdoc/>
     public IReadOnlyList<string> NumberingSystems => shared.NumberingSystems;
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=0AB88A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=0AB88A
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string>? NumberingSystemDigits(string system) =>
         shared.NumberingSystemDigits(system) ?? secondary?.NumberingSystemDigits(system);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=3DD4C0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=3DD4C0
+    // Hairs-Human:        PENDING
     public IReadOnlyList<PluralRuleText>? PluralRules(string language, PluralRuleType type) =>
         Resolve(type == PluralRuleType.Ordinal ? IntlTable.Ordinals : IntlTable.Plurals, language, (data, tag) => data.PluralRules(tag, type));
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=804520
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=804520
+    // Hairs-Human:        PENDING
     public string? PluralRange(string language, string start, string end) =>
         Resolve(IntlTable.PluralRanges, language, (data, tag) => data.PluralRange(tag, start, end));
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=0700B2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=0700B2
+    // Hairs-Human:        PENDING
     public string? UnitPattern(string locale, string width, string unit, string field) =>
         Resolve(IntlTable.Units, locale, (data, tag) => data.UnitPattern(tag, width, unit, field));
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=0A2CC6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=0A2CC6
+    // Hairs-Human:        PENDING
     public ListPatterns? ListPattern(string locale, string type) =>
         ResolveValue(IntlTable.ListPatterns, locale, (data, tag) => data.ListPattern(tag, type));
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=9CA788
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=9CA788
+    // Hairs-Human:        PENDING
     public string? RelativeTime(string locale, string field, string key) =>
         Resolve(IntlTable.RelativeTimes, locale, (data, tag) => data.RelativeTime(tag, field, key));
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=BB9D4E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=BB9D4E
+    // Hairs-Human:        PENDING
     public string? DisplayName(string locale, string kind, string code) =>
         Resolve(IntlTable.DisplayNames, locale, (data, tag) => data.DisplayName(tag, kind, code));
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=337D68
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=337D68
+    // Hairs-Human:        PENDING
     public string? DateValue(string locale, string calendar, string key) =>
         Resolve(IntlTable.DateLocales, locale, (data, tag) => data.DateValue(tag, calendar, key));
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=99CC00
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=99CC00
+    // Hairs-Human:        PENDING
     public IReadOnlyDictionary<string, string>? DateValues(string locale, string calendar) =>
         Resolve(IntlTable.DateLocales, locale, (data, tag) => data.DateValues(tag, calendar));
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=1F2D95
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=1F2D95
+    // Hairs-Human:        PENDING
     public IReadOnlyList<DayPeriodRule>? DayPeriods(string language) =>
         Resolve(IntlTable.DayPeriods, language, (data, tag) => data.DayPeriods(tag));
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=FDE6B8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=FDE6B8
+    // Hairs-Human:        PENDING
     public IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone) => shared.MetazonePeriods(zone) ?? secondary?.MetazonePeriods(zone);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=3C93A8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=3C93A8
+    // Hairs-Human:        PENDING
     public string? GoldenZone(string metazone, string region) => shared.GoldenZone(metazone, region) ?? secondary?.GoldenZone(metazone, region);
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=5BDFCD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=5BDFCD
+    // Hairs-Human:        PENDING
     public string? PrimaryZone(string region) => shared.PrimaryZone(region) ?? secondary?.PrimaryZone(region);
 
     /// <summary>A question about a locale whose answer is a reference, asked along the chain.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=High; Resources=1; Fingerprint=2867DD
-    // Broiler-Falsified-If: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=High; Resources=1; Fingerprint=2867DD
+    // Hairs-Falsified-If: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
+    // Hairs-Human:        PENDING
     private T? Resolve<T>(IntlTable table, string locale, Func<ILocaleData, string, T?> question)
         where T : class
     {
@@ -303,9 +303,9 @@ public sealed class CompositeLocaleData : ILocaleData
     }
 
     /// <summary>A question about a locale whose answer is a value, asked along the chain.</summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=High; Resources=1; Fingerprint=E00AAB
-    // Broiler-Falsified-If: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=High; Resources=1; Fingerprint=E00AAB
+    // Hairs-Falsified-If: a question about a locale is answered by the secondary provider or by a parent for a tag whose table the shared data holds, the secondary provider is asked at a tag the shared data lists, or it is asked before the shared data at a tag
+    // Hairs-Human:        PENDING
     private T? ResolveValue<T>(IntlTable table, string locale, Func<ILocaleData, string, T?> question)
         where T : struct
     {

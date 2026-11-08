@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   3
 // Annotated:        3/3
 // Exempt:           0
@@ -27,20 +27,20 @@ namespace Broiler.ECMAScript.Numbers;
 /// <param name="Exponent">The binary exponent of the significand's last place, -1074 for a subnormal.</param>
 /// <param name="IsEven">Whether the significand is even, which is when the ends of the double's rounding interval round to it.</param>
 /// <param name="LowerGapIsHalf">Whether the gap to the next smaller double is half the gap to the next larger, at a power of two above the subnormals.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=4802F0
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=4802F0
+// Hairs-Human:        PENDING
 internal readonly record struct DoubleBits(ulong Significand, int Exponent, bool IsEven, bool LowerGapIsHalf)
 {
     /// <summary>The bits of the significand field.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=81D371
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=81D371
+    // Hairs-Human:        PENDING
     internal const int MantissaBits = 52;
 
     /// <summary>Decomposes a positive finite double.</summary>
     /// <param name="value">A double greater than zero and finite.</param>
     /// <returns>Its exact significand and exponent.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=03C2B3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 6.1.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=03C2B3
+    // Hairs-Human:        PENDING
     internal static DoubleBits Of(double value)
     {
         var bits = BitConverter.DoubleToUInt64Bits(value);

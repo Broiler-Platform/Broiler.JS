@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   7
 // Annotated:        7/7
 // Exempt:           1
@@ -29,13 +29,13 @@ namespace Broiler.ECMAScript.Text;
 /// property list, the cycle check, the raw-JSON brand and the joining of members all read engine
 /// objects. A line break the driver writes between members is a line feed, never the platform's.
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.2; IP=Low; Security=Medium; Resources=1; Fingerprint=2BC6BB
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.2; IP=Low; Security=Medium; Resources=1; Fingerprint=2BC6BB
+// Hairs-Human:        PENDING
 public static class JsonText
 {
     /// <summary>The longest gap: ten code units.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.2.1; IP=Low; Security=Low; Resources=1; Fingerprint=4ED3AF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.2.1; IP=Low; Security=Low; Resources=1; Fingerprint=4ED3AF
+    // Hairs-Human:        PENDING
     public const int MaximumGap = 10;
 
     /// <summary>
@@ -45,8 +45,8 @@ public static class JsonText
     /// <param name="value">The String.</param>
     /// <param name="charge">The caller's meter: the String's length plus one, first; <see langword="null"/> for none.</param>
     /// <returns>The quoted String.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.2.3; IP=Low; Security=Medium; Resources=2; Fingerprint=EF4D2A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.2.3; IP=Low; Security=Medium; Resources=2; Fingerprint=EF4D2A
+    // Hairs-Human:        PENDING
     public static string Quote(ReadOnlySpan<char> value, WorkCharge? charge = null)
     {
         charge?.Invoke((ulong)value.Length + 1);
@@ -89,8 +89,8 @@ public static class JsonText
     /// <summary>The gap a Number <c>space</c> gives (ECMA-262 25.5.2.1, step 7): that many spaces, from none to ten.</summary>
     /// <param name="space">The Number, after a Number object is unwrapped with <c>ToNumber</c>.</param>
     /// <returns><c>min(10, ToIntegerOrInfinity(space))</c> spaces, or the empty String when that is below one.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.2.1; IP=Low; Security=Low; Resources=1; Fingerprint=98AD82
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.2.1; IP=Low; Security=Low; Resources=1; Fingerprint=98AD82
+    // Hairs-Human:        PENDING
     public static string GapFromNumber(double space)
     {
         var count = Math.Min(MaximumGap, IntegerConversions.ToIntegerOrInfinity(space));
@@ -101,16 +101,16 @@ public static class JsonText
     /// <param name="space">The String, after a String object is unwrapped with <c>ToString</c>.</param>
     /// <returns><paramref name="space"/> itself when it has ten code units or fewer; otherwise its first ten.</returns>
     /// <exception cref="ArgumentNullException">The String is <see langword="null"/>.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.2.1; IP=Low; Security=Low; Resources=1; Fingerprint=299CC8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.2.1; IP=Low; Security=Low; Resources=1; Fingerprint=299CC8
+    // Hairs-Human:        PENDING
     public static string GapFromString(string space)
     {
         ArgumentNullException.ThrowIfNull(space);
         return space.Length <= MaximumGap ? space : space[..MaximumGap];
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.2.3; IP=Low; Security=Low; Resources=1; Fingerprint=113515
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.2.3; IP=Low; Security=Low; Resources=1; Fingerprint=113515
+    // Hairs-Human:        PENDING
     private static int EscapedLength(ReadOnlySpan<char> value, int at)
     {
         var unit = value[at];
@@ -121,8 +121,8 @@ public static class JsonText
     }
 
     /// <summary>The character after the backslash of a short escape (ECMA-262 Table 76), or zero.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.2.3; IP=Low; Security=Low; Resources=1; Fingerprint=19A8D3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 25.5.2.3; IP=Low; Security=Low; Resources=1; Fingerprint=19A8D3
+    // Hairs-Human:        PENDING
     private static char ShortEscape(char unit) => unit switch
     {
         '\b' => 'b',

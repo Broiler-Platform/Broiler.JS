@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   12
 // Annotated:        12/12
 // Exempt:           3
@@ -28,8 +28,8 @@ namespace Broiler.ECMAScript.Generation.Time;
 /// <param name="Name">The member's path inside the tarball, e.g. <c>europe</c> or <c>zone.tab</c>.</param>
 /// <param name="Bytes">The member's length after extraction.</param>
 /// <param name="Sha256">The member's SHA-256 after extraction, in lower-case hexadecimal.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Low; Resources=1; Fingerprint=25B4A3
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Low; Resources=1; Fingerprint=25B4A3
+// Hairs-Human:        PENDING
 public sealed record TzdbPinMember(string Name, long Bytes, string Sha256);
 
 /// <summary>
@@ -51,14 +51,14 @@ public sealed record TzdbPinMember(string Name, long Bytes, string Sha256);
 /// warning, and nothing is generated from bytes that failed a check.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=7; Fingerprint=790869
-// Broiler-Falsified-If: a tarball or a member whose length, SHA-256, SHA-512 or stated version differs from the pin is extracted, or returned as the pinned one, without an exception
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=7; Fingerprint=790869
+// Hairs-Falsified-If: a tarball or a member whose length, SHA-256, SHA-512 or stated version differs from the pin is extracted, or returned as the pinned one, without an exception
+// Hairs-Human:        PENDING
 public sealed class TzdbPin
 {
     /// <summary>The one tzdb release the time zone tables are taken from, <see cref="TimeDataVersions.TzdbRelease"/>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Low; Resources=0; Fingerprint=769382
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Low; Resources=0; Fingerprint=769382
+    // Hairs-Human:        PENDING
     public const string PinnedVersion = TimeDataVersions.TzdbRelease;
 
     private TzdbPin(IReadOnlyDictionary<string, string> values, IReadOnlyList<TzdbPinMember> members)
@@ -74,21 +74,21 @@ public sealed class TzdbPin
     public IReadOnlyList<TzdbPinMember> Members { get; }
 
     /// <summary>The version line, or the empty string when there is none.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Medium; Resources=1; Fingerprint=7391BA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Medium; Resources=1; Fingerprint=7391BA
+    // Hairs-Human:        PENDING
     public string Version => Values.TryGetValue("version", out var version) ? version : string.Empty;
 
     /// <summary>The archive's file name, which the pin's <c>archive</c> line states beside its length.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Medium; Resources=1; Fingerprint=ACF122
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Medium; Resources=1; Fingerprint=ACF122
+    // Hairs-Human:        PENDING
     public string ArchiveName => Values.TryGetValue("archive", out var archive) ? archive.Split(' ')[0] : string.Empty;
 
     /// <summary>Parses pin text: <c>key value</c> lines, <c>#</c> comments, repeated <c>member</c> lines.</summary>
     /// <param name="text">The pin's text.</param>
     /// <exception cref="InvalidDataException">A <c>member</c> line is malformed, or a line is empty of a value or repeats a key.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=3; Fingerprint=72E0AE
-    // Broiler-Falsified-If: a malformed member line or a repeated key is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=3; Fingerprint=72E0AE
+    // Hairs-Falsified-If: a malformed member line or a repeated key is accepted
+    // Hairs-Human:        PENDING
     public static TzdbPin Parse(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -135,9 +135,9 @@ public sealed class TzdbPin
     /// <param name="tarball">The archived tarball's bytes.</param>
     /// <returns>Each pinned member's bytes, by its name in the tarball.</returns>
     /// <exception cref="InvalidDataException">The tarball or a member is not the one the pin describes, or the tarball holds a member twice.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=7; Fingerprint=CF0796
-    // Broiler-Falsified-If: a tarball whose length or digests differ from the pin is decompressed, or a member is answered without its own length and hash compared
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=7; Fingerprint=CF0796
+    // Hairs-Falsified-If: a tarball whose length or digests differ from the pin is decompressed, or a member is answered without its own length and hash compared
+    // Hairs-Human:        PENDING
     public IReadOnlyDictionary<string, byte[]> Extract(byte[] tarball)
     {
         ArgumentNullException.ThrowIfNull(tarball);
@@ -165,9 +165,9 @@ public sealed class TzdbPin
 
     /// <summary>Every way the tarball's bytes differ from what the pin records: the version, the archived flag, the length and both digests.</summary>
     /// <param name="tarball">The archived tarball's bytes.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=3; Fingerprint=394CF4
-    // Broiler-Falsified-If: a tarball one byte or one length away from the pin's yields no violation
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=3; Fingerprint=394CF4
+    // Hairs-Falsified-If: a tarball one byte or one length away from the pin's yields no violation
+    // Hairs-Human:        PENDING
     public IEnumerable<string> TarballViolations(byte[] tarball)
     {
         ArgumentNullException.ThrowIfNull(tarball);
@@ -215,9 +215,9 @@ public sealed class TzdbPin
     /// or a stated version that is not the pinned one. Empty when they are the pinned ones.
     /// </summary>
     /// <param name="archive">Each member's bytes, by its name in the tarball.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=3; Fingerprint=4DB748
-    // Broiler-Falsified-If: a member whose length, hash or stated version differs from the pin yields no violation
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=3; Fingerprint=4DB748
+    // Hairs-Falsified-If: a member whose length, hash or stated version differs from the pin yields no violation
+    // Hairs-Human:        PENDING
     public IEnumerable<string> Violations(IReadOnlyDictionary<string, byte[]> archive)
     {
         ArgumentNullException.ThrowIfNull(archive);
@@ -253,9 +253,9 @@ public sealed class TzdbPin
     /// <summary>The members, verified, or an exception naming every way they are not the pinned ones.</summary>
     /// <param name="archive">Each member's bytes, by its name in the tarball.</param>
     /// <exception cref="InvalidDataException">The members are not the ones the pin describes.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=3; Fingerprint=FE7B8A
-    // Broiler-Falsified-If: members with a violation are returned instead of refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=High; Resources=3; Fingerprint=FE7B8A
+    // Hairs-Falsified-If: members with a violation are returned instead of refused
+    // Hairs-Human:        PENDING
     public IReadOnlyDictionary<string, byte[]> Verified(IReadOnlyDictionary<string, byte[]> archive)
     {
         var violations = Violations(archive).ToArray();
@@ -271,13 +271,13 @@ public sealed class TzdbPin
     /// <summary>Strict UTF-8: a byte sequence that is not UTF-8 is a refusal, not a replacement character.</summary>
     /// <param name="bytes">The bytes.</param>
     /// <exception cref="System.Text.DecoderFallbackException">The bytes are not UTF-8.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Medium; Resources=3; Fingerprint=DAAAC3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Medium; Resources=3; Fingerprint=DAAAC3
+    // Hairs-Human:        PENDING
     public static string Decode(byte[] bytes) => ArchiveReading.Decode(bytes);
 
     /// <summary>The exception every refusal is, naming each violation on its own line.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Low; Resources=2; Fingerprint=D1088C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0053 tz pin via Broiler.VM TzdbPin; IP=Low; Security=Low; Resources=2; Fingerprint=D1088C
+    // Hairs-Human:        PENDING
     private static InvalidDataException Refusal(IEnumerable<string> violations) =>
         new("The tzdb archive is not the one tzdb.pin describes, so nothing is generated from it:\n  " +
             string.Join("\n  ", violations));

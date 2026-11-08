@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   9
 // Annotated:        9/9
 // Exempt:           5
@@ -54,8 +54,8 @@ namespace Broiler.ECMAScript.Intl;
 /// </para>
 /// <para><b>Immutable</b>: one may be shared between threads (convention 10).</para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=UTS10, ECMA-402 sec-collator-comparestrings via Broiler.VM JsCollator; IP=Low; Security=Medium; Resources=3; Fingerprint=B6048B
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=UTS10, ECMA-402 sec-collator-comparestrings via Broiler.VM JsCollator; IP=Low; Security=Medium; Resources=3; Fingerprint=B6048B
+// Hairs-Human:        PENDING
 public sealed class UcaCollator
 {
     private readonly UcaCollationData.Tables data;
@@ -70,8 +70,8 @@ public sealed class UcaCollator
     /// <param name="normalization">The normalization owner's normalizer, over the engine's Unicode tables.</param>
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
     /// <exception cref="System.IO.InvalidDataException">The collation tables are not in the format <see cref="UcaCollationData"/> states.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollator; IP=Low; Security=Low; Resources=1; Fingerprint=114440
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS10 via Broiler.VM JsCollator; IP=Low; Security=Low; Resources=1; Fingerprint=114440
+    // Hairs-Human:        PENDING
     public UcaCollator(UcaCollationData data, UcaCollatorOptions options, UnicodeNormalization normalization)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -98,8 +98,8 @@ public sealed class UcaCollator
     /// <returns><see cref="IntlStatus.Completed"/>, or <see cref="IntlStatus.NormalizedStringTooLong"/> when a string's NFD form is longer than <paramref name="maxLength"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="x"/> or <paramref name="y"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="maxLength"/> is negative.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-collator-comparestrings via Broiler.VM JsCollator.Compare; IP=Low; Security=Medium; Resources=4; Fingerprint=6BFA71
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-collator-comparestrings via Broiler.VM JsCollator.Compare; IP=Low; Security=Medium; Resources=4; Fingerprint=6BFA71
+    // Hairs-Human:        PENDING
     public IntlStatus Compare(string x, string y, int maxLength, WorkCharge? charge, out int order)
     {
         ArgumentNullException.ThrowIfNull(x);
@@ -126,8 +126,8 @@ public sealed class UcaCollator
     /// A string's collation elements, after NFD and, when shifted, with variable elements removed; or <see langword="null"/>
     /// when its NFD form is longer than <paramref name="maxLength"/>.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS10 s4.3 via Broiler.VM JsCollator.Elements; IP=Low; Security=Medium; Resources=3; Fingerprint=F57FF8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS10 s4.3 via Broiler.VM JsCollator.Elements; IP=Low; Security=Medium; Resources=3; Fingerprint=F57FF8
+    // Hairs-Human:        PENDING
     private List<ulong>? Elements(string text, int maxLength, WorkCharge? charge)
     {
         if (normalization.Transform(text, NormalForm.Nfd, maxLength, charge is null ? null : new UnicodeWorkCharge(charge), out var nfd) != UnicodeStatus.Success)
@@ -212,8 +212,8 @@ public sealed class UcaCollator
     }
 
     /// <summary>The level-by-level comparison of two element sequences.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS10 s7.4 via Broiler.VM JsCollator.Compare; IP=Low; Security=Low; Resources=3; Fingerprint=F55A1A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS10 s7.4 via Broiler.VM JsCollator.Compare; IP=Low; Security=Low; Resources=3; Fingerprint=F55A1A
+    // Hairs-Human:        PENDING
     private int Compare(List<ulong> left, List<ulong> right)
     {
         var primary = Level(left, right, static element => UcaCollationData.Tables.Primary(element), static _ => true);
@@ -252,8 +252,8 @@ public sealed class UcaCollator
     }
 
     /// <summary>One level: the non-zero weights of the counted elements, compared in order, the shorter sequence first.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS10 s7.4 via Broiler.VM JsCollator.Level; IP=Low; Security=Low; Resources=2; Fingerprint=E01EA6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS10 s7.4 via Broiler.VM JsCollator.Level; IP=Low; Security=Low; Resources=2; Fingerprint=E01EA6
+    // Hairs-Human:        PENDING
     private static int Level(List<ulong> left, List<ulong> right, Func<ulong, ulong> weight, Func<ulong, bool> counted)
     {
         var i = 0;
@@ -277,8 +277,8 @@ public sealed class UcaCollator
     }
 
     /// <summary>The next non-zero weight of a counted element, or zero at the end.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS10 s7.4 via Broiler.VM JsCollator.Next; IP=Low; Security=Low; Resources=1; Fingerprint=C05994
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS10 s7.4 via Broiler.VM JsCollator.Next; IP=Low; Security=Low; Resources=1; Fingerprint=C05994
+    // Hairs-Human:        PENDING
     private static ulong Next(List<ulong> elements, ref int at, Func<ulong, ulong> weight, Func<ulong, bool> counted)
     {
         while (at < elements.Count)
@@ -305,8 +305,8 @@ public sealed class UcaCollator
     /// The rank of an element's case in the order asked for: upper, mixed, lower when upper case goes first, and lower, mixed,
     /// upper otherwise.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 kf via Broiler.VM JsCollator.CaseRank; IP=Low; Security=Low; Resources=1; Fingerprint=7C8A23
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 kf via Broiler.VM JsCollator.CaseRank; IP=Low; Security=Low; Resources=1; Fingerprint=7C8A23
+    // Hairs-Human:        PENDING
     private ulong CaseRank(ulong element)
     {
         var stated = UcaCollationData.Tables.Case(element);
@@ -317,8 +317,8 @@ public sealed class UcaCollator
     private ulong CaseWeight(ulong element) => CaseRank(element);
 
     /// <summary>The tertiary weight, with case ordered first when a case order is asked for.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=UTS35 kf via Broiler.VM JsCollator.TertiaryWeight; IP=Low; Security=Low; Resources=1; Fingerprint=A3A1A1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=UTS35 kf via Broiler.VM JsCollator.TertiaryWeight; IP=Low; Security=Low; Resources=1; Fingerprint=A3A1A1
+    // Hairs-Human:        PENDING
     private ulong TertiaryWeight(ulong element)
     {
         var tertiary = UcaCollationData.Tables.Tertiary(element);

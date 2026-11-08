@@ -473,10 +473,20 @@ internal static class SharedRules
     // SL8: assurance coverage.
 
     /// <summary>
-    /// SL8's structural half: the shared folder's assurance configuration covers every shared
-    /// library and forbids directives. That every relevant unit carries its block, and that the
-    /// artefacts are current, is the assurance tool's <c>check</c>, which CI runs.
+    /// SL8's structural half: the shared folder's assurance configuration, <c>hairs.config.json</c>,
+    /// covers every shared library and forbids directives. That every relevant unit carries its
+    /// block, and that the artefacts are current, is the assurance tool's <c>check</c>, Hairs.Cli's
+    /// <c>assurance check</c>, which CI runs.
     /// </summary>
+    /// <remarks>
+    /// Changed 2026-11-08, when Broiler.Code's commit 1b31684 "Switch to Hairs" removed the review
+    /// CLI and the owner chose to migrate to Hairs.Cli 0.1.0-preview.2: the configuration is
+    /// <c>hairs.config.json</c>, and each message names it. The summary read "the shared folder's
+    /// assurance configuration covers every shared library and forbids directives", and the messages
+    /// read "assurance.config.json does not cover ...", "assurance.config.json does not forbid
+    /// preprocessor directives" and "assurance.config.json does not use the strict exemption
+    /// predicate".
+    /// </remarks>
     internal static IEnumerable<string> SL8(JsonDocument config, IEnumerable<string> libraryProjects)
     {
         var root = config.RootElement;
@@ -484,11 +494,11 @@ internal static class SharedRules
             ? list.EnumerateArray().Select(static p => p.GetString()!).ToHashSet(StringComparer.Ordinal)
             : [];
         foreach (var project in libraryProjects.Where(p => !projects.Contains(p)))
-            yield return "assurance.config.json does not cover " + project;
+            yield return "hairs.config.json does not cover " + project;
         if (!root.TryGetProperty("forbidDirectives", out var forbid) || forbid.ValueKind != JsonValueKind.True)
-            yield return "assurance.config.json does not forbid preprocessor directives";
+            yield return "hairs.config.json does not forbid preprocessor directives";
         if (!root.TryGetProperty("exemptionPredicate", out var predicate) || predicate.GetString() != "strict")
-            yield return "assurance.config.json does not use the strict exemption predicate";
+            yield return "hairs.config.json does not use the strict exemption predicate";
     }
 
     // ---------------------------------------------------------------------------------------------

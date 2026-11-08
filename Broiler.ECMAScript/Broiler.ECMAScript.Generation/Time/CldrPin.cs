@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   8
 // Annotated:        8/8
 // Exempt:           4
@@ -28,8 +28,8 @@ namespace Broiler.ECMAScript.Generation.Time;
 /// <param name="Name">The path as the pin writes it, relative to the pin's directory, e.g. <c>cldr-48.2.0/json/cldr-bcp47/bcp47/timezone.json</c>.</param>
 /// <param name="Bytes">The file's length.</param>
 /// <param name="Sha256">The file's SHA-256, in lower-case hexadecimal.</param>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=1; Fingerprint=F2815E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=1; Fingerprint=F2815E
+// Hairs-Human:        PENDING
 public sealed record CldrPinEntry(string Name, long Bytes, string Sha256);
 
 /// <summary>
@@ -45,14 +45,14 @@ public sealed record CldrPinEntry(string Name, long Bytes, string Sha256);
 /// <c>bcp47/timezone.json</c>, states none and is held by its hash alone, so this reader compares no
 /// stated version, and Broiler.VM's rule N27 keeps that check for its own files.
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=FAF53A
-// Broiler-Falsified-If: a file whose length or SHA-256 differs from the pin, or a pin of another CLDR version, is returned as the pinned one without an exception
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=FAF53A
+// Hairs-Falsified-If: a file whose length or SHA-256 differs from the pin, or a pin of another CLDR version, is returned as the pinned one without an exception
+// Hairs-Human:        PENDING
 public sealed class CldrPin
 {
     /// <summary>The one CLDR release the primary identifiers are taken from, <see cref="TimeDataVersions.CldrVersion"/>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=0; Fingerprint=9E9AC2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Low; Resources=0; Fingerprint=9E9AC2
+    // Hairs-Human:        PENDING
     public const string PinnedVersion = TimeDataVersions.CldrVersion;
 
     private CldrPin(IReadOnlyDictionary<string, string> values, IReadOnlyList<CldrPinEntry> entries, IReadOnlyList<string> integrities)
@@ -72,16 +72,16 @@ public sealed class CldrPin
     public IReadOnlyList<string> Integrities { get; }
 
     /// <summary>The version line, or the empty string when there is none.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Medium; Resources=1; Fingerprint=7391BA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Medium; Resources=1; Fingerprint=7391BA
+    // Hairs-Human:        PENDING
     public string Version => Values.TryGetValue("version", out var version) ? version : string.Empty;
 
     /// <summary>Parses pin text: <c>key value</c> lines, <c>#</c> comments, repeated <c>file</c> and <c>json-integrity</c> lines.</summary>
     /// <param name="text">The pin's text.</param>
     /// <exception cref="InvalidDataException">A <c>file</c> line is malformed, or a line is empty of a value or repeats a key.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=4ECE1D
-    // Broiler-Falsified-If: a malformed file line or a repeated key is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=4ECE1D
+    // Hairs-Falsified-If: a malformed file line or a repeated key is accepted
+    // Hairs-Human:        PENDING
     public static CldrPin Parse(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -130,8 +130,8 @@ public sealed class CldrPin
     /// <summary>The entry the pin writes as <paramref name="name"/>.</summary>
     /// <param name="name">The path as the pin writes it.</param>
     /// <exception cref="InvalidDataException">The pin names no such file.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Medium; Resources=2; Fingerprint=CBD84E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=Medium; Resources=2; Fingerprint=CBD84E
+    // Hairs-Human:        PENDING
     public CldrPinEntry Entry(string name) =>
         Entries.SingleOrDefault(entry => string.Equals(entry.Name, name, StringComparison.Ordinal))
         ?? throw new InvalidDataException("cldr.pin names no file `" + name + "`");
@@ -141,9 +141,9 @@ public sealed class CldrPin
     /// file, a length or a hash. Empty when they are the files the pin describes.
     /// </summary>
     /// <param name="archive">Each file's bytes, by the path the pin writes it under.</param>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=558790
-    // Broiler-Falsified-If: a file whose length or hash differs from the pin, or a pin of another version, yields no violation
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=558790
+    // Hairs-Falsified-If: a file whose length or hash differs from the pin, or a pin of another version, yields no violation
+    // Hairs-Human:        PENDING
     public IEnumerable<string> Violations(IReadOnlyDictionary<string, byte[]> archive)
     {
         ArgumentNullException.ThrowIfNull(archive);
@@ -183,9 +183,9 @@ public sealed class CldrPin
     /// <summary>The files, verified, or an exception naming every way they are not the pinned ones.</summary>
     /// <param name="archive">Each file's bytes, by the path the pin writes it under.</param>
     /// <exception cref="InvalidDataException">The files are not the ones the pin describes.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=22A1C6
-    // Broiler-Falsified-If: files with a violation are returned instead of refused
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin; IP=Low; Security=High; Resources=3; Fingerprint=22A1C6
+    // Hairs-Falsified-If: files with a violation are returned instead of refused
+    // Hairs-Human:        PENDING
     public IReadOnlyDictionary<string, byte[]> Verified(IReadOnlyDictionary<string, byte[]> archive)
     {
         var violations = Violations(archive).ToArray();

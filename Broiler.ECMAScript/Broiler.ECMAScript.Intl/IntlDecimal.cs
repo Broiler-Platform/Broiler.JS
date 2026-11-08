@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   27
 // Annotated:        27/27
 // Exempt:           10
@@ -24,8 +24,8 @@ using Broiler.ECMAScript.Numbers;
 namespace Broiler.ECMAScript.Intl;
 
 /// <summary>What an Intl mathematical value is (ECMA-402 ToIntlMathematicalValue, <c>sec-tointlmathematicalvalue</c>): a finite decimal, or one of the three others.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-tointlmathematicalvalue; IP=Low; Security=Low; Resources=0; Fingerprint=9380D6
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-tointlmathematicalvalue; IP=Low; Security=Low; Resources=0; Fingerprint=9380D6
+// Hairs-Human:        PENDING
 public enum IntlDecimalKind
 {
     /// <summary>A finite value, negative zero among them.</summary>
@@ -65,8 +65,8 @@ public enum IntlDecimalKind
 /// same units (decision D18).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Medium; Resources=3; Fingerprint=C3145B
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Medium; Resources=3; Fingerprint=C3145B
+// Hairs-Human:        PENDING
 public readonly record struct IntlDecimal
 {
     private readonly string? digits;
@@ -86,51 +86,51 @@ public readonly record struct IntlDecimal
     public bool IsNegative { get; }
 
     /// <summary>The significant digits, ASCII, without leading or trailing zeros; empty for zero and for the three non-finite values.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=C3319D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=C3319D
+    // Hairs-Human:        PENDING
     public string Digits => digits ?? string.Empty;
 
     /// <summary>Where the decimal point falls: a finite value is <c>0.Digits * 10^Point</c>; 0 for zero.</summary>
     public int Point { get; }
 
     /// <summary><c>not-a-number</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=E64508
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=E64508
+    // Hairs-Human:        PENDING
     public static IntlDecimal NaN => new(IntlDecimalKind.NaN, false, string.Empty, 0);
 
     /// <summary><c>positive-infinity</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=B67BA6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=B67BA6
+    // Hairs-Human:        PENDING
     public static IntlDecimal PositiveInfinity => new(IntlDecimalKind.PositiveInfinity, false, string.Empty, 0);
 
     /// <summary><c>negative-infinity</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=71EC81
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=71EC81
+    // Hairs-Human:        PENDING
     public static IntlDecimal NegativeInfinity => new(IntlDecimalKind.NegativeInfinity, true, string.Empty, 0);
 
     /// <summary>Zero.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=8DAC69
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=8DAC69
+    // Hairs-Human:        PENDING
     public static IntlDecimal Zero => new(IntlDecimalKind.Finite, false, string.Empty, 0);
 
     /// <summary><c>negative-zero</c>.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=FC03B8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=FC03B8
+    // Hairs-Human:        PENDING
     public static IntlDecimal NegativeZero => new(IntlDecimalKind.Finite, true, string.Empty, 0);
 
     /// <summary>Whether the value is finite, negative zero included.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=8068FD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=8068FD
+    // Hairs-Human:        PENDING
     public bool IsFinite => Kind == IntlDecimalKind.Finite;
 
     /// <summary>Whether the value is zero or negative zero.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=FE7914
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=FE7914
+    // Hairs-Human:        PENDING
     public bool IsZero => Kind == IntlDecimalKind.Finite && Digits.Length == 0;
 
     /// <summary>The power of ten of the leading digit, <c>floor(log10(|x|))</c>, for a nonzero finite value.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=5E7EB6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=5E7EB6
+    // Hairs-Human:        PENDING
     public int Magnitude => Point - 1;
 
     /// <summary>
@@ -145,8 +145,8 @@ public readonly record struct IntlDecimal
     /// <param name="point">Where the decimal point falls: the value is <c>0.digits * 10^point</c>.</param>
     /// <returns>The value, its digits without leading or trailing zeros.</returns>
     /// <exception cref="ArgumentException"><paramref name="digits"/> holds a character that is not an ASCII digit.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=4EFB5D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=4EFB5D
+    // Hairs-Human:        PENDING
     internal static IntlDecimal Finite(bool isNegative, string digits, int point)
     {
         ArgumentNullException.ThrowIfNull(digits);
@@ -164,15 +164,15 @@ public readonly record struct IntlDecimal
 
     /// <summary>The value without its sign.</summary>
     /// <returns>The value with a positive sign; <c>positive-infinity</c> for either infinity.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=A57383
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=A57383
+    // Hairs-Human:        PENDING
     public IntlDecimal Abs() => new(Kind == IntlDecimalKind.NegativeInfinity ? IntlDecimalKind.PositiveInfinity : Kind, false, Digits, Point);
 
     /// <summary>The value with its sign set; not-a-number is returned as it is.</summary>
     /// <param name="isNegative">The sign.</param>
     /// <returns>The value with that sign.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=7B5F45
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=7B5F45
+    // Hairs-Human:        PENDING
     public IntlDecimal WithSign(bool isNegative) =>
         Kind switch
         {
@@ -187,8 +187,8 @@ public readonly record struct IntlDecimal
     /// </summary>
     /// <param name="power">The power of ten.</param>
     /// <returns>The scaled value.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=ABBB03
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=ABBB03
+    // Hairs-Human:        PENDING
     internal IntlDecimal Scale(int power) => IsZero || !IsFinite ? this : new IntlDecimal(Kind, IsNegative, Digits, Point + power);
 
     /// <summary>
@@ -198,9 +198,9 @@ public readonly record struct IntlDecimal
     /// </summary>
     /// <param name="value">The Number.</param>
     /// <returns>The value.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=High; Resources=1; Fingerprint=07012B
-    // Broiler-Falsified-If: a Number's value differs from the decimal its Number::toString digits write
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=High; Resources=1; Fingerprint=07012B
+    // Hairs-Falsified-If: a Number's value differs from the decimal its Number::toString digits write
+    // Hairs-Human:        PENDING
     public static IntlDecimal FromNumber(double value)
     {
         if (double.IsNaN(value))
@@ -228,8 +228,8 @@ public readonly record struct IntlDecimal
     /// <param name="value">The BigInt.</param>
     /// <param name="charge">The caller's meter, charged by <c>BigIntText.ToString</c> for the decimal digits it writes, before it writes them.</param>
     /// <returns>The value.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=0B17A4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=0B17A4
+    // Hairs-Human:        PENDING
     public static IntlDecimal FromBigInt(BigInteger value, WorkCharge? charge = null)
     {
         var text = BigIntText.ToString(value, 10, charge);
@@ -251,9 +251,9 @@ public readonly record struct IntlDecimal
     /// <param name="charge">The caller's meter: <c>length / 8 + 1</c> units before anything is read (Broiler.VM's
     /// <c>JsDecimal.FromString</c>), and a prefixed literal's charges through <c>BigIntText</c>.</param>
     /// <returns>The value.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=High; Resources=2; Fingerprint=2EE52F
-    // Broiler-Falsified-If: a text outside StringNumericLiteral answers other than not-a-number, or a value that rounds to an infinity or a zero as a Number is kept as written
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=High; Resources=2; Fingerprint=2EE52F
+    // Hairs-Falsified-If: a text outside StringNumericLiteral answers other than not-a-number, or a value that rounds to an infinity or a zero as a Number is kept as written
+    // Hairs-Human:        PENDING
     public static IntlDecimal FromString(string text, BigIntPolicy policy, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -294,8 +294,8 @@ public readonly record struct IntlDecimal
     /// <summary>Whether two values are the same value: kind, sign, digits and point; <c>default</c> is <see cref="Zero"/>.</summary>
     /// <param name="other">The other value.</param>
     /// <returns>Whether they are the same.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=FACDB3
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=FACDB3
+    // Hairs-Human:        PENDING
     public bool Equals(IntlDecimal other) =>
         Kind == other.Kind && IsNegative == other.IsNegative && Point == other.Point && string.Equals(Digits, other.Digits, StringComparison.Ordinal);
 
@@ -305,8 +305,8 @@ public readonly record struct IntlDecimal
 
     /// <summary>The value as ECMA-402 writes a mathematical value in prose: digits with a point, an exponent where the point is far away, or the kind's name.</summary>
     /// <returns>For example <c>1.15</c>, <c>-0</c>, <c>1E+400</c>, <c>not-a-number</c>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=3E71AD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=3E71AD
+    // Hairs-Human:        PENDING
     public override string ToString()
     {
         switch (Kind)
@@ -345,8 +345,8 @@ public readonly record struct IntlDecimal
     }
 
     /// <summary>A finite value from ASCII digits that may carry leading and trailing zeros.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=C3442B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=C3442B
+    // Hairs-Human:        PENDING
     private static IntlDecimal Trimmed(bool negative, string digits, int point)
     {
         var first = 0;
@@ -372,8 +372,8 @@ public readonly record struct IntlDecimal
     /// A StrDecimalLiteral (ECMA-262 <c>sec-stringnumericliteral</c>): an optional sign, digits with an optional point, and an
     /// optional exponent; nothing else.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Medium; Resources=2; Fingerprint=791EDE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Medium; Resources=2; Fingerprint=791EDE
+    // Hairs-Human:        PENDING
     private static IntlDecimal? ParseDecimal(string text)
     {
         var at = 0;
@@ -469,8 +469,8 @@ public readonly record struct IntlDecimal
     /// RoundMVResult's test (ToIntlMathematicalValue step 9): a value whose Number would be an infinity is that infinity, and
     /// one whose Number would be a zero is that zero; any other is kept exactly.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Medium; Resources=2; Fingerprint=01D323
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Medium; Resources=2; Fingerprint=01D323
+    // Hairs-Human:        PENDING
     private IntlDecimal HeldToNumberRange()
     {
         if (!IsFinite || IsZero)
@@ -506,9 +506,9 @@ public readonly record struct IntlDecimal
     /// this nonnegative value: ECMA-402's choice between <c>r1</c> and <c>r2</c> in ToRawFixed and ToRawPrecision, through
     /// ApplyUnsignedRoundingMode (<c>sec-applyunsignedroundingmode</c>).
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=High; Resources=2; Fingerprint=9BA72E
-    // Broiler-Falsified-If: a tie, a value just above or just below a tie, or an exact multiple is rounded otherwise than ApplyUnsignedRoundingMode states, for any admitted increment
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=High; Resources=2; Fingerprint=9BA72E
+    // Hairs-Falsified-If: a tie, a value just above or just below a tie, or an exact multiple is rounded otherwise than ApplyUnsignedRoundingMode states, for any admitted increment
+    // Hairs-Human:        PENDING
     internal string RoundToUnits(int unit, int increment, UnsignedRoundingMode mode)
     {
         if (IsZero)
@@ -575,8 +575,8 @@ public readonly record struct IntlDecimal
     }
 
     /// <summary>A tail of digits, with no trailing zero, against one half: 0 none, 1 below, 2 exactly, 3 above.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=F48FE4
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=F48FE4
+    // Hairs-Human:        PENDING
     private static int Classify(string tail) =>
         tail.Length == 0 ? 0
         : tail[0] < '5' ? 1
@@ -584,8 +584,8 @@ public readonly record struct IntlDecimal
         : tail.Length == 1 ? 2 : 3;
 
     /// <summary>A digit string minus a small nonnegative number no greater than it, without leading zeros.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=C367C6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=C367C6
+    // Hairs-Human:        PENDING
     private static string Subtract(string digits, int value)
     {
         if (value == 0)
@@ -615,8 +615,8 @@ public readonly record struct IntlDecimal
     }
 
     /// <summary>A digit string plus a small nonnegative number, without leading zeros.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=A63E16
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-tointlmathematicalvalue via Broiler.VM JsDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=A63E16
+    // Hairs-Human:        PENDING
     private static string Add(string digits, int value)
     {
         var chars = new System.Collections.Generic.List<char>(digits.Length + 5);

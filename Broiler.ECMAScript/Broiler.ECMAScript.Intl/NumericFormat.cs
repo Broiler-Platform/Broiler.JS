@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   9
 // Annotated:        9/9
 // Exempt:           0
@@ -23,8 +23,8 @@ namespace Broiler.ECMAScript.Intl;
 /// <summary>What FormatNumericToString answers (<c>sec-formatnumerictostring</c>): the rounded value, with its sign, and its decimal String.</summary>
 /// <param name="RoundedNumber">[[RoundedNumber]]: the value rounded as the digit options say, with the input's sign.</param>
 /// <param name="FormattedString">[[FormattedString]]: ASCII digits with an optional <c>.</c>, without a sign.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-formatnumerictostring records; IP=Low; Security=Low; Resources=0; Fingerprint=775832
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-formatnumerictostring records; IP=Low; Security=Low; Resources=0; Fingerprint=775832
+// Hairs-Human:        PENDING
 public readonly record struct FormattedNumeric(IntlDecimal RoundedNumber, string FormattedString);
 
 /// <summary>
@@ -41,8 +41,8 @@ public readonly record struct FormattedNumeric(IntlDecimal RoundedNumber, string
 /// caller's <see cref="WorkCharge"/> where it charged its engine's meter, in the same units (decision D18).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=345121
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=Low; Resources=0; Fingerprint=345121
+// Hairs-Human:        PENDING
 public static class NumericFormat
 {
     /// <summary>
@@ -54,9 +54,9 @@ public static class NumericFormat
     /// <param name="charge">The caller's meter: <c>digits / 16 + 1</c> units, the value's significant digits, before any work (Broiler.VM's <c>JsNumberFormatter.cs:821</c>).</param>
     /// <returns>The rounded value and its String.</returns>
     /// <exception cref="ArgumentException"><paramref name="x"/> is not finite, or the options lack a pair their rounding type reads.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=High; Resources=2; Fingerprint=854FCF
-    // Broiler-Falsified-If: the String or the rounded value differs from FormatNumericToString's for a value and digit options, or the charge differs from digits / 16 + 1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=High; Resources=2; Fingerprint=854FCF
+    // Hairs-Falsified-If: the String or the rounded value differs from FormatNumericToString's for a value and digit options, or the charge differs from digits / 16 + 1
+    // Hairs-Human:        PENDING
     public static FormattedNumeric FormatNumericToString(DigitOptions options, IntlDecimal x, WorkCharge? charge = null)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -111,19 +111,19 @@ public static class NumericFormat
         return new FormattedNumeric(result.Rounded.WithSign(negative), text);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-formatnumerictostring records; IP=Low; Security=Low; Resources=1; Fingerprint=25F9CF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-formatnumerictostring records; IP=Low; Security=Low; Resources=1; Fingerprint=25F9CF
+    // Hairs-Human:        PENDING
     private static int Required(int? value) =>
         value ?? throw new ArgumentException("the digit options lack a pair their rounding type reads", "options");
 
     /// <summary>Whether a rounded value is an integer.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=325FAC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=325FAC
+    // Hairs-Human:        PENDING
     private static bool IsInteger(IntlDecimal value) => value.IsZero || value.Point >= value.Digits.Length;
 
     /// <summary>ECMA-402's ToRawFixed (<c>sec-torawfixed</c>) of a nonnegative value.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=Medium; Resources=2; Fingerprint=125F3A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=Medium; Resources=2; Fingerprint=125F3A
+    // Hairs-Human:        PENDING
     internal static RawFormat ToRawFixed(IntlDecimal x, int minFraction, int maxFraction, int increment, UnsignedRoundingMode mode)
     {
         var f = maxFraction;
@@ -155,8 +155,8 @@ public static class NumericFormat
     }
 
     /// <summary>ECMA-402's ToRawPrecision (<c>sec-torawprecision</c>) of a nonnegative value.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=Medium; Resources=2; Fingerprint=C72039
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=Medium; Resources=2; Fingerprint=C72039
+    // Hairs-Human:        PENDING
     internal static RawFormat ToRawPrecision(IntlDecimal x, int minPrecision, int maxPrecision, UnsignedRoundingMode mode)
     {
         var p = maxPrecision;
@@ -213,8 +213,8 @@ public static class NumericFormat
     }
 
     /// <summary>Removes up to <paramref name="cut"/> trailing zeros after a point, then a trailing point.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=B0D5DE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-formatnumerictostring sec-torawfixed sec-torawprecision via Broiler.VM JsNumberFormatter JsRawDecimal; IP=Low; Security=Low; Resources=1; Fingerprint=B0D5DE
+    // Hairs-Human:        PENDING
     private static string Cut(string m, int cut)
     {
         var end = m.Length;
@@ -237,7 +237,7 @@ public static class NumericFormat
     }
 
     /// <summary>What ToRawFixed and ToRawPrecision answer: [[FormattedString]], [[RoundedNumber]], [[IntegerDigitsCount]] and [[RoundingMagnitude]].</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-402 sec-formatnumerictostring records; IP=Low; Security=Low; Resources=0; Fingerprint=C70924
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-formatnumerictostring records; IP=Low; Security=Low; Resources=0; Fingerprint=C70924
+    // Hairs-Human:        PENDING
     internal readonly record struct RawFormat(string Formatted, IntlDecimal Rounded, int IntegerDigits, int RoundingMagnitude);
 }

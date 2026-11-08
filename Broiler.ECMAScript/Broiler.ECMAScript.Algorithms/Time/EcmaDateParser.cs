@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   18
 // Annotated:        18/18
 // Exempt:           5
@@ -23,8 +23,8 @@ namespace Broiler.ECMAScript.Time;
 /// Which strings <see cref="EcmaDateParser.Parse"/> reads beyond the Date Time String Format, which is the
 /// part of <c>Date.parse</c> (ECMA-262 21.4.3.2) the specification leaves to the implementation.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=F8E05E
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=F8E05E
+// Hairs-Human:        PENDING
 public enum DateParseDialect
 {
     /// <summary>
@@ -44,8 +44,8 @@ public enum DateParseDialect
 }
 
 /// <summary>What a parse found: no date, a UTC time value, or a local time the caller converts with <c>UTC</c>.</summary>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=FC41CC
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=FC41CC
+// Hairs-Human:        PENDING
 public enum EcmaParsedKind
 {
     /// <summary>The string is not a date in the dialect, or its date is outside the time values; <c>Date.parse</c> answers NaN.</summary>
@@ -64,8 +64,8 @@ public enum EcmaParsedKind
 /// <summary>The result of <see cref="EcmaDateParser.Parse"/>.</summary>
 /// <param name="Kind">What the string held.</param>
 /// <param name="Value">The time value for <see cref="EcmaParsedKind.Utc"/>, the local time for <see cref="EcmaParsedKind.Local"/>, and NaN for <see cref="EcmaParsedKind.Invalid"/>.</param>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=D252A7
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=D252A7
+// Hairs-Human:        PENDING
 public readonly record struct EcmaParsedDate(EcmaParsedKind Kind, double Value);
 
 /// <summary>
@@ -87,9 +87,9 @@ public readonly record struct EcmaParsedDate(EcmaParsedKind Kind, double Value);
 /// read, when the text is not empty, whatever the outcome. Broiler.VM's adapter adds its own unit.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.32; IP=Low; Security=High; Resources=2; Fingerprint=0047BF
-// Broiler-Falsified-If: a string outside the format is read by the strict dialect, a string of the format is refused or read at another time value, or Broiler.VM's dialect answers differently from that engine's DateParseText on a string other than a rendering of a negative year
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.32; IP=Low; Security=High; Resources=2; Fingerprint=0047BF
+// Hairs-Falsified-If: a string outside the format is read by the strict dialect, a string of the format is refused or read at another time value, or Broiler.VM's dialect answers differently from that engine's DateParseText on a string other than a rendering of a negative year
+// Hairs-Human:        PENDING
 public static class EcmaDateParser
 {
     /// <summary>Reads a string as a date in a dialect.</summary>
@@ -98,9 +98,9 @@ public static class EcmaDateParser
     /// <param name="charge">The caller's meter, charged the text's length before it is read; <see langword="null"/> for none.</param>
     /// <returns>The kind of date found and its value.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The dialect is not one of the enumeration's.</exception>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=High; Resources=2; Fingerprint=5C16E2
-    // Broiler-Falsified-If: the meter is charged other than the text's length before the first character is read, or charged for an empty text
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=High; Resources=2; Fingerprint=5C16E2
+    // Hairs-Falsified-If: the meter is charged other than the text's length before the first character is read, or charged for an empty text
+    // Hairs-Human:        PENDING
     public static EcmaParsedDate Parse(ReadOnlySpan<char> text, DateParseDialect dialect, WorkCharge? charge = null)
     {
         if (dialect is not (DateParseDialect.Strict or DateParseDialect.BroilerVM))
@@ -120,14 +120,14 @@ public static class EcmaDateParser
         return ReadTextual(text);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=E57066
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=E57066
+    // Hairs-Human:        PENDING
     private static readonly EcmaParsedDate Invalid = new(EcmaParsedKind.Invalid, double.NaN);
 
     // The Date Time String Format. The strict dialect holds a day to its month's length; Broiler.VM's
     // admits any day to 31 and carries it, as MakeDay does.
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.32; IP=Low; Security=Medium; Resources=1; Fingerprint=151641
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.32; IP=Low; Security=Medium; Resources=1; Fingerprint=151641
+    // Hairs-Human:        PENDING
     private static EcmaParsedDate ReadFormat(ReadOnlySpan<char> text, bool strict)
     {
         var at = 0;
@@ -237,8 +237,8 @@ public static class EcmaDateParser
     // "Thu Jan 01 1970" - and the shapes around them, exactly as Broiler.VM's DateParseTextual did,
     // except that a minus sign and digits are a year (correspondence row P9 of bundle sjl-6-001), so that
     // its renderings of negative years read back.
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=0D2460
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=0D2460
+    // Hairs-Human:        PENDING
     private static EcmaParsedDate ReadTextual(ReadOnlySpan<char> text)
     {
         double month = -1;
@@ -318,25 +318,25 @@ public static class EcmaDateParser
         return Clipped(local - (offsetMinutes * EcmaTime.MsPerMinute));
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.31; IP=Low; Security=Low; Resources=1; Fingerprint=6B1FE0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.31; IP=Low; Security=Low; Resources=1; Fingerprint=6B1FE0
+    // Hairs-Human:        PENDING
     private static EcmaParsedDate Clipped(double time)
     {
         var clipped = EcmaTime.TimeClip(time);
         return double.IsNaN(clipped) ? Invalid : new EcmaParsedDate(EcmaParsedKind.Utc, clipped);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.32; IP=Low; Security=Low; Resources=1; Fingerprint=6B90B1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.32; IP=Low; Security=Low; Resources=1; Fingerprint=6B90B1
+    // Hairs-Human:        PENDING
     private static int DaysInMonth(long year, int month) =>
         month is >= 1 and <= 12 ? IsoCalendarMath.DaysInMonth(year, month) : 0;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.32; IP=Low; Security=Low; Resources=1; Fingerprint=29D898
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.32; IP=Low; Security=Low; Resources=1; Fingerprint=29D898
+    // Hairs-Human:        PENDING
     private static bool At(ReadOnlySpan<char> text, int at, char expected) => at < text.Length && text[at] == expected;
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=3F77FF
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=3F77FF
+    // Hairs-Human:        PENDING
     private static bool StartsWithDigits(ReadOnlySpan<char> text, int count)
     {
         if (text.Length < count)
@@ -351,8 +351,8 @@ public static class EcmaDateParser
     }
 
     // Exactly count decimal digits at the cursor, which moves past them.
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.32; IP=Low; Security=Medium; Resources=1; Fingerprint=3414B1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.1.32; IP=Low; Security=Medium; Resources=1; Fingerprint=3414B1
+    // Hairs-Human:        PENDING
     private static bool ReadDigits(ReadOnlySpan<char> text, ref int at, int count, out long value)
     {
         value = 0;
@@ -372,8 +372,8 @@ public static class EcmaDateParser
     }
 
     // The next token between the separators Broiler.VM split on - space, comma and tab - skipping empty ones.
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=405624
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=405624
+    // Hairs-Human:        PENDING
     private static bool NextToken(ReadOnlySpan<char> text, ref int at, out ReadOnlySpan<char> token)
     {
         while (at < text.Length && IsSeparator(text[at]))
@@ -387,14 +387,14 @@ public static class EcmaDateParser
         return token.Length > 0;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=3F4562
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=3F4562
+    // Hairs-Human:        PENDING
     private static bool IsSeparator(char c) => c is ' ' or ',' or '\t';
 
     // HH:mm or HH:mm:ss, each part a whole number of any length. A clock of two parts keeps the seconds an
     // earlier clock of three set, as Broiler.VM's reader did: only the parts a clock has are read.
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=92DE4C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=92DE4C
+    // Hairs-Human:        PENDING
     private static bool ReadClock(ReadOnlySpan<char> token, ref double hour, ref double minute, ref double second)
     {
         var first = token.IndexOf(':');
@@ -411,8 +411,8 @@ public static class EcmaDateParser
     }
 
     // A token that is entirely decimal digits, accumulated as Broiler.VM did: value × 10 + digit, in doubles.
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=F56E00
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=F56E00
+    // Hairs-Human:        PENDING
     private static bool WholeNumber(ReadOnlySpan<char> token, out double value)
     {
         value = 0;
@@ -433,8 +433,8 @@ public static class EcmaDateParser
         return true;
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=D60FEC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Low; Resources=1; Fingerprint=D60FEC
+    // Hairs-Human:        PENDING
     private static int MonthByName(ReadOnlySpan<char> token) => token switch
     {
         "Jan" => 0,

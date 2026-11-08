@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   71
 // Annotated:        71/71
 // Exempt:           14
@@ -55,13 +55,13 @@ namespace Broiler.ECMAScript.Intl;
 /// question that first decodes it, and from every later one.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Medium; Resources=1; Fingerprint=0F61D9
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Medium; Resources=1; Fingerprint=0F61D9
+// Hairs-Human:        PENDING
 public sealed class TableLocaleData : ILocaleData
 {
     /// <summary>The kinds of alias the table names, in Broiler.VM's order.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=E5A822
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=E5A822
+    // Hairs-Human:        PENDING
     private static ImmutableArray<string> AliasKinds { get; } = ["language", "script", "region", "variant", "subdivision"];
 
     private readonly IIntlDataSet data;
@@ -85,8 +85,8 @@ public sealed class TableLocaleData : ILocaleData
     /// <summary>Creates the decoder over a data set; nothing is decoded until a question needs it.</summary>
     /// <param name="data">The tables, which answer the same bytes for the life of the process.</param>
     /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Medium; Resources=1; Fingerprint=3E16C8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Medium; Resources=1; Fingerprint=3E16C8
+    // Hairs-Human:        PENDING
     public TableLocaleData(IIntlDataSet data)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -105,13 +105,13 @@ public sealed class TableLocaleData : ILocaleData
     public string CldrVersion => data.CldrVersion;
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=0; Fingerprint=1A0433
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=0; Fingerprint=1A0433
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string> Locales => locales.Value;
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=B7872A
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=B7872A
+    // Hairs-Human:        PENDING
     public bool HoldsLocale(IntlTable table, string locale)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -134,8 +134,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=48FC15
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=48FC15
+    // Hairs-Human:        PENDING
     public string? LikelySubtags(string source)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -143,8 +143,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=ABF0A9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=ABF0A9
+    // Hairs-Human:        PENDING
     public string? Alias(LocaleAliasKind kind, string from)
     {
         ArgumentNullException.ThrowIfNull(from);
@@ -158,8 +158,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=FB55EE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=FB55EE
+    // Hairs-Human:        PENDING
     public bool IsExtensionKey(char singleton, string key)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -167,8 +167,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=11F151
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=11F151
+    // Hairs-Human:        PENDING
     public bool TryExtensionType(char singleton, string key, string type, out string preferred)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -185,8 +185,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=4FA7D6
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=4FA7D6
+    // Hairs-Human:        PENDING
     public RegionHourCycles? HourCycles(string region)
     {
         ArgumentNullException.ThrowIfNull(region);
@@ -194,8 +194,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=EA6847
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=EA6847
+    // Hairs-Human:        PENDING
     public RegionWeek? Week(string region)
     {
         ArgumentNullException.ThrowIfNull(region);
@@ -203,8 +203,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=6264A1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=6264A1
+    // Hairs-Human:        PENDING
     public bool? IsRightToLeft(string script)
     {
         ArgumentNullException.ThrowIfNull(script);
@@ -212,8 +212,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=8CEDC9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=8CEDC9
+    // Hairs-Human:        PENDING
     public string? NumberValue(string locale, string key)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -222,8 +222,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=7AD19C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=7AD19C
+    // Hairs-Human:        PENDING
     public CurrencyNames? Currency(string locale, string code)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -235,8 +235,8 @@ public sealed class TableLocaleData : ILocaleData
     public IReadOnlyList<string> CurrencyCodes => numbers.Value.CurrencyCodes;
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=2FC603
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=2FC603
+    // Hairs-Human:        PENDING
     public int? CurrencyDigits(string code)
     {
         ArgumentNullException.ThrowIfNull(code);
@@ -244,13 +244,13 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=0; Fingerprint=9DAB07
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=0; Fingerprint=9DAB07
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string> NumberingSystems => numbers.Value.NumberingSystemNames;
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=4ECA20
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=4ECA20
+    // Hairs-Human:        PENDING
     public IReadOnlyList<string>? NumberingSystemDigits(string system)
     {
         ArgumentNullException.ThrowIfNull(system);
@@ -258,8 +258,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=30F7BA
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=30F7BA
+    // Hairs-Human:        PENDING
     public IReadOnlyList<PluralRuleText>? PluralRules(string language, PluralRuleType type)
     {
         ArgumentNullException.ThrowIfNull(language);
@@ -268,8 +268,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=B0280D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=B0280D
+    // Hairs-Human:        PENDING
     public string? PluralRange(string language, string start, string end)
     {
         ArgumentNullException.ThrowIfNull(language);
@@ -279,8 +279,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=7615A0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=7615A0
+    // Hairs-Human:        PENDING
     public string? UnitPattern(string locale, string width, string unit, string field)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -291,8 +291,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=EB623B
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=EB623B
+    // Hairs-Human:        PENDING
     public ListPatterns? ListPattern(string locale, string type)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -301,8 +301,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=E4D952
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=E4D952
+    // Hairs-Human:        PENDING
     public string? RelativeTime(string locale, string field, string key)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -312,8 +312,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=9B5118
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=9B5118
+    // Hairs-Human:        PENDING
     public string? DisplayName(string locale, string kind, string code)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -323,8 +323,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=E1452C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=E1452C
+    // Hairs-Human:        PENDING
     public string? DateValue(string locale, string calendar, string key)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -332,14 +332,14 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=EBC824
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=EBC824
+    // Hairs-Human:        PENDING
     public IReadOnlyDictionary<string, string>? DateValues(string locale, string calendar) =>
         DateLanguage(locale, calendar) is { } values ? values.AsReadOnly() : null;
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=4A5D9E
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=4A5D9E
+    // Hairs-Human:        PENDING
     public IReadOnlyList<DayPeriodRule>? DayPeriods(string language)
     {
         ArgumentNullException.ThrowIfNull(language);
@@ -347,8 +347,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=2EAFB8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=2EAFB8
+    // Hairs-Human:        PENDING
     public IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone)
     {
         ArgumentNullException.ThrowIfNull(zone);
@@ -356,8 +356,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=7FFDD2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=7FFDD2
+    // Hairs-Human:        PENDING
     public string? GoldenZone(string metazone, string region)
     {
         ArgumentNullException.ThrowIfNull(metazone);
@@ -366,8 +366,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=4D29C8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=4D29C8
+    // Hairs-Human:        PENDING
     public string? PrimaryZone(string region)
     {
         ArgumentNullException.ThrowIfNull(region);
@@ -378,8 +378,8 @@ public sealed class TableLocaleData : ILocaleData
     /// A locale's date data in a calendar: the locale's own for <c>gregory</c>, and its layer <c>locale@calendar</c> for every
     /// other calendar, as Broiler.VM's date data keys them.
     /// </summary>
-    // Broiler-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=624A35
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Low; Resources=1; Fingerprint=624A35
+    // Hairs-Human:        PENDING
     private Dictionary<string, string>? DateLanguage(string locale, string calendar)
     {
         ArgumentNullException.ThrowIfNull(locale);
@@ -396,8 +396,8 @@ public sealed class TableLocaleData : ILocaleData
 
     // ---- the decoders, Broiler.VM's JsIntlTables at 4cf9ca44 ------------------------------------
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=2; Fingerprint=CB2899
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=2; Fingerprint=CB2899
+    // Hairs-Human:        PENDING
     private Dictionary<string, Dictionary<string, string>> ReadAliases()
     {
         var kinds = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
@@ -422,8 +422,8 @@ public sealed class TableLocaleData : ILocaleData
         return kinds;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=2; Fingerprint=BE6FFE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=2; Fingerprint=BE6FFE
+    // Hairs-Human:        PENDING
     private Dictionary<string, string> ReadExtensions()
     {
         var table = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -437,9 +437,9 @@ public sealed class TableLocaleData : ILocaleData
         return table;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=3; Fingerprint=21E4C4
-    // Broiler-Falsified-If: a number, currency, unit, plural, plural-range or numbering-system answer differs from what Broiler.VM's JsIntlTables.ReadNumbers decodes from the same tables
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=3; Fingerprint=21E4C4
+    // Hairs-Falsified-If: a number, currency, unit, plural, plural-range or numbering-system answer differs from what Broiler.VM's JsIntlTables.ReadNumbers decodes from the same tables
+    // Hairs-Human:        PENDING
     private NumberTables ReadNumbers()
     {
         var tables = new NumberTables();
@@ -547,8 +547,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <summary>A layer of date data over the data below it: its values set, and its <c>-</c> keys removed.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=1; Fingerprint=9D65CD
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=1; Fingerprint=9D65CD
+    // Hairs-Human:        PENDING
     private static Dictionary<string, string> Layered(Dictionary<string, string> below, Dictionary<string, string> layer)
     {
         var result = new Dictionary<string, string>(below, StringComparer.Ordinal);
@@ -568,9 +568,9 @@ public sealed class TableLocaleData : ILocaleData
         return result;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=3; Fingerprint=E8AF35
-    // Broiler-Falsified-If: a language's date data in a calendar holds a key or a value, or enumerates in an order, other than Broiler.VM's JsIntlTables.ReadDates decodes from the same table
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=3; Fingerprint=E8AF35
+    // Hairs-Falsified-If: a language's date data in a calendar holds a key or a value, or enumerates in an order, other than Broiler.VM's JsIntlTables.ReadDates decodes from the same table
+    // Hairs-Human:        PENDING
     private DateTables ReadDates()
     {
         var tables = new DateTables();
@@ -668,8 +668,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <summary>A day period table's time, <c>hh:mm</c>, as the minute of the day; <c>-1</c> for an empty field.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=1; Fingerprint=39A256
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=1; Fingerprint=39A256
+    // Hairs-Human:        PENDING
     private static int Minutes(string time) =>
         time.Length == 0
             ? -1
@@ -681,9 +681,9 @@ public sealed class TableLocaleData : ILocaleData
     /// zone in a region (<c>g</c>) and a country's primary zone (<c>p</c>); a period's bound is <c>yyyy-MM-dd HH:mm</c> UTC, and
     /// an empty one the start of 1970 or the end of 9999, as ICU reads CLDR's.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=2; Fingerprint=B01CA5
-    // Broiler-Falsified-If: a metazone period's bounds or name differ from the CLDR metaZones table's, or a line of another form is accepted
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=2; Fingerprint=B01CA5
+    // Hairs-Falsified-If: a metazone period's bounds or name differ from the CLDR metaZones table's, or a line of another form is accepted
+    // Hairs-Human:        PENDING
     private MetazoneTables ReadMetazones()
     {
         var tables = new MetazoneTables();
@@ -717,8 +717,8 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <summary>A metazone period's bound, <c>yyyy-MM-dd HH:mm</c> UTC, in milliseconds since the epoch.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=27E0C8
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Medium; Resources=1; Fingerprint=27E0C8
+    // Hairs-Human:        PENDING
     private static long MetazoneTime(string text)
     {
         static int Number(string text, int at, int length) =>
@@ -733,8 +733,8 @@ public sealed class TableLocaleData : ILocaleData
         return ((days * 1440) + (Number(text, 11, 2) * 60) + Number(text, 14, 2)) * 60_000;
     }
 
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=2; Fingerprint=B27D7D
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=2; Fingerprint=B27D7D
+    // Hairs-Human:        PENDING
     private LocaleInfoTables ReadLocaleInfo()
     {
         var info = new LocaleInfoTables();
@@ -777,75 +777,75 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <summary>The number, currency, unit and plural tables, decoded: Broiler.VM's <c>JsNumberData</c>'s dictionaries.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=69CBCC
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=69CBCC
+    // Hairs-Human:        PENDING
     private sealed class NumberTables
     {
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=163FE2
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=163FE2
+        // Hairs-Human:        PENDING
         internal Dictionary<string, Dictionary<string, string>> Locales { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=CED128
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=CED128
+        // Hairs-Human:        PENDING
         internal Dictionary<string, CurrencyNames> Currencies { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=23C33A
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=23C33A
+        // Hairs-Human:        PENDING
         internal HashSet<string> CurrencyLocales { get; } = new(StringComparer.Ordinal);
 
         internal IReadOnlyList<string> CurrencyCodes { get; set; } = [];
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=EEA0DA
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=EEA0DA
+        // Hairs-Human:        PENDING
         internal Dictionary<string, int> CurrencyDigits { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=51AA6F
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=51AA6F
+        // Hairs-Human:        PENDING
         internal Dictionary<string, IReadOnlyList<string>> NumberingSystems { get; } = new(StringComparer.Ordinal);
 
         internal IReadOnlyList<string> NumberingSystemNames { get; set; } = [];
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=762B62
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=762B62
+        // Hairs-Human:        PENDING
         internal Dictionary<string, List<PluralRuleText>> Plurals { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=D20849
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=D20849
+        // Hairs-Human:        PENDING
         internal Dictionary<string, List<PluralRuleText>> Ordinals { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=A8EF7A
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=A8EF7A
+        // Hairs-Human:        PENDING
         internal Dictionary<string, string> PluralRanges { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=D59F88
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=D59F88
+        // Hairs-Human:        PENDING
         internal HashSet<string> PluralRangeLocales { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=099EEC
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=099EEC
+        // Hairs-Human:        PENDING
         internal Dictionary<string, string> Units { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=E52EC8
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=E52EC8
+        // Hairs-Human:        PENDING
         internal HashSet<string> UnitLocales { get; } = new(StringComparer.Ordinal);
     }
 
     /// <summary>The date, hour-cycle and day-period tables, decoded: Broiler.VM's <c>JsDateData</c>'s dictionaries.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=C45FE9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=C45FE9
+    // Hairs-Human:        PENDING
     private sealed class DateTables
     {
         /// <summary>The pseudo-locale of the ISO 8601 calendar's patterns, and the suffix of each language's data in that calendar.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=B2F82B
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=B2F82B
+        // Hairs-Human:        PENDING
         internal const string Iso8601 = "@iso8601";
 
         /// <summary>
         /// The calendars whose data is a layer of the date table (Broiler.VM's JSD-0057), each after the one it is a layer over;
         /// null for the layer of CLDR's generic patterns. <c>islamic</c> is a parent only.
         /// </summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=652E11
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=652E11
+        // Hairs-Human:        PENDING
         internal static ImmutableArray<(string Calendar, string? Parent)> CalendarLayers { get; } =
         [
             ("buddhist", null), ("chinese", null), ("coptic", null), ("dangi", "chinese"), ("ethiopic", null), ("ethioaa", "ethiopic"),
@@ -853,21 +853,21 @@ public sealed class TableLocaleData : ILocaleData
             ("islamic-umalqura", "islamic"), ("japanese", null), ("persian", null), ("roc", null),
         ];
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=163FE2
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=163FE2
+        // Hairs-Human:        PENDING
         internal Dictionary<string, Dictionary<string, string>> Locales { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=266AA6
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=266AA6
+        // Hairs-Human:        PENDING
         internal Dictionary<string, RegionHourCycles> TimeData { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=FAA6B6
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=FAA6B6
+        // Hairs-Human:        PENDING
         internal Dictionary<string, List<DayPeriodRule>> DayPeriods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>Whether a key is one of a calendar's patterns rather than one of its names.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=1; Fingerprint=362031
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=1; Fingerprint=362031
+        // Hairs-Human:        PENDING
         internal static bool IsPatternKey(string key) =>
             key.StartsWith("dateFormats.", StringComparison.Ordinal) ||
             key.StartsWith("timeFormats.", StringComparison.Ordinal) ||
@@ -879,63 +879,63 @@ public sealed class TableLocaleData : ILocaleData
     }
 
     /// <summary>The week, script, list, relative-time and display-name tables, decoded: Broiler.VM's <c>JsLocaleInfo</c>'s dictionaries.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=B1B534
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=B1B534
+    // Hairs-Human:        PENDING
     private sealed class LocaleInfoTables
     {
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=52405F
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=52405F
+        // Hairs-Human:        PENDING
         internal Dictionary<string, RegionWeek> Weeks { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=1F42BE
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=1F42BE
+        // Hairs-Human:        PENDING
         internal Dictionary<string, bool> RightToLeft { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=EF63A2
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=EF63A2
+        // Hairs-Human:        PENDING
         internal Dictionary<string, ListPatterns> ListPatterns { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=386B9B
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=386B9B
+        // Hairs-Human:        PENDING
         internal HashSet<string> ListPatternLocales { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=E1AA84
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=E1AA84
+        // Hairs-Human:        PENDING
         internal Dictionary<string, string> RelativeTimes { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=AFDFFD
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=AFDFFD
+        // Hairs-Human:        PENDING
         internal HashSet<string> RelativeTimeLocales { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=7A3186
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=7A3186
+        // Hairs-Human:        PENDING
         internal Dictionary<string, string> DisplayNames { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=540785
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=540785
+        // Hairs-Human:        PENDING
         internal HashSet<string> DisplayNameLocales { get; } = new(StringComparer.Ordinal);
     }
 
     /// <summary>The metazone table, decoded.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=4F0FC1
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=4F0FC1
+    // Hairs-Human:        PENDING
     private sealed class MetazoneTables
     {
         /// <summary>The end of a period CLDR states without one: 9999-12-31 23:59 UTC.</summary>
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=E8690F
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=E8690F
+        // Hairs-Human:        PENDING
         internal const long NoEnd = 253_402_300_740_000L;
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=8D313F
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=8D313F
+        // Hairs-Human:        PENDING
         internal Dictionary<string, List<MetazonePeriod>> Periods { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=50C12F
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=50C12F
+        // Hairs-Human:        PENDING
         internal Dictionary<string, string> Golden { get; } = new(StringComparer.Ordinal);
 
-        // Broiler-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=781B0F
-        // Broiler-Human:        PENDING
+        // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=0; Fingerprint=781B0F
+        // Hairs-Human:        PENDING
         internal Dictionary<string, string> PrimaryZones { get; } = new(StringComparer.Ordinal);
     }
 }

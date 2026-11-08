@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   8
 // Annotated:        8/8
 // Exempt:           0
@@ -25,13 +25,13 @@ namespace Broiler.ECMAScript.Temporal;
 // largest unit, its time part as exact nanoseconds, and TemporalDurationFromInternal's balancing. Internal at
 // milestone SJL-10.3's part A; the durations sub-area (part C) publishes the operations it shares, and these stay
 // the one implementation of each.
-// Broiler-AI:           Origin=Ported; Spec=Temporal duration operations via Broiler.VM JsTemporalCore; IP=Low; Security=Low; Resources=1; Fingerprint=E1867A
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=Temporal duration operations via Broiler.VM JsTemporalCore; IP=Low; Security=Low; Resources=1; Fingerprint=E1867A
+// Hairs-Human:        PENDING
 internal static class DurationCore
 {
     // The "Length in Nanoseconds" of a time unit or day (Table 21): zero for the calendar units, which have none.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal Table 21 via Broiler.VM JsTemporalCore.UnitLength; IP=Low; Security=Low; Resources=0; Fingerprint=02B1EE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal Table 21 via Broiler.VM JsTemporalCore.UnitLength; IP=Low; Security=Low; Resources=0; Fingerprint=02B1EE
+    // Hairs-Human:        PENDING
     internal static long UnitLength(TemporalUnit unit) => unit switch
     {
         TemporalUnit.Day => TemporalLimits.NanosecondsPerDay,
@@ -45,26 +45,26 @@ internal static class DurationCore
     };
 
     // The proposal's LargerOfTwoTemporalUnits: the earlier in Table 21.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal LargerOfTwoTemporalUnits via Broiler.VM JsTemporalCore.Larger; IP=Low; Security=Low; Resources=0; Fingerprint=CC1E45
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal LargerOfTwoTemporalUnits via Broiler.VM JsTemporalCore.Larger; IP=Low; Security=Low; Resources=0; Fingerprint=CC1E45
+    // Hairs-Human:        PENDING
     internal static TemporalUnit Larger(TemporalUnit one, TemporalUnit two) => one <= two ? one : two;
 
     // The proposal's TimeDurationFromComponents over a duration's six time fields, exact.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TimeDurationFromComponents via Broiler.VM JsTemporalCore.TimeFromComponents; IP=Low; Security=Low; Resources=1; Fingerprint=04B415
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TimeDurationFromComponents via Broiler.VM JsTemporalCore.TimeFromComponents; IP=Low; Security=Low; Resources=1; Fingerprint=04B415
+    // Hairs-Human:        PENDING
     internal static BigInteger TimeFromComponents(DurationFields duration) =>
         TimeFromComponents(duration.Hours, duration.Minutes, duration.Seconds, duration.Milliseconds, duration.Microseconds, duration.Nanoseconds);
 
     // The proposal's TimeDurationFromComponents, exact.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TimeDurationFromComponents via Broiler.VM JsTemporalCore.TimeFromComponents; IP=Low; Security=Low; Resources=1; Fingerprint=BED123
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TimeDurationFromComponents via Broiler.VM JsTemporalCore.TimeFromComponents; IP=Low; Security=Low; Resources=1; Fingerprint=BED123
+    // Hairs-Human:        PENDING
     internal static BigInteger TimeFromComponents(double hours, double minutes, double seconds, double milliseconds, double microseconds, double nanoseconds) =>
         (new BigInteger(hours) * 3_600_000_000_000L) + (new BigInteger(minutes) * 60_000_000_000L) + (new BigInteger(seconds) * 1_000_000_000L) +
         (new BigInteger(milliseconds) * 1_000_000L) + (new BigInteger(microseconds) * 1000) + new BigInteger(nanoseconds);
 
     // The proposal's DurationSign: the sign of the first field that is not zero.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal DurationSign via Broiler.VM JsTemporalCore.DurationSign; IP=Low; Security=Low; Resources=0; Fingerprint=A74841
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal DurationSign via Broiler.VM JsTemporalCore.DurationSign; IP=Low; Security=Low; Resources=0; Fingerprint=A74841
+    // Hairs-Human:        PENDING
     internal static int Sign(DurationFields duration)
     {
         ReadOnlySpan<double> fields =
@@ -84,8 +84,8 @@ internal static class DurationCore
     }
 
     // The proposal's DefaultTemporalLargestUnit: the largest unit whose field is not zero, nanosecond for none.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal DefaultTemporalLargestUnit via Broiler.VM JsTemporalCore.DefaultLargestUnit; IP=Low; Security=Low; Resources=0; Fingerprint=0B3A90
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal DefaultTemporalLargestUnit via Broiler.VM JsTemporalCore.DefaultLargestUnit; IP=Low; Security=Low; Resources=0; Fingerprint=0B3A90
+    // Hairs-Human:        PENDING
     internal static TemporalUnit DefaultLargestUnit(DurationFields duration) =>
         duration.Years != 0 ? TemporalUnit.Year
         : duration.Months != 0 ? TemporalUnit.Month
@@ -100,8 +100,8 @@ internal static class DurationCore
 
     // The proposal's TemporalDurationFromInternal before CreateTemporalDuration: the time balanced up to the
     // largest unit, each field made a Number once.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal TemporalDurationFromInternal via Broiler.VM JsTemporalCore.FromInternal; IP=Low; Security=Low; Resources=1; Fingerprint=7A9F45
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=Temporal TemporalDurationFromInternal via Broiler.VM JsTemporalCore.FromInternal; IP=Low; Security=Low; Resources=1; Fingerprint=7A9F45
+    // Hairs-Human:        PENDING
     internal static DurationFields FromInternal(DateDuration date, BigInteger time, TemporalUnit largestUnit)
     {
         var sign = time.Sign;

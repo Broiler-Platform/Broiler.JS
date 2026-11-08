@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
 //
-// Broiler Code Assurance
-// ----------------------
+// HAIRS Code Assurance
+// --------------------
 // Relevant units:   10
 // Annotated:        10/10
 // Exempt:           0
@@ -42,18 +42,18 @@ namespace Broiler.ECMAScript.Numbers;
 /// (JSD-0065, decision 4). The vectors pin the platform's behaviour, as convention 9 asks.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=68E0F3
-// Broiler-Human:        PENDING
+// Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=68E0F3
+// Hairs-Human:        PENDING
 internal static class FixedDigits
 {
     /// <summary>The largest t for which 5^t can divide a 53-bit odd significand.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=3406D0
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=3406D0
+    // Hairs-Human:        PENDING
     private const int FivePowerLimit = 22;
 
     /// <summary>The longest rendering the platform writes for a digit count this area accepts.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=ED60D9
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=ED60D9
+    // Hairs-Human:        PENDING
     internal const int BufferLength = 160;
 
     /// <summary>
@@ -61,8 +61,8 @@ internal static class FixedDigits
     /// places, with the point when there is a fraction: <c>toFixed</c>'s steps 10 to 12.
     /// </summary>
     /// <returns>The number of characters written.</returns>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=076D79
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=076D79
+    // Hairs-Human:        PENDING
     internal static int Fixed(double magnitude, int decimals, Span<char> destination)
     {
         if (IsMidpoint(magnitude, decimals))
@@ -85,8 +85,8 @@ internal static class FixedDigits
     /// <param name="count">The significant digits wanted, 1 to 101.</param>
     /// <param name="digits">Receives exactly <paramref name="count"/> digits.</param>
     /// <param name="exponent">Receives the decimal exponent of the first digit.</param>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=E46B6C
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=E46B6C
+    // Hairs-Human:        PENDING
     internal static void Significant(double magnitude, int count, Span<char> digits, out int exponent)
     {
         Span<char> rendered = stackalloc char[BufferLength];
@@ -112,8 +112,8 @@ internal static class FixedDigits
     }
 
     /// <summary>Formats with an invariant standard format of the given precision.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=D2F3F5
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=D2F3F5
+    // Hairs-Human:        PENDING
     private static int Format(double value, char specifier, int precision, Span<char> destination)
     {
         Span<char> format = stackalloc char[4];
@@ -126,8 +126,8 @@ internal static class FixedDigits
     }
 
     /// <summary>Splits an <c>"E"</c> rendering into its digits, without the point, and its exponent.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=8705DE
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=8705DE
+    // Hairs-Human:        PENDING
     private static void Split(ReadOnlySpan<char> rendered, Span<char> digits, out int exponent)
     {
         var e = rendered.IndexOf('E');
@@ -143,8 +143,8 @@ internal static class FixedDigits
     /// Whether a positive finite magnitude lies exactly half way between two values
     /// <paramref name="decimals"/> decimal places apart.
     /// </summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=95B984
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=95B984
+    // Hairs-Human:        PENDING
     private static bool IsMidpoint(double magnitude, int decimals)
     {
         if (magnitude == 0)
@@ -177,8 +177,8 @@ internal static class FixedDigits
     }
 
     /// <summary>Adds one to the last place of a fixed rendering, carrying across the point.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=434B09
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=434B09
+    // Hairs-Human:        PENDING
     private static void IncrementFixed(Span<char> text, ref int length)
     {
         for (var at = length - 1; at >= 0; at--)
@@ -201,8 +201,8 @@ internal static class FixedDigits
     }
 
     /// <summary>Adds one to a digit string; true when every digit was a nine and it wrapped.</summary>
-    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=6CFEA2
-    // Broiler-Human:        PENDING
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-262 21.1.3.3 via Broiler.VM JsRealm.Number; IP=Low; Security=Medium; Resources=1; Fingerprint=6CFEA2
+    // Hairs-Human:        PENDING
     private static bool IncrementDigits(Span<char> digits)
     {
         for (var at = digits.Length - 1; at >= 0; at--)
