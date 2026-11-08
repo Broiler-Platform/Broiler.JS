@@ -71,8 +71,6 @@ jobs:
     name: Shared libraries
     needs: version
     uses: ./.github/workflows/shared-libraries.yml
-    # The assurance job checks out Broiler.Code with BROILER_CODE_TOKEN when the repository has one.
-    secrets: inherit
 
   publish:
     name: Publish to nuget.org
