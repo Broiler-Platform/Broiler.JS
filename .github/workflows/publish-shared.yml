@@ -65,6 +65,9 @@ jobs:
     name: Validate and pack
     needs: version
     uses: ./.github/workflows/shared-libraries.yml
+    # Changed 2026-11-08: the assurance job no longer checks out Broiler.Code (it restores Hairs.Cli from
+    # nuget.org), so this call passes no secrets. It read "# The assurance job checks out Broiler.Code
+    # with BROILER_CODE_TOKEN when the repository has one." and "secrets: inherit".
     with:
       package-version: ${{ needs.version.outputs.version }}
 

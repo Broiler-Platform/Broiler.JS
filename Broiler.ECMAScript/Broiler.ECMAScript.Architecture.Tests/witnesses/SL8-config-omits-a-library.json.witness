@@ -2,8 +2,10 @@
 // the owning component's narrower exemption predicate and permits preprocessor directives. It names the
 // artefacts and the regenerateCommand as the shared folder's hairs.config.json does.
 // (Changed 2026-11-08, when the owner chose to migrate from Broiler.Code's review CLI to Hairs.Cli
-// 0.1.0-preview.2. The first line read "SL8 witness: an assurance configuration that leaves a shared
-// library out of coverage, uses the" and the file had no artefacts and no regenerateCommand.)
+// 0.1.0-preview.2. The first two lines read "SL8 witness: an assurance configuration that leaves a
+// shared library out of coverage, uses the" and "owning component's narrower exemption predicate and
+// permits preprocessor directives."; the sentence is rewrapped above, and the file had no artefacts
+// and no regenerateCommand.)
 {
   "schema": 1,
   "component": "Broiler.ECMAScript",
