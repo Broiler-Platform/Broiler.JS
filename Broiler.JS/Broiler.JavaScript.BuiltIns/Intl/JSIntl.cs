@@ -323,8 +323,7 @@ public static class JSIntl
         var constructor = new JSFunction(static (in Arguments a) =>
             {
                 var options = ValidateConstructorArguments("DurationFormat", in a, out var canonical, coerceOptions: false);
-                var locale = ResolveLocaleFromCanonical(canonical, NumberFormatRelevantKeys);
-                return new JSIntlDurationFormat(locale, options);
+                return new JSIntlDurationFormat(canonical, options);
             },
             "DurationFormat",
             "function DurationFormat() { [native code] }",
@@ -1117,16 +1116,6 @@ public static class JSIntl
     internal static IReadOnlyList<string> NumberingSystemValues(string locale)
         => NumberFormatter.NumberingSystemKeyValues(JSIntlData.LocaleData, JSIntlLocaleProviders.DataLocale(locale));
 
-    // The parts of a NumberFormat's formatToParts as (type, value) pairs, for Intl.DurationFormat's internals until task 8.6
-    // moves them onto the library's duration format.
-    internal static List<(string type, string value)> NumberParts(IReadOnlyList<NumberPart> parts)
-    {
-        var list = new List<(string, string)>(parts.Count);
-        foreach (var part in parts)
-            list.Add((part.Type, part.Value));
-        return list;
-    }
-
     // ResolveLocale's matching steps (ECMA-402 sec-resolvelocale, steps 1 to 4) over a CanonicalizeLocaleList result, so the
     // caller's locales object is not read a second time: the shared library's lookup matcher, which is also this engine's best
     // fit (row L38), over the available-locale provider's list, falling back to the default-locale provider's DefaultLocale
@@ -1178,18 +1167,18 @@ public static class JSIntl
     // IsAllDigitSubtag; so are NumberingSystemDigit (the digits are the library's, from the data's numbering-system table)
     // and DefaultNumberingSystem, whose last reader was DateTimeFormat's constructor from a CultureInfo (row T42).
     // GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword keep the Collator as a reader.
+    // Noted 2026-11-09, at SJL-9.5 (task 8.6): DurationFormat resolves nu through the shared library's ResolveLocale
+    // (ResolveNumberingSystemLocale), so ResolveNumberingSystem (both overloads), NumberFormatRelevantKeys, NumberParts,
+    // JSIntlNumberFormat.ComputeFormatParts and JSIntlListFormat.FormatPartsForUnits are deleted with their last reader.
+    // ResolveLocaleFromCanonical stays for the Segmenter (SJL-7's, NoRelevantKeys) and the Collator (CollatorRelevantKeys);
+    // GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword stay for the Collator alone, whose
+    // move the brief for task 8.6 leaves to SJL-17.5.
 
     // The relevant extension keys of the services that resolve none: ListFormat, Segmenter, DisplayNames and PluralRules.
     // Revised 2026-11-08, at SJL-9.5 (task 8.4): ListFormat, DisplayNames and PluralRules resolve through the shared
     // library's ResolveLocale with NoRelevantKey; Segmenter, SJL-7's, still reads this list.
     internal static readonly string[] NoRelevantKeys = [];
 
-    // The Unicode-extension keys each service uses to negotiate the resolved locale. NumberFormatRelevantKeys, nu, is
-    // DurationFormat's.
-    // Revised 2026-11-08, at SJL-9.5 (task 8.4): NumberFormat and RelativeTimeFormat resolve nu through the shared
-    // library's ResolveLocale (ResolveNumberingSystemLocale) and no longer read the array; the comment read
-    // "NumberFormat's, nu, is also RelativeTimeFormat's and DurationFormat's."
-    internal static readonly string[] NumberFormatRelevantKeys = ["nu"];
     internal static readonly string[] CollatorRelevantKeys = ["co", "kf", "kn"];
 
     // The numbering systems with simple digit mappings (ECMA-402 Table: "Numbering
@@ -1225,14 +1214,6 @@ public static class JSIntl
         "iso8601", "japanese", "persian", "roc",
     ];
 
-    // ResolveLocale's negotiation of the `nu` (numbering system) relevant key. Returns
-    // the resolved numbering system and the resolved locale tag. Per spec: a supported
-    // `-u-nu-` value is used and reflected in the locale; a `numberingSystem` option that
-    // is supported and DIFFERENT overrides it and removes the `-u-nu-` from the locale; an
-    // unsupported value (in either place) falls through to "latn" with `-u-nu-` removed.
-    internal static (string NumberingSystem, string Locale) ResolveNumberingSystem(string localeTag, JSObject options)
-        => ResolveNumberingSystem(localeTag, ReadNumberingSystemOption(options));
-
     // Reads (and string-coerces) the numberingSystem option from the bag once, returning
     // null when it is absent/undefined. Split out so Intl.NumberFormat can fire the getter
     // in spec order (right after localeMatcher) while the locale negotiation below still
@@ -1250,51 +1231,6 @@ public static class JSIntl
         if (!IsWellFormedUnicodeKeywordType(value))
             throw JSEngine.NewRangeError($"Invalid numberingSystem option: {value}");
         return value;
-    }
-
-    // Noted 2026-11-09, at SJL-9.5 (task 8.5): DateTimeFormat no longer reads it; Intl.DurationFormat is its last reader.
-    // Negotiates the resolved `nu` (numbering system) against the locale's `-u-nu-` extension, given the already-read
-    // numberingSystem option value, for Intl.DateTimeFormat and Intl.DurationFormat until tasks 8.5 and 8.6 move them onto
-    // the library's ResolveLocale: a supported `-u-nu-` value is used and reflected in the locale; a supported option that
-    // differs overrides it and removes the `-u-nu-` from the locale; an unsupported value (in either place) falls through to
-    // the locale's default with `-u-nu-` removed.
-    // Revised 2026-11-08, at SJL-9.5 (task 8.4; decision D13, row L22): "supported" and the default are the data's, the nu
-    // values NumberingSystemValues gives the locale, where the comment read "The default is CLDR's
-    // (JSIntlDefaultNumberingSystems): "arab" for ar-EG, "arabext" for fa, "latn" for en or ar." and the supported set was
-    // SupportedNumberingSystemsSorted.
-    internal static (string NumberingSystem, string Locale) ResolveNumberingSystem(string localeTag, string optionValue)
-    {
-        var values = NumberingSystemValues(localeTag);
-        var value = values[0];
-        var reflectInLocale = false;
-
-        var ext = GetUnicodeExtensionType(localeTag, "nu");
-        if (ext != null && Contains(values, ext))
-        {
-            value = ext;
-            reflectInLocale = true;
-        }
-
-        if (optionValue != null && Contains(values, optionValue) &&
-            !string.Equals(optionValue, value, StringComparison.Ordinal))
-        {
-            value = optionValue;
-            reflectInLocale = false;
-        }
-
-        var locale = reflectInLocale ? localeTag : RemoveUnicodeExtensionKeyword(localeTag, "nu");
-        return (value, locale);
-
-        static bool Contains(IReadOnlyList<string> list, string item)
-        {
-            foreach (var candidate in list)
-            {
-                if (string.Equals(candidate, item, StringComparison.Ordinal))
-                    return true;
-            }
-
-            return false;
-        }
     }
 
     // ResolveLocale's per-key reflection rule: the "-u-<key>" keyword stays in the resolved locale
@@ -1836,99 +1772,115 @@ public sealed class JSIntlSegments : JSObject
     }
 }
 
+// Intl.DurationFormat (ECMA-402 sec-durationformat-objects, as tc39/proposal-temporal@e8cc03fc's intl.html amends it) over
+// the shared library's DurationFormatCore (SJL-9.5, task 8.6, sub-area (e); Broiler.VM's JSD-0082, decision D24): the
+// constructor reads localeMatcher, numberingSystem, style, each unit's style and display and fractionalDigits in the
+// specification's order, each checked as it is read; ResolveLocale's nu key is the library's, over the nu values the data
+// gives the matched locale (decision D13, row U16); GetDurationUnitOptions' defaults and checks (rows U1 to U3),
+// [[DigitalFormat]] (rows U13 and U14) and PartitionDurationFormatPattern over the library's number and list formatters, with
+// a fractional value summed exactly, are the library's, over the data home's number and list data (decision D5). The engine
+// keeps the reads, the argument through ToTemporalDuration (rows U7 and U9, corrections: the fields are read once, in
+// alphabetical order, and a String is parsed, never read back through Temporal.Duration.prototype's getters), the parts
+// arrays, resolvedOptions' object and each RangeError, made from the library's status; it passes no charge (row U19).
+// Deleted (2026-11-09): the Units, SingularUnits and style tables, the locale, numberingSystem, style, unitStyle, unitDisplay
+// and fractionalDigits fields, GetDurationUnitOptions' body, FormatToParts (PartitionDurationFormatPattern, with its ":"
+// separator for every locale), Format, DurationToFractional, DurationToFractionalString, FormatNumberParts (an inner
+// Intl.NumberFormat through JSIntlNumberFormat.ComputeFormatParts), the inner Intl.ListFormat through
+// JSIntlListFormat.FormatPartsForUnits, ToDurationFormatRecord and ValidateDurationArgument. Its public members stay
+// (decision SJL-D-25, disposition (a)): the constructor from a locale and an options object, which now reads the locale as a
+// requested one, and the prototype methods.
 public sealed class JSIntlDurationFormat : JSObject
 {
-    // Units in ECMA-402 processing order, with their singular NumberFormat unit name.
-    private static readonly string[] Units =
-        ["years", "months", "weeks", "days", "hours", "minutes", "seconds", "milliseconds", "microseconds", "nanoseconds"];
-    private static readonly string[] SingularUnits =
-        ["year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond"];
+    // The style option's values, by DurationFormatStyle.
+    private static readonly string[] StyleNames = ["long", "short", "narrow", "digital"];
 
-    private static readonly string[] DateStyles = ["long", "short", "narrow"];
-    private static readonly string[] TimeStyles = ["long", "short", "narrow", "numeric", "2-digit"];
-    private static readonly string[] SubSecondStyles = ["long", "short", "narrow", "numeric"];
-    private static readonly string[] StyleValues = ["long", "short", "narrow", "digital"];
+    // A unit option's values, by DurationUnitStyle; "fractional" is no option's value.
+    private static readonly string[] UnitStyleNames = ["long", "short", "narrow", "numeric", "2-digit", "fractional"];
+
     private static readonly string[] DisplayValues = ["auto", "always"];
 
-    private readonly string locale;
-    private readonly string numberingSystem;       // null => NumberFormat default
-    private readonly string style;                 // long | short | narrow | digital
-    private readonly string[] unitStyle = new string[Units.Length];
-    private readonly string[] unitDisplay = new string[Units.Length];
-    private readonly int? fractionalDigits;
+    private static readonly KeyString StyleKey = KeyStrings.GetOrCreate("style");
+    private static readonly KeyString FractionalDigitsKey = KeyStrings.GetOrCreate("fractionalDigits");
 
-    private JSIntlDurationFormat() : base(CurrentPrototype()) { }
+    /// <summary>The shared library's duration format: the resolved options, and PartitionDurationFormatPattern over them.</summary>
+    internal DurationFormatCore Core { get; }
 
-    public JSIntlDurationFormat(string locale, JSObject options) : this()
+    // The constructor's reads after CanonicalizeLocaleList, GetOptionsObject and localeMatcher (ValidateConstructorArguments).
+    internal JSIntlDurationFormat(JSValue canonicalLocales, JSObject options) : base(CurrentPrototype())
     {
-        (numberingSystem, this.locale) = JSIntl.ResolveNumberingSystem(locale, options);
-        style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), StyleValues, false, "short");
+        var numberingSystem = JSIntl.ReadNumberingSystemOption(options);
+        var resolved = JSIntl.ResolveNumberingSystemLocale(canonicalLocales, numberingSystem);
+        var dataLocale = JSIntlLocaleProviders.DataLocale(resolved.DataLocale);
+        var data = DataLocalePluralData.For(dataLocale);
 
-        string prevStyle = null;
-        for (var i = 0; i < Units.Length; i++)
+        // [[DigitalFormat]]'s two-digit hours, read at the data locale (row U14).
+        var twoDigitHours = DurationFormatCore.DigitalFormat(data, dataLocale).TwoDigitHours;
+
+        var style = (DurationFormatStyle)System.Array.IndexOf(StyleNames, JSIntl.GetOption(options, StyleKey, StyleNames, false, "short"));
+        var units = new DurationUnitOptions[10];
+        DurationUnitStyle? previous = null;
+        for (var i = 0; i < units.Length; i++)
         {
-            var stylesList = i < 4 ? DateStyles : (i < 7 ? TimeStyles : SubSecondStyles);
-            var digitalBase = i < 4 ? "short" : "numeric";
-            (unitStyle[i], unitDisplay[i]) = GetDurationUnitOptions(options, i, stylesList, digitalBase, prevStyle);
-            prevStyle = unitStyle[i];
+            var unit = (DurationUnit)i;
+            units[i] = GetDurationUnitOptions(options, unit, style, previous, twoDigitHours);
+            if (unit is DurationUnit.Hours or DurationUnit.Minutes or DurationUnit.Seconds or DurationUnit.Milliseconds or DurationUnit.Microseconds)
+                previous = units[i].Style;
         }
 
-        fractionalDigits = JSIntl.GetNumberOption(options, KeyStrings.GetOrCreate("fractionalDigits"), 0, 9);
+        var fractionalDigits = JSIntl.GetNumberOption(options, FractionalDigitsKey, 0, 9);
+        Core = DurationFormatCore.Create(data, resolved.Locale, dataLocale, resolved.KeyValues["nu"] ?? "latn", style, units, fractionalDigits);
     }
 
-    // ECMA-402 GetDurationUnitOptions (resolved per-unit style/display). The
-    // internal "fractional" formatting of sub-second units is handled at format
-    // time (durationToFractional) rather than stored, so the resolved sub-second
-    // style stays "numeric" — which is exactly what the spec partition algorithm
-    // reads back to decide whether to fold sub-seconds into a fractional value.
-    private (string style, string display) GetDurationUnitOptions(
-        JSObject options, int index, string[] stylesList, string digitalBase, string prevStyle)
+    // The format of a locale and an options object, the locale read as the one requested locale (an empty or null one as
+    // none), with no localeMatcher read.
+    // Revised 2026-11-09, at SJL-9.5 (task 8.6): it read the locale as the resolved one, negotiating only its -u-nu- keyword
+    // by hand (ResolveNumberingSystem); the locale is now matched against the available locales by the shared negotiation.
+    public JSIntlDurationFormat(string locale, JSObject options)
+        : this(string.IsNullOrEmpty(locale) ? JSValue.CreateArray() : JSIntl.CanonicalizeLocaleList(CreateString(locale)), options)
     {
-        var unit = Units[index];
-        var resolved = JSIntl.GetOption(options, KeyStrings.GetOrCreate(unit), stylesList, false, null);
-        var displayDefault = "always";
-        var isTimeUnit = unit is "hours" or "minutes" or "seconds";
-
-        if (resolved == null)
-        {
-            if (style == "digital")
-            {
-                if (!isTimeUnit)
-                    displayDefault = "auto";
-                resolved = digitalBase;
-            }
-            else
-            {
-                displayDefault = "auto";
-                resolved = prevStyle is "numeric" or "2-digit" ? "numeric" : style;
-            }
-        }
-
-        // ECMA-402 GetDurationUnitOptions: once a unit is shown with "numeric"/"2-digit"
-        // style, every following unit must also be "numeric"/"2-digit" — a "long"/"short"/
-        // "narrow" style after one is a RangeError. A numeric minutes/seconds chained after
-        // such a unit is shown as a zero-padded 2-digit value joined by the time separator
-        // (e.g. 1:00:30).
-        if (prevStyle is "numeric" or "2-digit")
-        {
-            if (resolved is not ("numeric" or "2-digit"))
-                throw JSEngine.NewRangeError(
-                    $"Invalid {unit} style \"{resolved}\" following a \"{prevStyle}\" unit");
-            if (unit is "minutes" or "seconds")
-                resolved = "2-digit";
-        }
-
-        var display = JSIntl.GetOption(options, KeyStrings.GetOrCreate(unit + "Display"), DisplayValues, false, displayDefault);
-        return (resolved, display);
     }
+
+    // ECMA-402's GetDurationUnitOptions (sec-getdurationunitoptions): the unit's two options read here, in order, each checked
+    // as it is read; the defaults and ValidateDurationUnitStyle are the shared library's, whose refusals are RangeErrors.
+    private static DurationUnitOptions GetDurationUnitOptions(JSObject options, DurationUnit unit, DurationFormatStyle baseStyle, DurationUnitStyle? previous, bool twoDigitHours)
+    {
+        var name = DurationFormatCore.UnitName(unit);
+        var admitted = new List<string>();
+        foreach (var admittedStyle in DurationFormatCore.UnitStyles(unit))
+            admitted.Add(UnitStyleNames[(int)admittedStyle]);
+
+        var style = JSIntl.GetOption(options, KeyStrings.GetOrCreate(name), admitted.ToArray(), false, null);
+        var display = JSIntl.GetOption(options, KeyStrings.GetOrCreate(name + "Display"), DisplayValues, false, null);
+
+        var status = DurationFormatCore.GetDurationUnitOptions(
+            unit,
+            style is null ? null : (DurationUnitStyle)System.Array.IndexOf(UnitStyleNames, style),
+            display is null ? null : display == "always" ? DurationUnitDisplay.Always : DurationUnitDisplay.Auto,
+            baseStyle,
+            previous,
+            twoDigitHours,
+            out var resolved);
+
+        return status switch
+        {
+            IntlStatus.Completed => resolved,
+            IntlStatus.FractionalDurationUnitAlwaysDisplayed => throw JSEngine.NewRangeError($"Intl.DurationFormat: {name} cannot always be displayed as a fraction"),
+            IntlStatus.DurationUnitAfterFractional => throw JSEngine.NewRangeError($"Intl.DurationFormat: {name} must be fractional after a fractional unit"),
+            _ => throw JSEngine.NewRangeError($"Intl.DurationFormat: {name} must be numeric or 2-digit after a numeric or 2-digit unit"),
+        };
+    }
+
+    // The duration format and formatToParts read: ToTemporalDuration (the proposal's amendment of ECMA-402 s15.10.1), which
+    // takes a Temporal.Duration's slots, parses a String, and reads a property bag's fields once, in alphabetical order.
+    private static global::Broiler.ECMAScript.Temporal.DurationFields Input(JSValue duration)
+        => ((JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(duration)).Fields;
 
     public static JSValue FormatPrototype(in Arguments a)
     {
         if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.format called on incompatible receiver");
 
-        var durationObject = ToDurationFormatRecord(a.Get1());
-        return CreateString(self.Format(durationObject));
+        return CreateString(self.Core.Format(Input(a.Get1())));
     }
 
     // Temporal.Duration.prototype.toLocaleString(locales, options): formats the duration with a
@@ -1939,9 +1891,8 @@ public sealed class JSIntlDurationFormat : JSObject
         var args = new Arguments(JSUndefined.Value, locales, options ?? JSUndefined.Value);
         var optionsObject = JSIntl.ValidateConstructorArguments(
             "DurationFormat", in args, out var canonical, requireNew: false, coerceOptions: false);
-        var locale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.NumberFormatRelevantKeys);
-        var df = new JSIntlDurationFormat(locale, optionsObject);
-        return CreateString(df.Format(ToDurationFormatRecord(duration)));
+        var df = new JSIntlDurationFormat(canonical, optionsObject);
+        return CreateString(df.Core.Format(Input(duration)));
     }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
@@ -1949,13 +1900,13 @@ public sealed class JSIntlDurationFormat : JSObject
         if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.formatToParts called on incompatible receiver");
 
-        var durationObject = ToDurationFormatRecord(a.Get1());
+        var duration = Input(a.Get1());
         var parts = CreateArray();
 
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
         var unitKey = KeyStrings.GetOrCreate("unit");
-        foreach (var (type, value, unit) in self.FormatToParts(durationObject))
+        foreach (var (type, value, unit) in self.Core.FormatToParts(duration))
         {
             var part = new JSObject();
             part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
@@ -1969,241 +1920,30 @@ public sealed class JSIntlDurationFormat : JSObject
         return parts;
     }
 
+    // resolvedOptions, Table 21 in its order, as the shared core resolved it: a fractional unit written as numeric (row U2).
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.resolvedOptions called on incompatible receiver");
 
+        var format = self.Core;
         var result = new JSObject();
         void Put(string key, JSValue value) =>
             result.FastAddValue(KeyStrings.GetOrCreate(key), value, JSPropertyAttributes.EnumerableConfigurableValue);
 
-        Put("locale", CreateString(self.locale ?? "en"));
-        Put("numberingSystem", CreateString(self.numberingSystem ?? "latn"));
-        Put("style", CreateString(self.style));
-        for (var i = 0; i < Units.Length; i++)
+        Put("locale", CreateString(format.Locale));
+        Put("numberingSystem", CreateString(format.NumberingSystem));
+        Put("style", CreateString(StyleNames[(int)format.Style]));
+        for (var i = 0; i < format.Units.Count; i++)
         {
-            Put(Units[i], CreateString(self.unitStyle[i]));
-            Put(Units[i] + "Display", CreateString(self.unitDisplay[i]));
+            var (style, display) = format.Units[i];
+            var name = DurationFormatCore.UnitName((DurationUnit)i);
+            Put(name, CreateString(style == DurationUnitStyle.Fractional ? "numeric" : UnitStyleNames[(int)style]));
+            Put(name + "Display", CreateString(display == DurationUnitDisplay.Always ? "always" : "auto"));
         }
-        if (self.fractionalDigits is { } digits)
+        if (format.FractionalDigits is { } digits)
             Put("fractionalDigits", CreateNumber(digits));
         return result;
-    }
-
-    // Implements PartitionDurationFormatPattern, returning the flattened parts.
-    // Each tuple's `unit` is the singular duration unit for parts produced from a
-    // unit's NumberFormat, or null for time separators and ListFormat literals.
-    private List<(string type, string value, string unit)> FormatToParts(JSObject durationObject)
-    {
-        var values = new double[Units.Length];
-        for (var i = 0; i < Units.Length; i++)
-        {
-            var v = durationObject[KeyStrings.GetOrCreate(Units[i])];
-            values[i] = v.IsUndefined ? 0 : v.DoubleValue;
-        }
-
-        var anyNegative = false;
-        foreach (var v in values)
-            anyNegative |= v < 0;
-
-        // Each element of `segments` is the list of parts for one ListFormat element.
-        var segments = new List<List<(string type, string value, string unit)>>();
-        var needSeparator = false;
-        var displayNegativeSign = true;
-
-        for (var i = 0; i < Units.Length; i++)
-        {
-            var unit = Units[i];
-            var unitStyleValue = unitStyle[i];
-            var display = unitDisplay[i];
-            var value = values[i];
-            var combineFractional = false;
-            string fractionalExact = null;
-
-            // Numeric seconds/milliseconds/microseconds fold the finer sub-second
-            // units into a single fractional value when the next unit is numeric.
-            if ((unit is "seconds" or "milliseconds" or "microseconds") && unitStyle[i + 1] == "numeric")
-            {
-                var exponent = unit == "seconds" ? 9 : unit == "milliseconds" ? 6 : 3;
-                value = DurationToFractional(values, exponent);
-                // The double is only kept for the display / sign checks below; the value is
-                // formatted from its EXACT decimal string so e.g. 10000000 s + 1 ns renders as
-                // "10000000.000000001" rather than the nearest double.
-                fractionalExact = DurationToFractionalString(values, exponent);
-                combineFractional = true;
-            }
-
-            var displayRequired = false;
-            if (unit == "minutes" && needSeparator)
-            {
-                displayRequired = unitDisplay[6] == "always"
-                    || values[6] != 0 || values[7] != 0 || values[8] != 0 || values[9] != 0;
-            }
-
-            if (value != 0 || display != "auto" || displayRequired)
-            {
-                var signNever = false;
-                if (displayNegativeSign)
-                {
-                    displayNegativeSign = false;
-                    // The negative sign is carried by the first displayed unit only when the duration
-                    // is actually negative; a lone negative-zero field (DurationSign 0) must format as
-                    // "+0", so normalize its negative zero away to avoid a spurious "-0".
-                    if (value == 0)
-                        value = anyNegative ? -0.0 : 0.0;
-                }
-                else
-                {
-                    signNever = true;
-                }
-
-                var numberParts = FormatNumberParts(SingularUnits[i], value, fractionalExact, unitStyleValue, combineFractional, signNever);
-                var unitName = SingularUnits[i];
-
-                if (!needSeparator)
-                {
-                    var segment = new List<(string, string, string)>();
-                    foreach (var (type, val) in numberParts)
-                        segment.Add((type, val, unitName));
-                    if (unitStyleValue is "2-digit" or "numeric")
-                        needSeparator = true;
-                    segments.Add(segment);
-                }
-                else
-                {
-                    var segment = segments[^1];
-                    segment.Add(("literal", ":", null));
-                    foreach (var (type, val) in numberParts)
-                        segment.Add((type, val, unitName));
-                }
-            }
-
-            if (combineFractional)
-                break;
-        }
-
-        // Join the per-unit element strings with Intl.ListFormat (type "unit").
-        var listStyle = style == "digital" ? "short" : style;
-        var lf = new JSIntlListFormat(locale, "unit", listStyle);
-        var elementStrings = new List<string>(segments.Count);
-        foreach (var segment in segments)
-        {
-            var sb = new StringBuilder();
-            foreach (var (_, value, _) in segment)
-                sb.Append(value);
-            elementStrings.Add(sb.ToString());
-        }
-
-        var result = new List<(string type, string value, string unit)>();
-        var elementIndex = 0;
-        foreach (var (type, value) in lf.FormatPartsForUnits(elementStrings))
-        {
-            if (type == "element")
-                result.AddRange(segments[elementIndex++]);
-            else
-                result.Add((type, value, null));
-        }
-        return result;
-    }
-
-    private string Format(JSObject durationObject)
-    {
-        var sb = new StringBuilder();
-        foreach (var (_, value, _) in FormatToParts(durationObject))
-            sb.Append(value);
-        return sb.ToString();
-    }
-
-    // Computes the value of a unit plus its finer sub-second units as a decimal,
-    // mirroring the reference durationToFractional. Magnitudes used by the format
-    // tests are small, so double precision is sufficient.
-    private static double DurationToFractional(double[] values, int exponent)
-    {
-        // values indices: seconds=6, milliseconds=7, microseconds=8, nanoseconds=9
-        double seconds = values[6], milliseconds = values[7], microseconds = values[8], nanoseconds = values[9];
-
-        if (exponent == 9 && milliseconds == 0 && microseconds == 0 && nanoseconds == 0)
-            return seconds;
-        if (exponent == 6 && microseconds == 0 && nanoseconds == 0)
-            return milliseconds;
-        if (exponent == 3 && nanoseconds == 0)
-            return microseconds;
-
-        double ns = nanoseconds;
-        if (exponent >= 9)
-            ns += seconds * 1_000_000_000d;
-        if (exponent >= 6)
-            ns += milliseconds * 1_000_000d;
-        if (exponent >= 3)
-            ns += microseconds * 1_000d;
-
-        return ns / Math.Pow(10, exponent);
-    }
-
-    // The exact decimal string of the folded sub-second value (DurationToFractional computed with
-    // real arithmetic): the seconds/milliseconds/microseconds/nanoseconds fields are integers, so
-    // their exact magnitudes combine over 10^exponent without the precision loss a double incurs.
-    private static string DurationToFractionalString(double[] values, int exponent)
-    {
-        var total = new BigInteger(values[9]); // nanoseconds
-        if (exponent >= 9)
-            total += new BigInteger(values[6]) * 1_000_000_000;
-        if (exponent >= 6)
-            total += new BigInteger(values[7]) * 1_000_000;
-        if (exponent >= 3)
-            total += new BigInteger(values[8]) * 1_000;
-
-        var negative = total.Sign < 0;
-        var magnitude = BigInteger.Abs(total);
-        var scale = BigInteger.Pow(10, exponent);
-        var intPart = magnitude / scale;
-        var fracPart = magnitude % scale;
-
-        var s = intPart.ToString(CultureInfo.InvariantCulture);
-        if (!fracPart.IsZero)
-            s += "." + fracPart.ToString(CultureInfo.InvariantCulture).PadLeft(exponent, '0');
-        return negative ? "-" + s : s;
-    }
-
-    private List<(string type, string value)> FormatNumberParts(string singularUnit, double value, string exactValue, string unitStyleValue, bool fractional, bool signNever)
-    {
-        var options = new JSObject();
-        void Set(string key, JSValue v) => options.FastAddValue(KeyStrings.GetOrCreate(key), v, JSPropertyAttributes.EnumerableConfigurableValue);
-
-        if (numberingSystem != null)
-            Set("numberingSystem", CreateString(numberingSystem));
-
-        if (unitStyleValue == "2-digit")
-            Set("minimumIntegerDigits", CreateNumber(2));
-
-        if (unitStyleValue is not ("numeric" or "2-digit"))
-        {
-            Set("style", CreateString("unit"));
-            Set("unit", CreateString(singularUnit));
-            Set("unitDisplay", CreateString(unitStyleValue));
-        }
-        else
-        {
-            Set("useGrouping", BooleanFalse);
-        }
-
-        if (fractional)
-        {
-            Set("maximumFractionDigits", CreateNumber(fractionalDigits ?? 9));
-            Set("minimumFractionDigits", CreateNumber(fractionalDigits ?? 0));
-            Set("roundingMode", CreateString("trunc"));
-        }
-
-        if (signNever)
-            Set("signDisplay", CreateString("never"));
-
-        var args = new Arguments(JSUndefined.Value, CreateString(locale), options);
-        var nf = new JSIntlNumberFormat(in args);
-        // A folded fractional value is formatted from its exact decimal string (parsed as an Intl
-        // mathematical value) so no sub-second precision is lost to the double round-trip.
-        var operand = exactValue != null ? CreateString(exactValue) : CreateNumber(value);
-        return nf.ComputeFormatParts(operand);
     }
 
     private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.DurationFormat");
@@ -2212,104 +1952,6 @@ public sealed class JSIntlDurationFormat : JSObject
     // of whatever `globalThis.Intl.DurationFormat` holds now: guest code may replace the namespace or its members.
     private static JSObject CurrentPrototype()
         => Intrinsics.IntlPrototype(IntrinsicKey);
-
-    // ToDurationRecord(input): a String is parsed as an ISO 8601 / Temporal duration (an invalid string
-    // is a RangeError), an object's unit fields are read and validated directly, and any other type is a
-    // TypeError. Returns the object whose unit getters the formatter then reads (a parsed string yields a
-    // Temporal.Duration, which exposes the same year/month/…/nanosecond properties).
-    private static JSObject ToDurationFormatRecord(JSValue duration)
-    {
-        if (duration is JSTemporalDuration temporalDuration)
-        {
-            // A Temporal.Duration is read from its internal slots, never its
-            // Temporal.Duration.prototype getters (which user code may have replaced) —
-            // matching ToTemporalDuration, which clones a Temporal.Duration from its slots.
-            // Snapshot the slots into a plain record so the formatter's field reads observe
-            // data, not installed accessors.
-            var slots = new[]
-            {
-                temporalDuration.years, temporalDuration.months, temporalDuration.weeks, temporalDuration.days,
-                temporalDuration.hours, temporalDuration.minutes, temporalDuration.seconds,
-                temporalDuration.milliseconds, temporalDuration.microseconds, temporalDuration.nanoseconds,
-            };
-            var record = new JSObject();
-            for (var i = 0; i < Units.Length; i++)
-                record.FastAddValue(KeyStrings.GetOrCreate(Units[i]), CreateNumber(slots[i]), JSPropertyAttributes.EnumerableConfigurableValue);
-            return record;
-        }
-
-        if (duration.IsString)
-            return (JSObject)JSTemporalDuration.From(new Arguments(JSUndefined.Value, duration));
-
-        if (duration is not JSObject durationObject)
-            throw JSEngine.NewTypeError("Duration argument must be an object or string");
-
-        ValidateDurationArgument(durationObject);
-        return durationObject;
-    }
-
-    private static void ValidateDurationArgument(JSObject durationObject)
-    {
-        var any = false;
-        var hasPositive = false;
-        var hasNegative = false;
-        // Field values in Units order (years, months, weeks, days, hours, minutes,
-        // seconds, milliseconds, microseconds, nanoseconds); absent fields stay 0.
-        var values = new double[Units.Length];
-        for (var i = 0; i < Units.Length; i++)
-        {
-            var unit = Units[i];
-            var value = durationObject[KeyStrings.GetOrCreate(unit)];
-            // A field left undefined is absent; reading by key also runs any getter.
-            if (value == null || value.IsUndefined)
-                continue;
-
-            any = true;
-            // ToIntegerIfIntegral runs ToNumber, which throws a TypeError for a BigInt.
-            if (value.IsBigInt)
-                throw JSEngine.NewTypeError($"Cannot convert a BigInt duration value for {unit}");
-            var numericValue = value.DoubleValue;
-            // ToIntegerIfIntegral: a non-finite or non-integral field is a RangeError.
-            if (double.IsNaN(numericValue) || double.IsInfinity(numericValue) || Math.Truncate(numericValue) != numericValue)
-                throw JSEngine.NewRangeError($"Invalid duration value for {unit}");
-
-            values[i] = numericValue;
-            hasPositive |= numericValue > 0;
-            hasNegative |= numericValue < 0;
-        }
-
-        // ToDurationRecord step: if no duration field was provided, throw a TypeError.
-        if (!any)
-            throw JSEngine.NewTypeError("Duration must specify at least one field");
-
-        if (hasPositive && hasNegative)
-            throw JSEngine.NewRangeError("Invalid duration: inconsistent sign");
-
-        // IsValidDuration (Temporal §7.5.x), invoked by ToDurationRecord: the years,
-        // months and weeks fields must each be below 2^32 in magnitude, and the combined
-        // time portion (days through nanoseconds) must total under 2^53 seconds. The total
-        // is computed with exact integer arithmetic — every field is integral here, so the
-        // real value of each double is exact — to avoid the rounding that floating-point
-        // multiplication by 10^-3/10^-6/10^-9 would introduce near the 2^53 boundary.
-        const double twoPow32 = 4294967296d; // 2^32
-        for (var i = 0; i < 3; i++)
-        {
-            if (Math.Abs(values[i]) >= twoPow32)
-                throw JSEngine.NewRangeError($"Duration value for {Units[i]} is out of range");
-        }
-
-        // Nanoseconds per: day, hour, minute, second, millisecond, microsecond, nanosecond.
-        ReadOnlySpan<long> nanosPerUnit =
-            [86_400_000_000_000L, 3_600_000_000_000L, 60_000_000_000L, 1_000_000_000L, 1_000_000L, 1_000L, 1L];
-        var totalNanoseconds = BigInteger.Zero;
-        for (var i = 0; i < nanosPerUnit.Length; i++)
-            totalNanoseconds += new BigInteger(values[i + 3]) * nanosPerUnit[i];
-
-        // 2^53 seconds expressed in nanoseconds (9007199254740992 × 10^9).
-        var maxNanoseconds = new BigInteger(9007199254740992L) * 1_000_000_000L;
-        if (BigInteger.Abs(totalNanoseconds) >= maxNanoseconds)
-            throw JSEngine.NewRangeError("Duration time total is out of range");
-    }
 }
 
 // Intl.ListFormat (ECMA-402 sec-listformat-objects) over the shared library's ListFormatter (SJL-9.5, task 8.4, sub-area
@@ -2323,6 +1965,10 @@ public sealed class JSIntlDurationFormat : JSObject
 // unknown type or style to conjunction or long while resolvedOptions reported the default; the former engine stored the
 // strings and reported them verbatim. A direct .NET caller now learns of the unknown value (for task 8.7's
 // docs/public-api.md and CHANGELOG).
+// Revised 2026-11-09, at SJL-9.5 (task 8.6): Intl.DurationFormat joins its units through the shared library's
+// DurationFormatCore, so FormatPartsForUnits, the (element, literal) parts it read, is deleted; the engine keeps
+// StringListFromIterable and the parts arrays. The sentence above read "The engine keeps StringListFromIterable, the
+// parts arrays and the (element, literal) parts Intl.DurationFormat reads until task 8.6."
 public sealed class JSIntlListFormat : JSObject
 {
     private static readonly string[] ListTypeNames = ["conjunction", "disjunction", "unit"];
@@ -2364,18 +2010,6 @@ public sealed class JSIntlListFormat : JSObject
         for (uint i = 0; i < (uint)parts.Count; i++)
             arr.SetPropertyOrThrow(CreateNumber(i), MakePart(parts[(int)i].Type, parts[(int)i].Value));
         return result;
-    }
-
-    // Like formatToParts, but returns ("element"|"literal", value) tuples. Used by
-    // Intl.DurationFormat to interleave its own per-unit parts with the list's
-    // separators (the "element" entries are replaced by the caller).
-    internal List<(string type, string value)> FormatPartsForUnits(List<string> items)
-    {
-        var parts = Formatter.FormatToParts(items, null);
-        var list = new List<(string, string)>(parts.Count);
-        foreach (var part in parts)
-            list.Add((part.Type, part.Value));
-        return list;
     }
 
     private static JSObject MakePart(string type, string value)
@@ -2797,13 +2431,6 @@ public class JSIntlNumberFormat : JSObject
         var @this = Of(a.This, "formatToParts");
         return PartsArray(@this.Formatter.FormatToParts(JSIntl.ToIntlMathematicalValue(a.Get1()), null), withSource: false);
     }
-
-    // The (type, value) parts of a value, for Intl.DurationFormat until its own move (task 8.6).
-    // Revised 2026-11-08, at SJL-9.5 (task 8.4): Intl.RelativeTimeFormat formats through the shared library's
-    // RelativeTimeFormatter and no longer calls this; the comment read "for Intl.DurationFormat and
-    // Intl.RelativeTimeFormat's callers until their own moves (task 8.6)".
-    internal List<(string type, string value)> ComputeFormatParts(JSValue value)
-        => JSIntl.NumberParts(Formatter.FormatToParts(JSIntl.ToIntlMathematicalValue(value), null));
 
     public static JSValue FormatRangePrototype(in Arguments a)
     {
