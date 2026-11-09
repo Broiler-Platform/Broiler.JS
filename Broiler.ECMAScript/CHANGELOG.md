@@ -594,7 +594,14 @@ Not yet packed under a version of its own: the stream's next version is set when
   - **the default calendar is the region's first preference** where an engine hands ResolveLocale `CalendarKeyValuesOf`'s
     values (`fa` `persian`, `th` `buddhist`); with `CalendarKeyValues`, or data without the table, it stays `gregory`;
   - **a fractional second takes the numbering system's own decimal symbol** (decision D21), where it took the locale's `latn`
-    symbol for every system: `en-u-nu-arab` writes U+066B.
+    symbol for every system: `en-u-nu-arab` writes U+066B, and so do the locales whose default system is not `latn` with no
+    `-u-nu-` keyword - `fa` and `fa-IR` (`arabext`) write `۶٫۷۸` and `ar-EG` (`arab`) `٦٫٧٨` for `{second: "numeric",
+    fractionalSecondDigits: 2}`, where they wrote `.`, as the pinned reference does (row T37);
+  - **so Temporal values meet the new default calendar**: in `fa`, `fa-IR`, `th` and `th-TH`, with no `-u-ca-` keyword and no
+    `calendar` option, `toLocaleString` (and a format's `format` and `formatRange`) of a `PlainDate`, `PlainDateTime`,
+    `PlainYearMonth`, `PlainMonthDay` or `ZonedDateTime` whose calendar is `gregory` now throws a RangeError (a calendar
+    mismatch, ECMA-402's `HandleDateTimeTemporal*` steps), where it formatted; one in `persian` or `buddhist` formats where it
+    threw; and an ISO `PlainDate`, `PlainDateTime` or `ZonedDateTime` is written in the locale's default calendar.
 
   Broiler.VM's tables carry no calendar preference table and no `symbols@` key, and none of its data locales has a script or a
   time data entry of its own, so its date-time formats do not move; its Intl.Locale's hour cycles move for the tags that reach a

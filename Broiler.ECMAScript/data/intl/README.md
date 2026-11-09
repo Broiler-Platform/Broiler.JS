@@ -11,7 +11,7 @@ files of `generated/`, from its cut-over, milestone SJL-9.5. Until then nothing 
 
 | Directory | Holds |
 |---|---|
-| [`cldr/`](cldr/README.md) | CLDR **48.2.0**'s files and `cldr.pin`: every file Broiler.VM's pin names, byte-identical, and Broiler.JS's extra main-data files from the same packages (decision D10) and `common/main` XML files from the CLDR repository (decision D21); the CLDR licence |
+| [`cldr/`](cldr/README.md) | CLDR **48.2.0**'s files and `cldr.pin`: every file Broiler.VM's pin names, byte-identical, and Broiler.JS's extra main-data files from the same packages (decision D10) and `common/main` XML files from the CLDR repository (decision D21), and, from 2026-11-09, the cldr-core supplemental file `calendarPreferenceData.json` from the cldr-core tarball the pin already names (the owner's ruling of 2026-11-09, "Add file, same tarball"); the CLDR licence *(the clause on `calendarPreferenceData.json` was added 2026-11-09, at review of that ruling; the row read "...from the CLDR repository (decision D21); the CLDR licence")* |
 | [`ucd/`](ucd/README.md) | The Unicode Character Database **17.0.0**'s `UnicodeData.txt` and `PropList.txt` and `ucd.pin`, held equal to Broiler.Unicode's pin entries (decision D12); the Unicode licence |
 | `locales/` | Each embedding's locale list (decision D5): [`broiler-vm.txt`](locales/broiler-vm.txt), Broiler.VM's, which does not grow, and [`broiler-js.txt`](locales/broiler-js.txt), Broiler.JS's |
 | `generated/` | Broiler.JS's tables, one file per table, written by the generator and never by hand, and their manifest |

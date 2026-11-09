@@ -1676,13 +1676,24 @@ This repository's part of it:
   "Add file, same tarball", "Fix both consumers" and "Follow CLDR, dated ruling", each asked and answered: SJL-9.5's cut-over of
   sub-areas (d) and (e) stays held at its stage 3, and before it merges the shared library and the data home take, in a merge
   of their own, the five places where its date-time format departed from the pinned CLDR 48.2.0 data, as with the currency
-  change of 2026-11-08; the alternative not taken was "Revert 8.5, fix later". The data rows T10, T16 and T37 now read CLDR's
-  time data for a locale's language and region before its region's (`ar-001` `h12`, `fr-CA` `h23`; Intl.Locale's hour cycles
-  too, row L19, in both engines), the whole locale's likely region (`zh-Hant` Taiwan's), the region's calendar preference
-  (`fa` `persian`, `th` `buddhist`, from CLDR's `calendarPreferenceData.json`, archived from the cldr-core tarball the pin
-  already names; the alternative not taken was "Leave calendars out") and a numbering system's own decimal symbol, which
-  replaces SJL-9.5's engine-side adapter; interval patterns keep ICU's widths, which the pinned reference shows to be the
-  library's already. Row T12's U+202F before a day period stays CLDR's, and this engine loses one test262 file under it,
+  change of 2026-11-08; the alternative not taken was "Revert 8.5, fix later". The date-time format now reads CLDR's time
+  data for a locale's language and region before its region's (row T10: `ar-001` `h12`, `fr-CA` `h23`; Intl.Locale's hour
+  cycles too, row L19, in both engines), the whole locale's likely region (`zh-Hant` Taiwan's) and the region's calendar
+  preference (`fa` `persian`, `th` `buddhist`, from CLDR's `calendarPreferenceData.json`, archived from the cldr-core tarball
+  the pin already names; the alternative not taken was "Leave calendars out"), which no row names on its own and which are
+  read under row T16's "the locale data of each" as data policy C5, and a numbering system's own decimal symbol, a locale's
+  default system's included (row T37: `en-u-nu-arab`, and `fa` and `ar-EG` with no keyword), which replaces SJL-9.5's
+  engine-side adapter; interval patterns keep ICU's widths, which the pinned reference shows to be the library's already.
+  Row L16 keeps `getCalendars` at `["gregory"]`, so the date-time format's default and `getCalendars` disagree for `fa` and
+  `th` in this engine. The root `THIRD_PARTY_NOTICES.md`'s CLDR entry, which lists the archive's files as Broiler.VM's, the
+  main-data files and the `common/main` XML files, does not yet name the supplemental `calendarPreferenceData.json`; its
+  licence sentence ("Every table in `data/intl/generated/` is derived from them") already covers the table. The entry gains a
+  dated note naming the file, in the form of its SJL-17.3 note, at SJL-9.5's stage 4, since this merge's scope stops at
+  `Broiler.ECMAScript/`, the bundle and this plan. *(Revised 2026-11-09, at review, before merge: the sentence read "The
+  data rows T10, T16 and T37 now read CLDR's time data for a locale's language and region before its region's (`ar-001` `h12`, `fr-CA` `h23`; Intl.Locale's
+  hour cycles too, row L19, in both engines), the whole locale's likely region (`zh-Hant` Taiwan's), the region's calendar
+  preference (...) and a numbering system's own decimal symbol, which replaces SJL-9.5's engine-side adapter".)* Row T12's
+  U+202F before a day period stays CLDR's, and this engine loses one test262 file under it,
   `intl402/DateTimeFormat/prototype/format/numbering-system.js`, listed by name: bundle `sjl-9-001`'s rule is revised for it,
   before SJL-9.5's judged runs, by the dated file
   [`docs/evidence/sjl-9-001/decision-rule-revised-2026-11-09.md`](../evidence/sjl-9-001/decision-rule-revised-2026-11-09.md),

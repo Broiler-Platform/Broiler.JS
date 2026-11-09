@@ -78,7 +78,11 @@ milestone SJL-13.1.)*
   pin byte for byte with the main-data files Broiler.JS's locale list adds and the `common/main` XML files decision D21
   reads, and the UCD files equal to Broiler.Unicode's pin entries; with each embedding's locale list (Broiler.VM's
   JSD-0082, decision D5) and Broiler.JS's tables, which `Broiler.ECMAScript.Generation` writes from them. No package
-  carries them; rule SL7 regenerates the tables byte for byte. *(Added 2026-10-26, at SJL-9.2b.)*
+  carries them; rule SL7 regenerates the tables byte for byte. *(Added 2026-10-26, at SJL-9.2b.)* *(Added 2026-11-09, by
+  the owner's ruling of that day, "Add file, same tarball": the CLDR pin also names one cldr-core supplemental file that is
+  not Broiler.VM's, `calendarPreferenceData.json`, from the cldr-core 48.2.0 tarball the pin already names, from which
+  Broiler.JS's `calendar-preferences.txt` is written; the bullet named the extra files as "the main-data files Broiler.JS's
+  locale list adds and the `common/main` XML files decision D21 reads".)*
 - **Temporal:** `tc39/proposal-temporal@e8cc03fc`, the revision both engines follow (Broiler.VM's JSD-0078,
   decision D1); where its text and its polyfill disagree, the text rules (decision D7). *(Added 2026-10-18, at
   SJL-10.3.)*

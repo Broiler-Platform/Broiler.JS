@@ -226,11 +226,21 @@ own.)*
   no preference. `fa` (IR) defaults to `persian` and `th` (TH) to `buddhist` (`0142`, `0146`, `0148`, `0152`, `0421`, `0425`,
   `0427`, `0431`). An engine hands it to ResolveLocale in place of `CalendarKeyValues`, so the `-u-ca-` keyword and the
   `calendar` option still choose over it. Intl.Locale's CalendarsOfLocale is unchanged: rows L16 and part C of the SJL-9 rule
-  hold `getCalendars` at `["gregory"]` in both engines.
+  hold `getCalendars` at `["gregory"]` in both engines. So over Broiler.JS's tables the two consumers disagree where the region
+  prefers another calendar: `Intl.DateTimeFormat("th")` resolves `buddhist` and `fa` `persian`, while `getCalendars()` answers
+  `["gregory"]` for both, where the pinned reference answers `["buddhist", "gregory"]` and `["persian", "gregory", ...]`; and
+  row L16's stated cause, that neither engine's data carries the preference table, no longer holds for Broiler.JS. The new
+  default reaches Temporal values too: in `fa` and `th`, with no keyword or option, a `gregory`-calendar `PlainDate`,
+  `PlainDateTime`, `PlainYearMonth`, `PlainMonthDay` or `ZonedDateTime` is refused with a RangeError (ECMA-402's calendar
+  check), where it formatted, and an ISO value is written in the locale's default calendar. The default calendar has no
+  correspondence row of its own; it is read under row T16's "the locale data of each" as data policy C5.
 - **A fractional second takes the numbering system's own decimal symbol** (decision D21; ECMA-402 FormatDateTimePattern's
   `fractionalSecondDigits`, whose separator is locale data): the number table's `symbols@<system>.decimal` at the data locale,
   then at root, then the locale's `latn` one, as the number formatter reads a symbol. `en-u-nu-arab` writes U+066B
-  (`intl/date-times/numbering/0001`, `0003`, `0017`). This replaces SJL-9.5's engine-side adapter, `NumberingSystemDecimalData`.
+  (`intl/date-times/numbering/0001`, `0003`, `0017`). The system is the resolved one, a locale's default where no keyword
+  names one, so `fa` and `fa-IR` (`arabext`) and `ar-EG` (`arab`) write U+066B too, `۶٫۷۸` and `٦٫٧٨` for two fractional
+  digits, where they wrote `.`, as the pinned reference does (row T37, which names `ar-EG`'s default). This replaces SJL-9.5's
+  engine-side adapter, `NumberingSystemDecimalData`.
   The date-time format writes no other number symbol: a pattern's `:` is its literal, which the reference writes for
   `arabext` too, whose root time separator is U+066B; a date has no grouping or sign.
 - **Interval fields take the widths ICU's interval patterns give.** The brief of the decision read that the library gives

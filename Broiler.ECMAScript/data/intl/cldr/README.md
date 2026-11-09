@@ -9,6 +9,12 @@ a **superset of Broiler.VM's** `src/tests/cldr/pins/cldr.pin` (decision D10): ev
 `data` to its last `file` line is in this one, unchanged and in its order, and the `file` lines after them name
 Broiler.JS's extra files: main-data files from the same npm packages at the same version, and CLDR's `common/main`
 XML files that decision D21 reads, from the CLDR repository at the tag Broiler.VM's `common/main/root.xml` came from.
+*(Added 2026-11-09, at review of the owner's ruling of that day, "Add file, same tarball": the `file` lines after Broiler.VM's
+also name one cldr-core supplemental file, `cldr-48.2.0/json/cldr-core/supplemental/calendarPreferenceData.json`, which is
+not one of Broiler.VM's files and is neither a main-data file nor a `common/main` XML file: the member of the cldr-core
+48.2.0 tarball the pin's `json-integrity cldr-core` line names, under the block "EXTENDED 2026-11-09" (below, "Broiler.JS's
+calendar preference file"). The paragraph above, which names the extra files as main-data files and `common/main` XML files,
+is otherwise unchanged.)*
 
 ## Where it came from
 
