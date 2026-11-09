@@ -1655,6 +1655,23 @@ This repository's part of it:
   is in that column too, but its data is each engine's collation data, SJL-17's (SJL-D-24 (c)), and no answer moves at
   SJL-9. The generated CLDR 48.2.0 tables replace the hand tables, the CLDR package, the host's ICU and the CLDR 47.0.0
   table; the `atTime` joins and U+202F are among them (T12).
+  *(Noted 2026-11-09, at corpus revision 36, on the owner's decision of 2026-11-08, "Revision 36: follow CLDR", their
+  own dated choice, asked and answered: where the pinned CLDR 48.2.0 contradicts a vector's expected value, the
+  reference's answer (ICU 78.3, CLDR 48.0), this engine's answer from SJL-9.5 is the shared library's, which follows
+  that data, and it is accepted; the alternative not taken, "Engine matches old answer", was engine-specific overrides
+  against the pinned data. Two such data facts reach rows N3c and S1b: CLDR 48.2.0 gives `en-150` the currency pattern
+  `#,##0.00 ¤`, U+00A0 before the sign (`common/main/en_150.xml` and cldr-json's `cldr-numbers-full`), which `en-DK`
+  and `en-FR` inherit, where the reference answers `"-€1,234.50"`; and it gives `gv` and `ln` the list pattern
+  `{0}, {1}` for start, middle, end and two alike, where the reference resolves both to `en-US` and answers
+  `"A, B, and C"`. Corpus revision 36 ([`conformance/vectors/REVISIONS.md`](../../conformance/vectors/REVISIONS.md))
+  classifies, for this engine, the five vectors these facts reach, `intl/numbers-and-text/families/0121`, `0141`,
+  `0151`, `0309` and `0454`, under those rows as data changes (C5), each field naming the decision and this note as
+  this engine's record, since no task answers it; no expected value and no Broiler.VM expectation changes. Not settled
+  by it, and open for the owner's call before SJL-9.5 merges: CLDR 48.2.0 gives root's `{0}, {1}` list patterns to
+  `aa`, `ab`, `en-Shaw`, `en-Shaw-GB`, `jbo` and `pap` too, whose row S1b vectors are normative with `"A, B, and C"`
+  and match on the ICU 74.2 host the corpus is classified on, which lists none of them (decision D7, its note above);
+  the windows-latest host of the engine vectors job lists `aa` and `pap` (corpus revision 28), where from SJL-9.5 this
+  engine is expected to answer `"A, B, C"` for `families/0008` and `0514`, and revision 36 does not classify them.)*
 - **What stays as it is.** The rows that are the same in both engines; and the engine policies, which the library's
   parameters keep this engine's: the default locale and zone, the available locales, the Collator's list, the meter
   and this engine's extensions (rows L28, L33, L40, L43, M9, N16, T3, T11, T40 and U19). Row L35 is the one engine
