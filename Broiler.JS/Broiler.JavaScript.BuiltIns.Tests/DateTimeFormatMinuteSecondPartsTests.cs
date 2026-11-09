@@ -28,8 +28,14 @@ public class DateTimeFormatMinuteSecondPartsTests
 
     [Theory]
     // A locale's default numbering system, and one a -u-nu- extension chooses.
+    // Revised 2026-11-09, at SJL-9.5's stage 4 (row T16, data policy C5): the row read
+    // [InlineData("fa", "minute=۰۳|literal=:|second=۰۵")]. fa's default calendar is now persian, CLDR's calendar preference
+    // for Iran, and CLDR 48.2.0's fa persian (and generic) calendar has no mmss skeleton, only ms "m:ss", so a 2-digit
+    // minute is written "۳" (row T13, the field widths of the skeleton the pattern generator matches; ICU 77.1 answers
+    // "۳:۰۵" with minute "numeric" too). The row now names fa's gregorian calendar, which keeps the point of this test, fa's
+    // default numbering system arabext; the persian answer is IntlDateTimeFormatLibraryTests' T16 row.
     [InlineData("ar-EG", "minute=٠٣|literal=:|second=٠٥")]
-    [InlineData("fa", "minute=۰۳|literal=:|second=۰۵")]
+    [InlineData("fa-u-ca-gregory", "minute=۰۳|literal=:|second=۰۵")]
     [InlineData("bn", "minute=০৩|literal=:|second=০৫")]
     [InlineData("en-u-nu-arab", "minute=٠٣|literal=:|second=٠٥")]
     [InlineData("en-u-nu-hanidec", "minute=〇三|literal=:|second=〇五")]

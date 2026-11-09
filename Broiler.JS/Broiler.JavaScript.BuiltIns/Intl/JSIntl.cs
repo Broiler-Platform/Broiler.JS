@@ -1193,6 +1193,16 @@ public static class JSIntl
     // cycles are the library's, from CLDR's time data (row T10)" holds as written. U+202F before the day period stays CLDR's under
     // the owner's ruling "Follow CLDR, dated ruling"; numbering-system.js is lost under row T12, and bundle sjl-9-001's rule is
     // revised to admit that one path as class L (docs/evidence/sjl-9-001/decision-rule-revised-2026-11-09.md).
+    // Revised 2026-11-09, at SJL-9.5's stage 4 (review): the revision above checks only the task 8.5 note's hour cycles. Its
+    // "JSIntl.ResolveLocale over DateTimeFormat.CalendarKeyValues" no longer holds as written: the ca key's values are now
+    // DateTimeFormat.CalendarKeyValuesOf the data locale (JSIntlLocaleProviders.DataLocale of the matched locale), whose
+    // first value is the first calendar of CLDR's calendarPreferenceData for the locale's own or likely region (row T16,
+    // data policy C5). Every locale whose region is AF, IR or TH, its own or likely, now defaults to persian or buddhist
+    // (fa, fa-IR, fa-AF, ps, uz-Arab, lrc, mzn, ckb-IR, th, th-TH, among this host's locales), and a gregory-calendar
+    // Temporal value is refused there. The hour cycles read the locale-keyed entries of CLDR's time data (en-001 and ar-001
+    // h12, fr-CA h23, and ku-SY h23 where SY gives h12: Intl.Locale's getHourCycles always, the date-time format where the
+    // host has ku-SY) and the whole tag's likely region (zh-Hant TW's h12, yue-Hans CN's h23) (rows T10 and L19). Which
+    // locales move in the date-time format depends on the host's locales (row L28).
 
     // The relevant extension keys of the services that resolve none: ListFormat, Segmenter, DisplayNames and PluralRules.
     // Revised 2026-11-08, at SJL-9.5 (task 8.4): ListFormat, DisplayNames and PluralRules resolve through the shared
@@ -2222,6 +2232,9 @@ public sealed class JSIntlLocale : JSObject
     }
 
     // CalendarsOfLocale: the ca keyword, else gregory (rows L15 and L16).
+    // Noted 2026-11-09, at SJL-9.5's stage 4: the date-time format's default calendar now follows CLDR's calendar preference
+    // for the region (row T16), so new Intl.DateTimeFormat("th") resolves buddhist and "fa" persian while this answers
+    // ["gregory"] for both. The shared library's LocaleInfo.Calendars records the disagreement (row L16 keeps gregory).
     public static JSValue GetCalendarsPrototype(in Arguments a)
         => StringArray(LocaleInfo.Calendars(RequireLocale(in a, "getCalendars").record));
 

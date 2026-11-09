@@ -86,6 +86,12 @@ public class IntlDateTimeFormatRangeTests
     // (2026-11-09): the shared library's formatRange does not widen an interval pattern's fields to the requested 2-digit
     // month and day; a library gap for its own merge (decision D52, SJL-D-9), held for the owner's ruling on row T30", and the
     // skipped assertion looked for "01/02/2020" at 0 and "01/05/2020" at "s.length - 10", expecting "true|true".
+    // Revised 2026-11-09, at SJL-9.5's stage 4 (review): two older sentences above no longer hold as written. The lead
+    // comment's "whatever separator the locale data supplies" (and the class note's "They deliberately avoid asserting
+    // rendered separator text") no longer describes this test, which pins en's separator, a thin space, an en dash and a
+    // thin space (row T30). The task 8.5 revision's "does not widen its fields to the requested 2-digit month and day as
+    // ICU does (V8: "01/02/2020 – 01/05/2020")" is wrong about ICU: Node 22.22.0 (ICU 77.1) answers
+    // "1/2/2020 – 1/5/2020" for this formatter's range and "01/02/2020" for its format.
     [Fact]
     public void FormatRangeRendersBothEndpoints()
         => Assert.Equal("1/2/2020\u2009\u2013\u20091/5/2020", Eval(

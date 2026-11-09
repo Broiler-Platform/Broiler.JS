@@ -22,6 +22,12 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 //   numbering system's own decimal symbol (fa's arabext, U+066B), and Intl.Locale's hour cycles. Before the merge the first
 //   three answered h23, h12 and h23, the calendars gregory, and fa's decimal came from the engine's deleted adapter
 //   NumberingSystemDecimalData.
+// - Revised 2026-11-09, at SJL-9.5's stage 4 (review): the T37 answer did not move at stage 4. The note above lists it with
+//   the moved answers, and the commit that added it called it one; but the deleted adapter NumberingSystemDecimalData gave
+//   fa's arabext U+066B before the merge as well, and the library now gives the same answer itself. Its test guards that
+//   answer against a regression. A moved answer of row T16 is added: fa's persian calendar has CLDR's ms "m:ss" and no
+//   mmss, so { minute: '2-digit', second: '2-digit' } writes "۳:۰۵" (row T13's field widths), where its gregorian calendar
+//   writes "۰۳:۰۵" (DateTimeFormatMinuteSecondPartsTests' fa row, revised the same day).
 public class IntlDateTimeFormatLibraryTests
 {
     private static void Load() => RuntimeHelpers.RunClassConstructor(typeof(Clr.DefaultClrInterop).TypeHandle);
@@ -102,6 +108,16 @@ public class IntlDateTimeFormatLibraryTests
     [InlineData("en", "gregory")]
     public void T16_the_default_calendar_is_the_region_s_preference(string locale, string calendar)
         => Assert.Equal(calendar, Eval($"new Intl.DateTimeFormat('{locale}').resolvedOptions().calendar"));
+
+    [Theory]
+    // fa's persian calendar (CLDR 48.2.0's ca-persian.json and ca-generic.json) has the skeleton ms, "m:ss", and no mmss, so
+    // the pattern generator's match keeps the minute's width (row T13); ICU 77.1 answers "۳:۰۵" and minute "numeric" too.
+    [InlineData("fa", "\u06F3:\u06F0\u06F5|numeric|persian")]
+    [InlineData("fa-u-ca-gregory", "\u06F0\u06F3:\u06F0\u06F5|2-digit|gregory")]
+    public void T16_fa_s_default_persian_calendar_writes_its_own_minute_and_second_pattern(string locale, string expected)
+        => Assert.Equal(expected, Eval(
+            $"var f = new Intl.DateTimeFormat('{locale}', {{ timeZone: 'UTC', minute: '2-digit', second: '2-digit' }}); var r = f.resolvedOptions(); "
+            + "f.format(new Date(Date.UTC(2026, 9, 16, 12, 3, 5))) + '|' + r.minute + '|' + r.calendar"));
 
     [Fact]
     // A gregory-calendar value is refused where the default is buddhist or persian; an ISO value is written in the default.
