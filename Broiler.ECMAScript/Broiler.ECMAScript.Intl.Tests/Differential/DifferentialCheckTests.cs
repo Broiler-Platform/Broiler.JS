@@ -29,6 +29,9 @@ public sealed class DifferentialCheckTests
     /// Sub-area (a), stage SJL-9.3a: every difference between Broiler.VM's locale code and the library is a row of the
     /// correspondence - L9 and L18, the corrections of Broiler.VM the library makes, and L22, each engine's own numbering
     /// systems, which differ only over Broiler.JS's data - and each of the two corrections is seen, so the check reaches it.
+    /// <i>(Revised 2026-11-09, by the owner's ruling of that day, "Fix both consumers": row L19, CLDR's time data for a Locale's
+    /// language and region, which the library reads and Broiler.VM's code missed, is a fourth row, and it is seen over Broiler.VM's
+    /// embedding too, where it is what Broiler.VM's answers move by at its next re-pin.)</i>
     /// </summary>
     [Fact]
     public void Broiler_VM_s_locale_code_and_the_library_differ_only_by_the_correspondence_s_rows()
@@ -42,7 +45,8 @@ public sealed class DifferentialCheckTests
         Assert.All(sections.Where(static s => s.Name.StartsWith("L4", StringComparison.Ordinal)), static s => Assert.True(s.Compared > 30, s.Name + " compared almost nothing"));
 
         var rows = sections.SelectMany(static s => s.ClassifiedByRow.Keys.Select(row => (Section: s.Name, Row: row))).ToList();
-        Assert.All(rows, static r => Assert.Contains(r.Row, new[] { "L9", "L18", "L22" }));
+        Assert.All(rows, static r => Assert.Contains(r.Row, new[] { "L9", "L18", "L19", "L22" }));
+        Assert.Contains(rows, static r => r.Row == "L19" && r.Section.EndsWith("(broiler-vm)", StringComparison.Ordinal));
         Assert.All(rows.Where(static r => r.Row == "L22"), static r => Assert.EndsWith("(broiler-js)", r.Section, StringComparison.Ordinal));
         Assert.Contains(rows, static r => r.Row == "L9" && r.Section.StartsWith("L1", StringComparison.Ordinal));
         Assert.Contains(rows, static r => r.Row == "L18" && r.Section.StartsWith("L3", StringComparison.Ordinal));

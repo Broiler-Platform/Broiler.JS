@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   21
-// Annotated:        21/21
+// Relevant units:   25
+// Annotated:        25/25
 // Exempt:           17
-// Human-reviewed:   0/21
+// Human-reviewed:   0/25
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         5/5
 // Resource impact:  2/10 max
-// Unverified:       21
+// Unverified:       25
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -143,6 +143,123 @@ public sealed class DateTimeFormat
     // Hairs-Human:        PENDING
     public static IReadOnlyList<string?> NumberingSystemKeyValues(ILocaleData data, string locale) => NumberFormatter.NumberingSystemKeyValues(data, locale);
 
+    /// <summary>
+    /// The <c>ca</c> values for a locale ([[LocaleData]].[[&lt;locale&gt;]].[[ca]], <c>sec-intl.datetimeformat-internal-slots</c>,
+    /// whose first element is the locale's default calendar): the first calendar of CLDR's calendar preferences for the locale's
+    /// region (UTS #35 Part 4, Calendar Preference Data) that is one of <see cref="CalendarKeyValues"/>, then the others in
+    /// <see cref="CalendarKeyValues"/>' order - <c>persian</c> first for <c>fa</c>, whose likely region is IR, and <c>buddhist</c>
+    /// for <c>th</c>. Where the data states no preference for the region it reads the world's, <c>001</c>; where it states none at
+    /// all - Broiler.VM's tables, which carry no <see cref="IntlTable.CalendarPreferences"/> table - or the first preferred is
+    /// <c>gregory</c>, the answer is <see cref="CalendarKeyValues"/> itself, the Gregorian calendar first. An engine hands it to
+    /// ResolveLocale as the <c>ca</c> key's values for the matched locale, as it hands <see cref="NumberingSystemKeyValues"/> for
+    /// <c>nu</c>; the <c>-u-ca-</c> keyword and the <c>calendar</c> option still choose over it.
+    /// <i>(Added 2026-11-09, by the owner's decision of that day, "Keep + fix library first": the default calendar was the
+    /// Gregorian for every locale.)</i>
+    /// </summary>
+    /// <param name="data">The locale data, ordinarily a <see cref="CompositeLocaleData"/>.</param>
+    /// <param name="locale">The matched available locale, as ResolveLocale's matching steps found it.</param>
+    /// <returns>The values, each once, the default first.</returns>
+    /// <exception cref="ArgumentNullException">An argument is null.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots ca values over UTS35 Part 4 calendarPreferenceData; IP=Low; Security=Low; Resources=1; Fingerprint=302EFA
+    // Hairs-Human:        PENDING
+    public static IReadOnlyList<string?> CalendarKeyValuesOf(ILocaleData data, string locale)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        ArgumentNullException.ThrowIfNull(locale);
+
+        var (_, region) = LanguageAndRegion(data, locale);
+        var preferences = data.CalendarPreferences(region) ?? data.CalendarPreferences("001");
+        string? first = null;
+
+        foreach (var calendar in preferences ?? [])
+        {
+            if (Contains(CalendarKeyValues, calendar))
+            {
+                first = calendar;
+                break;
+            }
+        }
+
+        if (first is null || first == "gregory")
+        {
+            return CalendarKeyValues;
+        }
+
+        var values = new List<string?>(CalendarKeyValues.Count) { first };
+
+        foreach (var calendar in CalendarKeyValues)
+        {
+            if (calendar != first)
+            {
+                values.Add(calendar);
+            }
+        }
+
+        return values.AsReadOnly();
+    }
+
+    /// <summary>
+    /// A locale's language and region: its own region, else the region CLDR's likely subtags give the whole locale (UTS #35 Part 1,
+    /// Likely Subtags: <c>zh-Hant</c> is <c>zh-Hant-TW</c>), else <c>001</c>; <c>en</c> for a locale that is not a well-formed tag.
+    /// <i>(Added 2026-11-09, by the owner's decision of that day, "Keep + fix library first": the region was the likely one of the
+    /// language alone, so <c>zh-Hant</c> read China's.)</i>
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=UTS35 Part 1 Add Likely Subtags for ECMA-402 sec-intl.datetimeformat-internal-slots locale data; IP=Low; Security=Low; Resources=1; Fingerprint=8BE13E
+    // Hairs-Human:        PENDING
+    private static (string Language, string Region) LanguageAndRegion(ILocaleData data, string locale)
+    {
+        if (LocaleTag.Parse(locale) is not { } tag)
+        {
+            return ("en", "001");
+        }
+
+        if (tag.Region is { Length: > 0 } region)
+        {
+            return (tag.Language, region);
+        }
+
+        var maximal = LocaleTag.Parse(locale)!;
+        return (tag.Language, maximal.Maximize(data) && maximal.Region is { Length: > 0 } likely ? likely : "001");
+    }
+
+    /// <summary>
+    /// The decimal separator a numbering system writes (decision D21): its own symbol at the data locale, then at root, where the
+    /// data carries it, then the data locale's <c>latn</c> one, then <c>.</c>, as <see cref="NumberFormatter"/> reads a symbol.
+    /// <i>(Added 2026-11-09, by the owner's decision of that day, "Keep + fix library first".)</i>
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-formatdatetimepattern fractionalSecondDigits separator over UTS35 Part 3 numbering-system symbols, JSD-0082 D21; IP=Low; Security=Low; Resources=1; Fingerprint=73096B
+    // Hairs-Human:        PENDING
+    private static string DecimalSymbol(ILocaleData data, string dataLocale, string numberingSystem)
+    {
+        if (numberingSystem != "latn")
+        {
+            var own = "symbols@" + numberingSystem + ".decimal";
+
+            if ((data.NumberValue(dataLocale, own) ?? data.NumberValue("und", own)) is { } stated)
+            {
+                return stated;
+            }
+        }
+
+        return data.NumberValue(dataLocale, "symbols.decimal") ?? ".";
+    }
+
+    /// <summary>Whether a list of key values holds a value, compared ordinally.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots ca values; IP=Low; Security=Low; Resources=1; Fingerprint=AFF895
+    // Hairs-Human:        PENDING
+    private static bool Contains(IReadOnlyList<string?> values, string value)
+    {
+        foreach (var candidate in values)
+        {
+            if (candidate == value)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // ---- making one -----------------------------------------------------------------------------------------------------
 
     /// <summary>
@@ -160,7 +277,7 @@ public sealed class DateTimeFormat
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
     /// <exception cref="ArgumentException">A component, style or key value outside the values ECMA-402 admits: the engine's
     /// GetOption and ResolveLocale, which come first, would not give it.</exception>
-    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat, hourCycle12 and hourCycle24 by CLDR's allowed formats (JSD-0082 row T10); IP=Low; Security=High; Resources=2; Fingerprint=1C7E53
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat, hourCycle12 and hourCycle24 by CLDR's allowed formats (JSD-0082 row T10); IP=Low; Security=High; Resources=2; Fingerprint=CB81DE
     // Hairs-Falsified-If: a resolved option differs from CreateDateTimeFormat's as amended by proposal-temporal e8cc03fc, or a refusal is another status
     // Hairs-Human:        PENDING
     public static IntlStatus Create(DateTimeData data, ResolvedLocale resolved, DateTimeFormatOptions options, out DateTimeFormat? format)
@@ -179,21 +296,30 @@ public sealed class DateTimeFormat
         string? Key(string key) => keys.TryGetValue(key, out var value) ? value : null;
 
         var dataLocale = resolved.DataLocale;
-        var tag = LocaleTag.Parse(dataLocale);
-        var language = tag?.Language ?? "en";
-        var region = tag?.Region is { Length: > 0 } explicitRegion
-            ? explicitRegion
-            : locale.LikelySubtags(language) is { } likely ? likely[(likely.LastIndexOf('-') + 1)..] : "001";
-        var preferred = dates.PreferredHourChar(region);
+
+        // THE DATA LOCALE'S REGION is its own, else the one CLDR's likely subtags give the whole locale - zh-Hant's TW, where its
+        // language alone gives CN - else the world's (UTS #35 Part 1, Likely Subtags; added 2026-11-09, by the owner's decision of
+        // that day, "Keep + fix library first"). It read: "var region = tag?.Region is { Length: > 0 } explicitRegion ? explicitRegion
+        // : locale.LikelySubtags(language) is { } likely ? likely[(likely.LastIndexOf('-') + 1)..] : "001";".
+        var (language, region) = LanguageAndRegion(locale, dataLocale);
+
+        // THE HOUR CYCLES are CLDR's time data for the locale's language and region where it states them, then the region's (UTS #35
+        // Part 4, Time Data; row T10): ar-001 prefers h and fr-CA H (added 2026-11-09, by the same decision). It read: "var preferred =
+        // dates.PreferredHourChar(region);", the region's alone.
+        var time = dates.HourCycles(language, region);
+        var preferred = DateData.PreferredHourChar(time);
         var defaultCycle = HourCycleOfChar(preferred);
 
-        // [[hourCycle12]] AND [[hourCycle24]] are the region's preferred cycle where it is of the kind asked for, and otherwise
-        // the first of that kind CLDR's time data allows for the region (row T10): Japan allows "H K h", so ja's is h11, as
-        // test262's hourCycle-default.js asks. Broiler.VM read "h12" and "h23" there, the same answers for its de and en.
+        // [[hourCycle12]] AND [[hourCycle24]] are the locale's preferred cycle (its language and region's time data, then its
+        // region's, then the world's) where it is of the kind asked for, and otherwise the first of that kind that time data
+        // allows (row T10): Japan allows "H K h", so ja's is h11, as test262's hourCycle-default.js asks. Broiler.VM read "h12"
+        // and "h23" there, the same answers for its de and en. (Revised 2026-11-09, at review of the owner's decision of that
+        // day, "Keep + fix library first": it read "are the region's preferred cycle where it is of the kind asked for, and
+        // otherwise the first of that kind CLDR's time data allows for the region (row T10)".)
         var hc = options.Hour12 switch
         {
-            true => defaultCycle is "h11" or "h12" ? defaultCycle : HourCycleOfChar(dates.AllowedHourChar(region, twelveHour: true)),
-            false => defaultCycle is "h23" or "h24" ? defaultCycle : HourCycleOfChar(dates.AllowedHourChar(region, twelveHour: false)),
+            true => defaultCycle is "h11" or "h12" ? defaultCycle : HourCycleOfChar(DateData.AllowedHourChar(time, twelveHour: true)),
+            false => defaultCycle is "h23" or "h24" ? defaultCycle : HourCycleOfChar(DateData.AllowedHourChar(time, twelveHour: false)),
             null => Key("hc") ?? defaultCycle,
         };
 
@@ -212,7 +338,14 @@ public sealed class DateTimeFormat
         var dateStyle = options.DateStyle;
         var timeStyle = options.TimeStyle;
         var hcChar = CharOfHourCycle(hc);
-        var decimalSymbol = locale.NumberValue(dataLocale, "symbols.decimal") ?? ".";
+        var numberingSystem = Key("nu") ?? "latn";
+
+        // THE DECIMAL SEPARATOR of a fractional second is the numbering system's own (decision D21), read as the number formatter
+        // reads a system's symbol: the number table's symbols@<system>.decimal at the data locale, then at root, then the data
+        // locale's latn one, so en-u-nu-arab writes U+066B. Broiler.VM's tables carry no symbols@ key, so its formats write the latn
+        // symbol as before. (Added 2026-11-09, by the owner's decision of that day, "Keep + fix library first"; it read
+        // "var decimalSymbol = locale.NumberValue(dataLocale, "symbols.decimal") ?? ".";", the latn symbol alone.)
+        var decimalSymbol = DecimalSymbol(locale, dataLocale, numberingSystem);
         var resolvedCalendar = Key("ca") ?? "gregory";
 
         // THE DEPRECATED HIJRI CALENDARS FALL BACK to the astronomical tabular one (the Intl era and month code proposal's
@@ -284,7 +417,6 @@ public sealed class DateTimeFormat
                 generator.BestPattern(SkeletonOfComponents(components, hcChar), DateTimePatternGenerator.MatchHourLength), hcChar);
         }
 
-        var numberingSystem = Key("nu") ?? "latn";
         var digitsOfSystem = Digits(locale, numberingSystem);
         var patternCycle = HourCycleOf(pattern);
         var intervalChar = patternCycle is null ? preferred : hcChar;

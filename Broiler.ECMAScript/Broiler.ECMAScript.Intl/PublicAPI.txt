@@ -18,6 +18,7 @@ Broiler.ECMAScript.Intl.CompactDisplay.value__ field System.Int32
 Broiler.ECMAScript.Intl.CompositeLocaleData sealed class : Broiler.ECMAScript.Intl.ILocaleData
 Broiler.ECMAScript.Intl.CompositeLocaleData..ctor(Broiler.ECMAScript.Intl.ILocaleData, Broiler.ECMAScript.Intl.ILocaleData) method System.Void
 Broiler.ECMAScript.Intl.CompositeLocaleData.Alias(Broiler.ECMAScript.Intl.LocaleAliasKind, System.String) method System.String
+Broiler.ECMAScript.Intl.CompositeLocaleData.CalendarPreferences(System.String) method System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Intl.CompositeLocaleData.Chain(System.String) method static System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Intl.CompositeLocaleData.Currency(System.String, System.String) method System.Nullable`1<Broiler.ECMAScript.Intl.CurrencyNames>
 Broiler.ECMAScript.Intl.CompositeLocaleData.CurrencyDigits(System.String) method System.Nullable`1<System.Int32>
@@ -131,6 +132,7 @@ Broiler.ECMAScript.Intl.DateTimeDefaults.Date = 0
 Broiler.ECMAScript.Intl.DateTimeDefaults.Time = 1
 Broiler.ECMAScript.Intl.DateTimeDefaults.value__ field System.Int32
 Broiler.ECMAScript.Intl.DateTimeFormat sealed class
+Broiler.ECMAScript.Intl.DateTimeFormat.CalendarKeyValuesOf(Broiler.ECMAScript.Intl.ILocaleData, System.String) method static System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Intl.DateTimeFormat.Create(Broiler.ECMAScript.Intl.DateTimeData, Broiler.ECMAScript.Intl.ResolvedLocale, Broiler.ECMAScript.Intl.DateTimeFormatOptions, Broiler.ECMAScript.Intl.DateTimeFormat&) method static Broiler.ECMAScript.Intl.IntlStatus
 Broiler.ECMAScript.Intl.DateTimeFormat.HandleDateTimeRange(Broiler.ECMAScript.Intl.DateTimeValue, Broiler.ECMAScript.Intl.DateTimeValue, Broiler.ECMAScript.Intl.DateTimeFormatter&, System.Double&, System.Double&) method Broiler.ECMAScript.Intl.IntlStatus
 Broiler.ECMAScript.Intl.DateTimeFormat.HandleDateTimeValue(Broiler.ECMAScript.Intl.DateTimeValue, Broiler.ECMAScript.Intl.DateTimeFormatter&, System.Double&) method Broiler.ECMAScript.Intl.IntlStatus
@@ -485,6 +487,7 @@ Broiler.ECMAScript.Intl.IIntlDataSet.Table(Broiler.ECMAScript.Intl.IntlTable) me
 Broiler.ECMAScript.Intl.IIntlDataSet.get_CldrVersion() method abstract System.String
 Broiler.ECMAScript.Intl.ILocaleData interface
 Broiler.ECMAScript.Intl.ILocaleData.Alias(Broiler.ECMAScript.Intl.LocaleAliasKind, System.String) method abstract System.String
+Broiler.ECMAScript.Intl.ILocaleData.CalendarPreferences(System.String) method virtual System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Intl.ILocaleData.Currency(System.String, System.String) method abstract System.Nullable`1<Broiler.ECMAScript.Intl.CurrencyNames>
 Broiler.ECMAScript.Intl.ILocaleData.CurrencyDigits(System.String) method abstract System.Nullable`1<System.Int32>
 Broiler.ECMAScript.Intl.ILocaleData.DateValue(System.String, System.String, System.String) method abstract System.String
@@ -576,6 +579,7 @@ Broiler.ECMAScript.Intl.IntlStatus.ZonedDateTimeNotFormatted = 25
 Broiler.ECMAScript.Intl.IntlStatus.value__ field System.Int32
 Broiler.ECMAScript.Intl.IntlTable enum
 Broiler.ECMAScript.Intl.IntlTable.Aliases = 2
+Broiler.ECMAScript.Intl.IntlTable.CalendarPreferences = 33
 Broiler.ECMAScript.Intl.IntlTable.Calendars = 29
 Broiler.ECMAScript.Intl.IntlTable.CollationRoot = 5
 Broiler.ECMAScript.Intl.IntlTable.CollationSettings = 32
@@ -1101,6 +1105,7 @@ Broiler.ECMAScript.Intl.SupportedValues.get_SanctionedUnits() method static Syst
 Broiler.ECMAScript.Intl.TableLocaleData sealed class : Broiler.ECMAScript.Intl.ILocaleData
 Broiler.ECMAScript.Intl.TableLocaleData..ctor(Broiler.ECMAScript.Intl.IIntlDataSet) method System.Void
 Broiler.ECMAScript.Intl.TableLocaleData.Alias(Broiler.ECMAScript.Intl.LocaleAliasKind, System.String) method System.String
+Broiler.ECMAScript.Intl.TableLocaleData.CalendarPreferences(System.String) method System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Intl.TableLocaleData.Currency(System.String, System.String) method System.Nullable`1<Broiler.ECMAScript.Intl.CurrencyNames>
 Broiler.ECMAScript.Intl.TableLocaleData.CurrencyDigits(System.String) method System.Nullable`1<System.Int32>
 Broiler.ECMAScript.Intl.TableLocaleData.DateValue(System.String, System.String, System.String) method System.String

@@ -39,7 +39,14 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// SJL-9.3f). A difference that removes is the data policy of rows T10, T15, T16, T22 and T37,
 /// Broiler.JS's embedding read at the data locale with its own numbering-system defaults; Broiler.VM's tables hold their locales'
 /// languages alone and no default numbering system but <c>latn</c>, so in its embedding that reading is the library's own and
-/// only row Z8 can classify a difference.
+/// only row Z8 can classify a difference. <i>(Extended 2026-11-09, by the owner's decision of that day, "Keep + fix library
+/// first": Broiler.VM's reading also takes the region from the likely subtags of the data locale's language alone, a region's
+/// time data and never a locale's, the <c>latn</c> decimal symbol (decision D21) and the Gregorian calendar as every locale's
+/// default, where the library now reads the whole locale's likely region, CLDR's time data for the language and region first, the
+/// numbering system's own decimal symbol and the region's calendar preference. Over Broiler.VM's embedding these readings are the
+/// same as the library's for its list - its tables carry no <c>symbols@</c> key and no calendar preference table, and none of its
+/// data locales has a script or an entry of its own in the time data - so a difference they removed there would be a move of
+/// Broiler.VM's answers; the test holds that none is found.)</i>
 /// </para>
 /// </remarks>
 internal static class DateTimeSection
@@ -483,7 +490,10 @@ internal static class DateTimeSection
             var match = LocaleNegotiation.MatchLocale(arms.Available, requested, "en-US");
             var resolved = LocaleNegotiation.ResolveLocale(match,
             [
-                new RelevantKey("ca", DateTimeFormat.CalendarKeyValues) { Option = calendar },
+                // THE ca VALUES, as an engine hands them: the locale's default calendar first, from the data's calendar preferences
+                // (added 2026-11-09, by the owner's decision of that day, "Keep + fix library first"; it read
+                // `new RelevantKey("ca", DateTimeFormat.CalendarKeyValues)`, which Broiler.VM's reading still takes).
+                new RelevantKey("ca", vmReading ? DateTimeFormat.CalendarKeyValues : DateTimeFormat.CalendarKeyValuesOf(data, match.Locale)) { Option = calendar },
                 new RelevantKey("hc", DateTimeFormat.HourCycleKeyValues) { Option = hour12 is null ? hourCycle : null, OptionIsNull = hour12 is not null },
                 new RelevantKey("nu", vmReading ? arms.VmNumberingSystems : DateTimeFormat.NumberingSystemKeyValues(data, match.Locale)) { Option = numberingSystem },
             ], data);
@@ -635,7 +645,12 @@ internal static class DateTimeSection
 
         public bool HoldsLocale(IntlTable table, string locale) => inner.HoldsLocale(table, locale);
 
-        public string? LikelySubtags(string source) => inner.LikelySubtags(source);
+        // Broiler.VM takes a data locale's region, where it names none, from the likely subtags of its language alone; the library
+        // from those of the whole locale (zh-Hant's TW, where zh gives CN; added 2026-11-09, by the owner's decision of that day,
+        // "Keep + fix library first"). So a source with a script or a region has no likely subtags here, and the library's
+        // Add Likely Subtags falls back to the language's, which gives Broiler.VM's region. It read
+        // `inner.LikelySubtags(source)`.
+        public string? LikelySubtags(string source) => source.Contains('-', StringComparison.Ordinal) ? null : inner.LikelySubtags(source);
 
         public string? Alias(LocaleAliasKind kind, string from) => inner.Alias(kind, from);
 
@@ -646,13 +661,20 @@ internal static class DateTimeSection
         // Broiler.VM reads a region's preferred hour format alone (its JsDateData.PreferredHourChar), and its hour12 takes h12 or
         // h23 where the preferred is of the other kind; the library takes the first of that kind the region allows (row T10,
         // settled at stage SJL-9.3f). So the allowed formats are read here as the preferred alone, which gives Broiler.VM's.
-        public RegionHourCycles? HourCycles(string region) => inner.HourCycles(region) is { } cycles ? cycles with { Allowed = cycles.Preferred } : null;
+        // Broiler.VM reads a region's time data, never a locale's: since 2026-11-09 the library asks for the language and region's
+        // entry first (fr-CA, ar-001), which this reading answers as none.
+        public RegionHourCycles? HourCycles(string region) =>
+            !region.Contains('-', StringComparison.Ordinal) && inner.HourCycles(region) is { } cycles ? cycles with { Allowed = cycles.Preferred } : null;
 
         public RegionWeek? Week(string region) => inner.Week(region);
 
         public bool? IsRightToLeft(string script) => inner.IsRightToLeft(script);
 
-        public string? NumberValue(string locale, string key) => inner.NumberValue(Language(locale), key);
+        // Broiler.VM's date-time format writes the latn decimal symbol for every numbering system; since 2026-11-09 the library
+        // writes the system's own, symbols@<system>.decimal (decision D21), which this reading answers as none. It read
+        // `inner.NumberValue(Language(locale), key)` for every key.
+        public string? NumberValue(string locale, string key) =>
+            key.StartsWith("symbols@", StringComparison.Ordinal) ? null : inner.NumberValue(Language(locale), key);
 
         public CurrencyNames? Currency(string locale, string code) => inner.Currency(Language(locale), code);
 

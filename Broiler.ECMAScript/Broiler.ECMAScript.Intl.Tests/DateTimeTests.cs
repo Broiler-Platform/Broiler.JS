@@ -32,7 +32,7 @@ public sealed class DateTimeTests
         var match = LocaleNegotiation.MatchLocale(["de", "de-DE", "en", "en-US", "fr", "ja"], requested, "en-US");
         return LocaleNegotiation.ResolveLocale(match,
         [
-            new RelevantKey("ca", DateTimeFormat.CalendarKeyValues) { Option = calendar },
+            new RelevantKey("ca", DateTimeFormat.CalendarKeyValuesOf(Data, match.Locale)) { Option = calendar },
             new RelevantKey("hc", DateTimeFormat.HourCycleKeyValues) { Option = hour12 is null ? hourCycle : null, OptionIsNull = hour12 is not null },
             new RelevantKey("nu", DateTimeFormat.NumberingSystemKeyValues(Data, match.Locale)) { Option = numberingSystem },
         ], Data);
@@ -161,11 +161,14 @@ public sealed class DateTimeTests
         Assert.Equal("午後0:05", Write(ja, Utc(2024, 1, 5, 12, 5)));
         Assert.Equal("午後11:05", Write(ja, Utc(2024, 1, 5, 23, 5)));
 
-        // A region without time data reads the world's, H h: h12 and h23, as before.
-        Assert.Equal('h', Dates.Dates.AllowedHourChar("ZZ", twelveHour: true));
-        Assert.Equal('H', Dates.Dates.AllowedHourChar("ZZ", twelveHour: false));
-        Assert.Equal('K', Dates.Dates.AllowedHourChar("JP", twelveHour: true));
-        Assert.Equal('H', Dates.Dates.AllowedHourChar("US", twelveHour: false));
+        // A region without time data reads the world's, H h: h12 and h23, as before; no time data at all, h and H. (Revised
+        // 2026-11-09, when the region-only AllowedHourChar(string, bool) was removed: these read it with "ZZ", "JP" and "US".)
+        Assert.Equal('h', DateData.AllowedHourChar(Dates.Dates.HourCycles("und", "ZZ"), twelveHour: true));
+        Assert.Equal('H', DateData.AllowedHourChar(Dates.Dates.HourCycles("und", "ZZ"), twelveHour: false));
+        Assert.Equal('K', DateData.AllowedHourChar(Dates.Dates.HourCycles("ja", "JP"), twelveHour: true));
+        Assert.Equal('H', DateData.AllowedHourChar(Dates.Dates.HourCycles("en", "US"), twelveHour: false));
+        Assert.Equal('h', DateData.AllowedHourChar(null, twelveHour: true));
+        Assert.Equal('H', DateData.AllowedHourChar(null, twelveHour: false));
     }
 
     [Fact]
