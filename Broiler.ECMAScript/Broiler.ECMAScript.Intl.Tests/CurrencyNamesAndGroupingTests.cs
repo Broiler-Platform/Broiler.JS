@@ -96,6 +96,31 @@ public sealed class CurrencyNamesAndGroupingTests
     }
 
     [Fact]
+    public void N4_A_value_that_is_not_finite_keeps_the_name_it_had_one_s_where_0_is_one_else_other_s()
+    {
+        // pl's and ru's 0 is many, and ro's few, yet ICU names infinity and not-a-number with other's form, as the library did
+        // before every form was carried; 0 itself, finite, is still named by its own category.
+        Assert.Equal("\u221E dolara ameryka\u0144skiego", Name("pl", double.PositiveInfinity));
+        Assert.Equal("-\u221E dolara ameryka\u0144skiego", Name("pl", double.NegativeInfinity));
+        Assert.Equal("NaN dolara ameryka\u0144skiego", Name("pl", double.NaN));
+        Assert.Equal("0 dolar\u00F3w ameryka\u0144skich", Name("pl", 0, 0));
+        Assert.Equal("\u221E \u0434\u043E\u043B\u043B\u0430\u0440\u0430 \u0421\u0428\u0410", Name("ru", double.PositiveInfinity));
+        Assert.Equal("-\u221E \u0434\u043E\u043B\u043B\u0430\u0440\u0430 \u0421\u0428\u0410", Name("ru", double.NegativeInfinity));
+        Assert.EndsWith(" \u0434\u043E\u043B\u043B\u0430\u0440\u0430 \u0421\u0428\u0410", Name("ru", double.NaN), StringComparison.Ordinal);
+        Assert.Equal("0 \u0434\u043E\u043B\u043B\u0430\u0440\u043E\u0432 \u0421\u0428\u0410", Name("ru", 0, 0));
+
+        // Where 0 is one, the name stays one's form, the answer the library and Broiler.VM gave before; ICU writes other's, an
+        // earlier difference this change does not move.
+        Assert.Equal("\u221E dollar des \u00C9tats-Unis", Name("fr", double.PositiveInfinity));
+
+        // A range with an end that is not finite: pl's one to many is many, and the name keeps other's form.
+        Assert.Equal(IntlStatus.Completed, Currency(Data, "pl", "USD", CurrencyDisplay.Name).FormatRange(IntlDecimal.FromNumber(1), IntlDecimal.FromNumber(double.PositiveInfinity), out var range));
+        Assert.EndsWith("\u221E dolara ameryka\u0144skiego", range, StringComparison.Ordinal);
+        Assert.Equal(IntlStatus.Completed, Currency(Data, "ru", "USD", CurrencyDisplay.Name).FormatRange(IntlDecimal.FromNumber(5), IntlDecimal.FromNumber(double.PositiveInfinity), out var russian));
+        Assert.EndsWith("\u221E \u0434\u043E\u043B\u043B\u0430\u0440\u0430 \u0421\u0428\u0410", russian, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void N4_The_name_falls_back_to_other_then_the_display_name_then_the_code()
     {
         var names = new CurrencyNames("$", "$", "dolar", "dolarů", "americký dolar", "SS", "SS") { Few = "dolary" };
@@ -131,6 +156,14 @@ public sealed class CurrencyNamesAndGroupingTests
 
         var home = Data.Currency("sl", "USD")!.Value;
         Assert.Equal(("", "ameriška dolarja", "ameriški dolarji", ""), (home.Zero, home.Two, home.Few, home.Many));
+
+        // A line of ten to twelve fields is in neither format and is refused, as a short line is.
+        foreach (var extra in new[] { "|", "||", "|||" })
+        {
+            var cut = TableLocaleDataTests.SmallTables();
+            cut[IntlTable.Currencies] = "en|USD|$|$|US dollar|US dollars|US Dollar|SS|SS" + extra;
+            Assert.Throws<System.IO.InvalidDataException>(() => new TableLocaleData(new TextDataSet(cut)).Currency("en", "USD"));
+        }
     }
 
     // ---- N3c: the currency style's grouping separator -----------------------------------------------------------------------

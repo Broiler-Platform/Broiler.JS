@@ -437,7 +437,7 @@ public sealed class TableLocaleData : ILocaleData
         return table;
     }
 
-    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=3; Fingerprint=39CCC2
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=3; Fingerprint=934D5C
     // Hairs-Falsified-If: a number, currency, unit, plural, plural-range or numbering-system answer differs from what Broiler.VM's JsIntlTables.ReadNumbers decodes from the same tables
     // Hairs-Human:        PENDING
     private NumberTables ReadNumbers()
@@ -465,7 +465,13 @@ public sealed class TableLocaleData : ILocaleData
             var fields = IntlTableText.Fields(line, 9, IntlTable.Currencies);
 
             // A LINE OF THIRTEEN FIELDS (Broiler.JS's tables, from 2026-11-09; row N4) carries the name's zero, two, few and
-            // many forms after Broiler.VM's nine; a line of nine has none of them.
+            // many forms after Broiler.VM's nine; a line of nine has none of them. A line of ten to twelve is in neither format
+            // and is refused, as a short line is (added 2026-11-09, at review: such a line was read as one of nine).
+            if (fields.Length is > 9 and < 13)
+            {
+                throw new InvalidDataException("a line of the " + nameof(IntlTable.Currencies) + " table has neither nine fields nor the four appended forms: " + line);
+            }
+
             var counted = fields.Length >= 13;
             tables.Currencies[fields[0] + "|" + fields[1]] = new CurrencyNames(
                 IntlTableText.Unescape(fields[2]), IntlTableText.Unescape(fields[3]), IntlTableText.Unescape(fields[4]),

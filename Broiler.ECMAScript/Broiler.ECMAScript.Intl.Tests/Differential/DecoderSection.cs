@@ -23,7 +23,7 @@ internal static class DecoderSection
         var suffix = " (" + embedding.Name + ")";
 
         yield return Identifiers(embedding, vm, library, random, scale, "D0.1 likely subtags, aliases, extensions and locales" + suffix);
-        yield return Numbers(vm, library, random, scale, "D0.2 numbers, currencies, units, plural rules and ranges" + suffix);
+        yield return Numbers(embedding, vm, library, random, scale, "D0.2 numbers, currencies, units, plural rules and ranges" + suffix);
         yield return Dates(vm, library, random, scale, "D0.3 date data in every calendar, hour cycles and day periods" + suffix);
         yield return LocaleInfo(vm, library, random, scale, "D0.4 weeks, scripts, lists, relative times and display names" + suffix);
     }
@@ -74,7 +74,7 @@ internal static class DecoderSection
         return section;
     }
 
-    private static Section Numbers(JsIntlTables vm, TableLocaleData library, SeededRandom random, int scale, string name)
+    private static Section Numbers(Embedding embedding, JsIntlTables vm, TableLocaleData library, SeededRandom random, int scale, string name)
     {
         var section = new Section(name);
         var numbers = vm.Numbers;
@@ -95,10 +95,17 @@ internal static class DecoderSection
             section.Compare("number " + miss + " symbols.decimal", numbers.Value(miss, "symbols.decimal"), library.NumberValue(miss, "symbols.decimal"));
         }
 
+        // A CURRENCY'S ZERO, TWO, FEW AND MANY NAMES, which Broiler.VM's decoder does not read, are compared with the fields its
+        // line appends after the nine, none in Broiler.VM's tables and so empty there (added 2026-11-09, at review of the owner's
+        // decision of 2026-11-08, "Keep + fix library first", row N4: each side rendered the seven fields Broiler.VM reads alone).
+        var appended = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var fields in embedding.Lines(IntlTable.Currencies).Select(static l => l.Split('|')))
+            appended[fields[0] + "|" + fields[1]] = fields.Length >= 13 ? string.Join("|", fields[9..13].Select(JsIntlTables.Unescape)) : "|||";
+
         foreach (var (key, names) in numbers.Currencies)
         {
             var bar = key.IndexOf('|');
-            section.Compare("currency " + key, Render(names), library.Currency(key[..bar], key[(bar + 1)..]) is { } c ? Render(c) : null);
+            section.Compare("currency " + key, Render(names) + "|" + appended[key], library.Currency(key[..bar], key[(bar + 1)..]) is { } c ? Render(c) : null);
         }
 
         section.Compare("currency codes",
@@ -332,7 +339,7 @@ internal static class DecoderSection
         string.Join("|", names.Symbol, names.Narrow, names.One, names.Other, names.Name, names.SymbolEnds, names.NarrowEnds);
 
     private static string Render(CurrencyNames names) =>
-        string.Join("|", names.Symbol, names.Narrow, names.One, names.Other, names.Name, names.SymbolEnds, names.NarrowEnds);
+        string.Join("|", names.Symbol, names.Narrow, names.One, names.Other, names.Name, names.SymbolEnds, names.NarrowEnds, names.Zero, names.Two, names.Few, names.Many);
 
     private static string Render(JsPluralOperands operands) =>
         operands.Integer.ToString(CultureInfo.InvariantCulture) + (operands.IntegerHuge ? "+" : string.Empty) + "." + operands.Fraction + "e" + operands.CompactExponent.ToString(CultureInfo.InvariantCulture);

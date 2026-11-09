@@ -16,9 +16,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Files scanned | 168 |
 | Files not covered | 0 |
 | Files carrying an annotation | 168 |
-| Code units | 4638 |
+| Code units | 4639 |
 | Relevant | 2979 |
-| Exempt by predicate | 1659 |
+| Exempt by predicate | 1660 |
 | Annotated | 2979 of 2979 (100%) |
 | Human reviewed | 0 of 2979 (0%) |
 | Unverified | 2979 |
@@ -33,7 +33,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1659 |
+| EXEMPT | 1660 |
 
 ## IP risk
 
@@ -329,7 +329,7 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 491 |
+| TrivialPropertyOrAccessor | 492 |
 | ParameterAssigningConstructor | 30 |
 | TrivialExpressionBodiedMember | 35 |
 | CompilerSuppliedRecordOrEnumMember | 124 |
@@ -360,7 +360,7 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `hairs.manifest.json` lists **every** code unit in the 5 covered assemblies -
-4638 of them, exempt and relevant alike - with the fingerprint of its declaration.
+4639 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as

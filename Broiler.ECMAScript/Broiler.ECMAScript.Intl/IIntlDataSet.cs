@@ -115,9 +115,11 @@ public enum IntlTable
     /// Each language's currencies: <c>language</c>, <c>code</c>, <c>symbol</c>, <c>narrow</c>, <c>one</c>,
     /// <c>other</c>, <c>name</c>, and for the symbol and the narrow symbol whether its first and last characters are
     /// symbols or separators (<c>S</c>) or not (<c>L</c>). In an embedding that carries them, four more fields follow: the
-    /// <c>zero</c>, <c>two</c>, <c>few</c> and <c>many</c> names, each empty where CLDR gives none. <i>(Added 2026-11-09, by
-    /// the owner's decision of 2026-11-08, "Keep + fix library first", for row N4: fields appended after the nine keep the
-    /// format, since a reader takes a line's first fields; Broiler.VM's tables carry the nine alone.)</i>
+    /// <c>zero</c>, <c>two</c>, <c>few</c> and <c>many</c> names, each empty where CLDR gives none. <i>(Added 2026-11-09, with
+    /// the change the owner's decision of 2026-11-08, "Keep + fix library first", calls for on row N4; Broiler.VM's tables carry
+    /// the nine alone. That fields appended after the nine keep the format, since a reader takes a line's first fields, is a
+    /// reading for the owner to confirm, not that decision's: the design's section 3.)</i> A line with more than nine fields but
+    /// fewer than thirteen is refused. <i>(Added 2026-11-09, at review.)</i>
     /// </summary>
     Currencies = 9,
 
