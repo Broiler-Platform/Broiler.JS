@@ -9,7 +9,7 @@ home, `Broiler.ECMAScript/data/intl/`, and generator, in `Broiler.ECMAScript.Gen
 or the home's data exists. **Revised:** 2026-10-27, at stage SJL-9.3a, by dated notes on "Why there is no project yet",
 the library's project now existing, and on sections 1 and 5, the composite's parent walk and its secondary provider, and
 week data keyed by region; and on 2026-11-01, at stage SJL-9.3b, by a dated note on section 1's sub-area (b), and the same
-day, at stage SJL-9.3c, by a dated note on its sub-area (c), and on 2026-11-02, at stage SJL-9.3d, by a dated note on its sub-area (d), and the same day, at stage SJL-9.3e, by a dated note on its sub-area (e), and the same day, at stage SJL-9.3f, by a dated note on the integration and on section 5's first item, and the same day, at milestone SJL-17.3, by a dated note on collation and on sections 3 and 8, and on 2026-11-09, by the owner's decision of 2026-11-08 on currency names and currency grouping, by dated notes on sections 1, 3 and 4 ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
+day, at stage SJL-9.3c, by a dated note on its sub-area (c), and on 2026-11-02, at stage SJL-9.3d, by a dated note on its sub-area (d), and the same day, at stage SJL-9.3e, by a dated note on its sub-area (e), and the same day, at stage SJL-9.3f, by a dated note on the integration and on section 5's first item, and the same day, at milestone SJL-17.3, by a dated note on collation and on sections 3 and 8, and on 2026-11-09, by the owner's decision of 2026-11-08 on currency names and currency grouping, by dated notes on sections 1, 3 and 4, and the same day, by the owner's decision of 2026-11-09 on the date-time format's locale data, by dated notes on sections 1, 3 and 4 ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
 both roles (Broiler.VM's exception EX-30), and nothing here has been read by anyone but its author.
 
 **What this document is.** The Intl library's design document in its home, one of the three places SJL-9.1 files the
@@ -192,6 +192,65 @@ on plural categories, is unchanged.)*
   read, else `group`, in the currency style whatever its display. CLDR 48.2.0 states it for `de-AT` alone of either list, so
   `de-AT` writes `-€ 1.234,50` for a currency and `1 234,5` for a decimal (vector `families/0101`); `currencyDecimal`, which
   ICU reads the same way, is stated by no locale of either list and is not read.
+
+*(Noted 2026-11-09: **the owner's decision of 2026-11-09, "Keep + fix library first"**, on the date-time format, sub-area (d),
+which SJL-9.5's stage 3 cut over to this library and found departing from the pinned CLDR 48.2.0 data in five places: engine
+corpus vector `intl/date-times/families/0028` (`ar-001`) failed, and eleven others drifted. SJL-9.5's branch is held as it is,
+this library and the data home change in a merge of their own, and after it SJL-9.5 removes its engine-side adapter of the
+decimal symbol and resumes, as with the currency change of 2026-11-08. The alternative not taken was "Revert 8.5, fix later".
+The owner ruled the same day "Add file, same tarball", which archives CLDR's `calendarPreferenceData.json` from the cldr-core
+tarball the pin already names (the alternative not taken: "Leave calendars out"), and "Fix both consumers", which brings
+Intl.Locale's hour cycles into the first item (the alternative not taken: "DateTimeFormat only"). Each reading is through the
+question layer, and over Broiler.VM's tables each answers as before for its list, since they carry neither the calendar
+preference table nor a numbering system's own symbols, and none of its data locales has a script or a time data entry of its
+own.)*
+- **The hour cycle is the locale's own time data, then its region's** (row T10; UTS #35 Part 4, Time Data, whose keys are a
+  region or a language and region; ECMA-402's [[LocaleData]].[[&lt;locale&gt;]].[[hourCycle]], [[hourCycle12]] and
+  [[hourCycle24]]). The date-time format asks `HourCycles` for the data locale's language and region (`ar-001`, `fr-CA`) before the
+  region alone, then the world's: `ar-001` prefers `h` and writes `3 بعد الظهر` (vector `0028`), `fr-CA` `H` and `15 h 07` (`0173`,
+  `0175`). The table always held these entries under those keys; the formats read the region's alone. Intl.Locale's
+  HourCyclesOfLocale reads them the same way (`sec-hourcyclesoflocale`, with RegionPreference's regions, the `rg` override
+  first): it looked them up as `language_region`, which names none, so its answers move for every tag that reaches an entry -
+  `fr-CA` `["h23", "h12"]`, `ar-001` and `en-001` `["h12", "h23"]`, `ku-SY` `["h23", "h12"]` - in both engines (row L19,
+  whose Broiler.VM column describes this reading).
+- **The region is the likely region of the whole data locale** (UTS #35 Part 1, Likely Subtags, Add Likely Subtags): the data
+  locale's own region, else the one Add Likely Subtags gives the locale with its script, else `001`. `zh-Hant` is `zh-Hant-TW`,
+  where `zh` alone gave CN, so it prefers `h` and writes `下午3時` (`0490`); `en-Shaw` is `en-Shaw-GB`, where `en` gave US. The
+  region also chooses the zone names' golden zones, as before.
+- **The default calendar is the region's first calendar preference** (ECMA-402 `sec-intl.datetimeformat-internal-slots`: the first
+  element of [[LocaleData]].[[&lt;locale&gt;]].[[ca]] is the default; UTS #35 Part 4, Calendar Preference Data). The new question
+  `ILocaleData.CalendarPreferences(region)`, a world question, reads the new table `IntlTable.CalendarPreferences` (33), and the
+  new `DateTimeFormat.CalendarKeyValuesOf(data, locale)` answers the `ca` values for a matched locale, as
+  `NumberingSystemKeyValues` answers `nu`'s: the first preferred calendar of the locale's likely region that
+  `CalendarKeyValues` holds, then the others; the static `CalendarKeyValues` itself where that is `gregory` or the data states
+  no preference. `fa` (IR) defaults to `persian` and `th` (TH) to `buddhist` (`0142`, `0146`, `0148`, `0152`, `0421`, `0425`,
+  `0427`, `0431`). An engine hands it to ResolveLocale in place of `CalendarKeyValues`, so the `-u-ca-` keyword and the
+  `calendar` option still choose over it. Intl.Locale's CalendarsOfLocale is unchanged: rows L16 and part C of the SJL-9 rule
+  hold `getCalendars` at `["gregory"]` in both engines. So over Broiler.JS's tables the two consumers disagree where the region
+  prefers another calendar: `Intl.DateTimeFormat("th")` resolves `buddhist` and `fa` `persian`, while `getCalendars()` answers
+  `["gregory"]` for both, where the pinned reference answers `["buddhist", "gregory"]` and `["persian", "gregory", ...]`; and
+  row L16's stated cause, that neither engine's data carries the preference table, no longer holds for Broiler.JS. The new
+  default reaches Temporal values too: in `fa` and `th`, with no keyword or option, a `gregory`-calendar `PlainDate`,
+  `PlainDateTime`, `PlainYearMonth`, `PlainMonthDay` or `ZonedDateTime` is refused with a RangeError (ECMA-402's calendar
+  check), where it formatted, and an ISO value is written in the locale's default calendar. The default calendar has no
+  correspondence row of its own; it is read under row T16's "the locale data of each" as data policy C5.
+- **A fractional second takes the numbering system's own decimal symbol** (decision D21; ECMA-402 FormatDateTimePattern's
+  `fractionalSecondDigits`, whose separator is locale data): the number table's `symbols@<system>.decimal` at the data locale,
+  then at root, then the locale's `latn` one, as the number formatter reads a symbol. `en-u-nu-arab` writes U+066B
+  (`intl/date-times/numbering/0001`, `0003`, `0017`). The system is the resolved one, a locale's default where no keyword
+  names one, so `fa` and `fa-IR` (`arabext`) and `ar-EG` (`arab`) write U+066B too, `۶٫۷۸` and `٦٫٧٨` for two fractional
+  digits, where they wrote `.`, as the pinned reference does (row T37, which names `ar-EG`'s default). This replaces SJL-9.5's
+  engine-side adapter, `NumberingSystemDecimalData`.
+  The date-time format writes no other number symbol: a pattern's `:` is its literal, which the reference writes for
+  `arabext` too, whose root time separator is U+066B; a date has no grouping or sign.
+- **Interval fields take the widths ICU's interval patterns give.** The brief of the decision read that the library gives
+  `1/2/2020 – 1/5/2020` "where ICU gives `01/02/2020 – 01/05/2020`". The pinned reference (Node v26.12.0, ICU 78.3, CLDR 48.0,
+  bundle `sjl-9-001`'s `reference.txt`) and ICU 77.1, whose answers the datasets retain, both answer `1/2/2020 – 1/5/2020` for
+  `{year: "numeric", month: "2-digit", day: "2-digit"}`: ICU's DateIntervalFormat normalizes the skeleton's numeric month and
+  day to one letter before it finds the interval skeleton, and widens a field (`adjustFieldWidth`) only where the nearest
+  interval skeleton differs from the normalized one, as a two-digit year does. The library already answers so, and nothing in
+  it changes; the tests hold it to the reference's answers, and the datasets' line `16 en {"year":"2-digit",...}` retains
+  `3/5/24 – 3/6/24` from ICU 77.1.
 
 *(Noted 2026-11-02, at SJL-9.3d: sub-area (d) as built, and the readings its code makes that the item above does not
 state, so that sub-area (e), SJL-9.3f's packing and the cut-overs inherit them knowingly. Its public names are
@@ -454,7 +513,11 @@ owner ruled the same day, "Additive: extend D8": fields appended to a text table
 tables write, keep the format, as an appended `IntlTable` value does under decision D8, whose exception this extends; the
 change is a minor version. The alternative not taken was "Format change: major". The note above read "this is a reading for
 the owner to confirm, not a ruling" and "Until the owner rules, the change is either a minor version under that extended
-exception or a **major version** under this paragraph's rule"; the ruling settles it.)*
+exception or a **major version** under this paragraph's rule"; the ruling settles it.)* *(Added 2026-11-09, by the owner's
+decision of that day on the date-time format's locale data: `CalendarPreferences`, 33, is the second appended value, each
+region's calendars in order of preference, which Broiler.JS's tables carry and Broiler.VM's never do; an engine without it
+answers an empty span, and its formats default to the Gregorian calendar. No field is appended to any line, so the owner's
+reading "Additive: extend D8" is not needed for it.)*
 
 **The data versions are public** (exit clause 2, convention 13): `IIntlDataSet.CldrVersion`, and the generator's
 `IntlDataVersions`, the CLDR, UCA and Unicode versions it writes from. The data's notices travel with the tables
@@ -485,6 +548,10 @@ version to the Unicode pin. The fallback is Broiler.Unicode's own Generation rea
 - **which plural forms of a currency's name** the currency table carries, `one` and `other` alone, Broiler.VM's, or every
   form CLDR gives, Broiler.JS's (`IntlGeneratorOptions.CurrencyNamePlurals`). *(Added 2026-11-09, by the owner's decision of
   2026-11-08 on row N4; the list ended "**the calendars** and **the tailorings**.")*
+- **whether the tables carry the calendar preferences**, none, Broiler.VM's, or every region's, Broiler.JS's
+  (`IntlGeneratorOptions.CalendarPreferences`), from `calendarPreferenceData.json`, which the pin names after Broiler.VM's lines
+  (the owner's ruling of 2026-11-09, "Add file, same tarball"). *(Added 2026-11-09, by the owner's decision of that day; the list
+  ended with the item on a currency's name.)*
 
 Today's hard-coded list (Broiler.VM's `CldrTableGenerator.cs:33`) becomes a parameter.
 
@@ -637,4 +704,10 @@ the list read "Nothing else here is changed.")* The header's "Revised" line gain
 "and on sections 3 and 8 ("Corrections" lists them)."; section 1 gains a dated note on the decision and two readings of
 sub-area (c), a currency's name in every plural form and the currency style's grouping separator; section 3 a dated note on
 fields appended to a line, the `Currencies` table's four; and section 4's parameters an item on the currency names' plural
-forms. Nothing else here is changed.
+forms. *(Extended 2026-11-09, by the owner's decision of that day on the date-time format's locale data; the sentence after the
+list read "Nothing else here is changed.")* The header's "Revised" line gains that decision's note, ending where it read "by dated
+notes on sections 1, 3 and 4 ("Corrections" lists them)."; section 1 gains a dated note on the decision and five readings of
+sub-area (d) - the locale's own time data, Intl.Locale's included, the whole locale's likely region, the region's calendar
+preference, the numbering system's own decimal symbol, and the interval patterns' widths, which stay ICU's; section 3 a dated
+note on the appended `CalendarPreferences`; and section 4's parameters an item on the calendar preferences. Nothing else here is
+changed.

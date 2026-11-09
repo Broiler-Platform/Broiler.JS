@@ -61,6 +61,19 @@
 # root.xml, retrieved with them, equal Broiler.VM's entries. The files are unmodified; the same owner's
 # direction applies.
 #
+# EXTENDED 2026-11-09 FOR THE OWNER'S DECISION OF THAT DAY, "Keep + fix library first". Broiler.JS's
+# tables carry CLDR's calendar preferences (UTS #35 Part 4, Calendar Preference Data), from which a
+# date-time format takes its locale's default calendar. The pinned archive held no
+# calendarPreferenceData.json; the owner ruled on 2026-11-09, "Add file, same tarball", that it be
+# archived from the cldr-core 48.2.0 tarball this pin already names, under the alternative not taken,
+# "Leave calendars out". The tarball was retrieved twice by Claude on 2026-11-09 from the registry URL
+# the json-source line below gives, into two directories that `cmp` found byte-identical, and each
+# copy's sha512 was found equal to the json-integrity cldr-core line below, before the file was read
+# from it and again when it was archived; the tarball's timeData.json and likelySubtags.json equal
+# the archived copies above. The file is the tarball's member, unmodified, at the same path below
+# json/cldr-core/ as Broiler.VM's supplemental files; its `file` line comes after Broiler.VM's lines,
+# so Broiler.VM's lines and its tables are unchanged, and Broiler.VM's generator options never read it.
+#
 # WHAT A LINE MEANS. As in Broiler.VM's pin: `file <path relative to this directory> <bytes> <sha256>`.
 # A supplemental JSON file states its CLDR major version, a package.json its package version and the
 # UCA files their UCA version, which the generator's IntlCldrPin compares with the pinned ones; the
@@ -2099,3 +2112,6 @@ file cldr-48.2.0/common/main/zu.xml 430863 e309dd4e1d9c864c7e03a0ac592a6b910d97e
 file cldr-48.2.0/common/collation/es.xml 1042 ab7b5b8066379ed64830805a231eac31f306c949f30d4ab39c665ab86b9b89cf
 file cldr-48.2.0/common/collation/sv.xml 1135 e1f1ba79ec79ee120f462e3883c995db6e45720cb3f77d3806fee0d6b8455ec5
 file cldr-48.2.0/common/collation/th.xml 1849 56787e3232786e42cc24870fa189d8714bc1f5b94c17d1440f90559a8b4c83fd
+
+# Broiler.JS's calendar preferences, added 2026-11-09 by the owner's ruling "Add file, same tarball" (see above).
+file cldr-48.2.0/json/cldr-core/supplemental/calendarPreferenceData.json 5369 62ff01888eaadc48876b3b02fe0305229cfdc1015d308962da7c44e34b6f12fe

@@ -5,7 +5,7 @@
 // --------------------
 // Relevant units:   25
 // Annotated:        25/25
-// Exempt:           3
+// Exempt:           4
 // Human-reviewed:   0/25
 // IP risk:          Low
 // Security risk:    Medium
@@ -99,10 +99,27 @@ public interface ILocaleData
     bool TryExtensionType(char singleton, string key, string type, out string preferred);
 
     /// <summary>The hour cycles a region allows and prefers (UTS #35 Part 4, Time Data), or <see langword="null"/>.</summary>
-    /// <param name="region">The region, as CLDR names it, or <c>001</c> for the world.</param>
+    /// <param name="region">
+    /// The region, as CLDR names it, or <c>001</c> for the world; or a language and a region, <c>fr-CA</c> or <c>ar-001</c>, for
+    /// the time data CLDR states for that locale, which comes before its region's. <i>(Revised 2026-11-09, by the owner's decision
+    /// of that day, "Keep + fix library first": the time data's locale entries were always in the table under these keys, and
+    /// the readers now ask for them; it read "The region, as CLDR names it, or <c>001</c> for the world.")</i>
+    /// </param>
     // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 question layer; IP=Low; Security=Low; Resources=0; Fingerprint=CDD284
     // Hairs-Human:        PENDING
     RegionHourCycles? HourCycles(string region);
+
+    /// <summary>
+    /// The calendars in common use in a region, most preferred first, as BCP 47 <c>ca</c> types (UTS #35 Part 4, Calendar
+    /// Preference Data), or <see langword="null"/>: a world question, read from the <see cref="IntlTable.CalendarPreferences"/>
+    /// table, which Broiler.VM's data does not carry. <i>(Added 2026-11-09, by the owner's decision of that day, "Keep + fix
+    /// library first". The default implementation answers <see langword="null"/>, so a provider written before the question
+    /// existed, an engine's secondary provider included, still implements the interface and answers "no data".)</i>
+    /// </summary>
+    /// <param name="region">The region, as CLDR names it, or <c>001</c> for the world.</param>
+    // Hairs-AI:           Origin=AI; Spec=UTS35 Part 4 calendarPreferenceData question for ECMA-402 sec-intl.datetimeformat-internal-slots ca; IP=Low; Security=Low; Resources=0; Fingerprint=B18C16
+    // Hairs-Human:        PENDING
+    IReadOnlyList<string>? CalendarPreferences(string region) => null;
 
     /// <summary>A region's week as CLDR states it (UTS #35 Part 4, Week Data), or <see langword="null"/>.</summary>
     /// <param name="region">The region, or <c>001</c> for the world.</param>

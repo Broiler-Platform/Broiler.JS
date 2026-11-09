@@ -552,7 +552,10 @@ internal static partial class LocaleSection
 
     /// <summary>
     /// The differences of sub-area (a) that Broiler.VM's correspondence classes: L9 and L18, corrections of Broiler.VM the
-    /// library makes (decision D32), and L22, each engine's own numbering-system data (data policy C5, decision D5). Each row
+    /// library makes (decision D32), and L22, each engine's own numbering-system data (data policy C5, decision D5); and, from
+    /// 2026-11-09, L19, CLDR's time data for a Locale's language and region, which the library reads before the region's (data
+    /// policy C5; the owner's ruling of that day, "Fix both consumers"). <i>(The summary read "... and L22, each engine's own
+    /// numbering-system data (data policy C5, decision D5).")</i> Each row
     /// is tried in this order and a difference takes the first that covers it; each covers a pair only when the two answers
     /// are what its correction or policy explains, never by the input alone, so an unrelated difference on the same input
     /// stays unclassified.
@@ -575,11 +578,56 @@ internal static partial class LocaleSection
             && vm == "[latn]" && SingleSystem().IsMatch(library) && library != "[latn]"
             && LocaleOf(input) is { } locale && locale.UnicodeExtensionValue("nu") is null);
 
+        // ROW L19 (added 2026-11-09, by the owner's ruling of that day, "Fix both consumers"): getHourCycles of a Locale with no
+        // -u-hc- whose language and preferred region CLDR's time data states an entry for (fr-CA, ar-001, en-001, ku-SY, ...).
+        // Broiler.VM's code looks the entry up as language_region, which names none, and answers the region's data; the library
+        // reads the entry first, as row L19's Broiler.VM column describes ("CLDR 48.2.0's time data for the language and region,
+        // then the region"; UTS #35 Part 4, Time Data): data policy (C5). Tried before L9, whose -u-rg- overrides read the same
+        // entries; covered only when each answer is the one its reading of the time data gives.
+        yield return new KnownDifference("L3", "L19", (input, vm, library) =>
+            input.StartsWith("getHourCycles ", StringComparison.Ordinal)
+            && LocaleOf(input) is { } locale && locale.UnicodeExtensionValue("hc") is null
+            && HourCyclesRead(locale, entries: false) == vm && HourCyclesRead(locale, entries: true) == library);
+
         // ROW L9: a -u-sd or -u-rg value whose subdivision alias is a region. Broiler.VM writes the region as given
         // (`en-u-sd-AX`), which is no canonical tag; the library writes UTS #35 Annex C's `axzzzz`.
         yield return new KnownDifference("L1", "L9", ExplainedBySubdivisionForm);
         yield return new KnownDifference("L2", "L9", ExplainedBySubdivisionForm);
         yield return new KnownDifference("L3", "L9", ExplainedBySubdivisionForm);
+    }
+
+    /// <summary>The time data and likely subtags row L19 reads: CLDR's global tables, the same lines in either embedding.</summary>
+    private static readonly Lazy<CompositeLocaleData> TimeTables = new(static () => new CompositeLocaleData(new TableLocaleData(HomeDataSet.Current)));
+
+    /// <summary>
+    /// HourCyclesOfLocale over CLDR's time data for a Locale with no <c>-u-hc-</c>, rendered as the section renders a list: the
+    /// preferred regions (the <c>rg</c> override first), each read for the Locale's language and that region where
+    /// <paramref name="entries"/> is set (the library's reading since 2026-11-09), else for the region alone (Broiler.VM's code's);
+    /// the preferred cycle, then the allowed ones; <c>h23</c> where there is none.
+    /// </summary>
+    private static string HourCyclesRead(LocaleId locale, bool entries)
+    {
+        var data = TimeTables.Value;
+        var preference = LocaleInfo.RegionPreference(locale.ToString(), data);
+        string[] regions = preference.RegionOverride is { } regionOverride ? [regionOverride, preference.Region] : [preference.Region];
+        var cycles = new List<string>();
+
+        foreach (var region in regions)
+        {
+            if (((entries ? data.HourCycles(locale.Language + "-" + region) : null) ?? data.HourCycles(region)) is not { } time)
+                continue;
+
+            foreach (var format in (time.Preferred + " " + time.Allowed).Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var cycle = format[0] switch { 'h' => "h12", 'H' => "h23", 'K' => "h11", 'k' => "h24", _ => null };
+                if (cycle is not null && !cycles.Contains(cycle))
+                    cycles.Add(cycle);
+            }
+
+            break;
+        }
+
+        return "[" + string.Join(",", cycles.Count == 0 ? ["h23"] : cycles) + "]";
     }
 
     /// <summary>

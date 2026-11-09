@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   7
-// Annotated:        7/7
-// Exempt:           9
-// Human-reviewed:   0/7
+// Relevant units:   8
+// Annotated:        8/8
+// Exempt:           12
+// Human-reviewed:   0/8
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       7
+// Unverified:       8
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -65,9 +65,31 @@ public enum IntlCurrencyNamePlurals
 }
 
 /// <summary>
+/// Whether the data carries CLDR's calendar preferences (the owner's decision of 2026-11-09, "Keep + fix library first", and
+/// the ruling of that day, "Add file, same tarball").
+/// </summary>
+// Hairs-AI:           Origin=AI; Spec=UTS35 Part 4 calendarPreferenceData generator option, owner decision 2026-11-09; IP=Low; Security=Low; Resources=0; Fingerprint=B49629
+// Hairs-Human:        PENDING
+public enum IntlCalendarPreferences
+{
+    /// <summary>None: Broiler.VM's tables, which carry no calendar preference table, so that its rule N28 holds them byte for byte.</summary>
+    None = 0,
+
+    /// <summary>
+    /// The table <c>CalendarPreferences</c>, from CLDR's <c>calendarPreferenceData.json</c>: each region CLDR names, then its
+    /// calendars, most preferred first, as BCP 47 <c>ca</c> types separated by spaces (<c>gregorian</c> written <c>gregory</c>, by the
+    /// archived <c>bcp47/calendar.json</c>'s aliases).
+    /// </summary>
+    Regions = 1,
+}
+
+/// <summary>
 /// The generator's parameters (decision JSD-0082, decision D11): the locale list, which numbering systems'
-/// symbols the number table carries, which plural forms of a currency's name the currency table carries, the
-/// calendars whose layers the date table carries, and the collation tailorings. <i>(Revised 2026-11-09, by the owner's
+/// symbols the number table carries, which plural forms of a currency's name the currency table carries, whether the
+/// tables carry the calendar preferences, the calendars whose layers the date table carries, and the collation tailorings.
+/// <i>(Revised 2026-11-09, by the owner's decision of that day, "Keep + fix library first"; it read "... which plural forms of a
+/// currency's name the currency table carries, the calendars whose layers the date table carries, and the collation
+/// tailorings.")</i> <i>(Revised 2026-11-09, by the owner's
 /// decision of 2026-11-08, "Keep + fix library first", row N4; it read "... which numbering systems' symbols the number table
 /// carries, the calendars whose layers the date table carries, and the collation tailorings.")</i>
 /// </summary>
@@ -124,6 +146,12 @@ public sealed record IntlGeneratorOptions
     /// Broiler.VM's, by default. <i>(Added 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix library first".)</i>
     /// </summary>
     public IntlCurrencyNamePlurals CurrencyNamePlurals { get; init; } = IntlCurrencyNamePlurals.OneAndOther;
+
+    /// <summary>
+    /// Whether the tables carry CLDR's calendar preferences; <see cref="IntlCalendarPreferences.None"/>, Broiler.VM's, by default.
+    /// <i>(Added 2026-11-09, by the owner's decision of that day, "Keep + fix library first".)</i>
+    /// </summary>
+    public IntlCalendarPreferences CalendarPreferences { get; init; } = IntlCalendarPreferences.None;
 
     /// <summary>The calendars the date table carries a layer for, a subset of <see cref="BroilerVmCalendars"/> in its order; all of them by default.</summary>
     public ImmutableArray<string> Calendars { get; init; } = BroilerVmCalendars;

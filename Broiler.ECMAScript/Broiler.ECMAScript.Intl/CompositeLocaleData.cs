@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   29
-// Annotated:        29/29
+// Relevant units:   30
+// Annotated:        30/30
 // Exempt:           6
-// Human-reviewed:   0/29
+// Human-reviewed:   0/30
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         2/2
 // Resource impact:  1/10 max
-// Unverified:       29
+// Unverified:       30
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -163,6 +163,13 @@ public sealed class CompositeLocaleData : ILocaleData
     // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=BD1E4A
     // Hairs-Human:        PENDING
     public RegionHourCycles? HourCycles(string region) => shared.HourCycles(region) ?? secondary?.HourCycles(region);
+
+    /// <inheritdoc/>
+    /// <remarks><i>(Added 2026-11-09, by the owner's decision of that day, "Keep + fix library first".)</i> A world question, asked of the shared
+    /// tables, then of the secondary provider.</remarks>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=3AA719
+    // Hairs-Human:        PENDING
+    public IReadOnlyList<string>? CalendarPreferences(string region) => shared.CalendarPreferences(region) ?? secondary?.CalendarPreferences(region);
 
     /// <inheritdoc/>
     // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 composite order; IP=Low; Security=Low; Resources=1; Fingerprint=7193CB

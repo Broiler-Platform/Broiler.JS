@@ -108,9 +108,11 @@ internal static class IntlDataHome
         return string.Join('\n', lines[first..end]) + "\n";
     }
 
-    /// <summary>Broiler.JS's options: its list, every numbering system's symbols (decision D21), its tailorings, and every plural form of a currency's name.</summary>
+    /// <summary>Broiler.JS's options: its list, every numbering system's symbols (decision D21), its tailorings, every plural form of a currency's name, and every region's calendar preferences.</summary>
     /// <remarks><i>(Revised 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix library first", row N4; the summary
-    /// read "Broiler.JS's options: its list, and every numbering system's symbols (decision D21).")</i></remarks>
+    /// read "Broiler.JS's options: its list, and every numbering system's symbols (decision D21).")</i> <i>(Revised again 2026-11-09,
+    /// by the owner's decision of that day, "Keep + fix library first", and the ruling "Add file, same tarball"; it read "... its
+    /// tailorings, and every plural form of a currency's name.")</i></remarks>
     internal static IntlGeneratorOptions BroilerJsOptions(string home) =>
         new(ReadList(home, BroilerJsList))
         {
@@ -118,6 +120,10 @@ internal static class IntlDataHome
 
             // EVERY PLURAL FORM OF A CURRENCY'S NAME (the owner's decision of 2026-11-08, "Keep + fix library first", row N4).
             CurrencyNamePlurals = IntlCurrencyNamePlurals.Every,
+
+            // EVERY REGION'S CALENDAR PREFERENCES (the owner's decision of 2026-11-09, "Keep + fix library first", and the ruling
+            // of that day, "Add file, same tarball").
+            CalendarPreferences = IntlCalendarPreferences.Regions,
 
             // BROILER.JS'S COLLATION TAILORINGS (milestone SJL-17.3; Broiler.VM's JSD-0084, decision E3).
             Tailorings = IntlGeneratorOptions.BroilerJsTailorings,

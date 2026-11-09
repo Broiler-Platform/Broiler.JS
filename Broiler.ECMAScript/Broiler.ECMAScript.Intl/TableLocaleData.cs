@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   71
-// Annotated:        71/71
-// Exempt:           14
-// Human-reviewed:   0/71
+// Relevant units:   73
+// Annotated:        73/73
+// Exempt:           15
+// Human-reviewed:   0/73
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         3/3
 // Resource impact:  3/10 max
-// Unverified:       71
+// Unverified:       73
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -82,10 +82,12 @@ public sealed class TableLocaleData : ILocaleData
 
     private readonly Lazy<MetazoneTables> metazones;
 
+    private readonly Lazy<Dictionary<string, ReadOnlyCollection<string>>> calendarPreferences;
+
     /// <summary>Creates the decoder over a data set; nothing is decoded until a question needs it.</summary>
     /// <param name="data">The tables, which answer the same bytes for the life of the process.</param>
     /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
-    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Medium; Resources=1; Fingerprint=3E16C8
+    // Hairs-AI:           Origin=AI; Spec=JSD-0082 D8 decoder implementation; IP=Low; Security=Medium; Resources=1; Fingerprint=9EACE0
     // Hairs-Human:        PENDING
     public TableLocaleData(IIntlDataSet data)
     {
@@ -99,6 +101,7 @@ public sealed class TableLocaleData : ILocaleData
         dates = new(ReadDates);
         localeInfo = new(ReadLocaleInfo);
         metazones = new(ReadMetazones);
+        calendarPreferences = new(ReadCalendarPreferences);
     }
 
     /// <summary>The CLDR release the tables were generated from, as the data set states it (convention 13).</summary>
@@ -191,6 +194,20 @@ public sealed class TableLocaleData : ILocaleData
     {
         ArgumentNullException.ThrowIfNull(region);
         return dates.Value.TimeData.TryGetValue(region, out var cycles) ? cycles : null;
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Read from <see cref="IntlTable.CalendarPreferences"/>, decoded the first time a region is asked for; a data set that does not
+    /// carry the table, Broiler.VM's, answers <see langword="null"/> for every region. <i>(Added 2026-11-09, by the owner's decision of
+    /// that day, "Keep + fix library first".)</i>
+    /// </remarks>
+    // Hairs-AI:           Origin=AI; Spec=UTS35 Part 4 calendarPreferenceData decoder; IP=Low; Security=Low; Resources=1; Fingerprint=3D56D5
+    // Hairs-Human:        PENDING
+    public IReadOnlyList<string>? CalendarPreferences(string region)
+    {
+        ArgumentNullException.ThrowIfNull(region);
+        return calendarPreferences.Value.TryGetValue(region, out var calendars) ? calendars : null;
     }
 
     /// <inheritdoc/>
@@ -747,6 +764,30 @@ public sealed class TableLocaleData : ILocaleData
 
         var days = IsoCalendarMath.EpochDays(Number(text, 0, 4), Number(text, 5, 2), Number(text, 8, 2));
         return ((days * 1440) + (Number(text, 11, 2) * 60) + Number(text, 14, 2)) * 60_000;
+    }
+
+    /// <summary>
+    /// The calendar preference table: each line a region and its calendars, separated by spaces, most preferred first; a region
+    /// named twice, or a line without a calendar, is refused.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=UTS35 Part 4 calendarPreferenceData decoder; IP=Low; Security=Medium; Resources=1; Fingerprint=361068
+    // Hairs-Human:        PENDING
+    private Dictionary<string, ReadOnlyCollection<string>> ReadCalendarPreferences()
+    {
+        var preferences = new Dictionary<string, ReadOnlyCollection<string>>(StringComparer.Ordinal);
+
+        foreach (var line in IntlTableText.Lines(data.Table(IntlTable.CalendarPreferences)))
+        {
+            var fields = IntlTableText.Fields(line, 2, IntlTable.CalendarPreferences);
+            var calendars = fields[1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            if (calendars.Length == 0 || !preferences.TryAdd(fields[0], Array.AsReadOnly(calendars)))
+            {
+                throw new InvalidDataException("the calendar preference table's line " + line + " names no calendar, or a region named before");
+            }
+        }
+
+        return preferences;
     }
 
     // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=Low; Resources=2; Fingerprint=B27D7D

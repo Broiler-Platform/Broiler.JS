@@ -11,6 +11,7 @@ uca-version 17.0.0
 unicode-version 17.0.0
 
 table aliases.txt 21252 120a60d57143e9291cd0a0ea9a57acb7ed245b06a82e724a9faf90efe1054417
+table calendar-preferences.txt 2101 670441dd05f9c1a2620bf4b69f08a3b1c44c88d39d5a5d90eeb215c45787f840
 table collation-root.bin 160603 7f99583746e017fe5eb0f0ecda1977b77ad7a6b50f1f428acd08949d17b3ee37
 table collation-settings.txt 64 208eee08fb77ea789e613c790bd48dab9393768c2d21722a4194660f102c621a
 table collation-tailorings.bin 7850 b7d98c75367f7bdc57bfb317340404081110f63b0d94322a5f6c5812544dfaa0
