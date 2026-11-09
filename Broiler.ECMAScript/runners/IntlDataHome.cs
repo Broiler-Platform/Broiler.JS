@@ -108,11 +108,16 @@ internal static class IntlDataHome
         return string.Join('\n', lines[first..end]) + "\n";
     }
 
-    /// <summary>Broiler.JS's options: its list, and every numbering system's symbols (decision D21).</summary>
+    /// <summary>Broiler.JS's options: its list, every numbering system's symbols (decision D21), its tailorings, and every plural form of a currency's name.</summary>
+    /// <remarks><i>(Revised 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix library first", row N4; the summary
+    /// read "Broiler.JS's options: its list, and every numbering system's symbols (decision D21).")</i></remarks>
     internal static IntlGeneratorOptions BroilerJsOptions(string home) =>
         new(ReadList(home, BroilerJsList))
         {
             NumberingSymbols = IntlNumberingSymbols.EveryNumberingSystem,
+
+            // EVERY PLURAL FORM OF A CURRENCY'S NAME (the owner's decision of 2026-11-08, "Keep + fix library first", row N4).
+            CurrencyNamePlurals = IntlCurrencyNamePlurals.Every,
 
             // BROILER.JS'S COLLATION TAILORINGS (milestone SJL-17.3; Broiler.VM's JSD-0084, decision E3).
             Tailorings = IntlGeneratorOptions.BroilerJsTailorings,

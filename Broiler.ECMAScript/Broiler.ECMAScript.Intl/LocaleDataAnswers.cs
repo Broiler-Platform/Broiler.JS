@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   9
-// Annotated:        9/9
-// Exempt:           7
-// Human-reviewed:   0/9
+// Relevant units:   10
+// Annotated:        10/10
+// Exempt:           11
+// Human-reviewed:   0/10
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  0/10 max
-// Unverified:       9
+// Unverified:       10
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -58,9 +58,55 @@ public enum PluralRuleType
 /// <param name="Name">The display name.</param>
 /// <param name="SymbolEnds">For the symbol, whether its first and its last character are a symbol or separator (<c>S</c>) or not (<c>L</c>): two characters, as UTS #35 Part 3's currency spacing reads them.</param>
 /// <param name="NarrowEnds">The same for the narrow symbol.</param>
-// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 answers; IP=Low; Security=Low; Resources=0; Fingerprint=EEC6FA
+/// <remarks>
+/// <i>(Added 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix library first", for row N4 of Broiler.VM's
+/// JSD-0082.)</i> The display name's other plural forms, <see cref="Zero"/>, <see cref="Two"/>, <see cref="Few"/> and
+/// <see cref="Many"/>, are set where the data carries them - Broiler.JS's tables do, Broiler.VM's carry <c>one</c> and
+/// <c>other</c> alone - and are empty otherwise; <see cref="DisplayName"/> picks the name for a plural category.
+/// </remarks>
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 answers; IP=Low; Security=Low; Resources=0; Fingerprint=2903D5
 // Hairs-Human:        PENDING
-public readonly record struct CurrencyNames(string Symbol, string Narrow, string One, string Other, string Name, string SymbolEnds, string NarrowEnds);
+public readonly record struct CurrencyNames(string Symbol, string Narrow, string One, string Other, string Name, string SymbolEnds, string NarrowEnds)
+{
+    /// <summary>The display name for the plural category <c>zero</c>; empty where the data gives none.</summary>
+    public string Zero { get; init; } = string.Empty;
+
+    /// <summary>The display name for the plural category <c>two</c>; empty where the data gives none.</summary>
+    public string Two { get; init; } = string.Empty;
+
+    /// <summary>The display name for the plural category <c>few</c>; empty where the data gives none.</summary>
+    public string Few { get; init; } = string.Empty;
+
+    /// <summary>The display name for the plural category <c>many</c>; empty where the data gives none.</summary>
+    public string Many { get; init; } = string.Empty;
+
+    /// <summary>
+    /// The display name for a plural category, as UTS #35 Part 3 (section 4, Currencies) falls back: the category's own
+    /// form, else <c>other</c>'s, else the display name; empty where the data gives none of them. ECMA-402's
+    /// PartitionNumberPattern leaves the name to the implementation; ICU selects it so by the formatted number's category.
+    /// </summary>
+    /// <param name="pluralCategory">The category of the formatted number: <c>zero</c>, <c>one</c>, <c>two</c>, <c>few</c>,
+    /// <c>many</c> or <c>other</c>; any other text is read as <c>other</c>.</param>
+    /// <returns>The name, or an empty string.</returns>
+    // Hairs-AI:           Origin=AI; Spec=UTS 35 Part 3 currency displayName count fallback for JSD-0082 N4; IP=Low; Security=Low; Resources=0; Fingerprint=6E100E
+    // Hairs-Human:        PENDING
+    public string DisplayName(string pluralCategory)
+    {
+        var counted = pluralCategory switch
+        {
+            "zero" => Zero,
+            "one" => One,
+            "two" => Two,
+            "few" => Few,
+            "many" => Many,
+            _ => Other,
+        };
+
+        return counted is { Length: > 0 } ? counted
+            : Other is { Length: > 0 } ? Other
+            : Name ?? string.Empty;
+    }
+}
 
 /// <summary>A locale's list patterns of one type (UTS #35 Part 2, List Patterns): the patterns of a list's start, middle and end, and of a list of two.</summary>
 /// <param name="Start">The pattern joining the first element to the rest.</param>
