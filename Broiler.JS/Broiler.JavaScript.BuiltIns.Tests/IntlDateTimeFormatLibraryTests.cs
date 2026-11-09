@@ -15,6 +15,13 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 //   so options null is a TypeError for Date.prototype's toLocale* methods (ToDateTimeOptions read it as an empty bag) and
 //   for Temporal.ZonedDateTime.prototype.toLocaleString (read as an empty bag before), and a primitive such as 5 is boxed
 //   for the latter, which formats where it was a TypeError.
+// - Rows T10, T16, T37 and L19 (data policy C5; added 2026-11-09, at SJL-9.5's stage 4, with the shared library's merge
+//   Broiler-Platform/Broiler.JS#1108 on the owner's decision of 2026-11-09, "Keep + fix library first"): hour cycles from the
+//   locale's own time data (ar-001 h12, fr-CA h23), the whole locale's likely region (zh-Hant Taiwan's h12), the region's
+//   calendar preference (fa persian, th buddhist, and the Temporal calendar check that follows from it), a locale's default
+//   numbering system's own decimal symbol (fa's arabext, U+066B), and Intl.Locale's hour cycles. Before the merge the first
+//   three answered h23, h12 and h23, the calendars gregory, and fa's decimal came from the engine's deleted adapter
+//   NumberingSystemDecimalData.
 public class IntlDateTimeFormatLibraryTests
 {
     private static void Load() => RuntimeHelpers.RunClassConstructor(typeof(Clr.DefaultClrInterop).TypeHandle);
@@ -70,4 +77,51 @@ public class IntlDateTimeFormatLibraryTests
     public void German_names_and_CLDR_s_join()
         => Assert.Equal("Freitag, 5. Januar 2024 um 15:07:09 UTC", Eval(
             $"new Intl.DateTimeFormat('de', {{ timeZone: 'UTC', dateStyle: 'full', timeStyle: 'long' }}).format({Instant})"));
+
+    [Theory]
+    [InlineData("ar-001", "h12", "3:07 \u0645")]
+    [InlineData("fr-CA", "h23", "15 h 07")]
+    public void T10_hour_cycles_come_from_the_locale_s_own_time_data(string locale, string cycle, string time)
+    {
+        Assert.Equal(cycle, Eval($"new Intl.DateTimeFormat('{locale}', {{ hour: 'numeric' }}).resolvedOptions().hourCycle"));
+        Assert.Equal(time, Eval(
+            $"new Intl.DateTimeFormat('{locale}', {{ timeZone: 'UTC', hour: 'numeric', minute: 'numeric' }}).format({Instant})"));
+    }
+
+    [Fact]
+    public void T16_zh_Hant_reads_its_likely_region_s_time_data()
+        => Assert.Equal("h12|\u4E0B\u53483\u6642", Eval(
+            $"var f = new Intl.DateTimeFormat('zh-Hant', {{ timeZone: 'UTC', hour: 'numeric' }}); f.resolvedOptions().hourCycle + '|' + f.format({Instant})"));
+
+    [Theory]
+    [InlineData("fa", "persian")]
+    [InlineData("fa-IR", "persian")]
+    [InlineData("th", "buddhist")]
+    [InlineData("th-TH", "buddhist")]
+    [InlineData("th-u-ca-gregory", "gregory")]
+    [InlineData("en", "gregory")]
+    public void T16_the_default_calendar_is_the_region_s_preference(string locale, string calendar)
+        => Assert.Equal(calendar, Eval($"new Intl.DateTimeFormat('{locale}').resolvedOptions().calendar"));
+
+    [Fact]
+    // A gregory-calendar value is refused where the default is buddhist or persian; an ISO value is written in the default.
+    public void T16_a_Temporal_date_must_be_in_the_default_calendar()
+    {
+        Assert.Equal("RangeError", Eval("try { new Temporal.PlainDate(2024, 1, 5, 'gregory').toLocaleString('th'); 'none' } catch (e) { e.name }"));
+        Assert.Equal("RangeError", Eval("try { new Temporal.PlainDate(2024, 1, 5, 'gregory').toLocaleString('fa'); 'none' } catch (e) { e.name }"));
+        Assert.Equal("5/1/2567", Eval("new Temporal.PlainDate(2024, 1, 5, 'buddhist').toLocaleString('th')"));
+        Assert.Equal("5/1/2567", Eval("new Temporal.PlainDate(2024, 1, 5).toLocaleString('th')"));
+    }
+
+    [Fact]
+    public void T37_a_locale_s_default_numbering_system_writes_its_own_decimal_symbol()
+        => Assert.Equal("\u06F9\u066B\u06F7\u06F8", Eval(
+            $"new Intl.DateTimeFormat('fa', {{ timeZone: 'UTC', second: 'numeric', fractionalSecondDigits: 2 }}).format({Instant})"));
+
+    [Theory]
+    [InlineData("ar-001", "h12,h23")]
+    [InlineData("en-001", "h12,h23")]
+    [InlineData("fr-CA", "h23,h12")]
+    public void L19_Intl_Locale_s_hour_cycles_come_from_the_locale_s_own_time_data(string locale, string cycles)
+        => Assert.Equal(cycles, Eval($"new Intl.Locale('{locale}').getHourCycles().join(',')"));
 }

@@ -1186,6 +1186,13 @@ public static class JSIntl
     // - U+202F before the day period (row T12, CLDR's data) costs test262's
     //   intl402/DateTimeFormat/prototype/format/numbering-system.js, which passes at the base and asks for a plain space
     //   before "AM" (JSD-0082, D21). Both points wait on the owner's ruling.
+    // Revised 2026-11-09, at SJL-9.5's stage 4, after the owner's decision of 2026-11-09, "Keep + fix library first", and the
+    // shared library's merge Broiler-Platform/Broiler.JS#1108: both points of the revision above are settled. The library reads
+    // CLDR's time data for the locale's language and region before its region's, and the whole locale's likely region, so
+    // ar-001 is h12 (0028 matches again), fr-CA h23 (0173, 0175) and zh-Hant h12, Taiwan's (0490): the task 8.5 note's "its hour
+    // cycles are the library's, from CLDR's time data (row T10)" holds as written. U+202F before the day period stays CLDR's under
+    // the owner's ruling "Follow CLDR, dated ruling"; numbering-system.js is lost under row T12, and bundle sjl-9-001's rule is
+    // revised to admit that one path as class L (docs/evidence/sjl-9-001/decision-rule-revised-2026-11-09.md).
 
     // The relevant extension keys of the services that resolve none: ListFormat, Segmenter, DisplayNames and PluralRules.
     // Revised 2026-11-08, at SJL-9.5 (task 8.4): ListFormat, DisplayNames and PluralRules resolve through the shared
@@ -2978,12 +2985,15 @@ public class JSIntlDateTimeFormat : JSObject
     private static readonly string[] StyleValues = ["full", "long", "medium", "short"];
 
     // The date-time data every format reads (the library's DateTimeData over the engine's locale data, the shared time zones
-    // and the calendars), made once; and one per numbering system whose own decimal symbol the data states (decision D21).
+    // and the calendars), made once.
+    // Revised 2026-11-09, at SJL-9.5's stage 4 (the shared library's merge Broiler-Platform/Broiler.JS#1108): the comment
+    // ended "made once; and one per numbering system whose own decimal symbol the data states (decision D21)", and
+    // DatesBySystem, a ConcurrentDictionary of that per-system data, followed. The library's DateTimeFormat now writes a
+    // numbering system's own decimal symbol itself (row T37, decision D21), so every format reads this one data and
+    // DatesBySystem is deleted.
     private static readonly Lazy<DateTimeData> SharedDates = new(
         static () => new DateTimeData(JSIntlData.LocaleData, Temporal.TemporalTimeData.TimeZones, Temporal.TemporalAdapter.Calendars),
         System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
-
-    private static readonly ConcurrentDictionary<string, DateTimeData> DatesBySystem = new(StringComparer.Ordinal);
 
     /// <summary>The shared library's format: what CreateDateTimeFormat resolved, its formatter and the formats of Temporal's types.</summary>
     internal DateTimeFormat Core { get; }
@@ -3046,9 +3056,13 @@ public class JSIntlDateTimeFormat : JSObject
         var hourCycle = JSIntl.GetOption(options, HourCycleKey, HourCycleValues, false, null);
 
         // ResolveLocale's ca, hc and nu keys, the shared library's, over the values the data gives the matched locale.
+        // Revised 2026-11-09, at SJL-9.5's stage 4: the ca key's values were "DateTimeFormat.CalendarKeyValues", the static
+        // list whose first value is gregory. They are now DateTimeFormat.CalendarKeyValuesOf the data locale, which puts first
+        // the first calendar CLDR's calendarPreferenceData prefers for the locale's likely region (fa persian, th buddhist),
+        // as the shared library's merge Broiler-Platform/Broiler.JS#1108 asks an engine to hand them (row T16, data policy C5).
         var resolved = JSIntl.ResolveLocale(canonicalLocales, locale =>
         [
-            new RelevantKey("ca", DateTimeFormat.CalendarKeyValues) { Option = calendar },
+            new RelevantKey("ca", DateTimeFormat.CalendarKeyValuesOf(JSIntlData.LocaleData, JSIntlLocaleProviders.DataLocale(locale))) { Option = calendar },
             new RelevantKey("hc", DateTimeFormat.HourCycleKeyValues) { Option = hour12 is null ? hourCycle : null, OptionIsNull = hour12 is not null },
             new RelevantKey("nu", JSIntl.NumberingSystemValues(locale)) { Option = numberingSystem },
         ]);
@@ -3083,9 +3097,8 @@ public class JSIntlDateTimeFormat : JSObject
         var dateStyle = JSIntl.GetOption(options, DateStyleKey, StyleValues, false, null);
         var timeStyle = JSIntl.GetOption(options, TimeStyleKey, StyleValues, false, null);
 
-        var nu = resolved.KeyValues["nu"] ?? "latn";
         var status = DateTimeFormat.Create(
-            DatesFor(nu),
+            DatesFor(),
             new ResolvedLocale(resolved.Locale, JSIntlLocaleProviders.DataLocale(resolved.DataLocale), resolved.KeyValues),
             new DateTimeFormatOptions
             {
@@ -3130,16 +3143,12 @@ public class JSIntlDateTimeFormat : JSObject
         return value.IsUndefined ? null : value.StringValue;
     }
 
-    // The date-time data a format of a numbering system reads.
-    private static DateTimeData DatesFor(string numberingSystem)
-    {
-        var shared = SharedDates.Value;
-        if (numberingSystem == "latn" || !NumberingSystemDecimalData.States(JSIntlData.LocaleData, numberingSystem))
-            return shared;
-
-        return DatesBySystem.GetOrAdd(numberingSystem, static system => new DateTimeData(
-            new NumberingSystemDecimalData(JSIntlData.LocaleData, system), Temporal.TemporalTimeData.TimeZones, Temporal.TemporalAdapter.Calendars));
-    }
+    // The date-time data a format reads, whatever its numbering system.
+    // Revised 2026-11-09, at SJL-9.5's stage 4: it was "DatesFor(string numberingSystem)", the data a format of a numbering
+    // system reads, which for a system other than latn whose own decimal symbol the data states returned a DateTimeData over
+    // NumberingSystemDecimalData (DatesBySystem's). The library reads that symbol itself now (row T37), so it returns the
+    // shared data, and the caller's resolved nu, which only it read, is no longer taken.
+    private static DateTimeData DatesFor() => SharedDates.Value;
 
     // ---- Temporal's toLocaleString and Date's toLocale* ------------------------------------------------------------------
 
@@ -3480,57 +3489,10 @@ public class JSIntlDateTimeFormat : JSObject
     }
 }
 
-/// <summary>
-/// The locale data a date-time format of one numbering system reads: <see cref="JSIntlData.LocaleData"/>, except that the
-/// decimal symbol is the numbering system's own (decision D21), read as the shared library's number formatter reads a
-/// system's symbol - the number table's <c>symbols@&lt;system&gt;.decimal</c> at the data locale, then at root (<c>und</c>),
-/// then the data locale's <c>latn</c> one - so that a fractional second of <c>en-u-nu-arab</c> is written with U+066B
-/// (SJL-9.5, task 8.5, 2026-11-09).
-/// </summary>
-/// <remarks>
-/// The shared library's <c>DateTimeFormat.Create</c> reads the decimal symbol of a date-time pattern as the data locale's
-/// <c>symbols.decimal</c> alone, the <c>latn</c> one, where the home's design (<c>Broiler.ECMAScript/docs/intl/design.md</c>,
-/// "Numbering systems") says every formatter writes numbers from the one table, so that <c>en-u-nu-arab</c> writes U+066B.
-/// The engine's hand table of that separator (<c>"٫"</c> for <c>arab</c> and <c>arabext</c>, in MapNumbering) is gone; the
-/// symbol is the data's. This adapter is the engine's until the library reads the system's own symbol itself, a library
-/// change made as its own merge (decision D52, SJL-D-9). Every other question is the inner data's.
-/// </remarks>
-internal sealed class NumberingSystemDecimalData(ILocaleData inner, string system) : ILocaleData
-{
-    private readonly string own = "symbols@" + system + ".decimal";
-
-    /// <summary>Whether the data states a decimal symbol of its own for a numbering system, at root.</summary>
-    internal static bool States(ILocaleData data, string system) => data.NumberValue("und", "symbols@" + system + ".decimal") is not null;
-
-    public string? NumberValue(string locale, string key)
-        => key == "symbols.decimal" && (inner.NumberValue(locale, own) ?? inner.NumberValue("und", own)) is { } stated
-            ? stated
-            : inner.NumberValue(locale, key);
-
-    public IReadOnlyList<string> Locales => inner.Locales;
-    public bool HoldsLocale(IntlTable table, string locale) => inner.HoldsLocale(table, locale);
-    public string? LikelySubtags(string source) => inner.LikelySubtags(source);
-    public string? Alias(LocaleAliasKind kind, string from) => inner.Alias(kind, from);
-    public bool IsExtensionKey(char singleton, string key) => inner.IsExtensionKey(singleton, key);
-    public bool TryExtensionType(char singleton, string key, string type, out string preferred) => inner.TryExtensionType(singleton, key, type, out preferred);
-    public RegionHourCycles? HourCycles(string region) => inner.HourCycles(region);
-    public RegionWeek? Week(string region) => inner.Week(region);
-    public bool? IsRightToLeft(string script) => inner.IsRightToLeft(script);
-    public CurrencyNames? Currency(string locale, string code) => inner.Currency(locale, code);
-    public IReadOnlyList<string> CurrencyCodes => inner.CurrencyCodes;
-    public int? CurrencyDigits(string code) => inner.CurrencyDigits(code);
-    public IReadOnlyList<string> NumberingSystems => inner.NumberingSystems;
-    public IReadOnlyList<string>? NumberingSystemDigits(string system) => inner.NumberingSystemDigits(system);
-    public IReadOnlyList<PluralRuleText>? PluralRules(string language, PluralRuleType type) => inner.PluralRules(language, type);
-    public string? PluralRange(string language, string start, string end) => inner.PluralRange(language, start, end);
-    public string? UnitPattern(string locale, string width, string unit, string field) => inner.UnitPattern(locale, width, unit, field);
-    public ListPatterns? ListPattern(string locale, string type) => inner.ListPattern(locale, type);
-    public string? RelativeTime(string locale, string field, string key) => inner.RelativeTime(locale, field, key);
-    public string? DisplayName(string locale, string kind, string code) => inner.DisplayName(locale, kind, code);
-    public string? DateValue(string locale, string calendar, string key) => inner.DateValue(locale, calendar, key);
-    public IReadOnlyDictionary<string, string>? DateValues(string locale, string calendar) => inner.DateValues(locale, calendar);
-    public IReadOnlyList<DayPeriodRule>? DayPeriods(string language) => inner.DayPeriods(language);
-    public IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone) => inner.MetazonePeriods(zone);
-    public string? GoldenZone(string metazone, string region) => inner.GoldenZone(metazone, region);
-    public string? PrimaryZone(string region) => inner.PrimaryZone(region);
-}
+// Deleted 2026-11-09, at SJL-9.5's stage 4: NumberingSystemDecimalData, the internal ILocaleData adapter that answered
+// symbols.decimal with the data's symbols@<system>.decimal (at the data locale, then at und, then the latn one) for a
+// date-time format of a numbering system, task 8.5's stand-in for a library change. Its remarks read "This adapter is the
+// engine's until the library reads the system's own symbol itself, a library change made as its own merge (decision D52,
+// SJL-D-9)". That merge is Broiler-Platform/Broiler.JS#1108 (the owner's decision of 2026-11-09, "Keep + fix library
+// first"): the library's DateTimeFormat reads symbols@<numberingSystem>.decimal at the locale, then at und, then latn's, then
+// "." (row T37, decision D21), for a keyword's system and a locale's default system alike.

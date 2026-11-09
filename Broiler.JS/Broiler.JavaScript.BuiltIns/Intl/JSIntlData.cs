@@ -134,6 +134,9 @@ internal sealed class JSIntlData : IIntlDataSet
         IntlTable.DisplayNames => "display-names.txt",
         IntlTable.MetaZones => "meta-zones.txt",
         IntlTable.CollationSettings => "collation-settings.txt",
+        // CLDR's calendar preferences by region (added 2026-11-09, at SJL-9.5's stage 4, with the shared library's merge
+        // Broiler-Platform/Broiler.JS#1108, which appends the table; DateTimeFormat.CalendarKeyValuesOf reads it).
+        IntlTable.CalendarPreferences => "calendar-preferences.txt",
         // The time zone and calendar tables (26 to 29, 31) are the time data home's, which TemporalTimeData embeds.
         _ => null,
     };

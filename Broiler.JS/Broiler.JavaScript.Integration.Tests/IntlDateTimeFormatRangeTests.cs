@@ -78,12 +78,19 @@ public class IntlDateTimeFormatRangeTests
     // fallbacks", and ICU widens them, so format writes "01/02/2020" while formatRange writes "1/2/2020". The original
     // assertion is restored and skipped until a library merge (decision D52, SJL-D-9; DateIntervalFormatter's
     // AdjustFieldWidth) widens the fields, or until the owner rules that T30 admits the answer.
-    [Fact(Skip = "SJL-9.5 (2026-11-09): the shared library's formatRange does not widen an interval pattern's fields to the requested 2-digit month and day; a library gap for its own merge (decision D52, SJL-D-9), held for the owner's ruling on row T30")]
+    // Revised 2026-11-09, at SJL-9.5's stage 4 (row T30, implementation-defined): the test is restored, unskipped, with the
+    // library's answer. The shared library's merge Broiler-Platform/Broiler.JS#1108 (item 5) found that the pinned reference,
+    // ICU 78.3, and ICU 77.1 both answer "1/2/2020 – 1/5/2020" (thin spaces around the en dash) for this format, so the
+    // review's reading that "ICU widens them" does not hold and no library change is owed: an interval pattern's fields keep
+    // the skeleton's widths, which is T30's "CLDR 48.2.0's intervalFormats with ICU's fallbacks". The skip read "SJL-9.5
+    // (2026-11-09): the shared library's formatRange does not widen an interval pattern's fields to the requested 2-digit
+    // month and day; a library gap for its own merge (decision D52, SJL-D-9), held for the owner's ruling on row T30", and the
+    // skipped assertion looked for "01/02/2020" at 0 and "01/05/2020" at "s.length - 10", expecting "true|true".
+    [Fact]
     public void FormatRangeRendersBothEndpoints()
-        => Assert.Equal("true|true", Eval(
+        => Assert.Equal("1/2/2020\u2009\u2013\u20091/5/2020", Eval(
             Formatter + Jan2 + Jan5
-            + "var s = f.formatRange(d1, d2);"
-            + "return [s.indexOf('01/02/2020') === 0, s.lastIndexOf('01/05/2020') === s.length - 10].join('|');"));
+            + "return f.formatRange(d1, d2);"));
 
     // ---- "SameValue": two equal instants collapse to the single, non-range rendering ----
 
