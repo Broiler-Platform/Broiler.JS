@@ -1173,6 +1173,19 @@ public static class JSIntl
     // ResolveLocaleFromCanonical stays for the Segmenter (SJL-7's, NoRelevantKeys) and the Collator (CollatorRelevantKeys);
     // GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword stay for the Collator alone, whose
     // move the brief for task 8.6 leaves to SJL-17.5.
+    // Revised 2026-11-09, at SJL-9.5 (review of tasks 8.5 and 8.6): two sentences above no longer hold as written.
+    // - The 2026-11-08 note's "ResolveNumberingSystem stays, its values now the data's (decision D13), for DateTimeFormat's
+    //   (task 8.5) and DurationFormat's (task 8.6) readers alone": both readers left at tasks 8.5 and 8.6, and the method
+    //   is deleted (the task 8.6 note above).
+    // - The task 8.5 note's "its hour cycles are the library's, from CLDR's time data (row T10)": the library reads only
+    //   the region-keyed entries of CLDR's time data (ILocaleData.HourCycles(region)), at the tag's region or else the
+    //   likely region of the language alone, and never the locale-keyed entries (ar-001, fr-CA, en-001 and the others). So
+    //   ar's default is h23 where the data's ar-001 gives h12 (engine vector intl/date-times/families/0028, which matched
+    //   at the base and now differs), fr-CA's is h12 where the data's fr-CA gives H (0173, 0175), and zh-Hant's is h23,
+    //   CN's, where TW's gives h (0490). It is a library gap for its own merge (decision D52, SJL-D-9).
+    // - U+202F before the day period (row T12, CLDR's data) costs test262's
+    //   intl402/DateTimeFormat/prototype/format/numbering-system.js, which passes at the base and asks for a plain space
+    //   before "AM" (JSD-0082, D21). Both points wait on the owner's ruling.
 
     // The relevant extension keys of the services that resolve none: ListFormat, Segmenter, DisplayNames and PluralRules.
     // Revised 2026-11-08, at SJL-9.5 (task 8.4): ListFormat, DisplayNames and PluralRules resolve through the shared
@@ -1835,6 +1848,8 @@ public sealed class JSIntlDurationFormat : JSObject
     // none), with no localeMatcher read.
     // Revised 2026-11-09, at SJL-9.5 (task 8.6): it read the locale as the resolved one, negotiating only its -u-nu- keyword
     // by hand (ResolveNumberingSystem); the locale is now matched against the available locales by the shared negotiation.
+    // Noted 2026-11-09, at SJL-9.5 (review of task 8.6): the locale now goes through CanonicalizeLocaleList, so an ill-formed
+    // tag throws a JavaScript RangeError, where the former constructor took the string as resolved and threw none.
     public JSIntlDurationFormat(string locale, JSObject options)
         : this(string.IsNullOrEmpty(locale) ? JSValue.CreateArray() : JSIntl.CanonicalizeLocaleList(CreateString(locale)), options)
     {
@@ -1842,6 +1857,10 @@ public sealed class JSIntlDurationFormat : JSObject
 
     // ECMA-402's GetDurationUnitOptions (sec-getdurationunitoptions): the unit's two options read here, in order, each checked
     // as it is read; the defaults and ValidateDurationUnitStyle are the shared library's, whose refusals are RangeErrors.
+    // Noted 2026-11-09, at SJL-9.5 (review of task 8.6, row U4, a correction): the unit's display option is read before
+    // ValidateDurationUnitStyle refuses a word style after a numeric or 2-digit unit, as the specification's steps order
+    // them; the former engine threw that RangeError before it read the display option, so a getter on, say,
+    // minutesDisplay with { hours: "numeric", minutes: "long" } did not run.
     private static DurationUnitOptions GetDurationUnitOptions(JSObject options, DurationUnit unit, DurationFormatStyle baseStyle, DurationUnitStyle? previous, bool twoDigitHours)
     {
         var name = DurationFormatCore.UnitName(unit);
@@ -2921,6 +2940,10 @@ public class JSIntlCollator : JSObject
 // branches), FormatDayPeriod and the locale field. Its public members stay (decision SJL-D-25, disposition (a)): the
 // constructor, Format, the prototype methods, TemporalToLocaleString, ToDateTimeOptions and ApplyAllDefaults (which no caller
 // of this repository reads any more), and Get(CultureInfo), over the library.
+// Revised 2026-11-09, at SJL-9.5 (review of task 8.5): the deletion list above also covers JSIntlResolvedOptionsExtensions
+// whole with its SetIfDefined, Has and RequiresExactCalendar, and, in TemporalTimeZones, ResolveFormatterTimeZone, whose
+// last reader was ReadTimeZoneOption. The OptionString it names was the option snapshot's instance reader; the private
+// static OptionString below is a new reader of a defined option's String.
 public class JSIntlDateTimeFormat : JSObject
 {
     private static readonly ConcurrentDictionary<string, JSIntlDateTimeFormat> formats = new();
@@ -3148,6 +3171,12 @@ public class JSIntlDateTimeFormat : JSObject
     }
 
     // A format made for one call, from the arguments' locales and options, as the constructor reads them.
+    // Noted 2026-11-09, at SJL-9.5 (review of task 8.5, rows T2 and T38, corrections): the options go through
+    // CoerceOptionsToObject here, as the specification's CreateDateTimeFormat asks, so options null is a TypeError for
+    // Date.prototype.toLocaleString, toLocaleDateString and toLocaleTimeString, where ToDateTimeOptions read null as an
+    // empty bag and the call formatted; for Temporal.ZonedDateTime.prototype.toLocaleString options null is a TypeError
+    // where the former engine read it as an empty bag, and a primitive such as 5 is boxed and formats where it was a
+    // TypeError. Neither row names these cases; IntlDateTimeFormatLibraryTests pins them.
     private static JSIntlDateTimeFormat Make(JSValue locales, JSValue options, DateTimeRequired required, DateTimeDefaults defaults, string zonedTimeZone)
     {
         var arguments = new Arguments(JSUndefined.Value, locales, options ?? JSUndefined.Value);
@@ -3170,11 +3199,15 @@ public class JSIntlDateTimeFormat : JSObject
     ];
 
     // ToDateTimeOptions(options, "any", "all"): when no date/time component or style is requested, the
-    // default is the full date+time. Used by Date.prototype.toLocaleString (the legacy [[Call]] uses
-    // defaults "all", unlike the Intl.DateTimeFormat constructor which uses "date"). Returns the
-    // options unchanged when defaults are not needed or it is not an object.
+    // default is the full date+time, as Date.prototype.toLocaleString's defaults "all" ask (unlike the Intl.DateTimeFormat
+    // constructor, which uses "date"). Returns the options unchanged when defaults are not needed or it is not an object.
     // Noted 2026-11-09, at SJL-9.5 (task 8.5): no caller of this repository reads it; it stays a public member (JSD-0082,
     // D24's T42 paragraph; decision SJL-D-25).
+    // Revised 2026-11-09, at SJL-9.5 (review of task 8.5): the comment read "Used by Date.prototype.toLocaleString (the
+    // legacy [[Call]] uses defaults "all", unlike the Intl.DateTimeFormat constructor which uses "date")."; Date.prototype's
+    // toLocale* methods read their options through CreateDateTimeFormat's required and defaults (ToLocaleString). This
+    // member and ToDateTimeOptions stay as hand-written option-bag code with no caller and no call into the shared library,
+    // where D24's T42 paragraph says they "stay, over the library".
     public static JSValue ApplyAllDefaults(JSValue options)
     {
         if (options is not JSObject o)

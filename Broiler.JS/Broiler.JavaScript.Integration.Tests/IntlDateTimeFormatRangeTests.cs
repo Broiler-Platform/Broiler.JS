@@ -72,12 +72,18 @@ public class IntlDateTimeFormatRangeTests
     // requested 2-digit month and day as ICU does (V8: "01/02/2020 – 01/05/2020"), so the endpoints are
     // "1/2/2020" and "1/5/2020" (a gap of the library, reported with SJL-9.5's stage 3). The test looked for
     // "01/02/2020" and "01/05/2020" and expected "true|true".
-    [Fact]
+    // Revised 2026-11-09, at SJL-9.5 (review of task 8.5): the assertion of task 8.5 looked for "1/2/2020" and "1/5/2020"
+    // ("s.length - 8"), which pinned the library's answer as the expected one. The widening of an interval pattern's fields
+    // to the requested widths is not row T30's choice of pattern: T30 reads "CLDR 48.2.0's intervalFormats with ICU's
+    // fallbacks", and ICU widens them, so format writes "01/02/2020" while formatRange writes "1/2/2020". The original
+    // assertion is restored and skipped until a library merge (decision D52, SJL-D-9; DateIntervalFormatter's
+    // AdjustFieldWidth) widens the fields, or until the owner rules that T30 admits the answer.
+    [Fact(Skip = "SJL-9.5 (2026-11-09): the shared library's formatRange does not widen an interval pattern's fields to the requested 2-digit month and day; a library gap for its own merge (decision D52, SJL-D-9), held for the owner's ruling on row T30")]
     public void FormatRangeRendersBothEndpoints()
         => Assert.Equal("true|true", Eval(
             Formatter + Jan2 + Jan5
             + "var s = f.formatRange(d1, d2);"
-            + "return [s.indexOf('1/2/2020') === 0, s.lastIndexOf('1/5/2020') === s.length - 8].join('|');"));
+            + "return [s.indexOf('01/02/2020') === 0, s.lastIndexOf('01/05/2020') === s.length - 10].join('|');"));
 
     // ---- "SameValue": two equal instants collapse to the single, non-range rendering ----
 

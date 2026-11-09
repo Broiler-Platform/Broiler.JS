@@ -135,6 +135,10 @@ public partial class JSDate
         return FormatThroughIntl(locale, format, global::Broiler.ECMAScript.Intl.DateTimeRequired.Time, global::Broiler.ECMAScript.Intl.DateTimeDefaults.Time);
     }
 
+    // Revised 2026-11-09, at SJL-9.5 (review of task 8.5, row T2): the three method comments above read "Spec (§21.4.4.39):
+    // construct an Intl.DateTimeFormat with ToDateTimeOptions(options, "date", "date") and format through it", with "any",
+    // "all" for toLocaleString and "time", "time" (§21.4.4.42) for toLocaleTimeString; each now names CreateDateTimeFormat's
+    // required and defaults, which ECMA-402's sup-date.prototype.tolocale* sections pass.
     // Routes Date.prototype.toLocale{,Date,Time}String through Intl.DateTimeFormat's CreateDateTimeFormat with the method's
     // required and defaults (the shared Intl library's DateTimeFormat). Both the formatted output and any thrown exception
     // (null locale → TypeError, malformed tag / invalid option → RangeError) are therefore identical to constructing the

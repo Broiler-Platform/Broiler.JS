@@ -7460,10 +7460,13 @@ public class BuiltInsTests
             try {
               var dtf = new Intl.DateTimeFormat('en-US');
               var resolved = dtf.resolvedOptions();
-              // ToDateTimeOptions supplies the year/month/day = "numeric" defaults for a
-              // formatter created with no date/time component, so `day` IS an own property —
-              // but it must be the spec default "numeric", NOT the "2-digit" value a client
-              // planted on Object.prototype (test262 default-options-object-prototype).
+              // CreateDateTimeFormat's defaults "date" supply the year/month/day = "numeric"
+              // defaults for a formatter created with no date/time component, so `day` IS an own
+              // property — but it must be the spec default "numeric", NOT the "2-digit" value a
+              // client planted on Object.prototype (test262 default-options-object-prototype).
+              // Revised 2026-11-09, at SJL-9.5 (review of task 8.5): the first line read
+              // "ToDateTimeOptions supplies the year/month/day = "numeric" defaults"; the
+              // constructor reads its options through CreateDateTimeFormat's required and defaults.
               [
                 resolved.day,
                 Object.getOwnPropertyDescriptor(resolved, 'day').value
@@ -7603,8 +7606,11 @@ public class BuiltInsTests
             ].join('|');
             """);
 
-        // The calendar OPTION must reach ResolvedCalendar (previously only the -u-ca- tag
-        // value was consulted), so a Buddhist year formats as 2050 + 543 = 2593.
+        // The calendar OPTION must reach the shared library's resolved calendar (previously only
+        // the -u-ca- tag value was consulted), so a Buddhist year formats as 2050 + 543 = 2593.
+        // Revised 2026-11-09, at SJL-9.5 (review of task 8.5): the comment read "The calendar
+        // OPTION must reach ResolvedCalendar"; ResolvedCalendar was deleted with task 8.5, and the
+        // calendar is ResolveLocale's ca key resolved by the shared Intl library.
         Assert.Equal("buddhist|2593|buddhist|2593", result.ToString());
     }
 

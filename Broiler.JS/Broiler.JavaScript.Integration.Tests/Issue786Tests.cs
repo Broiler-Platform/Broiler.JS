@@ -232,9 +232,12 @@ public class Issue786Tests
 
     [Fact]
     public void Date_ToLocaleString_DefaultsToDateAndTime()
-        // ToDateTimeOptions(options, "any", "all"): an options object with no component/style shows
-        // the full date+time (a lone supplementary option like era does not suppress the defaults),
-        // matching Temporal.Instant.prototype.toLocaleString.
+        // CreateDateTimeFormat's required "any" and defaults "all": an options object with no
+        // component/style shows the full date+time (a lone supplementary option like era does not
+        // suppress the defaults), matching Temporal.Instant.prototype.toLocaleString.
+        // Revised 2026-11-09, at SJL-9.5 (review of task 8.5, row T2): the comment began
+        // "ToDateTimeOptions(options, "any", "all")"; Date.prototype.toLocaleString no longer reads
+        // its options through ToDateTimeOptions.
         => Assert.Equal(
             Eval("new Temporal.Instant(0n).toLocaleString('en-US', {timeZone:'UTC'})"),
             Eval("new Date(0).toLocaleString('en-US', {timeZone:'UTC'})"));

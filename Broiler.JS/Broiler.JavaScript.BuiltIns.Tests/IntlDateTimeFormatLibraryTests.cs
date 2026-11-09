@@ -11,6 +11,10 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 // - Row T37 with decision D21 (data policy): a numbering system writes its own decimal symbol from the data, U+066B for
 //   arab, where a hand table in the engine gave it; and de's arab digits take the same symbol.
 // - Rows T14 and T12 (a correction and data policy): German names and CLDR 48.2.0's atTime join.
+// - Rows T2 and T38 (corrections, noted 2026-11-09 at the review of task 8.5): the options go through CoerceOptionsToObject,
+//   so options null is a TypeError for Date.prototype's toLocale* methods (ToDateTimeOptions read it as an empty bag) and
+//   for Temporal.ZonedDateTime.prototype.toLocaleString (read as an empty bag before), and a primitive such as 5 is boxed
+//   for the latter, which formats where it was a TypeError.
 public class IntlDateTimeFormatLibraryTests
 {
     private static void Load() => RuntimeHelpers.RunClassConstructor(typeof(Clr.DefaultClrInterop).TypeHandle);
@@ -42,6 +46,25 @@ public class IntlDateTimeFormatLibraryTests
     public void A_numbering_system_writes_its_own_decimal_symbol(string locale, string expected)
         => Assert.Equal(expected, Eval(
             $"new Intl.DateTimeFormat('{locale}', {{ timeZone: 'UTC', hour: 'numeric', minute: 'numeric', second: 'numeric', fractionalSecondDigits: 3 }}).format({Instant})"));
+
+    [Theory]
+    [InlineData("toLocaleString")]
+    [InlineData("toLocaleDateString")]
+    [InlineData("toLocaleTimeString")]
+    public void Date_toLocale_with_options_null_is_a_TypeError(string method)
+        => Assert.Equal("TypeError", Eval(
+            $"try {{ {Instant}.{method}('en', null); 'none' }} catch (e) {{ e.name }}"));
+
+    [Fact]
+    public void ZonedDateTime_toLocaleString_with_options_null_is_a_TypeError()
+        => Assert.Equal("TypeError", Eval(
+            "try { Temporal.ZonedDateTime.from('2024-01-05T15:07:09[UTC]').toLocaleString('en', null); 'none' } catch (e) { e.name }"));
+
+    [Fact]
+    public void ZonedDateTime_toLocaleString_boxes_a_primitive_options_value()
+        => Assert.Equal(
+            Eval("Temporal.ZonedDateTime.from('2024-01-05T15:07:09[UTC]').toLocaleString('en')"),
+            Eval("Temporal.ZonedDateTime.from('2024-01-05T15:07:09[UTC]').toLocaleString('en', 5)"));
 
     [Fact]
     public void German_names_and_CLDR_s_join()

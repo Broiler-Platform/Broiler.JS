@@ -71,27 +71,12 @@ internal static class TemporalTimeZones
         return false;
     }
 
-    /// <summary>
-    /// The time zone of <c>Intl.DateTimeFormat</c>'s <c>timeZone</c> option (ECMA-402 <c>CreateDateTimeFormat</c>):
-    /// an offset string without seconds, normalised to <c>±HH:MM</c>, or an available name; anything else,
-    /// an ISO date-time string among them, is a <c>RangeError</c>. The name is kept, not its primary: which
-    /// one the formatter reports stays this engine's until the edition both engines pin settles it (row Z8).
-    /// </summary>
-    internal static string ResolveFormatterTimeZone(string timeZone)
-    {
-        if (OffsetTimeZones.IsTimeZoneOffsetString(timeZone))
-        {
-            if (OffsetTimeZones.TryParseOffsetIdentifier(timeZone, out var minutes))
-                return OffsetTimeZones.FormatOffsetIdentifier(minutes);
-
-            throw JSEngine.NewRangeError($"Invalid timeZone option: {timeZone}");
-        }
-
-        if (Database.TryFind(timeZone, out var id))
-            return id.Identifier;
-
-        throw JSEngine.NewRangeError($"Invalid timeZone option: {timeZone}");
-    }
+    // Deleted 2026-11-09, at SJL-9.5 (review of task 8.5, sub-area (d)): ResolveFormatterTimeZone, whose last reader,
+    // JSIntlDateTimeFormat's ReadTimeZoneOption, went with task 8.5; Intl.DateTimeFormat's timeZone option now resolves
+    // through the shared library's ResolvedTimeZone.Resolve. Its summary read: "The time zone of Intl.DateTimeFormat's
+    // timeZone option (ECMA-402 CreateDateTimeFormat): an offset string without seconds, normalised to ±HH:MM, or an
+    // available name; anything else, an ISO date-time string among them, is a RangeError. The name is kept, not its
+    // primary: which one the formatter reports stays this engine's until the edition both engines pin settles it (row Z8)."
 
     /// <summary>The rules of a canonical identifier: a fixed offset, or the named zone's, which is its primary's.</summary>
     internal static ITimeZoneRules Rules(string timeZone) =>

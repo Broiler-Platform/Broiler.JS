@@ -9,6 +9,8 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 // - Row U9 (a correction): a String is parsed into fields; Temporal.Duration.prototype's getters are never called.
 // - Rows U1, U2 and U3 (corrections): GetDurationUnitOptions' display defaults after a numeric unit, a sub-second numeric
 //   unit as "fractional" (reported "numeric"), and ValidateDurationUnitStyle's RangeError for a fraction always displayed.
+// - Row U4 (a correction, noted 2026-11-09 at the review of task 8.6): a unit's display option is read before
+//   ValidateDurationUnitStyle's RangeError for a word style after a numeric unit; the former engine threw before the read.
 // - Row U13 (data policy): the digital clock's separator is CLDR's timeSeparator, "." for da.
 // - Row U16 with decision D21 (data policy): arab digits with arab's own symbols, U+061C before the minus.
 public class IntlDurationFormatLibraryTests
@@ -49,6 +51,13 @@ public class IntlDurationFormatLibraryTests
     public void A_fraction_always_displayed_is_a_RangeError()
         => Assert.Equal("RangeError", Eval(
             "try { new Intl.DurationFormat('en', { milliseconds: 'numeric', millisecondsDisplay: 'always' }); 'none' } catch (e) { e.name }"));
+
+    [Fact]
+    public void The_display_option_is_read_before_a_word_style_after_a_numeric_unit_is_refused()
+        => Assert.Equal("minutes,minutesDisplay|RangeError", Eval(
+            "var r = []; var o = { hours: 'numeric', get minutes() { r.push('minutes'); return 'long'; },"
+            + " get minutesDisplay() { r.push('minutesDisplay'); return 'auto'; } };"
+            + "var n; try { new Intl.DurationFormat('en', o); n = 'none'; } catch (e) { n = e.name; } r.join() + '|' + n"));
 
     [Theory]
     [InlineData("en", "1:02:03")]
