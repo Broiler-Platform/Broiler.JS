@@ -25,7 +25,7 @@ files of `generated/`, from its cut-over, milestone SJL-9.5. Until then nothing 
 |---|---|
 | `IntlCldrPin`, `IntlUcdPin` | The two pins' readers and checks, the UCA version tied to the Unicode version |
 | `CldrUcd` | The subset of the UCD the generator reads |
-| `IntlLocaleList`, `IntlGeneratorOptions` | The parameters: the locales the data supports, the main-data locales, the supplemental languages, which numbering systems' symbols the number table carries, the calendars and the tailorings |
+| `IntlLocaleList`, `IntlGeneratorOptions` | The parameters: the locales the data supports, the main-data locales, the supplemental languages, which numbering systems' symbols the number table carries, which plural forms of a currency's name the currency table carries, the calendars and the tailorings |
 | `CldrTableGenerator` | The tables, Broiler.VM's, collation included |
 | `IntlTableSource` | The tables as C#, with `TableSourceOptions`, as the time tables' writers: with Broiler.VM's options, Broiler.VM's `JsCldrTables.g.cs` byte for byte before its assurance pass |
 | `IntlTableFiles` | The tables as raw files, one per table, and `tables.manifest` |
@@ -47,7 +47,11 @@ root collation, and Broiler.JS's tailorings are its own list, Broiler.VM's JSD-0
 search and German phonebook and search, then every collation CLDR 48.2.0 gives for `es`, `sv` and `th`, with Thai's
 settings in `collation-settings.txt` - where Broiler.VM's stay its three (rule N28). The sentence read "Both carry the same
 global tables (likely subtags, aliases, extensions, currency digits, numbering systems, metazones, hour cycles, weeks,
-scripts and collation).")*
+scripts and collation).")* *(Added 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix library first", on row N4 of
+JSD-0082: Broiler.JS's currency table carries every plural form CLDR gives a currency's name - each line's four fields after
+Broiler.VM's nine, the `zero`, `two`, `few` and `many` names (`IntlGeneratorOptions.CurrencyNamePlurals`) - where Broiler.VM's
+keeps `one` and `other` alone; and the table row above named the parameters without "which plural forms of a currency's name
+the currency table carries".)*
 
 ## The generated tables
 

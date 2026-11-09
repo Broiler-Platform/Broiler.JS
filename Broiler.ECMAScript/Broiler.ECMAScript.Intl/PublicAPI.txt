@@ -54,10 +54,13 @@ Broiler.ECMAScript.Intl.CurrencyDisplay.value__ field System.Int32
 Broiler.ECMAScript.Intl.CurrencyNames struct : System.IEquatable`1<Broiler.ECMAScript.Intl.CurrencyNames>
 Broiler.ECMAScript.Intl.CurrencyNames..ctor(System.String, System.String, System.String, System.String, System.String, System.String, System.String) method System.Void
 Broiler.ECMAScript.Intl.CurrencyNames.Deconstruct(System.String&, System.String&, System.String&, System.String&, System.String&, System.String&, System.String&) method System.Void
+Broiler.ECMAScript.Intl.CurrencyNames.DisplayName(System.String) method System.String
 Broiler.ECMAScript.Intl.CurrencyNames.Equals(Broiler.ECMAScript.Intl.CurrencyNames) method System.Boolean
 Broiler.ECMAScript.Intl.CurrencyNames.Equals(System.Object) method virtual System.Boolean
 Broiler.ECMAScript.Intl.CurrencyNames.GetHashCode() method virtual System.Int32
 Broiler.ECMAScript.Intl.CurrencyNames.ToString() method virtual System.String
+Broiler.ECMAScript.Intl.CurrencyNames.get_Few() method System.String
+Broiler.ECMAScript.Intl.CurrencyNames.get_Many() method System.String
 Broiler.ECMAScript.Intl.CurrencyNames.get_Name() method System.String
 Broiler.ECMAScript.Intl.CurrencyNames.get_Narrow() method System.String
 Broiler.ECMAScript.Intl.CurrencyNames.get_NarrowEnds() method System.String
@@ -65,8 +68,12 @@ Broiler.ECMAScript.Intl.CurrencyNames.get_One() method System.String
 Broiler.ECMAScript.Intl.CurrencyNames.get_Other() method System.String
 Broiler.ECMAScript.Intl.CurrencyNames.get_Symbol() method System.String
 Broiler.ECMAScript.Intl.CurrencyNames.get_SymbolEnds() method System.String
+Broiler.ECMAScript.Intl.CurrencyNames.get_Two() method System.String
+Broiler.ECMAScript.Intl.CurrencyNames.get_Zero() method System.String
 Broiler.ECMAScript.Intl.CurrencyNames.op_Equality(Broiler.ECMAScript.Intl.CurrencyNames, Broiler.ECMAScript.Intl.CurrencyNames) method static System.Boolean
 Broiler.ECMAScript.Intl.CurrencyNames.op_Inequality(Broiler.ECMAScript.Intl.CurrencyNames, Broiler.ECMAScript.Intl.CurrencyNames) method static System.Boolean
+Broiler.ECMAScript.Intl.CurrencyNames.set_Few(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.CurrencyNames.set_Many(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Intl.CurrencyNames.set_Name(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Intl.CurrencyNames.set_Narrow(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Intl.CurrencyNames.set_NarrowEnds(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
@@ -74,6 +81,8 @@ Broiler.ECMAScript.Intl.CurrencyNames.set_One(System.String) method System.Void 
 Broiler.ECMAScript.Intl.CurrencyNames.set_Other(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Intl.CurrencyNames.set_Symbol(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Intl.CurrencyNames.set_SymbolEnds(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.CurrencyNames.set_Two(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Intl.CurrencyNames.set_Zero(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Intl.CurrencySign enum
 Broiler.ECMAScript.Intl.CurrencySign.Accounting = 1
 Broiler.ECMAScript.Intl.CurrencySign.Standard = 0

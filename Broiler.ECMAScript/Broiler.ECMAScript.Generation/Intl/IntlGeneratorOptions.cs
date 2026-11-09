@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   6
-// Annotated:        6/6
-// Exempt:           6
-// Human-reviewed:   0/6
+// Relevant units:   7
+// Annotated:        7/7
+// Exempt:           9
+// Human-reviewed:   0/7
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       6
+// Unverified:       7
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -44,9 +44,32 @@ public enum IntlNumberingSymbols
 }
 
 /// <summary>
+/// Which plural forms of a currency's display name the currency table carries (the owner's decision of 2026-11-08,
+/// "Keep + fix library first", for row N4 of Broiler.VM's JSD-0082).
+/// </summary>
+// Hairs-AI:           Origin=AI; Spec=JSD-0082 N4 currency plural names; IP=Low; Security=Low; Resources=0; Fingerprint=1903DC
+// Hairs-Human:        PENDING
+public enum IntlCurrencyNamePlurals
+{
+    /// <summary>
+    /// The <c>one</c> and <c>other</c> forms alone, the table's nine fields: Broiler.VM's tables, which its rule N28 holds
+    /// byte for byte.
+    /// </summary>
+    OneAndOther = 0,
+
+    /// <summary>
+    /// Besides them, every other plural form CLDR gives a currency's display name - <c>zero</c>, <c>two</c>, <c>few</c> and
+    /// <c>many</c> - as four fields appended to each line, in that order, empty where CLDR gives none.
+    /// </summary>
+    Every = 1,
+}
+
+/// <summary>
 /// The generator's parameters (decision JSD-0082, decision D11): the locale list, which numbering systems'
-/// symbols the number table carries, the calendars whose layers the date table carries, and the collation
-/// tailorings.
+/// symbols the number table carries, which plural forms of a currency's name the currency table carries, the
+/// calendars whose layers the date table carries, and the collation tailorings. <i>(Revised 2026-11-09, by the owner's
+/// decision of 2026-11-08, "Keep + fix library first", row N4; it read "... which numbering systems' symbols the number table
+/// carries, the calendars whose layers the date table carries, and the collation tailorings.")</i>
 /// </summary>
 /// <remarks>
 /// With Broiler.VM's list (<c>de</c>, <c>de-DE</c>, <c>en</c>, <c>en-US</c> and <c>und</c>, main data for
@@ -95,6 +118,12 @@ public sealed record IntlGeneratorOptions
 
     /// <summary>Which numbering systems' symbols the number table carries; <see cref="IntlNumberingSymbols.Latin"/> by default.</summary>
     public IntlNumberingSymbols NumberingSymbols { get; init; } = IntlNumberingSymbols.Latin;
+
+    /// <summary>
+    /// Which plural forms of a currency's display name the currency table carries; <see cref="IntlCurrencyNamePlurals.OneAndOther"/>,
+    /// Broiler.VM's, by default. <i>(Added 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix library first".)</i>
+    /// </summary>
+    public IntlCurrencyNamePlurals CurrencyNamePlurals { get; init; } = IntlCurrencyNamePlurals.OneAndOther;
 
     /// <summary>The calendars the date table carries a layer for, a subset of <see cref="BroilerVmCalendars"/> in its order; all of them by default.</summary>
     public ImmutableArray<string> Calendars { get; init; } = BroilerVmCalendars;

@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   47
-// Annotated:        47/47
-// Exempt:           45
-// Human-reviewed:   0/47
+// Relevant units:   48
+// Annotated:        48/48
+// Exempt:           46
+// Human-reviewed:   0/48
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         7/7
 // Resource impact:  3/10 max
-// Unverified:       47
+// Unverified:       48
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -113,6 +113,12 @@ public sealed class NumberFormatter
 
         /// <summary>The plural category of the formatted value, which a name is chosen by.</summary>
         internal string Plural { get; set; } = "other";
+
+        /// <summary>
+        /// Whether the formatted value is finite. A value that is not finite takes the plural category of 0 for its pattern, and a
+        /// currency's name in <c>one</c>'s form where that category is <c>one</c>, else in <c>other</c>'s (row N4).
+        /// </summary>
+        internal bool Finite { get; set; } = true;
     }
 
     private readonly ILocaleData data;
@@ -385,7 +391,7 @@ public sealed class NumberFormatter
         return IntlStatus.Completed;
     }
 
-    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=D2F819
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=C33169
     // Hairs-Falsified-If: a range collapses so that two different ranges write the same String, or its charges differ from each end formatted once and then each end again where the two differ, or the start alone again where they are the same
     // Hairs-Human:        PENDING
     private List<NumberPart> RangeParts(IntlDecimal x, IntlDecimal y, WorkCharge? charge)
@@ -431,7 +437,7 @@ public sealed class NumberFormatter
         if (collapseOuter && first.OuterLength > 0)
         {
             outer = new Built();
-            AddOuter(outer, plurals.SelectRange(first.Plural, second.Plural));
+            AddOuter(outer, plurals.SelectRange(first.Plural, second.Plural), first.Finite && second.Finite);
         }
 
         if (outer is not null)
@@ -650,7 +656,7 @@ public sealed class NumberFormatter
     // ---- building one number ----------------------------------------------------------------------------------------------
 
     /// <summary>PartitionNumberPattern, layered.</summary>
-    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=523B15
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=4887DE
     // Hairs-Falsified-If: a number's String or parts differ from PartitionNumberPattern's over the locale's CLDR patterns and symbols, or a charge moves
     // Hairs-Human:        PENDING
     private Built Build(IntlDecimal x, bool approximately, WorkCharge? charge)
@@ -712,6 +718,7 @@ public sealed class NumberFormatter
             : 0;
 
         built.Plural = plurals.Select(rounded.IsFinite ? n : "0", Notation == NumberNotation.Compact ? exponent : 0);
+        built.Finite = rounded.IsFinite;
 
         var (pattern, patternIsCompact, joined) = Patterns(compactKey, exponent, built.Plural);
 
@@ -777,14 +784,14 @@ public sealed class NumberFormatter
         }
 
         // THE OUTER LAYER: a unit's or a currency's name.
-        AddOuter(built, built.Plural);
+        AddOuter(built, built.Plural, built.Finite);
         return built;
     }
 
     /// <summary>The outer layer for a plural: a unit's pattern, or a currency's name in its pattern (rows N4 and N5).</summary>
-    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Medium; Resources=2; Fingerprint=7B0AD0
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=Medium; Resources=2; Fingerprint=8DCF23
     // Hairs-Human:        PENDING
-    private void AddOuter(Built built, string plural)
+    private void AddOuter(Built built, string plural, bool finite)
     {
         string? pattern = null;
         string? name = null;
@@ -798,11 +805,17 @@ public sealed class NumberFormatter
         {
             pattern = Value("currency.unitPattern-count-" + plural) ??
                 Value("currency.unitPattern-count-other") ?? "{0} {1}";
+            // THE NAME FOR THE NUMBER'S PLURAL CATEGORY, every form CLDR gives (row N4; revised 2026-11-09, by the owner's
+            // decision of 2026-11-08, "Keep + fix library first"): it read `names is not { } found ? Currency : (plural ==
+            // "one" ? found.One : found.Other) is { Length: > 0 } counted ? counted : found.Other.Length != 0 ? found.Other :
+            // found.Name.Length != 0 ? found.Name : Currency`, so that cs, lt and sl wrote their other form for few and many.
+            // A value that is not finite keeps that rule (added 2026-11-09, at review): one's form where 0's category is one,
+            // else other's. ICU writes other's for every language; where 0 is one (fr among them) the library writes one's,
+            // an earlier difference Broiler.VM shares, which needs a row of its own. Named by 0's category, pl and ru would
+            // write many's form and ro few's, away from ICU's answer and from the library's own before this change.
             var names = data.Currency(dataLocale, Currency);
-            name = names is not { } found ? Currency
-                : (plural == "one" ? found.One : found.Other) is { Length: > 0 } counted ? counted
-                : found.Other.Length != 0 ? found.Other
-                : found.Name.Length != 0 ? found.Name : Currency;
+            var category = finite || plural == "one" ? plural : "other";
+            name = names is { } found && found.DisplayName(category) is { Length: > 0 } counted ? counted : Currency;
             nameType = "currency";
         }
 
@@ -1170,7 +1183,7 @@ public sealed class NumberFormatter
     }
 
     /// <summary>Adds the digits of a formatted decimal String: integer groups, the decimal separator, the fraction.</summary>
-    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=41FED9
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter; IP=Low; Security=High; Resources=2; Fingerprint=68A8D5
     // Hairs-Falsified-If: a grouping separator is written where ICU's grouping test with the locale's minimum grouping digits writes none, or the reverse
     // Hairs-Human:        PENDING
     private void AddDigits(Built built, string n)
@@ -1193,7 +1206,9 @@ public sealed class NumberFormatter
         // multiple of g2, and the number groups at all only when its leading group holds at least the minimum grouping digits.
         var upper = integer.Length - 1;
         var groups = UseGrouping != NumberGrouping.Off && grouping1 > 0 && upper - grouping1 + 1 >= minimumGrouping;
-        var group = Symbol("group", ",");
+        // THE CURRENCY STYLE GROUPS WITH currencyGroup (row N3c; added 2026-11-09, by the owner's decision of 2026-11-08, "Keep +
+        // fix library first"): it read `var group = Symbol("group", ",");`.
+        var group = Style == NumberStyle.Currency ? CurrencyGroup() : Symbol("group", ",");
         var start = 0;
 
         for (var index = 0; groups && index < integer.Length; index++)
@@ -1269,6 +1284,30 @@ public sealed class NumberFormatter
         }
 
         return Value("symbols." + name) ?? fallback;
+    }
+
+    /// <summary>
+    /// The currency style's grouping separator (row N3c; added 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix
+    /// library first"): CLDR's <c>currencyGroup</c> where the data states one, as ICU writes a currency's digits with its
+    /// monetary grouping separator - the numbering system's own at the data locale, then at root, then the data locale's
+    /// <c>latn</c> one, as <see cref="Symbol"/> reads a symbol - else the grouping separator. Of the locales of either list
+    /// CLDR 48.2.0 states it for <c>de-AT</c> alone, so <c>de-AT</c> writes <c>€ 1.234,50</c> and <c>1 234,5</c>.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=UTS 35 Part 3 currencyGroup for ECMA-402 sec-partitionnumberpattern row N3c; IP=Low; Security=Medium; Resources=1; Fingerprint=BBD8C5
+    // Hairs-Human:        PENDING
+    private string CurrencyGroup()
+    {
+        if (NumberingSystem != "latn")
+        {
+            var own = "symbols@" + NumberingSystem + ".currencyGroup";
+
+            if ((data.NumberValue(dataLocale, own) ?? data.NumberValue("und", own)) is { } stated)
+            {
+                return stated;
+            }
+        }
+
+        return Value("symbols.currencyGroup") ?? Symbol("group", ",");
     }
 
     /// <summary>The code points of a String, which a range's collapse counts (row N17b).</summary>
