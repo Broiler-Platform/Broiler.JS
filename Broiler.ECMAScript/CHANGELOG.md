@@ -547,7 +547,9 @@ Not yet packed under a version of its own: the stream's next version is set when
   removed. Whether it is a minor change under convention 16 waits for the owner's ruling: the currency table's four fields
   appended to a line keep the data format only on a reading of the design's section 3 that the owner has not confirmed, and
   if the owner does not, the change is a major version under that section. *(Revised 2026-11-09, at review; it read "A minor
-  change under convention 16, which the stream's next version carries; nothing is removed:".)* It adds:
+  change under convention 16, which the stream's next version carries; nothing is removed:".)* *(Settled 2026-11-09: the owner
+  ruled the same day, "Additive: extend D8", so this is a minor change under convention 16, which the stream's next version
+  carries; the sentence above, "Whether it is a minor change under convention 16 waits for the owner's ruling", is answered.)* It adds:
   - `CurrencyNames.Zero`, `Two`, `Few` and `Many`, init properties empty by default, and `CurrencyNames.DisplayName(string)`,
     the name for a plural category with UTS #35's fallback to `other`'s form, then the display name;
     `TableLocaleData.Currency` fills the four from a currency line that carries them;

@@ -449,7 +449,12 @@ the fields Broiler.VM's tables write, would also keep the format, since every re
 and the rest are new. It extends decision D8's exception, which speaks of `IntlTable` values alone. Until the owner rules,
 the change is either a minor version under that extended exception or a **major version** under this paragraph's rule. The
 `Currencies` table is the first so extended: in Broiler.JS's tables each line carries the name's `zero`, `two`, `few` and
-`many` forms after its nine fields; Broiler.VM's lines keep nine, and the library refuses a line of ten to twelve.)*
+`many` forms after its nine fields; Broiler.VM's lines keep nine, and the library refuses a line of ten to twelve.)* *(Noted 2026-11-09: the
+owner ruled the same day, "Additive: extend D8": fields appended to a text table's line, after the fields Broiler.VM's
+tables write, keep the format, as an appended `IntlTable` value does under decision D8, whose exception this extends; the
+change is a minor version. The alternative not taken was "Format change: major". The note above read "this is a reading for
+the owner to confirm, not a ruling" and "Until the owner rules, the change is either a minor version under that extended
+exception or a **major version** under this paragraph's rule"; the ruling settles it.)*
 
 **The data versions are public** (exit clause 2, convention 13): `IIntlDataSet.CldrVersion`, and the generator's
 `IntlDataVersions`, the CLDR, UCA and Unicode versions it writes from. The data's notices travel with the tables

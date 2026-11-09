@@ -118,7 +118,8 @@ public enum IntlTable
     /// <c>zero</c>, <c>two</c>, <c>few</c> and <c>many</c> names, each empty where CLDR gives none. <i>(Added 2026-11-09, with
     /// the change the owner's decision of 2026-11-08, "Keep + fix library first", calls for on row N4; Broiler.VM's tables carry
     /// the nine alone. That fields appended after the nine keep the format, since a reader takes a line's first fields, is a
-    /// reading for the owner to confirm, not that decision's: the design's section 3.)</i> A line with more than nine fields but
+    /// reading for the owner to confirm, not that decision's: the design's section 3.)</i> <i>(Settled 2026-11-09: the owner
+    /// ruled "Additive: extend D8", so the appended fields keep the format.)</i> A line with more than nine fields but
     /// fewer than thirteen is refused. <i>(Added 2026-11-09, at review.)</i>
     /// </summary>
     Currencies = 9,
