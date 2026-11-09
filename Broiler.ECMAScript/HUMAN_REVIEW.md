@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `hairs.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2981 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2991 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 168 |
-| Code units | 4645 |
-| Relevant | 2981 |
-| Exempt | 1664 |
-| Assessed | 2981 of 2981 (100%) |
-| Human reviewed | 0 of 2981 (0%) |
-| Unverified | 2981 |
+| Code units | 4657 |
+| Relevant | 2991 |
+| Exempt | 1666 |
+| Assessed | 2991 of 2991 (100%) |
+| Human reviewed | 0 of 2991 (0%) |
+| Unverified | 2991 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2981 |
+| HUMAN_PENDING | 2991 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1664 |
+| EXEMPT | 1666 |
 
 ## 5. Aliases In The Tree
 
@@ -221,10 +221,10 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Intl/Collation/UcaCollationData.cs` | 60 | 42 | 18 | 42 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/Collation/UcaCollator.cs` | 14 | 9 | 5 | 9 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/Collation/UcaCollatorOptions.cs` | 10 | 4 | 6 | 4 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` | 35 | 29 | 6 | 29 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` | 36 | 30 | 6 | 30 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/DateIntervalFormatter.cs` | 43 | 33 | 10 | 33 | Low | High | 2/2 |
-| `Broiler.ECMAScript.Intl/DateTimeData.cs` | 22 | 14 | 8 | 14 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Intl/DateTimeFormat.cs` | 38 | 21 | 17 | 21 | Low | High | 5/5 |
+| `Broiler.ECMAScript.Intl/DateTimeData.cs` | 25 | 17 | 8 | 17 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Intl/DateTimeFormat.cs` | 42 | 25 | 17 | 25 | Low | High | 5/5 |
 | `Broiler.ECMAScript.Intl/DateTimeFormatOptions.cs` | 60 | 18 | 42 | 18 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` | 55 | 40 | 15 | 40 | Low | High | 5/5 |
 | `Broiler.ECMAScript.Intl/DateTimePatternGenerator.cs` | 83 | 68 | 15 | 68 | Low | High | 3/3 |
@@ -232,7 +232,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Intl/DisplayNamesCore.cs` | 29 | 11 | 18 | 11 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/DurationFormatCore.cs` | 65 | 33 | 32 | 33 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Intl/IIntlDataSet.cs` | 35 | 3 | 32 | 3 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Intl/ILocaleData.cs` | 28 | 25 | 3 | 25 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Intl/ILocaleData.cs` | 29 | 25 | 4 | 25 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlDecimal.cs` | 37 | 27 | 10 | 27 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Intl/IntlStatus.cs` | 32 | 1 | 31 | 1 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlTableText.cs` | 6 | 6 | 0 | 6 | Low | High | 1/1 |
@@ -251,7 +251,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Intl/RelativeTimeFormatter.cs` | 18 | 8 | 10 | 8 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/ResolvedTimeZone.cs` | 14 | 4 | 10 | 4 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/SupportedValues.cs` | 6 | 4 | 2 | 4 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Intl/TableLocaleData.cs` | 85 | 71 | 14 | 71 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Intl/TableLocaleData.cs` | 88 | 73 | 15 | 73 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Intl/ZoneNamer.cs` | 21 | 19 | 2 | 19 | Low | High | 2/2 |
 
 ## 7. Decisions Recorded
@@ -641,7 +641,7 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a range's String differs from PartitionDateTimeRangePattern's over CLDR intervalFormats and the fallback pattern
 - `Broiler.ECMAScript.Intl.DateIntervalFormatter.Largest(LocalDateTime, LocalDateTime)` in `Broiler.ECMAScript.Intl/DateIntervalFormatter.cs` - Security=High, Spec=ECMA-402 sec-partitiondatetimerangepattern UTS35 Part 4 intervalFormats via Broiler.VM JsDateIntervalFormat (ICU DateIntervalFormat), `6854FD`, PENDING
   - Falsified if: the largest differing field differs from ICU's for the two local times, so another interval pattern is chosen
-- `Broiler.ECMAScript.Intl.DateTimeFormat.Create(DateTimeData, ResolvedLocale, DateTimeFormatOptions, out DateTimeFormat?)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat, hourCycle12 and hourCycle24 by CLDR's allowed formats (JSD-0082 row T10), `1C7E53`, PENDING
+- `Broiler.ECMAScript.Intl.DateTimeFormat.Create(DateTimeData, ResolvedLocale, DateTimeFormatOptions, out DateTimeFormat?)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, Spec=ECMA-402 sec-createdatetimeformat as amended by proposal-temporal e8cc03fc via Broiler.VM JsRealm.DateTimeFormat, hourCycle12 and hourCycle24 by CLDR's allowed formats (JSD-0082 row T10), `CB81DE`, PENDING
   - Falsified if: a resolved option differs from CreateDateTimeFormat's as amended by proposal-temporal e8cc03fc, or a refusal is another status
 - `Broiler.ECMAScript.Intl.DateTimeFormat.HandleDateTimeValue(DateTimeValue, out DateTimeFormatter?, out double)` in `Broiler.ECMAScript.Intl/DateTimeFormat.cs` - Security=High, Spec=proposal-temporal e8cc03fc sec-temporal-handledatetimevalue sec-temporal-getdatetimeformat sec-temporal-adjustdatetimestyleformat via Broiler.VM JsRealm.DateTimeFormat, `D0B2D8`, PENDING
   - Falsified if: a value is formatted with another format than HandleDateTimeValue selects, or one it refuses is formatted
@@ -755,5 +755,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1677 of the 2981 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1687 of the 2991 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

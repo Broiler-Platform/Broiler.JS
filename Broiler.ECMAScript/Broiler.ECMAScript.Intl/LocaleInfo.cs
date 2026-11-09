@@ -121,13 +121,16 @@ public static class LocaleInfo
 
     /// <summary>
     /// HourCyclesOfLocale (<c>sec-hourcyclesoflocale</c>): the <c>hc</c> keyword, else CLDR's time data for the preferred
-    /// regions (the <c>rg</c> override first), the preferred cycle and then the allowed ones, <c>h23</c> when the data has
-    /// none (rows L19 to L21).
+    /// regions (the <c>rg</c> override first), each read first for the locale's language and that region and then for the region
+    /// alone, the preferred cycle and then the allowed ones, <c>h23</c> when the data has none (rows L19 to L21). <i>(Revised
+    /// 2026-11-09, by the owner's ruling of that day, "Fix both consumers": the language-and-region entries, such as <c>fr-CA</c>'s,
+    /// are now found; the summary read "else CLDR's time data for the preferred regions (the <c>rg</c> override first), the preferred
+    /// cycle and then the allowed ones".)</i>
     /// </summary>
     /// <param name="locale">The Locale.</param>
     /// <param name="data">The locale data.</param>
     /// <param name="charge">The caller's meter: as <see cref="RegionPreference"/>'s.</param>
-    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=F36BBF
+    // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=3285E9
     // Hairs-Human:        PENDING
     public static IReadOnlyList<string> HourCycles(LocaleRecord locale, ILocaleData data, WorkCharge? charge = null)
     {
@@ -152,7 +155,10 @@ public static class LocaleInfo
                 break;
             }
 
-            if ((data.HourCycles(language + "_" + preferred) ?? data.HourCycles(preferred)) is not { } time)
+            // THE LOCALE'S OWN TIME DATA is keyed language-region, as the table writes CLDR's entries (fr-CA, ar-001): read before the
+            // region's (UTS #35 Part 4, Time Data; row L19). Revised 2026-11-09, by the owner's ruling of that day, "Fix both
+            // consumers": the key was language + "_" + region, which names no entry, so the region's data was always read.
+            if ((data.HourCycles(language + "-" + preferred) ?? data.HourCycles(preferred)) is not { } time)
             {
                 continue;
             }

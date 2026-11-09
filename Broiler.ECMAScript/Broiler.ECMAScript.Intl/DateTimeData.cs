@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   14
-// Annotated:        14/14
+// Relevant units:   17
+// Annotated:        17/17
 // Exempt:           8
-// Human-reviewed:   0/14
+// Human-reviewed:   0/17
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  2/10 max
-// Unverified:       14
+// Unverified:       17
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -178,17 +178,28 @@ internal sealed class DateData
     /// The hour character a region prefers - <c>h</c>, <c>H</c>, <c>K</c> or <c>k</c> - from CLDR's time data, the world's
     /// where the region has none.
     /// </summary>
-    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=8E92E1
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=3724C4
     // Hairs-Human:        PENDING
-    internal char PreferredHourChar(string region)
-    {
-        if ((data.HourCycles(region) ?? data.HourCycles("001")) is not { } cycles)
-        {
-            return 'H';
-        }
+    internal char PreferredHourChar(string region) => PreferredHourChar(data.HourCycles(region) ?? data.HourCycles("001"));
 
-        return cycles.Preferred.Length != 0 ? cycles.Preferred[0] : 'H';
-    }
+    /// <summary>
+    /// The time data of a locale's language and region (UTS #35 Part 4, Time Data): CLDR's entry for the locale itself where it
+    /// states one - <c>fr-CA</c>'s <c>H</c>, <c>ar-001</c>'s <c>h</c> - then the region's, then the world's (row T10).
+    /// <i>(Added 2026-11-09, by the owner's decision of that day, "Keep + fix library first": the formats read the region's alone,
+    /// so <c>ar-001</c> took the world's 24-hour cycle and <c>fr-CA</c> Canada's 12-hour one.)</i>
+    /// </summary>
+    /// <param name="language">The locale's language subtag.</param>
+    /// <param name="region">The locale's region, its likely one where it names none.</param>
+    // Hairs-AI:           Origin=AI; Spec=UTS35 Part 4 Time Data locale then region for ECMA-402 sec-intl.datetimeformat-internal-slots hourCycle, JSD-0082 row T10 (C5); IP=Low; Security=Low; Resources=1; Fingerprint=A7ECE8
+    // Hairs-Human:        PENDING
+    internal RegionHourCycles? HourCycles(string language, string region) =>
+        data.HourCycles(language + "-" + region) ?? data.HourCycles(region) ?? data.HourCycles("001");
+
+    /// <summary>The hour character time data prefers: <c>h</c>, <c>H</c>, <c>K</c> or <c>k</c>, and <c>H</c> where there is none.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots hourCycle over UTS35 Part 4 Time Data preferred, JSD-0082 row T10 (C5); IP=Low; Security=Low; Resources=1; Fingerprint=381D46
+    // Hairs-Human:        PENDING
+    internal static char PreferredHourChar(RegionHourCycles? cycles) =>
+        cycles is { } time && time.Preferred.Length != 0 ? time.Preferred[0] : 'H';
 
     /// <summary>
     /// The hour character of a region's 12-hour cycle (<c>h</c> or <c>K</c>) or 24-hour cycle (<c>H</c> or <c>k</c>), its
@@ -200,11 +211,19 @@ internal sealed class DateData
     /// </summary>
     /// <param name="region">The region whose time data applies.</param>
     /// <param name="twelveHour">Whether the 12-hour cycle is asked for, else the 24-hour one.</param>
-    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots hourCycle12 and hourCycle24 over UTS #35 Time Data allowed formats, JSD-0082 row T10 (C5); IP=Low; Security=Low; Resources=1; Fingerprint=41C730
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots hourCycle12 and hourCycle24 over UTS #35 Time Data allowed formats, JSD-0082 row T10 (C5); IP=Low; Security=Low; Resources=1; Fingerprint=4E14DD
     // Hairs-Human:        PENDING
-    internal char AllowedHourChar(string region, bool twelveHour)
+    internal char AllowedHourChar(string region, bool twelveHour) => AllowedHourChar(data.HourCycles(region) ?? data.HourCycles("001"), twelveHour);
+
+    /// <summary>
+    /// As <see cref="AllowedHourChar(string, bool)"/>, over time data already found: a locale's, a region's or the world's.
+    /// <i>(Added 2026-11-09, with <see cref="HourCycles(string, string)"/>.)</i>
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots hourCycle12 and hourCycle24 over UTS #35 Time Data allowed formats, JSD-0082 row T10 (C5); IP=Low; Security=Low; Resources=1; Fingerprint=E4A52D
+    // Hairs-Human:        PENDING
+    internal static char AllowedHourChar(RegionHourCycles? time, bool twelveHour)
     {
-        if ((data.HourCycles(region) ?? data.HourCycles("001")) is { } cycles)
+        if (time is { } cycles)
         {
             foreach (var format in cycles.Allowed.Split(' ', StringSplitOptions.RemoveEmptyEntries))
             {
