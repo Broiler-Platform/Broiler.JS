@@ -41,18 +41,48 @@ revision's base (`055a51c7`) both hold. That file is not rewritten; this one is 
 
    So under the rule as written, this one row - a path passing at the base that fails after, whatever its class - makes
    parts A and B NOT MET however the rest of the runs read.
+
+   The file loops over `en-US`, `en-US-u-nu-arab`, `en-US-u-nu-deva` and `en-US-u-nu-hanidec` in that order and asserts
+   four times for each (its lines 54 to 57), and test262 stops at the first failing assertion. A failure on the hanidec
+   line 56 above therefore shows that every earlier assertion passed, and it **masks** one: hanidec's line 57,
+   "en-US-u-nu-hanidec: display one numeric-styled unit", which asks the format with `second: "numeric"` alone to include
+   `"六"`. The run records only the failing assertion's message, which would read the same whatever made line 56 fail -
+   U+202F, or a wrong hanidec digit in the two-digit format - so the message alone shows neither the cause nor that line 57
+   would pass. *(This paragraph was added 2026-11-09, at review, before this revision merged.)*
 2. **The revision admits exactly that row, in both parts, as a new class L.** Class L admits the one path, in each variant
-   the run holds, only when it fails after on the one assertion above, because of the U+202F the data writes. The file
-   failing on any other assertion (its `arab`, `deva` or `en-US` lines, or the fractional-second one), timing out or being
-   skipped after is not in L, and no other path is ever in L: every other row passing at the base that fails, times out or
-   is skipped after stays a regression, whatever its class, as the rule says.
+   the run holds, only when it fails after on the one assertion above, because of the U+202F the data writes, and only when
+   a retained probe shows that cause and the masked assertion: at the after commit, in the shell the after run used (the
+   binaries whose hashes the run records) and in the part's zone, the probe prints the String of
+   `new Intl.DateTimeFormat("en-US-u-nu-hanidec", {hour: "2-digit", minute: "2-digit", second: "2-digit"}).format(new Date(2024, 0, 1, 2, 35, 6, 789))`
+   and of the same format with `{second: "numeric"}` alone, each with its code points, and the row is in L only if the
+   first is exactly `"〇二:三五:〇六 AM"` with U+202F before `AM` (the file's expected String with U+202F for its U+0020)
+   and the second includes `"六"`. The file failing on any other assertion (its `arab`, `deva` or `en-US` lines, or the
+   fractional-second one), either probe answer differing, the probe not retained, timing out or being skipped after is not
+   in L, and no other path is ever in L: every other row passing at the base that fails, times out or is skipped after stays
+   a regression, whatever its class, as the rule says. *(The probe clause was added 2026-11-09, at review, before this
+   revision merged: the item read "only when it fails after on the one assertion above, because of the U+202F the data
+   writes. The file failing on any other assertion (...), timing out or being skipped after is not in L".)* The shared
+   library's own test `DateTimeLocaleDataTests.T12_the_hanidec_format_numbering_system_js_asks_for_differs_only_by_U_202F`
+   holds the library to both answers at this merge; it is not the probe, which reads the engine's shell.
 3. **How the script carries it.** `scripts/compliance/compare_test262_paths.py` runs unchanged, as committed at SJL-0.9,
    and this revision changes no file the rule fixes. The script admits the labels C1, C3 and C5 alone and reports a
    classification of a row that passed at the base as refused. So the row is classified in the revision's own file,
    `test262/revised-2026-11-09/classifications.json`, beside the original's, with the class C5 and a reason beginning
    "L (T12, the owner's ruling of 2026-11-09)"; the script reports it as a regression with that classification refused, and
    the bundle's README reads that row, and only that row, as class L. The collector's comparison is run again over the runs
-   the `test262` step retained, into `test262/revised-2026-11-09/`; it takes no run of its own.
+   the `test262` step retained, into `test262/revised-2026-11-09/`; it takes no run of its own. The probe of item 2 is
+   retained beside it, as `test262/revised-2026-11-09/class-l-probe.<part>.txt`, one file per part. *(The last sentence was
+   added 2026-11-09, at review, before this revision merged.)*
+4. **Broiler.VM's records this ruling touches.** Its JSD-0082's decision D21 gives as its reason "Broiler.JS passes
+   test262's `DateTimeFormat/prototype/format/numbering-system.js` at its base. That file asserts U+066B for
+   `en-US-u-nu-arab` (row T37), and template T2 forbids losing it."; this revision admits losing that same file. Its row
+   T37 assertion (`arab`'s U+066B) still passes after, and the file is lost on hanidec's U+202F (row T12, decision D25).
+   Broiler.VM's own dated note under D21 (its commits `0705679` and `dad7795`, on its default branch at `df75f8c`) already
+   qualifies that reason with this ruling. Its correspondence row L16 gives as `getCalendars`' cause "Neither engine's data
+   carries that table, so both answer the empty list's fallback"; from this merge Broiler.JS's tables carry CLDR's calendar
+   preferences and the date-time format reads them, while the library keeps `getCalendars` at `["gregory"]` by choice, as
+   row L16 and part C hold it. That cause is owed a dated note in Broiler.VM, at its next re-pin. Neither touches this
+   rule. *(This item was added 2026-11-09, at review, before this revision merged.)*
 
 **Nothing else changed:** the populations, configurations, timeouts, classes C1, C3 and C5, part B's zone, parts C and D,
 the base and after commits and every other line of the rule are the original's. Part C is not touched by this file: its
@@ -70,7 +100,7 @@ admitted difference classes:
   C1 correction - a row failing at the base passes after, because the shared library follows the pinned text where this engine did not: each row JSD-0082's section "Every row, classified" puts in its column "Correction of Broiler.JS"; each one listed with its path, its variant and its row, and listed in the changelog (decision SJL-D-16)
   C3 implementation-defined - a row failing at the base passes after, because the shared library's choice where the specification leaves one to the implementation (best-fit matching, pattern selection, interval patterns, display-name fallbacks) replaces this engine's: each row in the column "Implementation-defined", listed with its path, its variant, its row and the vector that classifies it
   C5 data policy by decision - a row failing at the base passes after, because the tables the shared generator writes from CLDR 48.2.0 for this engine's locale list (JSD-0082 decision D5) replace host ICU data, the Broiler.Unicode.Cldr.LocaleData package, the CLDR 47.0.0 numbering-system table (decision D13) or a hand-written table: each row in the column "Data policy", listed with its path, its variant, its row and the decision
-  L the one admitted loss, by the owner's ruling of 2026-11-09, "Follow CLDR" - test/intl402/DateTimeFormat/prototype/format/numbering-system.js, in each variant the run holds (original and terser), passing at the base and failing after because the String a format of en-US-u-nu-hanidec with hour, minute and second "2-digit" writes has U+202F NARROW NO-BREAK SPACE before the day period, CLDR 48.2.0's pattern (row T12, data policy C5; JSD-0082 decision D25), where the file's assertion "en-US-u-nu-hanidec: display all time units in 2-digit" asks for U+0020; each variant listed with its path, its variant, row T12, this ruling and the assertion's message as the run records it; the file failing on any other assertion, timing out or being skipped after is not in L, and no other path is
+  L the one admitted loss, by the owner's ruling of 2026-11-09, "Follow CLDR" - test/intl402/DateTimeFormat/prototype/format/numbering-system.js, in each variant the run holds (original and terser), passing at the base and failing after because the String a format of en-US-u-nu-hanidec with hour, minute and second "2-digit" writes has U+202F NARROW NO-BREAK SPACE before the day period, CLDR 48.2.0's pattern (row T12, data policy C5; JSD-0082 decision D25), where the file's assertion "en-US-u-nu-hanidec: display all time units in 2-digit" asks for U+0020, and only when the probe retained as test262/revised-2026-11-09/class-l-probe.<part>.txt, run at the after commit in the shell the after run used (the binaries whose hashes the run records) and in the part's zone, prints for new Intl.DateTimeFormat("en-US-u-nu-hanidec", {hour: "2-digit", minute: "2-digit", second: "2-digit"}).format(new Date(2024, 0, 1, 2, 35, 6, 789)) exactly "〇二:三五:〇六 AM" with U+202F before AM, and for the same format with {second: "numeric"} alone a String that includes "六" (the file's line 57, which the failure masks), each with its code points; each variant listed with its path, its variant, row T12, this ruling, the assertion's message as the run records it and the probe's two answers; the file failing on any other assertion, either probe answer differing, the probe not retained, timing out or being skipped after is not in L, and no other path is
 the resolved time zone is not a class: this engine already reports the identifier as given, which decision D15 keeps, so a verdict that moves on it is a regression
 every other difference is a regression, including a row that passes at the base and fails, times out or is skipped after, whatever its class, but for the rows class L admits, and a row whose verdict moves between failed, timed out and skipped without a class
 MET if and only if both runs are complete (every expected shard reported, no configuration failure, one suite revision, one shell, every shard in the zone, includeNegative true in both), the two runs' host-zone records read alike, the script finds them comparable, no row passing at the base fails, times out or is skipped after but those class L admits, and every changed verdict is in C1, C3, C5 or L and is listed.
@@ -92,8 +122,11 @@ NOT MET otherwise; and if the two runs' host-zone records differ, the part is no
 ```
 
 **How it is read.** As the rule's parts A and B are read, with one more table in the bundle: the class-L row of each part,
-per variant, with its path, its variant, row T12, this ruling and the failing assertion's message as the run records it. A
-part whose script report lists a regression other than a class-L row is NOT MET.
+per variant, with its path, its variant, row T12, this ruling, the failing assertion's message as the run records it and the
+probe's two answers with their code points. A part whose script report lists a regression other than a class-L row, or
+whose probe is missing or answers otherwise, is NOT MET. *(Revised 2026-11-09, at review, before this revision merged: the
+paragraph read "...this ruling and the failing assertion's message as the run records it. A part whose script report lists
+a regression other than a class-L row is NOT MET.")*
 
 ## The rule it revises, quoted whole
 
