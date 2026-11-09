@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   17
-// Annotated:        17/17
+// Relevant units:   15
+// Annotated:        15/15
 // Exempt:           8
-// Human-reviewed:   0/17
+// Human-reviewed:   0/15
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  2/10 max
-// Unverified:       17
+// Unverified:       15
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -175,14 +175,6 @@ internal sealed class DateData
     }
 
     /// <summary>
-    /// The hour character a region prefers - <c>h</c>, <c>H</c>, <c>K</c> or <c>k</c> - from CLDR's time data, the world's
-    /// where the region has none.
-    /// </summary>
-    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 C5 data reads at the data locale (D5) via Broiler.VM JsDateData; IP=Low; Security=Low; Resources=1; Fingerprint=3724C4
-    // Hairs-Human:        PENDING
-    internal char PreferredHourChar(string region) => PreferredHourChar(data.HourCycles(region) ?? data.HourCycles("001"));
-
-    /// <summary>
     /// The time data of a locale's language and region (UTS #35 Part 4, Time Data): CLDR's entry for the locale itself where it
     /// states one - <c>fr-CA</c>'s <c>H</c>, <c>ar-001</c>'s <c>h</c> - then the region's, then the world's (row T10).
     /// <i>(Added 2026-11-09, by the owner's decision of that day, "Keep + fix library first": the formats read the region's alone,
@@ -202,23 +194,26 @@ internal sealed class DateData
         cycles is { } time && time.Preferred.Length != 0 ? time.Preferred[0] : 'H';
 
     /// <summary>
-    /// The hour character of a region's 12-hour cycle (<c>h</c> or <c>K</c>) or 24-hour cycle (<c>H</c> or <c>k</c>), its
-    /// [[hourCycle12]] or [[hourCycle24]] where the region prefers a cycle of the other kind: the first of that kind among
-    /// CLDR's allowed formats for the region, the world's where the region has no time data, and <c>h</c> or <c>H</c> where
-    /// none of them is of that kind (row T10). CLDR allows Japan's <c>H K h</c>, so <c>ja</c>'s 12-hour cycle is <c>h11</c>,
-    /// as test262's <c>intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js</c> asks; every other region of
-    /// CLDR 48.2.0's time data allows <c>h</c> before any <c>K</c>, and none allows <c>k</c>.
+    /// The hour character of a 12-hour cycle (<c>h</c> or <c>K</c>) or 24-hour cycle (<c>H</c> or <c>k</c>), the
+    /// [[hourCycle12]] or [[hourCycle24]] of time data already found - a locale's, a region's or the world's (see
+    /// <see cref="HourCycles(string, string)"/>) - where it prefers a cycle of the other kind: the first of that kind among
+    /// its allowed formats, and <c>h</c> or <c>H</c> where there is no time data or none of them is of that kind (row T10).
+    /// CLDR allows Japan's <c>H K h</c>, so <c>ja</c>'s 12-hour cycle is <c>h11</c>, as test262's
+    /// <c>intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js</c> asks; every other region of CLDR 48.2.0's
+    /// time data allows <c>h</c> before any <c>K</c>, and none allows <c>k</c>.
+    /// <i>(Added 2026-11-09, with <see cref="HourCycles(string, string)"/>, by the owner's decision of that day, "Keep + fix
+    /// library first"; revised the same day, at review, when the instance overloads <c>AllowedHourChar(string region, bool
+    /// twelveHour)</c> and <c>PreferredHourChar(string region)</c>, which read a region's time data alone and which nothing
+    /// called any more, were removed. This summary read "As <c>AllowedHourChar(string, bool)</c>, over time data already found:
+    /// a locale's, a region's or the world's."; the removed overload's read "The hour character of a region's 12-hour cycle
+    /// (<c>h</c> or <c>K</c>) or 24-hour cycle (<c>H</c> or <c>k</c>), its [[hourCycle12]] or [[hourCycle24]] where the region
+    /// prefers a cycle of the other kind: the first of that kind among CLDR's allowed formats for the region, the world's where
+    /// the region has no time data, and <c>h</c> or <c>H</c> where none of them is of that kind (row T10)", and
+    /// <c>PreferredHourChar(string)</c>'s "The hour character a region prefers - <c>h</c>, <c>H</c>, <c>K</c> or <c>k</c> -
+    /// from CLDR's time data, the world's where the region has none.")</i>
     /// </summary>
-    /// <param name="region">The region whose time data applies.</param>
+    /// <param name="time">The time data that applies, or <see langword="null"/> where there is none.</param>
     /// <param name="twelveHour">Whether the 12-hour cycle is asked for, else the 24-hour one.</param>
-    // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots hourCycle12 and hourCycle24 over UTS #35 Time Data allowed formats, JSD-0082 row T10 (C5); IP=Low; Security=Low; Resources=1; Fingerprint=4E14DD
-    // Hairs-Human:        PENDING
-    internal char AllowedHourChar(string region, bool twelveHour) => AllowedHourChar(data.HourCycles(region) ?? data.HourCycles("001"), twelveHour);
-
-    /// <summary>
-    /// As <see cref="AllowedHourChar(string, bool)"/>, over time data already found: a locale's, a region's or the world's.
-    /// <i>(Added 2026-11-09, with <see cref="HourCycles(string, string)"/>.)</i>
-    /// </summary>
     // Hairs-AI:           Origin=AI; Spec=ECMA-402 sec-intl.datetimeformat-internal-slots hourCycle12 and hourCycle24 over UTS #35 Time Data allowed formats, JSD-0082 row T10 (C5); IP=Low; Security=Low; Resources=1; Fingerprint=E4A52D
     // Hairs-Human:        PENDING
     internal static char AllowedHourChar(RegionHourCycles? time, bool twelveHour)

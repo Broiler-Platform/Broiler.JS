@@ -310,9 +310,12 @@ public sealed class DateTimeFormat
         var preferred = DateData.PreferredHourChar(time);
         var defaultCycle = HourCycleOfChar(preferred);
 
-        // [[hourCycle12]] AND [[hourCycle24]] are the region's preferred cycle where it is of the kind asked for, and otherwise
-        // the first of that kind CLDR's time data allows for the region (row T10): Japan allows "H K h", so ja's is h11, as
-        // test262's hourCycle-default.js asks. Broiler.VM read "h12" and "h23" there, the same answers for its de and en.
+        // [[hourCycle12]] AND [[hourCycle24]] are the locale's preferred cycle (its language and region's time data, then its
+        // region's, then the world's) where it is of the kind asked for, and otherwise the first of that kind that time data
+        // allows (row T10): Japan allows "H K h", so ja's is h11, as test262's hourCycle-default.js asks. Broiler.VM read "h12"
+        // and "h23" there, the same answers for its de and en. (Revised 2026-11-09, at review of the owner's decision of that
+        // day, "Keep + fix library first": it read "are the region's preferred cycle where it is of the kind asked for, and
+        // otherwise the first of that kind CLDR's time data allows for the region (row T10)".)
         var hc = options.Hour12 switch
         {
             true => defaultCycle is "h11" or "h12" ? defaultCycle : HourCycleOfChar(DateData.AllowedHourChar(time, twelveHour: true)),

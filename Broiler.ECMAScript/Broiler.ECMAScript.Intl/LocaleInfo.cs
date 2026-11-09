@@ -58,8 +58,17 @@ namespace Broiler.ECMAScript.Intl;
 public static class LocaleInfo
 {
     /// <summary>
-    /// CalendarsOfLocale (<c>sec-calendarsoflocale</c>): the <c>ca</c> keyword, else the region's calendars in common use,
-    /// which no embedding's data carries, so <c>gregory</c> (row L16, the same in both engines).
+    /// CalendarsOfLocale (<c>sec-calendarsoflocale</c>): the <c>ca</c> keyword, else <c>gregory</c> (row L16, the same in both
+    /// engines), where the specification reads the region's calendars in common use.
+    /// <i>(Revised 2026-11-09, at review of the owner's decision of that day, "Keep + fix library first": the summary read "the
+    /// <c>ca</c> keyword, else the region's calendars in common use, which no embedding's data carries, so <c>gregory</c> (row
+    /// L16, the same in both engines)". From that decision Broiler.JS's tables carry CLDR's calendar preferences
+    /// (<see cref="ILocaleData.CalendarPreferences(string)"/>), and the date-time format's default calendar reads them through
+    /// <see cref="DateTimeFormat.CalendarKeyValuesOf(ILocaleData, string)"/>; this answer keeps <c>gregory</c> by choice, as
+    /// row L16 and part C of Broiler.JS's SJL-9 rule hold it. So over Broiler.JS's tables the two disagree where the region
+    /// prefers another calendar: <c>Intl.DateTimeFormat("th")</c> resolves <c>buddhist</c> and <c>fa</c> <c>persian</c>, while
+    /// <c>new Intl.Locale("th").getCalendars()</c> answers <c>["gregory"]</c>, where the pinned reference answers
+    /// <c>["buddhist", "gregory"]</c>. Broiler.VM's tables carry no preferences, so its two agree.)</i>
     /// </summary>
     /// <param name="locale">The Locale.</param>
     // Hairs-AI:           Origin=Ported; Spec=ECMA-402 locale.html Locale Info via Broiler.VM JsRealm.Locale; IP=Low; Security=Low; Resources=1; Fingerprint=F9A4AD

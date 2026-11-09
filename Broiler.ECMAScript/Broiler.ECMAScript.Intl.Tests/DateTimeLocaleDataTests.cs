@@ -213,6 +213,42 @@ public sealed class DateTimeLocaleDataTests
         Assert.Equal("\u0E51\u0E55:\u0E50\u0E57:\u0E50\u0E59.\u0E51\u0E52\u0E53", Write(Format("en-u-nu-thai", Seconds, hourCycle: "h23"), Instant));
     }
 
+    /// <summary>2024-01-01T02:35:06.789Z, test262's numbering-system.js instant, read in UTC.</summary>
+    private const double NumberingInstant = 1704076506789;
+
+    [Fact]
+    public void Item_4_a_locale_whose_default_system_is_not_latn_writes_that_system_s_decimal_symbol_too()
+    {
+        // No -u-nu- keyword: the resolved default is the number table's defaultNumberingSystem, fa's arabext and ar-EG's arab,
+        // and the separator is that system's, U+066B, where it was the latn ".". The pinned reference (Node v26.12.0, ICU 78.3)
+        // writes "\u06F6\u066B\u06F7\u06F8" for fa and fa-IR and "\u0666\u066B\u0667\u0668" for ar-EG with {second: "numeric", fractionalSecondDigits: 2}.
+        var tenths = new DateTimeComponents { Second = "numeric", FractionalSecondDigits = 2 };
+        Assert.Equal("arabext", Format("fa", tenths).NumberingSystem);
+        Assert.Equal("\u06F6\u066B\u06F7\u06F8", Write(Format("fa", tenths), NumberingInstant));
+        Assert.Equal("\u06F6\u066B\u06F7\u06F8", Write(Format("fa-IR", tenths), NumberingInstant));
+        Assert.Equal("arab", Format("ar-EG", tenths).NumberingSystem);
+        Assert.Equal("\u0666\u066B\u0667\u0668", Write(Format("ar-EG", tenths), NumberingInstant));
+
+        // The latn system of the same locales, and ar, whose default is latn, keep ".".
+        Assert.Equal("6.78", Write(Format("fa-u-nu-latn", tenths), NumberingInstant));
+        Assert.Equal("6.78", Write(Format("ar", tenths), NumberingInstant));
+    }
+
+    [Fact]
+    public void T12_the_hanidec_format_numbering_system_js_asks_for_differs_only_by_U_202F()
+    {
+        // test262's intl402/DateTimeFormat/prototype/format/numbering-system.js (ccaac100), en-US-u-nu-hanidec: its line 56 asks
+        // the 2-digit format to include "\u3007\u4E8C:\u4E09\u4E94:\u3007\u516D AM", with U+0020; the library writes CLDR 48.2.0's U+202F (row T12) and
+        // the file's digits. Its line 57, which a failure at line 56 masks, asks the {second: "numeric"} format to include "\u516D".
+        var twoDigit = new DateTimeComponents { Hour = "2-digit", Minute = "2-digit", Second = "2-digit" };
+        Assert.Equal("\u3007\u4E8C:\u4E09\u4E94:\u3007\u516D\u202FAM", Write(Format("en-US-u-nu-hanidec", twoDigit), NumberingInstant));
+        Assert.Contains("\u516D", Write(Format("en-US-u-nu-hanidec", new DateTimeComponents { Second = "numeric" }), NumberingInstant), StringComparison.Ordinal);
+
+        // Its lines 54 and 55, which pass before line 56 fails.
+        Assert.Contains("\u4E8C:\u4E09\u4E94:\u3007\u516D", Write(Format("en-US-u-nu-hanidec", new DateTimeComponents { Hour = "numeric", Minute = "numeric", Second = "numeric" }), NumberingInstant), StringComparison.Ordinal);
+        Assert.Contains("\u4E8C:\u4E09\u4E94:\u3007\u516D.\u4E03\u516B\u4E5D", Write(Format("en-US-u-nu-hanidec", new DateTimeComponents { Hour = "numeric", Minute = "numeric", Second = "numeric", FractionalSecondDigits = 3 }), NumberingInstant), StringComparison.Ordinal);
+    }
+
     // ---- 5. interval patterns' field widths (ICU's DateIntervalFormat) ----------------------------------------------------------------
 
     /// <summary>

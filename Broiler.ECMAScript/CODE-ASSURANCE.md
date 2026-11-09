@@ -16,12 +16,12 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Files scanned | 168 |
 | Files not covered | 0 |
 | Files carrying an annotation | 168 |
-| Code units | 4657 |
-| Relevant | 2991 |
+| Code units | 4655 |
+| Relevant | 2989 |
 | Exempt by predicate | 1666 |
-| Annotated | 2991 of 2991 (100%) |
-| Human reviewed | 0 of 2991 (0%) |
-| Unverified | 2991 |
+| Annotated | 2989 of 2989 (100%) |
+| Human reviewed | 0 of 2989 (0%) |
+| Unverified | 2989 |
 
 ## Review states
 
@@ -29,7 +29,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2991 |
+| HUMAN_PENDING | 2989 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
@@ -40,7 +40,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 2989 |
+| Low | 2987 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,7 +51,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 1896 |
+| Low | 1894 |
 | Medium | 840 |
 | High | 235 |
 | Critical | 0 |
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.0 / 10 |
-| Units scored | 2991 |
+| Units scored | 2989 |
 
 ## High-security review areas
 
@@ -360,7 +360,7 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `hairs.manifest.json` lists **every** code unit in the 5 covered assemblies -
-4657 of them, exempt and relevant alike - with the fingerprint of its declaration.
+4655 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as

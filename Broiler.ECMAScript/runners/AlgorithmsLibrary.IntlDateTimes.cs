@@ -793,9 +793,14 @@ internal sealed partial class AlgorithmsLibrary
             var hourCycle = GetString(bag, "hourCycle", ["h11", "h12", "h23", "h24"], null);
 
             var match = LocaleNegotiation.MatchLocale(IntlAvailable, requested, IntlDefaultLocale);
+
+            // THE ca VALUES are the matched locale's, as an engine hands them (DateTimeFormat.CalendarKeyValuesOf), as nu's are.
+            // Broiler.VM's available locales are all Gregorian regions, so no answer moves. (Revised 2026-11-09, at review of the
+            // owner's decision of that day, "Keep + fix library first"; it read "new RelevantKey("ca",
+            // DateTimeFormat.CalendarKeyValues) { Option = calendar },".)
             var resolved = LocaleNegotiation.ResolveLocale(match,
             [
-                new RelevantKey("ca", DateTimeFormat.CalendarKeyValues) { Option = calendar },
+                new RelevantKey("ca", DateTimeFormat.CalendarKeyValuesOf(IntlFormatData, match.Locale)) { Option = calendar },
                 new RelevantKey("hc", DateTimeFormat.HourCycleKeyValues) { Option = hour12 is null ? hourCycle : null, OptionIsNull = hour12 is not null },
                 new RelevantKey("nu", DateTimeFormat.NumberingSystemKeyValues(IntlFormatData, match.Locale)) { Option = numberingSystem },
             ], IntlFormatData);

@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `hairs.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2991 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2989 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 168 |
-| Code units | 4657 |
-| Relevant | 2991 |
+| Code units | 4655 |
+| Relevant | 2989 |
 | Exempt | 1666 |
-| Assessed | 2991 of 2991 (100%) |
-| Human reviewed | 0 of 2991 (0%) |
-| Unverified | 2991 |
+| Assessed | 2989 of 2989 (100%) |
+| Human reviewed | 0 of 2989 (0%) |
+| Unverified | 2989 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,7 +67,7 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2991 |
+| HUMAN_PENDING | 2989 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
@@ -223,7 +223,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Intl/Collation/UcaCollatorOptions.cs` | 10 | 4 | 6 | 4 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/CompositeLocaleData.cs` | 36 | 30 | 6 | 30 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/DateIntervalFormatter.cs` | 43 | 33 | 10 | 33 | Low | High | 2/2 |
-| `Broiler.ECMAScript.Intl/DateTimeData.cs` | 25 | 17 | 8 | 17 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Intl/DateTimeData.cs` | 23 | 15 | 8 | 15 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/DateTimeFormat.cs` | 42 | 25 | 17 | 25 | Low | High | 5/5 |
 | `Broiler.ECMAScript.Intl/DateTimeFormatOptions.cs` | 60 | 18 | 42 | 18 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/DateTimeFormatter.cs` | 55 | 40 | 15 | 40 | Low | High | 5/5 |
@@ -755,5 +755,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1687 of the 2991 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1686 of the 2989 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.
