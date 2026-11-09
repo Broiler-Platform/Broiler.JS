@@ -48,12 +48,22 @@ tailorings of Broiler.VM's JSD-0084, decision E3, and CLDR's rules for `es`, `sv
 directories `cmp` found byte-identical, and the `de.xml`, `en.xml` and `root.xml` retrieved with them equal Broiler.VM's. They
 state no version and are held by their hashes alone.
 
+**Broiler.JS's calendar preference file** was added on 2026-11-09, by the owner's decision of that day, "Keep + fix library
+first", and the owner's ruling of that day, "Add file, same tarball" (the alternative not taken: "Leave calendars out"): a
+date-time format's default calendar is the first of CLDR's calendar preferences for its locale's region, and the archive held
+no `calendarPreferenceData.json`. The file is `cldr-48.2.0/json/cldr-core/supplemental/calendarPreferenceData.json`, the member
+of the cldr-core 48.2.0 tarball the pin's `json-integrity cldr-core` line already names, unmodified. The tarball was retrieved
+twice on 2026-11-09 from the npm registry, into two directories `cmp` found byte-identical, and each copy's sha512 was checked
+against that `json-integrity` line, before the file was read from it and again when it was archived; the tarball's
+`timeData.json` and `likelySubtags.json` equal the archived copies. Its `file` line follows Broiler.VM's lines, so they and
+Broiler.VM's tables are unchanged; Broiler.VM's records note the file at its next re-pin.
+
 | | |
 |---|---|
 | Version | **CLDR 48.2.0**; UCA **17.0.0**, the Unicode version of [`../ucd/`](../ucd/README.md) |
 | Files | `cldr-48.2.0/common/` (Broiler.VM's collation files, `common/main/root.xml` and the UCA files; Broiler.JS's `common/main/<locale>.xml` files and, from 2026-11-02, its collation files `es.xml`, `sv.xml` and `th.xml`) and `cldr-48.2.0/json/<package>/` (the cldr-json files), each at its path in its source |
 | Licence | [`cldr-LICENSE.txt`](cldr-LICENSE.txt), the CLDR repository's `LICENSE` at the tag `release-48-2`: the Unicode License v3 (SPDX `Unicode-3.0`) |
-| Retrieved | Broiler.VM's files by Broiler.VM, 2026-10-04 and 2026-10-05; the extra files and the XML files 2026-10-26; the collation files 2026-11-02; each **twice**, byte-identical |
+| Retrieved | Broiler.VM's files by Broiler.VM, 2026-10-04 and 2026-10-05; the extra files and the XML files 2026-10-26; the collation files 2026-11-02; the calendar preference file 2026-11-09; each **twice**, byte-identical |
 
 ### The names files CLDR does not carry
 

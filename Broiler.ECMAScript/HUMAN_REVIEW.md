@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `hairs.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2979 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2981 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 168 |
-| Code units | 4639 |
-| Relevant | 2979 |
-| Exempt | 1660 |
-| Assessed | 2979 of 2979 (100%) |
-| Human reviewed | 0 of 2979 (0%) |
-| Unverified | 2979 |
+| Code units | 4645 |
+| Relevant | 2981 |
+| Exempt | 1664 |
+| Assessed | 2981 of 2981 (100%) |
+| Human reviewed | 0 of 2981 (0%) |
+| Unverified | 2981 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2979 |
+| HUMAN_PENDING | 2981 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1660 |
+| EXEMPT | 1664 |
 
 ## 5. Aliases In The Tree
 
@@ -196,11 +196,11 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Frontend/Tokenizer.cs` | 77 | 57 | 20 | 57 | Low | High | 15/15 |
 | `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` | 45 | 40 | 5 | 40 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Dates.cs` | 13 | 13 | 0 | 13 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` | 43 | 43 | 0 | 43 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` | 44 | 44 | 0 | 44 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Generation/Intl/CldrUcd.cs` | 30 | 25 | 5 | 25 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Generation/Intl/IntlCldrPin.cs` | 17 | 13 | 4 | 13 | Low | High | 7/7 |
 | `Broiler.ECMAScript.Generation/Intl/IntlDataVersions.cs` | 5 | 5 | 0 | 5 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Generation/Intl/IntlGeneratorOptions.cs` | 16 | 7 | 9 | 7 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Generation/Intl/IntlGeneratorOptions.cs` | 20 | 8 | 12 | 8 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Generation/Intl/IntlLocaleList.cs` | 9 | 5 | 4 | 5 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Generation/Intl/IntlTableFiles.cs` | 4 | 4 | 0 | 4 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Generation/Intl/IntlTableSource.cs` | 2 | 2 | 0 | 2 | Low | Low | 0/0 |
@@ -231,7 +231,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Intl/DigitOptions.cs` | 37 | 18 | 19 | 18 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/DisplayNamesCore.cs` | 29 | 11 | 18 | 11 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/DurationFormatCore.cs` | 65 | 33 | 32 | 33 | Low | High | 3/3 |
-| `Broiler.ECMAScript.Intl/IIntlDataSet.cs` | 34 | 3 | 31 | 3 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Intl/IIntlDataSet.cs` | 35 | 3 | 32 | 3 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/ILocaleData.cs` | 28 | 25 | 3 | 25 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlDecimal.cs` | 37 | 27 | 10 | 27 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Intl/IntlStatus.cs` | 32 | 1 | 31 | 1 | Low | Low | 0/0 |
@@ -555,7 +555,7 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: an element with a lower-case or missing hexadecimal digit, or another marker than . or *, is read, or one the expression matches is not
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Tailoring.Apply(RootCollation, CldrUcd, string, Func<string, string?>)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs` - Security=High, Spec=JSD-0082 D11 tailorings via Broiler.VM CldrTableGenerator, `CE9BFD`, PENDING
   - Falsified if: rule syntax outside the supported subset is accepted, or a tailored weight that runs into the next root weight is written
-- `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Generate(IntlCldrPin, IReadOnlyDictionary<string, byte[]>, CldrUcd, IntlGeneratorOptions)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` - Security=High, Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator, `A5FD26`, PENDING
+- `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Generate(IntlCldrPin, IReadOnlyDictionary<string, byte[]>, CldrUcd, IntlGeneratorOptions)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` - Security=High, Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator, `CE48BF`, PENDING
   - Falsified if: tables are written from an archive the pin does not describe, or with Broiler.VM's options they differ from Broiler.VM's generator's
 - `Broiler.ECMAScript.Generation.Intl.CldrTableGenerator.Archive.Bytes(string)` in `Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs` - Security=High, Spec=JSD-0082 D11 CLDR tables, `ADFB0A`, PENDING
   - Falsified if: a file the pin does not name is read, or its absence is answered with empty data
@@ -755,5 +755,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1675 of the 2979 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1677 of the 2981 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

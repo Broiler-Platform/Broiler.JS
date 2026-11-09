@@ -21,9 +21,11 @@ public sealed class ContractTests
     /// <summary>
     /// The values a stage appended for a table Broiler.VM's data never carries (decision D8): milestone SJL-17.3's collation
     /// settings, which an engine without them answers as an empty span. <i>(Added 2026-11-02, at milestone SJL-17.3; until then
-    /// the test held that no value was appended.)</i>
+    /// the test held that no value was appended.)</i> <i>(Extended 2026-11-09, by the owner's decision of that day, "Keep + fix
+    /// library first": the calendar preferences, 33, which an engine without them also answers as an empty span; the list read
+    /// <c>[("CollationSettings", 32)]</c>.)</i>
     /// </summary>
-    private static readonly (string Name, int Number)[] Appended = [("CollationSettings", 32)];
+    private static readonly (string Name, int Number)[] Appended = [("CollationSettings", 32), ("CalendarPreferences", 33)];
 
     [Fact]
     public void IntlTable_keeps_JsIntlTable_s_numbers_and_appends_only_tables_Broiler_VM_s_data_never_carries()

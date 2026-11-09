@@ -167,6 +167,43 @@ public sealed class IntlCompletenessTests
     }
 
     /// <summary>
+    /// The calendar preference table (the owner's decision of 2026-11-09, "Keep + fix library first", and the ruling of that day,
+    /// "Add file, same tarball"): Broiler.JS's tables carry every region of CLDR 48.2.0's <c>calendarPreferenceData.json</c>, in
+    /// CLDR's order, each name as the BCP 47 <c>ca</c> type <c>bcp47/calendar.json</c> gives it; Broiler.VM's carry no such table,
+    /// so its options read no file the pin adds for it.
+    /// </summary>
+    [Fact]
+    public void The_calendar_preferences_are_CLDR_s_as_BCP_47_types_and_Broiler_VM_s_tables_carry_none()
+    {
+        var archive = IntlDataHome.CldrFiles(IntlDataHome.Current, IntlDataHome.ReadCldrPin(IntlDataHome.Current));
+        using var json = JsonDocument.Parse(archive["cldr-48.2.0/json/cldr-core/supplemental/calendarPreferenceData.json"]);
+        var cldr = json.RootElement.GetProperty("supplemental").GetProperty("calendarPreferenceData").EnumerateObject()
+            .ToDictionary(static region => region.Name, static region => region.Value.EnumerateArray().Select(static name => name.GetString()!).ToList(), StringComparer.Ordinal);
+        var lines = Lines(BroilerJs.Value["CalendarPreferences"]);
+
+        Assert.Equal(52, cldr.Count);
+        Assert.Equal(cldr.Keys.Order(StringComparer.Ordinal), lines.Select(static line => line.Split('|')[0]));
+        foreach (var line in lines)
+        {
+            var fields = line.Split('|');
+            Assert.Equal(2, fields.Length);
+            Assert.Equal(cldr[fields[0]].Select(static name => name == "gregorian" ? "gregory" : name), fields[1].Split(' '));
+        }
+
+        Assert.Contains("IR|persian gregory islamic islamic-civil islamic-tbla", lines);
+        Assert.Contains("TH|buddhist gregory", lines);
+        Assert.Contains("001|gregory", lines);
+        Assert.DoesNotContain(lines, static line => line.Contains("gregorian", StringComparison.Ordinal));
+
+        Assert.DoesNotContain(BroilerVm.Value.Tables, static table => table.Name == "CalendarPreferences");
+        Assert.Equal(IntlCalendarPreferences.None, new IntlGeneratorOptions(IntlDataHome.ReadList(IntlDataHome.Current, IntlDataHome.BroilerJsList)).CalendarPreferences);
+        Assert.Equal(IntlCalendarPreferences.Regions, IntlDataHome.BroilerJsOptions(IntlDataHome.Current).CalendarPreferences);
+        Assert.Equal(IntlCalendarPreferences.None, IntlDataHome.BroilerVmOptions(IntlDataHome.Current).CalendarPreferences);
+        Assert.DoesNotContain(IntlCldrPin.Parse(IntlDataHome.BroilerVmPinLines(IntlDataHome.Current)).Entries,
+            static entry => entry.Name.EndsWith("/calendarPreferenceData.json", StringComparison.Ordinal));
+    }
+
+    /// <summary>
     /// Decision D21 for every main-data locale of Broiler.JS's list: each symbol of each numbering system other than
     /// <c>latn</c> that CLDR states for the locale, its parent chain or root - read as a formatter reads the table:
     /// the locale's own <c>symbols@</c> line, else <c>und</c>'s, else the locale's <c>latn</c> symbol - is CLDR

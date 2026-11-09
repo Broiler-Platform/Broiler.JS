@@ -5,7 +5,7 @@
 // --------------------
 // Relevant units:   3
 // Annotated:        3/3
-// Exempt:           31
+// Exempt:           32
 // Human-reviewed:   0/3
 // IP risk:          Low
 // Security risk:    Medium
@@ -73,7 +73,7 @@ public interface IIntlDataSet
 /// appended 32, are read by this library's <see cref="UcaCollationData"/>.)</i>
 /// </para>
 /// </remarks>
-// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 table numbers; IP=Low; Security=Low; Resources=0; Fingerprint=6DF252
+// Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 table numbers; IP=Low; Security=Low; Resources=0; Fingerprint=0500C0
 // Hairs-Human:        PENDING
 public enum IntlTable
 {
@@ -214,4 +214,14 @@ public enum IntlTable
     /// primaries from <c>first</c> to <c>last</c> moved before the root primary <c>before</c>, each four hexadecimal digits.
     /// </summary>
     CollationSettings = 32,
+
+    /// <summary>
+    /// CLDR's calendar preferences (UTS #35 Part 4, Calendar Preference Data), a table Broiler.VM's data never carries:
+    /// <c>region</c>, then the calendars in common use there, most preferred first, as BCP 47 <c>ca</c> types separated by
+    /// spaces (<c>gregory</c>, where CLDR writes <c>gregorian</c>). <i>(Added 2026-11-09, by the owner's decision of that day,
+    /// "Keep + fix library first", and the ruling "Add file, same tarball", which archives CLDR 48.2.0's
+    /// <c>calendarPreferenceData.json</c> from the pinned cldr-core tarball: an embedding that lacks the table answers it as an
+    /// empty span, and its date-time formats default to the Gregorian calendar as before.)</i>
+    /// </summary>
+    CalendarPreferences = 33,
 }

@@ -9,6 +9,10 @@ Broiler.ECMAScript.Generation.Intl.CldrUcd.PropListFile field static const Syste
 Broiler.ECMAScript.Generation.Intl.CldrUcd.Read(System.Collections.Generic.IReadOnlyDictionary`2<System.String,System.Byte[]>) method static Broiler.ECMAScript.Generation.Intl.CldrUcd
 Broiler.ECMAScript.Generation.Intl.CldrUcd.UnicodeDataFile field static const System.String = "ucd-17.0.0/UnicodeData.txt"
 Broiler.ECMAScript.Generation.Intl.CldrUcd.get_Version() method static System.String
+Broiler.ECMAScript.Generation.Intl.IntlCalendarPreferences enum
+Broiler.ECMAScript.Generation.Intl.IntlCalendarPreferences.None = 0
+Broiler.ECMAScript.Generation.Intl.IntlCalendarPreferences.Regions = 1
+Broiler.ECMAScript.Generation.Intl.IntlCalendarPreferences.value__ field System.Int32
 Broiler.ECMAScript.Generation.Intl.IntlCldrPin sealed class
 Broiler.ECMAScript.Generation.Intl.IntlCldrPin.Entry(System.String) method Broiler.ECMAScript.Generation.Intl.IntlPinEntry
 Broiler.ECMAScript.Generation.Intl.IntlCldrPin.Parse(System.String) method static Broiler.ECMAScript.Generation.Intl.IntlCldrPin
@@ -59,6 +63,7 @@ Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.ToString() method virtua
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_BroilerJsTailorings() method static System.Collections.Immutable.ImmutableArray`1<System.String>
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_BroilerVmCalendars() method static System.Collections.Immutable.ImmutableArray`1<System.String>
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_BroilerVmTailorings() method static System.Collections.Immutable.ImmutableArray`1<System.String>
+Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_CalendarPreferences() method Broiler.ECMAScript.Generation.Intl.IntlCalendarPreferences
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_Calendars() method System.Collections.Immutable.ImmutableArray`1<System.String>
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_CurrencyNamePlurals() method Broiler.ECMAScript.Generation.Intl.IntlCurrencyNamePlurals
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_Locales() method Broiler.ECMAScript.Generation.Intl.IntlLocaleList
@@ -66,6 +71,7 @@ Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_NumberingSymbols() m
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.get_Tailorings() method System.Collections.Immutable.ImmutableArray`1<System.String>
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.op_Equality(Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions, Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions) method static System.Boolean
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.op_Inequality(Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions, Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions) method static System.Boolean
+Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.set_CalendarPreferences(Broiler.ECMAScript.Generation.Intl.IntlCalendarPreferences) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.set_Calendars(System.Collections.Immutable.ImmutableArray`1<System.String>) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.set_CurrencyNamePlurals(Broiler.ECMAScript.Generation.Intl.IntlCurrencyNamePlurals) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions.set_NumberingSymbols(Broiler.ECMAScript.Generation.Intl.IntlNumberingSymbols) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)

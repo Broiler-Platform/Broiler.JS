@@ -25,7 +25,7 @@ files of `generated/`, from its cut-over, milestone SJL-9.5. Until then nothing 
 |---|---|
 | `IntlCldrPin`, `IntlUcdPin` | The two pins' readers and checks, the UCA version tied to the Unicode version |
 | `CldrUcd` | The subset of the UCD the generator reads |
-| `IntlLocaleList`, `IntlGeneratorOptions` | The parameters: the locales the data supports, the main-data locales, the supplemental languages, which numbering systems' symbols the number table carries, which plural forms of a currency's name the currency table carries, the calendars and the tailorings |
+| `IntlLocaleList`, `IntlGeneratorOptions` | The parameters: the locales the data supports, the main-data locales, the supplemental languages, which numbering systems' symbols the number table carries, which plural forms of a currency's name the currency table carries, whether the tables carry the calendar preferences, the calendars and the tailorings |
 | `CldrTableGenerator` | The tables, Broiler.VM's, collation included |
 | `IntlTableSource` | The tables as C#, with `TableSourceOptions`, as the time tables' writers: with Broiler.VM's options, Broiler.VM's `JsCldrTables.g.cs` byte for byte before its assurance pass |
 | `IntlTableFiles` | The tables as raw files, one per table, and `tables.manifest` |
@@ -51,7 +51,15 @@ scripts and collation).")* *(Added 2026-11-09, by the owner's decision of 2026-1
 JSD-0082: Broiler.JS's currency table carries every plural form CLDR gives a currency's name - each line's four fields after
 Broiler.VM's nine, the `zero`, `two`, `few` and `many` names (`IntlGeneratorOptions.CurrencyNamePlurals`) - where Broiler.VM's
 keeps `one` and `other` alone; and the table row above named the parameters without "which plural forms of a currency's name
-the currency table carries".)*
+the currency table carries".)* *(Added 2026-11-09, by the owner's decision of that day, "Keep + fix library
+first", and the ruling of that day, "Add file, same tarball": Broiler.JS's tables carry CLDR's calendar preferences, the table
+`calendar-preferences.txt` (each region, then its calendars as BCP 47 types, most preferred first), from which a date-time
+format takes its locale's default calendar, `persian` for `fa` and `buddhist` for `th`. Its input,
+`cldr/cldr-48.2.0/json/cldr-core/supplemental/calendarPreferenceData.json`, is the member of the cldr-core 48.2.0 tarball the pin
+already names, archived under a dated `file` line after Broiler.VM's lines (`cldr.pin`'s block "EXTENDED 2026-11-09"). The
+table is opt-in (`IntlGeneratorOptions.CalendarPreferences`, `IntlCalendarPreferences.None` by default), so Broiler.VM's
+options write its tables byte for byte as before (rule N28); Broiler.VM's records note the file at its next re-pin. The table
+row above named the parameters without "whether the tables carry the calendar preferences".)*
 
 ## The generated tables
 

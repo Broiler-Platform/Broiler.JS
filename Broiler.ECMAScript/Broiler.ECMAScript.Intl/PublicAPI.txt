@@ -576,6 +576,7 @@ Broiler.ECMAScript.Intl.IntlStatus.ZonedDateTimeNotFormatted = 25
 Broiler.ECMAScript.Intl.IntlStatus.value__ field System.Int32
 Broiler.ECMAScript.Intl.IntlTable enum
 Broiler.ECMAScript.Intl.IntlTable.Aliases = 2
+Broiler.ECMAScript.Intl.IntlTable.CalendarPreferences = 33
 Broiler.ECMAScript.Intl.IntlTable.Calendars = 29
 Broiler.ECMAScript.Intl.IntlTable.CollationRoot = 5
 Broiler.ECMAScript.Intl.IntlTable.CollationSettings = 32

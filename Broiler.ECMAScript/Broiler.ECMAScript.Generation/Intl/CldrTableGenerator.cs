@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   43
-// Annotated:        43/43
+// Relevant units:   44
+// Annotated:        44/44
 // Exempt:           0
-// Human-reviewed:   0/43
+// Human-reviewed:   0/44
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         3/3
 // Resource impact:  8/10 max
-// Unverified:       43
+// Unverified:       44
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -127,7 +127,7 @@ public static partial class CldrTableGenerator
     /// <param name="ucd">The UCD subset, read from files the caller verified against a pin.</param>
     /// <param name="options">The locale list and the other parameters.</param>
     /// <exception cref="InvalidDataException">The archive is not the one the pin describes, a file a table reads is not pinned, or a value is not one the table can carry.</exception>
-    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=8; Fingerprint=A5FD26
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=8; Fingerprint=CE48BF
     // Hairs-Falsified-If: tables are written from an archive the pin does not describe, or with Broiler.VM's options they differ from Broiler.VM's generator's
     // Hairs-Human:        PENDING
     public static IntlTables Generate(IntlCldrPin pin, IReadOnlyDictionary<string, byte[]> cldr, CldrUcd ucd, IntlGeneratorOptions options)
@@ -197,6 +197,13 @@ public static partial class CldrTableGenerator
         if (settings.Count > 0)
         {
             tables.Add(Text("CollationSettings", "The settings each tailoring states: tailoring, setting, values.", settings));
+        }
+
+        // A REGION'S CALENDAR PREFERENCES (the owner's decision of 2026-11-09, "Keep + fix library first"): a table Broiler.VM's data
+        // never carries, written only when the options ask for it, so that Broiler.VM's options write its tables as before (rule N28).
+        if (options.CalendarPreferences == IntlCalendarPreferences.Regions)
+        {
+            tables.Add(Text("CalendarPreferences", "The calendars in common use in each region, most preferred first: region, calendars.", CalendarPreferences(archive)));
         }
 
         return new IntlTables(pin.Version, pin.Values.TryGetValue("uca-version", out var uca) ? uca : string.Empty, tables.AsReadOnly(), archive.Absent());
@@ -1027,6 +1034,48 @@ public static partial class CldrTableGenerator
             .Select(static entry => entry.Name + "|" + entry.Value.GetProperty("_allowed").GetString() + "|" + entry.Value.GetProperty("_preferred").GetString())
             .Order(StringComparer.Ordinal)
             .ToList();
+
+    /// <summary>
+    /// CLDR's calendar preferences (UTS #35 Part 4, Calendar Preference Data): each region <c>calendarPreferenceData.json</c>
+    /// names, then its calendars in CLDR's order, each as the BCP 47 <c>ca</c> type the archived <c>bcp47/calendar.json</c> gives
+    /// it - the type itself, or the type an alias names, <c>gregory</c> for <c>gregorian</c>. A name that is neither is refused.
+    /// <i>(Added 2026-11-09, by the owner's decision of that day, "Keep + fix library first".)</i>
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=UTS35 Part 4 calendarPreferenceData with BCP 47 ca types; IP=Low; Security=Medium; Resources=2; Fingerprint=F34FB3
+    // Hairs-Human:        PENDING
+    private static IEnumerable<string> CalendarPreferences(Archive archive)
+    {
+        var types = new Dictionary<string, string>(StringComparer.Ordinal);
+        var keyword = archive.Json("json/cldr-bcp47/bcp47/calendar.json").GetProperty("keyword").GetProperty("u").GetProperty("ca");
+        var defined = keyword.EnumerateObject().Where(static type => !type.Name.StartsWith('_')).ToList();
+
+        foreach (var type in defined)
+        {
+            types[type.Name] = type.Name;
+        }
+
+        foreach (var type in defined)
+        {
+            if (type.Value.TryGetProperty("_alias", out var alias))
+            {
+                foreach (var spelling in (alias.GetString() ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    types.TryAdd(spelling, type.Name);
+                }
+            }
+        }
+
+        string Type(string name) =>
+            types.TryGetValue(name, out var type)
+                ? type
+                : throw new InvalidDataException("calendarPreferenceData.json names the calendar " + name + ", which bcp47/calendar.json does not define");
+
+        return archive.Json("json/cldr-core/supplemental/calendarPreferenceData.json").GetProperty("supplemental").GetProperty("calendarPreferenceData")
+            .EnumerateObject()
+            .Select(region => region.Name + "|" + string.Join(' ', region.Value.EnumerateArray().Select(name => Type(name.GetString() ?? string.Empty))))
+            .Order(StringComparer.Ordinal)
+            .ToList();
+    }
 
     /// <summary>
     /// Each region's week: region, first day, weekend start, weekend end and minimal days in the first week, a
