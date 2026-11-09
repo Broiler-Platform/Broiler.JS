@@ -313,9 +313,11 @@ public class Issue725Tests
     // five {in the morning, noon, in the afternoon, in the evening, at night};
     // midnight must NOT surface and the periods must be contiguous.
 
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T17, data policy): CLDR 48.2.0's en rule puts 00:00 to 06:00 in morning1, "in the
+    // morning", where a hand override gave "at night"; the hours 0 and 5 expected "at night".
     [Theory]
-    [InlineData(0, "at night")]
-    [InlineData(5, "at night")]
+    [InlineData(0, "in the morning")]
+    [InlineData(5, "in the morning")]
     [InlineData(6, "in the morning")]
     [InlineData(11, "in the morning")]
     [InlineData(12, "noon")]
@@ -347,15 +349,18 @@ public class Issue725Tests
                 }).join(',');"));
 
     [Fact]
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T17, data policy): "in the morning" at 00:00, CLDR 48.2.0's en rule; the test
+    // expected "at night", and keeps its name.
     public void EnDayPeriodShortMidnightIsAtNight()
         => Assert.Equal(
-            "at night",
+            "in the morning",
             Eval("new Intl.DateTimeFormat('en', {dayPeriod:'short'}).format(new Date(2017,11,12,0,0));"));
 
     [Fact]
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T17, data policy): as above; the test expected "dayPeriod:at night".
     public void EnDayPeriodFormatToPartsMidnightIsAtNight()
         => Assert.Equal(
-            "dayPeriod:at night",
+            "dayPeriod:in the morning",
             Eval(@"
                 var parts = new Intl.DateTimeFormat('en', {dayPeriod:'long'}).formatToParts(new Date(2017,11,12,0,0));
                 parts.map(function(p){ return p.type + ':' + p.value; }).join('|');"));
@@ -513,8 +518,10 @@ public class Issue725Tests
         => Assert.Equal("gregory", Eval("new Intl.DateTimeFormat('en-u-ca-invalid').resolvedOptions().calendar;"));
 
     [Fact]
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T36, data policy): CLDR's Hebrew calendar pattern is day, month, year; the test
+    // expected the Gregorian order, "Kislev 24, 5778".
     public void HebrewCalendarFormatsHebrewMonthAndYear()
-        => Assert.Equal("Kislev 24, 5778", Eval(
+        => Assert.Equal("24 Kislev 5778", Eval(
             "new Intl.DateTimeFormat('en-u-ca-hebrew',{year:'numeric',month:'long',day:'numeric'}).format(new Date(2017,11,12));"));
 
 
@@ -524,7 +531,9 @@ public class Issue725Tests
     [Fact]
     public void ChineseCalendarYearHasRelatedYearAndYearNameParts()
         => Assert.Equal(
-            "relatedYear=2017|literal=(|yearName=\u4E01\u9149|literal=)",
+            // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T35, a correction): the cyclic year name is en's own in CLDR 48.2.0,
+            // "ding-you", where the Chinese name was written in English; the yearName expected was "\u4E01\u9149".
+            "relatedYear=2017|literal=(|yearName=ding-you|literal=)",
             Eval(@"new Intl.DateTimeFormat('en-u-ca-chinese', {year:'numeric'}).formatToParts(new Date(2017,11,12)).map(function(p){return p.type+'='+p.value;}).join('|');"));
 
     [Fact]

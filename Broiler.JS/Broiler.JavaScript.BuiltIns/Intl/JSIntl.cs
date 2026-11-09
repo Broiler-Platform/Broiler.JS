@@ -19,6 +19,8 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Runtime.Unicode;
 using Broiler.Unicode.Algorithms;
 using Broiler.Unicode.Segmentation;
+// IntlEnumerationData (Intl.supportedValuesOf's currencies and units, sub-area (a)) is the last reader of this namespace
+// here since SJL-9.5's task 8.5, which ends DateTimeFormat's use of CldrLocaleData (noted 2026-11-09).
 using UnicodeCldr.LocaleData;
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
@@ -482,9 +484,16 @@ public static class JSIntl
                 if (a.This is not JSIntlDateTimeFormat @this)
                     throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.format called on incompatible receiver");
 
-                var format = new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
-                format.SetNameProperty(string.Empty);
-                return format;
+                // [[BoundFormat]]: made once, an anonymous function of length 1 (row T4, a correction: a new function was
+                // made at each read, so dtf.format !== dtf.format).
+                if (@this.BoundFormat is null)
+                {
+                    var format = new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
+                    format.SetNameProperty(string.Empty);
+                    @this.BoundFormat = format;
+                }
+
+                return @this.BoundFormat;
             }, "get format", "function get format() { [native code] }", createPrototype: false, length: 0),
             null,
             JSPropertyAttributes.ConfigurableProperty);
@@ -1108,18 +1117,6 @@ public static class JSIntl
     internal static IReadOnlyList<string> NumberingSystemValues(string locale)
         => NumberFormatter.NumberingSystemKeyValues(JSIntlData.LocaleData, JSIntlLocaleProviders.DataLocale(locale));
 
-    // The locale's default numbering system, the first of its nu values (decision D13, row L22), which replaces the
-    // JSIntlDefaultNumberingSystems table generated from CLDR 47.0.0.
-    internal static string DefaultNumberingSystem(string locale) => NumberingSystemValues(locale)[0];
-
-    // A numbering system's digit d (0 to 9) from the data's numbering-system table (ECMA-402 Table 12), or the ASCII digit
-    // for latn or a system the data does not hold; it replaces JSIntlNumberFormat's ContiguousDigitZero and AlgorithmicDigits
-    // tables and MapDigit (deleted 2026-11-08), for DateTimeFormat's digits until task 8.5 moves them.
-    internal static string NumberingSystemDigit(string numberingSystem, int d)
-        => numberingSystem is null or "latn" || JSIntlData.LocaleData.NumberingSystemDigits(numberingSystem) is not { Count: 10 } digits
-            ? ((char)('0' + d)).ToString()
-            : digits[d];
-
     // The parts of a NumberFormat's formatToParts as (type, value) pairs, for Intl.DurationFormat's internals until task 8.6
     // moves them onto the library's duration format.
     internal static List<(string type, string value)> NumberParts(IReadOnlyList<NumberPart> parts)
@@ -1172,6 +1169,15 @@ public static class JSIntl
     // the data's; ResolveNumberingSystem stays, its values now the data's (decision D13), for DateTimeFormat's (task 8.5) and
     // DurationFormat's (task 8.6) readers alone. The Collator's co, kf and kn stay where they are: the brief for task 8.4
     // gives the collator's move to SJL-17.5, so the item above assigned to task 8.4 waits on the Collator's own cut-over.
+    // Noted 2026-11-09, at SJL-9.5 (task 8.5): DateTimeFormat resolves ca, hc and nu through the shared library's ResolveLocale
+    // (JSIntl.ResolveLocale over DateTimeFormat.CalendarKeyValues, HourCycleKeyValues and NumberingSystemValues), and its
+    // hour cycles are the library's, from CLDR's time data (row T10). The task 8.5 items above are deleted with their last
+    // reader: ResolveCalendar, IsAvailableCalendar, IsRenderableCalendar, ReadCalendarOption, DateTimeFormatRelevantKeys,
+    // DateTimeFormatRelevantKeysWithoutHourCycle, DropHourCycleExtension, FilterUnicodeExtensionKeywords, the
+    // TwelveHourRegions table, DefaultHourCycle, Prefers11HourCycle, LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+    // IsAllDigitSubtag; so are NumberingSystemDigit (the digits are the library's, from the data's numbering-system table)
+    // and DefaultNumberingSystem, whose last reader was DateTimeFormat's constructor from a CultureInfo (row T42).
+    // GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword keep the Collator as a reader.
 
     // The relevant extension keys of the services that resolve none: ListFormat, Segmenter, DisplayNames and PluralRules.
     // Revised 2026-11-08, at SJL-9.5 (task 8.4): ListFormat, DisplayNames and PluralRules resolve through the shared
@@ -1184,90 +1190,7 @@ public static class JSIntl
     // library's ResolveLocale (ResolveNumberingSystemLocale) and no longer read the array; the comment read
     // "NumberFormat's, nu, is also RelativeTimeFormat's and DurationFormat's."
     internal static readonly string[] NumberFormatRelevantKeys = ["nu"];
-    internal static readonly string[] DateTimeFormatRelevantKeys = ["ca", "hc", "nu"];
-    // The relevant keys minus "hc": used to drop the locale's -u-hc- extension when an
-    // hour12 / hourCycle option overrides it (ResolveLocale only reflects a keyword whose
-    // value actually came from the locale, not one supplied by an option).
-    internal static readonly string[] DateTimeFormatRelevantKeysWithoutHourCycle = ["ca", "nu"];
-
-    internal static string DropHourCycleExtension(string tag)
-        => FilterUnicodeExtensionKeywords(tag, DateTimeFormatRelevantKeysWithoutHourCycle);
     internal static readonly string[] CollatorRelevantKeys = ["co", "kf", "kn"];
-
-    // Rebuilds a BCP-47 tag keeping only the "-u-" extension keywords whose key is in
-    // relevantKeys; attributes and irrelevant keys are dropped, and the whole "-u-"
-    // sequence is removed when nothing relevant survives. Other singleton extensions
-    // ("-t-", "-x-", …) are preserved.
-    private static string FilterUnicodeExtensionKeywords(string tag, string[] relevantKeys)
-    {
-        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase) < 0)
-            return tag;
-
-        var parts = tag.Split('-');
-        var u = -1;
-        for (var i = 0; i < parts.Length; i++)
-        {
-            if (parts[i].Length != 1)
-                continue;
-            // Stop scanning at the private-use singleton ("x"): everything beyond is
-            // private-use, so a "u" inside that payload is not a Unicode extension.
-            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
-            if (parts[i][0] == 'x' || parts[i][0] == 'X') break;
-        }
-
-        if (u < 0)
-            return tag;
-
-        // Walk the "-u-" extension (up to the next singleton subtag or the end),
-        // grouping subtags into keywords: a 2-char subtag is a key, longer subtags are
-        // its type values (or leading attributes before the first key).
-        var end = u + 1;
-        var keywords = new List<(string Key, List<string> Types)>();
-        while (end < parts.Length && parts[end].Length != 1)
-        {
-            if (parts[end].Length == 2)
-                keywords.Add((parts[end].ToLowerInvariant(), new List<string>()));
-            else if (keywords.Count > 0)
-                keywords[^1].Types.Add(parts[end]);
-            // (a subtag before the first key is an attribute — dropped)
-            end++;
-        }
-
-        var sb = new StringBuilder();
-        for (var i = 0; i < u; i++)
-        {
-            if (i > 0)
-                sb.Append('-');
-            sb.Append(parts[i]);
-        }
-
-        var keptAny = false;
-        foreach (var (key, types) in keywords)
-        {
-            if (System.Array.IndexOf(relevantKeys, key) < 0)
-                continue;
-
-            if (!keptAny)
-            {
-                sb.Append("-u");
-                keptAny = true;
-            }
-
-            sb.Append('-').Append(key);
-            // CanonicalizeUnicodeLocaleId: a boolean-keyword value of "true" is the default and is
-            // dropped (e.g. "kn-true" → "kn"), so resolvedOptions().locale carries just the key.
-            if (types.Count == 1 && string.Equals(types[0], "true", StringComparison.OrdinalIgnoreCase))
-                continue;
-            foreach (var type in types)
-                sb.Append('-').Append(type);
-        }
-
-        // Preserve any later singleton extensions ("-t-", "-x-", …) after the "-u-" run.
-        for (var i = end; i < parts.Length; i++)
-            sb.Append('-').Append(parts[i]);
-
-        return sb.ToString();
-    }
 
     // The numbering systems with simple digit mappings (ECMA-402 Table: "Numbering
     // System Identifiers"), i.e. the `nu` values an implementation negotiates via
@@ -1329,23 +1252,7 @@ public static class JSIntl
         return value;
     }
 
-    // Reads (string-coerces and validates) the calendar option from the bag once,
-    // returning null when absent. InitializeDateTimeFormat reads it right after
-    // localeMatcher and ahead of numberingSystem; a value that is not a well-formed
-    // Unicode BCP-47 extension type is a RangeError.
-    internal static string ReadCalendarOption(JSObject options)
-    {
-        var value = options == null ? null : OptionString(options, KeyStrings.GetOrCreate("calendar"));
-        if (value == null)
-            return null;
-        if (!LocaleId.IsUnicodeType(value))
-            throw JSEngine.NewRangeError("Invalid calendar option");
-        // ResolveLocale lowers an option's value by ASCII casing and replaces a deprecated calendar by its preferred one from
-        // the BCP 47 data ("islamicc" -> "islamic-civil"), the shared library's (SJL-9.5, sub-area (a)).
-        value = LocaleId.AsciiLowercase(value);
-        return JSIntlData.LocaleData.TryExtensionType('u', "ca", value, out var preferred) ? preferred : value;
-    }
-
+    // Noted 2026-11-09, at SJL-9.5 (task 8.5): DateTimeFormat no longer reads it; Intl.DurationFormat is its last reader.
     // Negotiates the resolved `nu` (numbering system) against the locale's `-u-nu-` extension, given the already-read
     // numberingSystem option value, for Intl.DateTimeFormat and Intl.DurationFormat until tasks 8.5 and 8.6 move them onto
     // the library's ResolveLocale: a supported `-u-nu-` value is used and reflected in the locale; a supported option that
@@ -1390,47 +1297,6 @@ public static class JSIntl
         }
     }
 
-    // Negotiates the resolved `ca` (calendar) against the locale's `-u-ca-` extension, given the
-    // already-read+canonicalized calendar option value, mirroring ResolveNumberingSystem. Per
-    // ResolveLocale: a supported `-u-ca-` value is used and reflected in the locale; a supported
-    // option that DIFFERS overrides it and drops the `-u-ca-`; an unsupported value (in either
-    // place) falls through to the default "gregory" with `-u-ca-` removed. "Supported" here is the
-    // set of available canonical calendars (so "iso8601" counts but "invalid" does not).
-    internal static (string Calendar, string Locale) ResolveCalendar(string localeTag, string optionValue)
-    {
-        // The ResolveLocale `ca` negotiation runs over the full set of AVAILABLE canonical calendars,
-        // so any valid identifier (including "hebrew"/"japanese") is kept in the resolved locale; only
-        // an unavailable identifier (e.g. "invalid") falls back to "gregory" and drops the -u-ca-.
-        var value = "gregory";
-        var reflectInLocale = false;
-
-        var ext = GetUnicodeExtensionType(localeTag, "ca");
-        if (IsAvailableCalendar(ext))
-        {
-            value = ext;
-            reflectInLocale = true;
-        }
-
-        if (optionValue != null && IsAvailableCalendar(optionValue) && !string.Equals(optionValue, value, StringComparison.Ordinal))
-        {
-            value = optionValue;
-            reflectInLocale = false;
-        }
-
-        var locale = reflectInLocale ? localeTag : RemoveUnicodeExtensionKeyword(localeTag, "ca");
-        return (value, locale);
-    }
-
-    // A calendar identifier this implementation lists among the available (canonical) calendars.
-    internal static bool IsAvailableCalendar(string c)
-        => c != null && System.Array.IndexOf(AvailableCanonicalCalendars, c) >= 0;
-
-    // A calendar this formatter can actually project: the proleptic Gregorian calendars plus the
-    // special calendars the formatting engine renders. An available-but-unrenderable calendar coming
-    // from the locale's -u-ca- (e.g. "hebrew") is reported as "gregory", matching the gregorian output.
-    internal static bool IsRenderableCalendar(string c)
-        => c is "gregory" or "iso8601" || JSIntlDateTimeFormatEngine.IsSupportedCalendar(c);
-
     // ResolveLocale's per-key reflection rule: the "-u-<key>" keyword stays in the resolved locale
     // when no option overrides it, or when the option value equals the extension value; an option
     // that differs from the extension drops the keyword (test262 .../resolved-*-unicode-extensions-
@@ -1446,8 +1312,9 @@ public static class JSIntl
     }
 
     // Rebuilds a BCP-47 tag dropping a single Unicode ("-u-") extension keyword (and the
-    // whole "-u-" sequence when nothing else survives). Sibling of
-    // FilterUnicodeExtensionKeywords, which keeps a set instead of removing one.
+    // whole "-u-" sequence when nothing else survives).
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5): FilterUnicodeExtensionKeywords is deleted with DateTimeFormat's hand
+    // negotiation; the comment ended "Sibling of FilterUnicodeExtensionKeywords, which keeps a set instead of removing one."
     internal static string RemoveUnicodeExtensionKeyword(string tag, string removeKey)
     {
         if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase) < 0)
@@ -1554,79 +1421,6 @@ public static class JSIntl
         }
 
         return null;
-    }
-
-    // Regions that conventionally use a 12-hour clock; everything else defaults to the 24-hour cycle. DateTimeFormat's hand
-    // table (row T10), which was Intl.Locale's until SJL-9.5's sub-area (a) moved getHourCycles onto CLDR's time data; it
-    // leaves with DateTimeFormat's sub-area (d), task 8.5.
-    private static readonly HashSet<string> TwelveHourRegions = new(StringComparer.Ordinal)
-    {
-        "US", "CA", "AU", "NZ", "IN", "PH", "PK", "BD", "EG", "MX", "CO", "SA",
-    };
-
-    // The CLDR-derived default hour cycle for a locale: "h12" for 12-hour regions (and
-    // English without a region), "h23" otherwise. A coarse approximation of the CLDR
-    // <hours> preference data, sufficient for the common cases.
-    internal static string DefaultHourCycle(string tag)
-    {
-        var region = RegionSubtag(tag);
-        if (region != null)
-            return TwelveHourRegions.Contains(region) ? "h12" : "h23";
-
-        return LanguageSubtag(tag) == "en" ? "h12" : "h23";
-    }
-
-    // CLDR <hours> preferred 12-hour cycle: "h" (h12) in almost every locale, but "K" (h11)
-    // in the small set whose day-period clock starts at 0 — Japan (ja / JP). Used when the
-    // hour12 option requests a 12-hour clock.
-    internal static bool Prefers11HourCycle(string tag)
-    {
-        var region = RegionSubtag(tag);
-        if (region != null)
-            return region == "JP";
-        return LanguageSubtag(tag) == "ja";
-    }
-
-    private static string LanguageSubtag(string tag)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return null;
-
-        var dash = tag.IndexOf('-');
-        return (dash < 0 ? tag : tag.Substring(0, dash)).ToLowerInvariant();
-    }
-
-    private static string RegionSubtag(string tag)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return null;
-
-        var parts = tag.Split('-');
-        var i = 1;
-        if (i < parts.Length && parts[i].Length == 4 && IsAllAlphaSubtag(parts[i]))
-            i++; // skip script
-
-        if (i < parts.Length
-            && ((parts[i].Length == 2 && IsAllAlphaSubtag(parts[i])) || (parts[i].Length == 3 && IsAllDigitSubtag(parts[i]))))
-            return parts[i].ToUpperInvariant();
-
-        return null;
-    }
-
-    private static bool IsAllAlphaSubtag(string s)
-    {
-        foreach (var c in s)
-            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
-                return false;
-        return s.Length > 0;
-    }
-
-    private static bool IsAllDigitSubtag(string s)
-    {
-        foreach (var c in s)
-            if (c < '0' || c > '9')
-                return false;
-        return s.Length > 0;
     }
 
     internal static JSIntlDisplayNamesOptions ValidateDisplayNamesOptions(JSObject options)
@@ -3479,311 +3273,259 @@ public class JSIntlCollator : JSObject
         => Intrinsics.IntlPrototype(IntrinsicKey);
 }
 
+// Intl.DateTimeFormat (ECMA-402 sec-datetimeformat-objects, as tc39/proposal-temporal@e8cc03fc's intl.html amends it) over the
+// shared library's DateTimeFormat (SJL-9.5, task 8.5, sub-area (d); Broiler.VM's JSD-0082, decision D24): the constructor
+// reads every option once, in the specification's order, each checked as it is read, ResolveLocale's ca, hc and nu keys are
+// the library's over the values the data gives the matched locale, and the hour cycle, the calendar's data, the pattern of the
+// styles or of the components, the numbering system's digits, the zone's names, the intervals and the formats of Temporal's
+// types are the library's, over the data home's date data (decision D5) and the shared time zones and calendars. The engine
+// keeps the reads, the default zone (the host's, decision SJL-D-19, row T11), ToDateTimeFormattable, the bound format (row
+// T4), the parts arrays and each RangeError and TypeError, made from the library's status; it passes no charge (row T40).
+// Deleted (2026-11-09): JSIntlDateTimeFormatEngine.cs whole (the en-only pattern resolution, field formatting, interval
+// algorithm and zone names), the option snapshot and every reader of it (OptionString, FractionalSecondDigits,
+// ResolveHour12, ResolveHourCycle, ResolveEnginePattern, ResolvedCalendar, ResolvedCalendarId, UnicodeKeyword,
+// ResolveFields, the TemporalFields flags, RequestedFields, ClassifyTemporal, CheckTemporalCalendar, EffectiveTemporalFields,
+// FormatTemporalToParts, FormatTemporalRangeToParts, ResolveTemporalPattern, StyleMonthWidth, ComputeRangeParts, MapNumbering,
+// the dayPeriod branches and their CLDR day-period reads through CldrLocaleData, SupportsDayPeriod, UsesHourFormatting,
+// DayPeriodStyle, WallHourMinute, DayPeriodRuleOverrides, DayPeriodWidth, DayPeriodNameForStyle, DayPeriodName,
+// ResolveDayPeriodKey, MatchDayPeriodRules, ReadTimeZoneOption, TimeClipRange), the value tables of the option reads now
+// written once (DateTimeStyleValues among them), and the members row T42 names: the constructor from a CultureInfo,
+// Format(DateTimeOffset, JSObject), FormatEnglishHour (both overloads; the int one's last readers were the dayPeriod
+// branches), FormatDayPeriod and the locale field. Its public members stay (decision SJL-D-25, disposition (a)): the
+// constructor, Format, the prototype methods, TemporalToLocaleString, ToDateTimeOptions and ApplyAllDefaults (which no caller
+// of this repository reads any more), and Get(CultureInfo), over the library.
 public class JSIntlDateTimeFormat : JSObject
 {
     private static readonly ConcurrentDictionary<string, JSIntlDateTimeFormat> formats = new();
-    private static readonly KeyString HourKey = KeyStrings.GetOrCreate("hour");
-    private static readonly KeyString DayPeriodKey = KeyStrings.GetOrCreate("dayPeriod");
-    private static readonly KeyString MinuteKey = KeyStrings.GetOrCreate("minute");
-    private static readonly KeyString SecondKey = KeyStrings.GetOrCreate("second");
-    private static readonly KeyString FractionalSecondDigitsKey = KeyStrings.GetOrCreate("fractionalSecondDigits");
-    private static readonly KeyString YearKey = KeyStrings.GetOrCreate("year");
-    private static readonly KeyString MonthKey = KeyStrings.GetOrCreate("month");
-    private static readonly KeyString DayKey = KeyStrings.GetOrCreate("day");
     private static readonly KeyString DateStyleKey = KeyStrings.GetOrCreate("dateStyle");
     private static readonly KeyString TimeStyleKey = KeyStrings.GetOrCreate("timeStyle");
     private static readonly KeyString TimeZoneKey = KeyStrings.GetOrCreate("timeZone");
     private static readonly KeyString Hour12Key = KeyStrings.GetOrCreate("hour12");
     private static readonly KeyString HourCycleKey = KeyStrings.GetOrCreate("hourCycle");
     private static readonly KeyString CalendarKey = KeyStrings.GetOrCreate("calendar");
-    private static readonly KeyString NumberingSystemKey = KeyStrings.GetOrCreate("numberingSystem");
-    private static readonly KeyString WeekdayKey = KeyStrings.GetOrCreate("weekday");
-    private static readonly KeyString EraKey = KeyStrings.GetOrCreate("era");
-    private static readonly KeyString TimeZoneNameKey = KeyStrings.GetOrCreate("timeZoneName");
     private static readonly KeyString FormatMatcherKey = KeyStrings.GetOrCreate("formatMatcher");
+    private static readonly KeyString FractionalSecondDigitsKey = KeyStrings.GetOrCreate("fractionalSecondDigits");
 
-    // The sanctioned value sets for the date/time option getters (CreateDateTimeFormat).
-    private static readonly string[] NarrowShortLong = ["narrow", "short", "long"];
-    private static readonly string[] NumericTwoDigit = ["2-digit", "numeric"];
-    private static readonly string[] MonthValues = ["2-digit", "numeric", "narrow", "short", "long"];
+    // ECMA-402's Table 16 of date-time components, in table order, with the values each option admits; the constructor reads
+    // them in this order.
+    private static readonly (KeyString Key, string[] Values)[] ComponentOptions =
+    [
+        (KeyStrings.GetOrCreate("weekday"), ["narrow", "short", "long"]),
+        (KeyStrings.GetOrCreate("era"), ["narrow", "short", "long"]),
+        (KeyStrings.GetOrCreate("year"), ["2-digit", "numeric"]),
+        (KeyStrings.GetOrCreate("month"), ["2-digit", "numeric", "narrow", "short", "long"]),
+        (KeyStrings.GetOrCreate("day"), ["2-digit", "numeric"]),
+        (KeyStrings.GetOrCreate("dayPeriod"), ["narrow", "short", "long"]),
+        (KeyStrings.GetOrCreate("hour"), ["2-digit", "numeric"]),
+        (KeyStrings.GetOrCreate("minute"), ["2-digit", "numeric"]),
+        (KeyStrings.GetOrCreate("second"), ["2-digit", "numeric"]),
+        (FractionalSecondDigitsKey, null),
+        (KeyStrings.GetOrCreate("timeZoneName"), ["short", "long", "shortOffset", "longOffset", "shortGeneric", "longGeneric"]),
+    ];
+
     private static readonly string[] HourCycleValues = ["h11", "h12", "h23", "h24"];
-    private static readonly string[] TimeZoneNameValues =
-        ["short", "long", "shortOffset", "longOffset", "shortGeneric", "longGeneric"];
     private static readonly string[] FormatMatcherValues = ["basic", "best fit"];
-    private readonly CultureInfo locale;
-    private readonly string localeTag;
-    private readonly string numberingSystem;
-    private JSObject options;
+    private static readonly string[] StyleValues = ["full", "long", "medium", "short"];
 
-    // dateStyle / timeStyle are GetOption-coerced (to a string) and validated once at
-    // construction, then reported verbatim by resolvedOptions. Reading them from the
-    // raw user options object would surface the original (possibly non-string) value
-    // — e.g. `{ dateStyle: { toString() { return "full"; } } }` must resolve to the
-    // string "full", not the object.
-    internal static readonly string[] DateTimeStyleValues = ["full", "long", "medium", "short"];
-    private readonly string dateStyle;
-    private readonly string timeStyle;
+    // The date-time data every format reads (the library's DateTimeData over the engine's locale data, the shared time zones
+    // and the calendars), made once; and one per numbering system whose own decimal symbol the data states (decision D21).
+    private static readonly Lazy<DateTimeData> SharedDates = new(
+        static () => new DateTimeData(JSIntlData.LocaleData, Temporal.TemporalTimeData.TimeZones, Temporal.TemporalAdapter.Calendars),
+        System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
-    // True when the constructor supplied the year/month/day = "numeric" defaults because the user
-    // specified no date/time component and no dateStyle/timeStyle (ToDateTimeOptions, defaults
-    // "date"). The defaults are stored on the snapshot so resolvedOptions reports them, but the
-    // formatter must still treat itself as "default" (RequestedFields) so a Temporal value formats
-    // its own default fields rather than being constrained to the injected year/month/day.
-    private readonly bool dateDefaultsApplied;
+    private static readonly ConcurrentDictionary<string, DateTimeData> DatesBySystem = new(StringComparer.Ordinal);
 
-    private string OptionString(KeyString key)
+    /// <summary>The shared library's format: what CreateDateTimeFormat resolved, its formatter and the formats of Temporal's types.</summary>
+    internal DateTimeFormat Core { get; }
+
+    /// <summary>[[BoundFormat]] (row T4, a correction: a new function was made at each read, so dtf.format !== dtf.format).</summary>
+    internal JSFunction BoundFormat { get; set; }
+
+    public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())
     {
-        var value = options?[key];
-        return value == null || value.IsUndefined ? null : value.StringValue;
+        var options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a, out var canonical, requireNew: false);
+        Core = Create(canonical, options, DateTimeRequired.Any, DateTimeDefaults.Date, null);
     }
 
-    private int FractionalSecondDigits()
+    private JSIntlDateTimeFormat(JSObject prototype, DateTimeFormat core) : base(prototype)
     {
-        var value = options?[FractionalSecondDigitsKey];
-        return value == null || value.IsUndefined ? 0 : (int)value.DoubleValue;
+        Core = core;
     }
 
-    private bool ResolveHour12()
+    private JSIntlDateTimeFormat(DateTimeFormat core) : base()
     {
-        var hc = ResolveHourCycle();
-        return hc == "h11" || hc == "h12";
+        Core = core;
     }
 
-    // Resolves the hourCycle reported by resolvedOptions (CreateDateTimeFormat). The
-    // hour12 option wins, mapping to h11/h12 (true) or h23/h24 (false) depending on
-    // whether the locale default is a "0-based" cycle; otherwise an explicit hourCycle
-    // option wins, then the locale's -u-hc- extension, then the locale default.
-    // Kept as the single source of truth so ResolveHour12 never disagrees.
-    private string ResolveHourCycle()
-    {
-        var hcDefault = JSIntl.DefaultHourCycle(localeTag);
+    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.DateTimeFormat");
 
-        var hour12 = options?[Hour12Key];
-        if (hour12 != null && !hour12.IsUndefined)
+    // %Intl.DateTimeFormat.prototype% of the current realm (Intrinsics.IntlPrototype), never the prototype
+    // of whatever `globalThis.Intl.DateTimeFormat` holds now: guest code may replace the namespace or its members.
+    private static JSObject CurrentPrototype()
+        => Intrinsics.IntlPrototype(IntrinsicKey);
+
+    // A format for a .NET culture's name with no options, cached by the name: the format of `new Intl.DateTimeFormat(tag)`, a
+    // name that is no well-formed tag read as no locale (the default). Over the library since SJL-9.5, task 8.5, as JSD-0082's
+    // D24 keeps it.
+    public static JSIntlDateTimeFormat Get(CultureInfo culture)
+        => formats.GetOrAdd(culture.Name, static name =>
         {
-            // hour12 picks the locale's preferred clock of the requested kind from CLDR's
-            // <hours> data: hour12 true selects the 12-hour cycle, which is "h12" everywhere
-            // except the few locales (Japanese) whose preferred 12-hour cycle is "h11"; hour12
-            // false selects "h23" (the 24-hour cycle observed by other engines).
-            if (hour12.BooleanValue)
-                return JSIntl.Prefers11HourCycle(localeTag) ? "h11" : "h12";
-            return "h23";
+            var locales = JSValue.CreateArray();
+            if (name.Length != 0 && LocaleId.TryCanonicalize(name, JSIntlData.LocaleData, out var tag) == IntlStatus.Completed)
+                locales.AddArrayItem(CreateString(tag));
+            return new JSIntlDateTimeFormat(Create(locales, null, DateTimeRequired.Any, DateTimeDefaults.Date, null));
+        });
+
+    // ECMA-402's CreateDateTimeFormat (sec-createdatetimeformat, as e8cc03fc amends it), after CanonicalizeLocaleList,
+    // CoerceOptionsToObject and localeMatcher (ValidateConstructorArguments): every read in the specification's order, each
+    // checked as it is read, then the shared library's DateTimeFormat.Create over the record read, whose refusals are this
+    // engine's TypeErrors. zonedTimeZone is Temporal.ZonedDateTime.prototype.toLocaleString's own zone, which the options may
+    // not name.
+    private static DateTimeFormat Create(JSValue canonicalLocales, JSObject options, DateTimeRequired required, DateTimeDefaults defaults, string zonedTimeZone)
+    {
+        // calendar, then numberingSystem, each a well-formed Unicode type (row L14).
+        var calendar = OptionString(options, CalendarKey);
+        if (calendar != null && !LocaleId.IsUnicodeType(calendar))
+            throw JSEngine.NewRangeError("Invalid calendar option");
+
+        var numberingSystem = JSIntl.ReadNumberingSystemOption(options);
+
+        // hour12 (ToBoolean), then hourCycle; hour12 makes hourCycle ECMA-402's null.
+        var hour12Value = options == null ? JSUndefined.Value : options[Hour12Key];
+        bool? hour12 = hour12Value.IsUndefined ? null : hour12Value.BooleanValue;
+        var hourCycle = JSIntl.GetOption(options, HourCycleKey, HourCycleValues, false, null);
+
+        // ResolveLocale's ca, hc and nu keys, the shared library's, over the values the data gives the matched locale.
+        var resolved = JSIntl.ResolveLocale(canonicalLocales, locale =>
+        [
+            new RelevantKey("ca", DateTimeFormat.CalendarKeyValues) { Option = calendar },
+            new RelevantKey("hc", DateTimeFormat.HourCycleKeyValues) { Option = hour12 is null ? hourCycle : null, OptionIsNull = hour12 is not null },
+            new RelevantKey("nu", JSIntl.NumberingSystemValues(locale)) { Option = numberingSystem },
+        ]);
+
+        // timeZone: the host's zone where it is undefined (decision SJL-D-19, row T11); Temporal.ZonedDateTime's toLocaleString
+        // names its own zone, and refuses one the options name.
+        var timeZoneValue = options == null ? JSUndefined.Value : options[TimeZoneKey];
+        if (zonedTimeZone != null)
+        {
+            if (!timeZoneValue.IsUndefined)
+                throw JSEngine.NewTypeError("Temporal.ZonedDateTime.toLocaleString: the timeZone option is not allowed");
+            timeZoneValue = CreateString(zonedTimeZone);
         }
 
-        var option = OptionString(HourCycleKey);
-        if (option != null)
-            return option;
+        var timeZoneText = timeZoneValue.IsUndefined ? Temporal.TemporalTimeZones.SystemTimeZoneIdentifier() : timeZoneValue.StringValue;
+        if (ResolvedTimeZone.Resolve(timeZoneText, Temporal.TemporalTimeZones.Database, out var timeZone) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError($"Invalid timeZone option: {timeZoneText}");
 
-        var ext = JSIntl.GetUnicodeExtensionType(localeTag, "hc");
-        if (!string.IsNullOrEmpty(ext) && (ext == "h11" || ext == "h12" || ext == "h23" || ext == "h24"))
-            return ext;
-
-        return hcDefault;
-    }
-
-    private JSIntlDateTimeFormatEngine.Pattern ResolveEnginePattern()
-        => JSIntlDateTimeFormatEngine.ResolvePattern(
-            localeTag: localeTag,
-            hasYear: OptionString(YearKey) != null,
-            yearStyle: OptionString(YearKey),
-            hasMonth: OptionString(MonthKey) != null,
-            monthStyle: OptionString(MonthKey),
-            hasDay: OptionString(DayKey) != null,
-            dayStyle: OptionString(DayKey),
-            hasHour: OptionString(HourKey) != null,
-            hasMinute: OptionString(MinuteKey) != null,
-            hasSecond: OptionString(SecondKey) != null,
-            fractionalSecondDigits: FractionalSecondDigits(),
-            hasDayPeriodField: false,
-            dateStyle: dateStyle,
-            timeStyle: timeStyle,
-            hour12: ResolveHour12(),
-            calendar: ResolvedCalendar(),
-            hasWeekday: OptionString(KeyStrings.GetOrCreate("weekday")) != null,
-            weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")),
-            hasTimeZoneName: OptionString(KeyStrings.GetOrCreate("timeZoneName")) != null,
-            hourCycle: ResolveHourCycle(),
-            hasEra: OptionString(KeyStrings.GetOrCreate("era")) != null,
-            eraStyle: OptionString(KeyStrings.GetOrCreate("era")),
-            hourStyle: OptionString(HourKey),
-            minuteStyle: OptionString(MinuteKey),
-            secondStyle: OptionString(SecondKey));
-
-    // The resolved calendar: per ECMA-402 InitializeDateTimeFormat the `calendar` OPTION
-    // takes precedence over the locale tag's -u-ca- value, then -u-ca-, then the locale's
-    // default ("gregory"). An unsupported value (one this engine cannot project the year /
-    // era through) falls back to "gregory" so formatting still produces a usable result.
-    internal string ResolvedCalendar()
-    {
-        var ca = ResolvedCalendarId();
-        return JSIntlDateTimeFormatEngine.IsSupportedCalendar(ca) ? ca : "gregory";
-    }
-
-    // The resolved calendar IDENTIFIER (dateTimeFormat.[[Calendar]]): the `calendar` option, then the
-    // locale tag's -u-ca- value, then the locale default ("gregory"). Unlike ResolvedCalendar() it does
-    // NOT collapse an identifier the formatting engine cannot project (e.g. "iso8601", which it renders
-    // as proleptic Gregorian) down to "gregory": the unchanged identifier is what a Temporal value's
-    // calendar must be checked against (CheckTemporalCalendar) and what resolvedOptions reports.
-    internal string ResolvedCalendarId()
-    {
-        // An explicit `calendar` option that names an available calendar is the resolved [[Calendar]]
-        // and is reported verbatim (test262 resolvedOptions/calendar — every available calendar,
-        // including "hebrew"/"japanese", round-trips). Otherwise the resolved locale's negotiated
-        // -u-ca- value is reported, collapsed to "gregory" when this engine cannot render it (so a
-        // bare `en-u-ca-hebrew` reports "gregory", matching the gregorian formatting).
-        var option = OptionString(CalendarKey);
-        if (option != null && JSIntl.IsAvailableCalendar(option))
-            return option;
-        var ext = UnicodeKeyword(localeTag, "ca");
-        return JSIntl.IsRenderableCalendar(ext) ? ext : "gregory";
-    }
-
-    // Reads a Unicode (-u-) keyword value from a BCP-47 tag, e.g. "ca" from
-    // "en-u-ca-buddhist". Returns null when absent.
-    private static string UnicodeKeyword(string tag, string key)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return null;
-        var parts = tag.Split('-');
-        var u = System.Array.IndexOf(parts, "u");
-        if (u < 0)
-            return null;
-        for (var i = u + 1; i < parts.Length; i++)
+        // The components, in Table 16's order; then formatMatcher, dateStyle and timeStyle.
+        var components = new string[ComponentOptions.Length];
+        int? fractionalSecondDigits = null;
+        for (var i = 0; i < ComponentOptions.Length; i++)
         {
-            if (parts[i].Length == 2 && string.Equals(parts[i], key, StringComparison.OrdinalIgnoreCase))
+            var (key, values) = ComponentOptions[i];
+            if (values is null)
+                fractionalSecondDigits = JSIntl.GetNumberOption(options, key, 1, 3);
+            else
+                components[i] = JSIntl.GetOption(options, key, values, false, null);
+        }
+
+        _ = JSIntl.GetOption(options, FormatMatcherKey, FormatMatcherValues, false, "best fit");
+        var dateStyle = JSIntl.GetOption(options, DateStyleKey, StyleValues, false, null);
+        var timeStyle = JSIntl.GetOption(options, TimeStyleKey, StyleValues, false, null);
+
+        var nu = resolved.KeyValues["nu"] ?? "latn";
+        var status = DateTimeFormat.Create(
+            DatesFor(nu),
+            new ResolvedLocale(resolved.Locale, JSIntlLocaleProviders.DataLocale(resolved.DataLocale), resolved.KeyValues),
+            new DateTimeFormatOptions
             {
-                // A Unicode keyword value may span several subtags, e.g. "ca" → "islamic-tbla"; collect
-                // all following type subtags (length 3–8) until the next key (length 2) or extension end.
-                var value = new List<string>();
-                for (var j = i + 1; j < parts.Length && parts[j].Length > 2; j++)
-                    value.Add(parts[j].ToLowerInvariant());
-                return value.Count > 0 ? string.Join("-", value) : null;
-            }
-        }
-        return null;
-    }
+                Hour12 = hour12,
+                TimeZone = timeZone,
+                Components = new DateTimeComponents
+                {
+                    Weekday = components[0],
+                    Era = components[1],
+                    Year = components[2],
+                    Month = components[3],
+                    Day = components[4],
+                    DayPeriod = components[5],
+                    Hour = components[6],
+                    Minute = components[7],
+                    Second = components[8],
+                    FractionalSecondDigits = fractionalSecondDigits,
+                    TimeZoneName = components[10],
+                },
+                DateStyle = dateStyle,
+                TimeStyle = timeStyle,
+                Required = required,
+                Defaults = defaults,
+                ForZonedDateTime = zonedTimeZone != null,
+            },
+            out var format);
 
-    private JSIntlDateTimeFormatEngine.Fields ResolveFields(double clipped)
-    {
-        var tz = OptionString(TimeZoneKey);
-        // The display name is always computed so it is available whenever the resolved pattern emits a
-        // zone token — the explicit timeZoneName option, or a long/full time style. The explicit option
-        // wins; otherwise the time style chooses the width: timeStyle "full" uses the long zone name
-        // ("Coordinated Universal Time") and "long" uses the short name ("UTC").
-        var style = OptionString(KeyStrings.GetOrCreate("timeZoneName"))
-            ?? (timeStyle == "full" ? "long" : "short");
-        var zoneName = JSIntlDateTimeFormatEngine.FormatTimeZoneName(localeTag, tz, style, clipped);
-        var wall = JSIntlDateTimeFormatEngine.ToZone(clipped, tz);
-        var dayPeriod = DayPeriodName((int)EcmaTime.HourFromTime(wall), (int)EcmaTime.MinFromTime(wall));
-        return new(wall, zoneName, dayPeriod);
-    }
-
-    // ── Temporal integration (FormatDateTimePattern / HandleDateTimeValue) ───────────────────────
-    // The field categories a Temporal type can supply to Intl.DateTimeFormat. A plain type that lacks
-    // a category drops the formatter's request for it; a formatter that requests *only* unsupported
-    // categories has no overlap and is a TypeError. A ZonedDateTime cannot be formatted directly.
-    [Flags]
-    private enum TemporalFields
-    {
-        None = 0, Era = 1, Year = 2, Month = 4, Day = 8, Weekday = 16,
-        Hour = 32, Minute = 64, Second = 128, FractionalSecond = 256, DayPeriod = 512, TimeZoneName = 1024,
-        Date = Era | Year | Month | Day | Weekday,
-        Time = Hour | Minute | Second | FractionalSecond | DayPeriod,
-    }
-
-    // True when the value is any Temporal date/time object this formatter handles specially.
-    private static bool IsTemporalDateTime(JSValue value)
-        => value is JSTemporalPlainDate or JSTemporalPlainDateTime or JSTemporalPlainTime
-            or JSTemporalPlainYearMonth or JSTemporalPlainMonthDay or JSTemporalInstant
-            or JSTemporalZonedDateTime;
-
-    private bool Has(KeyString key) => options != null && options[key] is { IsUndefined: false };
-
-    // The fields the formatter is *requesting*, plus whether it was created without any explicit
-    // date/time component or style (in which case a Temporal type fills in its own defaults).
-    private (TemporalFields requested, bool isDefault) RequestedFields()
-    {
-        var f = TemporalFields.None;
-        if (Has(YearKey)) f |= TemporalFields.Year;
-        if (Has(MonthKey)) f |= TemporalFields.Month;
-        if (Has(DayKey)) f |= TemporalFields.Day;
-        if (Has(KeyStrings.GetOrCreate("weekday"))) f |= TemporalFields.Weekday;
-        if (Has(KeyStrings.GetOrCreate("era"))) f |= TemporalFields.Era;
-        if (Has(HourKey)) f |= TemporalFields.Hour;
-        if (Has(MinuteKey)) f |= TemporalFields.Minute;
-        if (Has(SecondKey)) f |= TemporalFields.Second;
-        if (Has(FractionalSecondDigitsKey)) f |= TemporalFields.FractionalSecond;
-        if (Has(DayPeriodKey)) f |= TemporalFields.DayPeriod;
-        if (Has(KeyStrings.GetOrCreate("timeZoneName"))) f |= TemporalFields.TimeZoneName;
-
-        // era and timeZoneName are *supplementary*: they are not date/time components for the
-        // defaulting decision, so a formatter requesting only those is still "default" (a plain type
-        // formats its defaults, dropping the unsupported supplementary field, instead of failing the
-        // no-overlap check). They are re-added to a supporting type in EffectiveTemporalFields.
-        var hadComponents = (f & ~SupplementaryFields) != TemporalFields.None;
-
-        // Expand dateStyle / timeStyle into the component fields they render (en/CLDR layout, matching
-        // the engine's hardcoded styles). timeStyle long/full also implies a time-zone name.
-        if (dateStyle != null)
-            f |= TemporalFields.Year | TemporalFields.Month | TemporalFields.Day
-                | (dateStyle == "full" ? TemporalFields.Weekday : TemporalFields.None);
-        if (timeStyle != null)
+        return status switch
         {
-            f |= TemporalFields.Hour | TemporalFields.Minute;
-            if (timeStyle is "medium" or "long" or "full") f |= TemporalFields.Second;
-            if (timeStyle is "long" or "full") f |= TemporalFields.TimeZoneName;
-        }
-
-        // A formatter that only carries the injected year/month/day defaults (no user-specified
-        // component or style) is still "default": a Temporal value formats its own default fields
-        // rather than being constrained to year/month/day.
-        return (f, dateDefaultsApplied || (!hadComponents && dateStyle == null && timeStyle == null));
+            IntlStatus.Completed => format,
+            IntlStatus.StyleWithComponents => throw JSEngine.NewTypeError("Intl.DateTimeFormat: dateStyle and timeStyle cannot be combined with a date-time component option"),
+            IntlStatus.DateFormatWithTimeStyle => throw JSEngine.NewTypeError("Intl.DateTimeFormat: timeStyle may not be used with a date-only operation"),
+            IntlStatus.TimeFormatWithDateStyle => throw JSEngine.NewTypeError("Intl.DateTimeFormat: dateStyle may not be used with a time-only operation"),
+            _ => throw new InvalidOperationException("The shared date-time format answered " + status + ", which CreateDateTimeFormat does not expect."),
+        };
     }
 
-    // Temporal.X.prototype.toLocaleString: create a DateTimeFormat for the locale/options and format
-    // the Temporal value through the same HandleDateTimeValue path (so toLocaleString and
-    // DateTimeFormat.prototype.format agree). An optional default time zone is injected when absent
-    // (used by ZonedDateTime, which formats in its own zone); a conflicting one is a RangeError.
-    private static readonly string[] DateTimeComponentKeys =
-    [
-        "weekday", "era", "year", "month", "day", "dayPeriod",
-        "hour", "minute", "second", "fractionalSecondDigits", "timeZoneName",
-    ];
+    // An option's String (ToString of a defined value), or null when it is undefined.
+    private static string OptionString(JSObject options, KeyString key)
+    {
+        var value = options == null ? JSUndefined.Value : options[key];
+        return value.IsUndefined ? null : value.StringValue;
+    }
 
-    private static readonly string[] DateTimeFormatOptionKeys =
-    [
-        "localeMatcher", "calendar", "numberingSystem", "hour12", "hourCycle", "timeZone",
-        "weekday", "era", "year", "month", "day", "dayPeriod", "hour", "minute", "second",
-        "fractionalSecondDigits", "timeZoneName", "formatMatcher", "dateStyle", "timeStyle",
-    ];
+    // The date-time data a format of a numbering system reads.
+    private static DateTimeData DatesFor(string numberingSystem)
+    {
+        var shared = SharedDates.Value;
+        if (numberingSystem == "latn" || !NumberingSystemDecimalData.States(JSIntlData.LocaleData, numberingSystem))
+            return shared;
 
+        return DatesBySystem.GetOrAdd(numberingSystem, static system => new DateTimeData(
+            new NumberingSystemDecimalData(JSIntlData.LocaleData, system), Temporal.TemporalTimeData.TimeZones, Temporal.TemporalAdapter.Calendars));
+    }
+
+    // ---- Temporal's toLocaleString and Date's toLocale* ------------------------------------------------------------------
+
+    // Temporal.X.prototype.toLocaleString (the proposal's amendment of ECMA-402 s15.11): a format made for the call by
+    // CreateDateTimeFormat with the type's required and defaults - date for PlainDate, PlainYearMonth and PlainMonthDay, time
+    // for PlainTime, any and all for the others - which writes the value; a ZonedDateTime's in its own zone.
     public static JSValue TemporalToLocaleString(JSValue temporal, JSValue locales, JSValue options, string defaultTimeZone = null)
     {
-        if (defaultTimeZone != null)
+        var (required, defaults) = temporal switch
         {
-            if (options != null && !options.IsNullOrUndefined && options is not JSObject)
-                throw JSEngine.NewTypeError("Temporal toLocaleString options must be an object or undefined");
+            JSTemporalPlainDate or JSTemporalPlainYearMonth or JSTemporalPlainMonthDay => (DateTimeRequired.Date, DateTimeDefaults.Date),
+            JSTemporalPlainTime => (DateTimeRequired.Time, DateTimeDefaults.Time),
+            _ => (DateTimeRequired.Any, DateTimeDefaults.All),
+        };
 
-            var resolved = new JSObject();
-            if (options is JSObject src)
-                foreach (var name in DateTimeFormatOptionKeys)
-                {
-                    var key = KeyStrings.GetOrCreate(name);
-                    var v = src[key];
-                    if (!v.IsUndefined) resolved[key] = v;
-                }
+        var format = Make(locales, options, required, defaults, defaultTimeZone);
+        var (formatter, time) = format.HandleValue(temporal);
+        return CreateString(formatter.Format(time));
+    }
 
-            // ZonedDateTime formats in its own zone; supplying any timeZone option (even a matching
-            // one) is a TypeError.
-            if (!resolved[TimeZoneKey].IsUndefined)
-                throw JSEngine.NewTypeError(
-                    "Temporal.ZonedDateTime.toLocaleString: the timeZone option is not allowed");
-            resolved[TimeZoneKey] = CreateString(defaultTimeZone);
-            options = resolved;
-        }
+    // Date.prototype.toLocaleString, toLocaleDateString and toLocaleTimeString (ECMA-402 sup-date.prototype.tolocalestring
+    // and the two others): CreateDateTimeFormat with any/date/time and all/date/time, which reads each option once (row T2, a
+    // correction: ToDateTimeOptions read the components and styles once more, first), and the time value it writes.
+    internal static string ToLocaleString(double time, JSValue locales, JSValue options, DateTimeRequired required, DateTimeDefaults defaults)
+    {
+        var format = Make(locales, options, required, defaults, null);
+        var (formatter, x) = format.HandleValue(CreateNumber(time));
+        return formatter.Format(x);
+    }
 
-        var dtf = new JSIntlDateTimeFormat(new Arguments(JSUndefined.Value, locales, options ?? JSUndefined.Value));
-        return new JSString(JSIntlDateTimeFormatEngine.PartsToString(dtf.FormatTemporalToParts(temporal, zonedAllowed: true, enforceStyle: true)));
+    // A format made for one call, from the arguments' locales and options, as the constructor reads them.
+    private static JSIntlDateTimeFormat Make(JSValue locales, JSValue options, DateTimeRequired required, DateTimeDefaults defaults, string zonedTimeZone)
+    {
+        var arguments = new Arguments(JSUndefined.Value, locales, options ?? JSUndefined.Value);
+        var optionsObject = JSIntl.ValidateConstructorArguments("DateTimeFormat", in arguments, out var canonical, requireNew: false);
+        return new JSIntlDateTimeFormat(CurrentPrototype(), Create(canonical, optionsObject, required, defaults, zonedTimeZone));
     }
 
     // The date/time component options whose presence suppresses defaulting (era / timeZoneName are
@@ -3793,10 +3535,19 @@ public class JSIntlDateTimeFormat : JSObject
         "weekday", "year", "month", "day", "dayPeriod", "hour", "minute", "second", "fractionalSecondDigits",
     ];
 
+    private static readonly string[] DateTimeFormatOptionKeys =
+    [
+        "localeMatcher", "calendar", "numberingSystem", "hour12", "hourCycle", "timeZone",
+        "weekday", "era", "year", "month", "day", "dayPeriod", "hour", "minute", "second",
+        "fractionalSecondDigits", "timeZoneName", "formatMatcher", "dateStyle", "timeStyle",
+    ];
+
     // ToDateTimeOptions(options, "any", "all"): when no date/time component or style is requested, the
     // default is the full date+time. Used by Date.prototype.toLocaleString (the legacy [[Call]] uses
     // defaults "all", unlike the Intl.DateTimeFormat constructor which uses "date"). Returns the
     // options unchanged when defaults are not needed or it is not an object.
+    // Noted 2026-11-09, at SJL-9.5 (task 8.5): no caller of this repository reads it; it stays a public member (JSD-0082,
+    // D24's T42 paragraph; decision SJL-D-25).
     public static JSValue ApplyAllDefaults(JSValue options)
     {
         if (options is not JSObject o)
@@ -3828,12 +3579,15 @@ public class JSIntlDateTimeFormat : JSObject
         ["dayPeriod", "hour", "minute", "second", "fractionalSecondDigits"];
 
     // ToDateTimeOptions (ECMA-402 §11.5.1.1), parameterised by the <paramref name="required"/> and
-    // <paramref name="defaults"/> fields ("date" / "time" / "all" / "any"). Date.prototype's legacy
-    // toLocaleString / toLocaleDateString / toLocaleTimeString construct an Intl.DateTimeFormat with
-    // ToDateTimeOptions(options, "any"|"date"|"time", "all"|"date"|"time") respectively, which is why
-    // their default output (and their option validation) must match Intl.DateTimeFormat exactly.
-    // Returns a fresh options object carrying the supplied options' properties plus the defaulted
-    // numeric components; throws a TypeError for the date+timeStyle / time+dateStyle conflicts.
+    // <paramref name="defaults"/> fields ("date" / "time" / "all" / "any"). Returns a fresh options object carrying the supplied
+    // options' properties plus the defaulted numeric components; throws a TypeError for the date+timeStyle / time+dateStyle
+    // conflicts.
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T2): Date.prototype's toLocale* methods no longer read their options
+    // through it, but through CreateDateTimeFormat's required and defaults (ToLocaleString), which reads each option once; it
+    // stays a public member (decision SJL-D-25). The comment read: "Date.prototype's legacy toLocaleString /
+    // toLocaleDateString / toLocaleTimeString construct an Intl.DateTimeFormat with ToDateTimeOptions(options,
+    // "any"|"date"|"time", "all"|"date"|"time") respectively, which is why their default output (and their option validation)
+    // must match Intl.DateTimeFormat exactly."
     public static JSValue ToDateTimeOptions(JSValue options, string required, string defaults)
     {
         var source = options.IsUndefined ? null : options as JSObject;
@@ -3877,203 +3631,120 @@ public class JSIntlDateTimeFormat : JSObject
         return merged;
     }
 
-    // The per-type formatting metadata: supported fields, default fields, an identity for same-type
-    // range checks, the calendar, and the wall-clock (or zone-projected) Fields.
-    private readonly struct TemporalMeta
-    {
-        public readonly TemporalFields Mask, Defaults;
-        public readonly string Kind, CalendarId;
-        public readonly JSIntlDateTimeFormatEngine.Fields Fields;
-        public TemporalMeta(TemporalFields mask, TemporalFields defaults, string kind, string calendarId, JSIntlDateTimeFormatEngine.Fields fields)
-        { Mask = mask; Defaults = defaults; Kind = kind; CalendarId = calendarId; Fields = fields; }
-    }
+    // ---- the values a format writes --------------------------------------------------------------------------------------
 
-    private const TemporalFields DateDefaults = TemporalFields.Year | TemporalFields.Month | TemporalFields.Day;
-    private const TemporalFields TimeDefaults = TemporalFields.Hour | TemporalFields.Minute | TemporalFields.Second;
-    // Fields that don't participate in the overlap/default decision; added back if the type supports them.
-    private const TemporalFields SupplementaryFields = TemporalFields.Era | TemporalFields.TimeZoneName;
+    // The proposal's IsTemporalObject (amended ECMA-402 s15.6.12).
+    private static bool IsTemporalDateTime(JSValue value)
+        => value is JSTemporalPlainDate or JSTemporalPlainDateTime or JSTemporalPlainTime
+            or JSTemporalPlainYearMonth or JSTemporalPlainMonthDay or JSTemporalInstant
+            or JSTemporalZonedDateTime;
 
-    // HandleDateTimeValue: classify a Temporal value. ZonedDateTime is a TypeError for
-    // DateTimeFormat.format, but toLocaleString (zonedAllowed) formats it in its own zone, with the
-    // zone name included by default.
-    private TemporalMeta ClassifyTemporal(JSValue value, bool zonedAllowed) => value switch
+    // ToDateTimeFormattable (amended ECMA-402 s15.6.11): a Temporal object as itself, anything else as a Number, here as the
+    // shared library's value to format.
+    private static DateTimeValue Formattable(JSValue value) => value switch
     {
-        JSTemporalZonedDateTime zdt => zonedAllowed
-            ? new TemporalMeta(TemporalFields.Date | TemporalFields.Time | TemporalFields.TimeZoneName,
-                DateDefaults | TimeDefaults | TemporalFields.TimeZoneName, "zoneddatetime", zdt.calendarId,
-                ResolveFields((double)(zdt.epochNanoseconds / 1_000_000)))
-            : throw JSEngine.NewTypeError(
-                "Intl.DateTimeFormat: cannot format a Temporal.ZonedDateTime; use zonedDateTime.toLocaleString() instead"),
-        JSTemporalPlainDate d => new TemporalMeta(TemporalFields.Date, DateDefaults, "date", d.calendarId,
-            new JSIntlDateTimeFormatEngine.Fields(d.isoYear, d.isoMonth, d.isoDay, 0, 0, 0, 0)),
-        JSTemporalPlainDateTime dt => new TemporalMeta(TemporalFields.Date | TemporalFields.Time, DateDefaults | TimeDefaults, "datetime", dt.calendarId,
-            new JSIntlDateTimeFormatEngine.Fields(dt.isoYear, dt.isoMonth, dt.isoDay, dt.hour, dt.minute, dt.second, dt.millisecond, dayPeriod: DayPeriodName(dt.hour, dt.minute))),
-        JSTemporalPlainTime t => new TemporalMeta(TemporalFields.Time, TimeDefaults, "time", "iso8601",
-            new JSIntlDateTimeFormatEngine.Fields(1970, 1, 1, t.hour, t.minute, t.second, t.millisecond, dayPeriod: DayPeriodName(t.hour, t.minute))),
-        JSTemporalPlainYearMonth ym => new TemporalMeta(TemporalFields.Era | TemporalFields.Year | TemporalFields.Month, TemporalFields.Year | TemporalFields.Month, "yearmonth", ym.calendarId,
-            new JSIntlDateTimeFormatEngine.Fields(ym.isoYear, ym.isoMonth, ym.referenceISODay, 0, 0, 0, 0)),
-        JSTemporalPlainMonthDay md => new TemporalMeta(TemporalFields.Month | TemporalFields.Day, TemporalFields.Month | TemporalFields.Day, "monthday", md.calendarId,
-            new JSIntlDateTimeFormatEngine.Fields(md.referenceISOYear, md.isoMonth, md.isoDay, 0, 0, 0, 0)),
-        JSTemporalInstant inst => new TemporalMeta(TemporalFields.Date | TemporalFields.Time | TemporalFields.TimeZoneName, DateDefaults | TimeDefaults, "instant", "iso8601",
-            ResolveFields((double)(inst.epochNanoseconds / 1_000_000))),
-        _ => throw JSEngine.NewTypeError("Intl.DateTimeFormat: unsupported Temporal value"),
+        JSTemporalPlainDate date => DateTimeValue.PlainDate(date.IsoDate, date.calendarId),
+        JSTemporalPlainYearMonth yearMonth => DateTimeValue.PlainYearMonth(yearMonth.IsoDate, yearMonth.calendarId),
+        JSTemporalPlainMonthDay monthDay => DateTimeValue.PlainMonthDay(monthDay.IsoDate, monthDay.calendarId),
+        JSTemporalPlainTime time => DateTimeValue.PlainTime(time.IsoTime),
+        JSTemporalPlainDateTime dateTime => DateTimeValue.PlainDateTime(dateTime.IsoDateTime, dateTime.calendarId),
+        JSTemporalInstant instant => DateTimeValue.Instant(instant.epochNanoseconds),
+        JSTemporalZonedDateTime zoned => DateTimeValue.ZonedDateTime(zoned.epochNanoseconds, zoned.calendarId),
+        _ => DateTimeValue.Number(value.DoubleValue),
     };
 
-    // The Temporal value's calendar must be compatible with the formatter's resolved calendar.
-    // For PlainDate / PlainDateTime / Instant / ZonedDateTime the iso8601 calendar is compatible with
-    // any calendar (HandleDateTimeTemporalDate's iso8601 exception); for PlainYearMonth / PlainMonthDay
-    // (exact = true) the calendars must be identical — even an iso8601 instance is a mismatch.
-    private void CheckTemporalCalendar(string calendarId, bool exact)
+    // The proposal's HandleDateTimeValue (amended ECMA-402 s15.6.22), the shared format's: the formatter a value is written in
+    // and its time in milliseconds; a plain value's format is written at UTC, so no zone moves it.
+    private (DateTimeFormatter Formatter, double Time) HandleValue(JSValue value)
     {
-        var formatterCalendar = ResolvedCalendarId();
-        var compatible = exact
-            ? calendarId == formatterCalendar
-            : calendarId == "iso8601" || calendarId == formatterCalendar;
-        if (!compatible)
-            throw JSEngine.NewRangeError(
-                $"Intl.DateTimeFormat: calendar \"{calendarId}\" does not match the formatter calendar \"{formatterCalendar}\"");
+        var status = Core.HandleDateTimeValue(Formattable(value), out var formatter, out var time);
+        return status == IntlStatus.Completed ? (formatter, time) : throw ValueError(value, status);
     }
 
-    // PlainYearMonth / PlainMonthDay require an exact calendar match (no iso8601 exception).
-    private static bool RequiresExactCalendar(string kind) => kind is "yearmonth" or "monthday";
-
-    // The effective fields shared by both endpoints of a format/formatRange, or a TypeError when the
-    // formatter and the Temporal type have no field in common.
-    private TemporalFields EffectiveTemporalFields(in TemporalMeta meta, bool enforceStyle)
+    // The value of format and formatToParts: now where it is undefined, else ToDateTimeFormattable's.
+    private (DateTimeFormatter Formatter, double Time) FormatValue(in Arguments a)
     {
-        // toLocaleString builds the formatter with a type-specific "required", so an incompatible
-        // whole style is a TypeError at that point: a date-only type (PlainDate / PlainYearMonth /
-        // PlainMonthDay) rejects timeStyle, and the time-only PlainTime rejects dateStyle. Direct
-        // DateTimeFormat.format uses required "any" and instead just drops the unsupported fields.
-        if (enforceStyle)
+        if (a.Length == 0 || a[0] == null || a[0].IsUndefined)
+            return (Core.Formatter, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+        var value = a.Get1();
+        return HandleValue(IsTemporalDateTime(value) ? value : CreateNumber(value.DoubleValue));
+    }
+
+    // The start and end a range method formats (sec-intl.datetimeformat.prototype.formatRange, as the proposal amends it):
+    // neither undefined, checked before either is converted; each read by ToDateTimeFormattable, in argument order, then the
+    // shared format's HandleDateTimeRange.
+    private (DateTimeFormatter Formatter, double X, double Y) RangeValues(in Arguments a)
+    {
+        var start = a.Get1();
+        var end = a.GetAt(1);
+        if (start == null || start.IsUndefined || end == null || end.IsUndefined)
+            throw JSEngine.NewTypeError("Intl.DateTimeFormat range start and end dates must not be undefined");
+
+        var x = IsTemporalDateTime(start) ? start : CreateNumber(start.DoubleValue);
+        var y = IsTemporalDateTime(end) ? end : CreateNumber(end.DoubleValue);
+        var status = Core.HandleDateTimeRange(Formattable(x), Formattable(y), out var formatter, out var xTime, out var yTime);
+        if (status == IntlStatus.Completed)
+            return (formatter, xTime, yTime);
+
+        // The value the error names: the start where the start alone is refused, else the end.
+        var refused = status == IntlStatus.RangeOfDifferentTypes
+            || Core.HandleDateTimeValue(Formattable(x), out _, out _) != IntlStatus.Completed ? x : y;
+        throw ValueError(refused, status);
+    }
+
+    // The error of a value the shared format refuses: a RangeError for a time TimeClip refuses or a calendar the format does
+    // not write, a TypeError for a type the options give no field of, a ZonedDateTime, or a range of two types.
+    private Exception ValueError(JSValue value, IntlStatus status)
+    {
+        var calendar = value switch
         {
-            if (timeStyle != null && (meta.Mask & TemporalFields.Time) == 0)
-                throw JSEngine.NewTypeError("Intl.DateTimeFormat: timeStyle is not supported for this Temporal type");
-            if (dateStyle != null && (meta.Mask & TemporalFields.Date) == 0)
-                throw JSEngine.NewTypeError("Intl.DateTimeFormat: dateStyle is not supported for this Temporal type");
-        }
+            JSTemporalPlainDate date => date.calendarId,
+            JSTemporalPlainYearMonth yearMonth => yearMonth.calendarId,
+            JSTemporalPlainMonthDay monthDay => monthDay.calendarId,
+            JSTemporalPlainDateTime dateTime => dateTime.calendarId,
+            JSTemporalZonedDateTime zoned => zoned.calendarId,
+            _ => "iso8601",
+        };
 
-        var (requested, isDefault) = RequestedFields();
-        var effective = isDefault ? meta.Defaults : requested & meta.Mask;
-
-        // An explicit supplementary field (era / timeZoneName) is honoured by a type that supports it
-        // even when the formatter is otherwise default; it never counts toward the overlap check.
-        effective |= requested & SupplementaryFields & meta.Mask;
-
-        if (effective == TemporalFields.None)
-            throw JSEngine.NewTypeError("Intl.DateTimeFormat: the format options and the Temporal type have no fields in common");
-        return effective;
+        return status switch
+        {
+            IntlStatus.TimeValueOutOfRange => JSEngine.NewRangeError("Invalid time value"),
+            IntlStatus.TemporalCalendarMismatch => JSEngine.NewRangeError(
+                $"Intl.DateTimeFormat: calendar \"{calendar}\" does not match the formatter calendar \"{Core.Calendar}\""),
+            IntlStatus.TemporalTypeNotFormatted => JSEngine.NewTypeError("Intl.DateTimeFormat: the format options and the Temporal type have no fields in common"),
+            IntlStatus.ZonedDateTimeNotFormatted => JSEngine.NewTypeError(
+                "Intl.DateTimeFormat: cannot format a Temporal.ZonedDateTime; use zonedDateTime.toLocaleString() instead"),
+            IntlStatus.RangeOfDifferentTypes => JSEngine.NewTypeError("Intl.DateTimeFormat.formatRange: both arguments must be the same Temporal type"),
+            _ => new InvalidOperationException("The shared date-time format answered " + status + ", which no step of this adapter expects."),
+        };
     }
 
-    // FormatDateTimePattern: build the parts for a Temporal value, or throw TypeError/RangeError.
-    private List<JSIntlDateTimeFormatEngine.Part> FormatTemporalToParts(JSValue value, bool zonedAllowed = false, bool enforceStyle = false)
-    {
-        var meta = ClassifyTemporal(value, zonedAllowed);
-        // Resolve the effective fields first: an incompatible whole style (e.g. timeStyle on a
-        // date-only type) is a TypeError and must be reported ahead of a calendar mismatch
-        // RangeError, so `PlainMonthDay.from('01-01').toLocaleString('en', {timeStyle:'short'})`
-        // throws the TypeError rather than the iso8601-vs-locale-default calendar RangeError.
-        var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in meta, enforceStyle));
-        CheckTemporalCalendar(meta.CalendarId, RequiresExactCalendar(meta.Kind));
-        var fields = meta.Fields;
-        // The numbering system's digits, as a Date's parts and FormatTemporalRangeToParts take them.
-        return MapNumbering(JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), null));
-    }
-
-    // FormatDateTimeRange with two Temporal endpoints: both must be the same Temporal type and share a
-    // calendar (else TypeError / RangeError), then the interval is formatted with one shared pattern.
-    private List<JSIntlDateTimeFormatEngine.Part> FormatTemporalRangeToParts(JSValue startValue, JSValue endValue)
-    {
-        var start = ClassifyTemporal(startValue, zonedAllowed: false);
-        var end = ClassifyTemporal(endValue, zonedAllowed: false);
-        if (start.Kind != end.Kind)
-            throw JSEngine.NewTypeError("Intl.DateTimeFormat.formatRange: both arguments must be the same Temporal type");
-        if (start.CalendarId != end.CalendarId)
-            throw JSEngine.NewRangeError("Intl.DateTimeFormat.formatRange: the two arguments must have the same calendar");
-        CheckTemporalCalendar(start.CalendarId, RequiresExactCalendar(start.Kind));
-        var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in start, enforceStyle: false));
-        var startFields = start.Fields;
-        var endFields = end.Fields;
-        return MapNumbering(JSIntlDateTimeFormatEngine.FormatRangeToParts(pattern, in startFields, in endFields, FractionalSecondDigits()));
-    }
-
-    // Builds an engine pattern from the effective Temporal fields, projecting each component's width
-    // from the formatter's options (numeric by default). dateStyle/timeStyle are already expanded
-    // into fields, so the component-based builder is used (clean field separators).
-    private JSIntlDateTimeFormatEngine.Pattern ResolveTemporalPattern(TemporalFields f)
-        => JSIntlDateTimeFormatEngine.ResolvePattern(
-            localeTag: localeTag,
-            hasYear: f.HasFlag(TemporalFields.Year), yearStyle: f.HasFlag(TemporalFields.Year) ? (OptionString(YearKey) ?? (dateStyle == "short" ? "2-digit" : "numeric")) : null,
-            hasMonth: f.HasFlag(TemporalFields.Month), monthStyle: f.HasFlag(TemporalFields.Month) ? (OptionString(MonthKey) ?? StyleMonthWidth()) : null,
-            hasDay: f.HasFlag(TemporalFields.Day), dayStyle: f.HasFlag(TemporalFields.Day) ? (OptionString(DayKey) ?? "numeric") : null,
-            hasHour: f.HasFlag(TemporalFields.Hour), hasMinute: f.HasFlag(TemporalFields.Minute), hasSecond: f.HasFlag(TemporalFields.Second),
-            fractionalSecondDigits: f.HasFlag(TemporalFields.FractionalSecond) ? FractionalSecondDigits() : 0,
-            hasDayPeriodField: f.HasFlag(TemporalFields.DayPeriod),
-            dateStyle: null, timeStyle: null,
-            hour12: ResolveHour12(),
-            calendar: ResolvedCalendar(),
-            hasWeekday: f.HasFlag(TemporalFields.Weekday),
-            weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")) ?? (dateStyle == "full" ? "long" : null),
-            hasTimeZoneName: f.HasFlag(TemporalFields.TimeZoneName),
-            hourCycle: ResolveHourCycle(),
-            hasEra: f.HasFlag(TemporalFields.Era),
-            eraStyle: OptionString(KeyStrings.GetOrCreate("era")));
-
-    // The month width implied by dateStyle when no explicit month option is present.
-    private string StyleMonthWidth() => dateStyle switch
-    {
-        "full" or "long" => "long",
-        "medium" => "short",
-        _ => "numeric", // short / null
-    };
-
-    private static JSValue PartsArray(System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> parts)
+    // An array of { type, value } objects, with source where a part has one.
+    private static JSValue PartsArray(IReadOnlyList<DateTimePart> parts)
     {
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
         var sourceKey = KeyStrings.GetOrCreate("source");
         var array = CreateArray();
-        foreach (var p in parts)
+        foreach (var part in parts)
         {
             var obj = new JSObject();
-            obj[typeKey] = CreateString(p.Type);
-            obj[valueKey] = CreateString(p.Value);
-            if (p.Source != null)
-                obj[sourceKey] = CreateString(p.Source);
+            obj[typeKey] = CreateString(part.Type);
+            obj[valueKey] = CreateString(part.Value);
+            if (part.Source != null)
+                obj[sourceKey] = CreateString(part.Source);
             array.AddArrayItem(obj);
         }
         return array;
     }
 
-    public static JSIntlDateTimeFormat Get(CultureInfo culture)
-        => formats.GetOrAdd(culture.Name, static key => new JSIntlDateTimeFormat(CultureInfo.GetCultureInfo(key)));
+    // ---- the prototype -----------------------------------------------------------------------------------------------------
 
     public JSValue Format(in Arguments a)
     {
-        if (a.Length > 0 && a[0] != null && IsTemporalDateTime(a[0]))
-            return new JSString(JSIntlDateTimeFormatEngine.PartsToString(FormatTemporalToParts(a[0])));
-
-        var value = a.Length == 0 || a[0] == null || a[0].IsUndefined
-            ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-            : a.Get1().DoubleValue;
-        var clipped = EcmaTime.TimeClip(value);
-        if (double.IsNaN(clipped))
-            throw JSEngine.NewRangeError("Invalid time value");
-
-        if (SupportsDayPeriod())
-        {
-            var (h, m) = WallHourMinute(clipped);
-            var dayPeriod = DayPeriodNameForStyle(h, m, DayPeriodStyle());
-            if (UsesHourFormatting())
-                return new JSString($"{FormatEnglishHour(h)} {dayPeriod}");
-
-            return new JSString(dayPeriod);
-        }
-
-        var pattern = ResolveEnginePattern();
-        var fields = ResolveFields(clipped);
-        var parts = JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), "literal");
-        return new JSString(JSIntlDateTimeFormatEngine.PartsToString(MapNumbering(parts)));
+        var (formatter, time) = FormatValue(in a);
+        return new JSString(formatter.Format(time));
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -4081,16 +3752,22 @@ public class JSIntlDateTimeFormat : JSObject
             ? @this.Format(in a)
             : throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.format called on incompatible receiver");
 
+    public static JSValue FormatToPartsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlDateTimeFormat @this)
+            throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatToParts called on incompatible receiver");
+
+        var (formatter, time) = @this.FormatValue(in a);
+        return PartsArray(formatter.FormatToParts(time));
+    }
+
     public static JSValue FormatRangePrototype(in Arguments a)
     {
         if (a.This is not JSIntlDateTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatRange called on incompatible receiver");
 
-        var parts = @this.ComputeRangeParts(a);
-        var sb = new StringBuilder();
-        foreach (var part in parts)
-            sb.Append(part.Value);
-        return CreateString(sb.ToString());
+        var (formatter, x, y) = @this.RangeValues(in a);
+        return CreateString(formatter.FormatRange(x, y));
     }
 
     public static JSValue FormatRangeToPartsPrototype(in Arguments a)
@@ -4098,455 +3775,102 @@ public class JSIntlDateTimeFormat : JSObject
         if (a.This is not JSIntlDateTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatRangeToParts called on incompatible receiver");
 
-        return PartsArray(@this.ComputeRangeParts(a));
+        var (formatter, x, y) = @this.RangeValues(in a);
+        return PartsArray(formatter.FormatRangeToParts(x, y));
     }
 
-    private System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> ComputeRangeParts(in Arguments a)
-    {
-        // FormatDateTimeRange step 3: TypeError if either endpoint is undefined — checked
-        // before ToNumber, so a throwing valueOf on the other argument is not observed.
-        var startArg = a.Get1();
-        var endArg = a.GetAt(1);
-        if (startArg == null || startArg.IsUndefined || endArg == null || endArg.IsUndefined)
-            throw JSEngine.NewTypeError("Intl.DateTimeFormat range start and end dates must not be undefined");
-
-        // ToDateTimeFormattable on both endpoints, in argument order: a Temporal object is
-        // kept as-is, anything else is ToNumber-coerced now (observably running its
-        // valueOf/toString). This happens for BOTH arguments before the same-kind check —
-        // PartitionDateTimeRangePattern must not report a different-kind pair before the
-        // arguments have been coerced (and TimeClip(NaN) must not throw a RangeError ahead
-        // of that TypeError).
-        var startTemporal = IsTemporalDateTime(startArg);
-        var endTemporal = IsTemporalDateTime(endArg);
-        var startNumber = startTemporal ? 0d : startArg.DoubleValue;
-        var endNumber = endTemporal ? 0d : endArg.DoubleValue;
-
-        // PartitionDateTimeRangePattern step 5: when either endpoint is a Temporal object,
-        // both must be the same Temporal type (else TypeError).
-        if (startTemporal || endTemporal)
-        {
-            if (!startTemporal || !endTemporal)
-                throw JSEngine.NewTypeError("Intl.DateTimeFormat.formatRange: both arguments must be the same Temporal type");
-            return FormatTemporalRangeToParts(startArg, endArg);
-        }
-
-        var startValue = TimeClipRange(startNumber);
-        var endValue = TimeClipRange(endNumber);
-        var pattern = ResolveEnginePattern();
-        var startFields = ResolveFields(startValue);
-        var endFields = ResolveFields(endValue);
-        return MapNumbering(JSIntlDateTimeFormatEngine.FormatRangeToParts(pattern, in startFields, in endFields, FractionalSecondDigits()));
-    }
-
-    public static JSValue FormatToPartsPrototype(in Arguments a)
-    {
-        if (a.This is not JSIntlDateTimeFormat @this)
-            throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatToParts called on incompatible receiver");
-
-        if (a.Length > 0 && a[0] != null && IsTemporalDateTime(a[0]))
-            return PartsArray(@this.FormatTemporalToParts(a[0]));
-
-        var value = a.Length == 0 || a[0] == null || a[0].IsUndefined
-            ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-            : a.Get1().DoubleValue;
-        var clipped = EcmaTime.TimeClip(value);
-        if (double.IsNaN(clipped))
-            throw JSEngine.NewRangeError("Invalid time value");
-
-        if (@this.SupportsDayPeriod())
-        {
-            var (h, m) = @this.WallHourMinute(clipped);
-            var dayPeriodParts = CreateArray();
-            if (@this.UsesHourFormatting())
-            {
-                var hourPart = new JSObject();
-                hourPart[KeyStrings.GetOrCreate("type")] = CreateString("hour");
-                hourPart[KeyStrings.GetOrCreate("value")] = CreateString(FormatEnglishHour(h));
-                var literalPart = new JSObject();
-                literalPart[KeyStrings.GetOrCreate("type")] = CreateString("literal");
-                literalPart[KeyStrings.GetOrCreate("value")] = CreateString(" ");
-                dayPeriodParts.AddArrayItem(hourPart);
-                dayPeriodParts.AddArrayItem(literalPart);
-            }
-
-            var dayPeriodPart = new JSObject();
-            dayPeriodPart[KeyStrings.GetOrCreate("type")] = CreateString("dayPeriod");
-            dayPeriodPart[KeyStrings.GetOrCreate("value")] = CreateString(@this.DayPeriodNameForStyle(h, m, @this.DayPeriodStyle()));
-            dayPeriodParts.AddArrayItem(dayPeriodPart);
-            return dayPeriodParts;
-        }
-
-        var pattern = @this.ResolveEnginePattern();
-        var fields = @this.ResolveFields(clipped);
-        var engineParts = JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, @this.FractionalSecondDigits(), null);
-        return PartsArray(@this.MapNumbering(engineParts));
-    }
-
-    // Translates the ASCII digits the engine produces for the numeric date/time fields into the
-    // resolved numbering system's digits (e.g. "arab" → ٠-٩, "hanidec" → 〇一二…), and renders the
-    // fractional-seconds decimal point with that numbering system's decimal separator (arab uses
-    // U+066B). Names, separators and symbols keep the locale's characters.
-    private System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> MapNumbering(
-        System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> parts)
-    {
-        if (numberingSystem == null || numberingSystem == "latn")
-            return parts;
-
-        var decimalSeparator = numberingSystem is "arab" or "arabext" ? "٫" : ".";
-        var mapped = new System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part>(parts.Count);
-        for (var i = 0; i < parts.Count; i++)
-        {
-            var part = parts[i];
-            if (part.Type is "year" or "relatedYear" or "month" or "day"
-                or "hour" or "minute" or "second" or "fractionalSecond")
-            {
-                var sb = new StringBuilder(part.Value.Length);
-                foreach (var c in part.Value)
-                    sb.Append(c is >= '0' and <= '9' ? JSIntl.NumberingSystemDigit(numberingSystem, c - '0') : c.ToString());
-                mapped.Add(new JSIntlDateTimeFormatEngine.Part(part.Type, sb.ToString(), part.Source));
-            }
-            else if (part.Type == "literal" && part.Value == "."
-                && i + 1 < parts.Count && parts[i + 1].Type == "fractionalSecond")
-            {
-                mapped.Add(new JSIntlDateTimeFormatEngine.Part(part.Type, decimalSeparator, part.Source));
-            }
-            else
-            {
-                mapped.Add(part);
-            }
-        }
-        return mapped;
-    }
-
+    // resolvedOptions, in Table 16's order, as the shared format resolved it: the hour cycle where the pattern has an hour, the
+    // components of the selected pattern for a format made from components (row T7), fractionalSecondDigits a Number, and the
+    // styles; each an own data property (CreateDataPropertyOrThrow), so a setter on Object.prototype is never called.
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlDateTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.resolvedOptions called on incompatible receiver");
 
+        var format = @this.Core;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.localeTag));
-        // resolvedOptions reports dtf.[[Calendar]] — the resolved calendar IDENTIFIER (e.g. "iso8601",
-        // not collapsed to "gregory") after the ResolveLocale `ca` negotiation, NOT the raw option.
-        result.CreateDataProperty(KeyStrings.GetOrCreate("calendar"), CreateString(@this.ResolvedCalendarId()));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(@this.numberingSystem));
-        // The default time zone is SystemTimeZoneIdentifier: the host's zone as a PRIMARY identifier — a
-        // host whose local zone is "Etc/UTC" (e.g. a UTC container) reports "UTC" (test262
-        // DateTimeFormat/prototype/resolvedOptions/basic) — resolved through the shared database, or
-        // "UTC" for a host zone the database does not hold (milestone SJL-8.6).
-        result.CreateDataProperty(KeyStrings.GetOrCreate("timeZone"),
-            CreateString(TemporalTimeZones.SystemTimeZoneIdentifier()));
-
-        if (@this.options != null)
-        {
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeZone");
-            // hourCycle / hour12 are RESOLVED values (not plain passthrough): when the
-            // format includes an hour component, both are always present — hourCycle
-            // resolved from the hour12/hourCycle options (defaulting per locale) and
-            // hour12 derived to match. They appear right after timeZone per the spec.
-            if (@this.UsesHourFormatting())
-            {
-                result.CreateDataProperty(KeyStrings.GetOrCreate("hourCycle"), CreateString(@this.ResolveHourCycle()));
-                result.CreateDataProperty(KeyStrings.GetOrCreate("hour12"), @this.ResolveHour12() ? BooleanTrue : BooleanFalse);
-            }
-            // dateStyle / timeStyle report the coerced+validated string captured at
-            // construction (not the raw option value).
-            if (@this.dateStyle != null)
-                result.CreateDataProperty(DateStyleKey, CreateString(@this.dateStyle));
-            if (@this.timeStyle != null)
-                result.CreateDataProperty(TimeStyleKey, CreateString(@this.timeStyle));
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "weekday");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "era");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "year");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "month");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "day");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "dayPeriod");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "hour");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "minute");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "second");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "fractionalSecondDigits");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeZoneName");
-        }
-
-        return result;
-    }
-
-    internal JSValue Format(DateTimeOffset value, JSObject format) => new JSString(value.ToString(locale));
-
-    private bool SupportsDayPeriod()
-        => options != null && !options[DayPeriodKey].IsUndefined;
-
-    private bool UsesHourFormatting()
-        => (options != null && !options[HourKey].IsUndefined)
-            // Every timeStyle (full/long/medium/short) renders an hour component, so its
-            // resolvedOptions carries a resolved hourCycle / hour12 just like an explicit hour.
-            || timeStyle != null;
-
-    private string DayPeriodStyle()
-        => options?[DayPeriodKey]?.StringValue ?? string.Empty;
-
-    private static string FormatEnglishHour(DateTimeOffset value) => FormatEnglishHour(value.Hour);
-
-    private static string FormatEnglishHour(int hour)
-        => ((hour % 12) == 0 ? 12 : hour % 12).ToString(CultureInfo.InvariantCulture);
-
-    // The wall-clock hour/minute in the formatter's time zone (system local when unset), full range.
-    private (int hour, int minute) WallHourMinute(double clipped)
-    {
-        var wall = JSIntlDateTimeFormatEngine.ToZone(clipped, OptionString(TimeZoneKey));
-        return ((int)EcmaTime.HourFromTime(wall), (int)EcmaTime.MinFromTime(wall));
-    }
-
-    // CLDR day-period rule overrides for the ECMA-402 dayPeriod option. The bundled
-    // Broiler.Unicode tables (a) surface the fixed "midnight" period at 00:00, which
-    // the dayPeriod option never emits (browsers fold midnight into the surrounding
-    // flexible period, so 00:00 → "at night" for en), and (b) for "en" carry a
-    // mis-generated morning1/night1 split (morning1=0-720, night1=1260-1440) rather
-    // than the CLDR morning1=06:00-12:00 with night1 wrapping 21:00-06:00. The
-    // corrected rules keep the flexible periods contiguous; "noon" is retained (it
-    // IS surfaced by the option). Keyed by language subtag.
-    private static readonly Dictionary<string, string> DayPeriodRuleOverrides = new(StringComparer.Ordinal)
-    {
-        ["en"] = "noon@720;morning1=360-720;afternoon1=720-1080;evening1=1080-1260;night1=1260-360",
-    };
-
-    // The localized day-period name for the time, from CLDR data: the day-period
-    // rules pick the period (am/pm/noon/midnight/morning/…) and the ECMA-402
-    // dayPeriod option (long/short/narrow) selects the CLDR width.
-    private string FormatDayPeriod(DateTimeOffset value, string style)
-        => DayPeriodNameForStyle(value.Hour, value.Minute, style);
-
-    private static string DayPeriodWidth(string style) => style switch
-    {
-        "narrow" => "narrow",
-        "short" => "abbreviated",
-        _ => "wide",
-    };
-
-    private string DayPeriodNameForStyle(int hour, int minute, string style)
-        => CldrLocaleData.GetDayPeriodName(localeTag, ResolveDayPeriodKey(localeTag, hour, minute), DayPeriodWidth(style));
-
-    // The flexible day-period name for the dayPeriod option at a wall-clock time, or null when the
-    // option is absent. Pre-renders the 'B' token for Temporal formatting so it matches the legacy
-    // FormatDayPeriod path.
-    private string DayPeriodName(int hour, int minute)
-    {
-        var style = OptionString(DayPeriodKey);
-        return style == null ? null : DayPeriodNameForStyle(hour, minute, style);
-    }
-
-    private static string ResolveDayPeriodKey(string localeTag, int hour, int minute)
-    {
-        var dash = localeTag?.IndexOf('-') ?? -1;
-        var language = (dash < 0 ? localeTag ?? string.Empty : localeTag[..dash]).ToLowerInvariant();
-        if (DayPeriodRuleOverrides.TryGetValue(language, out var rules))
-            return MatchDayPeriodRules(rules, hour * 60 + minute) ?? (hour < 12 ? "am" : "pm");
-
-        return CldrLocaleData.GetDayPeriod(localeTag, hour, minute);
-    }
-
-    // Mirrors UnicodeCldr.LocaleData's day-period rule matcher: "@" ("at") rules
-    // win first, then half-open ranges (a from>before range wraps past midnight).
-    private static string MatchDayPeriodRules(string rules, int time)
-    {
-        foreach (var rule in rules.Split(';'))
-        {
-            var at = rule.IndexOf('@');
-            if (at >= 0)
-            {
-                if (int.Parse(rule[(at + 1)..], CultureInfo.InvariantCulture) == time)
-                    return rule[..at];
-                continue;
-            }
-
-            var eq = rule.IndexOf('=');
-            if (eq < 0)
-                continue;
-
-            var period = rule[..eq];
-            var dash = rule.IndexOf('-', eq + 1);
-            var from = int.Parse(rule[(eq + 1)..dash], CultureInfo.InvariantCulture);
-            var before = int.Parse(rule[(dash + 1)..], CultureInfo.InvariantCulture);
-            var matched = from <= before
-                ? time >= from && time < before
-                : time >= from || time < before;
-            if (matched)
-                return period;
-        }
-
-        return null;
-    }
-
-    public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())
-    {
-        var userOptions = JSIntl.ValidateConstructorArguments(
-            "DateTimeFormat", in a, out var canonical, requireNew: false);
-
-        // CreateDateTimeFormat reads every option exactly once, in a fixed order, before
-        // any formatting takes place. Read them all here — firing each user getter once,
-        // in order — and capture the coerced/validated values in a private snapshot the
-        // formatter and resolvedOptions then read from. This keeps the observable getter
-        // order spec-compliant (test262 DateTimeFormat constructor-options-order*),
-        // surfaces a throwing getter at construction (constructor-options-throwing-getters),
-        // validates each option once (RangeError for an out-of-set value), and never
-        // re-invokes a getter at format time.
-        //
-        // The snapshot has a NULL prototype: only the options we explicitly Capture below
-        // are present, so a later property read on the snapshot can't accidentally pick up
-        // a value the user planted on Object.prototype (test262
-        // default-options-object-prototype.js).
-        var snapshot = new JSObject();
-        snapshot.SetPrototypeOf(Null.JSNull.Value);
-        void Capture(KeyString key, string value)
+        void Put(string name, string value)
         {
             if (value != null)
-                snapshot[key] = CreateString(value);
+                result.CreateDataProperty(KeyStrings.GetOrCreate(name), CreateString(value));
         }
 
-        // localeMatcher (step 4) was already read by ValidateConstructorArguments.
-        // calendar then numberingSystem.
-        var calendarOption = JSIntl.ReadCalendarOption(userOptions);
-        Capture(CalendarKey, calendarOption);
-        var nuOption = JSIntl.ReadNumberingSystemOption(userOptions);
-        if (nuOption != null && !JSIntl.IsWellFormedUnicodeKeywordType(nuOption))
-            throw JSEngine.NewRangeError("Invalid numberingSystem option");
-        Capture(NumberingSystemKey, nuOption);
+        Put("locale", format.Locale);
+        Put("calendar", format.Calendar);
+        Put("numberingSystem", format.NumberingSystem);
+        Put("timeZone", format.TimeZone);
 
-        // hour12 (Boolean) then hourCycle.
-        var hour12 = userOptions == null ? JSUndefined.Value : userOptions[Hour12Key];
-        if (!hour12.IsUndefined)
-            snapshot[Hour12Key] = hour12.BooleanValue ? BooleanTrue : BooleanFalse;
-        Capture(HourCycleKey, JSIntl.GetOption(userOptions, HourCycleKey, HourCycleValues, false, null));
-
-        // timeZone (Get + ToString + offset-identifier normalization).
-        Capture(TimeZoneKey, ReadTimeZoneOption(userOptions));
-
-        // Date/time components, in table order: weekday, era, year, month, day,
-        // dayPeriod, hour, minute, second, fractionalSecondDigits.
-        Capture(WeekdayKey, JSIntl.GetOption(userOptions, WeekdayKey, NarrowShortLong, false, null));
-        Capture(EraKey, JSIntl.GetOption(userOptions, EraKey, NarrowShortLong, false, null));
-        Capture(YearKey, JSIntl.GetOption(userOptions, YearKey, NumericTwoDigit, false, null));
-        Capture(MonthKey, JSIntl.GetOption(userOptions, MonthKey, MonthValues, false, null));
-        Capture(DayKey, JSIntl.GetOption(userOptions, DayKey, NumericTwoDigit, false, null));
-        Capture(DayPeriodKey, JSIntl.GetOption(userOptions, DayPeriodKey, NarrowShortLong, false, null));
-        Capture(HourKey, JSIntl.GetOption(userOptions, HourKey, NumericTwoDigit, false, null));
-        Capture(MinuteKey, JSIntl.GetOption(userOptions, MinuteKey, NumericTwoDigit, false, null));
-        Capture(SecondKey, JSIntl.GetOption(userOptions, SecondKey, NumericTwoDigit, false, null));
-        var fractionalSecondDigits = JSIntl.GetNumberOption(userOptions, FractionalSecondDigitsKey, 1, 3);
-        if (fractionalSecondDigits.HasValue)
-            snapshot[FractionalSecondDigitsKey] = CreateNumber(fractionalSecondDigits.Value);
-
-        // timeZoneName then formatMatcher.
-        Capture(TimeZoneNameKey, JSIntl.GetOption(userOptions, TimeZoneNameKey, TimeZoneNameValues, false, null));
-        _ = JSIntl.GetOption(userOptions, FormatMatcherKey, FormatMatcherValues, false, "best fit");
-
-        // dateStyle then timeStyle: GetOption-coerced once here so resolvedOptions reports
-        // the coerced string rather than the raw option value.
-        dateStyle = JSIntl.GetOption(userOptions, DateStyleKey, DateTimeStyleValues, false, null);
-        timeStyle = JSIntl.GetOption(userOptions, TimeStyleKey, DateTimeStyleValues, false, null);
-
-        // CreateDateTimeFormat: dateStyle / timeStyle may not be combined with an explicit
-        // date/time component option. (An explicitly-undefined style is absent by GetOption.)
-        if (dateStyle != null || timeStyle != null)
+        if (format.HourCycle is { } hourCycle)
         {
-            foreach (var name in DateTimeComponentKeys)
-                if (snapshot[KeyStrings.GetOrCreate(name)] is { IsUndefined: false })
-                    throw JSEngine.NewTypeError(
-                        $"Intl.DateTimeFormat: the {name} option cannot be combined with dateStyle or timeStyle");
+            Put("hourCycle", hourCycle);
+            result.CreateDataProperty(Hour12Key, format.Hour12 == true ? BooleanTrue : BooleanFalse);
         }
 
-        // ToDateTimeOptions(options, "any", "date"): when the user specified no date/time COMPONENT
-        // and no dateStyle/timeStyle, default year/month/day to "numeric" so resolvedOptions reports
-        // them (test262 resolvedOptions/basic) and so they are own properties — not inherited from a
-        // tainted Object.prototype (test262 default-options-object-prototype). era / timeZoneName are
-        // supplementary and do not suppress the defaults.
-        if (dateStyle == null && timeStyle == null)
+        foreach (var (name, value) in format.ResolvedComponents)
         {
-            var hasComponent = false;
-            foreach (var name in DateComponentKeys)
-                if (!snapshot[KeyStrings.GetOrCreate(name)].IsUndefined) { hasComponent = true; break; }
-            if (!hasComponent)
-                foreach (var name in TimeComponentKeys)
-                    if (!snapshot[KeyStrings.GetOrCreate(name)].IsUndefined) { hasComponent = true; break; }
-
-            if (!hasComponent)
-            {
-                snapshot[YearKey] = CreateString("numeric");
-                snapshot[MonthKey] = CreateString("numeric");
-                snapshot[DayKey] = CreateString("numeric");
-                dateDefaultsApplied = true;
-            }
+            if (name == "fractionalSecondDigits")
+                result.CreateDataProperty(FractionalSecondDigitsKey, CreateNumber(int.Parse(value, NumberStyles.None, CultureInfo.InvariantCulture)));
+            else
+                Put(name, value);
         }
 
-        options = snapshot;
-
-        var resolvedLocale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.DateTimeFormatRelevantKeys);
-        (numberingSystem, localeTag) = JSIntl.ResolveNumberingSystem(resolvedLocale, nuOption);
-        // hour12 forces a non-keyword hour cycle, so it always drops the locale's -u-hc-. An
-        // hourCycle option only drops it when it DIFFERS from the extension value; an equal value
-        // keeps -u-hc- in the resolved locale (test262 resolvedOptions/resolved-hour-cycle-...).
-        if (!hour12.IsUndefined)
-            localeTag = JSIntl.DropHourCycleExtension(localeTag);
-        else
-            localeTag = JSIntl.ReflectExtensionKeyword(
-                localeTag, "hc", OptionString(HourCycleKey), JSIntl.GetUnicodeExtensionType(localeTag, "hc"));
-        // Negotiate the `ca` (calendar) relevant key the same way: an unavailable `calendar`
-        // option/extension is dropped, and the resolved locale keeps -u-ca- only when the value
-        // came from (or matches) the extension. Only the resolved LOCALE is taken here; the
-        // reported calendar value is derived on demand by ResolvedCalendarId.
-        (_, localeTag) = JSIntl.ResolveCalendar(localeTag, OptionString(CalendarKey));
-        locale = CultureInfo.CurrentCulture;
-    }
-
-    // Reads and validates the timeZone option (CreateDateTimeFormat) through the shared database
-    // (milestone SJL-8.6): an offset string is normalized to ±HH:MM, and one with seconds is a
-    // RangeError; a named zone is matched by its ASCII case and case-normalized — "utc" → "UTC",
-    // "africa/abidjan" → "Africa/Abidjan" — but NOT canonicalized through backward links
-    // ("Asia/Calcutta" stays "Asia/Calcutta"); anything else, an ISO date-time string among them, is a
-    // RangeError. Returns null when the option is absent.
-    private static string ReadTimeZoneOption(JSObject userOptions)
-    {
-        var value = userOptions == null ? JSUndefined.Value : userOptions[TimeZoneKey];
-        if (value.IsUndefined)
-            return null;
-
-        return TemporalTimeZones.ResolveFormatterTimeZone(value.StringValue);
-    }
-
-    internal JSIntlDateTimeFormat(CultureInfo locale) : base()
-    {
-        this.locale = locale;
-        localeTag = locale.Name;
-        numberingSystem = JSIntl.DefaultNumberingSystem(localeTag);
-    }
-
-    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.DateTimeFormat");
-
-    // %Intl.DateTimeFormat.prototype% of the current realm (Intrinsics.IntlPrototype), never the prototype
-    // of whatever `globalThis.Intl.DateTimeFormat` holds now: guest code may replace the namespace or its members.
-    private static JSObject CurrentPrototype()
-        => Intrinsics.IntlPrototype(IntrinsicKey);
-
-    private static double TimeClipRange(double number)
-    {
-        var clipped = EcmaTime.TimeClip(number);
-        if (double.IsNaN(clipped))
-            throw JSEngine.NewRangeError("Invalid time value");
-
-        return clipped;
+        Put("dateStyle", format.DateStyle);
+        Put("timeStyle", format.TimeStyle);
+        return result;
     }
 }
 
-internal static class JSIntlResolvedOptionsExtensions
+/// <summary>
+/// The locale data a date-time format of one numbering system reads: <see cref="JSIntlData.LocaleData"/>, except that the
+/// decimal symbol is the numbering system's own (decision D21), read as the shared library's number formatter reads a
+/// system's symbol - the number table's <c>symbols@&lt;system&gt;.decimal</c> at the data locale, then at root (<c>und</c>),
+/// then the data locale's <c>latn</c> one - so that a fractional second of <c>en-u-nu-arab</c> is written with U+066B
+/// (SJL-9.5, task 8.5, 2026-11-09).
+/// </summary>
+/// <remarks>
+/// The shared library's <c>DateTimeFormat.Create</c> reads the decimal symbol of a date-time pattern as the data locale's
+/// <c>symbols.decimal</c> alone, the <c>latn</c> one, where the home's design (<c>Broiler.ECMAScript/docs/intl/design.md</c>,
+/// "Numbering systems") says every formatter writes numbers from the one table, so that <c>en-u-nu-arab</c> writes U+066B.
+/// The engine's hand table of that separator (<c>"٫"</c> for <c>arab</c> and <c>arabext</c>, in MapNumbering) is gone; the
+/// symbol is the data's. This adapter is the engine's until the library reads the system's own symbol itself, a library
+/// change made as its own merge (decision D52, SJL-D-9). Every other question is the inner data's.
+/// </remarks>
+internal sealed class NumberingSystemDecimalData(ILocaleData inner, string system) : ILocaleData
 {
-    internal static void SetIfDefined(JSObject target, JSObject options, string name)
-    {
-        var key = KeyStrings.GetOrCreate(name);
-        var value = options?[key] ?? JSValue.UndefinedValue;
-        if (!value.IsUndefined)
-            // CreateDataPropertyOrThrow: define an own property directly. Ordinary
-            // assignment ([[Set]]) would walk the prototype chain and could invoke a
-            // setter installed on Object.prototype by client code (ECMA-402 requires
-            // resolvedOptions to be unaffected by such taint).
-            target.CreateDataProperty(key, value);
-    }
+    private readonly string own = "symbols@" + system + ".decimal";
+
+    /// <summary>Whether the data states a decimal symbol of its own for a numbering system, at root.</summary>
+    internal static bool States(ILocaleData data, string system) => data.NumberValue("und", "symbols@" + system + ".decimal") is not null;
+
+    public string? NumberValue(string locale, string key)
+        => key == "symbols.decimal" && (inner.NumberValue(locale, own) ?? inner.NumberValue("und", own)) is { } stated
+            ? stated
+            : inner.NumberValue(locale, key);
+
+    public IReadOnlyList<string> Locales => inner.Locales;
+    public bool HoldsLocale(IntlTable table, string locale) => inner.HoldsLocale(table, locale);
+    public string? LikelySubtags(string source) => inner.LikelySubtags(source);
+    public string? Alias(LocaleAliasKind kind, string from) => inner.Alias(kind, from);
+    public bool IsExtensionKey(char singleton, string key) => inner.IsExtensionKey(singleton, key);
+    public bool TryExtensionType(char singleton, string key, string type, out string preferred) => inner.TryExtensionType(singleton, key, type, out preferred);
+    public RegionHourCycles? HourCycles(string region) => inner.HourCycles(region);
+    public RegionWeek? Week(string region) => inner.Week(region);
+    public bool? IsRightToLeft(string script) => inner.IsRightToLeft(script);
+    public CurrencyNames? Currency(string locale, string code) => inner.Currency(locale, code);
+    public IReadOnlyList<string> CurrencyCodes => inner.CurrencyCodes;
+    public int? CurrencyDigits(string code) => inner.CurrencyDigits(code);
+    public IReadOnlyList<string> NumberingSystems => inner.NumberingSystems;
+    public IReadOnlyList<string>? NumberingSystemDigits(string system) => inner.NumberingSystemDigits(system);
+    public IReadOnlyList<PluralRuleText>? PluralRules(string language, PluralRuleType type) => inner.PluralRules(language, type);
+    public string? PluralRange(string language, string start, string end) => inner.PluralRange(language, start, end);
+    public string? UnitPattern(string locale, string width, string unit, string field) => inner.UnitPattern(locale, width, unit, field);
+    public ListPatterns? ListPattern(string locale, string type) => inner.ListPattern(locale, type);
+    public string? RelativeTime(string locale, string field, string key) => inner.RelativeTime(locale, field, key);
+    public string? DisplayName(string locale, string kind, string code) => inner.DisplayName(locale, kind, code);
+    public string? DateValue(string locale, string calendar, string key) => inner.DateValue(locale, calendar, key);
+    public IReadOnlyDictionary<string, string>? DateValues(string locale, string calendar) => inner.DateValues(locale, calendar);
+    public IReadOnlyList<DayPeriodRule>? DayPeriods(string language) => inner.DayPeriods(language);
+    public IReadOnlyList<MetazonePeriod>? MetazonePeriods(string zone) => inner.MetazonePeriods(zone);
+    public string? GoldenZone(string metazone, string region) => inner.GoldenZone(metazone, region);
+    public string? PrimaryZone(string region) => inner.PrimaryZone(region);
 }

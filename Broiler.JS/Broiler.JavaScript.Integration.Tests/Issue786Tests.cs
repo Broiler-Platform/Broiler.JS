@@ -170,8 +170,10 @@ public class Issue786Tests
     [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainDate(2021, 8, 4))", "8/4/2021")]
     [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainYearMonth(2021, 8, 'gregory'))", "8/2021")]
     [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainMonthDay(8, 4, 'gregory'))", "8/4")]
-    [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainDateTime(2021, 8, 4, 23, 30, 45))", "8/4/2021, 11:30:45 PM")]
-    [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainTime(0, 30, 45))", "12:30:45 AM")]
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T12, data policy): CLDR 48.2.0's patterns write U+202F before the day period; the two
+    // lines below read "8/4/2021, 11:30:45 PM" and "12:30:45 AM" with a space.
+    [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainDateTime(2021, 8, 4, 23, 30, 45))", "8/4/2021, 11:30:45\u202FPM")]
+    [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainTime(0, 30, 45))", "12:30:45\u202FAM")]
     // A plain type uses its own wall clock, ignoring the formatter's time zone.
     [InlineData("new Intl.DateTimeFormat('en-US', {timeZone:'Pacific/Apia'}).format(new Temporal.PlainDate(2021, 8, 4))", "8/4/2021")]
     public void DateTimeFormat_FormatsTemporal(string code, string expected)
@@ -205,8 +207,9 @@ public class Issue786Tests
         => Assert.Equal("TypeError", ErrorName(code));
 
     [Fact]
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T31, data policy): CLDR's range separator is "\u2009–\u2009"; the test expected " – ".
     public void DateTimeFormat_FormatsTemporalRange()
-        => Assert.Equal("8/4/2021 – 8/5/2021", Eval(
+        => Assert.Equal("8/4/2021\u2009–\u20098/5/2021", Eval(
             "new Intl.DateTimeFormat('en-US').formatRange(new Temporal.PlainDate(2021,8,4), new Temporal.PlainDate(2021,8,5))"));
 
     [Fact]
@@ -218,7 +221,8 @@ public class Issue786Tests
     public void ZonedDateTime_ToLocaleString_FormatsInOwnZone()
         // Midnight in New York (epoch 05:00 UTC) renders as its own wall clock with the zone name
         // (the bundled CLDR short metazone name), proving the instance's zone — not UTC — is applied.
-        => Assert.Equal("1/1/1970, 12:00:00 AM EST", Eval(
+        // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T12, data policy): U+202F before the day period; the test expected "12:00:00 AM EST".
+        => Assert.Equal("1/1/1970, 12:00:00\u202FAM EST", Eval(
             "Temporal.ZonedDateTime.from('1970-01-01T00:00[America/New_York]').toLocaleString('en-US')"));
 
     [Fact]
@@ -243,16 +247,19 @@ public class Issue786Tests
 
     [Theory]
     // timeZoneName rendering: UTC keeps its CLDR name; offset zones use the GMT offset.
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'short', timeZone:'UTC'}).format(new Date(0))", "1/1/1970 UTC")]
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'long', timeZone:'UTC'}).format(new Date(0))", "1/1/1970 Coordinated Universal Time")]
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969 GMT-5")]
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'longOffset', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969 GMT-05:00")]
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T13, implementation-defined): CLDR's pattern generator joins a date and a zone name
+    // with ", " (V8's "1/1/1970, UTC"), where the hand resolver wrote a space; each expected string below read
+    // "<date> <zone>".
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'short', timeZone:'UTC'}).format(new Date(0))", "1/1/1970, UTC")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'long', timeZone:'UTC'}).format(new Date(0))", "1/1/1970, Coordinated Universal Time")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969, GMT-5")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'longOffset', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969, GMT-05:00")]
     // A local mean time's seconds follow the minutes, in both offset styles (row Z16).
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'longOffset', timeZone:'Africa/Abidjan'}).format(Date.UTC(1900, 0, 1))", "12/31/1899 GMT-00:16:08")]
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'Africa/Abidjan'}).format(Date.UTC(1900, 0, 1))", "12/31/1899 GMT-0:16:08")]
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'longOffset', timeZone:'America/New_York'}).format(Date.UTC(1850, 0, 1))", "12/31/1849 GMT-04:56:02")]
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'America/New_York'}).format(Date.UTC(1850, 0, 1))", "12/31/1849 GMT-4:56:02")]
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'Asia/Kolkata'}).format(new Date(0))", "1/1/1970 GMT+5:30")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'longOffset', timeZone:'Africa/Abidjan'}).format(Date.UTC(1900, 0, 1))", "12/31/1899, GMT-00:16:08")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'Africa/Abidjan'}).format(Date.UTC(1900, 0, 1))", "12/31/1899, GMT-0:16:08")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'longOffset', timeZone:'America/New_York'}).format(Date.UTC(1850, 0, 1))", "12/31/1849, GMT-04:56:02")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'America/New_York'}).format(Date.UTC(1850, 0, 1))", "12/31/1849, GMT-4:56:02")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'Asia/Kolkata'}).format(new Date(0))", "1/1/1970, GMT+5:30")]
     public void DateTimeFormat_RendersTimeZoneName(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
@@ -274,9 +281,12 @@ public class Issue786Tests
     [InlineData("new Temporal.PlainTime(11, 46).toLocaleString('en', {dayPeriod:'short'})", "in the morning")]
     [InlineData("new Temporal.PlainTime(15, 0).toLocaleString('en', {dayPeriod:'short'})", "in the afternoon")]
     [InlineData("new Temporal.PlainTime(11, 46, 40).toLocaleString('en', {dayPeriod:'short', hour:'numeric'})", "11 in the morning")]
-    // Date(0)/Instant(0n) are UTC midnight ("at night"); both paths honour timeZone:UTC and agree.
-    [InlineData("new Date(0).toLocaleString('en', {dayPeriod:'short', timeZone:'UTC'})", "at night")]
-    [InlineData("new Temporal.Instant(0n).toLocaleString('en', {dayPeriod:'short', timeZone:'UTC'})", "at night")]
+    // Date(0)/Instant(0n) are UTC midnight; both paths honour timeZone:UTC and agree.
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T17, data policy): CLDR 48.2.0's en rule puts 00:00 in morning1, "in the morning",
+    // where a hand override gave "at night"; the comment read 'are UTC midnight ("at night")' and both lines
+    // expected "at night".
+    [InlineData("new Date(0).toLocaleString('en', {dayPeriod:'short', timeZone:'UTC'})", "in the morning")]
+    [InlineData("new Temporal.Instant(0n).toLocaleString('en', {dayPeriod:'short', timeZone:'UTC'})", "in the morning")]
     public void DayPeriod_RendersCldrName(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
@@ -288,10 +298,13 @@ public class Issue786Tests
     [Theory]
     // CLDR metazone names (bundled for en): standard vs daylight selected by DST at the instant,
     // with a GMT-offset fallback when the metazone lacks the requested width.
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'long', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969 Eastern Standard Time")]
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'long', timeZone:'America/New_York'}).format(new Date(Date.UTC(2024,6,1)))", "6/30/2024 Eastern Daylight Time")]
-    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'short', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969 EST")]
-    [InlineData("new Temporal.ZonedDateTime(0n, 'Europe/Vienna').toLocaleString('en-US', {timeZoneName:'long'})", "1/1/1970, 1:00:00 AM Central European Standard Time")]
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, rows T13 and T12): a date and a zone name are joined with ", " (row T13), and U+202F
+    // precedes the day period (row T12); the first three expected strings read "<date> <zone>" and the last
+    // "1:00:00 AM" with a space.
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'long', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969, Eastern Standard Time")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'long', timeZone:'America/New_York'}).format(new Date(Date.UTC(2024,6,1)))", "6/30/2024, Eastern Daylight Time")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'short', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969, EST")]
+    [InlineData("new Temporal.ZonedDateTime(0n, 'Europe/Vienna').toLocaleString('en-US', {timeZoneName:'long'})", "1/1/1970, 1:00:00\u202FAM Central European Standard Time")]
     public void DateTimeFormat_RendersCldrZoneName(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 

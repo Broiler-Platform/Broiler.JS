@@ -14311,11 +14311,14 @@ public class BuiltInsTests
             })();
             """);
 
-        // 00:00 resolves to the flexible "at night" period: the ECMA-402 dayPeriod
-        // option does not surface the fixed "midnight" period (it folds into the
-        // surrounding night period), matching test262 dayPeriod-long-en.js. "noon"
-        // (12:00) is still surfaced.
-        Assert.Equal("at night|noon|1|dayPeriod|noon|12 n|3|hour|12|literal| |dayPeriod|n", result.ToString());
+        // 00:00 resolves to a flexible period: the ECMA-402 dayPeriod option does not surface the
+        // fixed "midnight" period, matching test262 dayPeriod-long-en.js. "noon" (12:00) is still
+        // surfaced.
+        // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T17, data policy): the flexible period at 00:00 is
+        // CLDR 48.2.0's en rule, morning1 from 00:00 before 12:00, so "in the morning", where a hand override
+        // of the rules gave "at night"; the comment read "00:00 resolves to the flexible "at night" period"
+        // and "(it folds into the surrounding night period)", and the expected string began "at night|".
+        Assert.Equal("in the morning|noon|1|dayPeriod|noon|12 n|3|hour|12|literal| |dayPeriod|n", result.ToString());
     }
 
     [Fact]

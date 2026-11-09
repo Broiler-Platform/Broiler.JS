@@ -11,6 +11,9 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 // "16 Anno Domini"), by the nearer of the era's and the field's skeletons.
 // The expected strings are V8's (ICU 77.1, CLDR 47) for the same options. An era-using calendar's
 // own era, written without the option, still needs a year.
+// Revised 2026-11-09, at SJL-9.5 (task 8.5, row T12, data policy): the shared Intl library writes CLDR 48.2.0's
+// patterns, whose day period follows U+202F NARROW NO-BREAK SPACE, so each expected " AM" or " PM" is now
+// "\u202FAM" or "\u202FPM", as V8 writes it in formatToParts; the strings are otherwise unchanged.
 public class DateTimeFormatEraWithoutYearTests
 {
     // 2026-10-16T12:03:05.678Z, a Friday.
@@ -36,21 +39,21 @@ public class DateTimeFormatEraWithoutYearTests
     // Ahead of a time alone.
     [InlineData("{ era: 'short', minute: '2-digit', second: '2-digit' }", "AD, 03:05")]
     [InlineData("{ era: 'short', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 2 }", "AD, 03:05.67")]
-    [InlineData("{ era: 'short', hour: 'numeric', minute: '2-digit' }", "AD, 12:03 PM")]
-    [InlineData("{ era: 'long', hour: 'numeric' }", "Anno Domini, 12 PM")]
+    [InlineData("{ era: 'short', hour: 'numeric', minute: '2-digit' }", "AD, 12:03\u202FPM")]
+    [InlineData("{ era: 'long', hour: 'numeric' }", "Anno Domini, 12\u202FPM")]
     [InlineData("{ era: 'long', hour: 'numeric', minute: '2-digit', hourCycle: 'h23' }", "Anno Domini, 12:03")]
     // After a date with no year.
     [InlineData("{ era: 'short', month: 'short', day: 'numeric' }", "Oct 16 AD")]
     [InlineData("{ era: 'short', month: 'numeric', day: 'numeric' }", "10/16 AD")]
     [InlineData("{ era: 'short', weekday: 'short', month: 'short', day: 'numeric' }", "Fri, Oct 16 AD")]
-    [InlineData("{ era: 'narrow', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }", "Oct 16 A, 12:03 PM")]
+    [InlineData("{ era: 'narrow', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }", "Oct 16 A, 12:03\u202FPM")]
     // A lone field joins a time as a date does.
-    [InlineData("{ era: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }", "AD (day: 16), 12:03 PM")]
-    [InlineData("{ era: 'short', month: 'short', hour: 'numeric', minute: '2-digit' }", "AD (month: Oct), 12:03 PM")]
-    [InlineData("{ era: 'short', weekday: 'short', hour: 'numeric', minute: '2-digit' }", "AD Fri, 12:03 PM")]
-    [InlineData("{ era: 'long', day: '2-digit', hour: 'numeric', minute: '2-digit' }", "Anno Domini (day: 16), 12:03 PM")]
-    [InlineData("{ era: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }", "16 Anno Domini, 12:03 PM")]
-    [InlineData("{ era: 'narrow', weekday: 'narrow', hour: 'numeric', minute: '2-digit' }", "A F, 12:03 PM")]
+    [InlineData("{ era: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }", "AD (day: 16), 12:03\u202FPM")]
+    [InlineData("{ era: 'short', month: 'short', hour: 'numeric', minute: '2-digit' }", "AD (month: Oct), 12:03\u202FPM")]
+    [InlineData("{ era: 'short', weekday: 'short', hour: 'numeric', minute: '2-digit' }", "AD Fri, 12:03\u202FPM")]
+    [InlineData("{ era: 'long', day: '2-digit', hour: 'numeric', minute: '2-digit' }", "Anno Domini (day: 16), 12:03\u202FPM")]
+    [InlineData("{ era: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }", "16 Anno Domini, 12:03\u202FPM")]
+    [InlineData("{ era: 'narrow', weekday: 'narrow', hour: 'numeric', minute: '2-digit' }", "A F, 12:03\u202FPM")]
     // With a year, unchanged.
     [InlineData("{ era: 'short', year: 'numeric' }", "2026 AD")]
     [InlineData("{ era: 'short' }", "10/16/2026 AD")]
@@ -118,13 +121,13 @@ public class DateTimeFormatEraWithoutYearTests
     [InlineData("en-u-ca-buddhist", "{ era: 'short', month: 'short', day: 'numeric' }", "Oct 16 BE")]
     [InlineData("en-u-ca-buddhist", "{ era: 'short', day: 'numeric' }", "BE (day: 16)")]
     [InlineData("en-u-ca-buddhist", "{ month: 'short', day: 'numeric' }", "Oct 16")]
-    [InlineData("en-u-ca-buddhist", "{ hour: 'numeric', minute: '2-digit' }", "12:03 PM")]
+    [InlineData("en-u-ca-buddhist", "{ hour: 'numeric', minute: '2-digit' }", "12:03\u202FPM")]
     public void An_era_using_calendar_s_era_needs_the_option_or_a_year(string locale, string options, string expected)
         => Assert.Equal(expected, Format(locale, options));
 
     [Theory]
     // A Temporal type with no era drops the option, as it did.
-    [InlineData("new Temporal.PlainTime(12, 3, 5)", "{ era: 'short', hour: 'numeric', minute: '2-digit' }", "12:03 PM")]
+    [InlineData("new Temporal.PlainTime(12, 3, 5)", "{ era: 'short', hour: 'numeric', minute: '2-digit' }", "12:03\u202FPM")]
     [InlineData("Temporal.PlainMonthDay.from('10-16')", "{ era: 'short', month: 'short', day: 'numeric', calendar: 'iso8601' }", "Oct 16")]
     // A PlainDate has one.
     [InlineData("new Temporal.PlainDate(2026, 10, 16)", "{ era: 'short', month: 'short', day: 'numeric' }", "Oct 16 AD")]

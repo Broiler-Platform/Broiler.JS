@@ -210,14 +210,16 @@ public class Issue711Tests
     // formatRange collapses shared higher-order fields: same month/year, differing day.
     [Fact]
     public void DateTimeFormatRangeDayDifference()
-        => Assert.Equal("Jan 3 – 5, 2019", Eval(
+        // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T31, data policy): CLDR's range separator is "\u2009–\u2009"; the test expected " – ".
+        => Assert.Equal("Jan 3\u2009–\u20095, 2019", Eval(
             "var f = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });"
             + "f.formatRange(new Date('2019-01-03T00:00:00'), new Date('2019-01-05T00:00:00'));"));
 
     // Differing month: month+day repeat per range, the year stays shared.
     [Fact]
     public void DateTimeFormatRangeMonthDifference()
-        => Assert.Equal("Jan 3 – Mar 4, 2019", Eval(
+        // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T31, data policy): as above; the test expected "Jan 3 – Mar 4, 2019".
+        => Assert.Equal("Jan 3\u2009–\u2009Mar 4, 2019", Eval(
             "var f = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });"
             + "f.formatRange(new Date('2019-01-03T00:00:00'), new Date('2019-03-04T00:00:00'));"));
 

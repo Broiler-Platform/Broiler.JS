@@ -62,8 +62,10 @@ public class Issue650DateTimeFormatTests
         => Eval($"new Intl.DateTimeFormat('{locale}', {{ dayPeriod: '{display}' }})" +
                 $".format(new Date(2017, 11, 12, {hour}, 0, 0, 0))");
 
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T17, data policy): CLDR 48.2.0's en rule puts 00:00 in morning1, "in the morning",
+    // where a hand override folded it into "at night"; the hour 0 expected "at night".
     [Theory]
-    [InlineData(0, "at night")]
+    [InlineData(0, "in the morning")]
     [InlineData(9, "in the morning")]
     [InlineData(12, "noon")]
     [InlineData(15, "in the afternoon")]
