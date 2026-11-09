@@ -30,6 +30,8 @@
 # (C5) under the row the vector's note names, as revision 15 classified the differences only its New York run
 # showed. Each such vector matches on the host of the runs above, where its run reports the divergence as no longer
 # holding, which the runner does not fail on.
+# (Reason js-n3c-ci-ubuntu is js-n3c-cldr-ci-ubuntu from revision 36, which keeps its text and replaces its last
+# clause.)
 #
 # Revision 35, 2026-11-04: decision D7 of Broiler.VM's JSD-0082 as the owner kept it that day ("Host only, fix
 # vectors"): Broiler.JS's available locales are the host's cultures only (row L28), and since SJL-9.5 its resolved
@@ -47,6 +49,34 @@
 # yet (rows T12, T30 and T31, and N4, which SJL-9.5 corrects), whose fields name that answer. (Until the
 # review of 2026-11-04 the *-host reasons said "and answers for that locale, which is Broiler.VM's
 # expectation here", and "so on such a host no task answers it".)
+#
+# Revision 36, 2026-11-08: the owner's decision of that day ("Revision 36: follow CLDR"). SJL-9.5's stage 2 (branch
+# sjl-9-5-cutover at 66840f72) formats numbers, plurals, lists, relative times and display names from the shared Intl
+# library, which follows the pinned CLDR 48.2.0, and three normative vectors whose out is the reference's answer
+# became differences nothing classifies: families/0121 (en-150, row N3c) and families/0309 (gv) and 0454 (ln), row
+# S1b. The pinned data contradicts out there: en-150's currency pattern is `#,##0.00U+00A0U+00A4`, and gv's and ln's
+# list patterns are `{0}, {1}` throughout, where the reference answers `"-U+20AC1,234.50"` and, resolving gv and ln to
+# en-US, `"A, B, and C"`. The owner accepts the data's answer, so reasons js-n3c-cldr and js-s1b-cldr classify them
+# for Broiler.JS under rows N3c and S1b, as data policy (C5), with that decision and the dated note of 2026-11-09
+# under SJL-9's data changes (C5) in docs/roadmap/SharedLibraries.md as this engine's record, since no task answers
+# them; a normative vector becomes a divergence and out does not change. The same pattern reaches two vectors already
+# classified, whose reasons said "answered by SJL-9.5", which no longer holds: families/0141 (en-DK), which inherits
+# en-150's pattern and which SJL-9.5 answers `"-1.234,50U+00A0U+20AC"`, moves from js-n3c to js-n3c-cldr; and
+# families/0151 (en-FR), which inherits it too where the host lists en-FR, moves from js-n3c-ci-ubuntu to
+# js-n3c-cldr-ci-ubuntu, which keeps that reason's text and replaces its last clause, "answered by SJL-9.5, this
+# engine's cut-over to the shared Intl library". No vector's out, per-engine field or Broiler.VM field changes. Not
+# classified, and open for the coordinator's or the owner's call before SJL-9.5 merges: CLDR 48.2.0 gives aa, ab,
+# en-Shaw, en-Shaw-GB, jbo and pap root's list patterns, `{0}, {1}` throughout, and their row S1b vectors
+# (families/0008, 0018, 0195, 0205, 0427 and 0514) are normative with out `"A, B, and C"`. They match on the host the
+# area is classified on, whose ICU 74.2 lists none of the six (revision 35), so Broiler.JS resolves them to en
+# (en-Shaw, en-Shaw-GB) or to the default en-US. The icu.dll of windows-latest, which ci.yml's engine vectors job runs
+# on, lists aa and pap (revision 28's ten windows-latest differences), and there SJL-9.5, which resolves a locale to
+# one the host lists (decision D7, row L29), is expected to answer the data's `"A, B, C"` for families/0008 (aa) and
+# 0514 (pap), two differences nothing classifies; no run shows that a CI host lists ab, en-Shaw, en-Shaw-GB or jbo.
+# Whether the owner's decision covers them is not settled here, and SJL-9.5's windows-latest engine vectors job is to
+# be read before it merges. (Until the review of 2026-11-09 this paragraph said "formats numbers, lists, relative
+# times and display names" and "with that decision as this engine's record", and the three reasons ended "this
+# engine's record is data policy C5 and that decision, which corpus revision 36 records".)
 
 reason js-l10: row L10: A `-t-` tlang whose language alias adds a subtag: `en-t-sh`; Broiler.JS answers `Error: System.IndexOutOfRangeException` from `CanonicalizeTransformedExtension`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-l12: row L12: `Zzzz` and `ZZ` in Add Likely Subtags: `und-Zzzz`, `und-ZZ`, `und-Zzzz-ZZ` maximized ...; Broiler.JS answers `en-Zzzz-US`, `en-Latn-ZZ`, `en-Zzzz-ZZ`; `en-Zzzz-ZZ`, `en-Zzzz`: the unknown script and region kept; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
@@ -90,7 +120,8 @@ reason js-n2b-m5: rows N2b and M5: Other locales' percent pattern: `de-CH`, `fr`
 reason js-n2c: row N2c: `style: "unit"`, `unit: "percent"`, short and long; Broiler.JS answers CLDR's unit pattern: `de` short `"50 %"` (U+0020), long `"50 Prozent"` (Node: `"50 %"` with U+00A0, `"50 Prozent"`); implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-n3b: row N3b: Currency spacing between a letter symbol or code and the digits: `en` code `EUR`, `USD`, `JPY`, `GBP` ...; Broiler.JS answers `"EUR1.00"`, `"CHF1.00"`, `"KWD1.000"`: no currency spacing; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-n3c: row N3c: Other locales' currency patterns and symbols: `fr`, `es`, `pt-PT`, `ko-KR`, `zh-TW`, `sv`, `ar`; Broiler.JS answers the package's and the host's: `fr` `"-1 234,50 U+20AC"`, `"1,00 $US"`; `ko-KR` `"US$1.00"`; `ar` `"-1U+066C234U+066B50U+20AC"`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-reason js-n3c-ci-ubuntu: row N3c: Other locales' currency patterns and symbols: `fr`, `es`, `pt-PT`, `ko-KR`, `zh-TW`, `sv`, `ar`; Broiler.JS answers the package's and the host's: `fr` `"-1 234,50 U+20AC"`, `"1,00 $US"`; `ko-KR` `"US$1.00"`; `ar` `"-1U+066C234U+066B50U+20AC"`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364071, `engine vectors (ubuntu-latest)`, Ubuntu 26.04.1 (image `ubuntu-26.04` 20261012.163.1), whose ICU is 78.2 by the image's software list (`libicu-dev` 78.2-2ubuntu1; the job's log names none), Broiler.JS's answer follows that ICU, not the pinned CLDR: `en-FR` `EUR` -1234.5 `"-U+20AC1U+202F234,50"`; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+reason js-n3c-cldr: row N3c: Other locales' currency patterns and symbols: `fr`, `es`, `pt-PT`, `ko-KR`, `zh-TW`, `sv`, `ar`; Broiler.JS answers the package's and the host's: `fr` `"-1 234,50 U+20AC"`, `"1,00 $US"`; `ko-KR` `"US$1.00"`; `ar` `"-1U+066C234U+066B50U+20AC"`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; from SJL-9.5, this engine's cut-over to the shared Intl library, Broiler.JS answers that data, and CLDR 48.2.0's own pattern is not out's: it gives `en-150` the currency pattern `#,##0.00U+00A0U+00A4` (common/main/en_150.xml, and cldr-numbers-full's main/en-150/numbers.json), which `en-DK` inherits (cldr-core's parentLocales; common/main/en_DK.xml has no currency formats) with its own decimal `,` and group `.`: `en-150` `"-1,234.50U+00A0U+20AC"`, `en-DK` `"-1.234,50U+00A0U+20AC"`, where out is the reference's answer (ICU 78.3, CLDR 48.0), `"-U+20AC1,234.50"`; the owner's decision of 2026-11-08 ("Revision 36: follow CLDR") accepts the pinned data's answer, so no task answers it: this engine's record is data policy C5 and that decision, with the dated note of 2026-11-09 under SJL-9's data changes (C5) in docs/roadmap/SharedLibraries.md
+reason js-n3c-cldr-ci-ubuntu: row N3c: Other locales' currency patterns and symbols: `fr`, `es`, `pt-PT`, `ko-KR`, `zh-TW`, `sv`, `ar`; Broiler.JS answers the package's and the host's: `fr` `"-1 234,50 U+20AC"`, `"1,00 $US"`; `ko-KR` `"US$1.00"`; `ar` `"-1U+066C234U+066B50U+20AC"`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; on the CI host of run 40400894567's job 121846364071, `engine vectors (ubuntu-latest)`, Ubuntu 26.04.1 (image `ubuntu-26.04` 20261012.163.1), whose ICU is 78.2 by the image's software list (`libicu-dev` 78.2-2ubuntu1; the job's log names none), Broiler.JS's answer follows that ICU, not the pinned CLDR: `en-FR` `EUR` -1234.5 `"-U+20AC1U+202F234,50"`; the vector matches on the host revision 28's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; from SJL-9.5, this engine's cut-over to the shared Intl library, Broiler.JS answers that data on a host that lists `en-FR` (decision D7, revision 35), and CLDR 48.2.0's answer is not out: `en-FR` inherits `en-150`'s currency pattern `#,##0.00U+00A0U+00A4` (cldr-core's parentLocales; common/main/en_FR.xml has no currency formats) with its own decimal `,` and group U+202F, `"-1U+202F234,50U+00A0U+20AC"` by that data; the owner's decision of 2026-11-08 ("Revision 36: follow CLDR") accepts the pinned data's answer, so no task answers it: this engine's record is data policy C5 and that decision, with the dated note of 2026-11-09 under SJL-9's data changes (C5) in docs/roadmap/SharedLibraries.md; on a host that lists no `en-FR`, as ICU 74.2 does not, Broiler.JS resolves it to `en` (row L29) and matches
 reason js-n4: row N4: `currencyDisplay: "name"`: `en` and `de`, nine currencies, 0, 1, 2, 1.5, -1234.5, `formatToParts`, ranges; Broiler.JS answers the symbol: `"U+20AC2.00"`, `"$1.00"`, `"CHF1.00"`, `de` `"1,00 U+20AC"`; parts `currency:"U+20AC"`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-n4-host: row N4: `currencyDisplay: "name"`: `en` and `de`, nine currencies, 0, 1, 2, 1.5, -1234.5, `formatToParts`, ranges; Broiler.JS answers the symbol: `"U+20AC2.00"`, `"$1.00"`, `"CHF1.00"`, `de` `"1,00 U+20AC"`; parts `currency:"U+20AC"`; a correction of Broiler.JS (JSD-0082, C1); where the host lists the locale, answered by SJL-9.5, this engine's cut-over to the shared Intl library; on a host whose ICU lists no culture for the vector's locale (the ICU 74.2 of Ubuntu 24.04.5, the host the area is classified on, lists none for `aa`, `ab`, `en-FR`, `en-Shaw`, `en-Shaw-GB`, `jbo` and `pap`), Broiler.JS resolves it as Broiler.VM's list does, to `en` or to the default `en-US`, and answers for that locale, which is Broiler.VM's expectation once this engine answers that locale as the row this field names has it (where SJL-9.5 corrects it, from that correction): its available locales are the host's cultures (decision D7, row L28, engine policy) and, since SJL-9.5, its resolved locale is the available one LookupMatcher finds (row L29); the owner's decision of 2026-11-04 ("Host only, fix vectors") keeps decision D7 as written, so on such a host no task answers the difference that resolution makes, and this engine's record is decision D7 of Broiler.VM's JSD-0082 with the dated note of 2026-11-04 under SJL-9 in docs/roadmap/SharedLibraries.md; at SJL-9.5's 4ba95d2d `en-FR` so resolves to `en` and answers `"$2.00"`, row N4's symbol, where Broiler.VM's expectation is `"2.00 US dollars"`
 reason js-n5b: row N5b: Compound units with no CLDR pattern: `liter-per-kilometer`, `byte-per-second`, `kilobit-per-stone` ...; Broiler.JS answers the identifier itself: `"1 liter-per-kilometer"`, `"2 liter-per-kilometer"`; implementation-defined (C3): the vector holds the answer the shared library takes, which its plan adopts; answered by SJL-9.5, this engine's cut-over to the shared Intl library
@@ -122,6 +153,7 @@ reason js-p5b: row P5b: `selectRange` when the ends differ: de (0,1) `one`, (1,2
 reason js-p6: row P6: `resolvedOptions`: en `{}`, ordinal, compact (short and long), `{maximumSignificantDigits: 3}` ...; Broiler.JS answers no compactDisplay, roundingIncrement, roundingMode, roundingPriority or trailingZeroDisplay. Compact reports fraction digits 0/3. morePrecision reports only the significa ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-p7: row P7: The PluralRules constructor's reads and refusals: the spy of every option; `compactDisplay: "bogus"` ...; Broiler.JS answers never reads `compactDisplay`, so `"bogus"` is accepted; accepts min > max; accepts an increment with significant digits. type, notation and increment 3 are refused; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-s1b: row S1b: Other locales: `es`, `fr`, `it`, `ja`, `zh`, `pl`, `ru`, `ar`, `he`, `xyz`; Broiler.JS answers the package's: `es` `"A, B, C y D"`, `ja` `"AU+3001BU+3001CU+3001D"`; `he` resolves `he` with English patterns `"A and B"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+reason js-s1b-cldr: row S1b: Other locales: `es`, `fr`, `it`, `ja`, `zh`, `pl`, `ru`, `ar`, `he`, `xyz`; Broiler.JS answers the package's: `es` `"A, B, C y D"`, `ja` `"AU+3001BU+3001CU+3001D"`; `he` resolves `he` with English patterns `"A and B"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; from SJL-9.5, this engine's cut-over to the shared Intl library, Broiler.JS answers that data, and CLDR 48.2.0's own patterns are not out's: it gives `gv` and `ln` the pattern `{0}, {1}` for start, middle, end and two alike (cldr-misc-full's main/gv/listPatterns.json and main/ln/listPatterns.json; common/main/gv.xml has no list patterns, so root's apply, and common/main/ln.xml's `{0} mpU+00E9 {1}` is draft `unconfirmed`, which the json does not carry): `"A, B, C"`, where out is the reference's answer, whose ListFormat resolves both locales to `en-US` (ICU 78.3, CLDR 48.0): `"A, B, and C"`; the owner's decision of 2026-11-08 ("Revision 36: follow CLDR") accepts the pinned data's answer, so no task answers it: this engine's record is data policy C5 and that decision, with the dated note of 2026-11-09 under SJL-9's data changes (C5) in docs/roadmap/SharedLibraries.md
 reason js-s1b-host: row S1b: Other locales: `es`, `fr`, `it`, `ja`, `zh`, `pl`, `ru`, `ar`, `he`, `xyz`; Broiler.JS answers the package's: `es` `"A, B, C y D"`, `ja` `"AU+3001BU+3001CU+3001D"`; `he` resolves `he` with English patterns `"A and B"` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; where the host lists the locale, answered by SJL-9.5, this engine's cut-over to the shared Intl library; on a host whose ICU lists no culture for the vector's locale (the ICU 74.2 of Ubuntu 24.04.5, the host the area is classified on, lists none for `aa`, `ab`, `en-FR`, `en-Shaw`, `en-Shaw-GB`, `jbo` and `pap`), Broiler.JS resolves it as Broiler.VM's list does, to `en` or to the default `en-US`, and answers for that locale, which is Broiler.VM's expectation once this engine answers that locale as the row this field names has it (where SJL-9.5 corrects it, from that correction): its available locales are the host's cultures (decision D7, row L28, engine policy) and, since SJL-9.5, its resolved locale is the available one LookupMatcher finds (row L29); the owner's decision of 2026-11-04 ("Host only, fix vectors") keeps decision D7 as written, so on such a host no task answers the difference that resolution makes, and this engine's record is decision D7 of Broiler.VM's JSD-0082 with the dated note of 2026-11-04 under SJL-9 in docs/roadmap/SharedLibraries.md
 reason js-s4b: row S4b: Other locales: `es`, `fr`, `pl`, `ja`, `ru`, `ar`, `xyz`; Broiler.JS answers the package's: `pl` `"3 dni temu"`, `fr` narrow `"-3 j"`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
 reason js-s5: row S5: The `numberingSystem` option: `en` `arab` `format(12, "day")` and `formatToParts`, `de` `thai`; `en-u-nu-arab`; Broiler.JS answers `"in 12 days"`, `"vor 1.234,5 Tagen"`: the inner NumberFormat is built without the option; `en-u-nu-arab` works; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
@@ -613,7 +645,6 @@ broiler-js js-n3c intl/numbers-and-text/families/0091
 broiler-js js-n3c intl/numbers-and-text/families/0101
 broiler-js js-n3c intl/numbers-and-text/families/0111
 broiler-js js-n3c intl/numbers-and-text/families/0131
-broiler-js js-n3c intl/numbers-and-text/families/0141
 broiler-js js-n3c intl/numbers-and-text/families/0217
 broiler-js js-n3c intl/numbers-and-text/families/0237
 broiler-js js-n3c intl/numbers-and-text/families/0247
@@ -643,7 +674,10 @@ broiler-js js-n3c intl/numbers-and-text/families/0734
 broiler-js js-n3c intl/numbers-and-text/families/0744
 broiler-js js-n3c intl/numbers-and-text/families/0754
 
-broiler-js js-n3c-ci-ubuntu intl/numbers-and-text/families/0151
+broiler-js js-n3c-cldr intl/numbers-and-text/families/0121
+broiler-js js-n3c-cldr intl/numbers-and-text/families/0141
+
+broiler-js js-n3c-cldr-ci-ubuntu intl/numbers-and-text/families/0151
 
 broiler-js js-n4 intl/numbers-and-text/currency/0043
 broiler-js js-n4 intl/numbers-and-text/currency/0044
@@ -1126,6 +1160,9 @@ broiler-js js-s1b intl/numbers-and-text/families/0749
 broiler-js js-s1b intl/numbers-and-text/families/0759
 broiler-js js-s1b intl/numbers-and-text/families/0828
 broiler-js js-s1b intl/numbers-and-text/list/0027
+
+broiler-js js-s1b-cldr intl/numbers-and-text/families/0309
+broiler-js js-s1b-cldr intl/numbers-and-text/families/0454
 
 broiler-js js-s1b-host intl/numbers-and-text/families/0156
 
