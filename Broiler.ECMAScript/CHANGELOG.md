@@ -543,8 +543,11 @@ Not yet packed under a version of its own: the stream's next version is set when
 
 - `Broiler.ECMAScript.Intl` and `Broiler.ECMAScript.Generation`: **a currency's name in every plural form, and the currency
   style's grouping separator** (the owner's decision of 2026-11-08, "Keep + fix library first", on rows N4 and N3c of
-  Broiler.VM's JSD-0082; design [`docs/intl/design.md`](docs/intl/design.md), section 1's note of 2026-11-09). A minor change
-  under convention 16, which the stream's next version carries; nothing is removed:
+  Broiler.VM's JSD-0082; design [`docs/intl/design.md`](docs/intl/design.md), section 1's note of 2026-11-09). Nothing is
+  removed. Whether it is a minor change under convention 16 waits for the owner's ruling: the currency table's four fields
+  appended to a line keep the data format only on a reading of the design's section 3 that the owner has not confirmed, and
+  if the owner does not, the change is a major version under that section. *(Revised 2026-11-09, at review; it read "A minor
+  change under convention 16, which the stream's next version carries; nothing is removed:".)* It adds:
   - `CurrencyNames.Zero`, `Two`, `Few` and `Many`, init properties empty by default, and `CurrencyNames.DisplayName(string)`,
     the name for a plural category with UTS #35's fallback to `other`'s form, then the display name;
     `TableLocaleData.Currency` fills the four from a currency line that carries them;
@@ -553,11 +556,25 @@ Not yet packed under a version of its own: the stream's next version is set when
 
 ### Changed
 
-None.
+- `Broiler.ECMAScript.Intl`'s `NumberFormatter`, over data that carries them (the owner's decision of 2026-11-08, "Keep + fix
+  library first"):
+  - **a currency's name takes the formatted number's plural category** in every form the data gives - `zero`, `one`, `two`,
+    `few`, `many` and `other` - falling back to `other`'s, then the display name, then the code, where it took `one`'s form
+    for `one` and `other`'s for every other category (row N4). A value that is not finite keeps the name it had. With
+    Broiler.JS's tables `cs`, `lt` and `sl` write `2,00 amerického dolaru`, `2,00 JAV doleriai` and `2,00 ameriški dolarji`;
+    with Broiler.VM's, which carry `one` and `other` alone, nothing moves;
+  - **the currency style groups its digits with `symbols.currencyGroup`**, falling back to `symbols.group`, where it grouped
+    with `symbols.group` alone (row N3c). CLDR 48.2.0 states it for `de-AT` alone of either list, which writes `-€ 1.234,50`
+    where it wrote `-€ 1 234,50`; Broiler.VM's locales state none.
+
+*(Revised 2026-11-09, at review of the owner's decision of 2026-11-08; the section read "None.")*
 
 ### Observable changes
 
-None: no engine reads the Intl generator, its tables, the Intl library or the frontend yet. Broiler.VM regenerates
+None in an engine yet, though the number formatter's own output changes for data that carries the forms or a
+`currencyGroup` ("Changed" above, and the note of 2026-11-09 at the end of this paragraph): no engine reads the Intl
+generator, its tables, the Intl library or the frontend yet. *(Revised 2026-11-09, at review; the opening read "None: no
+engine reads the Intl generator, its tables, the Intl library or the frontend yet.")* Broiler.VM regenerates
 its table with the generator at its work package SJL-9.2c, and Broiler.JS embeds the tables at its cut-over, milestone
 SJL-9.5, whose own records list what each observes; rows L9, L18 and Z8's corrections move Broiler.VM's answers when it
 cuts over to the library, at SJL-9.4. The frontend parses from stage 4c, reports the parse-time early errors from stage 4d, and neither engine

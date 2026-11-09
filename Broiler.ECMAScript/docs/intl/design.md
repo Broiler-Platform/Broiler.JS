@@ -183,7 +183,10 @@ on plural categories, is unchanged.)*
   else the display name (UTS #35 Part 3, section 4), the code where there is none; the number formatter names a currency so.
   `cs`, `lt` and `sl` write `2,00 amerického dolaru`, `2,00 JAV doleriai` and `2,00 ameriški dolarji` (vectors
   `intl/numbers-and-text/families/0082`, `0460` and `0616`). Broiler.VM's tables carry `one` and `other` alone, so with them
-  `few` and `many` take `other`'s form, as before; `de` and `en` give no other form.
+  `few` and `many` take `other`'s form, as before; `de` and `en` give no other form. A value that is not finite keeps the name
+  it had: `one`'s form where the category of 0 is `one`, else `other`'s, as ICU writes for `pl`, `ru` and `ro`, whose 0 is
+  `many` or `few` (`∞ dolara amerykańskiego`). Where 0 is `one` (`fr` among others) ICU writes `other`'s and the library
+  `one`'s, an earlier difference Broiler.VM shares that this change does not move. *(Added 2026-11-09, at review.)*
 - **A currency's digits are grouped with CLDR's `currencyGroup`** (row N3c), as ICU groups a currency with the monetary
   separator: the numbering system's own at the data locale, then at root, then the data locale's `latn` one, as a symbol is
   read, else `group`, in the currency style whatever its display. CLDR 48.2.0 states it for `de-AT` alone of either list, so
@@ -439,11 +442,14 @@ contract, so it is a **major version** of `Broiler.ECMAScript.Intl`, and each en
 the change that adopts it (the area design's section 6). Appending an `IntlTable` value for a table Broiler.VM's data
 never carries keeps the format, since an engine that lacks a table answers an empty span (decision D8). *(Added 2026-11-02,
 at milestone SJL-17.3: `CollationSettings`, 32, is the first such value, the settings Broiler.JS's tailorings state; the
-generator writes the table only where a tailoring states one, so Broiler.VM's tables are unchanged.)* *(Added 2026-11-09, by
-the owner's decision of 2026-11-08 on row N4: fields appended to a text table's line, after the fields Broiler.VM's tables
-write, also keep the format, since every reader takes a line's first fields by position and ignores the rest. The
+generator writes the table only where a tailoring states one, so Broiler.VM's tables are unchanged.)* *(Added 2026-11-09, with
+the change the owner's decision of 2026-11-08 on row N4 calls for. That decision ("Keep + fix library first") does not rule
+on the format, and this is a reading for the owner to confirm, not a ruling: fields appended to a text table's line, after
+the fields Broiler.VM's tables write, would also keep the format, since every reader takes a line's first fields by position
+and the rest are new. It extends decision D8's exception, which speaks of `IntlTable` values alone. Until the owner rules,
+the change is either a minor version under that extended exception or a **major version** under this paragraph's rule. The
 `Currencies` table is the first so extended: in Broiler.JS's tables each line carries the name's `zero`, `two`, `few` and
-`many` forms after its nine fields; Broiler.VM's lines keep nine.)*
+`many` forms after its nine fields; Broiler.VM's lines keep nine, and the library refuses a line of ten to twelve.)*
 
 **The data versions are public** (exit clause 2, convention 13): `IIntlDataSet.CldrVersion`, and the generator's
 `IntlDataVersions`, the CLDR, UCA and Unicode versions it writes from. The data's notices travel with the tables

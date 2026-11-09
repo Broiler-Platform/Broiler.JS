@@ -686,7 +686,8 @@ public static partial class CldrTableGenerator
     /// <summary>
     /// Each main-data locale's currency symbols and names; with <see cref="IntlCurrencyNamePlurals.Every"/>, each line also
     /// carries the name's <c>zero</c>, <c>two</c>, <c>few</c> and <c>many</c> forms, appended after Broiler.VM's nine fields
-    /// so that a reader of those nine reads the same values (the owner's decision of 2026-11-08, row N4).
+    /// so that a reader of those nine reads the same values (the owner's decision of 2026-11-08, row N4). <i>(Revised
+    /// 2026-11-09; the summary read "Each main-data locale's currency symbols and names.")</i>
     /// </summary>
     // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 currencies via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=F8BD64
     // Hairs-Human:        PENDING

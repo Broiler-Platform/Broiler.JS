@@ -29,7 +29,11 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// (decisions D5, D13 and D21), and with a currency's name in its <c>one</c> and <c>other</c> forms alone, which is what
 /// Broiler.VM's tables carry (added 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix library first", row N4; the
 /// sentence ended "and without the numbering systems' own symbols (decisions D5, D13 and D21)."). A difference that reading removes is the data policy of the correspondence's rows N1b to N9e,
-/// N8a and N8b, S1b, S4b and S8, Broiler.JS's embedding read as the library reads it; Broiler.VM's tables hold their locales'
+/// N8a and N8b, S1b, S4b and S8, and the data part of row N4, a currency's name in a form beyond <c>one</c> and <c>other</c>
+/// (CLDR data, C5 for locales beyond <c>de</c> and <c>en</c>, by the correspondence's row N4), Broiler.JS's embedding read as
+/// the library reads it <i>(revised 2026-11-09, at review of the owner's decision of 2026-11-08: the list read "rows N1b to N9e,
+/// N8a and N8b, S1b, S4b and S8, Broiler.JS's embedding read as the library reads it"; the label <see cref="DataRow"/> is
+/// unchanged and so names the data part of row N4 too)</i>; Broiler.VM's tables hold their locales'
 /// languages alone, no default numbering system but <c>latn</c> and no own symbols, so in its embedding the reading is the
 /// library's own and no difference can be classed so.
 /// </para>

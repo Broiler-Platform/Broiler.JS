@@ -109,6 +109,8 @@ internal static class IntlDataHome
     }
 
     /// <summary>Broiler.JS's options: its list, every numbering system's symbols (decision D21), its tailorings, and every plural form of a currency's name.</summary>
+    /// <remarks><i>(Revised 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix library first", row N4; the summary
+    /// read "Broiler.JS's options: its list, and every numbering system's symbols (decision D21).")</i></remarks>
     internal static IntlGeneratorOptions BroilerJsOptions(string home) =>
         new(ReadList(home, BroilerJsList))
         {

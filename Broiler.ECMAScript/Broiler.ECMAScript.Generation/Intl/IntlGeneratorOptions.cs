@@ -67,7 +67,9 @@ public enum IntlCurrencyNamePlurals
 /// <summary>
 /// The generator's parameters (decision JSD-0082, decision D11): the locale list, which numbering systems'
 /// symbols the number table carries, which plural forms of a currency's name the currency table carries, the
-/// calendars whose layers the date table carries, and the collation tailorings.
+/// calendars whose layers the date table carries, and the collation tailorings. <i>(Revised 2026-11-09, by the owner's
+/// decision of 2026-11-08, "Keep + fix library first", row N4; it read "... which numbering systems' symbols the number table
+/// carries, the calendars whose layers the date table carries, and the collation tailorings.")</i>
 /// </summary>
 /// <remarks>
 /// With Broiler.VM's list (<c>de</c>, <c>de-DE</c>, <c>en</c>, <c>en-US</c> and <c>und</c>, main data for
