@@ -1672,6 +1672,25 @@ This repository's part of it:
   and match on the ICU 74.2 host the corpus is classified on, which lists none of them (decision D7, its note above);
   the windows-latest host of the engine vectors job lists `aa` and `pap` (corpus revision 28), where from SJL-9.5 this
   engine is expected to answer `"A, B, C"` for `families/0008` and `0514`, and revision 36 does not classify them.)*
+  *(Noted 2026-11-09, on the owner's decision of 2026-11-09, "Keep + fix library first", and the owner's rulings of that day
+  "Add file, same tarball", "Fix both consumers" and "Follow CLDR, dated ruling", each asked and answered: SJL-9.5's cut-over of
+  sub-areas (d) and (e) stays held at its stage 3, and before it merges the shared library and the data home take, in a merge
+  of their own, the five places where its date-time format departed from the pinned CLDR 48.2.0 data, as with the currency
+  change of 2026-11-08; the alternative not taken was "Revert 8.5, fix later". The data rows T10, T16 and T37 now read CLDR's
+  time data for a locale's language and region before its region's (`ar-001` `h12`, `fr-CA` `h23`; Intl.Locale's hour cycles
+  too, row L19, in both engines), the whole locale's likely region (`zh-Hant` Taiwan's), the region's calendar preference
+  (`fa` `persian`, `th` `buddhist`, from CLDR's `calendarPreferenceData.json`, archived from the cldr-core tarball the pin
+  already names; the alternative not taken was "Leave calendars out") and a numbering system's own decimal symbol, which
+  replaces SJL-9.5's engine-side adapter; interval patterns keep ICU's widths, which the pinned reference shows to be the
+  library's already. Row T12's U+202F before a day period stays CLDR's, and this engine loses one test262 file under it,
+  `intl402/DateTimeFormat/prototype/format/numbering-system.js`, listed by name: bundle `sjl-9-001`'s rule is revised for it,
+  before SJL-9.5's judged runs, by the dated file
+  [`docs/evidence/sjl-9-001/decision-rule-revised-2026-11-09.md`](../evidence/sjl-9-001/decision-rule-revised-2026-11-09.md),
+  which admits that one path in parts A and B as class L; the alternative not taken was "Plain space like V8". Broiler.VM's
+  date-time answers do not move; its Intl.Locale's `getHourCycles` moves for the tags CLDR's time data names an entry for, at
+  its next re-pin, which also records the archived file and the rulings in its JSD-0082. The design's dated note of 2026-11-09
+  on sub-area (d), [`Broiler.ECMAScript/docs/intl/design.md`](../../Broiler.ECMAScript/docs/intl/design.md), has the
+  readings.)*
 - **What stays as it is.** The rows that are the same in both engines; and the engine policies, which the library's
   parameters keep this engine's: the default locale and zone, the available locales, the Collator's list, the meter
   and this engine's extensions (rows L28, L33, L40, L43, M9, N16, T3, T11, T40 and U19). Row L35 is the one engine

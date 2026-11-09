@@ -556,6 +556,20 @@ Not yet packed under a version of its own: the stream's next version is set when
   - `IntlGeneratorOptions.CurrencyNamePlurals` and the enum `IntlCurrencyNamePlurals` (`OneAndOther`, the default and
     Broiler.VM's; `Every`), which appends the `zero`, `two`, `few` and `many` names to each line of the `Currencies` table.
 
+- `Broiler.ECMAScript.Intl` and `Broiler.ECMAScript.Generation`: **the date-time format follows the pinned CLDR data** (the
+  owner's decision of 2026-11-09, "Keep + fix library first", with the rulings of that day "Add file, same tarball" and "Fix both
+  consumers"; design [`docs/intl/design.md`](docs/intl/design.md), section 1's note of 2026-11-09 on sub-area (d)). A minor change
+  under convention 16: nothing is removed, the new interface member has a default implementation, and the one new table is an
+  appended `IntlTable` value for a table Broiler.VM's data never carries, which decision D8 admits; no field is appended to a
+  line, so the owner's reading "Additive: extend D8" is not needed for it. It adds:
+  - `IntlTable.CalendarPreferences` (33), each region's calendars in order of preference;
+  - `ILocaleData.CalendarPreferences(string)`, answering `null` by default, with `TableLocaleData.CalendarPreferences` and
+    `CompositeLocaleData.CalendarPreferences`;
+  - `DateTimeFormat.CalendarKeyValuesOf(ILocaleData, string)`, the `ca` values for a matched locale, the region's preferred
+    calendar first, which an engine hands ResolveLocale as it hands `NumberingSystemKeyValues` for `nu`;
+  - `IntlGeneratorOptions.CalendarPreferences` and the enum `IntlCalendarPreferences` (`None`, the default and Broiler.VM's;
+    `Regions`), which writes the `CalendarPreferences` table.
+
 ### Changed
 
 - `Broiler.ECMAScript.Intl`'s `NumberFormatter`, over data that carries them (the owner's decision of 2026-11-08, "Keep + fix
@@ -568,6 +582,24 @@ Not yet packed under a version of its own: the stream's next version is set when
   - **the currency style groups its digits with `symbols.currencyGroup`**, falling back to `symbols.group`, where it grouped
     with `symbols.group` alone (row N3c). CLDR 48.2.0 states it for `de-AT` alone of either list, which writes `-€ 1.234,50`
     where it wrote `-€ 1 234,50`; Broiler.VM's locales state none.
+
+- `Broiler.ECMAScript.Intl`'s `DateTimeFormat` and `LocaleInfo` (the owner's decision of 2026-11-09, "Keep + fix library
+  first"):
+  - **the hour cycle reads the locale's own time data first** (row T10; UTS #35 Part 4, Time Data): CLDR's entry for the data
+    locale's language and region, then the region's, then the world's, where it read the region's alone, so `ar-001` takes
+    `h12` and `fr-CA` `h23`; **Intl.Locale's HourCyclesOfLocale** does the same (row L19; the ruling "Fix both consumers"),
+    where it looked the entry up as `language_region`, which names none;
+  - **the region of a data locale without one is the likely region of the whole locale** (UTS #35 Part 1, Likely Subtags),
+    where it was the likely region of its language alone: `zh-Hant` reads Taiwan's, `en-Shaw` Great Britain's;
+  - **the default calendar is the region's first preference** where an engine hands ResolveLocale `CalendarKeyValuesOf`'s
+    values (`fa` `persian`, `th` `buddhist`); with `CalendarKeyValues`, or data without the table, it stays `gregory`;
+  - **a fractional second takes the numbering system's own decimal symbol** (decision D21), where it took the locale's `latn`
+    symbol for every system: `en-u-nu-arab` writes U+066B.
+
+  Broiler.VM's tables carry no calendar preference table and no `symbols@` key, and none of its data locales has a script or a
+  time data entry of its own, so its date-time formats do not move; its Intl.Locale's hour cycles move for the tags that reach a
+  time data entry (`fr-CA`, `ar-001`, `en-001`, `ku-SY`, ...), row L19. Interval patterns are unchanged: their field widths are
+  ICU's (design, section 1's note of 2026-11-09).
 
 *(Revised 2026-11-09, at review of the owner's decision of 2026-11-08; the section read "None.")*
 
@@ -601,7 +633,13 @@ currency by the formatted number's plural category in every form the data gives,
 dolaru`, `2,00 JAV doleriai` and `2,00 ameriški dolarji` where they wrote the `other` form (row N4, a correction), and groups a
 currency's digits with CLDR's `currencyGroup`, so `de-AT` writes `-€ 1.234,50` where it wrote `-€ 1 234,50` (row N3c, data).
 Broiler.VM's tables carry neither the extra forms nor a `currencyGroup` for its locales, so its answers do not move; Broiler.JS
-observes both from its cut-over, SJL-9.5.)*
+observes both from its cut-over, SJL-9.5.)* *(Added 2026-11-09, by the owner's decision of that day, "Keep + fix library first": the
+date-time format's hour cycle, region, default calendar and fractional-second separator follow CLDR 48.2.0 ("Changed" above), so
+with Broiler.JS's tables `ar-001` writes `3 بعد الظهر`, `fr-CA` `15 h 07`, `zh-Hant` `下午3時`, `fa` and `th` their persian and
+buddhist dates, and `en-u-nu-arab` `١٥:٠٧:٠٩٫١٢٣`; Broiler.JS observes them from its cut-over, SJL-9.5, which hands
+`CalendarKeyValuesOf`'s values to ResolveLocale and removes its adapter of the decimal symbol. Broiler.VM's date-time formats do
+not move; its Intl.Locale's `getHourCycles` moves for the tags whose language and region CLDR's time data names, at its next
+re-pin (row L19).)*
 
 ### Data
 
@@ -625,6 +663,12 @@ observes both from its cut-over, SJL-9.5.)*
   grows from 1,752,680 to 1,982,660 bytes; its first nine fields are unchanged. Regenerated by rule SL7's write switch; two runs
   write the same bytes. No pin, list or other table changes, and Broiler.VM's tables do not change (rule N28). The number table
   already carried `symbols.currencyGroup` where CLDR states it (`de-AT`).
+- Broiler.JS's calendar preference table (the owner's decision of 2026-11-09, "Keep + fix library first"; the ruling "Add file,
+  same tarball"): `calendar-preferences.txt`, a new table of 52 regions (2,101 bytes), from CLDR **48.2.0**'s
+  `supplemental/calendarPreferenceData.json`, which the Intl home's pin gains under a dated `file` line after Broiler.VM's lines:
+  the member of the cldr-core 48.2.0 tarball the pin already names, retrieved twice and checked against its `json-integrity`
+  line. Regenerated by rule SL7's write switch; two runs write the same bytes. No other table changes, and Broiler.VM's tables
+  and pin lines do not change (rules N27 and N28).
 
 ## 0.1.0-preview.7 — published to nuget.org
 
