@@ -437,7 +437,7 @@ public sealed class TableLocaleData : ILocaleData
         return table;
     }
 
-    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=3; Fingerprint=21E4C4
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables; IP=Low; Security=High; Resources=3; Fingerprint=39CCC2
     // Hairs-Falsified-If: a number, currency, unit, plural, plural-range or numbering-system answer differs from what Broiler.VM's JsIntlTables.ReadNumbers decodes from the same tables
     // Hairs-Human:        PENDING
     private NumberTables ReadNumbers()
@@ -463,9 +463,19 @@ public sealed class TableLocaleData : ILocaleData
         foreach (var line in IntlTableText.Lines(data.Table(IntlTable.Currencies)))
         {
             var fields = IntlTableText.Fields(line, 9, IntlTable.Currencies);
+
+            // A LINE OF THIRTEEN FIELDS (Broiler.JS's tables, from 2026-11-09; row N4) carries the name's zero, two, few and
+            // many forms after Broiler.VM's nine; a line of nine has none of them.
+            var counted = fields.Length >= 13;
             tables.Currencies[fields[0] + "|" + fields[1]] = new CurrencyNames(
                 IntlTableText.Unescape(fields[2]), IntlTableText.Unescape(fields[3]), IntlTableText.Unescape(fields[4]),
-                IntlTableText.Unescape(fields[5]), IntlTableText.Unescape(fields[6]), fields[7], fields[8]);
+                IntlTableText.Unescape(fields[5]), IntlTableText.Unescape(fields[6]), fields[7], fields[8])
+            {
+                Zero = counted ? IntlTableText.Unescape(fields[9]) : string.Empty,
+                Two = counted ? IntlTableText.Unescape(fields[10]) : string.Empty,
+                Few = counted ? IntlTableText.Unescape(fields[11]) : string.Empty,
+                Many = counted ? IntlTableText.Unescape(fields[12]) : string.Empty,
+            };
             tables.CurrencyLocales.Add(fields[0]);
 
             if (named.Add(fields[1]))

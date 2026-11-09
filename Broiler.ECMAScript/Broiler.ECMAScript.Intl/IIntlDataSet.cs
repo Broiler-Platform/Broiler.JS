@@ -114,7 +114,10 @@ public enum IntlTable
     /// <summary>
     /// Each language's currencies: <c>language</c>, <c>code</c>, <c>symbol</c>, <c>narrow</c>, <c>one</c>,
     /// <c>other</c>, <c>name</c>, and for the symbol and the narrow symbol whether its first and last characters are
-    /// symbols or separators (<c>S</c>) or not (<c>L</c>).
+    /// symbols or separators (<c>S</c>) or not (<c>L</c>). In an embedding that carries them, four more fields follow: the
+    /// <c>zero</c>, <c>two</c>, <c>few</c> and <c>many</c> names, each empty where CLDR gives none. <i>(Added 2026-11-09, by
+    /// the owner's decision of 2026-11-08, "Keep + fix library first", for row N4: fields appended after the nine keep the
+    /// format, since a reader takes a line's first fields; Broiler.VM's tables carry the nine alone.)</i>
     /// </summary>
     Currencies = 9,
 

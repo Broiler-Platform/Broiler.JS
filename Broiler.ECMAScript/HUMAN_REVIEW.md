@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `hairs.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2977 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 2979 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 168 |
-| Code units | 4632 |
-| Relevant | 2977 |
-| Exempt | 1655 |
-| Assessed | 2977 of 2977 (100%) |
-| Human reviewed | 0 of 2977 (0%) |
-| Unverified | 2977 |
+| Code units | 4638 |
+| Relevant | 2979 |
+| Exempt | 1659 |
+| Assessed | 2979 of 2979 (100%) |
+| Human reviewed | 0 of 2979 (0%) |
+| Unverified | 2979 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2977 |
+| HUMAN_PENDING | 2979 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1655 |
+| EXEMPT | 1659 |
 
 ## 5. Aliases In The Tree
 
@@ -237,14 +237,14 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Intl/IntlStatus.cs` | 32 | 1 | 31 | 1 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/IntlTableText.cs` | 6 | 6 | 0 | 6 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/ListFormatter.cs` | 19 | 8 | 11 | 8 | Low | High | 1/1 |
-| `Broiler.ECMAScript.Intl/LocaleDataAnswers.cs` | 16 | 9 | 7 | 9 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Intl/LocaleDataAnswers.cs` | 21 | 10 | 11 | 10 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Intl/LocaleId.cs` | 28 | 22 | 6 | 22 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Intl/LocaleInfo.cs` | 20 | 18 | 2 | 18 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/LocaleNegotiation.cs` | 15 | 12 | 3 | 12 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/LocaleRecord.cs` | 25 | 12 | 13 | 12 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/LocaleTag.cs` | 44 | 31 | 13 | 31 | Low | High | 3/3 |
 | `Broiler.ECMAScript.Intl/NumberFormatOptions.cs` | 36 | 7 | 29 | 7 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Intl/NumberFormatter.cs` | 92 | 47 | 45 | 47 | Low | High | 7/7 |
+| `Broiler.ECMAScript.Intl/NumberFormatter.cs` | 93 | 48 | 45 | 48 | Low | High | 7/7 |
 | `Broiler.ECMAScript.Intl/NumericFormat.cs` | 9 | 9 | 0 | 9 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Intl/PluralEngine.cs` | 26 | 18 | 8 | 18 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Intl/PluralRulesRecord.cs` | 16 | 8 | 8 | 8 | Low | High | 1/1 |
@@ -711,7 +711,7 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a unit's pattern is not CLDR's for the width and plural, or a compound is composed otherwise than per-unit then compound pattern
 - `Broiler.ECMAScript.Intl.NumberFormatter.ComputeExponent(IntlDecimal, WorkCharge?)` in `Broiler.ECMAScript.Intl/NumberFormatter.cs` - Security=High, Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter, `4D037C`, PENDING
   - Falsified if: the exponent differs from ComputeExponent's after rounding, or its rounding charges other than digits / 16 + 1
-- `Broiler.ECMAScript.Intl.NumberFormatter.AddDigits(Built, string)` in `Broiler.ECMAScript.Intl/NumberFormatter.cs` - Security=High, Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter, `41FED9`, PENDING
+- `Broiler.ECMAScript.Intl.NumberFormatter.AddDigits(Built, string)` in `Broiler.ECMAScript.Intl/NumberFormatter.cs` - Security=High, Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter, `68A8D5`, PENDING
   - Falsified if: a grouping separator is written where ICU's grouping test with the locale's minimum grouping digits writes none, or the reverse
 - `Broiler.ECMAScript.Intl.NumberFormatter.Symbol(string, string)` in `Broiler.ECMAScript.Intl/NumberFormatter.cs` - Security=High, Spec=ECMA-402 sec-partitionnumberpattern sec-partitionnumberrangepattern sec-computeexponent sec-collapsenumberrange via Broiler.VM JsNumberFormatter, `5D9D8C`, PENDING
   - Falsified if: a numbering system's symbol is read otherwise than its own at the data locale, then at root, then the latn one
@@ -729,7 +729,7 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: the parts differ from PartitionRelativeTimePattern's with the magnitude written, or a refusal is another status
 - `Broiler.ECMAScript.Intl.ResolvedTimeZone.Resolve(string, ITimeZoneDatabase, out ResolvedTimeZone?, WorkCharge?)` in `Broiler.ECMAScript.Intl/ResolvedTimeZone.cs` - Security=High, Spec=ECMA-402 sec-getavailablenamedtimezoneidentifier sec-istimezoneoffsetstring, JSD-0082 D15 via Broiler.VM JsRealm.DateTimeFormat, `373863`, PENDING
   - Falsified if: an identifier is accepted that GetAvailableNamedTimeZoneIdentifier or IsTimeZoneOffsetString refuses, or its identifier or primary differs from the database's
-- `Broiler.ECMAScript.Intl.TableLocaleData.ReadNumbers()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `21E4C4`, PENDING
+- `Broiler.ECMAScript.Intl.TableLocaleData.ReadNumbers()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `39CCC2`, PENDING
   - Falsified if: a number, currency, unit, plural, plural-range or numbering-system answer differs from what Broiler.VM's JsIntlTables.ReadNumbers decodes from the same tables
 - `Broiler.ECMAScript.Intl.TableLocaleData.ReadDates()` in `Broiler.ECMAScript.Intl/TableLocaleData.cs` - Security=High, Spec=JSD-0082 D8 decoders via Broiler.VM JsIntlTables, `E8AF35`, PENDING
   - Falsified if: a language's date data in a calendar holds a key or a value, or enumerates in an order, other than Broiler.VM's JsIntlTables.ReadDates decodes from the same table
@@ -755,5 +755,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1673 of the 2977 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1675 of the 2979 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

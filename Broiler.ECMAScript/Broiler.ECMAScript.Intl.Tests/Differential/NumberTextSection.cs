@@ -25,8 +25,10 @@ namespace Broiler.ECMAScript.Intl.Tests.Differential;
 /// </para>
 /// <para>
 /// <b>Broiler.VM's reading.</b> Where the two arms differ, the library is asked again as Broiler.VM reads the data: at the data
-/// locale's language, with Broiler.VM's <c>nu</c> values, <c>latn</c> first, and without the numbering systems' own symbols
-/// (decisions D5, D13 and D21). A difference that reading removes is the data policy of the correspondence's rows N1b to N9e,
+/// locale's language, with Broiler.VM's <c>nu</c> values, <c>latn</c> first, without the numbering systems' own symbols
+/// (decisions D5, D13 and D21), and with a currency's name in its <c>one</c> and <c>other</c> forms alone, which is what
+/// Broiler.VM's tables carry (added 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix library first", row N4; the
+/// sentence ended "and without the numbering systems' own symbols (decisions D5, D13 and D21)."). A difference that reading removes is the data policy of the correspondence's rows N1b to N9e,
 /// N8a and N8b, S1b, S4b and S8, Broiler.JS's embedding read as the library reads it; Broiler.VM's tables hold their locales'
 /// languages alone, no default numbering system but <c>latn</c> and no own symbols, so in its embedding the reading is the
 /// library's own and no difference can be classed so.
@@ -595,8 +597,9 @@ internal static class NumberTextSection
         internal BigIntPolicy Policy { get; } = new(JsBigInt.MaximumBits);
     }
 
-    /// <summary>Locale data less every numbering system's own symbols, the <c>symbols@</c> keys Broiler.VM's tables never carry.</summary>
-    /// <remarks><i>(Noted 2026-11-02, at stage SJL-9.3e: internal, where it was private, so that sub-area (e)'s section reads the data as Broiler.VM does with the same type; nothing it answers changes.)</i></remarks>
+    /// <summary>Locale data less every numbering system's own symbols, the <c>symbols@</c> keys Broiler.VM's tables never carry, and less a currency name's forms beyond one and other, which they never carry either.</summary>
+    /// <remarks><i>(Noted 2026-11-02, at stage SJL-9.3e: internal, where it was private, so that sub-area (e)'s section reads the data as Broiler.VM does with the same type; nothing it answers changes.)</i> <i>(Extended 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix library first": the
+    /// summary ended "the <c>symbols@</c> keys Broiler.VM's tables never carry.", and a currency's names were answered whole.)</i></remarks>
     internal sealed class WithoutOwnSymbols(ILocaleData inner) : ILocaleData
     {
         public IReadOnlyList<string> Locales => inner.Locales;
@@ -619,7 +622,11 @@ internal static class NumberTextSection
 
         public string? NumberValue(string locale, string key) => key.StartsWith("symbols@", StringComparison.Ordinal) ? null : inner.NumberValue(locale, key);
 
-        public CurrencyNames? Currency(string locale, string code) => inner.Currency(locale, code);
+        // A CURRENCY'S NAME IN ONE AND OTHER ALONE, as Broiler.VM's tables carry it (added 2026-11-09, by the owner's decision of
+        // 2026-11-08, "Keep + fix library first": Broiler.JS's tables carry every plural form, row N4; it read
+        // `inner.Currency(locale, code)`).
+        public CurrencyNames? Currency(string locale, string code) =>
+            inner.Currency(locale, code) is { } names ? names with { Zero = string.Empty, Two = string.Empty, Few = string.Empty, Many = string.Empty } : null;
 
         public IReadOnlyList<string> CurrencyCodes => inner.CurrencyCodes;
 
