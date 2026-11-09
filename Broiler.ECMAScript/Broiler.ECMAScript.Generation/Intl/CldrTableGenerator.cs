@@ -127,7 +127,7 @@ public static partial class CldrTableGenerator
     /// <param name="ucd">The UCD subset, read from files the caller verified against a pin.</param>
     /// <param name="options">The locale list and the other parameters.</param>
     /// <exception cref="InvalidDataException">The archive is not the one the pin describes, a file a table reads is not pinned, or a value is not one the table can carry.</exception>
-    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=8; Fingerprint=92E567
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 CLDR tables via Broiler.VM CldrTableGenerator; IP=Low; Security=High; Resources=8; Fingerprint=A5FD26
     // Hairs-Falsified-If: tables are written from an archive the pin does not describe, or with Broiler.VM's options they differ from Broiler.VM's generator's
     // Hairs-Human:        PENDING
     public static IntlTables Generate(IntlCldrPin pin, IReadOnlyDictionary<string, byte[]> cldr, CldrUcd ucd, IntlGeneratorOptions options)
@@ -161,7 +161,12 @@ public static partial class CldrTableGenerator
             Text("Extensions", "The BCP 47 extension keys and their types: extension, key, type, preferred type.", Extensions(archive)),
             Text("Locales", "The locales this data supports.", list.Locales),
             Text("NumberLocales", "The number data of each supported language for the latn numbering system, flattened: language, key, value.", NumberLocales(archive, main, options.NumberingSymbols)),
-            Text("Currencies", "The currency names of each supported language: language, code, symbol, narrow symbol, singular name, plural name, name, and whether each symbol's first and last characters are symbols or separators.", Currencies(archive, main, ucd)),
+            Text(
+                "Currencies",
+                options.CurrencyNamePlurals == IntlCurrencyNamePlurals.Every
+                    ? "The currency names of each supported language: language, code, symbol, narrow symbol, singular name, plural name, name, whether each symbol's first and last characters are symbols or separators, and the zero, two, few and many names."
+                    : "The currency names of each supported language: language, code, symbol, narrow symbol, singular name, plural name, name, and whether each symbol's first and last characters are symbols or separators.",
+                Currencies(archive, main, ucd, options.CurrencyNamePlurals)),
             Text("CurrencyDigits", "The currencies whose fraction digits are not 2: code, digits.", CurrencyDigits(archive)),
             Text("NumberingSystems", "The numbering systems with a simple digit mapping: name, digits.", NumberingSystems(archive)),
             Text("Plurals", "The cardinal plural rules of each supported language: language, category, rule.", PluralRules(archive, "plurals.json", "plurals-type-cardinal", list)),
@@ -678,10 +683,14 @@ public static partial class CldrTableGenerator
         lines.Add(language + "|" + key + "|" + Escape(value.GetString()!));
     }
 
-    /// <summary>Each main-data locale's currency symbols and names.</summary>
-    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 currencies via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=5C08E5
+    /// <summary>
+    /// Each main-data locale's currency symbols and names; with <see cref="IntlCurrencyNamePlurals.Every"/>, each line also
+    /// carries the name's <c>zero</c>, <c>two</c>, <c>few</c> and <c>many</c> forms, appended after Broiler.VM's nine fields
+    /// so that a reader of those nine reads the same values (the owner's decision of 2026-11-08, row N4).
+    /// </summary>
+    // Hairs-AI:           Origin=Ported; Spec=JSD-0082 D11 currencies via Broiler.VM CldrTableGenerator; IP=Low; Security=Low; Resources=3; Fingerprint=F8BD64
     // Hairs-Human:        PENDING
-    private static IEnumerable<string> Currencies(Archive archive, ImmutableArray<string> languages, CldrUcd ucd)
+    private static IEnumerable<string> Currencies(Archive archive, ImmutableArray<string> languages, CldrUcd ucd, IntlCurrencyNamePlurals plurals)
     {
         var lines = new List<string>();
 
@@ -712,10 +721,20 @@ public static partial class CldrTableGenerator
                 string Raw(string name) =>
                     currency.Value.TryGetProperty(name, out var field) ? field.GetString()! : string.Empty;
 
-                lines.Add(string.Join('|',
+                var line = string.Join('|',
                     language, currency.Name, Field("symbol"), Field("symbol-alt-narrow"),
                     Field("displayName-count-one"), Field("displayName-count-other"), Field("displayName"),
-                    Ends(Raw("symbol")), Ends(Raw("symbol-alt-narrow"))));
+                    Ends(Raw("symbol")), Ends(Raw("symbol-alt-narrow")));
+
+                // EVERY OTHER PLURAL FORM OF THE NAME (row N4), appended so that Broiler.VM's nine fields keep their places.
+                if (plurals == IntlCurrencyNamePlurals.Every)
+                {
+                    line = string.Join('|',
+                        line, Field("displayName-count-zero"), Field("displayName-count-two"), Field("displayName-count-few"),
+                        Field("displayName-count-many"));
+                }
+
+                lines.Add(line);
             }
         }
 

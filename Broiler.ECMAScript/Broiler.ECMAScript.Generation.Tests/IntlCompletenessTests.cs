@@ -128,6 +128,45 @@ public sealed class IntlCompletenessTests
     }
 
     /// <summary>
+    /// Every plural form of a currency's name (the owner's decision of 2026-11-08, "Keep + fix library first", row N4): in
+    /// Broiler.JS's tables each currency line carries thirteen fields, the last four CLDR 48.2.0's <c>zero</c>, <c>two</c>,
+    /// <c>few</c> and <c>many</c> names from the locale's <c>currencies.json</c>, empty where it gives none; Broiler.VM's lines
+    /// keep their nine fields, which rule N28's digest also holds.
+    /// </summary>
+    [Fact]
+    public void Every_plural_form_of_a_currency_s_name_is_CLDR_s_and_Broiler_VM_s_lines_keep_nine_fields()
+    {
+        var archive = IntlDataHome.CldrFiles(IntlDataHome.Current, IntlDataHome.ReadCldrPin(IntlDataHome.Current));
+        var lines = Lines(BroilerJs.Value["Currencies"]);
+        var byKey = lines.Select(static line => line.Split('|')).ToDictionary(static f => f[0] + "|" + f[1], StringComparer.Ordinal);
+        Assert.All(byKey.Values, static fields => Assert.Equal(13, fields.Length));
+
+        var list = IntlDataHome.ReadList(IntlDataHome.Current, IntlDataHome.BroilerJsList);
+        var checkedForms = 0;
+        foreach (var locale in list.MainDataLocales)
+        {
+            using var json = JsonDocument.Parse(archive["cldr-48.2.0/json/cldr-numbers-full/main/" + locale + "/currencies.json"]);
+            foreach (var currency in json.RootElement.GetProperty("main").GetProperty(locale).GetProperty("numbers").GetProperty("currencies").EnumerateObject())
+            {
+                var fields = byKey[locale + "|" + currency.Name];
+                string Cldr(string name) => currency.Value.TryGetProperty(name, out var value) ? CldrTableGenerator.Escape(value.GetString()!) : string.Empty;
+                Assert.Equal(
+                    [Cldr("displayName-count-zero"), Cldr("displayName-count-two"), Cldr("displayName-count-few"), Cldr("displayName-count-many")],
+                    fields[9..]);
+                checkedForms += fields[9..].Count(static f => f.Length != 0);
+            }
+        }
+
+        Assert.True(checkedForms > 1000, checkedForms + " forms beyond one and other");
+        Assert.Contains("cs|USD|US$|$|americk\\u00FD dolar|americk\\u00FDch dolar\\u016F|americk\\u00FD dolar|LS|SS|||americk\\u00E9 dolary|americk\\u00E9ho dolaru", lines);
+        Assert.Contains("lt|USD|USD|$|JAV doleris|JAV doleri\\u0173|JAV doleris|LL|SS|||JAV doleriai|JAV dolerio", lines);
+        Assert.Contains("sl|USD|$|$|ameri\\u0161ki dolar|ameri\\u0161kih dolarjev|ameri\\u0161ki dolar|SS|SS||ameri\\u0161ka dolarja|ameri\\u0161ki dolarji|", lines);
+
+        Assert.All(Lines(BroilerVm.Value["Currencies"]), static line => Assert.Equal(9, line.Split('|').Length));
+        Assert.DoesNotContain("zero, two, few and many", BroilerVm.Value["Currencies"].Summary, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Decision D21 for every main-data locale of Broiler.JS's list: each symbol of each numbering system other than
     /// <c>latn</c> that CLDR states for the locale, its parent chain or root - read as a formatter reads the table:
     /// the locale's own <c>symbols@</c> line, else <c>und</c>'s, else the locale's <c>latn</c> symbol - is CLDR
