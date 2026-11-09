@@ -9,7 +9,7 @@ home, `Broiler.ECMAScript/data/intl/`, and generator, in `Broiler.ECMAScript.Gen
 or the home's data exists. **Revised:** 2026-10-27, at stage SJL-9.3a, by dated notes on "Why there is no project yet",
 the library's project now existing, and on sections 1 and 5, the composite's parent walk and its secondary provider, and
 week data keyed by region; and on 2026-11-01, at stage SJL-9.3b, by a dated note on section 1's sub-area (b), and the same
-day, at stage SJL-9.3c, by a dated note on its sub-area (c), and on 2026-11-02, at stage SJL-9.3d, by a dated note on its sub-area (d), and the same day, at stage SJL-9.3e, by a dated note on its sub-area (e), and the same day, at stage SJL-9.3f, by a dated note on the integration and on section 5's first item, and the same day, at milestone SJL-17.3, by a dated note on collation and on sections 3 and 8 ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
+day, at stage SJL-9.3c, by a dated note on its sub-area (c), and on 2026-11-02, at stage SJL-9.3d, by a dated note on its sub-area (d), and the same day, at stage SJL-9.3e, by a dated note on its sub-area (e), and the same day, at stage SJL-9.3f, by a dated note on the integration and on section 5's first item, and the same day, at milestone SJL-17.3, by a dated note on collation and on sections 3 and 8, and on 2026-11-09, by the owner's decision of 2026-11-08 on currency names and currency grouping, by dated notes on sections 1, 3 and 4 ("Corrections" lists them). **Owner:** the Broiler.JS maintainer, with the JavaScript profile owner. One person holds
 both roles (Broiler.VM's exception EX-30), and nothing here has been read by anyone but its author.
 
 **What this document is.** The Intl library's design document in its home, one of the three places SJL-9.1 files the
@@ -171,6 +171,24 @@ state, so that sub-areas (d) and (e), SJL-9.3f's packing and the cut-overs inher
 - **Three Unicode classifications are written out**, as Broiler.VM's formatter writes them: ICU's default-ignorable set,
   which a field's ends are trimmed of, Pattern_White_Space, which a range's separator is tested against, and the White_Space
   that Broiler.VM's `string.Trim()` read, so that no platform table is read (rule SL4).
+
+*(Noted 2026-11-09: **the owner's decision of 2026-11-08, "Keep + fix library first"**, on rows N4 and N3c of JSD-0082,
+which SJL-9.5's stage 2 met only in part for want of data. SJL-9.5's cut-over of Broiler.JS's NumberFormat stays, and before
+it merges this library and the data home change, in a merge of their own, so that its after commit meets both rows in full;
+Broiler.VM takes the change at a later re-pin. The alternatives not taken were "Keep, record as gap" and "Revert those
+members". Two readings of sub-area (c) follow from it, both through the existing question layer, and the second item above,
+on plural categories, is unchanged.)*
+- **A currency's name takes every plural form CLDR gives** (row N4). `CurrencyNames` carries `Zero`, `Two`, `Few` and `Many`
+  beside `One` and `Other`, and `DisplayName(category)` answers the formatted number's category's own form, else `other`'s,
+  else the display name (UTS #35 Part 3, section 4), the code where there is none; the number formatter names a currency so.
+  `cs`, `lt` and `sl` write `2,00 amerického dolaru`, `2,00 JAV doleriai` and `2,00 ameriški dolarji` (vectors
+  `intl/numbers-and-text/families/0082`, `0460` and `0616`). Broiler.VM's tables carry `one` and `other` alone, so with them
+  `few` and `many` take `other`'s form, as before; `de` and `en` give no other form.
+- **A currency's digits are grouped with CLDR's `currencyGroup`** (row N3c), as ICU groups a currency with the monetary
+  separator: the numbering system's own at the data locale, then at root, then the data locale's `latn` one, as a symbol is
+  read, else `group`, in the currency style whatever its display. CLDR 48.2.0 states it for `de-AT` alone of either list, so
+  `de-AT` writes `-€ 1.234,50` for a currency and `1 234,5` for a decimal (vector `families/0101`); `currencyDecimal`, which
+  ICU reads the same way, is stated by no locale of either list and is not read.
 
 *(Noted 2026-11-02, at SJL-9.3d: sub-area (d) as built, and the readings its code makes that the item above does not
 state, so that sub-area (e), SJL-9.3f's packing and the cut-overs inherit them knowingly. Its public names are
@@ -421,7 +439,11 @@ contract, so it is a **major version** of `Broiler.ECMAScript.Intl`, and each en
 the change that adopts it (the area design's section 6). Appending an `IntlTable` value for a table Broiler.VM's data
 never carries keeps the format, since an engine that lacks a table answers an empty span (decision D8). *(Added 2026-11-02,
 at milestone SJL-17.3: `CollationSettings`, 32, is the first such value, the settings Broiler.JS's tailorings state; the
-generator writes the table only where a tailoring states one, so Broiler.VM's tables are unchanged.)*
+generator writes the table only where a tailoring states one, so Broiler.VM's tables are unchanged.)* *(Added 2026-11-09, by
+the owner's decision of 2026-11-08 on row N4: fields appended to a text table's line, after the fields Broiler.VM's tables
+write, also keep the format, since every reader takes a line's first fields by position and ignores the rest. The
+`Currencies` table is the first so extended: in Broiler.JS's tables each line carries the name's `zero`, `two`, `few` and
+`many` forms after its nine fields; Broiler.VM's lines keep nine.)*
 
 **The data versions are public** (exit clause 2, convention 13): `IIntlDataSet.CldrVersion`, and the generator's
 `IntlDataVersions`, the CLDR, UCA and Unicode versions it writes from. The data's notices travel with the tables
@@ -448,7 +470,10 @@ version to the Unicode pin. The fallback is Broiler.Unicode's own Generation rea
 - **the main-data locales**, whose number, currency, unit, date, list, relative-time and display-name data it writes;
 - **the supplemental locales**, whose plural, ordinal, plural-range and day-period rules it writes;
 - **the numbering systems**, whose digits, and for Broiler.JS whose symbols, it writes;
-- **the calendars** and **the tailorings**.
+- **the calendars** and **the tailorings**;
+- **which plural forms of a currency's name** the currency table carries, `one` and `other` alone, Broiler.VM's, or every
+  form CLDR gives, Broiler.JS's (`IntlGeneratorOptions.CurrencyNamePlurals`). *(Added 2026-11-09, by the owner's decision of
+  2026-11-08 on row N4; the list ended "**the calendars** and **the tailorings**.")*
 
 Today's hard-coded list (Broiler.VM's `CldrTableGenerator.cs:33`) becomes a parameter.
 
@@ -596,4 +621,9 @@ milestone's note, ending where it read "and on section 5's first item ("Correcti
 note on collation - its names, and eight readings: the engine's reads, the tailoring chosen from the data, the settings
 table, normalization, the charges, the ceiling's status, Han across blocks (the owner's decision of 2026-11-02 on row O3),
 and what stays the engine's; section 3 a dated note on the appended `CollationSettings`; and section 8's item on collation a
-dated note. Nothing else here is changed.
+dated note. *(Extended 2026-11-09, by the owner's decision of 2026-11-08, "Keep + fix library first"; the sentence after
+the list read "Nothing else here is changed.")* The header's "Revised" line gains that decision's note, ending where it read
+"and on sections 3 and 8 ("Corrections" lists them)."; section 1 gains a dated note on the decision and two readings of
+sub-area (c), a currency's name in every plural form and the currency style's grouping separator; section 3 a dated note on
+fields appended to a line, the `Currencies` table's four; and section 4's parameters an item on the currency names' plural
+forms. Nothing else here is changed.
