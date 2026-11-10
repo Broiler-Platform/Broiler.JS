@@ -1,0 +1,197 @@
+Part C's table: every line after that differs from its expected answer, with the reading of the rule it meets (datasets/classify.py)
+
+L19: 1
+O: 1
+V: 35
+Z8: 152
+
+By program and line:
+  durations:260	V	V-retained: equals the retained answer	group 43
+  durations:263	V	V-symbols: the expected answer with arab's CLDR 48.2.0 symbols for latn's	group 43
+  durations:264	V	V-symbols: the expected answer with arab's CLDR 48.2.0 symbols for latn's	group 43
+  durations:265	V	V-retained: equals the retained answer	group 43
+  durations:266	V	V-retained: equals the retained answer	group 43
+  durations:530	V	V-retained: equals the retained answer	group 43
+  durations:533	V	V-symbols: the expected answer with arab's CLDR 48.2.0 symbols for latn's	group 43
+  durations:534	V	V-symbols: the expected answer with arab's CLDR 48.2.0 symbols for latn's	group 43
+  durations:535	V	V-retained: equals the retained answer	group 43
+  durations:536	V	V-retained: equals the retained answer	group 43
+  locales:7	V	V-retained: equals the retained answer	group 50
+  locales:19	V	V-retained: equals the retained answer	group 50
+  locales:31	V	V-retained: equals the retained answer	group 50
+  locales:43	V	V-retained: equals the retained answer	group 50
+  locales:55	V	V-retained: equals the retained answer	group 50
+  locales:67	V	V-retained: equals the retained answer	group 50
+  locales:79	V	V-retained: equals the retained answer	group 50
+  locales:91	V	V-retained: equals the retained answer	group 50
+  locales:103	V	V-retained: equals the retained answer	group 50
+  locales:128	L19	exactly the answer class L19 names	group 52
+  locales:177	V	V-retained: equals the retained answer	group 53
+  locales:201	V	V-retained: equals the retained answer	group 53
+  locales:235	V	V-collator: the sorted list this engine's Intl.Collator resolves	group 50
+  locales:247	V	V-collator: the sorted list this engine's Intl.Collator resolves	group 50
+  locales:259	V	V-collator: the sorted list this engine's Intl.Collator resolves	group 50
+  locales:271	V	V-collator: the sorted list this engine's Intl.Collator resolves	group 50
+  locales:283	V	V-retained: equals the retained answer	group 50
+  locales:295	V	V-collator: the sorted list this engine's Intl.Collator resolves	group 50
+  locales:607	V	V-retained: equals the retained answer	group 50
+  locales:631	V	V-retained: equals the retained answer	group 50
+  locales:643	V	V-retained: equals the retained answer	group 50
+  locales:655	V	V-retained: equals the retained answer	group 50
+  locales:691	V	V-retained: equals the retained answer	group 50
+  locales:739	V	V-retained: equals the retained answer	group 50
+  locales:751	V	V-retained: equals the retained answer	group 50
+  locales:763	V	V-retained: equals the retained answer	group 50
+  segments:110	O	equals its answer at the base	group -
+  timezones:6	Z8	only the identifier differs: Africa/Asmara (the primary) for Africa/Asmera as given	group 64
+  timezones:51	Z8	only the identifier differs: Africa/Bamako (the primary) for Africa/Timbuktu as given	group -
+  timezones:62	Z8	only the identifier differs: America/Argentina/Catamarca (the primary) for America/Argentina/ComodRivadavia as given	group 64
+  timezones:76	Z8	only the identifier differs: America/Adak (the primary) for America/Atka as given	group -
+  timezones:86	Z8	only the identifier differs: America/Argentina/Buenos_Aires (the primary) for America/Buenos_Aires as given	group 64
+  timezones:91	Z8	only the identifier differs: America/Argentina/Catamarca (the primary) for America/Catamarca as given	group 64
+  timezones:97	Z8	only the identifier differs: America/Atikokan (the primary) for America/Coral_Harbour as given	group 64
+  timezones:98	Z8	only the identifier differs: America/Argentina/Cordoba (the primary) for America/Cordoba as given	group 64
+  timezones:113	Z8	only the identifier differs: America/Tijuana (the primary) for America/Ensenada as given	group -
+  timezones:115	Z8	only the identifier differs: America/Indiana/Indianapolis (the primary) for America/Fort_Wayne as given	group 64
+  timezones:118	Z8	only the identifier differs: America/Nuuk (the primary) for America/Godthab as given	group 64
+  timezones:137	Z8	only the identifier differs: America/Indiana/Indianapolis (the primary) for America/Indianapolis as given	group 64
+  timezones:141	Z8	only the identifier differs: America/Argentina/Jujuy (the primary) for America/Jujuy as given	group 64
+  timezones:145	Z8	only the identifier differs: America/Indiana/Knox (the primary) for America/Knox_IN as given	group -
+  timezones:150	Z8	only the identifier differs: America/Kentucky/Louisville (the primary) for America/Louisville as given	group 64
+  timezones:159	Z8	only the identifier differs: America/Argentina/Mendoza (the primary) for America/Mendoza as given	group 64
+  timezones:168	Z8	only the identifier differs: America/Toronto (the primary) for America/Montreal as given	group -
+  timezones:172	Z8	only the identifier differs: America/Toronto (the primary) for America/Nipigon as given	group -
+  timezones:181	Z8	only the identifier differs: America/Iqaluit (the primary) for America/Pangnirtung as given	group -
+  timezones:186	Z8	only the identifier differs: America/Rio_Branco (the primary) for America/Porto_Acre as given	group -
+  timezones:190	Z8	only the identifier differs: America/Winnipeg (the primary) for America/Rainy_River as given	group -
+  timezones:196	Z8	only the identifier differs: America/Argentina/Cordoba (the primary) for America/Rosario as given	group 64
+  timezones:197	Z8	only the identifier differs: America/Tijuana (the primary) for America/Santa_Isabel as given	group -
+  timezones:203	Z8	only the identifier differs: America/Denver (the primary) for America/Shiprock as given	group -
+  timezones:214	Z8	only the identifier differs: America/Toronto (the primary) for America/Thunder_Bay as given	group -
+  timezones:219	Z8	only the identifier differs: America/St_Thomas (the primary) for America/Virgin as given	group -
+  timezones:223	Z8	only the identifier differs: America/Edmonton (the primary) for America/Yellowknife as given	group -
+  timezones:232	Z8	only the identifier differs: Antarctica/McMurdo (the primary) for Antarctica/South_Pole as given	group -
+  timezones:244	Z8	only the identifier differs: Asia/Ashgabat (the primary) for Asia/Ashkhabad as given	group -
+  timezones:254	Z8	only the identifier differs: Asia/Kolkata (the primary) for Asia/Calcutta as given	group 64
+  timezones:256	Z8	only the identifier differs: Asia/Ulaanbaatar (the primary) for Asia/Choibalsan as given	group -
+  timezones:257	Z8	only the identifier differs: Asia/Shanghai (the primary) for Asia/Chongqing as given	group -
+  timezones:258	Z8	only the identifier differs: Asia/Shanghai (the primary) for Asia/Chungking as given	group -
+  timezones:260	Z8	only the identifier differs: Asia/Dhaka (the primary) for Asia/Dacca as given	group -
+  timezones:268	Z8	only the identifier differs: Asia/Shanghai (the primary) for Asia/Harbin as given	group -
+  timezones:274	Z8	only the identifier differs: Europe/Istanbul (the primary) for Asia/Istanbul as given	group -
+  timezones:281	Z8	only the identifier differs: Asia/Urumqi (the primary) for Asia/Kashgar as given	group -
+  timezones:283	Z8	only the identifier differs: Asia/Kathmandu (the primary) for Asia/Katmandu as given	group 64
+  timezones:290	Z8	only the identifier differs: Asia/Macau (the primary) for Asia/Macao as given	group -
+  timezones:307	Z8	only the identifier differs: Asia/Yangon (the primary) for Asia/Rangoon as given	group 64
+  timezones:309	Z8	only the identifier differs: Asia/Ho_Chi_Minh (the primary) for Asia/Saigon as given	group 64
+  timezones:320	Z8	only the identifier differs: Asia/Jerusalem (the primary) for Asia/Tel_Aviv as given	group -
+  timezones:321	Z8	only the identifier differs: Asia/Thimphu (the primary) for Asia/Thimbu as given	group -
+  timezones:325	Z8	only the identifier differs: Asia/Makassar (the primary) for Asia/Ujung_Pandang as given	group -
+  timezones:327	Z8	only the identifier differs: Asia/Ulaanbaatar (the primary) for Asia/Ulan_Bator as given	group -
+  timezones:340	Z8	only the identifier differs: Atlantic/Faroe (the primary) for Atlantic/Faeroe as given	group 64
+  timezones:342	Z8	only the identifier differs: Arctic/Longyearbyen (the primary) for Atlantic/Jan_Mayen as given	group -
+  timezones:348	Z8	only the identifier differs: Australia/Sydney (the primary) for Australia/ACT as given	group -
+  timezones:352	Z8	only the identifier differs: Australia/Sydney (the primary) for Australia/Canberra as given	group -
+  timezones:353	Z8	only the identifier differs: Australia/Hobart (the primary) for Australia/Currie as given	group -
+  timezones:357	Z8	only the identifier differs: Australia/Lord_Howe (the primary) for Australia/LHI as given	group -
+  timezones:361	Z8	only the identifier differs: Australia/Sydney (the primary) for Australia/NSW as given	group -
+  timezones:362	Z8	only the identifier differs: Australia/Darwin (the primary) for Australia/North as given	group -
+  timezones:364	Z8	only the identifier differs: Australia/Brisbane (the primary) for Australia/Queensland as given	group -
+  timezones:365	Z8	only the identifier differs: Australia/Adelaide (the primary) for Australia/South as given	group -
+  timezones:367	Z8	only the identifier differs: Australia/Hobart (the primary) for Australia/Tasmania as given	group -
+  timezones:368	Z8	only the identifier differs: Australia/Melbourne (the primary) for Australia/Victoria as given	group -
+  timezones:369	Z8	only the identifier differs: Australia/Perth (the primary) for Australia/West as given	group -
+  timezones:370	Z8	only the identifier differs: Australia/Broken_Hill (the primary) for Australia/Yancowinna as given	group -
+  timezones:371	Z8	only the identifier differs: America/Rio_Branco (the primary) for Brazil/Acre as given	group -
+  timezones:372	Z8	only the identifier differs: America/Noronha (the primary) for Brazil/DeNoronha as given	group -
+  timezones:373	Z8	only the identifier differs: America/Sao_Paulo (the primary) for Brazil/East as given	group -
+  timezones:374	Z8	only the identifier differs: America/Manaus (the primary) for Brazil/West as given	group -
+  timezones:375	Z8	only the identifier differs: Europe/Brussels (the primary) for CET as given	group -
+  timezones:376	Z8	only the identifier differs: America/Chicago (the primary) for CST6CDT as given	group -
+  timezones:377	Z8	only the identifier differs: America/Halifax (the primary) for Canada/Atlantic as given	group -
+  timezones:378	Z8	only the identifier differs: America/Winnipeg (the primary) for Canada/Central as given	group -
+  timezones:379	Z8	only the identifier differs: America/Toronto (the primary) for Canada/Eastern as given	group -
+  timezones:380	Z8	only the identifier differs: America/Edmonton (the primary) for Canada/Mountain as given	group -
+  timezones:381	Z8	only the identifier differs: America/St_Johns (the primary) for Canada/Newfoundland as given	group -
+  timezones:382	Z8	only the identifier differs: America/Vancouver (the primary) for Canada/Pacific as given	group -
+  timezones:383	Z8	only the identifier differs: America/Regina (the primary) for Canada/Saskatchewan as given	group -
+  timezones:384	Z8	only the identifier differs: America/Whitehorse (the primary) for Canada/Yukon as given	group -
+  timezones:385	Z8	only the identifier differs: America/Santiago (the primary) for Chile/Continental as given	group -
+  timezones:386	Z8	only the identifier differs: Pacific/Easter (the primary) for Chile/EasterIsland as given	group -
+  timezones:387	Z8	only the identifier differs: America/Havana (the primary) for Cuba as given	group -
+  timezones:388	Z8	only the identifier differs: Europe/Athens (the primary) for EET as given	group -
+  timezones:389	Z8	only the identifier differs: America/Panama (the primary) for EST as given	group -
+  timezones:390	Z8	only the identifier differs: America/New_York (the primary) for EST5EDT as given	group -
+  timezones:391	Z8	only the identifier differs: Africa/Cairo (the primary) for Egypt as given	group -
+  timezones:392	Z8	only the identifier differs: Europe/Dublin (the primary) for Eire as given	group -
+  timezones:393	Z8	only the identifier differs: UTC (the primary) for Etc/GMT as given	group -
+  timezones:394	Z8	only the identifier differs: UTC (the primary) for Etc/GMT+0 as given	group -
+  timezones:407	Z8	only the identifier differs: UTC (the primary) for Etc/GMT-0 as given	group -
+  timezones:422	Z8	only the identifier differs: UTC (the primary) for Etc/GMT0 as given	group -
+  timezones:423	Z8	only the identifier differs: UTC (the primary) for Etc/Greenwich as given	group -
+  timezones:424	Z8	only the identifier differs: UTC (the primary) for Etc/UCT as given	group -
+  timezones:425	Z8	only the identifier differs: UTC (the primary) for Etc/UTC as given	group -
+  timezones:426	Z8	only the identifier differs: UTC (the primary) for Etc/Universal as given	group -
+  timezones:427	Z8	only the identifier differs: UTC (the primary) for Etc/Zulu as given	group -
+  timezones:432	Z8	only the identifier differs: Europe/London (the primary) for Europe/Belfast as given	group -
+  timezones:450	Z8	only the identifier differs: Europe/Kyiv (the primary) for Europe/Kiev as given	group 64
+  timezones:463	Z8	only the identifier differs: Asia/Nicosia (the primary) for Europe/Nicosia as given	group -
+  timezones:480	Z8	only the identifier differs: Europe/Chisinau (the primary) for Europe/Tiraspol as given	group -
+  timezones:482	Z8	only the identifier differs: Europe/Kyiv (the primary) for Europe/Uzhgorod as given	group 64
+  timezones:490	Z8	only the identifier differs: Europe/Kyiv (the primary) for Europe/Zaporozhye as given	group 64
+  timezones:492	Z8	only the identifier differs: Europe/London (the primary) for GB as given	group -
+  timezones:493	Z8	only the identifier differs: Europe/London (the primary) for GB-Eire as given	group -
+  timezones:494	Z8	only the identifier differs: UTC (the primary) for GMT as given	group -
+  timezones:495	Z8	only the identifier differs: UTC (the primary) for GMT+0 as given	group -
+  timezones:496	Z8	only the identifier differs: UTC (the primary) for GMT-0 as given	group -
+  timezones:497	Z8	only the identifier differs: UTC (the primary) for GMT0 as given	group -
+  timezones:498	Z8	only the identifier differs: UTC (the primary) for Greenwich as given	group -
+  timezones:499	Z8	only the identifier differs: Pacific/Honolulu (the primary) for HST as given	group -
+  timezones:500	Z8	only the identifier differs: Asia/Hong_Kong (the primary) for Hongkong as given	group -
+  timezones:501	Z8	only the identifier differs: Atlantic/Reykjavik (the primary) for Iceland as given	group -
+  timezones:513	Z8	only the identifier differs: Asia/Tehran (the primary) for Iran as given	group -
+  timezones:514	Z8	only the identifier differs: Asia/Jerusalem (the primary) for Israel as given	group -
+  timezones:515	Z8	only the identifier differs: America/Jamaica (the primary) for Jamaica as given	group -
+  timezones:516	Z8	only the identifier differs: Asia/Tokyo (the primary) for Japan as given	group -
+  timezones:517	Z8	only the identifier differs: Pacific/Kwajalein (the primary) for Kwajalein as given	group -
+  timezones:518	Z8	only the identifier differs: Africa/Tripoli (the primary) for Libya as given	group -
+  timezones:519	Z8	only the identifier differs: Europe/Brussels (the primary) for MET as given	group -
+  timezones:520	Z8	only the identifier differs: America/Phoenix (the primary) for MST as given	group -
+  timezones:521	Z8	only the identifier differs: America/Denver (the primary) for MST7MDT as given	group -
+  timezones:522	Z8	only the identifier differs: America/Tijuana (the primary) for Mexico/BajaNorte as given	group -
+  timezones:523	Z8	only the identifier differs: America/Mazatlan (the primary) for Mexico/BajaSur as given	group -
+  timezones:524	Z8	only the identifier differs: America/Mexico_City (the primary) for Mexico/General as given	group -
+  timezones:525	Z8	only the identifier differs: Pacific/Auckland (the primary) for NZ as given	group -
+  timezones:526	Z8	only the identifier differs: Pacific/Chatham (the primary) for NZ-CHAT as given	group -
+  timezones:527	Z8	only the identifier differs: America/Denver (the primary) for Navajo as given	group -
+  timezones:528	Z8	only the identifier differs: Asia/Shanghai (the primary) for PRC as given	group -
+  timezones:529	Z8	only the identifier differs: America/Los_Angeles (the primary) for PST8PDT as given	group -
+  timezones:537	Z8	only the identifier differs: Pacific/Kanton (the primary) for Pacific/Enderbury as given	group 64
+  timezones:546	Z8	only the identifier differs: Pacific/Honolulu (the primary) for Pacific/Johnston as given	group -
+  timezones:562	Z8	only the identifier differs: Pacific/Pohnpei (the primary) for Pacific/Ponape as given	group 64
+  timezones:566	Z8	only the identifier differs: Pacific/Pago_Pago (the primary) for Pacific/Samoa as given	group -
+  timezones:570	Z8	only the identifier differs: Pacific/Chuuk (the primary) for Pacific/Truk as given	group 64
+  timezones:573	Z8	only the identifier differs: Pacific/Chuuk (the primary) for Pacific/Yap as given	group 64
+  timezones:574	Z8	only the identifier differs: Europe/Warsaw (the primary) for Poland as given	group -
+  timezones:575	Z8	only the identifier differs: Europe/Lisbon (the primary) for Portugal as given	group -
+  timezones:576	Z8	only the identifier differs: Asia/Taipei (the primary) for ROC as given	group -
+  timezones:577	Z8	only the identifier differs: Asia/Seoul (the primary) for ROK as given	group -
+  timezones:578	Z8	only the identifier differs: Asia/Singapore (the primary) for Singapore as given	group -
+  timezones:579	Z8	only the identifier differs: Europe/Istanbul (the primary) for Turkey as given	group -
+  timezones:580	Z8	only the identifier differs: UTC (the primary) for UCT as given	group -
+  timezones:581	Z8	only the identifier differs: America/Anchorage (the primary) for US/Alaska as given	group -
+  timezones:582	Z8	only the identifier differs: America/Adak (the primary) for US/Aleutian as given	group -
+  timezones:583	Z8	only the identifier differs: America/Phoenix (the primary) for US/Arizona as given	group -
+  timezones:584	Z8	only the identifier differs: America/Chicago (the primary) for US/Central as given	group -
+  timezones:585	Z8	only the identifier differs: America/Indiana/Indianapolis (the primary) for US/East-Indiana as given	group 64
+  timezones:586	Z8	only the identifier differs: America/New_York (the primary) for US/Eastern as given	group -
+  timezones:587	Z8	only the identifier differs: Pacific/Honolulu (the primary) for US/Hawaii as given	group -
+  timezones:588	Z8	only the identifier differs: America/Indiana/Knox (the primary) for US/Indiana-Starke as given	group -
+  timezones:589	Z8	only the identifier differs: America/Detroit (the primary) for US/Michigan as given	group -
+  timezones:590	Z8	only the identifier differs: America/Denver (the primary) for US/Mountain as given	group -
+  timezones:591	Z8	only the identifier differs: America/Los_Angeles (the primary) for US/Pacific as given	group -
+  timezones:592	Z8	only the identifier differs: Pacific/Pago_Pago (the primary) for US/Samoa as given	group -
+  timezones:594	Z8	only the identifier differs: UTC (the primary) for Universal as given	group -
+  timezones:595	Z8	only the identifier differs: Europe/Moscow (the primary) for W-SU as given	group -
+  timezones:596	Z8	only the identifier differs: Europe/Lisbon (the primary) for WET as given	group -
+  timezones:597	Z8	only the identifier differs: UTC (the primary) for Zulu as given	group -

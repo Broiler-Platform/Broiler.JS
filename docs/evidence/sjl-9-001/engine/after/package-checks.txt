@@ -1,0 +1,18 @@
+tables: 26 files under Broiler.ECMAScript/data/intl/generated/; probes: 75 windows of 32 bytes
+
+Broiler.ECMAScript.Intl.0.1.0-preview.8.nupkg (sha256 79cdd9d590445437ca42c88d60154e3f3edbeccd9c529f9237e3c0af0b5fd9d3)
+  dependencies: Broiler.ECMAScript.Algorithms 0.1.0-preview.8, Broiler.Unicode.Algorithms 0.1.0-preview.6
+  entries: Broiler.ECMAScript.Intl.nuspec, README.md, THIRD_PARTY_NOTICES.md, icon.png, lib/net10.0/Broiler.ECMAScript.Intl.dll, lib/net10.0/Broiler.ECMAScript.Intl.xml
+  entries holding a window of a generated table: 0
+
+Broiler.ECMAScript.Algorithms.0.1.0-preview.8.nupkg (sha256 92724c5cc604deb463ea74d1514eb32dbbc5a84ddd77dcfa20d6912471347655)
+  dependencies: 
+  entries: Broiler.ECMAScript.Algorithms.nuspec, README.md, THIRD_PARTY_NOTICES.md, icon.png, lib/net10.0/Broiler.ECMAScript.Algorithms.dll, lib/net10.0/Broiler.ECMAScript.Algorithms.xml
+  entries holding a window of a generated table: 0
+
+Broiler.JavaScript.BuiltIns.0.1.0-preview.1.nupkg (sha256 14346f32d73db01d22580fa15393d352458f2d5b2894c9bcf7413d08bad2cebc)
+  dependencies: Broiler.ECMAScript.Algorithms 0.1.0-preview.8, Broiler.ECMAScript.Intl 0.1.0-preview.8, Broiler.JavaScript.Engine 0.1.0-preview.1, Broiler.JavaScript.Extensions 0.1.0-preview.1, Broiler.JavaScript.LinqExpressions 0.1.0-preview.1, Broiler.Regex 0.1.0-preview.5, Broiler.Unicode.Cldr.LocaleData 0.1.0-preview.6, Broiler.Unicode.Segmentation 0.1.0-preview.6
+  entries: Broiler.JavaScript.BuiltIns.nuspec, README.md, THIRD_PARTY_NOTICES.md, icon.png, lib/net10.0/Broiler.JavaScript.BuiltIns.dll, lib/net10.0/Broiler.JavaScript.BuiltIns.xml
+  entries holding a window of a generated table: 75
+  tables found: aliases.txt, calendar-preferences.txt, collation-root.bin, collation-tailorings.bin, currencies.txt, currency-digits.txt, date-locales.txt, day-periods.txt, display-names.txt, extensions.txt, likely-subtags.txt, list-patterns.txt, locales.txt, meta-zones.txt, number-locales.txt, numbering-systems.txt, ordinals.txt, plural-ranges.txt, plurals.txt, relative-times.txt, scripts.txt, tables.manifest, time-data.txt, units.txt, week-data.txt (25 of 26), in lib/net10.0/Broiler.JavaScript.BuiltIns.dll
+exit 0

@@ -1,0 +1,152 @@
+{
+ "broilerDll": "<tree>/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll",
+ "candidateCount": 1,
+ "dotnetVersion": "",
+ "executed": 2,
+ "expandedPaths": [
+  "test/intl402/default-locale-is-supported.js"
+ ],
+ "expectedVariantCountPerPath": 2,
+ "failed": 0,
+ "failedPaths": [],
+ "featureMatch": "any",
+ "featurePatterns": [],
+ "hostModeSummary": {
+  "module": {
+   "executed": 0,
+   "failed": 0,
+   "notApplicable": 0,
+   "passed": 0,
+   "selected": 0,
+   "skipped": 0,
+   "timedOut": 0
+  },
+  "raw": {
+   "executed": 0,
+   "failed": 0,
+   "notApplicable": 0,
+   "passed": 0,
+   "selected": 0,
+   "skipped": 0,
+   "timedOut": 0
+  },
+  "script": {
+   "executed": 2,
+   "failed": 0,
+   "notApplicable": 0,
+   "passed": 2,
+   "selected": 2,
+   "skipped": 0,
+   "timedOut": 0
+  }
+ },
+ "hostModes": [
+  "script",
+  "module",
+  "raw"
+ ],
+ "includeNegative": true,
+ "maxWorkers": 1,
+ "memoryLimitMb": 0,
+ "minifier": "terser",
+ "minifierHostExternNames": 0,
+ "minifierOptions": {
+  "asciiOnly": false,
+  "comments": false,
+  "compress": false,
+  "keepClassNames": true,
+  "keepFunctionNames": true,
+  "mangle": true,
+  "mangleEval": false,
+  "mangleProperties": false,
+  "module": false,
+  "reserveQuotedNames": true,
+  "semicolons": true,
+  "toplevel": false
+ },
+ "minifierProfile": "test262-safe-mangle-v2",
+ "minifierTimeoutSeconds": 30.0,
+ "minifierVersion": "5.50.0",
+ "notApplicable": 0,
+ "passed": 2,
+ "pathSummary": {
+  "executed": 1,
+  "failed": 0,
+  "passed": 1,
+  "skipped": 0,
+  "timedOut": 0,
+  "total": 1
+ },
+ "prioritizeFragile": false,
+ "promotedCount": 0,
+ "referenceEngine": "node",
+ "requestedPaths": [
+  "test/intl402/default-locale-is-supported.js"
+ ],
+ "results": [
+  {
+   "durationMs": 1815.259,
+   "features": [],
+   "flags": [],
+   "path": "test/intl402/default-locale-is-supported.js",
+   "sourceSizeBytes": 578,
+   "status": "passed",
+   "variant": "original"
+  },
+  {
+   "durationMs": 1734.321,
+   "features": [],
+   "flags": [],
+   "minificationDurationMs": 79.681,
+   "minificationRatio": 0.431111,
+   "minifiedSourceSizeBytes": 194,
+   "minifier": "terser",
+   "minifierInputBytes": 450,
+   "minifierProfile": "test262-safe-mangle-v2",
+   "minifierVersion": "5.50.0",
+   "path": "test/intl402/default-locale-is-supported.js",
+   "sourceSizeBytes": 578,
+   "status": "passed",
+   "variant": "terser"
+  }
+ ],
+ "runnerArch": "x86_64",
+ "runnerOs": "Linux",
+ "selectedCountBeforeSharding": 1,
+ "selectionLabel": "",
+ "selectionMode": "requested",
+ "shardCount": 1,
+ "shardIndex": 0,
+ "shuffleSeed": null,
+ "skipped": 0,
+ "subsetPatterns": [],
+ "suiteRef": "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e",
+ "testTimeoutSeconds": 30.0,
+ "timedOut": 0,
+ "timedOutPaths": [],
+ "total": 2,
+ "variantSummary": {
+  "original": {
+   "executed": 1,
+   "failed": 0,
+   "notApplicable": 0,
+   "passed": 1,
+   "skipped": 0,
+   "timedOut": 0,
+   "total": 1
+  },
+  "terser": {
+   "executed": 1,
+   "failed": 0,
+   "notApplicable": 0,
+   "passed": 1,
+   "skipped": 0,
+   "timedOut": 0,
+   "total": 1
+  }
+ },
+ "variants": [
+  "original",
+  "terser"
+ ]
+}

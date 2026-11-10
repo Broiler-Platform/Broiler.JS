@@ -1,0 +1,29 @@
+# the reference reference.txt names: v26.12.0; tarball node-v26.12.0-linux-x64.tar.xz, 34,060,244 bytes, sha256 fd47865ecd6391ebb431fc815e01b9135bf83ded5cf373247e9331e196b7aded; reference.txt's: fd47865ecd6391ebb431fc815e01b9135bf83ded5cf373247e9331e196b7aded; equal: True
+# process.versions: {"node":"26.12.0","acorn":"8.19.0","ada":"4.0.0","amaro":"1.1.11","ares":"1.34.8","brotli":"1.2.0","cldr":"48.0","icu":"78.3","libffi":"3.8.0","lief":"1.0.0","llhttp":"9.4.3","merve":"1.2.2","modules":"147","napi":"10","nbytes":"0.1.4","ncrypto":"0.0.1","nghttp2":"1.70.0","nghttp3":"","ngtcp2":"","openssl":"3.5.9","simdjson":"5.0.3","simdutf":"7.7.0","sqlite":"3.54.0","tz":"2026e","undici":"8.11.2","unicode":"17.0","uv":"1.52.1","uvwasi":"0.0.23","v8":"14.6.202.34-node.39","zlib":"1.3.2.1-motley-456ae73","zstd":"1.5.7"}
+# typeof Temporal in this Node, with no flag: object
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/dates.js
+# exit 0; 357,116 bytes, sha256 eecadb11b2c0d37945410da9e7a20a1d15ac0442dd4088b4757df673ec54fb66; lines 1430
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/displaynames.js
+# exit 0; 80,054 bytes, sha256 bf4541760e2ef44d7920d1fe221b25637c8c52bbc4672cd94695ca8c73a214a2; lines 823
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/durations.js
+# exit 0; 80,585 bytes, sha256 dde06f35203f245f4285f4ad7a64b24cf8956bfebafba76fd1c3d6826a45e67c; lines 553
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/lists.js
+# exit 0; 45,700 bytes, sha256 33260664d866aa94fd20da8ee8ad8fea02def22a491e3aa277c8ae557277d012; lines 481
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/locales.js
+# exit 0; 45,190 bytes, sha256 5842f109db755b998bf0456c1adce8af7973319cc599d00e9f94f0311188ec00; lines 780
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/numbers.js
+# exit 0; 358,967 bytes, sha256 b58253df296f0bfb72c3def02cbd6fbf255f4c58eaf6f8c1e91a041f801ac478; lines 2241
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/plurals.js
+# exit 0; 89,647 bytes, sha256 f278d298b720342782d7e5aae060943ff45c1a09fc55fab1c85674c7ed945ad3; lines 1299
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/relativetimes.js
+# exit 0; 169,277 bytes, sha256 bfa0d944bd0e32c6c6bb06562734a7ecd50d6e49ae8f030a5b9b0fdcde009cae; lines 2460
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/segments.js
+# exit 0; 16,732 bytes, sha256 9996a94ce3ffa8822a38078a4575fe76f06dbd66dd9c265776f931a7ba127f2e; lines 118
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/temporal-intl.js
+# exit 0; 119,812 bytes, sha256 485ffe98eb8d64d914127c2326c21c7ae88da4c02adf869daa3af6b131e2deb4; lines 1233
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/calendar-formats.js
+# exit 0; 606,116 bytes, sha256 51629b0f273961625a0689105dae27b40d12c21c2e4ec72d5d7ada267724f4bf; lines 5951
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/intl/zone-names.js
+# exit 0; 296,401 bytes, sha256 f17b75750f3c9e982a5c4cedf8b39e679a22fa010b9ed6f3363df6725449de12; lines 2713
+$ TZ=UTC node -e "const fs=require('fs');process.stdout.write((0,eval)(fs.readFileSync(process.argv[1],'utf8'))+'\n')" conformance/datasets/time/timezones.js
+# exit 0; 79,664 bytes, sha256 719c1ee46fea36a48631fc6cc8ec1b1dd9530761a317c44d58447b175fa421c9; lines 610

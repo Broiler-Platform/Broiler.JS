@@ -1,0 +1,21 @@
+# shell tree: <tree>, written by git archive of 8841799642ff61499faa01dc894b6fec768c8af6; the tree written by git archive of the commit without docs/evidence; the shell built there with dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release --nologo --disable-build-servers, SDK 10.0.401
+# shell: Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll, sha256 ff8f483b66578c7ef864ca3a6c2cb8ce9b775ff429df021698eb1dcee5fbd1bf
+# suite: <suite> at ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e; clean: True
+# terser: 5.50.0, installed by npm ci from .github/actions/run-test262-shard/terser/package-lock.json
+$ /usr/bin/python3 -I <tree>/scripts/compliance/run_test262.py --suite-root <suite> --broiler-dll <tree>/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll --include-negative --test-timeout-seconds 30 --minifier terser --terser-module <scratch>/terser/node_modules/terser --memory-limit-mb 0 --output <scratch>/default-locale-base.json --no-summary-stdout test/intl402/default-locale-is-supported.js
+# cwd <tree>; started 2026-11-10T17:42:41Z; exit 1
+# stderr
+[test262] Starting test262 run for suite ref ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e using local suite root <suite>
+[test262] Selected 1 runnable test(s) for shard 1/1 from 1 selected file(s) and 1 candidate path(s) using mode requested.
+[test262] Using Broiler script host at <tree>/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+[test262] Running 1 test(s) for shard 1/1.
+[test262] Per-test timeout is 30s; POSIX memory cap is disabled.
+[test262] Each path will run as original and terser variants (test262-safe-mangle-v2, version 5.50.0).
+[test262] A failing minified case is cross-checked against node v22.22.0 before it counts as an engine failure. It accepts --harmony-temporal --harmony-shadow-realm --harmony-intl-duration-format --js-float16array, so it can speak about those features.
+[test262] Failure 1 at test/intl402/default-locale-is-supported.js [original]
+[test262] Failure 2 at test/intl402/default-locale-is-supported.js [terser]
+[test262] Completed 1/1 path(s), 2 variant case(s) (passed=0, failed=2, skipped=0, timedOut=0).
+[test262] Wrote machine-readable summary to <scratch>/default-locale-base.json
+[test262] Finished test262 run: variantCases=2, executed=2, passed=0, failed=2, skipped=0, timedOut=0
+# row: test/intl402/default-locale-is-supported.js [original] failed: Uncaught Test262Error: Default locale is not reported as available. Expected SameValue(«-1», «-1») to be false (Testing with Collator.)
+# row: test/intl402/default-locale-is-supported.js [terser] failed: Uncaught Test262Error: Default locale is not reported as available. Expected SameValue(«-1», «-1») to be false (Testing with Collator.)

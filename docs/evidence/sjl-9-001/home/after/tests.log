@@ -1,0 +1,96 @@
+== start 2026-11-10T17:46:39Z load: 0.78 1.79 1.99 1/110 31283; dotnet processes: 0
+/dev/vda        252G   32G  7.5G  81% /
+# tree: git archive of a5f2692e88a9aafeaa850bebe9c3399f6263353b; SDK 10.0.401; TZ=UTC, no LANG
+$ dotnet build Broiler.ECMAScript.slnf -c Release --nologo --disable-build-servers
+build exit=1
+    0 Warning(s)
+    1 Error(s)
+/dev/vda        252G   32G  7.5G  81% /
+$ dotnet test Broiler.ECMAScript.slnf -c Release --no-build --logger trx --results-directory <tmp>/trx
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.Tests.dll (.NETCoreApp,Version=v10.0)
+The argument <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.Tests.dll is invalid. Please use the /help option to check the list of valid arguments.
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/bin/Release/net10.0/Broiler.ECMAScript.Conformance.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/bin/Release/net10.0/Broiler.ECMAScript.Frontend.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/bin/Release/net10.0/Broiler.ECMAScript.Generation.Tests.dll (.NETCoreApp,Version=v10.0)
+The argument <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/bin/Release/net10.0/Broiler.ECMAScript.Conformance.Tests.dll is invalid. Please use the /help option to check the list of valid arguments.
+The argument <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll is invalid. Please use the /help option to check the list of valid arguments.
+The argument <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/bin/Release/net10.0/Broiler.ECMAScript.Frontend.Tests.dll is invalid. Please use the /help option to check the list of valid arguments.
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/bin/Release/net10.0/Broiler.ECMAScript.Intl.Tests.dll (.NETCoreApp,Version=v10.0)
+The argument <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/bin/Release/net10.0/Broiler.ECMAScript.Generation.Tests.dll is invalid. Please use the /help option to check the list of valid arguments.
+The argument <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/bin/Release/net10.0/Broiler.ECMAScript.Intl.Tests.dll is invalid. Please use the /help option to check the list of valid arguments.
+test exit=1
+== end 2026-11-10T17:46:42Z
+/dev/vda        252G   32G  7.5G  81% /
+
+# the build failed: NU1903 (Microsoft.DotNet.ILCompiler 10.0.12, GHSA-p3jp-9v83-76w9) is a warning made an error in Broiler.ECMAScript.Probe's restore; built again with -p:NuGetAudit=false, which the stage's brief allows when NU1903 blocks a restore
+== start 2026-11-10T17:46:58Z load: 0.62 1.69 1.95 1/107 31545; dotnet processes: 0
+$ dotnet build Broiler.ECMAScript.slnf -c Release --nologo --disable-build-servers -p:NuGetAudit=false
+build exit=0
+    0 Warning(s)
+    0 Error(s)
+/dev/vda        252G   32G  7.3G  82% /
+$ dotnet test Broiler.ECMAScript.slnf -c Release --no-build --logger trx
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/bin/Release/net10.0/Broiler.ECMAScript.Conformance.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/bin/Release/net10.0/Broiler.ECMAScript.Frontend.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+Results File: <scratch>/trx/_vm_2026-11-10_17_47_47_net10.0.trx
+
+Passed!  - Failed:     0, Passed:   153, Skipped:     0, Total:   153, Duration: 19 s - Broiler.ECMAScript.Conformance.Tests.dll (net10.0)
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/bin/Release/net10.0/Broiler.ECMAScript.Generation.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+Results File: <scratch>/trx/_vm_2026-11-10_17_47_50_net10.0.trx
+
+Passed!  - Failed:     0, Passed:  1296, Skipped:     0, Total:  1296, Duration: 19 s - Broiler.ECMAScript.Algorithms.Tests.dll (net10.0)
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/bin/Release/net10.0/Broiler.ECMAScript.Intl.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:26.82]     Broiler.ECMAScript.Syntax.Tests.LimitsTests.Every_source_of_the_deep_nesting_corpus_ends_as_its_row_expects [FAIL]
+  Failed Broiler.ECMAScript.Syntax.Tests.LimitsTests.Every_source_of_the_deep_nesting_corpus_ends_as_its_row_expects [20 ms]
+  Error Message:
+   System.IO.DirectoryNotFoundException : Could not find a part of the path '<tree>/docs/evidence/sjl-13-001/inputs/deep/manifest.tsv'.
+  Stack Trace:
+     at Interop.ThrowExceptionForIoErrno(ErrorInfo errorInfo, String path, Boolean isDirError)
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, UnixFileMode openPermissions, Int64& fileLength, UnixFileMode& filePermissions, Boolean failForSymlink, Boolean& wasSymlink, Func`4 createOpenException)
+   at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.StreamReader.ValidateArgsAndOpenPath(String path, Int32 bufferSize)
+   at System.IO.File.ReadAllLines(String path, Encoding encoding)
+   at Broiler.ECMAScript.Syntax.Tests.LimitsTests.Every_source_of_the_deep_nesting_corpus_ends_as_its_row_expects() in <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/LimitsTests.cs:line 78
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+Results File: <scratch>/trx/_vm_2026-11-10_17_48_11_net10.0.trx
+
+Passed!  - Failed:     0, Passed:    52, Skipped:     0, Total:    52, Duration: 34 s - Broiler.ECMAScript.Generation.Tests.dll (net10.0)
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+Results File: <scratch>/trx/_vm_2026-11-10_17_47_47_net10.0[1].trx
+
+Passed!  - Failed:     0, Passed:    32, Skipped:     0, Total:    32, Duration: 1 m 16 s - Broiler.ECMAScript.Architecture.Tests.dll (net10.0)
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+Results File: <scratch>/trx/_vm_2026-11-10_17_47_50_net10.0[1].trx
+
+Failed!  - Failed:     1, Passed:  1050, Skipped:     0, Total:  1051, Duration: 1 m 16 s - Broiler.ECMAScript.Frontend.Tests.dll (net10.0)
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+Results File: <scratch>/trx/_vm_2026-11-10_17_48_17_net10.0.trx
+
+Passed!  - Failed:     0, Passed:   296, Skipped:     0, Total:   296, Duration: 58 s - Broiler.ECMAScript.Intl.Tests.dll (net10.0)
+test exit=1
+== end 2026-11-10T17:49:13Z
+/dev/vda        252G   32G  7.3G  82% /
+
+# the one failure, LimitsTests.Every_source_of_the_deep_nesting_corpus_ends_as_its_row_expects (Frontend, SJL-13's), read docs/evidence/sjl-13-001/inputs/, which the archive left out; that path was written into the tree from the same commit's archive and the test run again alone
+$ dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests -c Release --no-build --filter FullyQualifiedName~LimitsTests.Every_source_of_the_deep_nesting_corpus_ends_as_its_row_expects
+Test run for <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/bin/Release/net10.0/Broiler.ECMAScript.Frontend.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 2 s - Broiler.ECMAScript.Frontend.Tests.dll (net10.0)
+test exit=0

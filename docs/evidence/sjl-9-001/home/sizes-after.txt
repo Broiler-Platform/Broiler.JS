@@ -1,0 +1,36 @@
+# sjl-9-001 home sizes 2
+#
+# The sizes of the Intl tables this engine embeds at the after commit, a5f2692e88a9aafeaa850bebe9c3399f6263353b (the
+# merge of Broiler-Platform/Broiler.JS#1110), in bytes, restated by citation at SJL-9.6: each `table` line's length is
+# the one Broiler.ECMAScript/data/intl/generated/tables.manifest records at that commit (blob 6c137d548df0eafe08d5428bbf77642744da4815),
+# which the generator writes with each table and rule SL7 holds; nothing here is measured again. The base commit's
+# tables are the same files (`git diff 88417996 a5f2692e -- Broiler.ECMAScript/data/intl` is empty). BuiltIns embeds
+# every one (bundle sjl-9-001's engine/package-checks.txt). `since` names how a line differs from home/sizes.txt,
+# the sizes of SJL-9.2b, which this file does not replace: `same`, `changed from <n>`, or `added`.
+
+table aliases.txt 21252 same
+table calendar-preferences.txt 2101 added
+table collation-root.bin 160603 same
+table collation-settings.txt 64 added
+table collation-tailorings.bin 7850 changed from 3204
+table currencies.txt 1982660 changed from 1752680
+table currency-digits.txt 323 same
+table date-locales.txt 5909897 same
+table day-periods.txt 12378 same
+table display-names.txt 2749045 same
+table extensions.txt 13701 same
+table likely-subtags.txt 126494 same
+table list-patterns.txt 35940 same
+table locales.txt 447 same
+table meta-zones.txt 41580 same
+table number-locales.txt 507799 same
+table numbering-systems.txt 7555 same
+table ordinals.txt 2903 same
+table plural-ranges.txt 8029 same
+table plurals.txt 9742 same
+table relative-times.txt 494797 same
+table scripts.txt 1452 same
+table time-data.txt 3576 same
+table units.txt 1682184 same
+table week-data.txt 1699 same
+tables-total 13784071 tables 25

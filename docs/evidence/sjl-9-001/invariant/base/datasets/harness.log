@@ -1,0 +1,17 @@
+# shell tree: <tree>, written by git archive of 8841799642ff61499faa01dc894b6fec768c8af6; the tree written by git archive of the commit without docs/evidence; the shell built there with dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release --nologo --disable-build-servers, SDK 10.0.401
+# shell: Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll, sha256 ff8f483b66578c7ef864ca3a6c2cb8ce9b775ff429df021698eb1dcee5fbd1bf
+$ /usr/bin/python3 -I <repo>/scripts/conformance/run_reference_datasets.py run --bundle sjl-9-001 --tree <tree> --out <repo>/docs/evidence/sjl-9-001/invariant/base/datasets --label base --invariant-globalization
+# cwd <repo>; started 2026-11-10T17:42:22Z; exit 1
+dates: completed yes; 341 of 1430 lines equal the expected answer, 1089 differ
+displaynames: completed no; 0 of 823 lines equal the expected answer, 823 differ
+durations: completed yes; 289 of 553 lines equal the expected answer, 264 differ
+lists: completed yes; 316 of 481 lines equal the expected answer, 165 differ
+locales: completed yes; 619 of 780 lines equal the expected answer, 161 differ
+numbers: completed yes; 1373 of 2241 lines equal the expected answer, 868 differ
+plurals: completed yes; 1091 of 1299 lines equal the expected answer, 208 differ
+relativetimes: completed yes; 1227 of 2460 lines equal the expected answer, 1233 differ
+segments: completed yes; 110 of 118 lines equal the expected answer, 8 differ
+temporal-intl: completed yes; 694 of 1233 lines equal the expected answer, 539 differ
+calendar-formats: completed yes; 1491 of 5951 lines equal the expected answer, 4460 differ
+zone-names: completed yes; 288 of 2713 lines equal the expected answer, 2425 differ
+timezones: completed yes; 458 of 610 lines equal the expected answer, 152 differ

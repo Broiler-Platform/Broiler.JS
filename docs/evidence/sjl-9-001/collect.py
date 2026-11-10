@@ -390,13 +390,14 @@ class Collector:
     # -- part C ----------------------------------------------------------------------------------
 
     def tree_record(self, log: list[str]) -> None:
-        commit = ""
+        commit = self.args.archive_commit or ""
         archive = Path(self.args.archive).resolve() if self.args.archive else None
         if archive is not None and archive.exists():
             commit = subprocess.run(["git", "get-tar-commit-id"], stdin=open(archive, "rb"), capture_output=True,
                                     text=True).stdout.strip()
         log.append(f"# shell tree: {self.tree}, written by git archive of {commit or '(the archive was not given)'}"
-                   f"{f' ({archive.name}, sha256 {sha256(archive)})' if archive is not None and archive.exists() else ''}\n")
+                   f"{f' ({archive.name}, sha256 {sha256(archive)})' if archive is not None and archive.exists() else ''}"
+                   f"{f'; {self.args.archive_note}' if self.args.archive_note else ''}\n")
         dll = self.tree / SHELL_DLL
         log.append(f"# shell: {SHELL_DLL}, sha256 {sha256(dll) if dll.exists() else '(not built)'}\n")
 
@@ -538,6 +539,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--shell-build", help="probe: how the shell was built, recorded in the probe's file")
     parser.add_argument("--tree", help="datasets, invariant: the scratch tree git archive wrote, its shell built")
     parser.add_argument("--archive", help="datasets, invariant: the archive that tree was written from")
+    parser.add_argument("--archive-commit", help="datasets, invariant: the commit the archive was written from")
+    parser.add_argument("--archive-note", help="datasets, invariant: how the archive and the shell were made")
     parser.add_argument("--suite-root", help="invariant: a checkout of test262 at ccaac100")
     parser.add_argument("--terser-module", help="invariant: the installed terser package directory")
     parser.add_argument("--node-tarball", help="reference: the reference's tarball, as downloaded")

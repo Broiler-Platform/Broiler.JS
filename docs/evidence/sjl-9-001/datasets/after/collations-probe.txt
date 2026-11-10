@@ -1,0 +1,69 @@
+# datasets/after/collations-probe.js (sha256 41ba897571e4a6a7def5eeca55de7391180199f0e87b444ac6f7be70334fe32f), written by datasets/classify.py probe, run 2026-11-10T17:45:55Z in the shell of datasets/after/ (BroilerJS.dll sha256 68268038bd0d955d9046535fdc0cf1327a5c36fbe031422b3a71d1426213a74c, the after commit's, as datasets/after/identity.txt names it), TZ=UTC, no LANG
+supportedValuesOf(collation) => [emoji,eor,phonebk,phonetic,pinyin,stroke,trad,unihan,zhuyin]
+1 en collations => [emoji,eor] tag=en
+2 en-US collations => [emoji,eor] tag=en-US
+3 en-GB collations => [emoji,eor] tag=en-GB
+4 en-Latn collations => [emoji,eor] tag=en-Latn
+5 en-Arab collations => [emoji,eor] tag=en-Arab
+6 en-Shaw collations => [emoji,eor] tag=en-Shaw
+7 de collations => [emoji,eor,phonebk] tag=de
+8 de-AT collations => [emoji,eor,phonebk] tag=de-AT
+9 de-CH collations => [emoji,eor,phonebk] tag=de-CH
+10 fr collations => [emoji,eor] tag=fr
+11 fr-CA collations => [emoji,eor] tag=fr-CA
+12 es-419 collations => [emoji,eor] tag=es-419
+13 pt-BR collations => [emoji,eor] tag=pt-BR
+14 ar collations => [emoji,eor] tag=ar
+15 ar-EG collations => [emoji,eor] tag=ar-EG
+16 he collations => [emoji,eor] tag=he
+17 fa-IR collations => [emoji,eor] tag=fa-IR
+18 ur collations => [emoji,eor] tag=ur
+19 hi collations => [emoji,eor] tag=hi
+20 zh collations => [emoji,eor,phonetic,pinyin,stroke,trad,unihan,zhuyin] tag=zh
+21 zh-Hant collations => [emoji,eor,phonetic,pinyin,stroke,trad,unihan,zhuyin] tag=zh-Hant
+22 zh-TW collations => [emoji,eor,phonetic,pinyin,stroke,trad,unihan,zhuyin] tag=zh-TW
+23 zh-Hans-SG collations => [emoji,eor,phonetic,pinyin,stroke,trad,unihan,zhuyin] tag=zh-Hans-SG
+24 ja collations => [emoji,eor,unihan] tag=ja
+25 ko collations => [emoji,eor,unihan] tag=ko
+26 th collations => [emoji,eor] tag=th
+27 ru collations => [emoji,eor] tag=ru
+28 sr-Latn collations => [emoji,eor] tag=sr-Latn
+29 uz-Cyrl collations => [emoji,eor] tag=uz-Cyrl
+30 und collations => [emoji,eor] tag=und
+31 und-AQ collations => [emoji,eor] tag=und-AQ
+32 und-Latn-AQ collations => [emoji,eor] tag=und-Latn-AQ
+33 und-Cyrl-RO collations => [emoji,eor] tag=und-Cyrl-RO
+34 und-Thai collations => [emoji,eor] tag=und-Thai
+35 und-150 collations => [emoji,eor] tag=und-150
+36 und-AT collations => [emoji,eor] tag=und-AT
+37 mo collations => [emoji,eor] tag=ro
+38 iw collations => [emoji,eor] tag=he
+39 in-ID collations => [emoji,eor] tag=id-ID
+40 sh collations => [emoji,eor] tag=sr-Latn
+41 no collations => [emoji,eor] tag=no
+42 tl collations => [emoji,eor] tag=fil
+43 art-lojban collations => [emoji,eor] tag=jbo
+44 zh-hakka collations => [emoji,eor] tag=hak
+45 aar-x-private collations => [emoji,eor] tag=aa-x-private
+46 es-ES-preeuro collations => [emoji,eor] tag=es-ES-preeuro
+47 sl-rozaj-biske-1994 collations => [emoji,eor] tag=sl-1994-biske-rozaj
+48 hy-SU collations => [emoji,eor] tag=hy-AM
+49 ru-SU collations => [emoji,eor] tag=ru-RU
+50 en-u-ca-gregory-co-phonebk-kn collations (co phonebk, not read)
+51 en-u-nu-thai-hc-h23 collations => [emoji,eor] tag=en-u-hc-h23-nu-thai
+52 de-u-co-phonebk-ca-buddhist collations (co phonebk, not read)
+53 en-u-fw-mon collations => [emoji,eor] tag=en-u-fw-mon
+54 en-u-rg-gbzzzz collations => [emoji,eor] tag=en-u-rg-gbzzzz
+55 en-u-sd-usca collations => [emoji,eor] tag=en-u-sd-usca
+56 ar-u-nu-arab collations => [emoji,eor] tag=ar-u-nu-arab
+57 pt-u-attr2-attr1-ca-gregory collations => [emoji,eor] tag=pt-u-attr1-attr2-ca-gregory
+58 en-t-iw collations => [emoji,eor] tag=en-t-he
+59 und-x-private collations => [emoji,eor] tag=und-x-private
+60 en {"calendar":"islamicc","collation":"emoji","hourCycle":"h11","caseFirst":"upper","numeric":true,"numberingSystem":"arab","firstDayOfWeek":"0"} collations (co emoji, not read)
+61 en-US {"language":"fr","script":"Cyrl","region":"BE","variants":"Fonipa-1996"} collations => [emoji,eor] tag=fr-Cyrl-BE-1996-fonipa
+62 de-u-kn-false {"numeric":true} collations => [emoji,eor,phonebk] tag=de-u-kn
+63 en {"firstDayOfWeek":"tue"} collations => [emoji,eor] tag=en-u-fw-tue
+64 ja-JP {"region":"US"} collations => [emoji,eor,unihan] tag=ja-US
+65 he-IL {"script":"Latn"} collations => [emoji,eor] tag=he-Latn-IL
+[object Object]
+# exit 0
